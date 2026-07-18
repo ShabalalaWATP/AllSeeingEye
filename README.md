@@ -291,6 +291,16 @@ expires or closes.
 Cancel, Escape, Pause, dismissal and component teardown stop the recording and
 release its main-process reservation.
 
+### Close the app
+
+- Hover the standalone eye and select the `×` in its top-right corner.
+- In compact or expanded views, select the persistent top-right `×` labelled
+  **Quit AllSeeingEye**.
+- Alternatively, right-click the eye and choose **Quit AllSeeingEye**, or press
+  `Alt+F4`.
+
+Closing or dismissing an analysis is separate from quitting the application.
+
 ### Keyboard shortcuts
 
 | Shortcut | Action |
@@ -300,6 +310,7 @@ release its main-process reservation.
 | `Ctrl+Alt+P` | Pause or resume all analysis triggers. |
 | `Esc` | Close a transient control or collapse the expanded panel. |
 | `Ctrl+Enter` | Submit the text input. |
+| `Alt+F4` | Quit AllSeeingEye. |
 
 `Ctrl+Shift+P` is deliberately avoided because it would override the VS Code
 command palette system-wide.

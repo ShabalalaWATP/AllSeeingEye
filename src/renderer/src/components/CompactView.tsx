@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import EyeShell from './EyeShell'
+import QuitButton from './QuitButton'
 import {
   isBusy,
   prettifyCategory,
@@ -36,6 +37,7 @@ export default function CompactView({
 
   return (
     <div className="compact-window" ref={rootRef}>
+      <QuitButton className="compact-app-quit" />
       <div className="compact-eye">
         <EyeShell
           width={150}

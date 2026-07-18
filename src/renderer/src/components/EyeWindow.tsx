@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EyeShell from './EyeShell'
+import QuitButton from './QuitButton'
 import { isBusy, statusText, type GazeTarget } from '../hooks'
 import type { StatePayload } from '../../../shared/types'
 
@@ -142,6 +143,7 @@ export default function EyeWindow({
         }
       }}
     >
+      <QuitButton className="eye-app-quit" />
       <EyeShell
         width={216}
         state={snapshot.state}

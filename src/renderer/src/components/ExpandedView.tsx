@@ -4,6 +4,7 @@ import ScreenAnalysis from './ScreenAnalysis'
 import VoiceAnalysis from './VoiceAnalysis'
 import OverallReview from './OverallReview'
 import ExpertInsight from './ExpertInsight'
+import QuitButton from './QuitButton'
 import { isBusy, useFitHeight, type GazeTarget } from '../hooks'
 import {
   EXPERT_SHORT_LABELS,
@@ -52,7 +53,7 @@ export default function ExpandedView({
           <ComposerButton label="Voice" tab="voice" selected={contentTab === 'voice'} disabled={busy} onSelect={onTabChange} />
         </nav>
         <button className="icon-btn no-drag" onClick={() => void window.criticalEye.collapse()} title="Collapse (Esc)">▾</button>
-        <button className="icon-btn no-drag" onClick={() => void window.criticalEye.dismiss()} title="Close">✕</button>
+        <QuitButton />
       </header>
 
       {report && (
@@ -86,7 +87,7 @@ export default function ExpandedView({
         </button>
       </footer>
       <div className="shortcut-help no-drag">
-        <kbd>Ctrl+Shift+R</kbd> quick display · <kbd>Ctrl+Shift+Space</kbd> show/hide · <kbd>Esc</kbd> collapse
+        <kbd>Ctrl+Shift+R</kbd> quick display · <kbd>Ctrl+Shift+Space</kbd> show/hide · <kbd>Esc</kbd> collapse · <kbd>Alt+F4</kbd> quit
       </div>
     </div>
   )
