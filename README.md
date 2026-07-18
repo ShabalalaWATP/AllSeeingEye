@@ -238,7 +238,7 @@ chat, revoke and rotate it.
 | Variable | Required | Purpose |
 |---|---:|---|
 | `OPENAI_API_KEY` | Yes | Read only by the Electron main process. |
-| `OPENAI_MODEL` | No | Analysis model. Defaults to `gpt-5.6-sol`. |
+| `OPENAI_MODEL` | No | Analysis model. Defaults to the faster `gpt-5.6-luna` tier. |
 | `OPENAI_TRANSCRIPTION_MODEL` | No | Voice transcription model. Defaults to `gpt-4o-transcribe`. |
 | `OPENAI_REASONING_EFFORT` | No | Full-review reasoning effort when supported by the selected model. |
 | `OPENAI_QUICK_REASONING_EFFORT` | No | Quick-take reasoning effort. Defaults to `low`. |

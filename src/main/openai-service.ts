@@ -4,7 +4,7 @@ import type { z } from 'zod'
 import { BadResponseError, MissingKeyError } from './core/errors'
 
 const TIMEOUT_MS = 45_000
-const DEFAULT_MODEL = 'gpt-5.6-sol'
+const DEFAULT_MODEL = 'gpt-5.6-luna'
 
 let client: OpenAI | null = null
 

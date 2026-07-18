@@ -42,7 +42,7 @@ Each item below is a defect or gap found in the original brief, with the resolut
 
 15. **No demo insurance.** v2 adds three cheap artefacts: a `scripts/preflight.mjs` that validates the API key and model before the demo, and two planted demo assets in the repo (a flawed proposal HTML page and an insecure code snippet) so the model always has something juicy to find (Part G3). Also `app.requestSingleInstanceLock()` so a double-launch during a nervous demo cannot spawn two eyes.
 
-16. **Model default.** `OPENAI_MODEL` stays env-driven with the v1 default `gpt-5.6`. Preflight verifies access; the error mapper has a specific message for `model_not_found` telling the user to change `OPENAI_MODEL`. Optional `OPENAI_REASONING_EFFORT=low` is supported for reasoning models to cut latency, sent only when set (a 400 on non-reasoning models otherwise).
+16. **Model default.** `OPENAI_MODEL` stays env-driven and defaults to the latency-oriented `gpt-5.6-luna` tier. Preflight verifies access; the error mapper has a specific message for `model_not_found` telling the user to change `OPENAI_MODEL`. Optional `OPENAI_REASONING_EFFORT=low` is supported for reasoning models to cut latency, sent only when set (a 400 on non-reasoning models otherwise).
 
 17. **Latency is a demo feature.** v2 adds an elapsed-seconds counter to the Thinking state, a 45 s hard timeout, `maxRetries: 1` on the SDK client, and a talk-track note in the demo script (you narrate while it thinks).
 
@@ -126,7 +126,7 @@ git init && git add -A && git commit -m "chore: scaffold electron-vite react-ts"
 2. `.gitignore`: ensure `node_modules`, `dist`, `out`, `.env`, `*.local` are present. Create `.env.example`:
    ```env
    OPENAI_API_KEY=
-   OPENAI_MODEL=gpt-5.6
+   OPENAI_MODEL=gpt-5.6-luna
    # Optional, only for reasoning models:
    # OPENAI_REASONING_EFFORT=low
    ```
@@ -406,7 +406,7 @@ The key must never appear in renderer code, the preload bridge, logs, errors, so
 
 ```ts
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });
-const model = process.env.OPENAI_MODEL ?? 'gpt-5.6';
+const model = process.env.OPENAI_MODEL ?? 'gpt-5.6-luna';
 
 const response = await client.responses.parse({
   model,
