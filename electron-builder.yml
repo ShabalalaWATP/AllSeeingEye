@@ -1,0 +1,20 @@
+appId: com.hackathon.critical-eye
+productName: Critical Eye
+directories:
+  output: dist
+files:
+  - '!src/*'
+  - '!scripts/*'
+  - '!assets/*'
+  - '!tests/*'
+  - '!docs/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,vitest.config.ts}'
+  - '!{.env,.env.*,.npmrc,.gitignore,README.md,THIRD-PARTY.md,electron-builder.yml}'
+  - '!{package-lock.json,pnpm-lock.yaml,yarn.lock}'
+win:
+  target:
+    - portable
+portable:
+  artifactName: CriticalEye-${version}-portable.exe
+npmRebuild: false
