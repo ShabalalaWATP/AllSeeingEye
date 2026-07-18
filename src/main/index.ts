@@ -30,6 +30,9 @@ function main(): void {
     const wm = new WindowManager(prefs)
     const controller = new AnalysisController(wm, prefs)
 
+    // First run: open at compact size so the privacy notice has room.
+    if (!prefs.get().privacyNoticeDismissed) wm.setMode('compact')
+
     registerIpc(controller, prefs)
     attachContextMenu(wm, controller)
     registerShortcuts({

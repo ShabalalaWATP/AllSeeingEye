@@ -19,9 +19,36 @@ export async function maybeRunSmoke(wm: WindowManager): Promise<void> {
   const dir = process.env.CRITICAL_EYE_SMOKE_DIR ?? tmpdir()
   console.log(`[smoke] writing verification captures to ${dir}`)
 
+  // Surface renderer console output (e.g. shader compile errors) in stdout.
+  wm.win.webContents.on('console-message', (...args: unknown[]) => {
+    const details = args[args.length - 1]
+    console.log('[renderer]', typeof details === 'string' ? details : JSON.stringify(details))
+  })
+
   // Predictable position on the primary display so the eye is easy to find.
   wm.win.setBounds({ x: 120, y: 120, width: 160, height: 200 })
-  await delay(3500) // let the renderer paint the animated eye
+
+  // Wait until the WebGL canvas is actually mounted, then a little longer for
+  // the first frames. A fixed delay races the cold dev-server load.
+  const deadline = Date.now() + 20_000
+  let canvasInfo = 'never appeared'
+  while (Date.now() < deadline) {
+    try {
+      const info = (await wm.win.webContents.executeJavaScript(
+        `(() => { const c = document.querySelector('.evil-eye-container canvas');
+           return c ? c.width + 'x' + c.height : null })()`
+      )) as string | null
+      if (info) {
+        canvasInfo = info
+        break
+      }
+    } catch {
+      // page still loading
+    }
+    await delay(500)
+  }
+  console.log(`[smoke] eye canvas: ${canvasInfo}`)
+  await delay(2000)
 
   // 1. Eye visible: proves transparent rendering over the desktop.
   const display = screen.getPrimaryDisplay()
