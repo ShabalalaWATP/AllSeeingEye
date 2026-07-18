@@ -53,7 +53,7 @@ function main(): void {
       stopCursorFeed()
     })
 
-    void maybeRunSmoke(wm)
+    void maybeRunSmoke(wm, controller)
   })
 
   app.on('window-all-closed', () => app.quit())

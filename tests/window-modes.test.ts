@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   WINDOW_MODES,
+  clampContentHeight,
   defaultPosition,
   isVisibleOnAny,
   placeWindow
@@ -10,9 +11,34 @@ const workArea = { x: 0, y: 0, width: 1920, height: 1040 }
 
 describe('WINDOW_MODES', () => {
   it('defines the three approved sizes', () => {
-    expect(WINDOW_MODES.eye).toEqual({ width: 160, height: 200 })
+    expect(WINDOW_MODES.eye).toEqual({ width: 200, height: 150 })
     expect(WINDOW_MODES.compact).toEqual({ width: 520, height: 200 })
     expect(WINDOW_MODES.expanded).toEqual({ width: 560, height: 620 })
+  })
+})
+
+describe('clampContentHeight', () => {
+  it('never auto-sizes the eye window', () => {
+    expect(clampContentHeight('eye', 500, 1040)).toBeNull()
+  })
+
+  it('respects the per-mode minimum', () => {
+    expect(clampContentHeight('compact', 60, 1040)).toBe(150)
+    expect(clampContentHeight('expanded', 100, 1040)).toBe(340)
+  })
+
+  it('respects the per-mode maximum', () => {
+    expect(clampContentHeight('compact', 2000, 1040)).toBe(480)
+    expect(clampContentHeight('expanded', 2000, 1040)).toBe(860)
+  })
+
+  it('passes through content heights inside the bounds', () => {
+    expect(clampContentHeight('compact', 236, 1040)).toBe(236)
+    expect(clampContentHeight('expanded', 555.4, 1040)).toBe(555)
+  })
+
+  it('never exceeds the work area', () => {
+    expect(clampContentHeight('expanded', 800, 600)).toBe(576)
   })
 })
 

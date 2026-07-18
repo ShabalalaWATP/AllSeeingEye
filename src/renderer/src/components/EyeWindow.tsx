@@ -7,13 +7,13 @@ interface EyeWindowProps {
   cursor: GazeTarget
 }
 
-/** The 160x200 idle window: just the eye and a whisper of status. */
+/** The 200x150 idle window: just the eye and a whisper of status. */
 export default function EyeWindow({ snapshot, cursor }: EyeWindowProps): React.JSX.Element {
   const elapsed = useElapsed(snapshot.state === 'analysing')
   return (
     <div className="eye-window">
       <EyeShell
-        size={160}
+        width={200}
         state={snapshot.state}
         severity={snapshot.finding?.severity ?? null}
         cursor={cursor}

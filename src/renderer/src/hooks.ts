@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CompanionState, Severity, StatePayload } from '../../shared/types'
 
 const INITIAL_SNAPSHOT: StatePayload = {
@@ -60,6 +60,33 @@ export function useElapsed(active: boolean): number {
     return () => clearInterval(id)
   }, [active])
   return seconds
+}
+
+// Small allowance for panel margins outside the measured element.
+const FIT_HEIGHT_PAD_PX = 8
+
+/**
+ * Auto-size the window to its content: measures the referenced element and
+ * asks main to fit the window height (clamped there) whenever it changes.
+ */
+export function useFitHeight<T extends HTMLElement>(): React.RefObject<T | null> {
+  const ref = useRef<T>(null)
+  useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    let last = 0
+    const send = (): void => {
+      const height = Math.ceil(element.getBoundingClientRect().height) + FIT_HEIGHT_PAD_PX
+      if (Math.abs(height - last) < 2) return
+      last = height
+      void window.criticalEye.fitHeight(height)
+    }
+    const observer = new ResizeObserver(send)
+    observer.observe(element)
+    send()
+    return () => observer.disconnect()
+  }, [])
+  return ref
 }
 
 export function statusText(state: CompanionState, elapsed: number): string {

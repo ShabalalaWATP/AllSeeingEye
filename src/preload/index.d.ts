@@ -14,6 +14,7 @@ export interface CriticalEyeApi {
   dragEnd: () => Promise<{ wasClick: boolean }>
   analyseText: (text: string, mode: AnalysisMode) => Promise<void>
   setWindowMode: (mode: WindowMode) => Promise<void>
+  fitHeight: (height: number) => Promise<void>
   getPreferences: () => Promise<Preferences>
   updatePreferences: (
     update: Partial<Pick<Preferences, 'mode' | 'privacyNoticeDismissed' | 'startPaused'>>

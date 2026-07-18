@@ -15,6 +15,8 @@ const TextRequestSchema = z
 
 const WindowModeSchema = z.enum(WINDOW_MODE_NAMES)
 
+const FitHeightSchema = z.number().int().min(100).max(1200)
+
 /** Every argument crossing the bridge is validated here before use. */
 export function registerIpc(
   controller: AnalysisController,
@@ -35,6 +37,11 @@ export function registerIpc(
   ipcMain.handle('window:set-mode', (_event, raw: unknown) => {
     const parsed = WindowModeSchema.safeParse(raw)
     if (parsed.success) controller.setWindowMode(parsed.data)
+  })
+
+  ipcMain.handle('window:fit-height', (_event, raw: unknown) => {
+    const parsed = FitHeightSchema.safeParse(raw)
+    if (parsed.success) controller.fitHeight(parsed.data)
   })
 
   ipcMain.handle('prefs:get', () => prefs.get())

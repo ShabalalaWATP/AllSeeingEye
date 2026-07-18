@@ -3,18 +3,34 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { captureDisplayUnderCursor, delay } from './capture'
-import { analyseImage, hasApiKey } from './openai-client'
+import { hasApiKey } from './openai-client'
+import type { AnalysisController } from './analysis'
 import type { WindowManager } from './window'
 
 /**
  * DEV-ONLY verification harness, never active in packaged builds and only
- * when CRITICAL_EYE_SMOKE=1 is set explicitly. It writes two verification
+ * when CRITICAL_EYE_SMOKE=1 is set explicitly. It writes verification
  * captures to a temp directory so a developer can confirm that (a) the eye
- * renders transparently over the desktop and (b) the real pipeline excludes
- * the eye from its own screenshot. Normal app operation never writes any
- * capture to disk.
+ * renders transparently over the desktop, (b) the real pipeline excludes the
+ * eye from its own screenshot, and optionally (c) the complete analysis flow
+ * produces a finding bubble. Normal app operation never writes any capture
+ * to disk.
  */
-export async function maybeRunSmoke(wm: WindowManager): Promise<void> {
+
+async function capturePrimaryPng(): Promise<Buffer | null> {
+  const display = screen.getPrimaryDisplay()
+  const sources = await desktopCapturer.getSources({
+    types: ['screen'],
+    thumbnailSize: {
+      width: Math.round(display.size.width * display.scaleFactor),
+      height: Math.round(display.size.height * display.scaleFactor)
+    }
+  })
+  const source = sources.find((s) => s.display_id === String(display.id)) ?? sources[0]
+  return source && !source.thumbnail.isEmpty() ? source.thumbnail.toPNG() : null
+}
+
+export async function maybeRunSmoke(wm: WindowManager, controller: AnalysisController): Promise<void> {
   if (process.env.CRITICAL_EYE_SMOKE !== '1' || app.isPackaged) return
   const dir = process.env.CRITICAL_EYE_SMOKE_DIR ?? tmpdir()
   console.log(`[smoke] writing verification captures to ${dir}`)
@@ -26,7 +42,7 @@ export async function maybeRunSmoke(wm: WindowManager): Promise<void> {
   })
 
   // Predictable position on the primary display so the eye is easy to find.
-  wm.win.setBounds({ x: 120, y: 120, width: 160, height: 200 })
+  wm.win.setBounds({ x: 120, y: 120, width: 200, height: 150 })
 
   // Wait until the WebGL canvas is actually mounted, then a little longer for
   // the first frames. A fixed delay races the cold dev-server load.
@@ -51,35 +67,36 @@ export async function maybeRunSmoke(wm: WindowManager): Promise<void> {
   await delay(2000)
 
   // 1. Eye visible: proves transparent rendering over the desktop.
-  const display = screen.getPrimaryDisplay()
-  const sources = await desktopCapturer.getSources({
-    types: ['screen'],
-    thumbnailSize: {
-      width: Math.round(display.size.width * display.scaleFactor),
-      height: Math.round(display.size.height * display.scaleFactor)
-    }
-  })
-  const source = sources.find((s) => s.display_id === String(display.id)) ?? sources[0]
-  if (source) {
-    writeFileSync(join(dir, 'smoke-eye-visible.png'), source.thumbnail.toPNG())
+  const eyePng = await capturePrimaryPng()
+  if (eyePng) {
+    writeFileSync(join(dir, 'smoke-eye-visible.png'), eyePng)
     console.log('[smoke] wrote smoke-eye-visible.png')
   }
 
-  // 2. Real pipeline: the eye must be absent from its own capture.
   try {
+    // 2. Real pipeline: the eye must be absent from its own capture.
     const dataUrl = await captureDisplayUnderCursor(wm.win)
     const jpeg = Buffer.from(dataUrl.split(',')[1], 'base64')
     writeFileSync(join(dir, 'smoke-pipeline.jpg'), jpeg)
     console.log(`[smoke] wrote smoke-pipeline.jpg (${jpeg.length} bytes)`)
 
-    // 3. Optional live API round trip.
+    // 3. Optional: the complete user-facing flow, ending with the bubble on
+    // screen, captured for visual verification of the result window.
     if (process.env.CRITICAL_EYE_SMOKE_OPENAI === '1' && hasApiKey()) {
-      console.log('[smoke] calling OpenAI...')
-      const t0 = Date.now()
-      const finding = await analyseImage(dataUrl, 'general')
-      console.log(`[smoke] finding in ${Date.now() - t0}ms: ${JSON.stringify(finding)}`)
+      console.log('[smoke] running the full analysis flow...')
+      const started = Date.now()
+      await controller.runScreen()
+      const snapshot = controller.snapshot()
+      console.log(`[smoke] flow finished in ${Date.now() - started}ms state=${snapshot.state}`)
+      console.log(`[smoke] payload: ${JSON.stringify(snapshot.finding ?? snapshot.error)}`)
+      await delay(2500) // bubble render plus auto-height fit
+      const resultPng = await capturePrimaryPng()
+      if (resultPng) {
+        writeFileSync(join(dir, 'smoke-result.png'), resultPng)
+        console.log('[smoke] wrote smoke-result.png')
+      }
     } else if (process.env.CRITICAL_EYE_SMOKE_OPENAI === '1') {
-      console.log('[smoke] skipped OpenAI call: no API key configured')
+      console.log('[smoke] skipped analysis flow: no API key configured')
     }
   } catch (err) {
     console.error(`[smoke] pipeline failed: ${(err as Error).name}: ${(err as Error).message}`)

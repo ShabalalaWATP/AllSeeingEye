@@ -123,6 +123,10 @@ export class AnalysisController {
     this.push()
   }
 
+  fitHeight(contentHeight: number): void {
+    this.wm.fitHeight(contentHeight)
+  }
+
   togglePause(): void {
     this.paused = !this.paused
     if (!this.gate.isBusy) this.state = 'idle'

@@ -18,6 +18,7 @@ const api = {
   analyseText: (text: string, mode: string): Promise<void> =>
     ipcRenderer.invoke('analysis:text', { text, mode }),
   setWindowMode: (mode: string): Promise<void> => ipcRenderer.invoke('window:set-mode', mode),
+  fitHeight: (height: number): Promise<void> => ipcRenderer.invoke('window:fit-height', height),
   getPreferences: (): Promise<unknown> => ipcRenderer.invoke('prefs:get'),
   updatePreferences: (update: unknown): Promise<unknown> =>
     ipcRenderer.invoke('prefs:update', update),

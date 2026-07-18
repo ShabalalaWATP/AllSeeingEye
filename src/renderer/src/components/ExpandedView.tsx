@@ -1,7 +1,7 @@
 import EyeShell from './EyeShell'
 import FindingDetail from './FindingDetail'
 import TextAnalysis from './TextAnalysis'
-import type { GazeTarget } from '../hooks'
+import { useFitHeight, type GazeTarget } from '../hooks'
 import type { StatePayload } from '../../../shared/types'
 
 export type PanelTab = 'finding' | 'text'
@@ -13,18 +13,19 @@ interface ExpandedViewProps {
   onTabChange: (tab: PanelTab) => void
 }
 
-/** The 560x620 window: full detail, mode selection and manual text analysis. */
+/** The 560-wide window: full detail, mode selection and manual text analysis. */
 export default function ExpandedView({
   snapshot,
   cursor,
   tab,
   onTabChange
 }: ExpandedViewProps): React.JSX.Element {
+  const rootRef = useFitHeight<HTMLDivElement>()
   return (
-    <div className="expanded-window panel">
+    <div className="expanded-window panel" ref={rootRef}>
       <header className="expanded-header drag">
         <div className="header-eye no-drag">
-          <EyeShell size={44} state={snapshot.state} cursor={cursor} interactive={false} />
+          <EyeShell width={60} state={snapshot.state} cursor={cursor} interactive={false} />
         </div>
         <span className="title">Critical Eye</span>
         <nav className="tabs no-drag">

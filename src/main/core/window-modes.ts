@@ -11,13 +11,36 @@ export interface Rect extends Size {
 }
 
 export const WINDOW_MODES: Record<WindowMode, Size> = {
-  eye: { width: 160, height: 200 },
+  eye: { width: 200, height: 150 },
   compact: { width: 520, height: 200 },
   expanded: { width: 560, height: 620 }
 }
 
 /** Centre of the eye graphic relative to the window's top-left, in pixels. */
-export const EYE_CENTRE = { x: 80, y: 80 }
+export const EYE_CENTRE = { x: 100, y: 55 }
+
+/** Content-driven height bounds for the auto-sizing panel windows. */
+export const CONTENT_HEIGHT_LIMITS: Record<'compact' | 'expanded', { min: number; max: number }> =
+  {
+    compact: { min: 150, max: 480 },
+    expanded: { min: 340, max: 860 }
+  }
+
+const WORK_AREA_HEIGHT_MARGIN = 24
+
+/**
+ * Clamp a measured content height into the mode's bounds and the work area.
+ * Returns null for the eye window, which never auto-sizes.
+ */
+export function clampContentHeight(
+  mode: WindowMode,
+  height: number,
+  workAreaHeight: number
+): number | null {
+  if (mode === 'eye') return null
+  const { min, max } = CONTENT_HEIGHT_LIMITS[mode]
+  return Math.max(min, Math.min(Math.round(height), max, workAreaHeight - WORK_AREA_HEIGHT_MARGIN))
+}
 
 const SCREEN_EDGE_MARGIN = 24
 

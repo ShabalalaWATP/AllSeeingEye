@@ -1,6 +1,12 @@
 import { app, BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
-import { WINDOW_MODES, defaultPosition, isVisibleOnAny, placeWindow } from './core/window-modes'
+import {
+  WINDOW_MODES,
+  clampContentHeight,
+  defaultPosition,
+  isVisibleOnAny,
+  placeWindow
+} from './core/window-modes'
 import type { PrefsStore } from './prefs'
 import type { WindowMode } from '../shared/types'
 
@@ -70,6 +76,16 @@ export class WindowManager {
     const bounds = this.win.getBounds()
     const workArea = screen.getDisplayMatching(bounds).workArea
     this.win.setBounds(placeWindow(bounds, WINDOW_MODES[mode], workArea))
+  }
+
+  /** Fit the panel height to the renderer's measured content height. */
+  fitHeight(contentHeight: number): void {
+    const bounds = this.win.getBounds()
+    const workArea = screen.getDisplayMatching(bounds).workArea
+    const height = clampContentHeight(this.windowMode, contentHeight, workArea.height)
+    if (height === null || height === bounds.height) return
+    const width = WINDOW_MODES[this.windowMode].width
+    this.win.setBounds(placeWindow(bounds, { width, height }, workArea))
   }
 
   toggleVisibility(): void {

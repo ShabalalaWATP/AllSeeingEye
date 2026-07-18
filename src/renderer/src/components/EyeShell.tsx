@@ -3,7 +3,8 @@ import { isBusy, type GazeTarget } from '../hooks'
 import type { CompanionState, Severity } from '../../../shared/types'
 
 interface EyeShellProps {
-  size: number
+  /** Overall width; the eye is a wide shape about half as tall as it is wide. */
+  width: number
   state: CompanionState
   severity?: Severity | null
   cursor: GazeTarget
@@ -22,7 +23,7 @@ interface EyeShellProps {
  * analysis. The (invisible) outer ring stays an OS drag region as a backup.
  */
 export default function EyeShell({
-  size,
+  width,
   state,
   severity,
   cursor,
@@ -48,10 +49,10 @@ export default function EyeShell({
   }
 
   return (
-    <div className="eye-shell drag" style={{ width: size, height: size }}>
+    <div className="eye-shell drag" style={{ width, height: Math.round(width * 0.55) }}>
       <div
         className={`eye-hit no-drag ${stateClass}`}
-        style={{ width: Math.round(size * 0.74), height: Math.round(size * 0.74) }}
+        style={{ width: Math.round(width * 0.94), height: Math.round(width * 0.48) }}
         onPointerDown={onPointerDown}
         onPointerUp={(event) => void onPointerUp(event)}
         role="button"

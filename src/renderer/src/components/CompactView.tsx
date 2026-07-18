@@ -6,6 +6,7 @@ import {
   severityClass,
   statusText,
   useElapsed,
+  useFitHeight,
   type GazeTarget
 } from '../hooks'
 import type { StatePayload } from '../../../shared/types'
@@ -17,10 +18,11 @@ interface CompactViewProps {
 
 const NO_ISSUE_AUTO_DISMISS_MS = 8000
 
-/** The 520x200 window: eye on the left, one-line content on the right. */
+/** The 520-wide window: eye on the left, content-sized bubble on the right. */
 export default function CompactView({ snapshot, cursor }: CompactViewProps): React.JSX.Element {
   const busy = isBusy(snapshot.state)
   const elapsed = useElapsed(snapshot.state === 'analysing')
+  const rootRef = useFitHeight<HTMLDivElement>()
 
   // A calm all-clear does not deserve to hang around.
   useEffect(() => {
@@ -33,10 +35,10 @@ export default function CompactView({ snapshot, cursor }: CompactViewProps): Rea
     !snapshot.privacyNoticeDismissed && !snapshot.finding && !snapshot.error && !busy
 
   return (
-    <div className="compact-window">
+    <div className="compact-window" ref={rootRef}>
       <div className="compact-eye">
         <EyeShell
-          size={130}
+          width={150}
           state={snapshot.state}
           severity={snapshot.finding?.severity ?? null}
           cursor={cursor}
