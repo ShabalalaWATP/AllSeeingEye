@@ -27,6 +27,7 @@ describe('parsePrefs', () => {
       x: 12,
       y: 34,
       mode: 'delivery',
+      reviewDepth: 'combined',
       privacyNoticeDismissed: true,
       startPaused: true
     }
@@ -37,8 +38,16 @@ describe('parsePrefs', () => {
 describe('PrefsUpdateSchema', () => {
   it('accepts the renderer-updatable fields', () => {
     expect(
-      PrefsUpdateSchema.safeParse({ mode: 'writing', privacyNoticeDismissed: true }).success
+      PrefsUpdateSchema.safeParse({
+        mode: 'writing',
+        reviewDepth: 'combined',
+        privacyNoticeDismissed: true
+      }).success
     ).toBe(true)
+  })
+
+  it('rejects an unknown review depth', () => {
+    expect(PrefsUpdateSchema.safeParse({ reviewDepth: 'everything' }).success).toBe(false)
   })
 
   it('rejects position updates from the renderer', () => {

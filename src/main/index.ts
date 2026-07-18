@@ -36,7 +36,7 @@ function main(): void {
     // First run: open at compact size so the privacy notice has room.
     if (!prefs.get().privacyNoticeDismissed) wm.setMode('compact')
 
-    registerIpc(controller, prefs, new DragController(wm.win))
+    registerIpc(controller, prefs, new DragController(wm.win), wm)
     attachContextMenu(wm, controller)
     registerShortcuts({
       analyse: () => void controller.runScreen(),

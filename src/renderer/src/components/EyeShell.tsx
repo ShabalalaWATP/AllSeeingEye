@@ -10,6 +10,9 @@ interface EyeShellProps {
   cursor: GazeTarget
   /** When set, the inner eye is clickable and triggers a screen analysis. */
   interactive?: boolean
+  onActivate?: () => void
+  optionsExpanded?: boolean
+  optionsControls?: string
 }
 
 /**
@@ -27,7 +30,10 @@ export default function EyeShell({
   state,
   severity,
   cursor,
-  interactive = true
+  interactive = true,
+  onActivate,
+  optionsExpanded,
+  optionsControls
 }: EyeShellProps): React.JSX.Element {
   const glowIntensity = state === 'analysing' ? 0.8 : severity === 'high' ? 0.65 : 0.35
   const flameSpeed = state === 'analysing' ? 1.7 : 1.0
@@ -44,7 +50,15 @@ export default function EyeShell({
     if (event.button !== 0) return
     const { wasClick } = await window.criticalEye.dragEnd()
     if (wasClick && interactive && !isBusy(state) && state !== 'paused') {
-      void window.criticalEye.analyseScreen()
+      if (onActivate) onActivate()
+      else void window.criticalEye.analyseScreen()
+    }
+  }
+
+  const analyse = (): void => {
+    if (interactive && !isBusy(state) && state !== 'paused') {
+      if (onActivate) onActivate()
+      else void window.criticalEye.analyseScreen()
     }
   }
 
@@ -55,9 +69,23 @@ export default function EyeShell({
         style={{ width: Math.round(width * 0.94), height: Math.round(width * 0.48) }}
         onPointerDown={onPointerDown}
         onPointerUp={(event) => void onPointerUp(event)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            analyse()
+          }
+        }}
         role="button"
-        aria-label="Analyse this screen"
-        title="Drag to move. Click to analyse this screen (Ctrl+Shift+R). Right-click for menu."
+        tabIndex={interactive ? 0 : -1}
+        aria-expanded={interactive ? optionsExpanded : undefined}
+        aria-controls={interactive ? optionsControls : undefined}
+        aria-disabled={!interactive || isBusy(state) || state === 'paused'}
+        aria-label={onActivate
+          ? 'Open analysis options'
+          : 'Analyse this screen. Hover or focus for more input options.'}
+        title={onActivate
+          ? 'Drag to move. Click for analysis options.'
+          : 'Drag to move. Click to analyse this screen. Hover or focus for more inputs.'}
       >
         <EvilEye
           glowIntensity={glowIntensity}

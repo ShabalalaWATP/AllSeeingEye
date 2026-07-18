@@ -1,4 +1,6 @@
-# Critical Eye: 5-Hour Hackathon Implementation Plan (v2)
+# AllSeeingEye: original 5-hour hackathon implementation plan (historical)
+
+> Historical design record. The current architecture and behaviour are documented in the repository README and `MASTER_IMPLEMENTATION_PLAN.md`.
 
 A second pair of eyes for your thinking.
 
@@ -32,7 +34,7 @@ Each item below is a defect or gap found in the original brief, with the resolut
 
 11. **`Ctrl+Shift+P` is the VS Code command palette.** Registering it globally steals it system-wide, and the demo script itself opens VS Code. Pause moves to `Ctrl+Alt+P`. Note also that `Ctrl+Shift+R` globally steals browser hard-reload while the app runs; acceptable and intended (it is the trigger), but documented.
 
-12. **A frameless, taskbar-less, always-on-top window with no quit affordance is a trap.** v1 put the context menu in P1. v2 promotes a minimal right-click menu (Analyse, Text analysis, Pause, Show/Hide, Quit) to P0 via the `webContents` `context-menu` event, which needs no renderer code. The full menu with Settings stays P1.
+12. **A frameless, taskbar-less, always-on-top window with no quit affordance is a trap.** In eye mode, hover or focus opens the four-input renderer tray beneath the eye, with right-click as a fallback. Compact and expanded modes retain a native operational context menu with Pause, Show/Hide and Quit.
 
 13. **Drag regions swallow clicks and right-clicks.** `-webkit-app-region: drag` areas do not deliver click or contextmenu events on Windows. v1 wanted "click the eye to analyse" and "right-click the eye for menu" plus a drag area. v2 specifies exact zones: the inner eye disc is `no-drag` (click and right-click live there), the outer annulus is the drag handle. In compact and expanded modes, a top strip is the drag handle (Part E9).
 
@@ -64,7 +66,7 @@ Do not re-litigate these during the build.
 | Validation | `zod@^3.25` everywhere (API schema, IPC args, prefs) | Compatible with `zodTextFormat` |
 | OpenAI call | `client.responses.parse()` + `zodTextFormat`, image as base64 data URL `input_image` | Native structured outputs, no JSON scraping |
 | Shortcuts | `Ctrl+Shift+R` analyse, `Ctrl+Shift+Space` show/hide, `Ctrl+Alt+P` pause | VS Code conflict avoided |
-| Window modes | eye 160x200, compact 520x200, expanded 560x620, main process owns the map | Approximates v1 dims, adds room for status label |
+| Window modes | idle eye 216x120, eye plus tray 216x258, compact 520x200, expanded 560x620, main process owns the map | Keeps the idle eye clean and expands only for explicit input choices |
 | Packaging | electron-builder, `portable` target | Single exe, no installer UI, fastest to demo |
 | Tests | Vitest on pure modules in `src/main/core` only | No Electron mocking in a 5-hour window |
 | File size | Target 350 lines per hand-written file, 400 hard ceiling | House standard |
@@ -112,8 +114,8 @@ Total 300 minutes. Commit at the end of every phase (conventional commits). Timi
 ### T0 (0:00 - 0:25): Scaffold and guardrails
 
 ```bash
-npm create @quick-start/electron@latest critical-eye -- --template react-ts
-cd critical-eye
+npm create @quick-start/electron@latest allseeingeye -- --template react-ts
+cd allseeingeye
 npm install
 npm i openai zod@^3.25 ogl electron-store@8.2.0 dotenv
 npm i -D vitest
@@ -200,7 +202,7 @@ Verify (Checkpoint C, the demo line): with a document visible, `Ctrl+Shift+R` bl
 1. `ExpandedPanel`: headline, severity, category, explanation, visible evidence, recommendation, confidence bar, mode selector, Analyse again, Pause, Collapse. Copy and feedback buttons only if ahead of schedule (they are P1).
 2. `TextAnalysis` tab in the expanded panel: textarea (12,000 char limit with counter, enforced again in main), mode selector shared, "Red team this" button, `Ctrl+Enter` submits, plain Enter newlines.
 3. Pause: `Ctrl+Alt+P`, context menu item, and a button; paused state blocks capture triggers with a status flash, dims the eye, persists across restarts via prefs.
-4. Minimal context menu (P0) in main via `webContents.on('context-menu')`: Analyse this screen, Open text analysis, Pause/Resume, Show/Hide, Quit.
+4. Context handling (P0) in main via `webContents.on('context-menu')`: open the same four-input tray as a fallback in eye mode; retain Pause/Resume, Show/Hide and Quit in panel modes.
 5. `Escape` collapses expanded to eye (renderer keydown, never a global shortcut).
 6. Privacy first-run bubble (copy in Part E11), dismiss persisted. "No issue" state: calm, neutral styling, auto-collapse after a few seconds.
 7. Visual design pass: tokens in `styles/tokens.css` (deep charcoal `#17171c` panels, glass blur, 1 px `#ffffff14` borders, purple `#8b5cf6` primary accent, amber `#f59e0b` medium, red `#ef4444` high, 12 px radii, soft shadows). Severity colours only on the severity elements, never the whole panel.
@@ -217,7 +219,7 @@ Verify: run the full journey end to end twice, including a deliberate error (dis
 
 ### T7 (4:10 - 5:00): Package, sweep, rehearse
 
-1. `electron-builder.yml`: set `appId: com.hackathon.critical-eye`, `productName: Critical Eye`, `win.target: portable`. Keep the template's `files` config. The default Electron icon is acceptable today.
+1. `electron-builder.yml`: set `appId: com.shabalalawatp.allseeingeye`, `productName: AllSeeingEye`, `win.target: portable`. Keep the template's `files` config. The default Electron icon is acceptable today.
 2. Add `"package:win": "npm run build && electron-builder --win portable"`. First run downloads builder tooling; that is why this phase has 50 minutes. Fallback: `electron-builder --dir` and demo the unpacked exe; final fallback: demo from `npm run dev` (decide by 4:40, never demo a broken package).
 3. Smoke-test the packaged exe: place a `.env` beside it (the main process reads it there when packaged, Part E7), run the full journey once.
 4. Secret and artefact sweep: `git ls-files | findstr /i ".env"` returns only `.env.example`; search `dist` and `out` for `sk-`; confirm no screenshot files exist anywhere; `git status` clean.
@@ -268,7 +270,7 @@ type AnalysisResult =
 Base system instruction (unchanged from v1 apart from the final rule):
 
 ```text
-You are Critical Eye, a concise and sceptical red-team reviewer.
+You are AllSeeingEye, a concise and sceptical red-team reviewer.
 
 Analyse only the material that is clearly visible in the supplied screenshot. Your purpose is to identify the single most important weakness in the user's current work.
 
@@ -340,7 +342,8 @@ export const RedTeamFindingSchema = z.object({
 
 ```ts
 export const WINDOW_MODES = {
-  eye:      { width: 160, height: 200 },
+  eye:      { width: 216, height: 120 },
+  // temporary hover/focus tray footprint: 216x258
   compact:  { width: 520, height: 200 },
   expanded: { width: 560, height: 620 },
 } as const;
@@ -386,7 +389,7 @@ export async function captureDisplayUnderCursor(win: BrowserWindow): Promise<str
 }
 ```
 
-Hard rules carried from v1: never write the image to disk, never log image bytes (log byte counts and durations only), null the data URL reference after the API call resolves, no audio, no video, no polling, no destination except the configured OpenAI call. Windows needs no OS screen-recording permission. If ghosting appears with the opacity dance, swap to `win.hide()` / `win.showInactive()`. Optional refinement, not default: `setContentProtection(true)` during capture (excluded from capture APIs on Windows 10 2004+, but also invisible to screen-share tools).
+Hard rules carried from v1: never write the image to disk, never log image bytes (log byte counts and durations only), null the data URL reference after the API call resolves, no video, no background audio, no polling, no destination except the configured OpenAI call. Voice notes now use explicit, bounded audio-only recording and automatic in-memory transcription and analysis after the user presses Done. Windows needs no OS screen-recording permission. If ghosting appears with the opacity dance, swap to `win.hide()` / `win.showInactive()`. Optional refinement, not default: `setContentProtection(true)` during capture (excluded from capture APIs on Windows 10 2004+, but also invisible to screen-share tools).
 
 ### E7: OpenAI service
 
@@ -470,7 +473,7 @@ No remote content, no `eval`, `webSecurity` stays on, DevTools only in dev (`mod
 
 Drag regions swallow left-clicks and right-clicks on Windows, so zones are explicit:
 
-- Eye mode: outer annulus (the ring between the 160 px window edge and the ~110 px inner disc) is `-webkit-app-region: drag`. The inner disc is `no-drag`: left-click triggers analysis, right-click opens the context menu (the `context-menu` event does not fire over drag regions).
+- Eye mode: the outer annulus is `-webkit-app-region: drag`. The inner disc is `no-drag`: left-click triggers quick analysis; hover or focus opens the four-input tray below; right-click opens the same tray as a fallback (the `context-menu` event does not fire over drag regions).
 - Compact and expanded modes: a 24 px top strip is the drag handle; every control is `no-drag`.
 
 ### E10: Preferences
@@ -479,7 +482,7 @@ Persisted via `electron-store@8`, validated with zod on read (fall back to defau
 
 ### E11: Privacy UX copy (final strings)
 
-- First-run bubble: "Critical Eye only looks when you ask it to. Screenshots are analysed in memory and are not saved by this application." with a "Got it" button.
+- First-run bubble: "AllSeeingEye only looks when you ask it to. Screenshots are analysed in memory and are not saved by this application." with a "Got it" button.
 - Expanded panel footer: "Screenshots are analysed in memory and are not saved."
 - Paused status label: "Paused". No hidden capture paths, no telemetry, no history.
 
@@ -537,7 +540,7 @@ What it does; demo screenshot placeholder; Mermaid architecture diagram (below);
 
 ```mermaid
 flowchart LR
-    User[User triggers analysis] --> Eye[Critical Eye]
+    User[User triggers analysis] --> Eye[AllSeeingEye]
     Eye --> Capture[Ephemeral screen capture]
     Capture --> OpenAI[OpenAI Responses API]
     OpenAI --> Finding[Structured red-team finding]
@@ -588,7 +591,7 @@ Full context menu with Settings; system tray icon; start with Windows; Helpful /
 
 ### H5: Explicit non-goals today (unchanged from v1)
 
-No continuous monitoring, background OCR, keylogging, clipboard monitoring, audio, accounts, cloud persistence, team features, multiple agents, vector databases, screenshot history, automatic document editing, Office add-ins, browser extensions, auto-update, enterprise deployment, UI Automation, or separate backend.
+No continuous monitoring, background OCR, keylogging, clipboard monitoring, passive listening, accounts, cloud persistence, team features, vector databases, screenshot history, automatic document editing, Office add-ins, browser extensions, auto-update, enterprise deployment, UI Automation, or separate remote backend. The current local backend now orchestrates multiple relevant-only expert agents and explicit voice-note transcription.
 
 ### H6: Definition of done (amended v1 list)
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import EyeShell from './EyeShell'
 import {
   isBusy,
@@ -14,25 +14,25 @@ import type { StatePayload } from '../../../shared/types'
 interface CompactViewProps {
   snapshot: StatePayload
   cursor: GazeTarget
+  onFullReview: () => void
 }
 
-const NO_ISSUE_AUTO_DISMISS_MS = 8000
-
 /** The 520-wide window: eye on the left, content-sized bubble on the right. */
-export default function CompactView({ snapshot, cursor }: CompactViewProps): React.JSX.Element {
+export default function CompactView({
+  snapshot,
+  cursor,
+  onFullReview
+}: CompactViewProps): React.JSX.Element {
   const busy = isBusy(snapshot.state)
   const elapsed = useElapsed(snapshot.state === 'analysing')
   const rootRef = useFitHeight<HTMLDivElement>()
 
-  // A calm all-clear does not deserve to hang around.
-  useEffect(() => {
-    if (snapshot.state !== 'no_issue') return
-    const id = setTimeout(() => void window.criticalEye.dismiss(), NO_ISSUE_AUTO_DISMISS_MS)
-    return () => clearTimeout(id)
-  }, [snapshot.state])
-
   const showPrivacy =
-    !snapshot.privacyNoticeDismissed && !snapshot.finding && !snapshot.error && !busy
+    !snapshot.privacyNoticeDismissed &&
+    !snapshot.finding &&
+    !snapshot.quickResult &&
+    !snapshot.error &&
+    !busy
 
   return (
     <div className="compact-window" ref={rootRef}>
@@ -50,11 +50,13 @@ export default function CompactView({ snapshot, cursor }: CompactViewProps): Rea
         {showPrivacy ? (
           <PrivacyBlock />
         ) : busy ? (
-          <ProgressBlock label={statusText(snapshot.state, elapsed)} />
+          <ProgressBlock label={statusText(snapshot.state, elapsed, snapshot.reviewPhase)} />
+        ) : snapshot.quickResult ? (
+          <QuickResultBlock snapshot={snapshot} onFullReview={onFullReview} />
         ) : snapshot.error ? (
           <ErrorBlock message={snapshot.error.message} />
         ) : snapshot.finding ? (
-          <FindingBlock snapshot={snapshot} />
+          <FindingBlock snapshot={snapshot} onFullReview={onFullReview} />
         ) : (
           <HintBlock />
         )}
@@ -69,9 +71,9 @@ function PrivacyBlock(): React.JSX.Element {
     await window.criticalEye.dismiss()
   }
   return (
-    <div className="block no-drag">
+    <div className="block no-drag" role="status" aria-live="polite">
       <p className="notice">
-        Critical Eye only looks when you ask it to. Screenshots are analysed in memory and are not
+        AllSeeingEye only looks when you ask it to. Screenshots are analysed in memory and are not
         saved by this application.
       </p>
       <div className="actions">
@@ -85,7 +87,7 @@ function PrivacyBlock(): React.JSX.Element {
 
 function ProgressBlock({ label }: { label: string }): React.JSX.Element {
   return (
-    <div className="block no-drag">
+    <div className="block no-drag" role="status" aria-live="polite">
       <p className="progress-label">{label}</p>
       <div className="progress-track">
         <div className="progress-glow" />
@@ -109,15 +111,88 @@ function ErrorBlock({ message }: { message: string }): React.JSX.Element {
       </div>
       <p className="headline">{message}</p>
       <div className="actions">
-        <button className="btn" onClick={() => void window.criticalEye.analyseScreen()}>
-          Try again
+        <button className="btn" onClick={() => void window.criticalEye.dismiss()}>
+          Choose another input
         </button>
       </div>
     </div>
   )
 }
 
-function FindingBlock({ snapshot }: { snapshot: StatePayload }): React.JSX.Element {
+function QuickResultBlock({
+  snapshot,
+  onFullReview
+}: {
+  snapshot: StatePayload
+  onFullReview: () => void
+}): React.JSX.Element {
+  const resultRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    requestAnimationFrame(() => resultRef.current?.focus())
+  }, [snapshot.quickResult?.runId])
+
+  return (
+    <div
+      ref={resultRef}
+      className="block quick-result no-drag"
+      tabIndex={-1}
+      aria-label="Quick take ready"
+    >
+      <div className="meta-row">
+        <span className="result-kicker">Quick take</span>
+        <button
+          className="icon-btn"
+          onClick={() => void window.criticalEye.dismiss()}
+          title="Dismiss"
+        >
+          ✕
+        </button>
+      </div>
+      <p className="quick-answer selectable" role="status" aria-live="polite">
+        {snapshot.quickResult?.answer}
+      </p>
+      {snapshot.error && (
+        <p className="quick-review-error" role="alert">
+          Full analysis could not complete: {snapshot.error.message}
+        </p>
+      )}
+      <label className="quick-depth" htmlFor="quick-review-depth">
+        <span>Full analysis</span>
+        <select
+          id="quick-review-depth"
+          value={snapshot.reviewDepth}
+          disabled={!snapshot.canRunFullReview}
+          onChange={(event) => void window.criticalEye.updatePreferences({
+            reviewDepth: event.target.value === 'combined' ? 'combined' : 'focused'
+          })}
+        >
+          <option value="focused">Focused expert</option>
+          <option value="combined">Combined experts</option>
+        </select>
+      </label>
+      <div className="actions">
+        <button
+          className="btn primary"
+          disabled={!snapshot.canRunFullReview}
+          onClick={onFullReview}
+        >
+          {snapshot.canRunFullReview ? 'Full analysis' : 'Full analysis unavailable'}
+        </button>
+        <button className="btn subtle" onClick={() => void window.criticalEye.dismiss()}>
+          New input
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function FindingBlock({
+  snapshot,
+  onFullReview
+}: {
+  snapshot: StatePayload
+  onFullReview: () => void
+}): React.JSX.Element {
   const finding = snapshot.finding!
   const allClear = !finding.hasMaterialIssue
   return (
@@ -141,16 +216,11 @@ function FindingBlock({ snapshot }: { snapshot: StatePayload }): React.JSX.Eleme
       </div>
       <p className="headline">{finding.headline}</p>
       <div className="actions">
-        {!allClear && (
-          <button
-            className="btn primary"
-            onClick={() => void window.criticalEye.setWindowMode('expanded')}
-          >
-            Expand
-          </button>
-        )}
-        <button className="btn" onClick={() => void window.criticalEye.analyseScreen()}>
-          Reanalyse
+        <button className="btn primary" onClick={onFullReview}>
+          Open full review
+        </button>
+        <button className="btn subtle" onClick={() => void window.criticalEye.dismiss()}>
+          New input
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // Demo asset: a deliberately insecure, non-functional snippet for showing
-// Critical Eye's Security mode. Every credential below is fake. Do not reuse
+// AllSeeingEye's Security mode. Every credential below is fake. Do not reuse
 // any of this code anywhere.
 
 const API_SECRET = 'live_secret_EXAMPLE_DO_NOT_SHIP_0000' // hardcoded secret

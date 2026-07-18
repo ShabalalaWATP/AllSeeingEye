@@ -11,13 +11,16 @@ export interface Rect extends Size {
 }
 
 export const WINDOW_MODES: Record<WindowMode, Size> = {
-  eye: { width: 200, height: 150 },
+  eye: { width: 216, height: 120 },
   compact: { width: 520, height: 200 },
   expanded: { width: 560, height: 620 }
 }
 
+/** Temporary eye-mode size while the input tray is visible below the eye. */
+export const EYE_TRAY_SIZE: Size = { width: 216, height: 258 }
+
 /** Centre of the eye graphic relative to the window's top-left, in pixels. */
-export const EYE_CENTRE = { x: 100, y: 55 }
+export const EYE_CENTRE = { x: 108, y: 59 }
 
 /** Content-driven height bounds for the auto-sizing panel windows. */
 export const CONTENT_HEIGHT_LIMITS: Record<'compact' | 'expanded', { min: number; max: number }> =

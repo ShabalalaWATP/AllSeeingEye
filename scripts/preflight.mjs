@@ -18,6 +18,7 @@ try {
   const response = await client.responses.create({
     model,
     input: 'Reply with the single word OK.',
+    store: false,
     ...(effort ? { reasoning: { effort } } : {})
   })
   const text = (response.output_text ?? '').trim().slice(0, 40)

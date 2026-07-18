@@ -3,7 +3,7 @@
  * Vendored from https://reactbits.dev/r/EvilEye-TS-CSS under the
  * MIT + Commons Clause licence (see REACT-BITS-LICENSE.md in this folder).
  *
- * Local adaptations for Critical Eye:
+ * Local adaptations for AllSeeingEye:
  * - Transparent output: the background flood is removed and alpha is derived
  *   from brightness (premultiplied), so the eye floats over the desktop. A
  *   soft dark core keeps the iris and pupil from becoming see-through.

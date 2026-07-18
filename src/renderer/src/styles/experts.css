@@ -1,0 +1,221 @@
+.eye-window {
+  position: relative;
+  isolation: isolate;
+}
+
+.eye-launcher {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  flex: 0 0 132px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  width: calc(100% - 10px);
+  margin-top: 1px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(18, 18, 23, 0.97);
+  box-shadow: var(--shadow);
+  animation: eye-tray-in 150ms ease-out;
+}
+
+@keyframes eye-tray-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+.eye-launcher button,
+.composer-tabs button,
+.source-kind-switch button {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text);
+  font: inherit;
+  min-height: 50px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.eye-launcher button:hover,
+.eye-launcher button:focus-visible {
+  border-color: rgba(139, 92, 246, 0.65);
+  background: var(--accent-soft);
+}
+
+.eye-hit:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.screen-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field-label,
+.depth-selector legend {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.focus-input,
+.single-line-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  padding: 9px 11px;
+}
+
+.focus-input {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.focus-input:focus,
+.single-line-input:focus {
+  outline: 2px solid rgba(139, 92, 246, 0.5);
+  outline-offset: 1px;
+}
+
+.capture-scope,
+.coverage-note {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.depth-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.depth-selector legend {
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.depth-selector label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 180px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.depth-selector label.active {
+  border-color: rgba(139, 92, 246, 0.55);
+  background: var(--accent-soft);
+}
+
+.depth-selector label span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.depth-selector label small {
+  color: var(--text-dim);
+}
+
+.expert-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.expert-chip {
+  border: 1px solid rgba(139, 92, 246, 0.38);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: #ddd6fe;
+  padding: 3px 9px;
+  font-size: 11px;
+}
+
+.review-focus {
+  padding: 8px 10px;
+  border-left: 2px solid var(--accent);
+  background: var(--bg-inset);
+}
+
+.combined-detail > div,
+.expert-detail-list details {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+}
+
+.combined-detail ul,
+.combined-detail ol {
+  margin: 5px 0 0;
+  padding-left: 18px;
+}
+
+.combined-detail li {
+  margin: 3px 0;
+  line-height: 1.45;
+}
+
+.expert-detail-list {
+  gap: 7px !important;
+}
+
+.expert-detail-list summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.expert-detail-list article {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.expert-detail-list small {
+  display: block;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.sev-dot.sev-critical {
+  background: #fb7185;
+  box-shadow: 0 0 12px rgba(251, 113, 133, 0.85);
+  animation: dot-pulse 0.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,12 +1,15 @@
 import type { CompanionState } from '../../shared/types'
 
 export const TRANSITIONS: Record<CompanionState, readonly CompanionState[]> = {
-  idle: ['capturing', 'analysing', 'paused'],
+  idle: ['capturing', 'recording', 'transcribing', 'analysing', 'paused'],
   capturing: ['analysing', 'error', 'idle'],
-  analysing: ['result', 'no_issue', 'error'],
-  result: ['idle', 'capturing', 'analysing'],
-  no_issue: ['idle', 'capturing', 'analysing'],
-  error: ['idle', 'capturing', 'analysing'],
+  recording: ['transcribing', 'error', 'idle'],
+  transcribing: ['analysing', 'error'],
+  analysing: ['quick_result', 'result', 'no_issue', 'error'],
+  quick_result: ['idle', 'capturing', 'recording', 'transcribing', 'analysing'],
+  result: ['idle', 'capturing', 'recording', 'transcribing', 'analysing'],
+  no_issue: ['idle', 'capturing', 'recording', 'transcribing', 'analysing'],
+  error: ['idle', 'capturing', 'recording', 'transcribing', 'analysing'],
   paused: ['idle']
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  EYE_TRAY_SIZE,
   WINDOW_MODES,
   clampContentHeight,
   defaultPosition,
@@ -11,7 +12,8 @@ const workArea = { x: 0, y: 0, width: 1920, height: 1040 }
 
 describe('WINDOW_MODES', () => {
   it('defines the three approved sizes', () => {
-    expect(WINDOW_MODES.eye).toEqual({ width: 200, height: 150 })
+    expect(WINDOW_MODES.eye).toEqual({ width: 216, height: 120 })
+    expect(EYE_TRAY_SIZE).toEqual({ width: 216, height: 258 })
     expect(WINDOW_MODES.compact).toEqual({ width: 520, height: 200 })
     expect(WINDOW_MODES.expanded).toEqual({ width: 560, height: 620 })
   })
@@ -77,7 +79,17 @@ describe('placeWindow', () => {
 describe('defaultPosition', () => {
   it('sits in the bottom-right with a margin', () => {
     const pos = defaultPosition(workArea, WINDOW_MODES.eye)
-    expect(pos).toEqual({ x: 1920 - 160 - 24, y: 1040 - 200 - 24 })
+    expect(pos).toEqual({
+      x: 1920 - WINDOW_MODES.eye.width - 24,
+      y: 1040 - WINDOW_MODES.eye.height - 24
+    })
+  })
+
+  it('reserves enough room for the tray to unfold without moving the eye', () => {
+    const pos = defaultPosition(workArea, EYE_TRAY_SIZE)
+    const opened = placeWindow(pos, EYE_TRAY_SIZE, workArea)
+    expect(opened).toEqual({ ...pos, ...EYE_TRAY_SIZE })
+    expect(pos.y).toBe(1040 - EYE_TRAY_SIZE.height - 24)
   })
 })
 

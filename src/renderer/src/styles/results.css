@@ -1,0 +1,134 @@
+.result-tabs {
+  display: flex;
+  gap: 14px;
+  padding: 0 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+}
+
+.result-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.result-tabs button {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 9px 1px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  cursor: pointer;
+}
+
+.result-tabs button::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: transparent;
+  content: '';
+}
+
+.result-tabs button.active {
+  color: var(--text);
+}
+
+.result-tabs button.active::after {
+  background: var(--accent);
+}
+
+.result-tabs button:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.result-kicker {
+  color: #c4b5fd;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.coverage-reasons,
+.expert-insight ul {
+  margin: 4px 0 0;
+  padding-left: 19px;
+}
+
+.coverage-reasons li,
+.expert-insight li {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.expert-insight {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.expert-insight h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.expert-insight h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.expert-summary,
+.route-reason,
+.expert-finding p,
+.insight-row p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.route-reason {
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+  color: var(--text-dim);
+}
+
+.context-banner {
+  padding: 8px 10px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.expert-finding {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border);
+}
+
+.insight-row {
+  display: grid;
+  grid-template-columns: 105px 1fr;
+  gap: 10px;
+}
+
+.expert-finding small,
+.expert-disclaimer {
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.expert-insight > section:not(.expert-finding) {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.expert-disclaimer {
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}

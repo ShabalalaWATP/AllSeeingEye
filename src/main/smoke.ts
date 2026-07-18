@@ -3,6 +3,7 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { captureDisplayUnderCursor, delay } from './capture'
+import { WINDOW_MODES } from './core/window-modes'
 import { hasApiKey } from './openai-client'
 import type { AnalysisController } from './analysis'
 import type { WindowManager } from './window'
@@ -42,7 +43,7 @@ export async function maybeRunSmoke(wm: WindowManager, controller: AnalysisContr
   })
 
   // Predictable position on the primary display so the eye is easy to find.
-  wm.win.setBounds({ x: 120, y: 120, width: 200, height: 150 })
+  wm.win.setBounds({ x: 120, y: 120, ...WINDOW_MODES.eye })
 
   // Wait until the WebGL canvas is actually mounted, then a little longer for
   // the first frames. A fixed delay races the cold dev-server load.

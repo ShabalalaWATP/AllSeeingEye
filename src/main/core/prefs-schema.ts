@@ -1,10 +1,11 @@
 import { z } from 'zod'
-import { ANALYSIS_MODES, type Preferences } from '../../shared/types'
+import { ANALYSIS_MODES, REVIEW_DEPTHS, type Preferences } from '../../shared/types'
 
 export const PREFS_DEFAULTS: Preferences = {
   x: -1,
   y: -1,
   mode: 'general',
+  reviewDepth: 'focused',
   privacyNoticeDismissed: false,
   startPaused: false
 }
@@ -15,6 +16,7 @@ const PrefsSchema = z
     x: z.number().int().catch(PREFS_DEFAULTS.x),
     y: z.number().int().catch(PREFS_DEFAULTS.y),
     mode: z.enum(ANALYSIS_MODES).catch(PREFS_DEFAULTS.mode),
+    reviewDepth: z.enum(REVIEW_DEPTHS).catch(PREFS_DEFAULTS.reviewDepth),
     privacyNoticeDismissed: z.boolean().catch(PREFS_DEFAULTS.privacyNoticeDismissed),
     startPaused: z.boolean().catch(PREFS_DEFAULTS.startPaused)
   })
@@ -28,6 +30,7 @@ export function parsePrefs(raw: unknown): Preferences {
 export const PrefsUpdateSchema = z
   .object({
     mode: z.enum(ANALYSIS_MODES).optional(),
+    reviewDepth: z.enum(REVIEW_DEPTHS).optional(),
     privacyNoticeDismissed: z.boolean().optional(),
     startPaused: z.boolean().optional()
   })

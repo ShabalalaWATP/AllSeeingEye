@@ -11,8 +11,8 @@ export const MODE_ADDENDA: Record<AnalysisMode, string> = {
     'secrets and insecure defaults. Do not provide offensive exploitation steps. ' +
     'Identify the weakness and give defensive remediation.',
   writing:
-    'Focus on unsupported claims, ambiguity, missing context, unclear reasoning and ' +
-    'statements readers may misinterpret.',
+    'Focus on UK English grammar, spelling, punctuation, syntax, ambiguity, structure, ' +
+    'clarity, tone, audience, plain language, unsupported claims and meaning-preserving edits.',
   delivery:
     'Focus on ownership, dependencies, dates, sequencing, acceptance criteria and whether ' +
     'the visible plan can actually be executed.'
@@ -29,7 +29,7 @@ function baseInstruction(source: AnalysisSource): string {
       ? 'Analyse only the material that is clearly visible in the supplied screenshot.'
       : 'Analyse only the material supplied in the message.'
   const noun = source === 'screen' ? 'screenshot' : 'supplied material'
-  return `You are Critical Eye, a concise and sceptical red-team reviewer.
+  return `You are AllSeeingEye, a concise and sceptical red-team reviewer.
 
 ${scope} Your purpose is to identify the single most important weakness in the user's current work.
 

@@ -1,7 +1,7 @@
 {
-  "name": "critical-eye",
+  "name": "allseeingeye",
   "version": "0.1.0",
-  "description": "A second pair of eyes for your thinking. On-demand red-team review of whatever is on your screen.",
+  "description": "AllSeeingEye is an on-demand, multi-agent red-team reviewer for screens, windows, text and voice notes.",
   "main": "./out/main/index.js",
   "author": "Alex Orr",
   "license": "MIT",

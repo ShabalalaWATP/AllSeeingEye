@@ -1,5 +1,5 @@
-appId: com.hackathon.critical-eye
-productName: Critical Eye
+appId: com.shabalalawatp.allseeingeye
+productName: AllSeeingEye
 directories:
   output: dist
 files:
@@ -16,5 +16,5 @@ win:
   target:
     - portable
 portable:
-  artifactName: CriticalEye-${version}-portable.exe
+  artifactName: AllSeeingEye-${version}-portable.exe
 npmRebuild: false

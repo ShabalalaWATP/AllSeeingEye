@@ -1,65 +1,138 @@
-import OpenAI from 'openai'
-import { zodTextFormat } from 'openai/helpers/zod'
-import { RedTeamFindingSchema, sanitiseFinding } from './core/finding-schema'
-import { buildInstruction, USER_PROMPT_SCREEN, USER_PROMPT_TEXT } from './core/prompts'
-import { BadResponseError, MissingKeyError } from './core/errors'
-import type { AnalysisMode, RedTeamFinding } from '../shared/types'
+import { toFile } from 'openai'
+import {
+  CombinedSynthesisSchema,
+  ExpertAnalysisSchema,
+  ObservationSchema,
+  sanitiseExpertAnalysis,
+  sanitiseSynthesis,
+  type EvidenceItem,
+  type ObservationRoute
+} from './agents/schemas'
+import {
+  buildExpertInstruction,
+  buildExpertUserContent,
+  buildRouterInstruction,
+  buildSynthesisInstruction,
+  buildSynthesisUserContent
+} from './agents/prompts'
+import { selectExperts } from './agents/routing'
+import { BadResponseError } from './core/errors'
+import {
+  getOpenAIClient,
+  runStructured
+} from './openai-service'
+import type {
+  AnalysisMode,
+  AnalysisSource,
+  CombinedSynthesis,
+  ExpertAnalysis,
+  ExpertId,
+  ReviewDepth,
+  VoiceMimeType
+} from '../shared/types'
+import { MAX_TEXT_LENGTH } from '../shared/types'
 
-const TIMEOUT_MS = 45_000
-const DEFAULT_MODEL = 'gpt-5.6-sol'
+export { getModel, hasApiKey } from './openai-service'
 
-let client: OpenAI | null = null
-
-export function hasApiKey(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY)
-}
-
-export function getModel(): string {
-  return process.env.OPENAI_MODEL ?? DEFAULT_MODEL
-}
-
-function getClient(): OpenAI {
-  if (!hasApiKey()) throw new MissingKeyError()
-  client ??= new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    timeout: TIMEOUT_MS,
-    maxRetries: 1
-  })
-  return client
-}
-
-async function run(instruction: string, userContent: unknown[]): Promise<RedTeamFinding> {
-  const openai = getClient()
-  const request: Record<string, unknown> = {
-    model: getModel(),
-    input: [
-      { role: 'system', content: instruction },
-      { role: 'user', content: userContent }
-    ],
-    text: { format: zodTextFormat(RedTeamFindingSchema, 'red_team_finding') }
+export async function observeAndRoute(
+  source: AnalysisSource,
+  artefact: string,
+  mode: AnalysisMode,
+  depth: ReviewDepth,
+  focusQuestion: string,
+  signal?: AbortSignal
+): Promise<ObservationRoute> {
+  const prompt = `Review focus: ${focusQuestion || 'No specific question; assess the overall work.'}`
+  const content: unknown[] = source === 'screen'
+    ? [
+        { type: 'input_text', text: prompt },
+        { type: 'input_image', image_url: artefact, detail: 'high' }
+      ]
+    : [{ type: 'input_text', text: `${prompt}\n\nSupplied work:\n---\n${artefact}` }]
+  const observation = await runStructured(
+    buildRouterInstruction(source, depth, mode),
+    content,
+    ObservationSchema,
+    'critical_eye_observation_route',
+    { signal }
+  )
+  return {
+    ...observation,
+    selectedExperts: selectExperts(observation, source, depth, mode, focusQuestion)
   }
-  // Only sent when explicitly configured: non-reasoning models reject it.
-  const effort = process.env.OPENAI_REASONING_EFFORT
-  if (effort) request.reasoning = { effort }
-
-  // The request shape follows the documented Responses API; the loose cast
-  // keeps us compatible across SDK minor versions. The output is fully
-  // re-validated locally, so nothing downstream trusts the cast.
-  const response = await openai.responses.parse(request as never)
-  const parsed = (response as { output_parsed?: unknown }).output_parsed
-  if (!parsed) throw new BadResponseError('empty structured output')
-  return sanitiseFinding(RedTeamFindingSchema.parse(parsed))
 }
 
-export async function analyseImage(dataUrl: string, mode: AnalysisMode): Promise<RedTeamFinding> {
-  return run(buildInstruction(mode, 'screen'), [
-    { type: 'input_text', text: USER_PROMPT_SCREEN },
-    { type: 'input_image', image_url: dataUrl, detail: 'high' }
-  ])
+export async function runExpert(
+  expertId: ExpertId,
+  evidence: EvidenceItem[],
+  subjectSummary: string,
+  limitations: string[],
+  focusQuestion: string,
+  mode: AnalysisMode,
+  source: AnalysisSource,
+  signal?: AbortSignal
+): Promise<ExpertAnalysis> {
+  const result = await runStructured(
+    buildExpertInstruction(expertId),
+    [{
+      type: 'input_text',
+      text: buildExpertUserContent(evidence, subjectSummary, limitations, focusQuestion, mode, source)
+    }],
+    ExpertAnalysisSchema,
+    `critical_eye_${expertId}`,
+    { signal }
+  )
+  return sanitiseExpertAnalysis(result, expertId, evidence)
 }
 
-export async function analyseText(text: string, mode: AnalysisMode): Promise<RedTeamFinding> {
-  return run(buildInstruction(mode, 'text'), [
-    { type: 'input_text', text: `${USER_PROMPT_TEXT}\n\n---\n${text}` }
-  ])
+export async function synthesiseExperts(
+  analyses: ExpertAnalysis[],
+  focusQuestion: string,
+  signal?: AbortSignal
+): Promise<CombinedSynthesis> {
+  const result = await runStructured(
+    buildSynthesisInstruction(),
+    [{ type: 'input_text', text: buildSynthesisUserContent(analyses, focusQuestion) }],
+    CombinedSynthesisSchema,
+    'critical_eye_combined_analysis',
+    { signal }
+  )
+  return sanitiseSynthesis(result)
+}
+
+export async function transcribeVoice(
+  bytes: Uint8Array,
+  mimeType: VoiceMimeType,
+  signal?: AbortSignal
+): Promise<string> {
+  const baseMime = mimeType.split(';')[0]
+  const extension = baseMime === 'audio/mp4'
+    ? 'm4a'
+    : baseMime === 'audio/mpeg'
+      ? 'mp3'
+      : baseMime === 'audio/wav'
+        ? 'wav'
+        : baseMime === 'audio/ogg'
+          ? 'ogg'
+          : 'webm'
+  const audioCopy = Buffer.from(bytes)
+  try {
+    const file = await toFile(audioCopy, `voice-note.${extension}`, { type: baseMime })
+    const result = await getOpenAIClient().audio.transcriptions.create(
+      {
+        file,
+        model: process.env.OPENAI_TRANSCRIPTION_MODEL ?? 'gpt-4o-transcribe',
+        response_format: 'json'
+      },
+      signal ? { signal } : undefined
+    )
+    const transcript = result.text.trim()
+    if (!transcript) throw new BadResponseError('empty voice transcription')
+    if (transcript.length > MAX_TEXT_LENGTH) {
+      throw new BadResponseError('voice transcription is too long to analyse')
+    }
+    return transcript
+  } finally {
+    audioCopy.fill(0)
+  }
 }

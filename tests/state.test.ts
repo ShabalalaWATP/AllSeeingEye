@@ -6,8 +6,14 @@ describe('canTransition', () => {
     expect(canTransition('idle', 'capturing')).toBe(true)
     expect(canTransition('capturing', 'analysing')).toBe(true)
     expect(canTransition('analysing', 'result')).toBe(true)
+    expect(canTransition('analysing', 'quick_result')).toBe(true)
+    expect(canTransition('quick_result', 'analysing')).toBe(true)
     expect(canTransition('analysing', 'no_issue')).toBe(true)
     expect(canTransition('result', 'idle')).toBe(true)
+    expect(canTransition('idle', 'transcribing')).toBe(true)
+    expect(canTransition('idle', 'recording')).toBe(true)
+    expect(canTransition('recording', 'transcribing')).toBe(true)
+    expect(canTransition('transcribing', 'analysing')).toBe(true)
   })
 
   it('allows failure paths', () => {
@@ -41,6 +47,8 @@ describe('displayState', () => {
   it('never masks an active analysis', () => {
     expect(displayState('analysing', true)).toBe('analysing')
     expect(displayState('capturing', true)).toBe('capturing')
+    expect(displayState('transcribing', true)).toBe('transcribing')
+    expect(displayState('recording', true)).toBe('recording')
   })
 
   it('passes through when unpaused', () => {

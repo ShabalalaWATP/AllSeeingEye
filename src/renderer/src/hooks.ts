@@ -5,10 +5,15 @@ const INITIAL_SNAPSHOT: StatePayload = {
   state: 'idle',
   windowMode: 'eye',
   analysisMode: 'general',
+  reviewDepth: 'focused',
   paused: false,
   privacyNoticeDismissed: true,
   finding: null,
-  error: null
+  quickResult: null,
+  report: null,
+  error: null,
+  reviewPhase: null,
+  canRunFullReview: false
 }
 
 /** Mirrors the main-process state machine. The renderer never owns state. */
@@ -89,23 +94,41 @@ export function useFitHeight<T extends HTMLElement>(): React.RefObject<T | null>
   return ref
 }
 
-export function statusText(state: CompanionState, elapsed: number): string {
+export function statusText(
+  state: CompanionState,
+  elapsed: number,
+  reviewPhase: StatePayload['reviewPhase'] = null
+): string {
   switch (state) {
     case 'capturing':
       return 'Capturing'
+    case 'recording':
+      return 'Listening…'
+    case 'transcribing':
+      return 'Transcribing'
     case 'analysing':
-      return elapsed > 0 ? `Thinking… ${elapsed}s` : 'Thinking…'
+      if (reviewPhase === 'full') {
+        return elapsed > 0
+          ? `Running the relevant expert review… ${elapsed}s`
+          : 'Running the relevant expert review…'
+      }
+      return elapsed > 0 ? `Getting a quick take… ${elapsed}s` : 'Getting a quick take…'
     case 'paused':
       return 'Paused'
     case 'error':
       return 'Unable to analyse'
+    case 'quick_result':
+      return 'Quick take ready'
     default:
       return 'Ready'
   }
 }
 
 export function isBusy(state: CompanionState): boolean {
-  return state === 'capturing' || state === 'analysing'
+  return state === 'capturing' ||
+    state === 'recording' ||
+    state === 'transcribing' ||
+    state === 'analysing'
 }
 
 export function prettifyCategory(category: string): string {
