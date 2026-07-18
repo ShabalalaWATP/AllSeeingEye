@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Project Meridian: Metadata Migration Proposal</title>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 24px; color: #1f2430; line-height: 1.6; }
+  h1 { font-size: 26px; border-bottom: 3px solid #2b5cad; padding-bottom: 8px; }
+  h2 { font-size: 18px; color: #2b5cad; margin-top: 28px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #cdd4e0; padding: 8px 10px; text-align: left; font-size: 14px; }
+  th { background: #eef2f9; }
+  .meta { color: #66707f; font-size: 14px; }
+</style>
+</head>
+<body>
+  <!-- Demo asset: a deliberately flawed proposal for Critical Eye demonstrations. -->
+  <h1>Project Meridian: Metadata Migration Proposal</h1>
+  <p class="meta">Version 0.9 &middot; Prepared for the Steering Board &middot; Owner: TBC</p>
+
+  <h2>Executive summary</h2>
+  <p>
+    Project Meridian will migrate all 4.2 million case records to the new records platform in a
+    single cut-over weekend. Because the source metadata is accurate, records will be routed to
+    the correct retention categories automatically, and no manual review stage is required. We
+    guarantee zero downtime for frontline teams throughout.
+  </p>
+
+  <h2>Approach</h2>
+  <p>
+    The migration engine maps each record's category code directly to the new taxonomy. Any code
+    it does not recognise will be handled appropriately. Legacy duplicates are not expected to be
+    a significant factor and are out of scope.
+  </p>
+
+  <h2>Timeline</h2>
+  <table>
+    <tr><th>Phase</th><th>Duration</th><th>Notes</th></tr>
+    <tr><td>Build and unit test</td><td>6 weeks</td><td>Single vendor team</td></tr>
+    <tr><td>User acceptance testing</td><td>2 days</td><td>Condensed to protect the go-live date</td></tr>
+    <tr><td>Go-live</td><td>Fixed: 30 September</td><td>Announced to the board; cannot move</td></tr>
+  </table>
+
+  <h2>Data handling</h2>
+  <p>
+    For convenience during reconciliation, the working extract (including claimant names, dates of
+    birth and case outcomes) will be shared with the vendor via a shared spreadsheet in the team
+    drive. Access will be tidied up after go-live.
+  </p>
+
+  <h2>Risk position</h2>
+  <p>
+    No significant risks have been identified. A rollback plan is not considered necessary given
+    the quality of the source data. Success will be measured by the migration completing on the
+    scheduled weekend.
+  </p>
+</body>
+</html>
