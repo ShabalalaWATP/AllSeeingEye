@@ -10,6 +10,8 @@ type Unsubscribe = () => void
 
 export interface CriticalEyeApi {
   analyseScreen: () => Promise<void>
+  dragBegin: () => Promise<void>
+  dragEnd: () => Promise<{ wasClick: boolean }>
   analyseText: (text: string, mode: AnalysisMode) => Promise<void>
   setWindowMode: (mode: WindowMode) => Promise<void>
   getPreferences: () => Promise<Preferences>

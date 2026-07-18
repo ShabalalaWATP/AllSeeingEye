@@ -18,8 +18,13 @@
 .eye-hit {
   border-radius: 50%;
   overflow: hidden;
-  cursor: pointer;
+  cursor: grab;
   transition: filter 300ms ease;
+  touch-action: none;
+}
+
+.eye-hit:active {
+  cursor: grabbing;
 }
 
 .eye-hit.state-capturing {

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { ANALYSIS_MODES, MAX_TEXT_LENGTH, WINDOW_MODE_NAMES } from '../shared/types'
 import { PrefsUpdateSchema } from './core/prefs-schema'
 import type { AnalysisController } from './analysis'
+import type { DragController } from './drag'
 import type { PrefsStore } from './prefs'
 
 const TextRequestSchema = z
@@ -15,8 +16,15 @@ const TextRequestSchema = z
 const WindowModeSchema = z.enum(WINDOW_MODE_NAMES)
 
 /** Every argument crossing the bridge is validated here before use. */
-export function registerIpc(controller: AnalysisController, prefs: PrefsStore): void {
+export function registerIpc(
+  controller: AnalysisController,
+  prefs: PrefsStore,
+  drag: DragController
+): void {
   ipcMain.handle('analysis:screen', () => controller.runScreen())
+
+  ipcMain.handle('drag:begin', () => drag.begin())
+  ipcMain.handle('drag:end', () => drag.end())
 
   ipcMain.handle('analysis:text', (_event, raw: unknown) => {
     const parsed = TextRequestSchema.safeParse(raw)

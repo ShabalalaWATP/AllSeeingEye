@@ -52,7 +52,8 @@ npm run dev
 | `OPENAI_REASONING_EFFORT` | Optional. Set to `low` on reasoning models to cut latency. Leave unset otherwise. |
 
 For the packaged exe, either set system environment variables or place a
-`.env` file next to `CriticalEye-*-portable.exe`.
+`.env` file next to `CriticalEye-*-portable.exe`. For a desktop launcher,
+create a shortcut to the portable exe (keep the `.env` beside the exe).
 
 ## Commands
 
@@ -68,9 +69,12 @@ For the packaged exe, either set system environment variables or place a
 
 ## Using it
 
-- Drag the eye anywhere by its outer ring (or the panel top strips).
-- Click the eye (or press `Ctrl+Shift+R`) to analyse the display under your
-  cursor. The eye blinks while capturing, pulses while thinking, then shows a
+- Grab the eye anywhere and drag it around the desktop; panels drag by their
+  top strips. Position persists between restarts.
+- Click the eye without moving it (or press `Ctrl+Shift+R`) to analyse the
+  display under your cursor: the whole display is captured at near-native
+  resolution, every visible window included. The eye hides itself from the
+  screenshot, blinks while capturing, pulses while thinking, then shows a
   one-line finding you can expand.
 - Right-click the eye for the menu (analyse, text analysis, pause, hide, quit).
 - The Text tab in the expanded panel analyses pasted text (up to 12,000

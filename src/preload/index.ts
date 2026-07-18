@@ -13,6 +13,8 @@ function subscribe(channel: string, callback: (payload: unknown) => void): Unsub
 
 const api = {
   analyseScreen: (): Promise<void> => ipcRenderer.invoke('analysis:screen'),
+  dragBegin: (): Promise<void> => ipcRenderer.invoke('drag:begin'),
+  dragEnd: (): Promise<unknown> => ipcRenderer.invoke('drag:end'),
   analyseText: (text: string, mode: string): Promise<void> =>
     ipcRenderer.invoke('analysis:text', { text, mode }),
   setWindowMode: (mode: string): Promise<void> => ipcRenderer.invoke('window:set-mode', mode),

@@ -2,7 +2,7 @@ import { desktopCapturer, screen, type BrowserWindow } from 'electron'
 import { CaptureError } from './core/errors'
 
 const SETTLE_MS = 150
-const MAX_LONG_EDGE = 2000
+const MAX_LONG_EDGE = 2560
 const JPEG_QUALITY = 75
 
 export const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))

@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { PrefsStore } from './prefs'
 import { WindowManager } from './window'
 import { AnalysisController } from './analysis'
+import { DragController } from './drag'
 import { registerIpc } from './ipc'
 import { attachContextMenu } from './context-menu'
 import { registerShortcuts, unregisterShortcuts } from './shortcuts'
@@ -18,11 +19,13 @@ function main(): void {
   }
 
   // Dev: .env at the project root. Packaged: also read a .env placed beside
-  // the portable exe (demo machines rarely have system-wide variables set).
-  // dotenv never overrides variables that already exist in the environment.
+  // the exe (demo machines rarely have system-wide variables set). Portable
+  // builds extract to a temp dir, so PORTABLE_EXECUTABLE_DIR is the real
+  // location. dotenv never overrides variables already in the environment.
   loadDotenv()
   if (app.isPackaged) {
-    loadDotenv({ path: join(dirname(process.execPath), '.env') })
+    const exeDir = process.env.PORTABLE_EXECUTABLE_DIR ?? dirname(process.execPath)
+    loadDotenv({ path: join(exeDir, '.env') })
   }
 
   void app.whenReady().then(() => {
@@ -33,7 +36,7 @@ function main(): void {
     // First run: open at compact size so the privacy notice has room.
     if (!prefs.get().privacyNoticeDismissed) wm.setMode('compact')
 
-    registerIpc(controller, prefs)
+    registerIpc(controller, prefs, new DragController(wm.win))
     attachContextMenu(wm, controller)
     registerShortcuts({
       analyse: () => void controller.runScreen(),
