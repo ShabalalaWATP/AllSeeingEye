@@ -48,7 +48,7 @@ npm run dev
 | Variable | Purpose |
 |---|---|
 | `OPENAI_API_KEY` | Required. Read only by the main process; never exposed to the renderer. |
-| `OPENAI_MODEL` | Model for analysis. Defaults to `gpt-5.6`. |
+| `OPENAI_MODEL` | Model for analysis. Defaults to `gpt-5.6-sol`. |
 | `OPENAI_REASONING_EFFORT` | Optional. Set to `low` on reasoning models to cut latency. Leave unset otherwise. |
 
 For the packaged exe, either set system environment variables or place a

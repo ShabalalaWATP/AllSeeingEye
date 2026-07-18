@@ -4,7 +4,7 @@ import 'dotenv/config'
 import OpenAI from 'openai'
 
 const key = process.env.OPENAI_API_KEY
-const model = process.env.OPENAI_MODEL ?? 'gpt-5.6'
+const model = process.env.OPENAI_MODEL ?? 'gpt-5.6-sol'
 
 if (!key) {
   console.error('FAIL: OPENAI_API_KEY is not set. Copy .env.example to .env and add your key.')

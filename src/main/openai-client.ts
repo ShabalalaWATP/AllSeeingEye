@@ -6,7 +6,7 @@ import { BadResponseError, MissingKeyError } from './core/errors'
 import type { AnalysisMode, RedTeamFinding } from '../shared/types'
 
 const TIMEOUT_MS = 45_000
-const DEFAULT_MODEL = 'gpt-5.6'
+const DEFAULT_MODEL = 'gpt-5.6-sol'
 
 let client: OpenAI | null = null
 
