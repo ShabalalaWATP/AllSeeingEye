@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
-    "electron-store": "^8.2.0",
+    "electron-store": "^11.0.2",
     "openai": "^6.48.0",
     "zod": "^3.25.76"
   },
