@@ -28,6 +28,8 @@ STATUS_BY_CODE: dict[str, int] = {
     "already_decided": 409,
     "email_taken": 409,
     "self_modification": 409,
+    "user_inactive": 409,
+    "payload_too_large": 413,
     "not_ready": 503,
 }
 
@@ -40,6 +42,11 @@ class CsrfFailed(AppError):
 class NotReady(AppError):
     code = "not_ready"
     default_message = "The service is not ready."
+
+
+class PayloadTooLarge(AppError):
+    code = "payload_too_large"
+    default_message = "The request body is too large."
 
 
 def envelope(code: str, message: str, fields: dict[str, str] | None = None) -> dict[str, Any]:

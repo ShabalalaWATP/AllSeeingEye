@@ -8,8 +8,11 @@ from argon2.exceptions import InvalidHashError, VerificationError
 
 class Argon2PasswordHasher:
     def __init__(self) -> None:
-        # Library defaults are argon2id with a 64 MiB memory cost and a per-hash random salt.
-        self._hasher = _Argon2()
+        # argon2id with the parameters pinned explicitly (OWASP-recommended profile) so a
+        # library upgrade cannot weaken them silently; salts are random per hash.
+        self._hasher = _Argon2(
+            time_cost=3, memory_cost=65_536, parallelism=4, hash_len=32, salt_len=16
+        )
 
     def hash(self, password: str) -> str:
         return self._hasher.hash(password)

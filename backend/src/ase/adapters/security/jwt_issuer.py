@@ -51,13 +51,15 @@ class JwtAccessTokenIssuer:
             raise Unauthenticated() from exc
         if payload.get("typ") != "access":
             raise Unauthenticated()
-        if int(payload["exp"]) <= int(self._clock.now().timestamp()):
-            raise Unauthenticated("The session has expired.")
         try:
-            return AccessClaims(
+            expires = int(payload["exp"])
+            claims = AccessClaims(
                 user_id=UUID(str(payload["sub"])),
                 role=Role(str(payload.get("role"))),
                 jti=str(payload["jti"]),
             )
-        except ValueError as exc:
+        except (TypeError, ValueError) as exc:
             raise Unauthenticated() from exc
+        if expires <= int(self._clock.now().timestamp()):
+            raise Unauthenticated("The session has expired.")
+        return claims

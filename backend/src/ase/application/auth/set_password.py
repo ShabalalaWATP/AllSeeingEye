@@ -17,6 +17,7 @@ from ase.application.ports import (
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidToken, RateLimited
 from ase.domain.password_policy import validate_password
+from ase.domain.tokens import TokenPurpose
 
 
 class SetPasswordUseCase:
@@ -57,11 +58,14 @@ class SetPasswordUseCase:
         if token is None or not token.is_usable(now):
             raise InvalidToken()
         user = await self._users.get_by_id(token.user_id)
-        if user is None:
+        # A reset link must never reactivate an account an administrator switched off;
+        # only an activation link (issued at approval) turns an account on.
+        if user is None or (token.purpose is TokenPurpose.RESET and not user.is_active):
             raise InvalidToken()
         validate_password(new_password, user.email)
         user.password_hash = self._hasher.hash(new_password)
-        user.is_active = True
+        if token.purpose is TokenPurpose.ACTIVATION:
+            user.is_active = True
         user.failed_login_count = 0
         user.locked_until = None
         await self._users.save(user)

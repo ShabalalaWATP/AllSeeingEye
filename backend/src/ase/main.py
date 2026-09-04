@@ -9,7 +9,7 @@ from fastapi import FastAPI
 
 from ase import __version__
 from ase.api.errors import register_error_handlers
-from ase.api.middleware import SecurityHeadersMiddleware
+from ase.api.middleware import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from ase.api.router import api_router
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.container import Container
@@ -44,6 +44,7 @@ def create_app(
     )
     app.state.container = container
     app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
     register_error_handlers(app)
     app.include_router(api_router, prefix="/api")
     return app

@@ -16,7 +16,10 @@ from helpers import (
     login,
     login_token,
     restore_session,
+    token_from_link,
 )
+
+NEW_PASSWORD = "Harbour-Lights-Fade-77"
 
 
 async def test_list_users(client: AsyncClient, admin: User, user: User) -> None:
@@ -51,6 +54,40 @@ async def test_deactivation_blocks_access(client: AsyncClient, admin: User, user
     assert response.json()["is_active"] is False
     assert (await client.get("/api/me", headers=bearer(user_token))).status_code == 401
     assert (await login(client, USER_EMAIL, USER_PASSWORD)).status_code == 401
+
+
+async def test_deactivation_voids_links_and_reset_cannot_reactivate(
+    client: AsyncClient, admin: User, user: User
+) -> None:
+    token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
+    issued = await client.post(f"/api/admin/users/{user.id}/reset-link", headers=bearer(token))
+    link_secret = token_from_link(issued.json()["reset_link"])
+    off = await client.patch(
+        f"/api/admin/users/{user.id}", json={"is_active": False}, headers=bearer(token)
+    )
+    assert off.status_code == 200
+    # The outstanding link died with the deactivation.
+    redeem = await client.post(
+        "/api/auth/set-password", json={"token": link_secret, "new_password": NEW_PASSWORD}
+    )
+    assert redeem.status_code == 400
+    # No new reset link can be issued while the account is off.
+    refused = await client.post(f"/api/admin/users/{user.id}/reset-link", headers=bearer(token))
+    assert refused.status_code == 409
+    assert refused.json()["error"]["code"] == "user_inactive"
+    # Reactivating restores the normal flow, and a fresh link works.
+    on = await client.patch(
+        f"/api/admin/users/{user.id}", json={"is_active": True}, headers=bearer(token)
+    )
+    assert on.status_code == 200
+    fresh = await client.post(f"/api/admin/users/{user.id}/reset-link", headers=bearer(token))
+    assert fresh.status_code == 200
+    redeem = await client.post(
+        "/api/auth/set-password",
+        json={"token": token_from_link(fresh.json()["reset_link"]), "new_password": NEW_PASSWORD},
+    )
+    assert redeem.status_code == 204
+    assert (await login(client, USER_EMAIL, NEW_PASSWORD)).status_code == 200
 
 
 async def test_no_op_update_is_fine(client: AsyncClient, admin: User, user: User) -> None:

@@ -17,7 +17,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.domain.audit import AuditAction
-from ase.domain.errors import NotFound
+from ase.domain.errors import NotFound, UserInactive
 from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import Role, User
 
@@ -36,12 +36,14 @@ class UpdateUserUseCase:
         self,
         users: UserRepository,
         refresh_tokens: RefreshTokenRepository,
+        password_tokens: PasswordTokenRepository,
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
     ) -> None:
         self._users = users
         self._refresh_tokens = refresh_tokens
+        self._password_tokens = password_tokens
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
@@ -69,7 +71,11 @@ class UpdateUserUseCase:
         await self._users.save(user)
         if changes:
             # A demotion or deactivation must end every live session.
-            await self._refresh_tokens.revoke_all_for_user(user.id, self._clock.now())
+            now = self._clock.now()
+            await self._refresh_tokens.revoke_all_for_user(user.id, now)
+            if user.is_active is False:
+                # And no outstanding activation or reset link may bring the account back.
+                await self._password_tokens.revoke_all_for_user(user.id, now)
         await self._auditor.record(
             AuditAction.USER_UPDATED,
             actor=actor.id,
@@ -105,6 +111,8 @@ class IssueResetLinkUseCase:
         user = await self._users.get_by_id(user_id)
         if user is None:
             raise NotFound()
+        if not user.is_active:
+            raise UserInactive()
         now = self._clock.now()
         secret = self._generator.new_secret()
         expires_at = now + ttl_for(TokenPurpose.RESET)

@@ -4,23 +4,27 @@
 
 {$ASE_SITE_ADDRESS:localhost} {
 	encode gzip
-
-	header {
-		X-Content-Type-Options nosniff
-		Referrer-Policy no-referrer
-		X-Frame-Options DENY
-		Permissions-Policy "camera=(), microphone=(), geolocation=()"
-		# MapLibre sets inline styles on its controls, hence style-src 'unsafe-inline'.
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; font-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
-		# Strict-Transport-Security "max-age=31536000; includeSubDomains"
-		-Server
+	header -Server
+	request_body {
+		max_size 64KB
 	}
 
 	handle /api/* {
+		# The API sets its own strict headers (CSP default-src 'none', no-store); Caddy
+		# only proxies them through.
 		reverse_proxy api:8000
 	}
 
 	handle {
+		header {
+			X-Content-Type-Options nosniff
+			Referrer-Policy no-referrer
+			X-Frame-Options DENY
+			Permissions-Policy "camera=(), microphone=(), geolocation=()"
+			# MapLibre sets inline styles on its controls, hence style-src 'unsafe-inline'.
+			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; font-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+			# Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		}
 		root * /srv
 		try_files {path} /index.html
 		file_server

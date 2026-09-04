@@ -31,6 +31,9 @@ def _refresh_from_row(row: RefreshTokenRow) -> RefreshToken:
 
 
 class SqlRefreshTokenRepository:
+    """Bulk revocations below are plain UPDATEs: rows already loaded in the same session are
+    not refreshed, so callers must not rely on previously loaded token objects afterwards."""
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
@@ -124,3 +127,13 @@ class SqlPasswordTokenRepository:
             raise NotFound()
         row.used_at = token.used_at
         await self._session.flush()
+
+    async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
+        """Mark every unused token as used so no outstanding link can be redeemed."""
+        stmt = (
+            update(PasswordTokenRow)
+            .where(PasswordTokenRow.user_id == user_id, PasswordTokenRow.used_at.is_(None))
+            .values(used_at=now)
+        )
+        result = cast("CursorResult[Any]", await self._session.execute(stmt))
+        return int(result.rowcount or 0)

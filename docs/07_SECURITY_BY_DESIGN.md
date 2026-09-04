@@ -64,7 +64,18 @@ Top risks, in order: prompt injection through ingested content; server-side requ
 - Structured logs redact tokens, keys and passwords; IP addresses are kept only in the audit log with a retention setting.
 - The app stores no personal data beyond email, display name and audit events. Social-media items are held only in the expiring live tier unless a user pins them into evidence, which the audit log records.
 
-## 3. Verification plan
+## 3. Residual risks recorded after the Phase 0 security review (4 September 2026)
+
+- Account lockout is a deliberate trade-off: five bad passwords lock a known address for fifteen minutes, so an attacker who knows an email can keep that user locked out at no cost. Accepted for a LAN or Tailscale deployment; before any public exposure, replace the hard lock with a challenge after repeated failures and alert on repeated `account_locked` audit entries.
+- Access tokens cannot be revoked inside their fifteen-minute lifetime (stateless JWT). Deactivation and role changes end refresh sessions immediately and take full effect at the next refresh.
+- The in-memory rate limiter protects a single process only; running several uvicorn workers or replicas would split the buckets. The compose file runs one worker on purpose.
+- Behind Caddy the API trusts `X-Forwarded-For` from the whole compose network (`ASE_FORWARDED_ALLOW_IPS=*`), which is safe only while the API port stays unpublished.
+- The body-size cap relies on `Content-Length` and on counting streamed chunks inside the API, plus Caddy's 64 KB limit at the edge; there is no separate JSON depth limit yet.
+- Secrets in `.env` are readable by anyone with access to the host or `docker inspect`. Acceptable for a single-operator machine.
+- HSTS stays commented out while the site uses Caddy's internal certificate; enabling it is a gate on the exposure checklist, not just a comment.
+- CI pins third-party actions to commit SHAs and runs pip-audit, bandit, pnpm audit, gitleaks, semgrep and a trivy image scan, but no CI run has been observed yet because the repository has no remote.
+
+## 4. Verification plan
 - Unit tests for the SSRF guard, sanitiser, policy module, token rotation and validation linting, with coverage above 95 percent in those modules.
 - A weekly dependency audit workflow.
 - Before any exposure beyond the LAN: a self-review against the OWASP ASVS level 2 checklist, and an OWASP ZAP baseline scan against a staging container.

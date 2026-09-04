@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections import deque
+from collections import OrderedDict, deque
 
 from ase.application.ports import Clock
 
@@ -12,11 +12,12 @@ class InMemorySlidingWindowLimiter:
     def __init__(self, clock: Clock, max_keys: int = 10_000) -> None:
         self._clock = clock
         self._max_keys = max_keys
-        self._hits: dict[str, deque[float]] = {}
+        self._hits: OrderedDict[str, deque[float]] = OrderedDict()
 
     def hit(self, key: str, limit: int, window_seconds: int) -> int | None:
         now = self._clock.now().timestamp()
         window = self._hits.setdefault(key, deque())
+        self._hits.move_to_end(key)  # least recently used keys are evicted first
         cutoff = now - window_seconds
         while window and window[0] <= cutoff:
             window.popleft()
@@ -30,7 +31,6 @@ class InMemorySlidingWindowLimiter:
         self._hits.clear()
 
     def _evict_if_needed(self) -> None:
-        # Bound memory under abuse: drop the oldest keys once the table is too large.
+        # Bound memory under abuse: drop the least recently used keys once the table is full.
         while len(self._hits) > self._max_keys:
-            oldest = next(iter(self._hits))
-            del self._hits[oldest]
+            self._hits.popitem(last=False)

@@ -10,6 +10,7 @@ Status: agreed contract for Phase 0. The backend implements it; the frontend dev
 - Access token: JWT, HS256, claims `sub` (user id), `role`, `typ: "access"`, `iat`, `exp` (15 minutes by default), `jti`. Held in memory by the SPA, never in storage.
 - Refresh token: opaque 48-byte URL-safe random string delivered only as the cookie `ase_refresh` (`HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=14 days; Secure` when `ASE_COOKIE_SECURE=true`). Stored hashed (SHA-256) with a family id; rotated on every refresh; reuse of a rotated token revokes the whole family.
 - CSRF: cookie `ase_csrf` (random, `SameSite=Strict; Path=/`, readable by script) is set with the refresh cookie. `POST /api/auth/refresh` and `POST /api/auth/logout` require header `X-CSRF-Token` equal to the cookie (constant-time compare). Failure: 403 `csrf_failed`.
+- Request bodies above 64 KB are refused with 413 `payload_too_large` (configurable with `ASE_MAX_REQUEST_BYTES`; Caddy enforces the same cap at the edge).
 - Rate limits: 429 `rate_limited` with a `Retry-After` header. Defaults: login 10 per minute per IP and 5 per minute per email; request-account and forgot-password 3 per hour per IP; set-password 10 per hour per IP.
 - Lockout: after 5 failed logins for one account within 15 minutes, the account is locked for 15 minutes. The response is still 401 `invalid_credentials`; the audit log records the lockout.
 - No account enumeration: login failures, account requests for existing emails and password reset requests for unknown emails all return the same status and message as the success path.
@@ -36,11 +37,11 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 | `POST /api/auth/set-password` | none | `{token, new_password}` | 204 (token purpose may be `activation` or `reset`; single use) | 400 `invalid_token`; 422 `weak_password` with `fields.new_password` reason; 429 |
 | `GET /api/me` | bearer | | 200 `User` | 401 |
 | `GET /api/admin/account-requests?status=pending` | admin | | 200 `{"items": [AccountRequest]}` | 401, 403 |
-| `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "admin"}` | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided` |
+| `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "admin"}` | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided`; 409 `email_taken` when a user with that address already exists |
 | `POST /api/admin/account-requests/{id}/reject` | admin | `{reason?}` | 204 | 404; 409 |
 | `GET /api/admin/users` | admin | | 200 `{"items": [User]}` | 401, 403 |
-| `PATCH /api/admin/users/{id}` | admin | `{role?, is_active?}` | 200 `User` | 404; 409 `self_modification` when changing your own role or active flag |
-| `POST /api/admin/users/{id}/reset-link` | admin | | 200 `{"reset_link": string, "expires_at": datetime}` | 404 |
+| `PATCH /api/admin/users/{id}` | admin | `{role?, is_active?}` | 200 `User`. Any change ends the user's sessions; deactivation also voids every outstanding activation or reset link | 404; 409 `self_modification` when changing your own role or active flag |
+| `POST /api/admin/users/{id}/reset-link` | admin | | 200 `{"reset_link": string, "expires_at": datetime}` | 404; 409 `user_inactive` for a deactivated account |
 | `GET /api/admin/audit-log?limit=100&before=<id>` | admin | | 200 `{"items": [AuditEntry], "next_before": int | null}` | 401, 403 |
 | `GET /api/health` | none | | 200 `{"status": "ok", "version": string}` | |
 | `GET /api/ready` | none | | 200 `{"status": "ready"}` when the database answers | 503 `not_ready` |
@@ -53,7 +54,7 @@ Interactive docs (`/api/docs`, `/api/openapi.json`) are served only when `ASE_EN
 
 ## Token links
 
-Activation tokens last 7 days, reset tokens 30 minutes. Both are 32-byte URL-safe random strings stored as SHA-256 hashes with a purpose and a single-use flag. Links are built from `ASE_PUBLIC_BASE_URL` as `<base>/activate?token=...` and `<base>/reset-password?token=...`.
+Activation tokens last 7 days, reset tokens 30 minutes. Both are 48-byte URL-safe random strings (the same generator as refresh tokens) stored as SHA-256 hashes with a purpose and a single-use flag. Only an activation token turns an account on; a reset token for a deactivated account is refused with 400 `invalid_token`. Links are built from `ASE_PUBLIC_BASE_URL` as `<base>/activate?token=...` and `<base>/reset-password?token=...`.
 
 ## Audit actions
 

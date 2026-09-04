@@ -30,4 +30,6 @@ class UTCDateTime(TypeDecorator[datetime]):
     def process_result_value(self, value: datetime | None, dialect: Dialect) -> datetime | None:
         if value is None:
             return None
-        return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+        # SQLite returns naive values (stored as UTC); PostgreSQL may return the session
+        # timezone. Both paths end as aware UTC.
+        return value.astimezone(UTC) if value.tzinfo is not None else value.replace(tzinfo=UTC)

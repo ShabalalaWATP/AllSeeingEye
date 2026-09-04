@@ -75,3 +75,8 @@ class EmailTaken(AppError):
 class SelfModification(AppError):
     code = "self_modification"
     default_message = "You cannot change your own role or active status."
+
+
+class UserInactive(AppError):
+    code = "user_inactive"
+    default_message = "The account is deactivated. Reactivate it before issuing a link."

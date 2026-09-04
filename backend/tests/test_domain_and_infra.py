@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
@@ -149,6 +149,14 @@ def test_utc_datetime_type_rejects_naive_values() -> None:
     restored = column.process_result_value(datetime(2026, 1, 1), None)  # type: ignore[arg-type]
     assert restored is not None
     assert restored.tzinfo is UTC
+    # An aware value in another zone (a PostgreSQL session timezone) is converted, not trusted.
+    plus_two = timezone(timedelta(hours=2))
+    shifted = column.process_result_value(
+        datetime(2026, 1, 1, 12, tzinfo=plus_two),
+        None,  # type: ignore[arg-type]
+    )
+    assert shifted == datetime(2026, 1, 1, 10, tzinfo=UTC)
+    assert shifted.tzinfo is UTC
 
 
 def test_sqlite_paths(tmp_path: object) -> None:

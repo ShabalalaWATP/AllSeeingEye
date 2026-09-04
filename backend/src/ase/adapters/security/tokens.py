@@ -7,7 +7,7 @@ import secrets
 
 
 class SecretsTokenGenerator:
-    def __init__(self, nbytes: int = 32) -> None:
+    def __init__(self, nbytes: int = 48) -> None:
         self._nbytes = nbytes
 
     def new_secret(self) -> str:

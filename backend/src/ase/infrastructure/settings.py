@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     log_level: str = "INFO"
+    max_request_bytes: int = Field(default=65_536, ge=1_024, le=10_485_760)
     admin_password: SecretStr | None = None
     rate_limit_login_per_ip: int = Field(default=10, ge=1)
     rate_limit_login_per_email: int = Field(default=5, ge=1)

@@ -165,7 +165,9 @@ class Container:
 
     def update_user(self, session: AsyncSession) -> UpdateUserUseCase:
         r = self.repositories(session)
-        return UpdateUserUseCase(r.users, r.refresh_tokens, self.clock, self._auditor(r), r.uow)
+        return UpdateUserUseCase(
+            r.users, r.refresh_tokens, r.password_tokens, self.clock, self._auditor(r), r.uow
+        )
 
     def issue_reset_link(self, session: AsyncSession) -> IssueResetLinkUseCase:
         r = self.repositories(session)
