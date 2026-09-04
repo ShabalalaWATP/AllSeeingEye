@@ -49,7 +49,7 @@ Interactive docs (`/api/docs`, `/api/openapi.json`) are served only when `ASE_EN
 
 ## Password policy
 
-12 to 128 characters; not in the bundled list of the 1,000 most common passwords; not equal to the email address or its local part. Violations return 422 `weak_password` with a specific reason in `fields.new_password`.
+12 to 128 characters; not in the bundled list of the 10,000 most common passwords, checked against the whole password and against its core with leading and trailing digits and punctuation stripped (so "password1234" is rejected); not equal to the email address or its local part. Violations return 422 `weak_password` with a specific reason in `fields.new_password`.
 
 ## Token links
 

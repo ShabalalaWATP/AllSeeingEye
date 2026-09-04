@@ -1,0 +1,85 @@
+"""Twelve-factor settings with the ASE_ prefix. Every variable is documented in .env.example."""
+
+from __future__ import annotations
+
+import secrets
+from enum import StrEnum
+from typing import Self
+
+from pydantic import Field, PrivateAttr, SecretStr, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from ase.application.dto import RateLimits
+
+MIN_SECRET_LENGTH = 32
+
+
+class Environment(StrEnum):
+    DEV = "dev"
+    TEST = "test"
+    PROD = "prod"
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="ASE_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
+
+    env: Environment = Environment.DEV
+    database_url: str = "sqlite+aiosqlite:///./data/ase.db"
+    jwt_secret: SecretStr | None = None
+    access_token_minutes: int = Field(default=15, ge=1, le=120)
+    refresh_token_days: int = Field(default=14, ge=1, le=90)
+    cookie_secure: bool | None = None
+    public_base_url: str = "http://localhost:5173"
+    log_level: str = "INFO"
+    admin_password: SecretStr | None = None
+    rate_limit_login_per_ip: int = Field(default=10, ge=1)
+    rate_limit_login_per_email: int = Field(default=5, ge=1)
+    rate_limit_request_account_per_ip: int = Field(default=3, ge=1)
+    rate_limit_forgot_per_ip: int = Field(default=3, ge=1)
+    rate_limit_set_password_per_ip: int = Field(default=10, ge=1)
+
+    _generated_secret: bool = PrivateAttr(default=False)
+
+    @model_validator(mode="after")
+    def _finalise(self) -> Self:
+        if self.env is Environment.PROD:
+            secret = self.jwt_secret.get_secret_value() if self.jwt_secret else ""
+            if len(secret) < MIN_SECRET_LENGTH:
+                msg = f"ASE_JWT_SECRET must be at least {MIN_SECRET_LENGTH} characters in prod."
+                raise ValueError(msg)
+        elif self.jwt_secret is None:
+            self.jwt_secret = SecretStr(secrets.token_urlsafe(48))
+            self._generated_secret = True
+        if self.cookie_secure is None:
+            self.cookie_secure = self.env is Environment.PROD
+        return self
+
+    @property
+    def is_dev(self) -> bool:
+        return self.env is Environment.DEV
+
+    @property
+    def is_prod(self) -> bool:
+        return self.env is Environment.PROD
+
+    @property
+    def generated_secret(self) -> bool:
+        return self._generated_secret
+
+    @property
+    def jwt_secret_value(self) -> str:
+        # The validator guarantees a secret exists; this only narrows the type.
+        assert self.jwt_secret is not None  # noqa: S101
+        return self.jwt_secret.get_secret_value()
+
+    @property
+    def rate_limits(self) -> RateLimits:
+        return RateLimits(
+            login_per_ip=self.rate_limit_login_per_ip,
+            login_per_email=self.rate_limit_login_per_email,
+            request_account_per_ip=self.rate_limit_request_account_per_ip,
+            forgot_per_ip=self.rate_limit_forgot_per_ip,
+            set_password_per_ip=self.rate_limit_set_password_per_ip,
+        )

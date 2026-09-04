@@ -15,7 +15,7 @@ Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm
 - [ ] Layered skeleton `ase/{domain,application,adapters,api,infrastructure}` and `ase/container.py`
 - [ ] Settings (`ASE_` prefix), structured logging with redaction, `/api/health`, `/api/ready`
 - [ ] SQLAlchemy 2 async models and Alembic migration 0001 (users, account_requests, refresh_tokens, password_tokens, audit_log)
-- [ ] Password hashing (argon2id), password policy with common-password list
+- [ ] Password hashing (argon2id), password policy with the 10,000 most common passwords deny list (checked on the whole password and on its core without trailing digits and punctuation, because no entry in the top 1,000 reaches the 12-character minimum)
 - [ ] Access tokens (JWT HS256, 15 min), refresh token rotation with family reuse detection, CSRF double-submit
 - [ ] Rate limiting (in-memory sliding window) and account lockout
 - [ ] Auth endpoints: login, refresh, logout, request-account, forgot-password, set-password, me
