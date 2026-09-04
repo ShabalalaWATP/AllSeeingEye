@@ -21,14 +21,18 @@ export default function GlobePage() {
   useGlobeEngine(containerRef, mode, supported);
 
   return (
-    <div className="relative h-full w-full bg-ground">
+    // Fills the shell's relative <main> directly: a percentage height would collapse
+    // because the main area takes its height from flex, not from an explicit value.
+    <div className="absolute inset-0 bg-ground">
       {supported ? (
         <div
           ref={containerRef}
           role="region"
           aria-label={mode === 'globe' ? '3D globe' : 'Map'}
           data-testid="map-container"
-          className="absolute inset-0"
+          // MapLibre's stylesheet forces position: relative on this element, so it
+          // needs an explicit height rather than absolute positioning.
+          className="h-full w-full"
         />
       ) : (
         <div className="flex h-full items-center justify-center p-6">

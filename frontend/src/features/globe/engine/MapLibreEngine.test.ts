@@ -34,6 +34,14 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
 
     map.fire('style.load');
     expect(map.setSky).toHaveBeenCalledTimes(1);
+    // Palette overrides apply only to layers the style actually has.
+    expect(map.setPaintProperty).toHaveBeenCalledTimes(3);
+    expect(map.setPaintProperty).toHaveBeenCalledWith('water', 'fill-color', '#0b1626');
+    expect(map.setPaintProperty).not.toHaveBeenCalledWith(
+      'boundary_state',
+      expect.anything(),
+      expect.anything(),
+    );
     expect(map.setProjection).toHaveBeenCalledWith({ type: 'mercator' });
 
     engine.setProjection('globe');

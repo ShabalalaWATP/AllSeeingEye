@@ -25,11 +25,38 @@ export const GLOBE_SKY: SkySpecification = {
   'sky-color': '#0b1230',
   'horizon-color': '#28407a',
   'fog-color': '#07070b',
-  'fog-ground-blend': 0.6,
-  'horizon-fog-blend': 0.7,
+  // Keep ground fog low: at planet scale the whole surface counts as "far away",
+  // and a strong blend towards the dark fog colour blacks out the continents.
+  'fog-ground-blend': 0.1,
+  'horizon-fog-blend': 0.5,
   'sky-horizon-blend': 0.6,
   'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
 };
+
+/**
+ * The OpenFreeMap dark style paints land at 5 percent grey and water at 11 percent,
+ * which is invisible on a globe. These overrides move it onto the app palette:
+ * obsidian land, deep navy water, slate borders and muted labels.
+ */
+type PaintOverride = readonly [
+  layer: string,
+  property: 'background-color' | 'fill-color' | 'line-color' | 'text-color',
+  value: string,
+];
+
+export const PAINT_OVERRIDES: readonly PaintOverride[] = [
+  ['background', 'background-color', '#15151d'],
+  ['water', 'fill-color', '#0b1626'],
+  ['waterway', 'line-color', '#0b1626'],
+  ['boundary_country_z0-4', 'line-color', '#4a4a5c'],
+  ['boundary_country_z5-', 'line-color', '#4a4a5c'],
+  ['boundary_state', 'line-color', '#33333f'],
+  ['place_country_major', 'text-color', '#9a95a3'],
+  ['place_country_minor', 'text-color', '#9a95a3'],
+  ['place_country_other', 'text-color', '#9a95a3'],
+  ['place_city_large', 'text-color', '#7d7886'],
+  ['place_city', 'text-color', '#7d7886'],
+];
 
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
@@ -47,8 +74,15 @@ export class MapLibreEngine implements MapEngine {
     map.on('style.load', () => {
       this.styleReady = true;
       map.setSky(GLOBE_SKY);
+      for (const [layer, property, value] of PAINT_OVERRIDES) {
+        if (map.getLayer(layer) !== undefined) map.setPaintProperty(layer, property, value);
+      }
       this.applyProjection();
     });
+    if (import.meta.env.DEV) {
+      // Development aid only: lets the browser console inspect the live map.
+      (window as unknown as { __aseMap?: MapLibreMap }).__aseMap = map;
+    }
     this.map = map;
   }
 
