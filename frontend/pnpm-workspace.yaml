@@ -1,0 +1,4 @@
+# pnpm settings (pnpm 10+ reads project settings from this file).
+# msw has a postinstall that only prints a message; its build script is not needed.
+allowBuilds:
+  msw: false

@@ -1,0 +1,16 @@
+# Applies when the build context is frontend/. A copy with the same patterns lives
+# in Dockerfile.dockerignore for BuildKit builds whose context is the repo root.
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+**/*.log
+**/.git
+**/.vscode
+**/.idea
+**/__pycache__
+**/.venv
+backend
+data
+docs

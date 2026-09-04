@@ -1,0 +1,81 @@
+/*
+ * Theme tokens for The All Seeing Eye. Dark only: obsidian ground, one ember
+ * accent taken from the Evil Eye, cyan for live data, amber for warnings.
+ * Fonts are self-hosted through Fontsource; nothing is fetched at runtime.
+ */
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+@theme {
+  --color-*: initial;
+  --color-ground: #07070b;
+  --color-surface: #14141c;
+  --color-surface-2: #1c1c26;
+  --color-line: #2a2a36;
+  --color-text: #e9e4dc;
+  --color-muted: #9a95a3;
+  --color-ember: #ff6f37;
+  --color-cyan: #22d3ee;
+  --color-amber: #f5b53f;
+  --color-good: #5cd39b;
+  --color-critical: #ff5a5a;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+
+  --radius-card: 0.75rem;
+  --shadow-card: 0 20px 60px -20px rgb(0 0 0 / 0.8);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-ground);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--color-ground);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-ember) 45%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility card-surface {
+  background-color: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+}
