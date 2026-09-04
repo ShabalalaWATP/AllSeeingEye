@@ -64,3 +64,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+### Static brand assets
+
+The files under `public/brand/` (`eye-32.png`, `eye-48.png`, `eye-192.png`, `eye-512.png`,
+`apple-touch-icon.png`) are frame captures of this same component rendered by the app's
+development-only `/brand/capture` page on 4 September 2026, downscaled without other edits.
+They exist so the favicon, PWA icons and print or export headers show the real eye rather
+than a redrawn imitation. They carry the same licence terms as the component.
