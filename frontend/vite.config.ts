@@ -12,12 +12,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  optimizeDeps: {
+    // MapLibre 6 starts a module worker with `new URL(..., import.meta.url)`. Pre-bundling
+    // moves the module into .vite/deps, where that relative worker file does not exist,
+    // so vector tiles silently never parse in development. Serving the package as-is fixes it.
+    exclude: ['maplibre-gl'],
+  },
   server: {
     port: 5173,
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // 127.0.0.1 rather than localhost: Node may resolve localhost to ::1 first.
+        target: 'http://127.0.0.1:8000',
         changeOrigin: false,
       },
     },
