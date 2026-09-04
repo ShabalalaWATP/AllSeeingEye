@@ -10,16 +10,19 @@ import { usePageVisible, useReducedMotion } from './useMotionPreferences';
 
 export interface BrandMarkProps {
   size?: number;
+  /** Purely visual repeat of the mark (a loading screen next to the rail's own mark). */
+  decorative?: boolean;
 }
 
-export function BrandMark({ size = 40 }: BrandMarkProps) {
+export function BrandMark({ size = 40, decorative = false }: BrandMarkProps) {
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
 
   return (
     <div
-      role="img"
-      aria-label={BRAND_NAME}
+      role={decorative ? undefined : 'img'}
+      aria-label={decorative ? undefined : BRAND_NAME}
+      aria-hidden={decorative ? true : undefined}
       className="shrink-0 overflow-hidden rounded-full"
       style={{ width: size, height: size }}
     >

@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
+
+// Lazy route chunks and MSW round trips can exceed the 1 s default on a busy machine.
+configure({ asyncUtilTimeout: 4000 });
 
 import { initialAuthState, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';

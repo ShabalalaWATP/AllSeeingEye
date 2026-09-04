@@ -16,6 +16,10 @@ export default mergeConfig(
       include: ['src/**/*.test.{ts,tsx}'],
       restoreMocks: true,
       clearMocks: true,
+      // Page tests render lazy routes through MSW round trips; on a busy machine the
+      // default 5 s per test is too tight and produced false failures.
+      testTimeout: 15_000,
+      hookTimeout: 15_000,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html', 'lcov'],

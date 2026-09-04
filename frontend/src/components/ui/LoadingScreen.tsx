@@ -11,7 +11,7 @@ export function LoadingScreen({ label = 'Loading' }: LoadingScreenProps) {
       role="status"
       className="flex h-full min-h-64 w-full flex-col items-center justify-center gap-4 bg-ground"
     >
-      <BrandMark size={56} />
+      <BrandMark size={56} decorative />
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{label}</p>
     </div>
   );
