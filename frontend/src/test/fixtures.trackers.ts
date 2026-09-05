@@ -1,4 +1,5 @@
 /** Tracker boards and details built from the live event fixture. */
+import type { AviationBoard, JamMap } from '@/lib/api/aviation';
 import type { ConflictCard, ConflictDetail, HazardCard, HazardDetail } from '@/lib/api/trackers';
 
 import { liveEvent } from './fixtures.events';
@@ -61,4 +62,44 @@ export const conflictDetail: ConflictDetail = {
   card: conflictCard,
   timeline: hazardDetail.timeline,
   events: [shelling, liveEvent({ id: 'n1', category: 'news', title: 'Talks in Kyiv', url: null })],
+};
+
+export const aviationBoard: AviationBoard = {
+  military_total: 96,
+  interesting: 4,
+  ladd: 12,
+  pia: 1,
+  by_country: [
+    { iso: 'US', count: 40, baseline: 32.5, ratio: 1.23 },
+    { iso: 'UA', count: 9, baseline: 3, ratio: 3 },
+    { iso: 'PL', count: 2, baseline: null, ratio: null },
+  ],
+  emergencies: [
+    liveEvent({
+      id: 'sos',
+      category: 'aviation',
+      subtype: 'emergency',
+      title: 'RCH123 (C17): squawk 7700, general emergency',
+      severity: 0.8,
+      point: { lon: 30, lat: 50 },
+      country_iso: 'PL',
+      url: 'https://globe.adsb.lol/?icao=ae1234',
+    }),
+  ],
+  areas: [
+    { id: 'black_sea', name: 'Black Sea and southern Ukraine', count: 120, military: 6, baseline: 110 },
+    { id: 'baltic', name: 'Baltic Sea and Kaliningrad', count: 80, military: 2, baseline: null },
+  ],
+  jam_amber: 3,
+  jam_red: 1,
+  jam_updated_at: '2026-09-05T08:30:00Z',
+};
+
+export const jamMap: JamMap = {
+  cells: [
+    { lon: 36.5, lat: 49.5, size: 1, good: 4, bad: 2, percent_bad: 16.7, level: 'red' },
+    { lon: 20.5, lat: 55.5, size: 1, good: 30, bad: 2, percent_bad: 3.1, level: 'amber' },
+    { lon: 0.5, lat: 51.5, size: 1, good: 200, bad: 1, percent_bad: 0, level: 'green' },
+  ],
+  updated_at: '2026-09-05T08:30:00Z',
 };

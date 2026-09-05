@@ -17,10 +17,12 @@ import {
   auditPageOne,
   auditPageTwo,
   conflictCard,
+  aviationBoard,
   conflictDetail,
   countries,
   hazardCard,
   hazardDetail,
+  jamMap,
   liveEvents,
   llmProfiles,
   pendingRequests,
@@ -315,6 +317,10 @@ export const handlers = [
   ),
 
   http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [conflictCard] })),
+
+  http.get('/api/trackers/aviation', () => HttpResponse.json(aviationBoard)),
+
+  http.get('/api/trackers/aviation/jamming', () => HttpResponse.json(jamMap)),
 
   http.get('/api/trackers/conflicts/:id', ({ params }) =>
     params.id === 'ukraine'

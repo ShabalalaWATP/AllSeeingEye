@@ -74,7 +74,12 @@ describe('display preferences', () => {
     const stored = JSON.parse(localStorage.getItem(GLOBE_PREFS_KEY) ?? '{}') as {
       state: Record<string, unknown>;
     };
-    expect(stored.state).toEqual({ baseLayer: 'hybrid', terminator: false, lite: true });
+    expect(stored.state).toEqual({
+      baseLayer: 'hybrid',
+      terminator: false,
+      lite: true,
+      interference: false,
+    });
   });
 
   it('holds the brand mark still in lite mode', async () => {

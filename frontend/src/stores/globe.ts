@@ -20,11 +20,14 @@ export interface GlobeState {
   terminator: boolean;
   /** Drop atmosphere, animation and the terminator for weak GPUs or a wall display. */
   lite: boolean;
+  /** Draw the GNSS interference cells from the aviation tracker. */
+  interference: boolean;
   setMode: (mode: ViewMode) => void;
   toggleMode: () => void;
   setBaseLayer: (layer: BaseLayer) => void;
   toggleTerminator: () => void;
   toggleLite: () => void;
+  toggleInterference: () => void;
 }
 
 export const useGlobeStore = create<GlobeState>()(
@@ -34,6 +37,7 @@ export const useGlobeStore = create<GlobeState>()(
       baseLayer: 'dark',
       terminator: true,
       lite: false,
+      interference: false,
       setMode: (mode) => {
         set({ mode });
       },
@@ -49,6 +53,9 @@ export const useGlobeStore = create<GlobeState>()(
       toggleLite: () => {
         set((state) => ({ lite: !state.lite }));
       },
+      toggleInterference: () => {
+        set((state) => ({ interference: !state.interference }));
+      },
     }),
     {
       name: GLOBE_PREFS_KEY,
@@ -57,6 +64,7 @@ export const useGlobeStore = create<GlobeState>()(
         baseLayer: state.baseLayer,
         terminator: state.terminator,
         lite: state.lite,
+        interference: state.interference,
       }),
     },
   ),

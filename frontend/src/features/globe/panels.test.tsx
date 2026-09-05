@@ -30,10 +30,12 @@ describe('LayerPanel', () => {
         onToggle={onToggle}
         onToggleTerminator={onToggleTerminator}
         onToggleLite={onToggleLite}
+        interference={false}
+        onToggleInterference={vi.fn()}
       />,
     );
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(13);
+    expect(switches).toHaveLength(14);
     expect(screen.getByRole('switch', { name: 'Day and night on' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -75,6 +77,8 @@ describe('LayerPanel', () => {
         onToggle={vi.fn()}
         onToggleTerminator={vi.fn()}
         onToggleLite={vi.fn()}
+        interference={false}
+        onToggleInterference={vi.fn()}
       />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Down.');

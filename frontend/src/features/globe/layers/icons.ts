@@ -71,7 +71,10 @@ export function buildIconLayer(
       mask: true,
     }),
     getSize: (event) => (event.id === selectedId ? 30 : 22),
-    getColor: (event) => [...CATEGORY_STYLES[event.category].colour, 235],
+    getColor: (event) =>
+      event.subtype === 'emergency'
+        ? [255, 90, 90, 255]
+        : [...CATEGORY_STYLES[event.category].colour, 235],
     // deck.gl rotates anticlockwise; a track is clockwise from north.
     getAngle: (event) => (iconFor(event) === 'aircraft' ? -headingOf(event) : 0),
     updateTriggers: { getSize: [selectedId] },

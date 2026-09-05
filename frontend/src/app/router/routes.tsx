@@ -27,6 +27,7 @@ const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
 const ConflictPage = lazy(() => import('@/features/trackers/ConflictPage'));
 const HazardPage = lazy(() => import('@/features/trackers/HazardPage'));
+const AviationPage = lazy(() => import('@/features/trackers/AviationPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -57,6 +58,7 @@ export const routes: RouteObject[] = [
           { path: 'trackers', element: <TrackersPage /> },
           { path: 'trackers/conflicts/:id', element: <ConflictPage /> },
           { path: 'trackers/disasters/:hazard', element: <HazardPage /> },
+          { path: 'trackers/aviation', element: <AviationPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

@@ -17,6 +17,8 @@ export interface LayerPanelProps {
   onToggle: (category: Category) => void;
   onToggleTerminator: () => void;
   onToggleLite: () => void;
+  interference: boolean;
+  onToggleInterference: () => void;
 }
 
 const MEBIBYTE = 1_048_576;
@@ -76,6 +78,8 @@ export function LayerPanel({
   onToggle,
   onToggleTerminator,
   onToggleLite,
+  interference,
+  onToggleInterference,
 }: LayerPanelProps) {
   return (
     <section
@@ -142,6 +146,7 @@ export function LayerPanel({
       <div className="mt-1 border-t border-line pt-1">
         <Toggle label="Day and night" checked={terminator} onToggle={onToggleTerminator} />
         <Toggle label="Lite mode" checked={lite} onToggle={onToggleLite} />
+        <Toggle label="GNSS interference" checked={interference} onToggle={onToggleInterference} />
       </div>
       {stats !== null && (
         <p className="mt-1 px-1 font-mono text-[11px] text-muted">{formatBudget(stats)}</p>

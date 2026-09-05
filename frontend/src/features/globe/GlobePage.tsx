@@ -34,7 +34,11 @@ import { Ticker } from './Ticker';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
+import { fetchJamMap } from '@/lib/api/aviation';
+import type { JamCell } from '@/lib/api/aviation';
+
 import type { Cluster } from './layers/clusters';
+import { buildJamLayer } from './layers/jamming';
 import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
@@ -42,6 +46,8 @@ import { hasWebGl2 } from './webgl';
 
 /** Zoom used when the user focuses an event from a list. */
 export const FOCUS_ZOOM = 4;
+/** How often the interference cells are refreshed while the layer is on. */
+const JAM_REFRESH_MS = 5 * 60_000;
 
 // Only our own tile proxy ever sees the session token; the engine checks the origin.
 const createEngine = () =>
@@ -56,6 +62,27 @@ export default function GlobePage() {
   const toggleTerminator = useGlobeStore((state) => state.toggleTerminator);
   const lite = useGlobeStore((state) => state.lite);
   const toggleLite = useGlobeStore((state) => state.toggleLite);
+  const interference = useGlobeStore((state) => state.interference);
+  const toggleInterference = useGlobeStore((state) => state.toggleInterference);
+  const [jamCells, setJamCells] = useState<JamCell[]>([]);
+  useEffect(() => {
+    if (!interference) return;
+    let cancelled = false;
+    const load = () => {
+      fetchJamMap().then(
+        (map) => {
+          if (!cancelled) setJamCells(map.cells);
+        },
+        () => undefined,
+      );
+    };
+    load();
+    const timer = window.setInterval(load, JAM_REFRESH_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [interference]);
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
   const engine = useGlobeEngine(containerRef, {
@@ -139,10 +166,13 @@ export default function GlobePage() {
     if (!supported) return;
     const events = buildEventLayers(scoped, hidden, onPick, selectedId, { zoom, onCluster });
     const night = terminator && !lite ? [buildTerminatorLayer(new Date(now))] : [];
-    engine.setLayers([...night, ...events]);
+    const jam = interference ? buildJamLayer(jamCells) : null;
+    engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...events]);
   }, [
     engine,
     hidden,
+    interference,
+    jamCells,
     lite,
     now,
     onCluster,
@@ -224,6 +254,8 @@ export default function GlobePage() {
           onToggle={toggleCategory}
           onToggleTerminator={toggleTerminator}
           onToggleLite={toggleLite}
+          interference={interference}
+          onToggleInterference={toggleInterference}
         />
         {nation !== null && (
           <CountryPanel
