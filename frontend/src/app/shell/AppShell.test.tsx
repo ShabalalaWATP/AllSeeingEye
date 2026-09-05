@@ -16,10 +16,11 @@ describe('AppShell', () => {
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(nav).getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
-    for (const [label, phase] of [
-      ['Trackers', 'Phase 3'],
-      ['Direction', 'Phase 4'],
-    ]) {
+    expect(within(nav).getByRole('link', { name: 'Trackers' })).toHaveAttribute(
+      'href',
+      '/trackers',
+    );
+    for (const [label, phase] of [['Direction', 'Phase 4']]) {
       const button = within(nav).getByRole('button', { name: new RegExp(`^${label!}`) });
       expect(button).toBeDisabled();
       expect(button).toHaveTextContent(phase!);

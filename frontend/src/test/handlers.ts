@@ -16,7 +16,11 @@ import {
   adminUser,
   auditPageOne,
   auditPageTwo,
+  conflictCard,
+  conflictDetail,
   countries,
+  hazardCard,
+  hazardDetail,
   liveEvents,
   llmProfiles,
   pendingRequests,
@@ -301,6 +305,22 @@ export const handlers = [
   ),
 
   http.delete('/api/reports/:id', () => new HttpResponse(null, { status: 204 })),
+
+  http.get('/api/trackers/disasters', () => HttpResponse.json({ items: [hazardCard] })),
+
+  http.get('/api/trackers/disasters/:hazard', ({ params }) =>
+    params.hazard === 'earthquake'
+      ? HttpResponse.json(hazardDetail)
+      : apiError(422, 'validation_error', 'Unknown hazard'),
+  ),
+
+  http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [conflictCard] })),
+
+  http.get('/api/trackers/conflicts/:id', ({ params }) =>
+    params.id === 'ukraine'
+      ? HttpResponse.json(conflictDetail)
+      : apiError(404, 'not_found', 'No such conflict'),
+  ),
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 

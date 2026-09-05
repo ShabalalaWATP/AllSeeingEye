@@ -124,11 +124,11 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 
 ### 3a. Framework, disasters and conflicts
 - [x] Tracker domain: hazards folded from connector subtypes, curated `Conflict` definitions, activity (24 h, 7 d, previous 7 d, trend), day buckets, hazard and conflict cards computed from the live store, never stored
-- [ ] Curated conflicts and tension areas as a packaged resource (Ukraine, Gaza and the West Bank, Israel and Hezbollah, Sudan, Yemen and the Red Sea, the central Sahel, eastern DR Congo, Myanmar, Somalia, Syria, Haiti, Ethiopia, north-east Nigeria, Cabo Delgado, Libya, Taiwan Strait, the Korean peninsula, the South China Sea, India and Pakistan, Armenia and Azerbaijan, Colombia, the Pakistan and Afghanistan border, Iran and Israel), each with countries, a bounding box, belligerents, keywords and a summary; admin editing is a later follow-up
-- [ ] Tracker service and API: `/api/trackers/disasters`, `/api/trackers/disasters/{hazard}`, `/api/trackers/conflicts`, `/api/trackers/conflicts/{id}` with cards, timelines and the events behind them
+- [x] Curated conflicts and tension areas as a packaged resource (Ukraine, Gaza and the West Bank, Israel and Hezbollah, Sudan, Yemen and the Red Sea, the central Sahel, eastern DR Congo, Myanmar, Somalia, Syria, Haiti, Ethiopia, north-east Nigeria, Cabo Delgado, Libya, Taiwan Strait, the Korean peninsula, the South China Sea, India and Pakistan, Armenia and Azerbaijan, Colombia, the Pakistan and Afghanistan border, Iran and Israel), each with countries, a bounding box, belligerents, keywords and a summary; admin editing is a later follow-up
+- [x] Tracker service and API: `/api/trackers/disasters`, `/api/trackers/disasters/{hazard}`, `/api/trackers/conflicts`, `/api/trackers/conflicts/{id}` with cards, timelines and the events behind them
 - [ ] Connectors: NHC and JTWC cyclones (positions, intensity, movement), Smithsonian weekly volcano reports, NTWC and PTWC tsunami bulletins, EMSC earthquakes, NWS severe weather, Met Office UK warnings, WHO Disease Outbreak News, IFRC GO events, HDX HAPI monthly conflict aggregates
 - [ ] Products: Disaster SITREP (hazard scope, optional country) and Conflict Assessment (conflict scope: bounding box, countries and keywords steer selection; most likely and most dangerous courses of action with yardstick terms)
-- [ ] Trackers in the app: the rail entry goes live; boards with severity, activity, trend and the latest item; detail pages with timeline, event list, "show on globe" and "generate" buttons
+- [x] Trackers in the app: the rail entry is live; boards with activity, trend, red alerts and the latest item; detail pages with a fourteen-day timeline, the event list and "show on globe" (the "generate" buttons arrive with the tracker templates)
 - [ ] Globe upgrades the trackers need: cyclone and volcano icons, clustering or hex density at low zoom, a time slider over the retained window
 
 ### 3b. Aviation

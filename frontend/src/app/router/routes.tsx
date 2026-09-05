@@ -24,6 +24,9 @@ const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'))
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
+const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
+const ConflictPage = lazy(() => import('@/features/trackers/ConflictPage'));
+const HazardPage = lazy(() => import('@/features/trackers/HazardPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -51,6 +54,9 @@ export const routes: RouteObject[] = [
           { index: true, element: <GlobePage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
+          { path: 'trackers', element: <TrackersPage /> },
+          { path: 'trackers/conflicts/:id', element: <ConflictPage /> },
+          { path: 'trackers/disasters/:hazard', element: <HazardPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

@@ -1,0 +1,235 @@
+{
+  "note": "Curated conflicts and tension areas for the conflict tracker (docs/04 section 5.1). Bounding boxes are west, south, east, north in WGS84 and are deliberately generous. Seeded 5 September 2026; admin editing is a later follow-up.",
+  "conflicts": [
+    {
+      "id": "ukraine",
+      "name": "Russia's war in Ukraine",
+      "status": "war",
+      "countries": ["UA"],
+      "bbox": [22.0, 44.0, 41.0, 52.5],
+      "belligerents": ["Russia", "Ukraine"],
+      "keywords": ["Ukraine", "Russia", "Kyiv", "Kharkiv", "Donetsk", "Zaporizhzhia", "Kherson", "Sumy", "Crimea", "drone", "missile"],
+      "summary": "Full-scale war since February 2022 along a front in the east and south, with long-range strikes across the country and into Russia."
+    },
+    {
+      "id": "gaza_west_bank",
+      "name": "Israel, Gaza and the West Bank",
+      "status": "war",
+      "countries": ["IL", "PS"],
+      "bbox": [34.2, 29.4, 35.9, 33.4],
+      "belligerents": ["Israel", "Hamas", "Palestinian Islamic Jihad"],
+      "keywords": ["Gaza", "Israel", "West Bank", "Rafah", "IDF", "Hamas", "Jerusalem", "hostage"],
+      "summary": "War in Gaza since October 2023 with recurring operations in the West Bank."
+    },
+    {
+      "id": "israel_hezbollah",
+      "name": "Israel and Hezbollah",
+      "status": "tension",
+      "countries": ["LB", "IL"],
+      "bbox": [35.0, 32.8, 36.7, 34.7],
+      "belligerents": ["Israel", "Hezbollah"],
+      "keywords": ["Lebanon", "Hezbollah", "Beirut", "southern Lebanon", "Litani"],
+      "summary": "Cross-border conflict along the Blue Line under a fragile ceasefire."
+    },
+    {
+      "id": "sudan",
+      "name": "Sudan civil war",
+      "status": "war",
+      "countries": ["SD"],
+      "bbox": [21.8, 8.6, 38.6, 22.3],
+      "belligerents": ["Sudanese Armed Forces", "Rapid Support Forces"],
+      "keywords": ["Sudan", "Khartoum", "El Fasher", "Darfur", "RSF", "SAF", "Kordofan", "Port Sudan"],
+      "summary": "War between the army and the Rapid Support Forces since April 2023, with famine and mass displacement."
+    },
+    {
+      "id": "yemen_red_sea",
+      "name": "Yemen and the Red Sea",
+      "status": "war",
+      "countries": ["YE"],
+      "bbox": [41.5, 11.5, 54.6, 19.2],
+      "belligerents": ["Houthis (Ansar Allah)", "Yemeni government", "Saudi-led coalition", "US and UK forces"],
+      "keywords": ["Yemen", "Houthi", "Red Sea", "Sanaa", "Hodeidah", "Bab el-Mandeb", "Aden", "shipping"],
+      "summary": "Civil war and Houthi attacks on Red Sea shipping with US, UK and Israeli strikes in reply."
+    },
+    {
+      "id": "sahel",
+      "name": "Central Sahel insurgency",
+      "status": "war",
+      "countries": ["ML", "BF", "NE"],
+      "bbox": [-12.5, 9.4, 16.0, 25.0],
+      "belligerents": ["JNIM", "Islamic State Sahel", "Malian, Burkinabe and Nigerien forces", "Africa Corps"],
+      "keywords": ["Mali", "Burkina Faso", "Niger", "Sahel", "JNIM", "Bamako", "Ouagadougou", "Niamey", "Timbuktu"],
+      "summary": "Jihadist insurgency across three junta-led states with Russian-backed forces replacing Western missions."
+    },
+    {
+      "id": "drc_east",
+      "name": "Eastern DR Congo",
+      "status": "war",
+      "countries": ["CD"],
+      "bbox": [26.5, -5.5, 31.5, 3.5],
+      "belligerents": ["M23 / AFC", "FARDC", "Rwanda", "Wazalendo militias"],
+      "keywords": ["Congo", "DRC", "M23", "Goma", "Bukavu", "North Kivu", "South Kivu", "Ituri", "Rwanda"],
+      "summary": "M23 offensive holding Goma and Bukavu with regional mediation and a fragile ceasefire."
+    },
+    {
+      "id": "myanmar",
+      "name": "Myanmar civil war",
+      "status": "war",
+      "countries": ["MM"],
+      "bbox": [92.0, 9.5, 101.2, 28.6],
+      "belligerents": ["Myanmar military (SAC)", "People's Defence Forces", "Ethnic armed organisations"],
+      "keywords": ["Myanmar", "Burma", "junta", "Rakhine", "Arakan Army", "Mandalay", "Sagaing", "Naypyidaw"],
+      "summary": "Nationwide war since the 2021 coup, with the junta losing ground in the borderlands."
+    },
+    {
+      "id": "somalia",
+      "name": "Somalia",
+      "status": "war",
+      "countries": ["SO"],
+      "bbox": [40.9, -1.7, 51.5, 12.1],
+      "belligerents": ["Al-Shabaab", "Somali government", "AUSSOM"],
+      "keywords": ["Somalia", "Al-Shabaab", "Mogadishu", "Puntland", "Jubaland", "Shabelle"],
+      "summary": "Long insurgency around Mogadishu and the central regions, with Islamic State active in Puntland."
+    },
+    {
+      "id": "syria",
+      "name": "Syria",
+      "status": "tension",
+      "countries": ["SY"],
+      "bbox": [35.7, 32.3, 42.4, 37.3],
+      "belligerents": ["Syrian transitional government", "SDF", "Israel", "Islamic State remnants"],
+      "keywords": ["Syria", "Damascus", "Aleppo", "SDF", "Latakia", "Sweida", "Deir ez-Zor"],
+      "summary": "Post-Assad transition with sectarian violence, Israeli strikes and an unresolved north-east."
+    },
+    {
+      "id": "haiti",
+      "name": "Haiti gang conflict",
+      "status": "war",
+      "countries": ["HT"],
+      "bbox": [-74.5, 18.0, -71.6, 20.1],
+      "belligerents": ["Viv Ansanm gang coalition", "Haitian National Police", "Gang Suppression Force"],
+      "keywords": ["Haiti", "Port-au-Prince", "gang", "Kenyan police"],
+      "summary": "Gangs control most of the capital; an international force supports the police."
+    },
+    {
+      "id": "ethiopia",
+      "name": "Ethiopia",
+      "status": "tension",
+      "countries": ["ET"],
+      "bbox": [33.0, 3.4, 48.0, 14.9],
+      "belligerents": ["Ethiopian federal forces", "Fano militias", "Oromo Liberation Army", "Tigray factions"],
+      "keywords": ["Ethiopia", "Amhara", "Fano", "Tigray", "Oromia", "Addis Ababa", "Eritrea"],
+      "summary": "Insurgencies in Amhara and Oromia and a fragile Tigray settlement, with Eritrea tension."
+    },
+    {
+      "id": "nigeria_north",
+      "name": "Northern Nigeria",
+      "status": "war",
+      "countries": ["NG"],
+      "bbox": [2.7, 4.2, 14.7, 13.9],
+      "belligerents": ["Boko Haram", "ISWAP", "Bandit groups", "Nigerian armed forces"],
+      "keywords": ["Nigeria", "Borno", "Boko Haram", "ISWAP", "Maiduguri", "bandits", "Zamfara", "Kaduna"],
+      "summary": "Jihadist insurgency in the north-east and banditry across the north-west."
+    },
+    {
+      "id": "cabo_delgado",
+      "name": "Cabo Delgado insurgency",
+      "status": "war",
+      "countries": ["MZ"],
+      "bbox": [38.0, -14.5, 41.0, -10.4],
+      "belligerents": ["Islamic State Mozambique", "Mozambican forces", "Rwandan forces"],
+      "keywords": ["Mozambique", "Cabo Delgado", "Mocimboa", "Palma", "Pemba"],
+      "summary": "Islamic State affiliate insurgency in the gas-rich north of Mozambique."
+    },
+    {
+      "id": "libya",
+      "name": "Libya",
+      "status": "tension",
+      "countries": ["LY"],
+      "bbox": [9.3, 19.5, 25.2, 33.2],
+      "belligerents": ["Government of National Unity", "Libyan National Army"],
+      "keywords": ["Libya", "Tripoli", "Benghazi", "Haftar", "Misrata"],
+      "summary": "Divided government with recurring militia clashes in Tripoli."
+    },
+    {
+      "id": "taiwan_strait",
+      "name": "Taiwan Strait",
+      "status": "tension",
+      "countries": ["TW"],
+      "bbox": [116.0, 20.0, 124.0, 27.0],
+      "belligerents": ["China (PLA)", "Taiwan"],
+      "keywords": ["Taiwan", "PLA", "Taiwan Strait", "ADIZ", "Fujian", "Kinmen", "blockade"],
+      "summary": "Sustained Chinese military pressure around Taiwan with periodic large exercises."
+    },
+    {
+      "id": "korea",
+      "name": "Korean peninsula",
+      "status": "tension",
+      "countries": ["KP", "KR"],
+      "bbox": [124.0, 33.0, 131.0, 43.0],
+      "belligerents": ["North Korea", "South Korea", "United States"],
+      "keywords": ["North Korea", "Pyongyang", "DPRK", "missile launch", "Kim Jong Un", "Seoul", "DMZ"],
+      "summary": "Missile tests, nuclear posture and the North's alignment with Russia."
+    },
+    {
+      "id": "south_china_sea",
+      "name": "South China Sea",
+      "status": "tension",
+      "countries": ["PH"],
+      "bbox": [105.0, 3.0, 121.0, 22.0],
+      "belligerents": ["China Coast Guard", "Philippines", "Vietnam", "Malaysia"],
+      "keywords": ["South China Sea", "Scarborough", "Second Thomas Shoal", "Spratly", "coast guard", "Philippines", "water cannon"],
+      "summary": "Confrontations between Chinese and Philippine vessels around disputed shoals."
+    },
+    {
+      "id": "india_pakistan",
+      "name": "India and Pakistan",
+      "status": "tension",
+      "countries": ["IN", "PK"],
+      "bbox": [72.0, 30.0, 80.0, 37.0],
+      "belligerents": ["India", "Pakistan"],
+      "keywords": ["Kashmir", "Line of Control", "Pakistan", "India", "Pahalgam", "Srinagar"],
+      "summary": "Nuclear-armed rivals with periodic strikes across the Line of Control."
+    },
+    {
+      "id": "armenia_azerbaijan",
+      "name": "Armenia and Azerbaijan",
+      "status": "tension",
+      "countries": ["AM", "AZ"],
+      "bbox": [43.4, 38.3, 50.4, 41.4],
+      "belligerents": ["Armenia", "Azerbaijan"],
+      "keywords": ["Armenia", "Azerbaijan", "Nakhchivan", "Zangezur", "Baku", "Yerevan"],
+      "summary": "Post-Karabakh peace process with border incidents and the Zangezur corridor question."
+    },
+    {
+      "id": "colombia",
+      "name": "Colombia",
+      "status": "tension",
+      "countries": ["CO"],
+      "bbox": [-79.1, -4.3, -66.8, 12.6],
+      "belligerents": ["ELN", "FARC dissidents", "Clan del Golfo", "Colombian forces"],
+      "keywords": ["Colombia", "ELN", "Catatumbo", "Cauca", "Bogota"],
+      "summary": "Fragmented armed groups fighting over coca corridors as peace talks stall."
+    },
+    {
+      "id": "pakistan_afghanistan",
+      "name": "Pakistan and Afghanistan border",
+      "status": "war",
+      "countries": ["PK", "AF"],
+      "bbox": [60.5, 24.0, 75.5, 38.5],
+      "belligerents": ["TTP", "Baloch insurgents", "Pakistan", "Taliban government"],
+      "keywords": ["Pakistan", "Afghanistan", "TTP", "Balochistan", "Khyber Pakhtunkhwa", "Kabul", "Islamabad", "Quetta"],
+      "summary": "TTP and Baloch insurgencies in Pakistan with cross-border strikes into Afghanistan."
+    },
+    {
+      "id": "iran_israel",
+      "name": "Iran and Israel",
+      "status": "tension",
+      "countries": ["IR"],
+      "bbox": [44.0, 25.0, 63.5, 40.0],
+      "belligerents": ["Iran", "Israel", "United States"],
+      "keywords": ["Iran", "Tehran", "IRGC", "nuclear", "Natanz", "Isfahan", "enrichment"],
+      "summary": "Direct exchanges of strikes since 2024 and the unresolved nuclear question."
+    }
+  ]
+}

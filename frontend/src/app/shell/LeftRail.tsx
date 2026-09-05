@@ -13,10 +13,7 @@ const itemClass =
 const idleClass = 'text-muted hover:bg-surface-2 hover:text-text';
 const activeClass = 'bg-surface-2 text-text';
 
-const laterItems = [
-  { label: 'Trackers', phase: 'Phase 3' },
-  { label: 'Direction', phase: 'Phase 4' },
-];
+const laterItems = [{ label: 'Direction', phase: 'Phase 4' }];
 
 function RailButton({
   active,
@@ -73,6 +70,7 @@ export function LeftRail() {
         <RailButton active={onGlobePage && mode === 'map'} onClick={showMap} shortcut="M">
           Map
         </RailButton>
+        <RailLink to="/trackers">Trackers</RailLink>
         <RailLink to="/reports">Reports</RailLink>
         {laterItems.map((item) => (
           <button

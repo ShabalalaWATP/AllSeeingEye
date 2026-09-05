@@ -14,6 +14,7 @@ from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
@@ -83,6 +84,7 @@ from ase.application.ports.llm import (
 )
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.tiles import TileProvider
+from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.access import (
     DeleteReportUseCase,
     GetReportUseCase,
@@ -90,6 +92,7 @@ from ase.application.reports.access import (
 )
 from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.application.trackers.boards import TrackerService
 from ase.domain.report_records import ReportVersion
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -145,6 +148,7 @@ class Container:
         self.bus = InMemoryEventBus()
         self.health = HealthRegistry()
         self.countries: CountryDirectory = CountryIndex.from_resource()
+        self.conflicts: ConflictDirectory = ConflictIndex.from_resource()
         self.streams = StreamLimiter(settings.max_streams_per_user)
         self.cipher: SecretCipher = FernetCipher(settings.encryption_key_value)
         self.llm: LlmGateway = OpenAiCompatibleGateway()
@@ -326,6 +330,9 @@ class Container:
             auditor=self._auditor(r),
             uow=r.uow,
         )
+
+    def trackers(self) -> TrackerService:
+        return TrackerService(self.store, self.conflicts, self.clock)
 
     def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
         return ListReportsUseCase(self.repositories(session).reports)
