@@ -129,6 +129,10 @@ export class MapLibreEngine implements MapEngine {
     else this.map?.flyTo({ center: target.center, zoom: target.zoom });
   }
 
+  getZoom(): number {
+    return this.map?.getZoom() ?? 0;
+  }
+
   onCursor(handler: CursorHandler): () => void {
     const map = this.map;
     if (map === null) return () => undefined;

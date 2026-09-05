@@ -7,6 +7,10 @@ import type { Layer } from '@deck.gl/core';
 
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 
+import { CLUSTER_ZOOM, buildClusterLayers, cellSizeFor, clusterEvents } from './clusters';
+import type { Cluster } from './clusters';
+import { buildIconLayer, iconFor } from './icons';
+
 export interface CategoryStyle {
   label: string;
   colour: [number, number, number];
@@ -45,16 +49,19 @@ export interface PickInfo {
   object?: LiveEvent;
 }
 
-/** One scatterplot layer per category, so toggling a category never rebuilds the rest. */
-export function buildEventLayers(
+/** The camera's zoom and what to do when a cluster is picked; absent means no clustering. */
+export interface LayerView {
+  zoom: number;
+  onCluster: (cluster: Cluster) => void;
+}
+
+function scatterLayers(
   events: readonly LiveEvent[],
-  hidden: readonly Category[],
   onPick: (event: LiveEvent | null) => void,
   selectedId: string | null,
 ): Layer[] {
   const byCategory = new Map<Category, LiveEvent[]>();
   for (const event of events) {
-    if (event.point === null || hidden.includes(event.category)) continue;
     const bucket = byCategory.get(event.category) ?? [];
     bucket.push(event);
     byCategory.set(event.category, bucket);
@@ -84,4 +91,38 @@ export function buildEventLayers(
       },
     });
   });
+}
+
+/**
+ * The data layers for the visible, located events: clusters when the camera is far out,
+ * otherwise icons for aircraft, cyclones and volcanoes and severity-sized points for
+ * everything else. Toggling a category never rebuilds the others.
+ */
+export function buildEventLayers(
+  events: readonly LiveEvent[],
+  hidden: readonly Category[],
+  onPick: (event: LiveEvent | null) => void,
+  selectedId: string | null,
+  view?: LayerView,
+): Layer[] {
+  const visible = events.filter(
+    (event) => event.point !== null && !hidden.includes(event.category),
+  );
+  let loose: LiveEvent[] = visible;
+  const layers: Layer[] = [];
+  if (view !== undefined && view.zoom < CLUSTER_ZOOM) {
+    const clustered = clusterEvents(visible, cellSizeFor(view.zoom));
+    layers.push(...buildClusterLayers(clustered.clusters, view.onCluster));
+    loose = clustered.loose;
+  }
+  layers.push(
+    ...scatterLayers(
+      loose.filter((event) => iconFor(event) === null),
+      onPick,
+      selectedId,
+    ),
+  );
+  const icons = buildIconLayer(loose, onPick, selectedId);
+  if (icons !== null) layers.push(icons);
+  return layers;
 }

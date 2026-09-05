@@ -23,7 +23,10 @@ describe('events store', () => {
   it('loads events and stats from the API', async () => {
     server.use(
       http.get('/api/events', () =>
-        HttpResponse.json({ items: [liveEvent(), liveEvent({ id: 'e2', category: 'cyber', point: null })], count: 2 }),
+        HttpResponse.json({
+          items: [liveEvent(), liveEvent({ id: 'e2', category: 'cyber', point: null })],
+          count: 2,
+        }),
       ),
       http.get('/api/events/stats', () =>
         HttpResponse.json({ total: 2, estimated_bytes: 100, budget_bytes: 1000, per_category: [] }),
@@ -38,7 +41,11 @@ describe('events store', () => {
   });
 
   it('records a load failure', async () => {
-    server.use(http.get('/api/events', () => HttpResponse.json({ error: { code: 'x', message: 'Down.' } }, { status: 500 })));
+    server.use(
+      http.get('/api/events', () =>
+        HttpResponse.json({ error: { code: 'x', message: 'Down.' } }, { status: 500 }),
+      ),
+    );
     await useEventsStore.getState().load();
     expect(useEventsStore.getState().error).toBe('Down.');
     expect(useEventsStore.getState().loaded).toBe(true);
@@ -48,7 +55,10 @@ describe('events store', () => {
     const store = useEventsStore.getState();
     store.handleStreamMessage({
       event: 'event.upsert',
-      data: JSON.stringify({ source_id: 's', events: [liveEvent(), liveEvent({ id: 'e2', published_at: '2026-09-06T00:00:00Z' })] }),
+      data: JSON.stringify({
+        source_id: 's',
+        events: [liveEvent(), liveEvent({ id: 'e2', published_at: '2026-09-06T00:00:00Z' })],
+      }),
       id: null,
     });
     expect(useEventsStore.getState().list.map((e) => e.id)).toEqual(['e2', 'e1']);
@@ -61,8 +71,12 @@ describe('events store', () => {
     });
     expect(useEventsStore.getState().list.map((e) => e.id)).toEqual(['e2']);
     expect(useEventsStore.getState().selectedId).toBeNull();
-    useEventsStore.getState().handleStreamMessage({ event: 'event.upsert', data: 'not json', id: null });
-    useEventsStore.getState().handleStreamMessage({ event: 'event.upsert', data: '{"events":"bad"}', id: null });
+    useEventsStore
+      .getState()
+      .handleStreamMessage({ event: 'event.upsert', data: 'not json', id: null });
+    useEventsStore
+      .getState()
+      .handleStreamMessage({ event: 'event.upsert', data: '{"events":"bad"}', id: null });
     useEventsStore.getState().applyUpsert([]);
     useEventsStore.getState().applyExpire([]);
     expect(useEventsStore.getState().list).toHaveLength(1);
@@ -96,10 +110,15 @@ describe('events store', () => {
 
   it('bounds the client mirror by dropping the oldest observed events', () => {
     const many = Array.from({ length: MAX_CLIENT_EVENTS + 5 }, (_, index) =>
-      liveEvent({ id: `m${index}`, observed_at: new Date(Date.UTC(2026, 8, 5, 0, index)).toISOString() }),
+      liveEvent({
+        id: `m${index}`,
+        observed_at: new Date(Date.UTC(2026, 8, 5, 0, index)).toISOString(),
+      }),
     );
     useEventsStore.getState().applyUpsert(many);
-    useEventsStore.getState().applyUpsert([liveEvent({ id: 'newest', observed_at: '2027-01-01T00:00:00Z' })]);
+    useEventsStore
+      .getState()
+      .applyUpsert([liveEvent({ id: 'newest', observed_at: '2027-01-01T00:00:00Z' })]);
     const state = useEventsStore.getState();
     expect(Object.keys(state.byId).length).toBeLessThanOrEqual(MAX_CLIENT_EVENTS + 1);
     expect(state.byId.m0).toBeUndefined();

@@ -17,6 +17,7 @@ import { useCountriesStore } from '@/stores/countries';
 import {
   countByCategory,
   filterByCountry,
+  filterByWindow,
   selectSelectedEvent,
   useEventsStore,
 } from '@/stores/events';
@@ -33,6 +34,7 @@ import { Ticker } from './Ticker';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
+import type { Cluster } from './layers/clusters';
 import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
@@ -65,6 +67,20 @@ export default function GlobePage() {
   });
   useLiveEvents();
   const now = useNow();
+  const [zoom, setZoom] = useState(1.5);
+  useEffect(
+    () =>
+      engine.onView((view) => {
+        setZoom(Math.round(view.zoom * 10) / 10);
+      }),
+    [engine],
+  );
+  const onCluster = useCallback(
+    (cluster: Cluster) => {
+      engine.flyTo({ center: [cluster.lon, cluster.lat], zoom: Math.min(FOCUS_ZOOM, zoom + 2.5) });
+    },
+    [engine, zoom],
+  );
 
   const osMaps = useCapabilitiesStore((state) => state.osMaps);
   const capabilitiesLoaded = useCapabilitiesStore((state) => state.loaded);
@@ -96,7 +112,12 @@ export default function GlobePage() {
   const setCountry = useEventsStore((state) => state.setCountry);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
   const list = useEventsStore((state) => state.list);
-  const scoped = useMemo(() => filterByCountry(list, country), [list, country]);
+  const windowHours = useEventsStore((state) => state.windowHours);
+  const setWindow = useEventsStore((state) => state.setWindow);
+  const scoped = useMemo(
+    () => filterByWindow(filterByCountry(list, country), windowHours, now),
+    [list, country, windowHours, now],
+  );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
@@ -116,10 +137,22 @@ export default function GlobePage() {
 
   useEffect(() => {
     if (!supported) return;
-    const events = buildEventLayers(scoped, hidden, onPick, selectedId);
+    const events = buildEventLayers(scoped, hidden, onPick, selectedId, { zoom, onCluster });
     const night = terminator && !lite ? [buildTerminatorLayer(new Date(now))] : [];
     engine.setLayers([...night, ...events]);
-  }, [engine, hidden, lite, now, onPick, scoped, selectedId, supported, terminator]);
+  }, [
+    engine,
+    hidden,
+    lite,
+    now,
+    onCluster,
+    onPick,
+    scoped,
+    selectedId,
+    supported,
+    terminator,
+    zoom,
+  ]);
 
   const focus = useCallback(
     (event: LiveEvent) => {
@@ -186,6 +219,8 @@ export default function GlobePage() {
           error={error}
           terminator={terminator}
           lite={lite}
+          windowHours={windowHours}
+          onWindow={setWindow}
           onToggle={toggleCategory}
           onToggleTerminator={toggleTerminator}
           onToggleLite={toggleLite}

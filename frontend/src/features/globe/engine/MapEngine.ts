@@ -40,6 +40,8 @@ export interface MapEngine {
   /** Subscribes to cursor positions over the map and returns the unsubscribe function. */
   onCursor(handler: CursorHandler): () => void;
   flyTo(target: FlyToTarget): void;
+  /** The camera's current zoom level, 0 when nothing is mounted. */
+  getZoom(): number;
   /** Replaces the data layers drawn over the base map. */
   setLayers(layers: readonly DataLayer[]): void;
   /** Subscribes to an engine event and returns the unsubscribe function. */

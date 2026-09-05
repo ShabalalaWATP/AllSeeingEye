@@ -18,6 +18,8 @@ export interface EventsState {
   hidden: Category[];
   /** ISO 3166-1 alpha-2 code of the nation filter, or null for the whole world. */
   country: string | null;
+  /** Show only events published within this many hours, or null for the whole window. */
+  windowHours: number | null;
   stats: StoreStats | null;
   status: StreamStatus;
   loaded: boolean;
@@ -30,6 +32,7 @@ export interface EventsState {
   setStatus: (status: StreamStatus) => void;
   toggleCategory: (category: Category) => void;
   setCountry: (iso: string | null) => void;
+  setWindow: (hours: number | null) => void;
   select: (id: string | null) => void;
   reset: () => void;
 }
@@ -39,6 +42,7 @@ export const initialEventsState = {
   list: [] as LiveEvent[],
   hidden: [] as Category[],
   country: null as string | null,
+  windowHours: null as number | null,
   stats: null as StoreStats | null,
   status: 'offline' as StreamStatus,
   loaded: false,
@@ -61,7 +65,10 @@ function bounded(byId: Record<string, LiveEvent>): Record<string, LiveEvent> {
   return Object.fromEntries(entries.slice(entries.length - MAX_CLIENT_EVENTS));
 }
 
-function without(byId: Record<string, LiveEvent>, ids: readonly string[]): Record<string, LiveEvent> {
+function without(
+  byId: Record<string, LiveEvent>,
+  ids: readonly string[],
+): Record<string, LiveEvent> {
   const gone = new Set(ids);
   return Object.fromEntries(Object.entries(byId).filter(([id]) => !gone.has(id)));
 }
@@ -130,6 +137,9 @@ export const useEventsStore = create<EventsState>()((set, get) => ({
   setCountry: (iso) => {
     set({ country: iso });
   },
+  setWindow: (hours) => {
+    set({ windowHours: hours });
+  },
 
   select: (id) => {
     set({ selectedId: id });
@@ -143,6 +153,17 @@ export const useEventsStore = create<EventsState>()((set, get) => ({
 /** Events inside the nation filter, before category switches apply. */
 export function filterByCountry(events: LiveEvent[], country: string | null): LiveEvent[] {
   return country === null ? events : events.filter((event) => event.country_iso === country);
+}
+
+/** Events published within the window ending now; null keeps everything retained. */
+export function filterByWindow(
+  events: LiveEvent[],
+  hours: number | null,
+  now: number,
+): LiveEvent[] {
+  if (hours === null) return events;
+  const since = now - hours * 3_600_000;
+  return events.filter((event) => Date.parse(event.published_at) >= since);
 }
 
 export const selectCountryEvents = (state: EventsState): LiveEvent[] =>

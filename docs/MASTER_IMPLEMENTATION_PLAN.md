@@ -130,7 +130,7 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [ ] Met Office UK warnings and MeteoAlarm per-country feeds (both answer but were empty or unseen at capture time, so no parser is written yet); HDX HAPI monthly conflict aggregates for the conflict detail view
 - [x] Products: Disaster SITREP (hazard scope, optional country) and Conflict Assessment (conflict scope: bounding box, countries and keywords steer selection, the curated summary goes to the model as background that must not be cited; most likely and most dangerous courses of action with yardstick terms); the tracker detail pages link to a prefilled generate form
 - [x] Trackers in the app: the rail entry is live; boards with activity, trend, red alerts and the latest item; detail pages with a fourteen-day timeline, the event list and "show on globe" (the "generate" buttons arrive with the tracker templates)
-- [ ] Globe upgrades the trackers need: cyclone and volcano icons, clustering or hex density at low zoom, a time slider over the retained window
+- [x] Globe upgrades the trackers need: aircraft icons rotated to their heading, cyclone and volcano icons, grid clustering with counts below zoom 3 (a click flies in), and a time window control (1 h to 7 d or everything retained); playback over the window is still to come
 
 ### 3b. Aviation
 - [ ] adsb.lol interesting, LADD and PIA lists; emergency squawk polling (7700, 7600, 7500) as alerts; area-of-interest civil traffic through 250-nautical-mile point queries around seeded areas, with OpenSky anonymous bounding boxes as the fallback

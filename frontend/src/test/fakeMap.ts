@@ -69,6 +69,10 @@ export class FakeMap {
     FakeMap.instances.push(this);
   }
 
+  getZoom(): number {
+    return 1.5;
+  }
+
   fire(event: string, payload: unknown = {}): void {
     for (const handler of this.handlers.get(event) ?? []) handler(payload);
   }

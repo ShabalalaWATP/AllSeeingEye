@@ -22,7 +22,11 @@ export interface GlobeEngineHandle {
   flyTo: (target: FlyToTarget) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
   onCursor: (handler: CursorHandler) => () => void;
+  /** Subscribes to camera moves with the zoom after each; safe before the engine mounts. */
+  onView: (handler: ViewHandler) => () => void;
 }
+
+export type ViewHandler = (view: { zoom: number }) => void;
 
 export interface GlobeEngineOptions {
   enabled: boolean;
@@ -43,6 +47,7 @@ export function useGlobeEngine(
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
   const cursorHandlers = useRef(new Set<CursorHandler>());
+  const viewHandlers = useRef(new Set<ViewHandler>());
   const factory = createEngine ?? createMapLibreEngine;
 
   useEffect(() => {
@@ -53,8 +58,13 @@ export function useGlobeEngine(
     const offCursor = engine.onCursor((position) => {
       for (const handler of cursorHandlers.current) handler(position);
     });
+    const offMove = engine.on('move', () => {
+      const view = { zoom: engine.getZoom() };
+      for (const handler of viewHandlers.current) handler(view);
+    });
     engineRef.current = engine;
     return () => {
+      offMove();
       offCursor();
       engine.destroy();
       engineRef.current = null;
@@ -88,5 +98,15 @@ export function useGlobeEngine(
     };
   }, []);
 
-  return useMemo(() => ({ setLayers, flyTo, onCursor }), [setLayers, flyTo, onCursor]);
+  const onView = useCallback((handler: ViewHandler) => {
+    viewHandlers.current.add(handler);
+    return () => {
+      viewHandlers.current.delete(handler);
+    };
+  }, []);
+
+  return useMemo(
+    () => ({ setLayers, flyTo, onCursor, onView }),
+    [setLayers, flyTo, onCursor, onView],
+  );
 }

@@ -12,12 +12,24 @@ export interface LayerPanelProps {
   error: string | null;
   terminator: boolean;
   lite: boolean;
+  windowHours: number | null;
+  onWindow: (hours: number | null) => void;
   onToggle: (category: Category) => void;
   onToggleTerminator: () => void;
   onToggleLite: () => void;
 }
 
 const MEBIBYTE = 1_048_576;
+
+/** The time windows offered, in hours; null is the whole retained window. */
+export const WINDOWS: readonly { hours: number | null; label: string }[] = [
+  { hours: 1, label: '1 h' },
+  { hours: 6, label: '6 h' },
+  { hours: 24, label: '24 h' },
+  { hours: 72, label: '72 h' },
+  { hours: 168, label: '7 d' },
+  { hours: null, label: 'All' },
+];
 
 export function formatBudget(stats: StoreStats): string {
   const used = (stats.estimated_bytes / MEBIBYTE).toFixed(1);
@@ -59,6 +71,8 @@ export function LayerPanel({
   error,
   terminator,
   lite,
+  windowHours,
+  onWindow,
   onToggle,
   onToggleTerminator,
   onToggleLite,
@@ -103,6 +117,28 @@ export function LayerPanel({
           );
         })}
       </ul>
+      <div
+        role="radiogroup"
+        aria-label="Time window"
+        className="mt-1 flex flex-wrap gap-1 border-t border-line px-1 pt-1.5"
+      >
+        {WINDOWS.map((option) => (
+          <button
+            key={option.label}
+            type="button"
+            role="radio"
+            aria-checked={option.hours === windowHours}
+            onClick={() => {
+              onWindow(option.hours);
+            }}
+            className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
+              option.hours === windowHours ? 'bg-surface-2 text-text' : 'text-muted hover:text-text'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
       <div className="mt-1 border-t border-line pt-1">
         <Toggle label="Day and night" checked={terminator} onToggle={onToggleTerminator} />
         <Toggle label="Lite mode" checked={lite} onToggle={onToggleLite} />

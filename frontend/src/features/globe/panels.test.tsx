@@ -13,6 +13,7 @@ const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
 describe('LayerPanel', () => {
   it('lists every category with its count, reports the budget and toggles', async () => {
     const onToggle = vi.fn();
+    const onWindow = vi.fn();
     const onToggleTerminator = vi.fn();
     const onToggleLite = vi.fn();
     render(
@@ -24,6 +25,8 @@ describe('LayerPanel', () => {
         error={null}
         terminator
         lite={false}
+        windowHours={null}
+        onWindow={onWindow}
         onToggle={onToggle}
         onToggleTerminator={onToggleTerminator}
         onToggleLite={onToggleLite}
@@ -67,6 +70,8 @@ describe('LayerPanel', () => {
         error="Down."
         terminator={false}
         lite
+        windowHours={24}
+        onWindow={vi.fn()}
         onToggle={vi.fn()}
         onToggleTerminator={vi.fn()}
         onToggleLite={vi.fn()}
