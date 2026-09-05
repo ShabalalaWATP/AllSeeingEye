@@ -157,6 +157,32 @@ TEMPLATES: dict[str, Template] = {
         token_budget=7_000,
         needs_conflict=True,
     ),
+    "aviation_activity": Template(
+        id="aviation_activity",
+        title="Aviation activity report",
+        purpose=(
+            "Military and unusual flying now against the baseline, emergencies and GNSS "
+            "interference, from the tracked aircraft and the day's reporting."
+        ),
+        sections=(
+            "Notable military and interesting flights by region: what is airborne now, from "
+            "the aircraft evidence, cited by label.",
+            "Patterns against baseline: which nations and watched areas are above or below "
+            "their normal level, using the background figures as context.",
+            "GNSS interference: where positions are degraded and what that implies.",
+            "Emergencies: any emergency squawks and what is known about them.",
+            "Key judgements: one to three on what the activity indicates, each with one "
+            "yardstick term and a confidence rating.",
+            "Gaps and sourcing statement.",
+        ),
+        strategy=EvidenceStrategy(
+            frozenset({Category.AVIATION, Category.NEWS, Category.CONFLICT}),
+            window_hours=24,
+            max_items=50,
+            per_source_cap=20,
+        ),
+        token_budget=5_000,
+    ),
 }
 
 

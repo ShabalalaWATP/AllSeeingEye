@@ -6,7 +6,7 @@ the previous key judgements shown to the model so it can say what changed.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -62,7 +62,9 @@ class GenerateReportUseCase:
         limits: RateLimits,
         auditor: Auditor,
         uow: UnitOfWork,
+        backgrounds: Mapping[str, Callable[[], Awaitable[str]]] | None = None,
     ) -> None:
+        self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
             store=store,
             source_profiles=source_profiles,
@@ -88,7 +90,7 @@ class GenerateReportUseCase:
         template = self._template(request)
         profile = await self._prepare(actor, request.profile_id, template)
         now = self._clock.now()
-        job = self._job(actor, template, request, profile, now)
+        job = await self._job(actor, template, request, profile, now)
         version = await self._producer.produce(job, self._profile_for)
         record = ReportRecord(
             id=version.report_id,
@@ -121,7 +123,7 @@ class GenerateReportUseCase:
         template = self._template(request)
         profile = await self._prepare(actor, None, template)
         now = self._clock.now()
-        job = self._job(
+        job = await self._job(
             actor, template, request, profile, now, previous=previous, report_id=record.id
         )
         version = await self._producer.produce(job, self._profile_for)
@@ -147,7 +149,7 @@ class GenerateReportUseCase:
             raise EncryptionUnavailable()
         return profile
 
-    def _job(
+    async def _job(
         self,
         actor: User,
         template: Template,
@@ -161,6 +163,8 @@ class GenerateReportUseCase:
         country = self._countries.get(request.country_iso) if request.country_iso else None
         conflict = self._conflict(request)
         hazard = self._hazard(request)
+        provider = self._backgrounds.get(template.id)
+        background = await provider() if provider is not None else self._background(conflict)
         return Job(
             actor=actor,
             template=template,
@@ -177,7 +181,7 @@ class GenerateReportUseCase:
             countries=conflict.countries if conflict else (),
             hazard=hazard,
             terms=conflict.keywords if conflict else (),
-            background=self._background(conflict),
+            background=background,
         )
 
     async def _finish(

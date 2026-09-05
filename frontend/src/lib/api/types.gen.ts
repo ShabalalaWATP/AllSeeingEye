@@ -397,6 +397,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trackers/aviation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Aviation Board */
+        get: operations["aviation_board_api_trackers_aviation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/aviation/jamming": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Jamming */
+        get: operations["jamming_api_trackers_aviation_jamming_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trackers/conflicts": {
         parameters: {
             query?: never;
@@ -710,6 +744,19 @@ export interface components {
              */
             expires_at: string;
         };
+        /** AreaActivityOut */
+        AreaActivityOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
+            /** Military */
+            military: number;
+            /** Baseline */
+            baseline: number | null;
+        };
         /** AuditEntryOut */
         AuditEntryOut: {
             /** Id */
@@ -738,6 +785,29 @@ export interface components {
             items: components["schemas"]["AuditEntryOut"][];
             /** Next Before */
             next_before: number | null;
+        };
+        /** AviationBoardOut */
+        AviationBoardOut: {
+            /** Military Total */
+            military_total: number;
+            /** Interesting */
+            interesting: number;
+            /** Ladd */
+            ladd: number;
+            /** Pia */
+            pia: number;
+            /** By Country */
+            by_country: components["schemas"]["CountryActivityOut"][];
+            /** Emergencies */
+            emergencies: components["schemas"]["EventOut"][];
+            /** Areas */
+            areas: components["schemas"]["AreaActivityOut"][];
+            /** Jam Amber */
+            jam_amber: number;
+            /** Jam Red */
+            jam_red: number;
+            /** Jam Updated At */
+            jam_updated_at: string | null;
         };
         /**
          * CapabilitiesOut
@@ -813,6 +883,17 @@ export interface components {
         CountriesOut: {
             /** Items */
             items: components["schemas"]["CountryOut"][];
+        };
+        /** CountryActivityOut */
+        CountryActivityOut: {
+            /** Iso */
+            iso: string;
+            /** Count */
+            count: number;
+            /** Baseline */
+            baseline: number | null;
+            /** Ratio */
+            ratio: number | null;
         };
         /** CountryOut */
         CountryOut: {
@@ -962,6 +1043,30 @@ export interface components {
             status: string;
             /** Version */
             version: string;
+        };
+        /** JamCellOut */
+        JamCellOut: {
+            /** Lon */
+            lon: number;
+            /** Lat */
+            lat: number;
+            /** Size */
+            size: number;
+            /** Good */
+            good: number;
+            /** Bad */
+            bad: number;
+            /** Percent Bad */
+            percent_bad: number;
+            /** Level */
+            level: string;
+        };
+        /** JamMapOut */
+        JamMapOut: {
+            /** Cells */
+            cells: components["schemas"]["JamCellOut"][];
+            /** Updated At */
+            updated_at: string | null;
         };
         /** LlmProfileIn */
         LlmProfileIn: {
@@ -2129,6 +2234,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    aviation_board_api_trackers_aviation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AviationBoardOut"];
+                };
+            };
+        };
+    };
+    jamming_api_trackers_aviation_jamming_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JamMapOut"];
                 };
             };
         };

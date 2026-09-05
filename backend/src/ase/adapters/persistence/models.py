@@ -6,7 +6,17 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
@@ -126,6 +136,19 @@ class ReportRow(Base):
     created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
     latest_version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class ActivitySampleRow(Base):
+    __tablename__ = "activity_samples"
+    __table_args__ = (
+        UniqueConstraint("kind", "key", "hour", name="uq_activity_samples_kind_key_hour"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(String(40))
+    key: Mapped[str] = mapped_column(String(64))
+    hour: Mapped[datetime] = mapped_column(UTCDateTime)
+    value: Mapped[int] = mapped_column(Integer)
 
 
 class ReportVersionRow(Base):

@@ -1055,6 +1055,58 @@
         }
       }
     },
+    "/api/trackers/aviation": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Aviation Board",
+        "operationId": "aviation_board_api_trackers_aviation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AviationBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/aviation/jamming": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Jamming",
+        "operationId": "jamming_api_trackers_aviation_jamming_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JamMapOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/trackers/conflicts": {
       "get": {
         "tags": [
@@ -1961,6 +2013,46 @@
         ],
         "title": "ApproveOut"
       },
+      "AreaActivityOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "military": {
+            "type": "integer",
+            "title": "Military"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "count",
+          "military",
+          "baseline"
+        ],
+        "title": "AreaActivityOut"
+      },
       "AuditEntryOut": {
         "properties": {
           "id": {
@@ -2055,6 +2147,81 @@
           "next_before"
         ],
         "title": "AuditPageOut"
+      },
+      "AviationBoardOut": {
+        "properties": {
+          "military_total": {
+            "type": "integer",
+            "title": "Military Total"
+          },
+          "interesting": {
+            "type": "integer",
+            "title": "Interesting"
+          },
+          "ladd": {
+            "type": "integer",
+            "title": "Ladd"
+          },
+          "pia": {
+            "type": "integer",
+            "title": "Pia"
+          },
+          "by_country": {
+            "items": {
+              "$ref": "#/components/schemas/CountryActivityOut"
+            },
+            "type": "array",
+            "title": "By Country"
+          },
+          "emergencies": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Emergencies"
+          },
+          "areas": {
+            "items": {
+              "$ref": "#/components/schemas/AreaActivityOut"
+            },
+            "type": "array",
+            "title": "Areas"
+          },
+          "jam_amber": {
+            "type": "integer",
+            "title": "Jam Amber"
+          },
+          "jam_red": {
+            "type": "integer",
+            "title": "Jam Red"
+          },
+          "jam_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jam Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "military_total",
+          "interesting",
+          "ladd",
+          "pia",
+          "by_country",
+          "emergencies",
+          "areas",
+          "jam_amber",
+          "jam_red",
+          "jam_updated_at"
+        ],
+        "title": "AviationBoardOut"
       },
       "CapabilitiesOut": {
         "properties": {
@@ -2317,6 +2484,48 @@
           "items"
         ],
         "title": "CountriesOut"
+      },
+      "CountryActivityOut": {
+        "properties": {
+          "iso": {
+            "type": "string",
+            "title": "Iso"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "iso",
+          "count",
+          "baseline",
+          "ratio"
+        ],
+        "title": "CountryActivityOut"
       },
       "CountryOut": {
         "properties": {
@@ -2798,6 +3007,78 @@
           "version"
         ],
         "title": "HealthOut"
+      },
+      "JamCellOut": {
+        "properties": {
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "size": {
+            "type": "number",
+            "title": "Size"
+          },
+          "good": {
+            "type": "integer",
+            "title": "Good"
+          },
+          "bad": {
+            "type": "integer",
+            "title": "Bad"
+          },
+          "percent_bad": {
+            "type": "number",
+            "title": "Percent Bad"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lon",
+          "lat",
+          "size",
+          "good",
+          "bad",
+          "percent_bad",
+          "level"
+        ],
+        "title": "JamCellOut"
+      },
+      "JamMapOut": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/JamCellOut"
+            },
+            "type": "array",
+            "title": "Cells"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cells",
+          "updated_at"
+        ],
+        "title": "JamMapOut"
       },
       "LlmProfileIn": {
         "properties": {

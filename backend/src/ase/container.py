@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
+from ase.adapters.feeds.adsb_watch import load_watch_areas
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.geo.conflicts import ConflictIndex
@@ -20,6 +21,7 @@ from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
+from ase.adapters.persistence.baselines import SqlBaselineRepository, SqlBaselineSink
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.session import (
@@ -74,6 +76,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.application.ports.archive import Archiver
+from ase.application.ports.baselines import BaselineRepository
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
@@ -92,7 +95,14 @@ from ase.application.reports.access import (
 )
 from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.application.trackers.aviation import (
+    AviationMonitor,
+    AviationService,
+    WatchedArea,
+    background,
+)
 from ase.application.trackers.boards import TrackerService
+from ase.domain.aviation import JamMap
 from ase.domain.report_records import ReportVersion
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -111,6 +121,7 @@ class Repositories:
     llm_profiles: LlmProfileRepository
     llm_usage: LlmUsageRepository
     reports: ReportRepository
+    baselines: BaselineRepository
     uow: UnitOfWork
 
 
@@ -170,6 +181,15 @@ class Container:
         self.tiles: TileProvider = (
             OsMapsTileProvider(os_key) if os_key is not None else NullTileProvider()
         )
+        self.jam = JamMap()
+        self.watch_areas = tuple(WatchedArea(area.id, area.name) for area in load_watch_areas())
+        self.aviation_monitor = AviationMonitor(
+            self.store,
+            self.jam,
+            SqlBaselineSink(self.session_factory),
+            self.clock,
+            self.watch_areas,
+        )
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
@@ -202,6 +222,7 @@ class Container:
             llm_profiles=SqlLlmProfileRepository(session),
             llm_usage=SqlLlmUsageRepository(session),
             reports=SqlReportRepository(session),
+            baselines=SqlBaselineRepository(session),
             uow=SqlAlchemyUnitOfWork(session),
         )
 
@@ -320,6 +341,7 @@ class Container:
             source_profiles=self.source_profiles,
             countries=self.countries,
             conflicts=self.conflicts,
+            backgrounds={"aviation_activity": lambda: self.aviation_background(session)},
             llm_profiles=r.llm_profiles,
             usage=r.llm_usage,
             cipher=self.cipher,
@@ -334,6 +356,13 @@ class Container:
 
     def trackers(self) -> TrackerService:
         return TrackerService(self.store, self.conflicts, self.clock)
+
+    def aviation(self) -> AviationService:
+        return AviationService(self.store, self.jam, self.clock, self.watch_areas)
+
+    async def aviation_background(self, session: AsyncSession) -> str:
+        """The aviation board as a paragraph for the aviation report's background."""
+        return await background(self.aviation(), self.repositories(session).baselines)
 
     def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
         return ListReportsUseCase(self.repositories(session).reports)

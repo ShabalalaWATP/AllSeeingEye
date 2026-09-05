@@ -23,9 +23,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     container: Container = app.state.container
     if container.settings.feeds_enabled:
         await container.scheduler.start()
+        await container.aviation_monitor.start()
     try:
         yield
     finally:
+        await container.aviation_monitor.stop()
         await container.scheduler.stop()
         await container.dispose()
 

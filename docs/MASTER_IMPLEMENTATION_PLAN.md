@@ -136,9 +136,10 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] adsb.lol LADD and PIA lists with the database flags (military, interesting, PIA, LADD) as tags; emergency squawk polling (7500, 7700, 7600) as severe events; all traffic over eight watched areas through 250-nautical-mile point queries (`ase/resources/air_watch.json`); one event id per airframe whichever query saw it
 - [ ] OpenSky anonymous bounding boxes as the fallback for the watched areas
 - [ ] Aircraft rendering: heading icons, altitude colouring, short trails, callsign labels at high zoom; the Mictronics aircraft database for type and operator
-- [ ] Baselines: tiny hourly aggregates of military flights per country and emergencies per region (the one durable "normal levels" table); per-country activity against a 30-day baseline on the aviation board
-- [ ] GNSS interference hex map from `nac_p` and `nic`, updated hourly
-- [ ] Aviation Activity Report template
+- [x] Baselines: an `activity_samples` table (migration 0005) of hourly maxima written every five minutes by a background sampler (military aircraft per nation, aircraft per watched area, emergency squawks); the aviation board shows each nation and area against its 30-day mean
+- [x] GNSS interference map: one-degree cells over a rolling day with the GPSJam share of poor-accuracy aircraft (`nac_p` of 5 or below is the assumption), served at `/api/trackers/aviation/jamming`
+- [x] Aviation Activity Report template, with the board (counts against baselines, emergencies, interference cells) handed to the model as background
+- [ ] Aviation in the app: the board page, the interference layer and emergency styling on the globe
 
 ### 3c. Maritime, space and cyber
 - [ ] NAVAREA warnings with positions parsed from text as points and areas; Maritime Activity Report template; AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist

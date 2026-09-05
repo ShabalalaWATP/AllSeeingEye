@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.deps import ContainerDep, CurrentUser, SessionDep
+from ase.api.schemas_aviation import AviationBoardOut, JamCellOut, JamMapOut
 from ase.api.schemas_trackers import (
     ConflictBoardOut,
     ConflictCardOut,
@@ -13,6 +14,7 @@ from ase.api.schemas_trackers import (
     HazardCardOut,
     HazardDetailOut,
 )
+from ase.application.trackers.aviation import board_with_baselines
 from ase.domain.trackers import Hazard
 
 router = APIRouter(prefix="/trackers", tags=["trackers"])
@@ -29,6 +31,25 @@ async def disaster_detail(
     hazard: Hazard, user: CurrentUser, container: ContainerDep
 ) -> HazardDetailOut:
     return HazardDetailOut.from_detail(container.trackers().disaster_detail(hazard))
+
+
+@router.get("/aviation")
+async def aviation_board(
+    user: CurrentUser, session: SessionDep, container: ContainerDep
+) -> AviationBoardOut:
+    board = await board_with_baselines(
+        container.aviation(), container.repositories(session).baselines
+    )
+    return AviationBoardOut.from_board(board)
+
+
+@router.get("/aviation/jamming")
+async def jamming(user: CurrentUser, container: ContainerDep) -> JamMapOut:
+    service = container.aviation()
+    return JamMapOut(
+        cells=[JamCellOut.from_cell(cell) for cell in service.jam_cells()],
+        updated_at=container.jam.updated_at,
+    )
 
 
 @router.get("/conflicts")
