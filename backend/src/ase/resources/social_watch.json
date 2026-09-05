@@ -1,0 +1,8 @@
+{
+  "mastodon": [
+    {
+      "instance": "mastodon.social",
+      "tags": ["ukraine", "osint", "breakingnews", "gaza", "sudan", "taiwan", "earthquake"]
+    }
+  ]
+}

@@ -45,6 +45,7 @@ from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
+from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.llm import (
     CreateLlmProfileUseCase,
@@ -69,6 +70,7 @@ from ase.application.auth.set_password import SetPasswordUseCase
 from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
+from ase.application.feeds.language import LanguageStage
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
@@ -88,6 +90,7 @@ from ase.application.ports.baselines import BaselineRepository
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
+from ase.application.ports.language import LanguageDetector
 from ase.application.ports.llm import (
     LlmGateway,
     LlmProfileRepository,
@@ -104,7 +107,7 @@ from ase.container.features import FeatureWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
-from ase.infrastructure.settings import Settings
+from ase.infrastructure.settings import Environment, Settings
 
 log = structlog.get_logger(__name__)
 
@@ -167,7 +170,12 @@ class Container(FeatureWiring):
         self.cipher: SecretCipher = FernetCipher(settings.encryption_key_value)
         self.llm: LlmGateway = OpenAiCompatibleGateway()
         self._llm_gateway = self.llm
-        self.pipeline = Pipeline([Normaliser(), CountryStage(self.countries, self.countries)])
+        detector: LanguageDetector = (
+            NullDetector() if settings.env is Environment.TEST else LangidDetector()
+        )
+        self.pipeline = Pipeline(
+            [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
+        )
         self.http = FeedHttpClient(settings.feeds_user_agent)
         self.connectors: list[FeedConnector] = (
             list(connectors)

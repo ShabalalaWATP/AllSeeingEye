@@ -203,7 +203,7 @@ Headline changes discovered during research: UCDP now requires an access token; 
 |---|---|---|
 | feedparser 6.0.14 (July 2026) | Active, BSD | RSS and Atom parsing behind `defusedxml` |
 | trafilatura 2.x | Active, Apache 2.0 | Article text extraction for top evidence items |
-| lingua-language-detector 2.2.0 (March 2026) | Active, Rust-backed, 75 languages | Language detection on short titles |
+| py3langid 0.4.0 | Active, pure Python, 4.5 MB installed, 97 languages restricted to the 24 the feeds carry | Language detection on short titles. lingua-language-detector was tried first and dropped because its wheel installs 291 MB of models, out of proportion for a home machine |
 | fasttext | Upstream archived March 2024 | Avoid |
 | mordecai3 | Dormant pre-release, needs Elasticsearch | Avoid; build a small spaCy NER plus GeoNames matcher instead |
 
@@ -248,7 +248,7 @@ Every row was fetched from the development host with the project's User-Agent on
 | UN press | `press.un.org/en/rss.xml` | 200 | Already seeded |
 | CFR Global Conflict Tracker | RSS | 404 | Reference only, link out |
 | Google News RSS | keyword search with `when:1d`, Ukrainian edition | 200 | Keyword collection for PIRs and foreign-language headlines |
-| Bluesky public AppView | `searchPosts` with and without the User-Agent | 403 | Blocked from this host; Phase 5 must confirm before relying on it |
+| Bluesky public AppView | `searchPosts` with and without the User-Agent | 403 | Blocked from this host; re-checked at the start of Phase 5 on 5 September, still 403, so Bluesky stays out until a later probe answers |
 | Mastodon | `mastodon.social` hashtag timeline | 200 | Social watchlists |
 | Reddit | `r/worldnews/new/.rss` | 200 with the project's User-Agent | Social watchlists without OAuth |
 | YouTube | channel RSS | 200 | Channel watchlists |

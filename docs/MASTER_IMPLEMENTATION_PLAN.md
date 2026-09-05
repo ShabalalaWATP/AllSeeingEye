@@ -6,7 +6,7 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 Phases 0 to 3 are built and committed (last commit `477af44`, 5 September 2026). Phase 0 gave the foundation and auth; Phase 1 the fusion core, the live globe and the first connectors; Phase 2 the grading engine, the LLM gateway and the doctrine-validated report pipeline with versions, a Markdown download, the direction call, the devil's advocacy pass and Wayback archiving; Phase 3 the trackers: boards and detail pages for hazards and 23 curated conflicts, the aviation module (lists, emergency squawks, watched areas, hourly baselines, the GNSS interference map), maritime warnings, space and cyber boards, twenty new connectors, five new products and the globe upgrades (icons, low-zoom clustering, a time window, the interference layer). End-to-end generation against a real model is still untested because no endpoint or `ASE_ENCRYPTION_KEY` is configured on the development host.
 
-Phase 4 (direction and warning) is nearly complete: areas of interest, collection plans, evidence per requirement, plan-scoped reports, indicators with alert routing (in-app, stream, webhook, report) and scheduled products are live. Ops-room mode closed the phase's roadmap items; PIR tagging in the pipeline, plan editing in the app and baseline-relative indicators remain as follow-ups.
+Phase 4 (direction and warning) is nearly complete: areas of interest, collection plans, evidence per requirement, plan-scoped reports, indicators with alert routing (in-app, stream, webhook, report) and scheduled products are live. Ops-room mode closed the phase's roadmap items; PIR tagging in the pipeline, plan editing in the app and baseline-relative indicators remain as follow-ups. Phase 5 (social and languages) has begun: Mastodon, YouTube and Reddit feeds and language detection are in; translation, the social board and watchlists are next.
 
 Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job). The development API runs on port 8001 with `ASE_DEV_API_TARGET` in `frontend/.env.local`, because a stale listener holds port 8000 until the host is rebooted.
 
@@ -172,6 +172,16 @@ Acceptance from the roadmap: an indicator fires on synthetic data within one pip
 - Split deck.gl and MapLibre into their own chunks (the globe chunk is 1.6 MB minified) once the layer set settles.
 - The live globe loads up to 2,000 events on entry and mirrors at most 5,000; revisit both caps with the retention windows when more connectors land.
 - Source names are not exposed to non-admin users, so the inspector shows the source id; a public sources summary endpoint would fix that.
+
+## Phase 5: Social and languages
+
+Acceptance from the roadmap: foreign-language items appear with translated titles and social bursts are detected.
+
+- [x] Social feeds without keys: Mastodon hashtag timelines on operator-chosen instances (`ase/resources/social_watch.json`; posts reduced to text, reliability E, credibility 6), outlet YouTube channels (BBC, Reuters, DW, Al Jazeera, France 24, Sky; the outlet's reliability) and subreddit listings (worldnews, geopolitics, UkrainianConflict; reliability E) as Atom seeds. Bluesky re-checked and still refused; Telegram stays out
+- [x] Language detection: a pipeline stage fills the language of events whose feed could not name one (social posts first), backed by py3langid restricted to 24 languages with a confidence floor; under test the stage runs with a null detector
+- [ ] Translation: an LLM-backed translator behind a `translation` profile role, batching untranslated non-English titles from the live store into `title_en` with a hash cache and an hourly call budget
+- [ ] Social board and page: posts by platform and instance, top hashtags of the day, and bursts (keyword counts against the hourly baselines), with a globe layer for the posts that carry a location
+- [ ] Watchlists: keyword collection through Google News RSS search feeds built from the enabled collection plans' search terms
 
 ## Later phases
 

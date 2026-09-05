@@ -20,6 +20,7 @@ from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
+from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
 from ase.adapters.feeds.rss_sources import build_rss_connectors
@@ -66,5 +67,6 @@ def build_connectors(
         RansomwareConnector(http, clock),
         IodaConnector(http, clock),
         *build_rss_connectors(http, clock),
+        *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
     ]
     return [connector for connector in connectors if connector.spec.id not in excluded]
