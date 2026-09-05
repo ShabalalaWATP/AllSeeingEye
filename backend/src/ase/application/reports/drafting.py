@@ -84,6 +84,11 @@ async def draft_body(
         draft.latency_ms += result.latency_ms
         try:
             parsed = parse_body(json.loads(result.content))
+        except RecursionError:
+            draft.findings = [
+                Finding("schema", Severity.ERROR, "output", "Model JSON is nested too deeply.")
+            ]
+            continue
         except (ValueError, ReportParseError) as exc:
             draft.findings = [Finding("schema", Severity.ERROR, "output", f"{exc}"[:300])]
             continue

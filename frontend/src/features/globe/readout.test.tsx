@@ -14,6 +14,7 @@ function fakeHandle() {
   const handle: GlobeEngineHandle = {
     setLayers: vi.fn(),
     flyTo: vi.fn(),
+    getZoom: () => 1.5,
     spin: vi.fn(),
     onView: () => () => undefined,
     onCursor: (handler) => {

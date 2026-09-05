@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import string
 from functools import cache
+
+# Requires Python >=3.12; this standard-library API is supported.
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from importlib import resources
 
 from ase.domain.errors import WeakPassword

@@ -8,7 +8,10 @@ from uuid import UUID
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.feeds.mastodon import load_watch
+from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.schedules import SqlScheduleStore
+from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
@@ -19,13 +22,6 @@ from ase.application.direction.plans import (
     UpdatePlanUseCase,
 )
 from ase.application.dto import RequestContext
-from ase.application.reports.access import (
-    DeleteReportUseCase,
-    GetReportUseCase,
-    ListReportsUseCase,
-)
-from ase.application.reports.archiving import archive_evidence
-from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES
 from ase.application.schedules.manage import (
@@ -41,6 +37,8 @@ from ase.application.trackers.aviation import (
 )
 from ase.application.trackers.boards import TrackerService
 from ase.application.trackers.modules import ModuleService, cyber_summary, maritime_summary
+from ase.application.trackers.social import SocialMonitor, SocialService
+from ase.application.translate.queue import TranslationQueue
 from ase.application.warning.alerts import AcknowledgeAlertUseCase, ListAlertsUseCase
 from ase.application.warning.evaluator import IndicatorEvaluator
 from ase.application.warning.indicators import (
@@ -49,12 +47,14 @@ from ase.application.warning.indicators import (
     ListIndicatorsUseCase,
     UpdateIndicatorUseCase,
 )
+from ase.container.reporting import ReportWiring
 from ase.domain.errors import InvalidRequest
-from ase.domain.report_records import ReportVersion
+from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.schedules import Schedule
 from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
+    import asyncio
     from collections.abc import Mapping
 
     from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -63,6 +63,7 @@ if TYPE_CHECKING:
     from ase.application.auditing import Auditor
     from ase.application.dto import RateLimits
     from ase.application.ports.archive import Archiver
+    from ase.application.ports.embeddings import EmbeddingGateway
     from ase.application.ports.feeds import EventBus
     from ase.application.ports.geo import CountryDirectory
     from ase.application.ports.llm import LlmGateway, SecretCipher
@@ -78,7 +79,7 @@ if TYPE_CHECKING:
 log = structlog.get_logger(__name__)
 
 
-class FeatureWiring:
+class FeatureWiring(ReportWiring):
     """Factories that need the core container's services; typed through the Container."""
 
     if TYPE_CHECKING:
@@ -93,6 +94,8 @@ class FeatureWiring:
         conflicts: ConflictDirectory
         cipher: SecretCipher
         llm: LlmGateway
+        embedding_gateway: EmbeddingGateway
+        embedding_lock: asyncio.Lock
         source_profiles: Mapping[str, SourceProfile]
         archiver: Archiver
         notifier: AlertNotifier
@@ -103,46 +106,23 @@ class FeatureWiring:
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def _auditor(self, repos: Repositories) -> Auditor: ...
 
-    async def archive_report_version(self, version: ReportVersion) -> None:
-        """Background job after generation: preserve the URLs the version cites."""
-        try:
-            async with self.session_factory() as session:
-                r = self.repositories(session)
-                await archive_evidence(self.archiver, r.reports, r.uow, version)
-        except Exception:
-            log.warning("archive.job_failed", report_version=str(version.id), exc_info=True)
-
-    def generate_report(self, session: AsyncSession) -> GenerateReportUseCase:
-        r = self.repositories(session)
-        return GenerateReportUseCase(
-            store=self.store,
-            source_profiles=self.source_profiles,
-            countries=self.countries,
-            conflicts=self.conflicts,
-            plans=r.plans,
-            aois=r.aois,
-            backgrounds={
-                "aviation_activity": lambda: self.aviation_background(session),
-                "maritime_activity": self._maritime_background,
-                "cyber_summary": self._cyber_background,
-            },
-            llm_profiles=r.llm_profiles,
-            usage=r.llm_usage,
-            cipher=self.cipher,
-            gateway=self.llm,
-            reports=r.reports,
-            clock=self.clock,
-            limiter=self.limiter,
-            limits=self.limits,
-            auditor=self._auditor(r),
-            uow=r.uow,
-        )
-
     def trackers(self) -> TrackerService:
         return TrackerService(self.store, self.conflicts, self.clock)
 
     def modules(self) -> ModuleService:
         return ModuleService(self.store, self.clock)
+
+    def social(self) -> SocialService:
+        terms = SqlSocialTerms(
+            self.session_factory, [tag for _, tags in load_watch() for tag in tags]
+        )
+        return SocialService(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)
+
+    def build_social_monitor(self) -> SocialMonitor:
+        terms = SqlSocialTerms(
+            self.session_factory, [tag for _, tags in load_watch() for tag in tags]
+        )
+        return SocialMonitor(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)
 
     def aviation(self) -> AviationService:
         return AviationService(self.store, self.jam, self.clock, self.watch_areas)
@@ -186,16 +166,6 @@ class FeatureWiring:
     def plan_evidence(self, session: AsyncSession) -> PlanEvidenceUseCase:
         r = self.repositories(session)
         return PlanEvidenceUseCase(r.plans, r.aois, self.store, self.clock)
-
-    def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
-        return ListReportsUseCase(self.repositories(session).reports)
-
-    def get_report(self, session: AsyncSession) -> GetReportUseCase:
-        return GetReportUseCase(self.repositories(session).reports)
-
-    def delete_report(self, session: AsyncSession) -> DeleteReportUseCase:
-        r = self.repositories(session)
-        return DeleteReportUseCase(r.reports, self._auditor(r), r.uow)
 
     def create_indicator(self, session: AsyncSession) -> CreateIndicatorUseCase:
         r = self.repositories(session)
@@ -274,6 +244,23 @@ class FeatureWiring:
         return ScheduleRunner(
             SqlScheduleStore(self.session_factory), self.schedule_report, self.clock
         )
+
+    def build_translation_queue(self) -> TranslationQueue:
+        translator = LlmTranslator(
+            self._translation_profile, self._translation_usage, self.cipher, self.llm, self.clock
+        )
+        return TranslationQueue(self.store, self.bus, translator, self.clock)
+
+    async def _translation_profile(self) -> LlmProfile | None:
+        async with self.session_factory() as session:
+            profiles = await self.repositories(session).llm_profiles.list_all()
+            return next((p for p in profiles if p.allows(LlmRole.TRANSLATION)), None)
+
+    async def _translation_usage(self, usage: LlmUsage) -> None:
+        # No transaction is held open while awaiting the model.
+        async with self.session_factory() as session:
+            await self.repositories(session).llm_usage.add(usage)
+            await session.commit()
 
     async def schedule_report(self, schedule: Schedule) -> UUID:
         """The product a schedule asks for, produced as its owner."""

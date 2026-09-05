@@ -12,7 +12,7 @@ import typer
 
 from ase.adapters.persistence.session import ensure_sqlite_directory
 from ase.container import Container
-from ase.domain.errors import WeakPassword
+from ase.domain.errors import AppError, InvalidCredentials, WeakPassword
 from ase.domain.password_policy import validate_password
 from ase.domain.users import Role, User, normalise_email
 from ase.infrastructure.migrations import upgrade_to_head
@@ -20,6 +20,35 @@ from ase.infrastructure.settings import Environment, Settings
 from ase.main import create_app
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
+
+
+@app.command("recover-admin-totp")
+def recover_admin_totp(
+    email: Annotated[
+        str, typer.Option(help="Email of the administrator who lost their authenticator")
+    ],
+) -> None:
+    """Remove local admin TOTP after password verification and revoke refresh sessions."""
+    password = typer.prompt("Current administrator password", hide_input=True)
+    typer.confirm("Remove this administrator's TOTP and revoke their refresh sessions?", abort=True)
+    try:
+        asyncio.run(_recover_admin_totp(Settings(), normalise_email(email), password))
+    except AppError as exc:
+        typer.echo(exc.message)
+        raise typer.Exit(code=1) from exc
+    typer.echo("TOTP removed. Sign in and enrol a new authenticator.")
+
+
+async def _recover_admin_totp(settings: Settings, email: str, password: str) -> None:
+    container = Container(settings)
+    try:
+        async with container.session_factory() as session:
+            user = await container.repositories(session).users.get_by_email(email)
+            if user is None:
+                raise InvalidCredentials()
+            await container.totp(session).recover_local(user, password)
+    finally:
+        await container.dispose()
 
 
 @app.command("create-admin")
@@ -83,7 +112,7 @@ def export_openapi(
     settings = Settings(_env_file=None, env=Environment.TEST, database_url="sqlite+aiosqlite://")
     schema = create_app(settings).openapi()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
+    path.write_bytes((json.dumps(schema, indent=2) + "\n").encode("utf-8"))
     typer.echo(f"Wrote {path}")
 
 

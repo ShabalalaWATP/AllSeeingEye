@@ -11,6 +11,12 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import PasswordTokenRow, RefreshTokenRow
+from ase.adapters.persistence.token_families import (
+    family_is_revoked,
+    prune_revoked_families,
+    record_family_revocation,
+    record_user_revocations,
+)
 from ase.domain.errors import NotFound
 from ase.domain.tokens import PasswordToken, RefreshToken, TokenPurpose
 
@@ -67,22 +73,40 @@ class SqlRefreshTokenRepository:
         row.expires_at = token.expires_at
         await self._session.flush()
 
+    async def consume(self, token_id: UUID, now: datetime) -> bool:
+        claimed = await self._session.scalar(
+            update(RefreshTokenRow)
+            .where(
+                RefreshTokenRow.id == token_id,
+                RefreshTokenRow.revoked_at.is_(None),
+                RefreshTokenRow.expires_at > now,
+                ~family_is_revoked(),
+            )
+            .values(revoked_at=now)
+            .returning(RefreshTokenRow.id)
+        )
+        return claimed is not None
+
     async def revoke_family(self, family_id: UUID, now: datetime) -> int:
+        await record_family_revocation(self._session, family_id, now)
         stmt = (
             update(RefreshTokenRow)
             .where(RefreshTokenRow.family_id == family_id, RefreshTokenRow.revoked_at.is_(None))
             .values(revoked_at=now)
         )
         result = cast("CursorResult[Any]", await self._session.execute(stmt))
+        await prune_revoked_families(self._session, now)
         return int(result.rowcount or 0)
 
     async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
+        await record_user_revocations(self._session, user_id, now)
         stmt = (
             update(RefreshTokenRow)
             .where(RefreshTokenRow.user_id == user_id, RefreshTokenRow.revoked_at.is_(None))
             .values(revoked_at=now)
         )
         result = cast("CursorResult[Any]", await self._session.execute(stmt))
+        await prune_revoked_families(self._session, now)
         return int(result.rowcount or 0)
 
 
@@ -127,6 +151,19 @@ class SqlPasswordTokenRepository:
             raise NotFound()
         row.used_at = token.used_at
         await self._session.flush()
+
+    async def consume(self, token_id: UUID, now: datetime) -> bool:
+        claimed = await self._session.scalar(
+            update(PasswordTokenRow)
+            .where(
+                PasswordTokenRow.id == token_id,
+                PasswordTokenRow.used_at.is_(None),
+                PasswordTokenRow.expires_at > now,
+            )
+            .values(used_at=now)
+            .returning(PasswordTokenRow.id)
+        )
+        return claimed is not None
 
     async def revoke_all_for_user(self, user_id: UUID, now: datetime) -> int:
         """Mark every unused token as used so no outstanding link can be redeemed."""

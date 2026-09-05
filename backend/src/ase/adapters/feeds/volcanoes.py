@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timedelta
 
 # Types only: parsing goes through defusedxml below.
+# nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring

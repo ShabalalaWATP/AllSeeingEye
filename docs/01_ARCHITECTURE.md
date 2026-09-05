@@ -1,307 +1,299 @@
-# The All Seeing Eye: Architecture Proposal
+# The All Seeing Eye: Architecture
 
-Status: proposal for review (2 September 2026). Nothing here is built yet.
-
-This document describes the intended shape of the system. It is deliberately opinionated so that it can be argued with. Decisions that need Alex's input are collected in `06_OPEN_QUESTIONS.md`; the reasoning behind the bigger choices is in `docs/adr/`.
+Status: implemented architecture through the Phase 5 and Phase 6
+changes, 6 September 2026. This replaces the initial proposal's descriptions of
+components that were not built. Acceptance evidence and remaining work live in
+[the implementation plan](MASTER_IMPLEMENTATION_PLAN.md); deployment gates live
+in [the Phase 6 security review](security/PHASE6_ASVS_REVIEW.md).
 
 ## 1. Design principles
 
-1. **One fusion core.** Every feed, whatever its origin (RSS, GeoJSON, ADS-B, AIS, TLE, API), is normalised into a single `Event` model. The globe, the filters, the trackers, the grading engine and the report generator all consume `Event`s. Adding a source never touches the UI.
-2. **Grade before generate.** Source reliability and information credibility are assigned deterministically, in code, before any LLM sees the material. The LLM is told the grades and must reason with them; it never invents them.
-3. **Cache, do not hoard.** Live feed data is a bounded, expiring cache held in memory. Only three things are durable: accounts and configuration, AI reports, and the frozen evidence a report cites. The database cannot grow unless someone generates reports.
-4. **Connectors are plugins; news sources are data.** Bespoke APIs get a small connector class. The hundreds of RSS/Atom feeds are rows in a source registry consumed by one generic connector.
-5. **Everything from the internet is hostile.** Feed content, article text, social posts and LLM output are untrusted input. They are size-limited, sanitised, schema-validated and never executed, rendered as HTML, or treated as instructions.
-6. **Modular monolith.** One FastAPI process, one database, one SPA. Clear internal boundaries (domain, application, adapters, API) so that the collectors could be split into a worker later without a rewrite. No message broker, no microservices, no cloud services.
-7. **Doctrine shapes the domain.** The intelligence cycle (Direction, Collection, Processing, Dissemination) is the product's information architecture, not a slogan. Priority Intelligence Requirements, areas of interest, indicators, graded sources and structured products are first-class objects.
-8. **SOLID, applied pragmatically.** Small modules (350 lines target, 400 hard ceiling), dependency inversion through `Protocol` ports, strategies for anything that varies by category or source.
+1. **One fusion core.** Feed items become an `Event`; the globe, trackers, warning
+   rules and report selection consume the same bounded live store.
+2. **Grade before generate.** Source reliability and item credibility are computed
+   before the model receives evidence. Doctrine validation checks its assessment.
+3. **Cache, do not hoard.** Raw live events are never written to the database or a
+   restart snapshot. Reports preserve their frozen evidence; configuration,
+   accounts, operational records and small hourly aggregates are durable.
+4. **Treat content as data.** External text, model output and imported content are
+   bounded and validated. The browser renders structured text, never source HTML.
+5. **One local application.** One API process runs collectors and background work,
+   one relational database holds durable data, and one React application renders
+   it. No message broker, vector service or new cloud dependency is required.
+6. **Small explicit boundaries.** Protocol ports separate use cases from external
+   systems. Composition stays in the `ase.container` package.
 
 ## 2. System context
 
 ```mermaid
 flowchart LR
-  subgraph Internet["Open sources (free)"]
-    RSS[News RSS / Google News / GDELT]
-    AIR[ADS-B: airplanes.live, adsb.lol, OpenSky]
-    SEA[AIS: AISStream, Global Fishing Watch]
-    HAZ[USGS, GDACS, EONET, NASA FIRMS, NWS]
-    CON[ACLED, UCDP, ISW, air-raid alerts]
-    SOC[Bluesky, Mastodon, Reddit, Telegram, YouTube RSS]
-    CYB[CISA KEV, ransomware.live, Cloudflare Radar, IODA]
-    SPC[CelesTrak, Launch Library, NOAA SWPC]
-    GOV[GOV.UK, FCDO, State Dept, NATO, UN, sanctions lists]
-  end
-  subgraph Host["Home machine or server (Docker Compose)"]
-    CADDY[Caddy: TLS, static SPA, reverse proxy]
-    API[FastAPI service: collectors, pipeline, API, SSE]
-    MEM[(In-memory live event store, bounded and expiring)]
-    PG[(PostgreSQL + PostGIS: users, sources, AOIs, PIRs, reports, frozen evidence)]
-  end
-  LLM[OpenAI-compatible endpoint: Ollama, LM Studio, OpenRouter, OpenAI]
-  WEB[Browser: React SPA, MapLibre globe + deck.gl]
-  Internet --> API
-  API <--> MEM
-  API <--> PG
-  API --> LLM
-  WEB <--> CADDY <--> API
+  FEEDS[Free feeds and APIs] --> HTTP[Guarded feed HTTP client]
+  HTTP --> PIPE[Normalise, language, geography, grading]
+  PIPE --> LIVE[(Bounded in-memory events)]
+  PIPE --> BUS[In-process event bus]
+  LIVE --> TRACKERS[Trackers, warning rules, report evidence selection]
+  TRACKERS --> DB[(SQLite development / PostgreSQL Compose)]
+  LIVE --> TRANSLATE[Bounded translation queue]
+  TRANSLATE --> LIVE
+  MODEL[Administrator-selected model endpoint] <--> API[FastAPI application]
+  API <--> DB
+  API <--> LIVE
+  BUS --> SSE[Authenticated server-sent events]
+  API <--> CADDY[Caddy / development proxy]
+  SSE --> CADDY
+  CADDY <--> WEB[React, MapLibre, deck.gl]
 ```
+
+The tracker-to-database path represents reports, alerts and small aggregate
+samples, not the raw event stream. Source availability and key requirements are
+recorded in [the data-source catalogue](02_DATA_SOURCES.md). Bluesky remains
+unavailable from the development host; Telegram is excluded by the accepted
+scope. Optional keyed feeds are not prerequisites for the core application.
 
 ## 3. Runtime topology
 
-| Container | Role | Notes |
+| Runtime | Responsibility | Operational boundary |
 |---|---|---|
-| `caddy` | TLS termination, serves the built SPA, proxies `/api` and `/api/stream` | Automatic local HTTPS for LAN; Tailscale recommended for remote access rather than port forwarding |
-| `api` | FastAPI app, background collectors, pipeline, scheduler, SSE fan-out | Single uvicorn worker on purpose (the live store is in-process). Vertical headroom is plenty for a handful of users |
-| `db` | PostgreSQL 16 with PostGIS | Durable tier only. Daily `pg_dump` to a mounted folder |
+| Development API | FastAPI, SQLite, collectors and background loops | Port 8001; `.env` and relative SQLite paths resolve from its working directory |
+| Development web | Vite on port 5173 | Same-origin `/api` proxy defaults to `127.0.0.1:8001` |
+| Compose `api` | Same application, migrations at startup | One uvicorn process on internal port 8000, non-root, read-only root filesystem and temporary `/tmp` |
+| Compose `db` | PostgreSQL 16 with PostGIS image | Durable tier, private Compose network and database volume |
+| Compose `web` | Caddy TLS, static SPA and reverse proxy | Ports 80/443; local internal certificate by default |
 
-The collectors run inside the API process as asyncio tasks. If it ever becomes necessary, the same code runs as a separate `worker` container by swapping the in-memory store for a Redis-backed implementation of the same port. That is an ADR-level change, not a rewrite.
+The API and database ports are unpublished in Compose. Caddy terminates HTTPS;
+changing exposure requires review of certificates, proxy trust, cookies and
+headers. This document does not assert that the deployment is ready for public
+access. See [security controls and gates](07_SECURITY_BY_DESIGN.md).
 
-## 4. Backend architecture (Python 3.12, FastAPI, uv)
+Application lifespan starts and stops the feed scheduler, aviation monitor,
+indicator evaluator, scheduled report runner, translation queue and social
+monitor. Rate limits, live events, stream admission, chat admission and search
+locking are process-local. Adding workers requires shared coordination and a
+separate design decision.
 
-### 4.1 Layering
+## 4. Backend architecture
 
-```
+### 4.1 Layering and composition
+
+```text
 backend/src/ase/
-  domain/          Entities, value objects, enums, pure domain services. No I/O, no framework imports.
-  application/     Use cases and ports (typing.Protocol). Orchestrates the domain. No framework imports.
-  adapters/        Implementations of ports.
-    feeds/         One module per bespoke connector, plus generic RSS/GeoJSON/CSV connectors.
-    llm/           OpenAI-compatible gateway, prompt templates, output validators.
-    persistence/   SQLAlchemy 2.0 async repositories, Alembic migrations.
-    geo/           Country resolver (Natural Earth polygons), gazetteer geocoder (GeoNames dump), H3 helpers.
-    archive/       Wayback Machine archiver.
-    notify/        Email (SMTP) and webhook notifiers.
-    translate/     LLM-backed translator, language detection.
-  api/             FastAPI routers, request/response schemas, auth dependencies. Thin: validate, call use case, map result.
-  infrastructure/  Settings, database session, scheduler, event bus, security primitives, structured logging.
+  domain/          Entities, values, doctrine and pure calculations
+  application/     Protocol ports, use cases and background orchestration
+  adapters/        HTTP, persistence, model, geography, export and security adapters
+  api/             Thin FastAPI routes, schemas and request dependencies
+  infrastructure/  Settings, logging, rate limiter and process services
+  container/       Composition root, shared instances and session factories
+  resources/       Packaged country, conflict and watch-area data
 ```
 
-Dependency rule: `api` and `adapters` depend on `application` and `domain`; `application` depends only on `domain`; `domain` depends on nothing. A lightweight composition root (the `ase.container` package: the core plus a feature-factory mixin) wires adapters to ports at startup. Tests substitute fakes at the port boundary.
+`domain` depends on no outer layer. `application` imports domain types and ports;
+adapters and API depend inward. Import-linter checks backend layering. Thin
+routes validate the transport boundary and call use cases.
 
-### 4.2 Ports (the seams)
+`container/__init__.py` builds shared services and auth/admin factories.
+`features.py` holds feature factories; `reporting.py` holds report production,
+export and search factories; `repositories.py` builds the session-scoped
+repository bundle. Mixins declare borrowed attributes under `TYPE_CHECKING`.
+Concrete wiring stays in this package; the split is not a new service boundary.
 
-| Port (Protocol) | Responsibility | Initial adapter | Later alternative |
-|---|---|---|---|
-| `FeedConnector` | Fetch one source and return normalised `Event`s | About 15 bespoke connectors plus `RssConnector`, `GeoJsonConnector` | Any new source |
-| `EventStore` | Bounded live store: upsert, query, prune, stats | `InMemoryEventStore` | `RedisEventStore` |
-| `EventBus` | Publish pipeline output to subscribers (SSE, indicators) | In-process asyncio queues | Redis pub/sub |
-| `LLMGateway` | Chat completion with optional JSON schema; optional embeddings | `OpenAICompatibleGateway` | Fake gateway for tests |
-| `Translator` | Batch translate short texts | `LLMTranslator` | LibreTranslate |
-| `Geocoder` | Resolve place names in text to coordinates and country | `GazetteerGeocoder` | LLM-assisted for high-value items |
-| `CountryResolver` | Point in polygon to ISO country | Natural Earth + shapely STRtree | |
-| `Archiver` | Preserve a URL for provenance | `WaybackArchiver` | archive.today |
-| `Notifier` | Deliver alerts | `EmailNotifier`, `WebhookNotifier` | ntfy, Discord |
-| Repositories | Durable persistence per aggregate | SQLAlchemy async on PostgreSQL | SQLite for tests |
-| `Clock`, `IdGenerator` | Determinism in tests | System | Fixed |
+### 4.2 Ports and adapters
 
-### 4.3 The unified Event model
-
-```python
-@dataclass(frozen=True, slots=True)
-class Event:
-    id: EventId                 # sha256(source_id + stable upstream id or canonical URL)
-    source_id: SourceId
-    category: Category          # news | conflict | disaster | aviation | maritime | space | cyber | social | political | humanitarian | economic
-    subtype: str                # e.g. "earthquake", "military_flight", "air_raid_alert", "ransomware_victim"
-    title: str
-    summary: str | None         # plain text, sanitised, bounded (2 KB)
-    url: str | None
-    published_at: datetime      # upstream time
-    observed_at: datetime       # when we saw it
-    language: str               # ISO 639-1, detected
-    title_en: str | None        # translation when language != en
-    geometry: Geometry | None   # point, polygon or None (WGS84)
-    geo_confidence: GeoConfidence  # exact | city | admin1 | country | none
-    country_iso: str | None
-    entities: tuple[Entity, ...]   # people, orgs, places, aircraft, vessels (bounded)
-    tags: frozenset[str]
-    severity: float | None      # 0..1, category-specific scale
-    reliability: Reliability    # A..F (from source registry)
-    credibility: Credibility    # 1..6 (computed by grading engine)
-    grade_rationale: str        # human-readable explanation of the grade
-    story_id: StoryId | None    # cluster of corroborating events
-    attributes: Mapping[str, JsonScalar]  # bounded, category-specific extras (aircraft hex, magnitude, FRP, mmsi)
-    content_hash: str           # for change detection and provenance
-```
-
-`attributes` is the escape hatch that keeps the model closed for modification while categories extend it. Rendering rules, icons, colours and detail panels are looked up by `(category, subtype)` in a single registry shared between backend metadata and frontend styling.
-
-### 4.4 Ingestion pipeline (the Processing phase)
-
-```mermaid
-flowchart LR
-  S[Scheduler: per-source interval + jitter] --> C[Connector.fetch]
-  C --> N[Normaliser: schema, hash, sanitise, size caps]
-  N --> L[Language detect + translation queue]
-  L --> G[Geo enrich: country, gazetteer, H3 cell]
-  G --> D[Dedup + story clustering]
-  D --> R[Grading engine: reliability, credibility, rationale]
-  R --> ST[(EventStore.upsert)]
-  ST --> B[EventBus.publish]
-  B --> SSE[SSE fan-out to browsers]
-  B --> IW[Indicator evaluator: PIR tagging, I&W rules, alerts]
-  B --> AGG[Baseline aggregator: counts per H3 cell, country, hour]
-```
-
-Each stage is a small class implementing `PipelineStage` with a single `process(batch) -> batch` method, composed in order at startup. Stages are individually unit tested with fixtures. A stage failure isolates to the batch, never the process.
-
-Connector execution rules:
-
-- Each connector runs in its own asyncio task with a hard timeout and a per-source semaphore.
-- A circuit breaker backs off exponentially after failures and marks the source `degraded`, then `disabled` after a configurable number of failures; the admin page shows why.
-- HTTP fetches use conditional requests (`ETag`, `If-Modified-Since`) where supported, a descriptive `User-Agent`, response size caps, and a redirect policy that refuses private address space.
-- Per-source health (last success, last error, items per poll, latency) lives in memory and is exposed on `/api/admin/sources/health`.
-
-### 4.5 The live store and the "no huge database" rule
-
-The live tier is an in-memory store with explicit budgets. Nothing in it is ever written to PostgreSQL.
-
-| Category | Retention window | Item cap | Approx. memory |
-|---|---|---|---|
-| Aviation (ADS-B snapshot) | latest snapshot only; trail of 10 positions for tracked aircraft | 15,000 aircraft | ~10 MB |
-| Maritime (AIS in subscribed boxes) | 30 minutes per vessel | 20,000 vessels | ~10 MB |
-| Fires (FIRMS) | 48 hours | 150,000 hotspots | ~25 MB |
-| Earthquakes / disasters | 7 days (mirrors upstream feed windows) | 5,000 | ~2 MB |
-| News (RSS, Google News, GDELT GEO) | 72 hours, metadata plus a 2 KB summary, no full text | 40,000 items | ~80 MB |
-| Conflict events (ACLED/UCDP) | 30 days for active conflict AOIs, 7 days elsewhere | 30,000 | ~15 MB |
-| Social | 24 hours | 10,000 | ~15 MB |
-| Cyber / political / economic | 7 days | 5,000 | ~5 MB |
-
-Mechanics:
-
-- `InMemoryEventStore` keeps a dict by `EventId`, per-category deques ordered by `observed_at`, and secondary indexes by `country_iso`, `story_id` and H3 cell (resolution 3 for globe heat maps, 6 for map-mode queries).
-- A prune loop runs every 60 seconds: evict beyond the window, then beyond the cap, then beyond a global memory budget (default 512 MB, measured by sampled item size, displayed in the admin System page).
-- An optional snapshot writes the store to `data/cache/live.parquet` every 5 minutes so a restart does not blank the globe. It is a cache file, not a database, and is safe to delete at any time.
-- Historic questions ("conflict events in the last 90 days") are answered by querying the upstream API on demand with a short TTL cache, not by keeping history locally. ACLED, UCDP, GDELT DOC, USGS FDSN and ReliefWeb all support date-range queries.
-- **Baselines, not history.** For Indicators and Warning the app needs "normal" levels (for example military flights over the Eastern Mediterranean per hour). It stores hourly counts per H3 cell and per country per category in a small `baseline_stats` table. That is a few megabytes per year, and it is enough to detect anomalies without storing a single raw event.
-- **Evidence freezing.** When a report is generated, the specific events it cites are copied into `evidence` rows (title, summary, URL, grade, geometry, content hash, archive URL, fetched text extract for the top items). Reports stay verifiable after the live cache has moved on. Users may also pin individual events to a report draft or an investigation; pins are the only other path from live tier to durable tier.
-
-Alternatives considered and rejected for the first version: PostgreSQL unlogged tables with a TTL sweep (write churn, bloat, vacuum), Redis (extra service; the right move only if the collectors become a separate process), SQLite/DuckDB file cache (good snapshot format, poor concurrent access). See `adr/0003`.
-
-### 4.6 Realtime delivery
-
-Server-Sent Events over `/api/stream` (one direction, reconnects for free, works through Caddy). The client subscribes with a filter (categories, bounding box or country, time window); the server sends `event.upsert`, `event.expire`, `alert`, `source.health` and `report.progress` messages. Heavy layers (fires, flights) are sent as compact JSON batches at most every few seconds. WebSockets are not needed because the browser never streams data to the server.
-
-### 4.7 Durable data model (PostgreSQL)
-
-| Table | Purpose |
+| Port or boundary | Current implementation |
 |---|---|
-| `users`, `account_requests`, `refresh_tokens`, `password_resets`, `totp_secrets` | Identity and sessions |
-| `audit_log` | Auth events, admin changes, report generation, exports (append only) |
-| `sources` | Source registry: id, name, org, parent org, category, kind (rss, api, ...), url, language, poll interval, default reliability, enabled, licence note |
-| `source_credentials`, `llm_profiles` | API keys and endpoint configuration, encrypted at rest with a key from the environment |
-| `aois` | User-defined areas of interest / named areas of interest (small polygons) |
-| `collection_plans`, `pirs`, `indicators`, `alerts` | Direction and warning objects |
-| `reports`, `report_versions`, `evidence`, `citations` | Products and their frozen provenance |
-| `baseline_stats` | Hourly aggregates for anomaly detection |
-| `saved_views` | Named globe/map states per user |
-| `llm_usage` | Tokens and cost per request, per user, per profile |
+| Feed connectors and HTTP | Dedicated feed adapters, shared RSS parsing, public-host validation and DNS pinning |
+| Event store and bus | Bounded in-memory store and in-process subscriptions |
+| Country resolution | Packaged Natural Earth boundaries with a pure point-in-polygon resolver |
+| Model completion | OpenAI-compatible chat adapter selected by administrator-owned profiles |
+| Translation | Batched title translation over the chat adapter, with usage records |
+| Embeddings | Dedicated OpenAI-compatible embeddings adapter and bounded JSON-vector repository |
+| Report rendering | Local PDF/DOCX renderer behind `ReportRenderer`; Markdown remains a stored export |
+| Repositories | SQLAlchemy async adapters, SQLite locally and PostgreSQL under Compose |
+| TOTP and credential encryption | `pyotp` and Fernet-backed adapters; no custom cryptographic protocol |
+| Notifications and archiving | In-app alerts, optional webhook and Wayback preservation; email transport remains absent |
 
-PostGIS is used for AOI containment queries and for evidence geometry; pgvector is optional and only for semantic search across saved reports.
+### 4.3 Event model and processing
 
-### 4.8 Configuration and secrets
+`domain/events.py` defines immutable events with stable ids, source/category,
+publication and observation timestamps, title, bounded summary, optional English
+title, point, geographic confidence, nation, tags, severity, NATO grade,
+rationale, story id and bounded scalar attributes. The current geometry field is
+`point`; the initial proposal's polygon/entity model is not the implementation.
 
-Twelve-factor settings via `pydantic-settings` from environment variables and an optional `.env` (never committed). Feed keys and LLM keys entered in the Admin UI are encrypted with Fernet using `ASE_ENCRYPTION_KEY`; the UI only ever shows the last four characters. There is no way to read a secret back through the API.
+The pipeline normalises and sanitises feed data, fills missing language and
+country context, clusters related stories and computes credibility. Source
+reliability remains registry-owned. Country-only reporting can use a nation's
+centroid with country-level confidence, distinguishing it from an exact location.
 
-## 5. Frontend architecture (React 19, TypeScript strict, Vite, Tailwind 4)
+Collectors have intervals, timeouts, health state and backoff. Events and changed
+grades are published after storage. Translation runs separately every thirty
+seconds, handles up to twenty titles per batch and sixty model calls per hour,
+and keeps a bounded cache. It merges only a still-current title translation, so a
+slow reply cannot restore a removed event or overwrite newer grading.
 
-### 5.1 Structure (feature sliced)
+Enabled collection plans supply Google News watchlist terms. Google article
+links are resolved lazily for cited report evidence through guarded requests.
+The social board computes platform/instance counts, hashtags and bursts from
+the live store and small hourly baselines. It does not persist a post archive.
 
-```
-frontend/src/
-  app/          router, providers, layout shell, theme
-  features/
-    auth/       login, request account, forgotten password, reset
-    globe/      map engine wrapper, layer registry, projection switch, base layers, time slider
-    events/     live event store (SSE client), event cards, inspector drawer
-    country/    country panel and nation filter
-    trackers/   conflict, disaster, aviation, maritime, space, cyber, social
-    direction/  AOIs, collection plans and PIRs, indicators and warnings board, alerts
-    reports/    template gallery, generation wizard, streaming view, report reader, exports
-    admin/      users, sources, LLM profiles, credentials, retention, system health, audit log
-  components/   shared UI primitives (Radix-based), icons, charts
-  lib/          generated API client and types, formatters (MGRS, OSGB, time), guards
-  stores/       Zustand stores for UI and live data
-```
+### 4.4 Bounded live storage
 
-### 5.2 Key libraries
+The default estimated memory budget is 512 MiB, configurable through
+`ASE_LIVE_STORE_MEMORY_MB`. The store indexes event ids by category and country,
+and maintains an incremental byte estimate. That estimate is not a hard process
+RSS limit. Retention defaults are defined in `application/feeds/budgets.py`:
 
-| Concern | Choice | Reason |
+| Category | Window | Item cap |
 |---|---|---|
-| Globe and map | MapLibre GL JS 6 (globe projection, WebGL2 required) + deck.gl 9.3 via `MapboxOverlay` | One engine for globe and 2D map: the `globe` projection preset flattens to Mercator automatically between zoom 10 and 12; free (BSD); raster (OS Maps, satellite) and vector base layers, terrain and heat maps all work on the globe; deck.gl has supported the MapLibre globe since 9.1 and handles 100k-point layers. See `adr/0001` |
-| Server state | TanStack Query | Caching, retries, invalidation |
-| UI state and live buffer | Zustand | Small, testable, no boilerplate |
-| Routing | React Router | Standard |
-| Components | Radix primitives + Tailwind (shadcn-style, copied into repo) | Accessible, dark-first, no runtime dependency on a component library |
-| Charts | ECharts (timelines, heat calendars, sparklines) | Excellent dark visuals, canvas performance |
-| Animation | Motion (framer-motion) | Panel transitions, ticker |
-| Forms and validation | react-hook-form + zod | Type-safe forms |
-| API types | `openapi-typescript` generated from the FastAPI schema in CI | End-to-end typing, no hand-written DTOs |
-| Coordinates | `mgrs`, `proj4` (EPSG:27700), `h3-js` | Military grid, OS grid, hex aggregation |
-| Brand mark | The React Bits Evil Eye, exactly the component at https://reactbits.dev/backgrounds/evil-eye | See section 5.6 |
+| Aviation | 10 minutes | 15,000 |
+| Maritime | 6 hours | 20,000 |
+| Disaster | 7 days | 150,000 |
+| News | 72 hours | 40,000 |
+| Conflict | 30 days | 30,000 |
+| Social | 24 hours | 10,000 |
+| Space, cyber, political, humanitarian, economic | 7 days each | 5,000 each |
 
-### 5.3 Globe engine abstraction
+Pruning removes expired and excess items; writes also evict oldest observations
+to enforce the memory estimate. There are no raw-event database tables, Parquet
+restart snapshots, historic feed archive or automatic historical API retrieval.
+Only the evidence selected into a saved report becomes durable. `activity_samples`
+holds small hourly aviation/social counts, not event payloads.
 
-**The 3D globe is the default view.** The root route after login is the globe, for every user and every session, at a zoom that shows the whole planet with atmosphere. The projection is MapLibre's `globe` preset, which stays a sphere at every zoom below 10 and only flattens between zoom 10 and 12 when the user goes to street scale; "Map mode" is an explicit toggle that switches to Mercator and unlocks the OS Maps, satellite and hybrid base layers. Saved views, deep links and the ops-room idle mode may open elsewhere, but nothing changes the default: a fresh login lands on the globe. Lite mode keeps the globe and only drops atmosphere and animation.
+### 4.5 Durable data, reports and search
 
-The map library is wrapped behind a small `MapEngine` interface (`setProjection`, `setBaseLayer`, `addLayer`, `flyTo`, `on(event)`), and every data layer is described declaratively by a `LayerSpec` from the layer registry: category, subtype, deck.gl layer type, styling accessors, legend entry, min/max zoom, and which panel opens on click. The registry is the single source of truth for icons and colours, shared with legends and event cards. Swapping MapLibre for Cesium later would touch one folder.
+| Durable records | Purpose |
+|---|---|
+| Users, account requests, password/refresh tokens and administrator TOTP | Identity, sessions and optional second factor |
+| LLM profiles and usage | Encrypted credentials, profile roles and model-call outcomes |
+| AOIs, collection plans, indicators, alerts and schedules | Standing collection and warning configuration |
+| Reports and report versions | Assessment body, findings, frozen evidence JSON, quality, analysis, Markdown and model usage metadata |
+| Activity samples | Small hourly counts for baseline comparisons |
+| Report embeddings | One bounded vector per indexed report version |
+| Audit log | Security and operator actions |
 
-Base layers (all free; details and terms in `02_DATA_SOURCES.md`):
+Report production selects and freezes evidence, computes information quality,
+optionally plans the question, generates a structured assessment, validates its
+doctrine and citations, and retries once on validation failure. Version history
+preserves what was assessed and cited at that time. Optional devil's advocacy can
+lower confidence; it cannot improve the grade or silently raise confidence.
 
-| Base layer | Source | Notes |
-|---|---|---|
-| Dark vector (default) | OpenFreeMap `dark` style | Keyless, no limits, attribution only |
-| OS Maps Road / Outdoor / Light | OS Maps API ZXY tiles, EPSG:3857 | Great Britain only, zoom 7 to 16 on the free OpenData plan (17 to 20 are premium); the Leisure style exists only in EPSG:27700 and is not used. Tiles are proxied and cached by the API so the key never reaches the browser; the switcher greys these out outside GB. The OS attribution line and logo are mandatory |
-| Satellite | EOX Sentinel-2 cloudless (annual mosaic, CC BY-NC-SA) as the static base; NASA GIBS daily VIIRS true colour and night lights as date-driven alternatives | Esri World Imagery is permitted for non-commercial use but Esri is retiring legacy raster basemaps in phases from October 2026, so it is optional rather than the default |
-| Hybrid | Satellite plus a labels-only vector layer (Protomaps `labelsOnly`) | MapLibre has no built-in labels overlay, so hybrid is composed in the style |
-| Terrain (map mode, optional) | Mapterhorn or AWS Terrarium DEM tiles | Free with attribution |
+Reports support Markdown, local PDF/DOCX export and structural comparison between
+two versions of the same report. The browser presents structured React text and
+validated links. It does not parse report Markdown into HTML or use DOMPurify.
 
-Coordinates use `proj4` (which bundles MGRS) for WGS84, MGRS and OSGB36 grid references; OSTN15 precision is a later option via a nadgrid file.
+Semantic search uses normalised JSON vectors for at most the latest 1,000 saved
+reports and at most 4,096 dimensions. Indexing is explicit, in batches of eight,
+and requires an `embeddings` profile. Vector validity depends on both report
+version and model/profile fingerprint. Cosine comparison runs in the application;
+there is no pgvector extension or raw-event index. See
+[ADR 0008](adr/0008-bounded-report-search.md) for limits and trade-offs.
 
-### 5.4 Performance rules
+### 4.6 Authentication and access
 
-- deck.gl layers receive typed arrays built in a web worker from the SSE buffer; React never re-renders per event.
-- Server-side H3 aggregation for fires and news density at globe zoom levels; raw points only when zoomed in.
-- A "lite mode" toggle drops atmosphere, halves point counts and disables animation for weak GPUs or the wall display.
-- Route-level code splitting: the admin and report reader bundles are not loaded on the globe.
+The SPA holds access tokens in memory and refreshes through protected cookies.
+`CurrentUser` verifies the access token and reloads the user's active state and
+current role from the database on every protected request. Administrator-only
+actions and owner/admin mutation checks remain enforced by the use cases.
+
+Authenticated users share read access to reports and collection plans, including
+report exports, comparisons and search. Reports and plans are not owner-private
+libraries. Their mutations require the owner or an administrator. Optional
+administrator TOTP is implemented with enrolment confirmation, encrypted secrets,
+code replay protection and host-only recovery. Concurrent token lifecycle checks
+and remaining authentication gates are recorded in the security review.
+
+SSE authenticates when a stream opens and ends it no later than token expiry.
+Connection admission is bounded per user and globally. An already-open stream
+does not reload user state after every event; account state is checked again on
+the next connection or request.
+
+### 4.7 External model boundary
+
+Administrators may configure private or loopback model endpoints deliberately.
+That trust boundary is separate from the public-feed SSRF policy. Chat and
+embedding adapters use streamed identity-encoded responses, byte caps, overall
+deadlines and no redirects. Chat has a 4 MiB response cap, a 120-second default
+deadline including admission, and two concurrent requests per shared gateway.
+Embeddings have a 2 MiB cap and a 30-second endpoint deadline. Provider errors
+never include response excerpts, credentials or request payloads.
+
+### 4.8 Configuration and recovery
+
+Settings use the `ASE_` prefix and optional working-directory `.env`. Profiles
+encrypt keys under `ASE_ENCRYPTION_KEY`; the key must be preserved for recovery.
+Compose uses a root `.env`; development started in `backend/` uses `backend/.env`.
+
+[Backup and restore](BACKUP_RESTORE.md) provides online SQLite snapshots and
+Compose PostgreSQL dumps, separately copied configuration, strict hash manifests
+and fresh-target-only restores. Real `.env` inclusion requires explicit opt-in.
+No backup schedule or automatic retention deletion is installed. SQLite drills
+are local and deterministic; an actual PostgreSQL restore remains a deployment
+verification gate.
+
+## 5. Frontend architecture
+
+### 5.1 Structure
+
+`app/` owns routing and shell composition. Feature folders own focused pages and
+hooks; shared UI, API clients, URL guards, formatting and stores live under
+`components/`, `lib/` and `stores/`. Features do not import each other.
+
+### 5.2 Libraries
+
+React 19, TypeScript strict and Tailwind 4 provide the UI. React Router handles
+routes; Zustand holds shared UI and live-event state. Zod validates transport
+data, and `openapi-typescript` generates DTOs from the exported FastAPI schema.
+MapLibre GL 6 and deck.gl 9 provide the globe and overlays. Existing resource hooks
+handle page data; TanStack Query, Radix, ECharts, Motion and react-hook-form were
+proposal options and are not current dependencies.
+
+### 5.3 Globe and map
+
+The root route opens a 3D globe. Map mode explicitly selects Mercator; lite mode
+reduces visual effects and movement. Layers use shared category colours, icons,
+low-zoom grid clustering and time/nation filters. Aircraft icons can rotate by
+track; GNSS interference is a separate computed layer. The ops-room view removes
+the shell and rotates the globe when motion preferences allow it.
+
+Current base layers are OpenFreeMap dark vectors, EOX satellite/hybrid and
+server-proxied OS Maps when a key is configured. Coordinates display WGS84.
+Additional imagery, grids and source-dependent layers remain checklist items;
+their presence in an earlier proposal does not mean they are implemented.
+
+### 5.4 Performance and accessibility
+
+MapLibre remains excluded from Vite development pre-bundling so its module worker
+loads correctly. Production code splitting separates MapLibre and deck.gl
+dependency groups. The live buffer is bounded, and the backend uses incremental
+store accounting. These changes do not establish representative-load results.
+Keyboard navigation, focus handling, reduced motion and accessibility checks are
+part of the Phase 6 pass; remaining manual audit work stays recorded as a gate.
 
 ### 5.5 Theme
 
-Dark by default, one accent. Palette: obsidian backgrounds (#07070b to #14141c), the "iris" accent taken directly from the Evil Eye colour (ember orange #FF6F37, the component's default, accepted on 3 September 2026), electric cyan for live data (#22d3ee), amber for warnings, muted slate text. Inter for UI, JetBrains Mono for coordinates, callsigns and grades. Grades and yardstick terms get their own consistent colour scales so a "B2" or "highly likely" reads the same everywhere.
+Dark surfaces, ember accent `#FF6F37`, cyan live data and amber warnings give the
+globe and report views consistent visual meaning. Inter and JetBrains Mono are
+bundled locally. Grade and confidence labels remain readable text as well as
+colour cues.
 
 ### 5.6 Brand mark: the React Bits Evil Eye
 
-The logo of The All Seeing Eye is the React Bits "Evil Eye" background component, specifically https://reactbits.dev/backgrounds/evil-eye, not an imitation of it.
+The mark is the original React Bits `EvilEye-TS-TW` component in
+`frontend/src/components/brand/EvilEye.tsx`, with its licence header intact.
+`BrandMark` provides a small, frame-capped instance that pauses when hidden and
+respects reduced motion. Auth screens use the full visual. Static icons derive
+from the real component. Preserve the component and
+`frontend/THIRD_PARTY_NOTICES.md`; never replace it with a redrawn imitation.
 
-| Aspect | Decision |
-|---|---|
-| Source | React Bits registry item `EvilEye-TS-TW` (TypeScript, Tailwind variant), installed with `npx shadcn@latest add @react-bits/EvilEye-TS-TW` or copied from `https://reactbits.dev/r/EvilEye-TS-TW.json` into `frontend/src/components/brand/EvilEye.tsx` with its licence header intact |
-| Dependency | `ogl` only (a small WebGL library); no three.js |
-| Licence | React Bits is MIT plus Commons Clause: using the component inside this product is permitted; selling or redistributing the component itself is not. The licence text ships in `frontend/THIRD_PARTY_NOTICES.md` |
-| Brand instance settings | `eyeColor` #FF6F37 (default), `backgroundColor` matching the page ground, `pupilFollow` on for the login page and off for the small mark, the other props at their defaults so the mark looks exactly like the React Bits demo |
-| Where it appears | Full-bleed on the login, request-account and password pages; as a small live mark (about 40 px) in the top-left of the app shell; on the loading screen; in the corner of the ops-room idle mode |
-| Performance rule | The component renders a full-canvas fragment shader every frame. The login instance runs freely. The small shell mark runs at a capped frame rate, pauses when the tab is hidden, and renders a single static frame under `prefers-reduced-motion`. The globe and the login eye are never on screen together |
-| Static derivatives | A PNG captured from the component (a build script renders it in headless Chromium) provides the favicon, PWA icons, the print and export header, and email images, so every static appearance is the real eye rather than a redrawn one |
+## 6. Checks and remaining evidence
 
-Wordmark: "THE ALL SEEING EYE" set in the display face beside the mark; the eye alone is used where space is tight.
+Backend checks are pytest with SQLite by default, a 90 percent coverage gate,
+ruff, strict mypy and import-linter. Frontend checks are Vitest/Testing Library/MSW
+with coverage, ESLint, TypeScript and production build. Fixtures and scripted
+model adapters keep tests offline. CI definitions include a PostgreSQL test job
+and supply-chain/security checks, but no remote CI execution has been observed.
 
-## 6. Cross-cutting concerns
-
-| Concern | Approach |
-|---|---|
-| Testing | pytest + pytest-asyncio + respx (HTTP mocking) + hypothesis for the grading engine; recorded fixture files per connector; a `FakeLLMGateway` with canned structured outputs; Vitest + Testing Library + MSW for the SPA; Playwright smoke tests (login, globe renders, generate a report against the fake gateway). Coverage gate 90% for backend and frontend, higher on auth, grading and report validation |
-| Static analysis | ruff, mypy strict, bandit, pip-audit; eslint (typescript-eslint strict, jsx-a11y), prettier, tsc, npm audit; semgrep and gitleaks in CI |
-| CI | GitHub Actions: lint, type-check, test with coverage, build images, trivy scan. A file-length check fails the build above 400 lines |
-| Observability | Structured JSON logs (structlog) with secret redaction; `/health` and `/ready`; optional Prometheus metrics; an admin System page showing feed health, live store budgets, LLM usage and the last 200 errors |
-| Docs | README, this architecture, ADRs, `SECURITY.md`, `DEVELOPMENT_STORY.md`, `MASTER_IMPLEMENTATION_PLAN.md`, `SOURCES.md` (every feed with licence notes), `DOCTRINE.md` |
-| Tooling | uv, ruff, pre-commit; pnpm; a `justfile` with `just dev`, `just test`, `just check`, `just up` |
-
-## 7. Resource footprint (estimate)
-
-| Component | RAM | Disk |
-|---|---|---|
-| API process with live store at default budgets | 400 to 800 MB | cache snapshot under 200 MB |
-| Optional spaCy small model and gazetteer | +150 MB | 60 MB |
-| PostgreSQL | 100 to 200 MB | roughly 100 to 300 KB per saved report including evidence; 10,000 reports is about 2 GB |
-| Caddy | 30 MB | |
-
-Nothing here needs a GPU. The LLM runs elsewhere (a local Ollama, a LAN box, or a hosted endpoint).
+Follow the current plan and security review for outstanding real-model testing,
+live PostgreSQL recovery, deployment headers, staging security scanning and
+representative load/accessibility evidence. Source files and workflow definitions
+describe behaviour and intended checks; they do not prove those operational
+checks have run.

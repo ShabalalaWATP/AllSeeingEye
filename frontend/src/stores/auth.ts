@@ -19,7 +19,7 @@ export interface AuthState {
   accessToken: string | null;
   pendingRefresh: Promise<string | null> | null;
   bootstrap: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, totpCode?: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<string | null>;
   setSession: (token: TokenResponse) => void;
@@ -73,8 +73,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     await get().refresh();
   },
 
-  login: async (email, password) => {
-    const token = await authApi.login(email, password);
+  login: async (email, password, totpCode) => {
+    const token = await authApi.login(email, password, totpCode);
     get().setSession(token);
   },
 

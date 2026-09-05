@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { liveEvent } from '@/test/fixtures';
 
-import { CATEGORY_STYLES, ORDERED_CATEGORIES, buildEventLayers, radiusFor } from './registry';
+import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
+import { buildEventLayers, radiusFor } from './registry';
 
 describe('layer registry', () => {
   it('orders categories and gives each a colour', () => {

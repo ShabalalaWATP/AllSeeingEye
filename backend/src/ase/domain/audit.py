@@ -11,6 +11,11 @@ from uuid import UUID
 class AuditAction(StrEnum):
     LOGIN_SUCCEEDED = "login_succeeded"
     LOGIN_FAILED = "login_failed"
+    TOTP_ENROLMENT_STARTED = "totp_enrolment_started"
+    TOTP_ENABLED = "totp_enabled"
+    TOTP_DISABLED = "totp_disabled"
+    TOTP_RECOVERED = "totp_recovered"
+    TOTP_FAILED = "totp_failed"
     ACCOUNT_LOCKED = "account_locked"
     TOKEN_REFRESHED = "token_refreshed"
     REFRESH_REUSE_DETECTED = "refresh_reuse_detected"

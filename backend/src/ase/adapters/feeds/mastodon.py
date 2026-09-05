@@ -10,6 +10,9 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+
+# Requires Python >=3.12; this standard-library API is supported.
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from importlib import resources
 from typing import Any
 
@@ -137,6 +140,7 @@ class MastodonConnector:
             grade_rationale="Public social post; not corroborated",
             attributes=freeze_attributes(
                 {
+                    "instance": self.spec.organisation,
                     "account": acct,
                     "display_name": str(account.get("display_name") or "") or None,
                     "boosts": status.get("reblogs_count"),

@@ -2,57 +2,107 @@
 
 An AI-assisted open-source intelligence (OSINT) fusion application: a 3D globe of live, graded events from free sources, with LLM-written intelligence products that follow UK and NATO assessment doctrine.
 
-Status: Phase 0 (foundation and authentication). Start with [docs/00_PROPOSAL_OVERVIEW.md](docs/00_PROPOSAL_OVERVIEW.md) and [docs/MASTER_IMPLEMENTATION_PLAN.md](docs/MASTER_IMPLEMENTATION_PLAN.md). Conventions for contributors and coding agents are in [CLAUDE.md](CLAUDE.md).
+Status: Phase 5 social/language features and Phase 6 features are implemented alongside the globe, trackers, collection plans, warning and report pipeline. Phase 6 adds optional administrator TOTP, PDF/DOCX export, version comparison, bounded semantic search of saved reports, performance and accessibility changes, and backup/restore tools. Remaining verification and deployment gates are tracked in [the implementation plan](docs/MASTER_IMPLEMENTATION_PLAN.md) and [the Phase 6 security review](docs/security/PHASE6_ASVS_REVIEW.md). This is a self-hosted LAN application; public exposure requires the remaining review gates.
+
+Start with [the approved proposal](docs/00_PROPOSAL_OVERVIEW.md), [current architecture](docs/01_ARCHITECTURE.md) and [feature operations](docs/PHASE5_PHASE6_OPERATIONS.md). Contributor conventions are in [CLAUDE.md](CLAUDE.md).
 
 ## Quick start (development)
 
-Prerequisites: Python 3.12 or later, [uv](https://docs.astral.sh/uv/), Node 22, pnpm, and Docker Desktop for the full stack.
+Prerequisites: Python 3.12 or later, [uv](https://docs.astral.sh/uv/), Node 22.12 or later, pnpm, and Docker Desktop for the full stack.
 
-```bash
-cp .env.example .env
+Run the setup commands from the repository root. For a new development setup,
+copy the example into the backend working directory. Preserve an existing `.env`:
+
+```powershell
+Copy-Item .env.example backend/.env
 ```
 
 Backend (SQLite, no Docker needed):
 
-```bash
+```powershell
 cd backend
 uv sync
 uv run ase migrate
 uv run ase create-admin --email you@example.com --display-name "You"
-uv run uvicorn ase.main:app --reload --port 8000
+uv run uvicorn ase.main:app --reload --port 8001
 ```
 
-Frontend:
+Frontend, in a second terminal starting at the repository root:
 
-```bash
+```powershell
 cd frontend
 pnpm install
 pnpm dev
 ```
 
-Open http://localhost:5173, sign in with the administrator you created, and you land on the globe.
+Open [the development app](http://localhost:5173), sign in with the administrator you created, and you land on the globe. With the backend commands above, the default SQLite file is `backend/data/ase.db`.
 
-If port 8000 is already taken, start the API on another port (`--port 8001`) and tell the dev server where it is with `ASE_DEV_API_TARGET=http://127.0.0.1:8001` in `frontend/.env.local` (ignored by git). Live feeds poll from the moment the API starts; set `ASE_FEEDS_DISABLED` to a comma-separated list of source ids to leave some out. After each report the URLs it cites are sent to the Wayback Machine for preservation; set `ASE_ARCHIVE_ENABLED=false` to keep them on this host.
+The frontend proxy defaults to API port 8001. To use another port, set `ASE_DEV_API_TARGET` in `frontend/.env.local` (ignored by git). Live feeds start with the API; `ASE_FEEDS_DISABLED` can exclude source ids. Report archiving attempts to preserve cited URLs through the Wayback Machine; set `ASE_ARCHIVE_ENABLED=false` to disable that outbound step.
+
+Configure `ASE_ENCRYPTION_KEY` before saving model profiles or enrolling TOTP.
+Profiles have separate roles for reporting, translation and embeddings. Semantic
+search is explicitly indexed from saved reports; it never stores raw live events.
+No real LLM endpoint is configured on the current development host, so model
+integration is tested with scripted adapters rather than a live provider.
 
 ## Full stack with Docker Compose
 
-Set `POSTGRES_PASSWORD` and `ASE_JWT_SECRET` in `.env`, then:
+For a new Compose setup, copy `.env.example` to `.env` at the repository root.
+Preserve an existing `.env`, set `POSTGRES_PASSWORD` and
+`ASE_JWT_SECRET`, and preserve `ASE_ENCRYPTION_KEY` if configured. From that root:
 
-```bash
+```powershell
 docker compose up --build -d
 ```
 
-Caddy serves the app on https://localhost (internal certificate) and proxies `/api` to the FastAPI service, which runs its migrations on start. Create the first administrator inside the container:
+Caddy serves [the local app](https://localhost) with an internal certificate and proxies `/api` to the FastAPI service, which runs its migrations on start. Create the first administrator inside the container:
 
-```bash
+```powershell
 docker compose exec api ase create-admin --email you@example.com --display-name "You"
 ```
 
+Keep the API and PostgreSQL ports unpublished. The API intentionally uses one
+process: live data, rate limits, model admission and search coordination are
+process-local. Public exposure requires the remaining security review gates.
+
+The web image builds the standard Caddy release with locked, patched Go
+dependencies. Its [build and update notes](infra/caddy-build/README.md) cover
+rebuilding, module checks and scanning the resulting image.
+
+## Recovery and verification limits
+
+[Backup and restore](docs/BACKUP_RESTORE.md) covers consistent SQLite snapshots,
+Compose PostgreSQL dumps, hash verification and restoration into new destinations.
+Actual `.env` files require explicit opt-in. No backup schedule or automatic
+retention deletion is installed. Real CLI recovery drills passed on temporary
+SQLite and PostgreSQL 17 databases, including all 19 migrated tables and secret
+decryption. Repeat the drill with the operator's storage and key handling before
+depending on a backup.
+
+The repository has no configured remote, so GitHub CI results have not been
+observed. Local test results and the remaining real-model, load and
+staging security checks are recorded in the implementation plan.
+
 ## Checks
 
-```bash
-cd backend && uv run pytest && uv run ruff check . && uv run mypy src && uv run lint-imports
-cd frontend && pnpm test && pnpm lint && pnpm typecheck
+Run each block from the repository root:
+
+```powershell
+uv run --project backend pytest backend/tests
+uv run --project backend ruff check backend
+uv run --project backend mypy --config-file backend/pyproject.toml backend/src
+```
+
+```powershell
+cd backend
+uv run lint-imports
+```
+
+```powershell
+pnpm --dir frontend test
+pnpm --dir frontend lint
+pnpm --dir frontend typecheck
+pnpm --dir frontend build
 python scripts/check_file_length.py
 ```
 

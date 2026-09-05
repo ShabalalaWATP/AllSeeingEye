@@ -10,19 +10,18 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from datetime import datetime, timedelta
-
-import structlog
 
 from ase.application.ports import Clock
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
 from ase.application.ports.translate import Translator, TranslatorUnavailable
 from ase.domain.events import Event
 
-log = structlog.get_logger(__name__)
+log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=30)
 LOOKBACK = timedelta(hours=24)
@@ -59,7 +58,7 @@ class TranslationQueue:
         self._calls_per_hour = calls_per_hour
         self._interval = interval
         self._sleep = sleep
-        self._tried: set[str] = set()
+        self._tried: OrderedDict[str, tuple[str, str]] = OrderedDict()
         self._cache: OrderedDict[tuple[str, str], str] = OrderedDict()
         self._hour: datetime | None = None
         self._calls = 0
@@ -86,6 +85,11 @@ class TranslationQueue:
     async def run_once(self) -> int:
         """Translate one batch; the number of events that gained an English title."""
         now = self._clock.now()
+        budget_left = self._budget_left(now)
+        for event_id, key in list(self._tried.items()):
+            current = self._store.get(event_id)
+            if current is None or (current.language.lower(), current.title) != key:
+                del self._tried[event_id]
         pool = self._store.query(EventQuery(since=now - LOOKBACK, limit=POOL))
         candidates = [e for e in pool if needs_translation(e) and e.id not in self._tried]
         if not candidates:
@@ -97,17 +101,31 @@ class TranslationQueue:
             cached = self._cache.get((event.language.lower(), event.title))
             if cached is not None:
                 updated.append(replace(event, title_en=cached))
-                self._tried.add(event.id)
             else:
                 pending.append(event)
-        if pending and self._budget_left(now):
+        if pending and budget_left:
             updated.extend(await self._translate(pending))
+        # A model call yields to polling, regrading and pruning. Merge only the translated
+        # field onto a still-current title, never restore a captured event wholesale.
+        merged: list[Event] = []
+        for event in updated:
+            current = self._store.get(event.id)
+            if (
+                current is not None
+                and current.title == event.title
+                and current.language.lower() == event.language.lower()
+                and current.title_en is None
+            ):
+                merged.append(replace(current, title_en=event.title_en))
+        updated = merged
         if updated:
             # put, not upsert: the content hash is unchanged, only the English title is new.
             self._store.put(updated)
-            await self._bus.publish(
-                BusMessage("event.upsert", {"source_id": "translation", "events": updated})
-            )
+            updated = [event for event in updated if self._store.get(event.id) is not None]
+            if updated:
+                await self._bus.publish(
+                    BusMessage("event.upsert", {"source_id": "translation", "events": updated})
+                )
         return len(updated)
 
     async def _translate(self, pending: list[Event]) -> list[Event]:
@@ -119,15 +137,19 @@ class TranslationQueue:
             if key not in seen:
                 seen[key] = len(unique)
                 unique.append((event.title, event.language.lower()))
+        self._calls += 1
         try:
             texts = await self._translator.translate(unique)
         except TranslatorUnavailable:
+            self._calls -= 1
             return []
-        self._calls += 1
         translated: list[Event] = []
         for event in pending:
-            self._tried.add(event.id)
             key = (event.language.lower(), event.title)
+            self._tried[event.id] = key
+            self._tried.move_to_end(event.id)
+            while len(self._tried) > CACHE_SIZE:
+                self._tried.popitem(last=False)
             text = texts[seen[key]] if seen[key] < len(texts) else None
             if text:
                 self._remember(key, text)

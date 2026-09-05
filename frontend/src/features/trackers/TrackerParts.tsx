@@ -7,7 +7,7 @@ import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 import { useEventsStore } from '@/stores/events';
 
-import { CATEGORY_STYLES } from '../globe/layers/registry';
+import { CATEGORY_STYLES } from '@/lib/categories';
 
 /** Activity this week against the week before, with a plain-words trend. */
 export function ActivityCells({ activity }: { activity: Activity }) {

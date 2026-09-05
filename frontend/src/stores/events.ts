@@ -61,7 +61,7 @@ function toList(byId: Record<string, LiveEvent>): LiveEvent[] {
 function bounded(byId: Record<string, LiveEvent>): Record<string, LiveEvent> {
   const entries = Object.entries(byId);
   if (entries.length <= MAX_CLIENT_EVENTS) return byId;
-  entries.sort(([, a], [, b]) => (a.observed_at < b.observed_at ? -1 : 1));
+  entries.sort(([, a], [, b]) => a.observed_at.localeCompare(b.observed_at));
   return Object.fromEntries(entries.slice(entries.length - MAX_CLIENT_EVENTS));
 }
 
@@ -89,9 +89,15 @@ export const useEventsStore = create<EventsState>()((set, get) => ({
 
   applyUpsert: (events) => {
     if (events.length === 0) return;
-    const byId = { ...bounded(get().byId) };
-    for (const event of events) byId[event.id] = event;
-    set({ byId, list: toList(byId) });
+    const merged = { ...get().byId };
+    for (const event of events) merged[event.id] = event;
+    const byId = bounded(merged);
+    const selectedId = get().selectedId;
+    set({
+      byId,
+      list: toList(byId),
+      selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
+    });
   },
 
   applyExpire: (ids) => {

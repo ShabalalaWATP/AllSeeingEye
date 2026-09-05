@@ -7,7 +7,7 @@ import type { Layer } from '@deck.gl/core';
 
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 
-import { CATEGORY_STYLES } from './registry';
+import { CATEGORY_STYLES } from '@/lib/categories';
 
 /** Below this zoom the globe clusters; above it every event is its own marker. */
 export const CLUSTER_ZOOM = 3;
@@ -30,7 +30,13 @@ export interface Clustered {
 
 /** Cell size in degrees for a zoom level: coarser when further out. */
 export function cellSizeFor(zoom: number): number {
-  return zoom < 1.5 ? 12 : zoom < 2.5 ? 6 : 3;
+  const bucket = clusteringZoomFor(zoom);
+  return bucket === 0 ? 12 : bucket === 1.5 ? 6 : 3;
+}
+
+/** A stable zoom within each grouping, including the unclustered view. */
+export function clusteringZoomFor(zoom: number): number {
+  return zoom < 1.5 ? 0 : zoom < 2.5 ? 1.5 : zoom < CLUSTER_ZOOM ? 2.5 : CLUSTER_ZOOM;
 }
 
 /** Bins located events into cells; cells with enough events become clusters. */

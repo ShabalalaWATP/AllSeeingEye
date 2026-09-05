@@ -82,6 +82,7 @@ export function LeftRail() {
             <RailLink to="/admin/audit">Audit log</RailLink>
             <RailLink to="/admin/sources">Sources</RailLink>
             <RailLink to="/admin/llm">Models</RailLink>
+            <RailLink to="/admin/security">Security</RailLink>
           </div>
         ) : null}
       </nav>

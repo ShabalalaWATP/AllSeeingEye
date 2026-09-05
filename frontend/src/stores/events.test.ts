@@ -116,11 +116,12 @@ describe('events store', () => {
       }),
     );
     useEventsStore.getState().applyUpsert(many);
+    expect(useEventsStore.getState().list).toHaveLength(MAX_CLIENT_EVENTS);
     useEventsStore
       .getState()
       .applyUpsert([liveEvent({ id: 'newest', observed_at: '2027-01-01T00:00:00Z' })]);
     const state = useEventsStore.getState();
-    expect(Object.keys(state.byId).length).toBeLessThanOrEqual(MAX_CLIENT_EVENTS + 1);
+    expect(Object.keys(state.byId).length).toBe(MAX_CLIENT_EVENTS);
     expect(state.byId.m0).toBeUndefined();
     expect(state.byId.newest).toBeDefined();
   });

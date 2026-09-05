@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from ase.application.auditing import Auditor
 from ase.application.auth.sessions import SessionFactory
+from ase.application.auth.totp import TotpUseCase
 from ase.application.dto import AuthSession, RateLimits, RequestContext
 from ase.application.ports import Clock, PasswordHasher, RateLimiter, UnitOfWork, UserRepository
 from ase.domain.audit import AuditAction
@@ -24,6 +25,7 @@ class LoginUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
         dummy_hash: str,
+        totp: TotpUseCase,
         lockout: LockoutPolicy | None = None,
     ) -> None:
         self._users = users
@@ -35,9 +37,16 @@ class LoginUseCase:
         self._auditor = auditor
         self._uow = uow
         self._dummy_hash = dummy_hash
+        self._totp = totp
         self._lockout = lockout or LockoutPolicy()
 
-    async def execute(self, email: str, password: str, context: RequestContext) -> AuthSession:
+    async def execute(
+        self,
+        email: str,
+        password: str,
+        context: RequestContext,
+        totp_code: str | None = None,
+    ) -> AuthSession:
         email = normalise_email(email)
         self._enforce_limits(email, context)
         user = await self._users.get_by_email(email)
@@ -60,6 +69,14 @@ class LoginUseCase:
             await self._fail(user, email, context, "wrong_password")
         # Every other branch raised, so this only narrows the type for the checker.
         assert user is not None  # noqa: S101
+        if not await self._totp.verify_login(user, totp_code):
+            locked = self._lockout.register_failure(user, now)
+            await self._users.save(user)
+            if locked:
+                await self._auditor.record(
+                    AuditAction.ACCOUNT_LOCKED, actor=user.id, subject=email, ip=context.ip
+                )
+            await self._fail(user, email, context, "invalid_second_factor")
         self._lockout.register_success(user, now)
         await self._users.save(user)
         session = await self._sessions.start(user, context)

@@ -9,6 +9,15 @@ import { viewTitle } from './TopBar';
 import { isEditableTarget } from './useViewShortcuts';
 
 describe('AppShell', () => {
+  it('lets the keyboard skip repeated navigation and focus the main area', async () => {
+    const { user } = renderApp('/', 'user');
+    const skip = await screen.findByRole('link', { name: 'Skip to main content' });
+    await user.tab();
+    expect(skip).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('main')).toHaveFocus();
+  });
+
   it('shows the brand, the rail items and the user', async () => {
     renderApp('/', 'user');
     expect(await screen.findByRole('img', { name: 'The All Seeing Eye' })).toBeInTheDocument();

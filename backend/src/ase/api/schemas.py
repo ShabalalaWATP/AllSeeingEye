@@ -16,6 +16,7 @@ from ase.domain.users import AccountRequest, RequestStatus, Role, User
 class LoginIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=128)
+    totp_code: str | None = Field(default=None, pattern=r"^[0-9]{6}$")
 
 
 class RequestAccountIn(BaseModel):

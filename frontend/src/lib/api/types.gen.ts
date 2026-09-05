@@ -140,6 +140,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/totp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_auth_totp_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/totp/enrol": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enrol */
+        post: operations["enrol_api_auth_totp_enrol_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/totp/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["confirm_api_auth_totp_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/totp/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable */
+        post: operations["disable_api_auth_totp_disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -338,6 +406,108 @@ export interface paths {
         };
         /** Report Markdown */
         get: operations["report_markdown_api_reports__report_id__markdown_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/export/{format}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Report */
+        get: operations["export_report_api_reports__report_id__export__format__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare Report Versions */
+        get: operations["compare_report_versions_api_reports__report_id__diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Status */
+        get: operations["search_status_api_report_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-search/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Index Reports */
+        post: operations["index_reports_api_report_search_index_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-search/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search Reports */
+        post: operations["search_reports_api_report_search_query_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/social": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Social Board */
+        get: operations["social_board_api_trackers_social_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1155,6 +1325,11 @@ export interface components {
             /** Newest */
             newest: string | null;
         };
+        /**
+         * ChangeKind
+         * @enum {string}
+         */
+        ChangeKind: "added" | "removed" | "changed";
         /** ConflictBoardOut */
         ConflictBoardOut: {
             /** Items */
@@ -1328,6 +1503,11 @@ export interface components {
             /** Count */
             count: number;
         };
+        /**
+         * ExportFormat
+         * @enum {string}
+         */
+        ExportFormat: "pdf" | "docx";
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
             /**
@@ -1590,7 +1770,7 @@ export interface components {
          * @description What a profile is allowed to do in the generation pipeline.
          * @enum {string}
          */
-        LlmRole: "direction" | "assessment" | "devil";
+        LlmRole: "direction" | "assessment" | "devil" | "translation" | "embeddings";
         /** LlmTestOut */
         LlmTestOut: {
             /** Ok */
@@ -1645,6 +1825,8 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            /** Totp Code */
+            totp_code?: string | null;
         };
         /** MaritimeBoardOut */
         MaritimeBoardOut: {
@@ -1775,6 +1957,27 @@ export interface components {
          * @enum {string}
          */
         Reliability: "A" | "B" | "C" | "D" | "E" | "F";
+        /** ReportChangeOut */
+        ReportChangeOut: {
+            /** Section */
+            section: string;
+            /** Path */
+            path: string;
+            kind: components["schemas"]["ChangeKind"];
+            /** Before */
+            before: string | null;
+            /** After */
+            after: string | null;
+        };
+        /** ReportComparisonOut */
+        ReportComparisonOut: {
+            /** From Version */
+            from_version: number;
+            /** To Version */
+            to_version: number;
+            /** Changes */
+            changes: components["schemas"]["ReportChangeOut"][];
+        };
         /** ReportCreateIn */
         ReportCreateIn: {
             /** Template */
@@ -1805,6 +2008,44 @@ export interface components {
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
             version: components["schemas"]["ReportVersionOut"];
+        };
+        /** ReportSearchHitOut */
+        ReportSearchHitOut: {
+            report: components["schemas"]["ReportSummaryOut"];
+            /** Score */
+            score: number;
+        };
+        /** ReportSearchIn */
+        ReportSearchIn: {
+            /** Query */
+            query: string;
+            /**
+             * Limit
+             * @default 10
+             */
+            limit: number;
+        };
+        /** ReportSearchOut */
+        ReportSearchOut: {
+            /** Items */
+            items: components["schemas"]["ReportSearchHitOut"][];
+            /** Indexed */
+            indexed: number;
+            /** Total */
+            total: number;
+        };
+        /** ReportSearchStatusOut */
+        ReportSearchStatusOut: {
+            /** Available */
+            available: boolean;
+            /** Indexed */
+            indexed: number;
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Batch Size */
+            batch_size: number;
         };
         /**
          * ReportStatus
@@ -2055,6 +2296,69 @@ export interface components {
             /** Categories */
             categories: components["schemas"]["Category"][];
         };
+        /** SocialBoardOut */
+        SocialBoardOut: {
+            /** Total */
+            total: number;
+            /** Located */
+            located: number;
+            /** Platforms */
+            platforms: components["schemas"]["SocialPlatformOut"][];
+            /** Hashtags */
+            hashtags: components["schemas"]["SocialHashtagOut"][];
+            /** Keywords */
+            keywords: components["schemas"]["SocialKeywordOut"][];
+            /** Posts */
+            posts: components["schemas"]["EventOut"][];
+            /**
+             * Window Start
+             * Format: date-time
+             */
+            window_start: string;
+            /**
+             * Window End
+             * Format: date-time
+             */
+            window_end: string;
+            /**
+             * Keyword Hour
+             * Format: date-time
+             */
+            keyword_hour: string;
+        };
+        /** SocialHashtagOut */
+        SocialHashtagOut: {
+            /** Tag */
+            tag: string;
+            /** Count */
+            count: number;
+        };
+        /** SocialKeywordOut */
+        SocialKeywordOut: {
+            /** Term */
+            term: string;
+            /** Count */
+            count: number;
+            /** Baseline */
+            baseline: number | null;
+            /** Baseline Hours */
+            baseline_hours: number;
+            /** Ratio */
+            ratio: number | null;
+            /** Burst */
+            burst: boolean;
+        };
+        /** SocialPlatformOut */
+        SocialPlatformOut: {
+            /** Platform */
+            platform: string;
+            /** Instance */
+            instance: string;
+            /** Count */
+            count: number;
+            /** Located */
+            located: number;
+        };
         /** SourceHealthOut */
         SourceHealthOut: {
             /** Source Id */
@@ -2192,6 +2496,42 @@ export interface components {
             /** Expires In */
             expires_in: number;
             user: components["schemas"]["UserOut"];
+        };
+        /** TotpConfirmIn */
+        TotpConfirmIn: {
+            /** Code */
+            code: string;
+        };
+        /** TotpDisableIn */
+        TotpDisableIn: {
+            /** Password */
+            password: string;
+            /** Code */
+            code: string;
+        };
+        /** TotpEnrolIn */
+        TotpEnrolIn: {
+            /** Password */
+            password: string;
+        };
+        /** TotpEnrolOut */
+        TotpEnrolOut: {
+            /** Secret */
+            secret: string;
+            /** Provisioning Uri */
+            provisioning_uri: string;
+            /**
+             * Expires In
+             * @default 600
+             */
+            expires_in: number;
+        };
+        /** TotpStatusOut */
+        TotpStatusOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Available */
+            available: boolean;
         };
         /** UpdateUserIn */
         UpdateUserIn: {
@@ -2435,6 +2775,121 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SetPasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_auth_totp_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpStatusOut"];
+                };
+            };
+        };
+    };
+    enrol_api_auth_totp_enrol_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpEnrolIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpEnrolOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_api_auth_totp_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpConfirmIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_api_auth_totp_disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpDisableIn"];
             };
         };
         responses: {
@@ -2841,6 +3296,168 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_report_api_reports__report_id__export__format__get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                format: components["schemas"]["ExportFormat"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_report_versions_api_reports__report_id__diff_get: {
+        parameters: {
+            query: {
+                from_version: number;
+                to_version: number;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportComparisonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_status_api_report_search_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSearchStatusOut"];
+                };
+            };
+        };
+    };
+    index_reports_api_report_search_index_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSearchStatusOut"];
+                };
+            };
+        };
+    };
+    search_reports_api_report_search_query_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportSearchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSearchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    social_board_api_trackers_social_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SocialBoardOut"];
                 };
             };
         };

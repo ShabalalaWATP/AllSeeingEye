@@ -1,7 +1,5 @@
 """Translation: the queue over the live store and the LLM translator behind a profile role."""
 
-
-
 from __future__ import annotations
 
 from collections.abc import Sequence

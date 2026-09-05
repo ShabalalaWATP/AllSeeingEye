@@ -1,8 +1,10 @@
+import { useId } from 'react';
+
 import type { Category, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
 
 import { ConnectionStatus } from './ConnectionStatus';
-import { CATEGORY_STYLES, ORDERED_CATEGORIES } from './layers/registry';
+import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
 
 export interface LayerPanelProps {
   counts: Partial<Record<Category, number>>;
@@ -81,6 +83,7 @@ export function LayerPanel({
   interference,
   onToggleInterference,
 }: LayerPanelProps) {
+  const windowName = useId();
   return (
     <section
       aria-label="Layers"
@@ -127,20 +130,21 @@ export function LayerPanel({
         className="mt-1 flex flex-wrap gap-1 border-t border-line px-1 pt-1.5"
       >
         {WINDOWS.map((option) => (
-          <button
-            key={option.label}
-            type="button"
-            role="radio"
-            aria-checked={option.hours === windowHours}
-            onClick={() => {
-              onWindow(option.hours);
-            }}
-            className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
-              option.hours === windowHours ? 'bg-surface-2 text-text' : 'text-muted hover:text-text'
-            }`}
-          >
-            {option.label}
-          </button>
+          <label key={option.label} className="cursor-pointer">
+            <input
+              type="radio"
+              name={windowName}
+              value={option.label}
+              checked={option.hours === windowHours}
+              onChange={() => {
+                onWindow(option.hours);
+              }}
+              className="peer sr-only"
+            />
+            <span className="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] text-muted hover:text-text peer-checked:bg-surface-2 peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember">
+              {option.label}
+            </span>
+          </label>
         ))}
       </div>
       <div className="mt-1 border-t border-line pt-1">

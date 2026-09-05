@@ -10,6 +10,9 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable, Mapping
 from functools import lru_cache
+
+# Requires Python >=3.12; this standard-library API is supported.
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from importlib.resources import files
 from typing import Any
 

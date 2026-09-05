@@ -9,6 +9,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
+from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.errors import NotFound
 from ase.domain.report_records import (
     ReportRecord,
@@ -156,6 +157,9 @@ class SqlReportRepository:
         return [_record_from_row(row) for row in rows]
 
     async def delete(self, report_id: UUID) -> None:
+        await self._session.execute(
+            delete(ReportEmbeddingRow).where(ReportEmbeddingRow.report_id == report_id)
+        )
         await self._session.execute(
             delete(ReportVersionRow).where(ReportVersionRow.report_id == report_id)
         )

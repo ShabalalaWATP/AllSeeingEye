@@ -170,4 +170,26 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     map.fire('moveend');
     expect(map.easeTo).toHaveBeenCalledTimes(2);
   });
+
+  it('stops chaining when an animation completes synchronously', () => {
+    const engine = createMapLibreEngine();
+    engine.mount(document.createElement('div'));
+    const map = FakeMap.instances[0]!;
+    // MapLibre completes immediately when reduced motion changes during a spin.
+    map.easeTo.mockImplementation(() => map.fire('moveend'));
+    expect(() => engine.spin(true)).not.toThrow();
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    map.fire('moveend');
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not restart spinning when removal finishes the current movement', () => {
+    const engine = createMapLibreEngine();
+    engine.mount(document.createElement('div'));
+    const map = FakeMap.instances[0]!;
+    engine.spin(true);
+    map.remove.mockImplementation(() => map.fire('moveend'));
+    engine.destroy();
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+  });
 });

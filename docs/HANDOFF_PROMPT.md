@@ -1,5 +1,11 @@
 # Handoff prompt: continue building The All Seeing Eye
 
+Historical snapshot from 5 September 2026. The continuation through Phase 6 is now
+implemented. Read [the live plan](MASTER_IMPLEMENTATION_PLAN.md),
+[operations guide](PHASE5_PHASE6_OPERATIONS.md) and
+[security review](security/PHASE6_ASVS_REVIEW.md) for the current state and remaining
+verification gates before using the older brief below.
+
 Paste everything below the line into GPT-6 Astra, Codex or any other agent that will
 carry on the work. It is written to be self-contained: the repository, the conventions,
 what exists, what is half done, what is next, and the traps that cost time.

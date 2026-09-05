@@ -61,17 +61,14 @@ export function NationFilter({ countries, value, onChange, error = null }: Natio
       <div className="flex items-center gap-1">
         <input
           type="text"
-          role="combobox"
           aria-label="Nation filter"
-          aria-expanded="false"
-          aria-controls={listId}
           list={listId}
           placeholder="Nation"
           autoComplete="off"
           value={shown}
           onChange={handleChange}
           onKeyDown={handleKey}
-          className="min-w-0 flex-1 bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted focus:outline-none"
+          className="min-w-0 flex-1 rounded bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted"
         />
         <datalist id={listId}>
           {countries.map((country) => (

@@ -15,6 +15,7 @@ import { useCountriesStore } from '@/stores/countries';
 
 import { GenerateForm } from './GenerateForm';
 import { SchedulesSection } from './SchedulesSection';
+import { ReportSearch } from './ReportSearch';
 
 const STATUS_CLASSES: Record<string, string> = {
   ready: 'bg-emerald-400/15 text-emerald-300',
@@ -65,6 +66,7 @@ export default function ReportsPage() {
   return (
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Reports</h1>
+      <ReportSearch />
       {templates.data === null ? (
         templates.loading ? (
           <LoadingNote label="Loading products" />

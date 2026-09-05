@@ -2,7 +2,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { formatAgo } from '@/lib/format';
 
-import { CATEGORY_STYLES } from './layers/registry';
+import { CATEGORY_STYLES } from '@/lib/categories';
 
 export const TICKER_LIMIT = 12;
 

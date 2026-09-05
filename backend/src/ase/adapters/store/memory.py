@@ -73,6 +73,7 @@ class InMemoryEventStore:
             if event.id in self._events:
                 self._remove(event.id)
             self._insert(event)
+        self._enforce_budget(self._pending_expiry)
 
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
@@ -104,7 +105,8 @@ class InMemoryEventStore:
             for event_id in ordered:
                 if self._events[event_id].observed_at < cutoff:
                     expired.append(event_id)
-            remaining = [i for i in ordered if i not in set(expired)]
+            expired_ids = set(expired)
+            remaining = [i for i in ordered if i not in expired_ids]
             overflow = len(remaining) - budget.max_items
             if overflow > 0:
                 evicted.extend(remaining[:overflow])

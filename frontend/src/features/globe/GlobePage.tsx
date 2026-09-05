@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
+import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
 import { useNow } from '@/lib/hooks/useNow';
@@ -38,6 +39,7 @@ import { fetchJamMap } from '@/lib/api/aviation';
 import type { JamCell } from '@/lib/api/aviation';
 
 import type { Cluster } from './layers/clusters';
+import { clusteringZoomFor } from './layers/clusters';
 import { buildJamLayer } from './layers/jamming';
 import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
@@ -65,6 +67,8 @@ export default function GlobePage() {
   const interference = useGlobeStore((state) => state.interference);
   const toggleInterference = useGlobeStore((state) => state.toggleInterference);
   const opsRoom = useGlobeStore((state) => state.opsRoom);
+  const reducedMotion = useReducedMotion();
+  const visible = usePageVisible();
   const [jamCells, setJamCells] = useState<JamCell[]>([]);
   useEffect(() => {
     if (!interference) return;
@@ -99,15 +103,18 @@ export default function GlobePage() {
   useEffect(
     () =>
       engine.onView((view) => {
-        setZoom(Math.round(view.zoom * 10) / 10);
+        setZoom(clusteringZoomFor(view.zoom));
       }),
     [engine],
   );
   const onCluster = useCallback(
     (cluster: Cluster) => {
-      engine.flyTo({ center: [cluster.lon, cluster.lat], zoom: Math.min(FOCUS_ZOOM, zoom + 2.5) });
+      engine.flyTo({
+        center: [cluster.lon, cluster.lat],
+        zoom: Math.min(FOCUS_ZOOM, engine.getZoom() + 2.5),
+      });
     },
-    [engine, zoom],
+    [engine],
   );
 
   const osMaps = useCapabilitiesStore((state) => state.osMaps);
@@ -142,9 +149,10 @@ export default function GlobePage() {
   const list = useEventsStore((state) => state.list);
   const windowHours = useEventsStore((state) => state.windowHours);
   const setWindow = useEventsStore((state) => state.setWindow);
+  const countryEvents = useMemo(() => filterByCountry(list, country), [list, country]);
   const scoped = useMemo(
-    () => filterByWindow(filterByCountry(list, country), windowHours, now),
-    [list, country, windowHours, now],
+    () => filterByWindow(countryEvents, windowHours, now),
+    [countryEvents, windowHours, now],
   );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const nation = country === null ? null : (countryByIso[country] ?? null);
@@ -163,36 +171,31 @@ export default function GlobePage() {
     [select],
   );
 
+  const eventLayers = useMemo(
+    () =>
+      supported ? buildEventLayers(scoped, hidden, onPick, selectedId, { zoom, onCluster }) : [],
+    [hidden, onCluster, onPick, scoped, selectedId, supported, zoom],
+  );
+  const night = useMemo(
+    () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),
+    [lite, now, supported, terminator],
+  );
+  const jam = useMemo(
+    () => (supported && interference ? buildJamLayer(jamCells) : null),
+    [interference, jamCells, supported],
+  );
   useEffect(() => {
-    if (!supported) return;
-    const events = buildEventLayers(scoped, hidden, onPick, selectedId, { zoom, onCluster });
-    const night = terminator && !lite ? [buildTerminatorLayer(new Date(now))] : [];
-    const jam = interference ? buildJamLayer(jamCells) : null;
-    engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...events]);
-  }, [
-    engine,
-    hidden,
-    interference,
-    jamCells,
-    lite,
-    now,
-    onCluster,
-    onPick,
-    scoped,
-    selectedId,
-    supported,
-    terminator,
-    zoom,
-  ]);
+    if (supported) engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...eventLayers]);
+  }, [engine, eventLayers, jam, night, supported]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
   useEffect(() => {
     if (!supported) return;
-    engine.spin(opsRoom && mode === 'globe' && !lite);
+    engine.spin(opsRoom && mode === 'globe' && !lite && !reducedMotion && visible);
     return () => {
       engine.spin(false);
     };
-  }, [engine, lite, mode, opsRoom, supported]);
+  }, [engine, lite, mode, opsRoom, reducedMotion, supported, visible]);
 
   const focus = useCallback(
     (event: LiveEvent) => {

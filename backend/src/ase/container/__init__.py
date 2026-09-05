@@ -6,9 +6,9 @@ factories (reports, trackers, direction) live in the mixin in features.py.
 
 from __future__ import annotations
 
+import asyncio
 import secrets
 from collections.abc import Sequence
-from dataclasses import dataclass
 from datetime import timedelta
 
 import structlog
@@ -17,32 +17,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.adsb_watch import load_watch_areas
+from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
+from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
-from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
-from ase.adapters.persistence.baselines import SqlBaselineRepository, SqlBaselineSink
-from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
-from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
-from ase.adapters.persistence.reports import SqlReportRepository
-from ase.adapters.persistence.schedules import SqlScheduleRepository
+from ase.adapters.persistence.baselines import SqlBaselineSink
 from ase.adapters.persistence.session import (
     create_engine,
     create_session_factory,
     ensure_sqlite_directory,
 )
-from ase.adapters.persistence.tokens import SqlPasswordTokenRepository, SqlRefreshTokenRepository
-from ase.adapters.persistence.users import SqlAccountRequestRepository, SqlUserRepository
-from ase.adapters.persistence.warning import SqlAlertRepository, SqlIndicatorRepository
+from ase.adapters.persistence.totp import SqlTotpRepository
+from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
 from ase.adapters.security.cipher import FernetCipher
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
+from ase.adapters.security.totp import EncryptedTotpProvider
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.adapters.translate.language import LangidDetector, NullDetector
@@ -67,6 +64,7 @@ from ase.application.auth.login import LoginUseCase
 from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
+from ase.application.auth.totp import TotpUseCase
 from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
@@ -74,61 +72,25 @@ from ase.application.feeds.language import LanguageStage
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
-from ase.application.ports import (
-    AccountRequestRepository,
-    AuditLogRepository,
-    Clock,
-    EmailSender,
-    PasswordTokenRepository,
-    RateLimiter,
-    RefreshTokenRepository,
-    UnitOfWork,
-    UserRepository,
-)
+from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.archive import Archiver
-from ase.application.ports.baselines import BaselineRepository
-from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.language import LanguageDetector
-from ase.application.ports.llm import (
-    LlmGateway,
-    LlmProfileRepository,
-    LlmUsageRepository,
-    SecretCipher,
-)
-from ase.application.ports.reports import ReportRepository
-from ase.application.ports.schedules import ScheduleRepository
+from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
-from ase.application.ports.warning import AlertNotifier, AlertRepository, IndicatorRepository
+from ase.application.ports.warning import AlertNotifier
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.features import FeatureWiring
+from ase.container.repositories import Repositories as Repositories
+from ase.container.repositories import build_repositories
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Environment, Settings
 
 log = structlog.get_logger(__name__)
-
-
-@dataclass(slots=True)
-class Repositories:
-    users: UserRepository
-    requests: AccountRequestRepository
-    refresh_tokens: RefreshTokenRepository
-    password_tokens: PasswordTokenRepository
-    audit: AuditLogRepository
-    llm_profiles: LlmProfileRepository
-    llm_usage: LlmUsageRepository
-    reports: ReportRepository
-    baselines: BaselineRepository
-    aois: AoiRepository
-    plans: PlanRepository
-    indicators: IndicatorRepository
-    alerts: AlertRepository
-    schedules: ScheduleRepository
-    uow: UnitOfWork
 
 
 class Container(FeatureWiring):
@@ -170,6 +132,9 @@ class Container(FeatureWiring):
         self.cipher: SecretCipher = FernetCipher(settings.encryption_key_value)
         self.llm: LlmGateway = OpenAiCompatibleGateway()
         self._llm_gateway = self.llm
+        self.embedding_gateway = OpenAiEmbeddingGateway()
+        self._embedding_gateway = self.embedding_gateway
+        self.embedding_lock = asyncio.Lock()
         detector: LanguageDetector = (
             NullDetector() if settings.env is Environment.TEST else LangidDetector()
         )
@@ -182,6 +147,11 @@ class Container(FeatureWiring):
             if connectors is not None
             else build_connectors(self.http, self.clock, settings.disabled_feed_ids)
         )
+        watchlists = GoogleNewsWatchlistConnector(
+            self.http, self.clock, SqlWatchlistPlanStore(self.session_factory)
+        )
+        if connectors is None and watchlists.spec.id not in settings.disabled_feed_ids:
+            self.connectors.append(watchlists)
         self.source_profiles = profiles_from_specs([c.spec for c in self.connectors])
         self.grader = GradingService(self.store, self.source_profiles, self.clock)
         self.scheduler = FeedScheduler(
@@ -207,6 +177,8 @@ class Container(FeatureWiring):
         )
         self.evaluator = self.build_evaluator()
         self.schedule_runner = self.build_schedule_runner()
+        self.translation_queue = self.build_translation_queue()
+        self.social_monitor = self.build_social_monitor()
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
@@ -216,28 +188,13 @@ class Container(FeatureWiring):
     async def dispose(self) -> None:
         await self.http.aclose()
         await self._llm_gateway.aclose()
+        await self._embedding_gateway.aclose()
         await self.tiles.aclose()
         await self.archiver.aclose()
         await self.engine.dispose()
 
     def repositories(self, session: AsyncSession) -> Repositories:
-        return Repositories(
-            users=SqlUserRepository(session),
-            requests=SqlAccountRequestRepository(session),
-            refresh_tokens=SqlRefreshTokenRepository(session),
-            password_tokens=SqlPasswordTokenRepository(session),
-            audit=SqlAuditLogRepository(session),
-            llm_profiles=SqlLlmProfileRepository(session),
-            llm_usage=SqlLlmUsageRepository(session),
-            reports=SqlReportRepository(session),
-            baselines=SqlBaselineRepository(session),
-            aois=SqlAoiRepository(session),
-            plans=SqlPlanRepository(session),
-            indicators=SqlIndicatorRepository(session),
-            alerts=SqlAlertRepository(session),
-            schedules=SqlScheduleRepository(session),
-            uow=SqlAlchemyUnitOfWork(session),
-        )
+        return build_repositories(session)
 
     def _auditor(self, repos: Repositories) -> Auditor:
         return Auditor(repos.audit, self.clock)
@@ -251,8 +208,21 @@ class Container(FeatureWiring):
         r = self.repositories(session)
         return LoginUseCase(
             r.users, self.hasher, self._sessions(r), self.clock, self.limiter, self.limits,
-            self._auditor(r), r.uow, self._dummy_hash,
+            self._auditor(r), r.uow, self._dummy_hash, totp=self.totp(session),
         )  # fmt: skip
+
+    def totp(self, session: AsyncSession) -> TotpUseCase:
+        r = self.repositories(session)
+        return TotpUseCase(
+            SqlTotpRepository(session),
+            EncryptedTotpProvider(self.cipher),
+            self.hasher,
+            r.refresh_tokens,
+            self.clock,
+            self.limiter,
+            self._auditor(r),
+            r.uow,
+        )
 
     def refresh(self, session: AsyncSession) -> RefreshUseCase:
         r = self.repositories(session)
@@ -342,6 +312,7 @@ class Container(FeatureWiring):
         return TestLlmProfileUseCase(
             r.llm_profiles, r.llm_usage, self.cipher, self.llm, self.clock,
             self._auditor(r), r.uow,
+            embeddings=self.embedding_gateway,
         )  # fmt: skip
 
     def list_llm_usage(self, session: AsyncSession) -> ListLlmUsageUseCase:

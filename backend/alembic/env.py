@@ -9,7 +9,12 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from ase.adapters.persistence import models  # noqa: F401  (registers the tables)
+from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
+    models,
+    report_search,
+    token_families,
+    totp,
+)
 from ase.adapters.persistence.base import Base
 from ase.infrastructure.settings import Settings
 

@@ -92,6 +92,16 @@ async def advocate(
     draft.latency_ms = result.latency_ms
     try:
         parsed = parse_advocacy(json.loads(result.content), target)
+    except RecursionError:
+        draft.findings.append(
+            Finding(
+                "advocacy",
+                Severity.WARNING,
+                "devils_advocacy",
+                "Advocacy JSON is nested too deeply.",
+            )
+        )
+        return draft
     except (ValueError, AdvocacyParseError) as exc:
         draft.findings.append(
             Finding("advocacy", Severity.WARNING, "devils_advocacy", f"Unusable: {exc}"[:300])

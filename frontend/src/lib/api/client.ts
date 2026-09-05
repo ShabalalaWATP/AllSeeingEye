@@ -71,6 +71,15 @@ export async function apiText(path: string, options: CallOptions = {}): Promise<
   return response.text();
 }
 
+/** Fetches an authenticated binary export through the same session and error handling. */
+export async function apiBlob(path: string, options: CallOptions = {}): Promise<Blob> {
+  const response = await execute(path, {
+    ...options,
+    headers: { Accept: 'application/octet-stream', ...options.headers },
+  });
+  return response.blob();
+}
+
 /** Performs a request whose successful response has no body of interest (for example 204). */
 export async function apiSend(path: string, options: CallOptions = {}): Promise<void> {
   await execute(path, options);

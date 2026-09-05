@@ -73,6 +73,12 @@ async def direct(
     draft.latency_ms = result.latency_ms
     try:
         draft.direction = parse_direction(json.loads(result.content))
+    except RecursionError:
+        draft.findings.append(
+            Finding(
+                "direction", Severity.WARNING, "direction", "Direction JSON is nested too deeply."
+            )
+        )
     except (ValueError, DirectionParseError) as exc:
         draft.findings.append(
             Finding("direction", Severity.WARNING, "direction", f"Direction unusable: {exc}"[:300])

@@ -5,10 +5,10 @@ import { apiCall, apiSend } from './client';
 import { messageResponseSchema, tokenResponseSchema, userSchema } from './schemas';
 import type { TokenResponse, User } from './schemas';
 
-export function login(email: string, password: string): Promise<TokenResponse> {
+export function login(email: string, password: string, totpCode?: string): Promise<TokenResponse> {
   return apiCall('/api/auth/login', {
     method: 'POST',
-    body: { email, password },
+    body: { email, password, ...(totpCode ? { totp_code: totpCode } : {}) },
     schema: tokenResponseSchema,
     auth: false,
   });

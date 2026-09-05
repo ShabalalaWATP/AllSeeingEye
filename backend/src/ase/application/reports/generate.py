@@ -16,6 +16,7 @@ from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
 from ase.application.ports.direction import AoiRepository, PlanRepository
+from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
@@ -33,6 +34,7 @@ from ase.domain.audit import AuditAction
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import (
     EncryptionUnavailable,
+    Forbidden,
     InvalidRequest,
     NoModelAvailable,
     NotFound,
@@ -68,6 +70,7 @@ class GenerateReportUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
         backgrounds: Mapping[str, Callable[[], Awaitable[str]]] | None = None,
+        url_resolver: EvidenceUrlResolver | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -76,6 +79,7 @@ class GenerateReportUseCase:
             cipher=cipher,
             gateway=gateway,
             usage=usage,
+            url_resolver=url_resolver,
         )
         self._countries = countries
         self._conflicts = conflicts
@@ -124,6 +128,8 @@ class GenerateReportUseCase:
         record = await self._reports.get(report_id)
         if record is None:
             raise NotFound()
+        if record.created_by != actor.id and not actor.is_admin:
+            raise Forbidden()
         previous = await self._reports.get_version(report_id, record.latest_version)
         if previous is None:
             raise NotFound()

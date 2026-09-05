@@ -22,6 +22,8 @@ const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
 const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'));
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
+const TotpSettingsPage = lazy(() => import('@/features/auth/TotpSettingsPage'));
+const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
@@ -74,6 +76,7 @@ export const routes: RouteObject[] = [
           { path: 'trackers/maritime', element: <MaritimePage /> },
           { path: 'trackers/space', element: <SpacePage /> },
           { path: 'trackers/cyber', element: <CyberPage /> },
+          { path: 'trackers/social', element: <SocialPage /> },
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
@@ -86,6 +89,7 @@ export const routes: RouteObject[] = [
               { path: 'audit', element: <AdminAuditPage /> },
               { path: 'sources', element: <AdminSourcesPage /> },
               { path: 'llm', element: <AdminLlmPage /> },
+              { path: 'security', element: <TotpSettingsPage /> },
             ],
           },
         ],

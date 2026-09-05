@@ -29,7 +29,9 @@ async def login(
     container: ContainerDep,
     context: ContextDep,
 ) -> TokenResponse:
-    auth = await container.login(session).execute(body.email, body.password, context)
+    auth = await container.login(session).execute(
+        body.email, body.password, context, body.totp_code
+    )
     set_session_cookies(response, auth, container.settings)
     return TokenResponse.from_session(auth)
 
@@ -42,6 +44,8 @@ async def refresh(
     container: ContainerDep,
     context: ContextDep,
 ) -> TokenResponse:
+    # This invokes the refresh use case, not a SQL cursor; its repository binds values.
+    # nosemgrep: python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute  # noqa: E501
     secret = request.cookies.get(REFRESH_COOKIE)
     auth = await container.refresh(session).execute(secret, context)
     set_session_cookies(response, auth, container.settings)
@@ -57,6 +61,8 @@ async def logout(
     container: ContainerDep,
     context: ContextDep,
 ) -> Response:
+    # This invokes the logout use case, not a SQL cursor; its repository binds values.
+    # nosemgrep: python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute  # noqa: E501
     await container.logout(session).execute(request.cookies.get(REFRESH_COOKIE), context)
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     clear_session_cookies(response, container.settings)
@@ -94,5 +100,7 @@ async def set_password(
     container: ContainerDep,
     context: ContextDep,
 ) -> Response:
+    # SetPasswordUseCase validates the domain password policy before hashing or writing.
+    # nosemgrep: python.django.security.audit.unvalidated-password.unvalidated-password
     await container.set_password(session).execute(body.token, body.new_password, context)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

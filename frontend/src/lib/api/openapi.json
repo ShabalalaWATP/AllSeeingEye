@@ -239,6 +239,156 @@
         }
       }
     },
+    "/api/auth/totp": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_auth_totp_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/totp/enrol": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Enrol",
+        "operationId": "enrol_api_auth_totp_enrol_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpEnrolIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpEnrolOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/totp/confirm": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Confirm",
+        "operationId": "confirm_api_auth_totp_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/totp/disable": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Disable",
+        "operationId": "disable_api_auth_totp_disable_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpDisableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/me": {
       "get": {
         "tags": [
@@ -928,6 +1078,278 @@
             }
           }
         }
+      }
+    },
+    "/api/reports/{report_id}/export/{format}": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Report",
+        "operationId": "export_report_api_reports__report_id__export__format__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ExportFormat"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/diff": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Compare Report Versions",
+        "operationId": "compare_report_versions_api_reports__report_id__diff_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "from_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "From Version"
+            }
+          },
+          {
+            "name": "to_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "To Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportComparisonOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/report-search": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Search Status",
+        "operationId": "search_status_api_report_search_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSearchStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/report-search/index": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Index Reports",
+        "operationId": "index_reports_api_report_search_index_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSearchStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/report-search/query": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Search Reports",
+        "operationId": "search_reports_api_report_search_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportSearchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSearchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/social": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Social Board",
+        "operationId": "social_board_api_trackers_social_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/stream": {
@@ -3410,6 +3832,15 @@
         ],
         "title": "CategoryStatsOut"
       },
+      "ChangeKind": {
+        "type": "string",
+        "enum": [
+          "added",
+          "removed",
+          "changed"
+        ],
+        "title": "ChangeKind"
+      },
       "ConflictBoardOut": {
         "properties": {
           "items": {
@@ -4000,6 +4431,14 @@
           "count"
         ],
         "title": "EventsOut"
+      },
+      "ExportFormat": {
+        "type": "string",
+        "enum": [
+          "pdf",
+          "docx"
+        ],
+        "title": "ExportFormat"
       },
       "ForgotPasswordIn": {
         "properties": {
@@ -4697,7 +5136,9 @@
         "enum": [
           "direction",
           "assessment",
-          "devil"
+          "devil",
+          "translation",
+          "embeddings"
         ],
         "title": "LlmRole",
         "description": "What a profile is allowed to do in the generation pipeline."
@@ -4868,6 +5309,18 @@
             "maxLength": 128,
             "minLength": 1,
             "title": "Password"
+          },
+          "totp_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Totp Code"
           }
         },
         "type": "object",
@@ -5235,6 +5688,78 @@
         "title": "Reliability",
         "description": "NATO source reliability (AJP-2.1 Table 3.1)."
       },
+      "ReportChangeOut": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ChangeKind"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "section",
+          "path",
+          "kind",
+          "before",
+          "after"
+        ],
+        "title": "ReportChangeOut"
+      },
+      "ReportComparisonOut": {
+        "properties": {
+          "from_version": {
+            "type": "integer",
+            "title": "From Version"
+          },
+          "to_version": {
+            "type": "integer",
+            "title": "To Version"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ReportChangeOut"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_version",
+          "to_version",
+          "changes"
+        ],
+        "title": "ReportComparisonOut"
+      },
       "ReportCreateIn": {
         "properties": {
           "template": {
@@ -5364,6 +5889,105 @@
           "version"
         ],
         "title": "ReportOut"
+      },
+      "ReportSearchHitOut": {
+        "properties": {
+          "report": {
+            "$ref": "#/components/schemas/ReportSummaryOut"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report",
+          "score"
+        ],
+        "title": "ReportSearchHitOut"
+      },
+      "ReportSearchIn": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Query"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "default": 10
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "ReportSearchIn"
+      },
+      "ReportSearchOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReportSearchHitOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "indexed": {
+            "type": "integer",
+            "title": "Indexed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "indexed",
+          "total"
+        ],
+        "title": "ReportSearchOut"
+      },
+      "ReportSearchStatusOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "indexed": {
+            "type": "integer",
+            "title": "Indexed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "batch_size": {
+            "type": "integer",
+            "title": "Batch Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "indexed",
+          "total",
+          "limit",
+          "batch_size"
+        ],
+        "title": "ReportSearchStatusOut"
       },
       "ReportStatus": {
         "type": "string",
@@ -5998,6 +6622,172 @@
         ],
         "title": "SirOut"
       },
+      "SocialBoardOut": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "located": {
+            "type": "integer",
+            "title": "Located"
+          },
+          "platforms": {
+            "items": {
+              "$ref": "#/components/schemas/SocialPlatformOut"
+            },
+            "type": "array",
+            "title": "Platforms"
+          },
+          "hashtags": {
+            "items": {
+              "$ref": "#/components/schemas/SocialHashtagOut"
+            },
+            "type": "array",
+            "title": "Hashtags"
+          },
+          "keywords": {
+            "items": {
+              "$ref": "#/components/schemas/SocialKeywordOut"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Posts"
+          },
+          "window_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window Start"
+          },
+          "window_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Window End"
+          },
+          "keyword_hour": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Keyword Hour"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "located",
+          "platforms",
+          "hashtags",
+          "keywords",
+          "posts",
+          "window_start",
+          "window_end",
+          "keyword_hour"
+        ],
+        "title": "SocialBoardOut"
+      },
+      "SocialHashtagOut": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag",
+          "count"
+        ],
+        "title": "SocialHashtagOut"
+      },
+      "SocialKeywordOut": {
+        "properties": {
+          "term": {
+            "type": "string",
+            "title": "Term"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "baseline_hours": {
+            "type": "integer",
+            "title": "Baseline Hours"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          },
+          "burst": {
+            "type": "boolean",
+            "title": "Burst"
+          }
+        },
+        "type": "object",
+        "required": [
+          "term",
+          "count",
+          "baseline",
+          "baseline_hours",
+          "ratio",
+          "burst"
+        ],
+        "title": "SocialKeywordOut"
+      },
+      "SocialPlatformOut": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "instance": {
+            "type": "string",
+            "title": "Instance"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "located": {
+            "type": "integer",
+            "title": "Located"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform",
+          "instance",
+          "count",
+          "located"
+        ],
+        "title": "SocialPlatformOut"
+      },
       "SourceHealthOut": {
         "properties": {
           "source_id": {
@@ -6423,6 +7213,97 @@
           "user"
         ],
         "title": "TokenResponse"
+      },
+      "TotpConfirmIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "TotpConfirmIn"
+      },
+      "TotpDisableIn": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password",
+          "code"
+        ],
+        "title": "TotpDisableIn"
+      },
+      "TotpEnrolIn": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "TotpEnrolIn"
+      },
+      "TotpEnrolOut": {
+        "properties": {
+          "secret": {
+            "type": "string",
+            "title": "Secret"
+          },
+          "provisioning_uri": {
+            "type": "string",
+            "title": "Provisioning Uri"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "default": 600
+          }
+        },
+        "type": "object",
+        "required": [
+          "secret",
+          "provisioning_uri"
+        ],
+        "title": "TotpEnrolOut"
+      },
+      "TotpStatusOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "available"
+        ],
+        "title": "TotpStatusOut"
       },
       "UpdateUserIn": {
         "properties": {

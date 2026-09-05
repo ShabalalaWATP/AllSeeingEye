@@ -4,13 +4,32 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
-Phases 0 to 3 are built and committed (last commit `477af44`, 5 September 2026). Phase 0 gave the foundation and auth; Phase 1 the fusion core, the live globe and the first connectors; Phase 2 the grading engine, the LLM gateway and the doctrine-validated report pipeline with versions, a Markdown download, the direction call, the devil's advocacy pass and Wayback archiving; Phase 3 the trackers: boards and detail pages for hazards and 23 curated conflicts, the aviation module (lists, emergency squawks, watched areas, hourly baselines, the GNSS interference map), maritime warnings, space and cyber boards, twenty new connectors, five new products and the globe upgrades (icons, low-zoom clustering, a time window, the interference layer). End-to-end generation against a real model is still untested because no endpoint or `ASE_ENCRYPTION_KEY` is configured on the development host.
+Phases 0 to 4 are built. The 6 September 2026 continuation adds the remaining Phase 5 features and the Phase 6 hardening work: translation, social listening and watchlists; optional administrator TOTP, report documents and comparison, semantic search, bounded-memory performance fixes, keyboard and motion improvements, and backup/restore tooling. Live events remain in memory. The current operating instructions are in [PHASE5_PHASE6_OPERATIONS.md](PHASE5_PHASE6_OPERATIONS.md).
 
-Phase 4 (direction and warning) is nearly complete: areas of interest, collection plans, evidence per requirement, plan-scoped reports, indicators with alert routing (in-app, stream, webhook, report) and scheduled products are live. Ops-room mode closed the phase's roadmap items; PIR tagging in the pipeline, plan editing in the app and baseline-relative indicators remain as follow-ups. Phase 5 (social and languages) has begun: Mastodon, YouTube and Reddit feeds and language detection are in; translation, the social board and watchlists are next.
+PIR tagging in the pipeline, plan editing in the app and baseline-relative indicators remain follow-ups. Modern opaque Google News links cannot currently be decoded without obtaining a signature from HTML, which conflicts with the no-scraping requirement. Their original Google URL is preserved. The ASVS review is a documented assessment, not certification or permission for public exposure; its remaining deployment checks are listed in [security/PHASE6_ASVS_REVIEW.md](security/PHASE6_ASVS_REVIEW.md).
 
 Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job). The development API runs on port 8001 with `ASE_DEV_API_TARGET` in `frontend/.env.local`, because a stale listener holds port 8000 until the host is rebooted.
 
-Check results at the last run (5 September 2026): backend 210 tests passing, coverage 96.2 percent, ruff, mypy strict, import-linter, bandit (pre-existing low findings only) clean; frontend 188 tests passing, coverage 96.1 percent statements and 88.0 percent branches, eslint and tsc clean, production build succeeds; pre-commit and the file-length check pass (the container module is 389 lines, over the 350 target and under the 400 limit).
+Baseline before this continuation: backend 229 tests passing with 95.36 percent coverage; frontend 226 tests passing with 97.18 percent lines and 90.20 percent branches. Both coverage gates remain 90 percent.
+
+Verification on 6 September 2026:
+
+| Check | Result |
+|---|---|
+| Final SQLite backend suite | 467 passed, one PostgreSQL-only skip; 96.11 percent combined statement/branch coverage |
+| PostgreSQL 17 | Full 462-test suite passed; after final report-production changes, the 36-test report/gateway selection passed with PostgreSQL configured (the writer-lock regressions deliberately use file-backed SQLite) |
+| Frontend | 262 tests passed across 60 files; 97.82 percent lines, 91.34 percent branches, 97.12 percent statements, 95.49 percent functions |
+| Source checks | Ruff lint/format, mypy strict, both import contracts, ESLint, TypeScript and file-length check passed; only the untouched 366-line grading module exceeds the 350-line target |
+| Security tools | Python/pnpm audits found no known vulnerabilities; Bandit and Gitleaks passed; Semgrep passed with 457 applicable rules after 13 precisely documented false-positive annotations |
+| Container images | Final API and web builds passed; Trivy reported no HIGH/CRITICAL findings under the recorded scan policies. Rebuilt standard Caddy retains all 132 modules; local HTTPS/static/API checks passed |
+| Recovery | Real SQLite and PostgreSQL 17 CLI drills passed, including migrations 0001 to 0011, all 19 tables and decryption of recovered credentials/TOTP; original data unchanged |
+| Browser | Desktop Chrome checked real globe/map tiles and markers, social, report comparison/downloads, unavailable search, admin access, keyboard focus and reduced motion using isolated synthetic data |
+
+Container scan results and remaining deployment requirements are recorded in the
+[ASVS review](security/PHASE6_ASVS_REVIEW.md). GitHub CI has not run because no
+remote is configured. The PostgreSQL checks used a disposable version 17 instance,
+not the operator's PostgreSQL 16/PostGIS deployment. Backup scripts separately
+measured 92.89 percent branch-aware coverage.
 
 ## Product rethink, 5 September 2026
 
@@ -167,9 +186,9 @@ Acceptance from the roadmap: an indicator fires on synthetic data within one pip
 ## Known follow-ups carried forward
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.
-- Push to GitHub to get a first CI run; several workflow steps (semgrep, trivy, the PostgreSQL job) have never executed.
-- Consider a JSON depth limit alongside the body size cap, and a challenge instead of a hard lockout before any public exposure.
-- Split deck.gl and MapLibre into their own chunks (the globe chunk is 1.6 MB minified) once the layer set settles.
+- Configure a GitHub remote to get a first hosted CI run. Local Semgrep, Trivy and PostgreSQL checks now have recorded results; the hosted workflow remains unverified.
+- Consider a JSON depth limit for incoming API requests alongside their body size cap, and a challenge instead of a hard lockout before any public exposure. Structured model responses already reject excessive nesting.
+- deck.gl and MapLibre now have separate chunks. They remain large dependencies (about 695 KB and 957 KB minified); the application globe chunk is about 30 KB. The worker/shared assets add about 19 KB/492 KB, and deck still preloads on login because of shared runtime dependencies. Removing dependency recursion caused a browser initialisation failure, so safe ordering is retained. Further reductions remain a measured follow-up; warning thresholds were not raised.
 - The live globe loads up to 2,000 events on entry and mirrors at most 5,000; revisit both caps with the retention windows when more connectors land.
 - Source names are not exposed to non-admin users, so the inspector shows the source id; a public sources summary endpoint would fix that.
 
@@ -179,13 +198,25 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 
 - [x] Social feeds without keys: Mastodon hashtag timelines on operator-chosen instances (`ase/resources/social_watch.json`; posts reduced to text, reliability E, credibility 6), outlet YouTube channels (BBC, Reuters, DW, Al Jazeera, France 24, Sky; the outlet's reliability) and subreddit listings (worldnews, geopolitics, UkrainianConflict; reliability E) as Atom seeds. Bluesky re-checked and still refused; Telegram stays out
 - [x] Language detection: a pipeline stage fills the language of events whose feed could not name one (social posts first), backed by py3langid restricted to 24 languages with a confidence floor; under test the stage runs with a null detector
-- [ ] Translation: an LLM-backed translator behind a `translation` profile role, batching untranslated non-English titles from the live store into `title_en` with a hash cache and an hourly call budget
-- [ ] Social board and page: posts by platform and instance, top hashtags of the day, and bursts (keyword counts against the hourly baselines), with a globe layer for the posts that carry a location
-- [ ] Watchlists: keyword collection through Google News RSS search feeds built from the enabled collection plans' search terms
+- [x] Translation: enabled `translation` model role, encrypted credentials, strict ordered JSON output, short-lived usage sessions and lifespan wiring; batches up to 20 titles every 30 seconds within a 60-call hourly budget, counting failed attempts. Bounded retry/cache state and compare-before-update preserve revised or expired events and live-store budgets
+- [x] Social board and page: rolling-day posts by platform/instance and hashtags, latest items and located posts on the globe; hourly keyword aggregates with zero samples and 30-day retention, bounded to 32 watched terms, with bursts against earlier complete hours
+- [x] Watchlists: Google News RSS search from enabled collection-plan terms, bounded to 12 deduplicated literal phrases, one request per minute, 15 minutes per query and 48 requests per rolling hour; conditional response cache bounded to 256 entries
+- [x] Cited-evidence URL resolution is lazy, validates public hosts and handles legacy embedded publisher URLs without fetching publisher HTML
+- [ ] Modern opaque Google News publisher URL decoding: signature-free batchexecute returned no result in the live probe; original Google links remain usable. No scraping fallback has been added
 
-## Later phases
+## Phase 6: Hardening and polish
 
-See `05_ROADMAP.md` and the revision note at its end: Phase 3 trackers in three slices (3a disasters and conflicts, 3b aviation, 3c maritime warnings, space and cyber), Phase 4 direction and warning on top of the tracker signals, Phase 5 social and languages, Phase 6 hardening.
+- [x] Optional administrator TOTP: encrypted pending/active factor, password recheck, timed enrolment, atomic step replay prevention, session revocation and local password-confirmed recovery command (migration 0009)
+- [x] PDF and DOCX downloads from frozen report versions with citations, findings, annex and review banner; bounded off-event-loop rendering; text-only processing without remote asset fetches
+- [x] Version comparison for report text and frozen evidence, available in the reader
+- [x] Semantic search over latest saved report versions using an optional embeddings profile, explicit small indexing batches, bounded vectors, invalidation and per-user/global budgets (migration 0010; [ADR 0008](adr/0008-bounded-report-search.md))
+- [x] Performance pass: linear expiry pruning, correct 5,000-event client cap, memoised globe layers, separate map vendors; repeatable store benchmark under `backend/benchmarks/`
+- [x] Accessibility review and fixes: native keyboard time controls, visible nation-field focus, skip navigation, reduced-motion and hidden-page behaviour; browser/assistive-technology limits recorded with verification
+- [x] Backup and restore scripts: SQLite online snapshot including WAL, integrity/manifest checks, explicit secrets opt-in, new-target-only restore, PostgreSQL dump/restore support; [procedure](BACKUP_RESTORE.md)
+- [x] Documentation refreshed, including operational limits and the bounded-search decision
+- [x] ASVS 5.0 level 2 review with evidence and remediation tracking; [review and remaining gates](security/PHASE6_ASVS_REVIEW.md)
+- [ ] Before exposure beyond the LAN: complete the review's remaining staging, deployment, recovery and operational checks
+- [ ] DOCX visual verification in Word or LibreOffice: structural/content checks passed, but no office renderer is installed on this host
 
 ## Blockers
 

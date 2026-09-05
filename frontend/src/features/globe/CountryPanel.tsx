@@ -3,7 +3,7 @@ import type { Country } from '@/lib/api/geoSchemas';
 import { formatAgo } from '@/lib/format';
 import { countByCategory } from '@/stores/events';
 
-import { CATEGORY_STYLES, ORDERED_CATEGORIES } from './layers/registry';
+import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
 
 export const COUNTRY_PANEL_LIMIT = 8;
 
@@ -69,7 +69,9 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
                   className="mt-1 h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: CATEGORY_STYLES[event.category].css }}
                 />
-                <span className="line-clamp-2 flex-1 text-text">{event.title_en ?? event.title}</span>{' '}
+                <span className="line-clamp-2 flex-1 text-text">
+                  {event.title_en ?? event.title}
+                </span>{' '}
                 <span className="shrink-0 font-mono text-[11px] text-muted">
                   {formatAgo(event.published_at, now)}
                 </span>

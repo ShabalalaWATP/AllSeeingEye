@@ -18,6 +18,11 @@ COPY alembic ./alembic
 COPY alembic.ini ./
 RUN uv sync --frozen --no-dev
 
+# Runtime commands use the locked virtual environment, not pip's vendored toolchain.
+# Remove build caches and the base-image pip to keep unused vulnerable vendors out.
+RUN uv cache clean \
+    && /usr/local/bin/python -m pip uninstall --yes pip
+
 RUN useradd --create-home --uid 10001 ase \
     && mkdir -p /app/data \
     && chown -R ase:ase /app

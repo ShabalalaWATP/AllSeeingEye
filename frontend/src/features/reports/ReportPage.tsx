@@ -15,8 +15,11 @@ import { fileNameFor, saveTextFile } from '@/lib/download';
 import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useResource } from '@/lib/hooks/useResource';
+import { useAuthStore } from '@/stores/auth';
 
 import { AdvocacyView, DirectionView, EvidenceAnnex, ReportBodyView } from './ReportSections';
+import { ReportDiff } from './ReportDiff';
+import { ReportExports } from './ReportExports';
 import { StatusBadge } from './ReportsPage';
 
 function versionFromQuery(value: string | null): number | undefined {
@@ -25,6 +28,7 @@ function versionFromQuery(value: string | null): number | undefined {
 }
 
 export default function ReportPage() {
+  const actor = useAuthStore((state) => state.user);
   const { id = '' } = useParams();
   const [params] = useSearchParams();
   const requested = versionFromQuery(params.get('version'));
@@ -55,6 +59,7 @@ export default function ReportPage() {
     );
   }
   const { report, version } = data;
+  const canEdit = actor?.id === report.created_by || actor?.role === 'admin';
   const versions = Array.from({ length: report.latest_version }, (_, index) => index + 1);
   const actionError = remove.error ?? regenerate.error ?? download.error;
   return (
@@ -89,19 +94,34 @@ export default function ReportPage() {
           ))}
         </nav>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" busy={regenerate.busy} onClick={() => void regenerate.run()}>
-            Regenerate
-          </Button>
+          {canEdit && (
+            <Button
+              variant="secondary"
+              busy={regenerate.busy}
+              onClick={() => void regenerate.run()}
+            >
+              Regenerate
+            </Button>
+          )}
           <Button variant="secondary" busy={download.busy} onClick={() => void download.run()}>
             Download Markdown
           </Button>
           <CopyButton value={version.markdown} label="Copy Markdown" />
-          <Button variant="danger" busy={remove.busy} onClick={() => void remove.run()}>
-            Delete
-          </Button>
+          {canEdit && (
+            <Button variant="danger" busy={remove.busy} onClick={() => void remove.run()}>
+              Delete
+            </Button>
+          )}
         </div>
+        <ReportExports id={id} version={version.number} title={report.title} />
         {actionError === null ? null : <Alert tone="error">{describeError(actionError)}</Alert>}
       </header>
+      <ReportDiff
+        key={`${id}:${String(version.number)}`}
+        id={id}
+        current={version.number}
+        latest={report.latest_version}
+      />
       {version.status !== 'ready' && (
         <Alert tone={version.status === 'failed' ? 'error' : 'warning'} title="Validator findings">
           <ul className="list-disc pl-5">

@@ -49,6 +49,7 @@ jobs:
         working-directory: backend
     env:
       ASE_TEST_DATABASE_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
+      ASE_TOKEN_RACE_TEST_URL: postgresql+asyncpg://ase:ase@localhost:5432/ase
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
@@ -113,7 +114,7 @@ jobs:
       image: semgrep/semgrep
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - run: semgrep scan --config p/default --config p/security-audit --error backend/src frontend/src
+      - run: semgrep scan --config p/default --config p/security-audit --no-rewrite-rule-ids --error backend/src frontend/src
 
   images:
     runs-on: ubuntu-latest

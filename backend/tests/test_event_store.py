@@ -97,6 +97,34 @@ def test_prune_by_memory_budget() -> None:
     assert stats.per_category[0].count == 2
 
 
+def test_prune_preserves_each_category_window_and_cap() -> None:
+    store = InMemoryEventStore(
+        budgets={
+            Category.NEWS: RetentionBudget(timedelta(hours=1), 2),
+            Category.AVIATION: RetentionBudget(timedelta(minutes=10), 1),
+        }
+    )
+    events = [
+        make_event("old-news", category=Category.NEWS, observed_at=NOW - timedelta(hours=2)),
+        make_event("cap-news", category=Category.NEWS, observed_at=NOW - timedelta(minutes=60)),
+        make_event("news-a", category=Category.NEWS, observed_at=NOW - timedelta(minutes=30)),
+        make_event("news-b", category=Category.NEWS, observed_at=NOW),
+        make_event("old-plane", category=Category.AVIATION, observed_at=NOW - timedelta(hours=1)),
+        make_event(
+            "cap-plane", category=Category.AVIATION, observed_at=NOW - timedelta(minutes=10)
+        ),
+        make_event("plane", category=Category.AVIATION, observed_at=NOW),
+    ]
+    store.upsert(events)
+    result = store.prune(NOW)
+    assert (result.expired, result.evicted) == (2, 2)
+    assert set(result.ids) == {events[index].id for index in (0, 1, 4, 5)}
+    assert {event.id for event in store.query(EventQuery())} == {
+        events[index].id for index in (2, 3, 6)
+    }
+    assert store.prune(NOW).ids == ()
+
+
 def test_stats_empty_store() -> None:
     stats = InMemoryEventStore().stats()
     assert stats.total == 0

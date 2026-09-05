@@ -1,6 +1,6 @@
 # Features and Views
 
-Status: proposal. MoSCoW priorities are suggestions for Alex to prune. "Phase" refers to `05_ROADMAP.md`.
+Status: approved design with an implementation inventory updated on 6 September 2026. Sections 1 to 10 retain design intent except where an implementation is described explicitly. Sections 11 and 12 distinguish working features from follow-ups and upstream/key blockers. "Phase" refers to `05_ROADMAP.md`; operational limits are in [Phase 5 and Phase 6 operations](PHASE5_PHASE6_OPERATIONS.md).
 
 ## 1. Application shell
 
@@ -72,36 +72,46 @@ A single panel that answers "what is going on in X right now": flag and key fact
 - CISA Known Exploited Vulnerabilities, ransomware victims by country and group, internet outages and shutdowns (IODA, Cloudflare Radar) on the globe, threat intel feed summaries.
 
 ### 5.7 Social listening
-- Bluesky, Mastodon, Reddit, YouTube channel uploads, and public Telegram channels tied to conflicts; keyword and hashtag watchlists; burst detection; everything defaults to reliability E/F and credibility 6 until corroborated.
+
+- Built: Mastodon hashtag timelines from the packaged instance watchlist, Reddit subreddit Atom feeds and six outlet YouTube channel feeds. Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
+- `/trackers/social` shows the retained day's posts by platform and instance, top hashtags, the latest 50 posts and counts of located posts. Located events use the existing social globe category; upstream posts without coordinates are not assigned guessed positions.
+- Keyword bursts compare the previous complete UTC hour with sampled history from the preceding 30 days. Up to 32 watchlist/collection terms have durable hourly count aggregates. A burst requires six baseline hours, three posts and at least twice the mean. Private collection terms are restricted to their owner or an administrator.
+- Mastodon and Reddit begin at reliability E and credibility 6. Named outlet YouTube channels retain outlet reliability. Translation and activity spikes do not establish truth or increase a grade.
 
 ## 6. Stories and the ticker
 - Near-duplicate detection groups items into stories; the corroboration count of a story and the mix of independent sources drive its credibility grade.
 - "Developing" badge when several independent sources publish within a short window.
 - Ticker shows the newest graded items; click to fly the globe to the location.
+- Built in Phase 5: language detection fills missing languages; a background queue optionally translates foreign-language titles through an enabled `translation` model profile. Original titles remain available and English display titles are streamed to open pages. No real model has been exercised on the development host.
 
 ## 7. Direction: PIRs, AOIs, Indicators and Warning
 - Collection plan: a named question set (Priority Intelligence Requirements) broken into specific requirements and indicators, each with keywords, categories, AOIs, countries and sources.
-- The pipeline tags events against PIRs continuously; the PIR page shows the evidence gathered and can generate a targeted assessment.
-- Indicators board: user rules ("military flights in AOI above 2x baseline", "FIRMS hotspots in AOI", "Polymarket probability above 30%", "air-raid alert in oblast", "internet outage in country") with traffic-light status, history and alert routing (in-app, email, webhook).
+- Built: plan pages match current evidence on demand and generate plan-scoped assessments. Continuous PIR tagging and a globe plan filter remain follow-ups.
+- Built: indicators evaluate event counts against configured thresholds, with in-app, stream, optional webhook and report routes. Baseline-relative thresholds and email routing remain follow-ups.
 - Scheduled products: daily INTSUM at 06:00 for chosen AOIs, weekly conflict roll-ups.
+- Built in Phase 5: Google News RSS keyword collection from enabled plans, bounded to 12 literal search terms and 48 requests/hour. The initial edition is GB English. Legacy embedded publisher URLs are decoded only for cited evidence; modern opaque links retain their original Google URL. Article scraping is excluded.
 
 ## 8. Reports (Dissemination)
 - Template gallery, generation wizard (scope, window, sources, model profile), streaming progress, reader with hover citations and grade badges, version history, "what changed since the previous report", share with other users (object-level permissions), export to Markdown, PDF and DOCX, print stylesheet.
 - "Ask the Eye": a free-form question turned into a structured assessment with evidence selection visible to the user before generation.
+- Built in Phase 6: PDF and DOCX downloads for a selected frozen version, including grades, citations, provenance and review warnings. Rendering is local and fetches no external resources. DOCX retains Unicode; unsupported characters in the bundled PDF font are written as explicit `[U+XXXX]` code points. DOCX structure is tested, but visual validation in LibreOffice remains unavailable on this host.
+- Built in Phase 6: structured comparisons between two versions of the same report, including evidence additions/removals, grade changes, direction, advocacy and validation findings. This is a deterministic field comparison, not a model judgement about change.
+- Built in Phase 6: "Find related reports" uses an explicitly configured `embeddings` profile. Indexing is requested in batches of eight and covers at most the newest 1,000 current saved report versions. Live events are never indexed. Similarity scores are not analytical confidence ratings; stale versions and incompatible model fingerprints are excluded.
 
 ## 9. Admin
 - Users: approve account requests, roles, disable, force reset, sessions.
-- LLM profiles: multiple OpenAI-compatible endpoints, per-role routing (assessment, fast, embeddings), test-connection button, token budgets, cost tracking.
+- LLM profiles: multiple OpenAI-compatible endpoints, with assessment, direction, devil, translation and embeddings roles, connection testing and usage records. Translation and embeddings require enabled profiles and `ASE_ENCRYPTION_KEY`.
+- Built in Phase 6: optional administrator TOTP at `/admin/security`, password-confirmed enrolment/removal, replay protection and a host-only recovery command. See the operations guide for recovery and session behaviour.
 - Source registry: enable/disable, reliability baseline, poll interval, category, language, credentials, licence note, health.
 - Retention and budgets for the live store; snapshot on/off.
 - SMTP and webhook settings; branding; audit log; system health.
 
 ## 10. Deliberately out of scope for now
-- Mobile-native apps, multi-tenant organisations, paid data sources, scraping sites that offer no feed or API (policy question for Alex), storing raw feed history, user-to-user chat.
+- Mobile-native apps, multi-tenant organisations, paid data sources, article/page scraping, storing raw feed history, user-to-user chat.
 
-## 11. Map feature inventory (5 September 2026)
+## 11. Map feature inventory (6 September 2026)
 
-Status after Phases 0 to 2, checked against live feeds on 5 September 2026 (section O of `02_DATA_SOURCES.md`). "Built" is on the globe today. "Next" is scheduled in `MASTER_IMPLEMENTATION_PLAN.md` with a feed that answered. "Key" waits only for a free key that Alex has to obtain. "Open" means the source is not confirmed and the feature is not promised.
+Implementation status through Phases 5 and 6, using the dated feed probes in section O of `02_DATA_SOURCES.md`. "Built" means the current code implements the feature. "Next" means follow-up work; a successful upstream probe alone does not establish an implementation. "Key" needs an operator-obtained free key. "Open" means the source is not confirmed.
 
 | Feature on the globe or map | Feed | Status |
 |---|---|---|
@@ -109,48 +119,57 @@ Status after Phases 0 to 2, checked against live feeds on 5 September 2026 (sect
 | Nation filter with fly-to, country panel with counts and latest items | Natural Earth polygons | Built |
 | Base layers: OpenFreeMap dark, EOX Sentinel-2 cloudless, hybrid, OS Maps Road, Outdoor and Light | Keyless except OS Maps | Built (OS Maps needs the key) |
 | Day and night terminator, lite mode, WGS84 readout that copies | Local computation | Built |
-| Military aircraft | adsb.lol `/v2/mil` (96 aircraft at the time of the check) | Built as points; heading icons, altitude colour, trails and callsign labels are next |
-| Interesting, LADD and PIA aircraft | adsb.lol `/v2/ladd`, `/v2/pia` and `dbFlags` | Next |
-| Civil traffic over areas of interest | adsb.lol `/v2/point/{lat}/{lon}/{radius}` up to 250 nm, no key; OpenSky anonymous bounding boxes, 400 credits a day | Next |
-| Emergency squawks 7700, 7600 and 7500 as alerts | adsb.lol `/v2/sqk/{code}` | Next |
-| GNSS interference hex map (the GPSJam method) | `nac_p` and `nic` fields present in adsb.lol responses | Next |
-| Tropical cyclones with centre, intensity and movement | NHC RSS `nhc:Cyclone` elements (Atlantic and East Pacific); JTWC RSS plus warning text with "NEAR 26.2N 127.5E" positions (West Pacific and Indian Ocean) | Next |
-| Volcanic activity, weekly | Smithsonian GVP RSS with `georss:point` | Next |
-| Tsunami bulletins | NTWC and PTWC Atom with `geo:lat` and `geo:long` | Next |
-| Earthquakes outside the US within seconds of detection | EMSC FDSN JSON | Next |
-| Severe weather polygons | NWS alerts API (polygons on some alerts, US only); Met Office UK warnings Atom | Next |
+| Military aircraft and heading icons | adsb.lol `/v2/mil` | Built; historical trails remain a follow-up |
+| Interesting, LADD and PIA aircraft | adsb.lol `/v2/ladd`, `/v2/pia` and `dbFlags` | Built |
+| Civil traffic over watched areas | adsb.lol `/v2/point/{lat}/{lon}/{radius}` up to 250 nm, no key | Built; OpenSky fallback remains a follow-up |
+| Emergency squawks 7700, 7600 and 7500 | adsb.lol `/v2/sqk/{code}` | Built in the aviation board and globe |
+| GNSS interference grid using the GPSJam-style proportion | `nac_p` in adsb.lol observations, rolling hourly buckets | Built with one-degree square cells |
+| Tropical cyclone positions | NHC RSS and JTWC warning text | Built |
+| Volcanic activity, weekly | Smithsonian GVP RSS with `georss:point` | Built |
+| Tsunami bulletins | NTWC and PTWC Atom with coordinates | Built |
+| EMSC earthquakes | EMSC FDSN JSON | Built |
+| US severe weather events | NWS alerts API | Built; Met Office and MeteoAlarm parsers remain follow-ups |
 | Daily satellite imagery with a date picker, night lights, GOES GeoColor every ten minutes | NASA GIBS WMTS; tiles verified for VIIRS true colour, the VIIRS day and night band and GOES-East GeoColor | Next |
 | Weather radar overlay | RainViewer, two hours of history | Could |
-| NAVAREA warning positions and areas | NGA broadcast warnings JSON (386 active); positions parsed from the warning text | Next |
+| NAVAREA warning positions | NGA broadcast warnings JSON, positions parsed from warning text | Built |
 | Anti-shipping incidents | NGA ASAM answers 404 on every documented path; UKMTO is a link-out | Open |
 | Vessels at chokepoints, dark vessels, loitering, encounters | AISStream (key), Global Fishing Watch (token) | Key |
-| Satellites over an area, ground tracks, the ISS | CelesTrak GP JSON propagated with SGP4 | Next |
-| Launch sites with a countdown | Launch Library 2, 15 calls an hour | Next |
-| Aurora oval and planetary K index | SWPC ovation and K-index JSON | Next |
-| Internet outages by country, region and network | IODA alerts | Next |
-| Ransomware victims by country | ransomware.live recent victims | Next |
+| Satellite and ISS positions | CelesTrak GP JSON propagated with SGP4 | Built; ground tracks and pass predictions remain follow-ups |
+| Launch sites and upcoming launches | Launch Library 2 | Built |
+| Planetary K index and space weather | SWPC JSON | Built; aurora oval overlay remains a follow-up |
+| Internet outages by country | IODA alerts | Built |
+| Ransomware victims by country | ransomware.live recent victims | Built |
+| Located social posts and translated display titles | Retained social events and optional translation profile | Built; current social feeds usually have no coordinates |
 | Conflict events | GDELT 2.0 events (built); HDX HAPI monthly aggregates by admin area | Built; aggregates next |
 | Assessed control of terrain in Ukraine | ISW ArcGIS: only historical feature services are discoverable; no current daily service found | Open |
 | Air-raid alerts by oblast | alerts.in.ua (token) over geoBoundaries ADM1 polygons | Key |
 | Active fires | NASA FIRMS (key by email) | Key |
 | Infrastructure on demand: airfields, ports, power stations | Overpass API | Later |
 | Country choropleths: news volume, conflict intensity, disaster alerts, outages, attention | Live store aggregates, IODA, Wikipedia page views | Next |
-| Time slider and playback over the retained window | Live store | Next |
-| Clustering and hex density at low zoom | deck.gl | Next |
-| Areas of interest drawn on the globe and saved per user | PostGIS | Phase 4 |
+| Time-window filter over retained events | Live store | Built; playback remains a follow-up |
+| Grid clustering at low zoom | deck.gl | Built; H3 density is not implemented |
+| Saved areas of interest | Bounding boxes or country sets | Built in Direction; drawing/editing on the globe remains a follow-up |
 | Arcs for story links and flight origin and destination | Live store | Later |
-| Ops room idle mode | Local | Phase 4 |
+| Ops room idle mode | Local | Built |
 
-## 12. Analysis feature inventory (5 September 2026)
+## 12. Analysis and hardening inventory (6 September 2026)
 
-Built: NATO grading (reliability from the registry, credibility from corroboration, syndication folded), story clustering, evidence freezing with hashes and Wayback archives, the quality of information check with a confidence ceiling, doctrine-validated products (INTSUM, INTREP, Country Brief, Ask the Eye) with the PHIA yardstick and a separate confidence rating, versions with a "what changed" line, a direction call that turns a question into PIR, SIRs and EEIs and steers evidence selection, a devil's advocacy pass that can only lower confidence, instruction-like text screened out of evidence, usage and audit logs.
+| Capability | Implemented scope |
+|---|---|
+| Doctrine and provenance | NATO reliability/credibility grading, story clustering, frozen cited evidence and hashes, PHIA judgements, separate confidence factors, validation findings, version history and optional Wayback archiving |
+| Report production | INTSUM, INTREP, Country Brief, Ask the Eye, Disaster SITREP, Conflict Assessment, Aviation Activity, Maritime Activity and Cyber Summary; direction and optional devil's advocacy passes |
+| Tracker analysis | Hazard and curated conflict boards/details; aviation, maritime, space, cyber and social boards computed from retained events |
+| Baselines | Tiny durable hourly aviation and configured social-keyword aggregates; GNSS observations remain in memory |
+| Direction and warning | Saved areas/plans, on-demand evidence per SIR, plan-scoped reports, threshold indicators, alerts, acknowledgement and scheduled products |
+| Social and languages | Mastodon/Reddit/YouTube feeds, social board, keyword bursts, language detection and optional title translation |
+| Keyword collection | Enabled plan terms feed bounded Google News RSS queries. Legacy cited URLs can resolve locally; opaque modern URLs remain unchanged |
+| Export and change review | Markdown/PDF/DOCX downloads and deterministic version comparison, including frozen evidence and validation changes |
+| Semantic report search | Explicit batches of eight, at most 1,000 current saved reports, portable bounded JSON vectors and a configured embeddings endpoint |
+| Administrator security | Optional TOTP, encrypted enrolment secrets, replay checks, password-confirmed management and host-only recovery |
+| Recovery | Verified SQLite/PostgreSQL backup bundles and restore to new destinations; [backup operations](BACKUP_RESTORE.md) describe testing and limits |
+| Performance and accessibility | Separate MapLibre/deck.gl build chunks, bounded export/model concurrency, live-store pruning improvements and a keyboard skip-to-content link; these changes do not establish a complete performance or accessibility certification |
+| Security assessment | [Phase 6 ASVS review](security/PHASE6_ASVS_REVIEW.md) records findings, verification and remaining deployment checks; it is not an ASVS level 2 certification or approval for public exposure |
 
-Next, in the order the master plan schedules them:
+Remaining work is tracked in the master plan: PIR pipeline tags and globe filtering, richer collection-plan editing, baseline-relative indicators, email transport, deferred feed parsers and keys, sanctions/context enrichment, contradiction handling, and further globe overlays. Warning Report, Competing Hypotheses and Source Evaluation templates are not in the implemented template set above.
 
-1. Tracker boards for hazards, curated conflicts, aviation, maritime warnings, space and cyber: activity now against the week before, trend, worst and latest event, countries touched, and a detail view with a timeline and the events themselves.
-2. Baselines for anomaly detection: tiny hourly aggregates (military flights per country, emergency squawks, jam percentages, outage alerts) so that "above twice the baseline" has a baseline. This is the one new durable table the architecture allows for "normal levels".
-3. Products: Disaster SITREP, Conflict Assessment, Aviation Activity Report, Maritime Activity Report, Cyber Summary, Warning Report, Competing Hypotheses, Source Evaluation.
-4. Direction and warning: areas of interest, collection plans with PIRs, keyword collection through Google News RSS queries and social watchlists, event tagging to PIRs, an indicators board with traffic lights over tracker signals and Polymarket probabilities, alert routing in-app and by webhook, scheduled INTSUMs.
-5. Context for briefs: sanctions programmes touching a country (UK Sanctions List XML and OFAC SDN XML), appeals and outbreaks (IFRC GO, WHO Disease Outbreak News, UNHCR), weather (Open-Meteo), attention (Wikipedia page views and the current events portal).
-6. Grading depth: contradiction rules (doubtful and improbable), instrument anomaly flags, corroboration and contradiction identifiers on events, and an evidence preview before generation for asks.
-7. Hardening: report diffing, semantic search over reports, PDF and DOCX export, backups.
+Operational validation is incomplete where it needs the operator's environment: no real LLM/embeddings endpoint has been configured and exercised, modern Google News link resolution is unavailable without a permitted API, DOCX visual rendering requires a suitable office renderer, and a real PostgreSQL recovery drill is still required. The [operations guide](PHASE5_PHASE6_OPERATIONS.md) separates those limitations from the implemented behaviour.

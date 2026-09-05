@@ -1,13 +1,17 @@
 """Chat completions against any OpenAI-compatible endpoint (OpenAI, Ollama, LM Studio, vLLM).
 
-The key travels only in the Authorization header; errors quote the status and at most a
-short, redacted excerpt of the body so a misconfigured endpoint can be diagnosed
-without the key or the prompt ever reaching a log.
+The key travels only in the Authorization header. Provider errors contain a status only,
+never response text, since callers persist them in report findings and usage records.
+Responses must use identity encoding so HTTP decompression cannot allocate before the
+streaming size guard. Local endpoints remain an administrator-controlled trust boundary.
 """
 
 from __future__ import annotations
 
+import asyncio
+import json
 import time
+from dataclasses import replace
 from typing import Any
 
 import httpx
@@ -17,12 +21,27 @@ from ase.domain.llm import LlmRequest, LlmResult
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
-ERROR_EXCERPT_CHARS = 200
+MAX_CONCURRENT_REQUESTS = 2
+MAX_JSON_DEPTH = 64
 
 
-def _excerpt(text: str) -> str:
-    flat = " ".join(text.split())
-    return flat[:ERROR_EXCERPT_CHARS]
+def _bounded_json(content: bytearray) -> Any:
+    try:
+        data = json.loads(content)
+    except (ValueError, RecursionError):
+        raise LlmGatewayError("The model endpoint returned invalid JSON.") from None
+    pending = [(data, 0)]
+    while pending:
+        value, depth = pending.pop()
+        if depth > MAX_JSON_DEPTH:
+            raise LlmGatewayError("The model endpoint returned invalid JSON.")
+        if isinstance(value, dict):
+            pending.extend(
+                (child, depth + 1) for child in value.values() if isinstance(child, (dict, list))
+            )
+        elif isinstance(value, list):
+            pending.extend((child, depth + 1) for child in value if isinstance(child, (dict, list)))
+    return data
 
 
 def build_payload(model: str, request: LlmRequest) -> dict[str, Any]:
@@ -74,7 +93,11 @@ class OpenAiCompatibleGateway:
         client: httpx.AsyncClient | None = None,
         timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
-        self._client = client or httpx.AsyncClient(timeout=httpx.Timeout(timeout_seconds))
+        self._client = client or httpx.AsyncClient(
+            timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
+        )
+        self._timeout = timeout_seconds
+        self._admission = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
 
     async def aclose(self) -> None:
         await self._client.aclose()
@@ -82,27 +105,48 @@ class OpenAiCompatibleGateway:
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
     ) -> LlmResult:
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json", "Accept-Encoding": "identity"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
         started = time.perf_counter()
         try:
-            response = await self._client.post(
-                f"{base_url}/chat/completions", json=build_payload(model, request), headers=headers
-            )
+            async with (
+                asyncio.timeout(self._timeout),
+                self._admission,
+                self._client.stream(
+                    "POST",
+                    f"{base_url}/chat/completions",
+                    json=build_payload(model, request),
+                    headers=headers,
+                    timeout=self._timeout,
+                    follow_redirects=False,
+                ) as response,
+            ):
+                if response.status_code != 200:
+                    raise LlmGatewayError(f"The model endpoint answered {response.status_code}.")
+                if response.headers.get("content-encoding", "identity").strip().lower() not in (
+                    "",
+                    "identity",
+                ):
+                    raise LlmGatewayError(
+                        "The model endpoint returned unsupported compressed content."
+                    )
+                content = bytearray()
+                async for chunk in response.aiter_bytes():
+                    if len(content) + len(chunk) > MAX_RESPONSE_BYTES:
+                        raise LlmGatewayError(
+                            "The model endpoint returned more than the allowed size."
+                        )
+                    content.extend(chunk)
+        except (TimeoutError, httpx.TimeoutException):
+            raise LlmGatewayError("The model endpoint timed out.") from None
         except httpx.HTTPError as exc:
             raise LlmGatewayError(
                 f"Could not reach the model endpoint: {type(exc).__name__}"
-            ) from exc
+            ) from None
+        data = _bounded_json(content)
+        result = parse_completion(data, model, 0)
         latency_ms = (time.perf_counter() - started) * 1000
-        if len(response.content) > MAX_RESPONSE_BYTES:
-            raise LlmGatewayError("The model endpoint returned more than the allowed size.")
-        if response.status_code >= 400:
-            raise LlmGatewayError(
-                f"The model endpoint answered {response.status_code}: {_excerpt(response.text)}"
-            )
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise LlmGatewayError("The model endpoint returned invalid JSON.") from exc
-        return parse_completion(data, model, latency_ms)
+        if latency_ms > self._timeout * 1000:
+            raise LlmGatewayError("The model endpoint timed out.")
+        return replace(result, latency_ms=latency_ms)

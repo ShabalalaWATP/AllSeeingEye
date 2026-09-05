@@ -11,6 +11,11 @@ import { ActivityCells } from './TrackerParts';
 
 const MODULES = [
   {
+    to: '/trackers/social',
+    title: 'Social',
+    blurb: 'Public posts, hashtags and keyword bursts against hourly activity.',
+  },
+  {
     to: '/trackers/aviation',
     title: 'Aviation',
     blurb: 'Military and unusual flying against baseline, emergencies, GNSS interference.',

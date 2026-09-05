@@ -16,7 +16,8 @@ export function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { run, busy, error } = useAsyncAction(() => login(email, password));
+  const [totpCode, setTotpCode] = useState('');
+  const { run, busy, error } = useAsyncAction(() => login(email, password, totpCode));
 
   const destination = redirectTarget(location.state);
   if (status === 'authenticated') {
@@ -53,6 +54,19 @@ export function LoginPage() {
         value={password}
         onChange={(event) => {
           setPassword(event.target.value);
+        }}
+      />
+      <TextField
+        label="Authenticator code"
+        hint="Required only if you have enabled administrator TOTP."
+        name="totp_code"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        pattern="[0-9]{6}"
+        maxLength={6}
+        value={totpCode}
+        onChange={(event) => {
+          setTotpCode(event.target.value);
         }}
       />
       <Button type="submit" busy={busy}>

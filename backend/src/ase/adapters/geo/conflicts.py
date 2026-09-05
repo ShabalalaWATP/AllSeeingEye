@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+
+# Requires Python >=3.12; this standard-library API is supported.
+# nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from importlib import resources
 from typing import Any
 

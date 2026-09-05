@@ -44,7 +44,7 @@ Acceptance: an indicator fires on synthetic data within one pipeline cycle and p
 - Bluesky, Mastodon, Reddit, YouTube RSS, Telegram public channels (option chosen in the open questions), language detection, batched translation with caching, watchlists, burst detection.
 
 ## Phase 6: Hardening and polish (2 sessions)
-- Optional TOTP for admins, PDF and DOCX export, report diffing, semantic search over reports (pgvector), performance passes, accessibility audit, backup and restore scripts, documentation pass.
+- Optional TOTP for admins, PDF and DOCX export, report diffing, semantic search over reports, performance passes, accessibility audit, backup and restore scripts, documentation pass. The implementation uses bounded JSON vectors with SQLite/PostgreSQL parity instead of pgvector; see [ADR 0008](adr/0008-bounded-report-search.md).
 
 ## Risks and mitigations
 
@@ -56,7 +56,7 @@ Acceptance: an indicator fires on synthetic data within one pipeline cycle and p
 | Prompt injection via feed content | Untrusted-data framing, delimiter isolation, instruction-like text detection, no LLM tools with side effects, output schema validation |
 | Geoparsing errors put news in the wrong place | Confidence levels shown on the map; GDELT GEO for pre-geolocated news; gazetteer limited to populated places; country-level fallback |
 | Memory creep in the live store | Hard budgets, prune loop, admin visibility, alert when above 80 percent |
-| Windows development friction | Docker for PostgreSQL; pure-Python dependencies; client-side PDF/DOCX export avoids native toolchains |
+| Windows development friction | Docker for PostgreSQL; server-side ReportLab/python-docx exports avoid an office installation for generation; visual DOCX verification still needs an office renderer |
 | Scope creep | MoSCoW list in `04_FEATURES_AND_VIEWS.md`; every phase ships something usable |
 
 ## Revision, 5 September 2026

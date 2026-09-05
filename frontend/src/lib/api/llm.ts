@@ -3,7 +3,13 @@ import { z } from 'zod';
 
 import { apiCall, apiSend } from './client';
 
-export const llmRoleSchema = z.enum(['direction', 'assessment', 'devil']);
+export const llmRoleSchema = z.enum([
+  'direction',
+  'assessment',
+  'devil',
+  'translation',
+  'embeddings',
+]);
 export type LlmRole = z.infer<typeof llmRoleSchema>;
 export const LLM_ROLES: readonly LlmRole[] = llmRoleSchema.options;
 

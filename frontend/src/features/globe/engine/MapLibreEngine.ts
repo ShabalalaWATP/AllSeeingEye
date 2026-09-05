@@ -81,6 +81,7 @@ export class MapLibreEngine implements MapEngine {
   private lite = false;
   private styleReady = false;
   private spinning = false;
+  private stepping = false;
 
   constructor(private readonly options: EngineOptions = {}) {}
 
@@ -126,12 +127,22 @@ export class MapLibreEngine implements MapEngine {
   private spinStep(): void {
     const map = this.map;
     if (map === null || !this.spinning) return;
+    // Reduced motion can make easeTo finish synchronously and emit moveend immediately.
+    if (this.stepping) {
+      this.spinning = false;
+      return;
+    }
     const center = map.getCenter();
-    map.easeTo({
-      center: [center.lng + SPIN_DEGREES, center.lat],
-      duration: SPIN_STEP_MS,
-      easing: (t: number) => t,
-    });
+    this.stepping = true;
+    try {
+      map.easeTo({
+        center: [center.lng + SPIN_DEGREES, center.lat],
+        duration: SPIN_STEP_MS,
+        easing: (t: number) => t,
+      });
+    } finally {
+      this.stepping = false;
+    }
   }
 
   setProjection(projection: Projection): void {
@@ -184,6 +195,7 @@ export class MapLibreEngine implements MapEngine {
   }
 
   destroy(): void {
+    this.spinning = false;
     this.map?.remove();
     this.map = null;
     this.overlay = null;

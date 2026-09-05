@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
+from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
 from ase.application.reports.advocacy import advocate, apply_advocacy
@@ -19,6 +20,7 @@ from ase.application.reports.direction import direct
 from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.render import render_markdown
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.resolve_links import resolve_cited_links
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import Template
 from ase.domain.advocacy import DevilsAdvocacy
@@ -67,6 +69,7 @@ class Totals:
     completion_tokens: int | None = None
     latency_ms: float = 0.0
     findings: list[Finding] = field(default_factory=list)
+    usage: list[LlmUsage] = field(default_factory=list)
 
     def add(
         self,
@@ -92,12 +95,14 @@ class Producer:
         cipher: SecretCipher,
         gateway: LlmGateway,
         usage: LlmUsageRepository,
+        url_resolver: EvidenceUrlResolver | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
         self._cipher = cipher
         self._gateway = gateway
         self._usage = usage
+        self._url_resolver = url_resolver
 
     async def produce(self, job: Job, profile_for: ProfileLookup) -> ReportVersion:
         totals = Totals()
@@ -138,8 +143,10 @@ class Producer:
             direction=direction,
             background=job.background,
         )
-        await self._log(
-            job, job.profile, f"report:{job.template.id}", draft.body is not None, draft
+        totals.usage.append(
+            self._usage_entry(
+                job, job.profile, f"report:{job.template.id}", draft.body is not None, draft
+            )
         )
         totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
         body = draft.body or ReportBody()
@@ -151,10 +158,19 @@ class Producer:
             and status is not ReportStatus.FAILED
         ):
             body, advocacy = await self._advocate(job, profile_for, body, selection.items, totals)
+        evidence = selection.items
+        if self._url_resolver is not None:
+            cited = body.cited_labels() | frozenset(advocacy.evidence if advocacy else ())
+            evidence = await resolve_cited_links(self._url_resolver, evidence, cited)
         markdown = render_markdown(
-            header, body, selection.items, quality, totals.findings,
+            header, body, evidence, quality, totals.findings,
             direction=direction, advocacy=advocacy,
         )  # fmt: skip
+        # Usage adapters flush writes. Keep all outbound model and resolution work
+        # ahead of them so SQLite's writer lock is held only for persistence. The
+        # caller commits these rows atomically with the resulting report version.
+        for usage in totals.usage:
+            await self._usage.add(usage)
         return ReportVersion(
             id=uuid4(),
             report_id=job.report_id or uuid4(),
@@ -162,7 +178,7 @@ class Producer:
             status=status,
             body=body,
             findings=tuple(totals.findings),
-            evidence=selection.items,
+            evidence=evidence,
             quality=quality,
             markdown=markdown,
             profile_id=job.profile.id,
@@ -199,7 +215,9 @@ class Producer:
         key = self._cipher.decrypt(profile.api_key_encrypted)
         draft = await direct(self._gateway, profile, key, question, job.country_name)
         purpose = f"report:{job.template.id}:direction"
-        await self._log(job, profile, purpose, draft.direction is not None, draft)
+        totals.usage.append(
+            self._usage_entry(job, profile, purpose, draft.direction is not None, draft)
+        )
         totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
         return draft.direction
 
@@ -225,7 +243,9 @@ class Producer:
         key = self._cipher.decrypt(profile.api_key_encrypted)
         draft = await advocate(self._gateway, profile, key, body, evidence)
         purpose = f"report:{job.template.id}:advocacy"
-        await self._log(job, profile, purpose, draft.advocacy is not None, draft)
+        totals.usage.append(
+            self._usage_entry(job, profile, purpose, draft.advocacy is not None, draft)
+        )
         totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
         if draft.advocacy is None:
             return body, None
@@ -239,20 +259,19 @@ class Producer:
             return ReportStatus.NEEDS_REVIEW
         return ReportStatus.READY
 
-    async def _log(self, job: Job, profile: LlmProfile, purpose: str, ok: bool, call: Any) -> None:
-        """One usage row per model call; the error column carries what went wrong, if anything."""
+    @staticmethod
+    def _usage_entry(job: Job, profile: LlmProfile, purpose: str, ok: bool, call: Any) -> LlmUsage:
+        """Prepare call accounting in memory; persist it after all outbound stages finish."""
         findings: Sequence[Finding] = call.findings
         problems = [f.message for f in findings if not ok or f.severity is Severity.ERROR]
-        await self._usage.add(
-            LlmUsage(
-                at=job.now,
-                profile_id=profile.id,
-                user_id=job.actor.id,
-                purpose=purpose,
-                ok=ok,
-                latency_ms=call.latency_ms,
-                prompt_tokens=call.prompt_tokens,
-                completion_tokens=call.completion_tokens,
-                error="; ".join(problems)[:500] or None,
-            )
+        return LlmUsage(
+            at=job.now,
+            profile_id=profile.id,
+            user_id=job.actor.id,
+            purpose=purpose,
+            ok=ok,
+            latency_ms=call.latency_ms,
+            prompt_tokens=call.prompt_tokens,
+            completion_tokens=call.completion_tokens,
+            error="; ".join(problems)[:500] or None,
         )

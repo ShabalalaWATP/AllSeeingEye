@@ -29,6 +29,18 @@ describe('matchCountry and zoomForBounds', () => {
 });
 
 describe('NationFilter', () => {
+  it('keeps native suggestions and keyboard focus without overriding popup state', async () => {
+    const user = userEvent.setup();
+    render(<NationFilter countries={countries} value={null} onChange={vi.fn()} />);
+    await user.tab();
+    const input = screen.getByRole('combobox', { name: 'Nation filter' });
+    expect(input).toHaveFocus();
+    expect(input).not.toHaveAttribute('aria-expanded');
+    expect(input).not.toHaveClass('focus:outline-none');
+    const list = document.getElementById(input.getAttribute('list')!);
+    expect(list?.querySelectorAll('option')).toHaveLength(countries.length);
+  });
+
   it('selects on a full name, a code, or Enter with a prefix, and clears', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();

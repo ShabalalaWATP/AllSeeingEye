@@ -5,11 +5,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-
-import structlog
 
 from ase.application.ports import Clock
 from ase.application.ports.baselines import BaselineRepository, BaselineSink
@@ -17,7 +16,7 @@ from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.aviation import JamCell, JamMap, military_by_country, tagged
 from ase.domain.events import Category, Event
 
-log = structlog.get_logger(__name__)
+log = logging.getLogger(__name__)
 
 SAMPLE_INTERVAL = timedelta(minutes=5)
 BASELINE_DAYS = 30

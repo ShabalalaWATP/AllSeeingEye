@@ -10,11 +10,10 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
-
-import structlog
 
 from ase.application.ports import Clock
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
@@ -22,7 +21,7 @@ from ase.application.ports.warning import AlertNotifier, WarningStore
 from ase.domain.events import Event
 from ase.domain.warning import ALERT_RETENTION, Alert, Indicator, alert_from, evaluate
 
-log = structlog.get_logger(__name__)
+log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=60)
 POOL = 2_000
@@ -82,12 +81,12 @@ class IndicatorEvaluator:
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
             await self._warnings.add_alert(alert)
-            log.info("alert_fired", indicator=indicator.name, count=alert.count)
+            log.info("alert_fired", extra={"indicator": indicator.name, "count": alert.count})
             await self._route(alert, indicator)
             fired.append(alert)
         pruned = await self._warnings.prune(now - ALERT_RETENTION)
         if pruned:
-            log.info("alerts_pruned", count=pruned)
+            log.info("alerts_pruned", extra={"count": pruned})
         return fired
 
     async def _route(self, alert: Alert, indicator: Indicator) -> None:
@@ -95,13 +94,13 @@ class IndicatorEvaluator:
         try:
             await self._notifier.notify(alert, indicator)
         except Exception:
-            log.exception("alert_notify_failed", indicator=indicator.name)
+            log.exception("alert_notify_failed", extra={"indicator": indicator.name})
         if self._reporter is None or indicator.report_template is None:
             return
         try:
             report_id = await self._reporter(indicator, alert)
         except Exception:
-            log.exception("alert_report_failed", indicator=indicator.name)
+            log.exception("alert_report_failed", extra={"indicator": indicator.name})
             return
         if report_id is not None:
             await self._warnings.attach_report(alert.id, report_id)

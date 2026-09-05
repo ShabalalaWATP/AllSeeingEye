@@ -1,84 +1,191 @@
 # Security by Design
 
-Status: proposal. This becomes `SECURITY.md` and a set of tests once building starts.
+Status: implementation guidance updated for Phase 5 and Phase 6, 6 September
+2026. These controls describe the current code, with deployment and verification
+limits called out below. They do not establish OWASP ASVS level 2 conformance or
+public-exposure readiness. The detailed review and remaining gates are in
+[PHASE6_ASVS_REVIEW.md](security/PHASE6_ASVS_REVIEW.md).
 
-## 1. Threat model summary
+## 1. Threat model
 
-Assets: user accounts, the LLM and feed API keys held by the admin, saved reports and evidence, the host machine, and the outbound reputation of the app (it polls other people's servers).
+Assets are accounts and sessions, administrator TOTP, model/feed credentials,
+saved reports and frozen evidence, configuration, the host machine and its
+outbound network access. Relevant actors include anonymous callers, authenticated
+users exceeding their role, hostile feed publishers, malicious or misconfigured
+model endpoints and compromised dependencies.
 
-Actors: anonymous internet users if the app is ever exposed; authenticated users acting beyond their role; hostile content authors (anyone who can publish a headline, a social post, or an RSS item that the app ingests); compromised or malicious upstream feeds; a malicious or misconfigured LLM endpoint.
+Primary risks are broken authentication and authorisation, prompt injection,
+SSRF, browser script injection, credential disclosure, excessive resource use
+and supply-chain compromise. The intended operating boundary is one controlled
+home machine or LAN/Tailscale deployment with one API process. A different
+exposure or multi-worker topology needs a new review.
 
-Top risks, in order: prompt injection through ingested content; server-side request forgery through feed URLs or archive requests; credential theft; cross-site scripting through feed HTML or LLM Markdown; denial of service through oversized or slow upstream responses; authorisation bypass between users; supply-chain compromise of dependencies.
-
-## 2. Controls
+## 2. Implemented controls
 
 ### Identity and sessions
-- argon2id password hashing; password policy by length and an offline breach-list check, not composition rules.
-- Access token: short-lived JWT (15 minutes) held in memory by the SPA. Refresh token: opaque, rotated on every use, stored hashed, delivered as an `HttpOnly; Secure; SameSite=Strict` cookie scoped to `/api/auth`. Reuse of a rotated refresh token revokes the whole family.
-- CSRF double-submit token on cookie-bearing endpoints.
-- Rate limiting and exponential backoff on login, account request, and password reset; temporary lockout with audit entry.
-- Account requests go to a queue; nothing is active until an admin approves. Password reset tokens are single use, 30 minutes, hashed at rest; the response is identical whether or not the email exists. If SMTP is not configured, the admin can issue a reset link from the admin page.
-- Optional TOTP second factor (phase 6), enforced for admins if enabled.
-- Every auth event is written to the append-only audit log.
+
+- Argon2id hashes passwords; policy includes an offline common-password deny
+  list. Account requests require administrator approval.
+- Access tokens are short-lived JWTs held in browser memory. Refresh tokens are
+  opaque, stored as hashes and rotated through an HttpOnly cookie. CSRF checks
+  protect cookie-authenticated refresh/logout operations.
+- `CurrentUser` verifies the access token and reloads the user's active state and
+  current role from the database for every protected HTTP request. Deactivation
+  and demotion therefore affect the next request even if its access JWT has not
+  expired. A signed token alone is not the source of current permissions.
+- Login and account-recovery endpoints have bounded rate limits and account
+  lockout. Password activation/reset tokens are hashed, time-limited and single
+  use. Responses avoid exposing account existence. Email delivery is not
+  configured; administrators can issue activation/reset links locally.
+- Optional administrator TOTP is implemented, including password-authorised
+  enrolment, confirmation, encrypted secrets, expiring enrolment state and code
+  replay protection. Enabling/removing TOTP revokes refresh sessions. Host-only
+  recovery uses `ase recover-admin-totp`; there is no HTTP recovery bypass.
+- Token rotation, reset consumption and TOTP transitions have deterministic
+  tests. Concurrent refresh-family invalidation and PostgreSQL execution need
+  the separate verification recorded in the Phase 6 review; unit tests alone
+  do not establish every lifecycle race property.
+- Authentication and administrative actions write audit records. This is an
+  application audit log, not a tamper-proof external audit service.
 
 ### Authorisation
-- Two roles, `user` and `admin`, checked in the application layer, not only at the route.
-- Object-level checks: reports, AOIs, collection plans, saved views and alerts belong to a user; access requires ownership or an explicit share. Admin endpoints require the admin role and are namespaced under `/api/admin`.
-- A `Policy` module centralises these rules so they are unit tested once and reused everywhere.
 
-### Untrusted content
-- Every upstream response has a size cap (5 MB default, per connector), a timeout, and a content-type check. XML is parsed with `defusedxml`; JSON depth and size are bounded.
-- Text fields are stripped of HTML in the normaliser with the standard-library parser (tags and attributes discarded, entities decoded), then truncated; links survive only as absolute http(s) URLs.
-- LLM endpoints are configured only by administrators and may point at private addresses on purpose (a model on localhost is the normal self-hosted case), so the feed client's SSRF guard is deliberately not applied to them; the trust boundary is the admin role. Keys are encrypted with Fernet under `ASE_ENCRYPTION_KEY`, the API returns only the last four characters, and gateway errors quote the status and a short excerpt of the body, never the request. The frontend renders text nodes only; the sole HTML rendering path is the sanitised report Markdown, passed through DOMPurify with a strict allow-list.
-- Archiving sends each cited URL to the Internet Archive after a report is generated (`ASE_ARCHIVE_ENABLED`, on by default). Only http(s) URLs of bounded length are sent; the replies are parsed for a snapshot address under `web.archive.org` and nothing else is kept or rendered. The job runs after the response, never retries, and a failure means the item simply has no archive link.
-- Alert routing to a webhook is opt-in through `ASE_ALERT_WEBHOOK_URL`. The address passes the same public-host check as feed URLs (private, loopback and link-local answers are refused and the resolved address is pinned), one POST is made per alert with a ten-second timeout and no retry, and the payload carries the alert and the indicator's name only, never a credential or a report body. Failures are logged and never block the in-app route or the stream.
-- Outbound requests only to hosts declared by the connector or present in the admin-managed source registry. DNS results are checked against private, loopback, link-local and metadata ranges before connecting, and again on redirects.
-- Adding or editing a source URL is admin only, validated (scheme, host, no credentials in URL), and logged.
+- `user` and `admin` roles are checked at protected boundaries. Administrator
+  operations require the current administrator role.
+- Reports and collection plans are shared reads for active authenticated users.
+  Report exports, version comparisons and semantic search follow the same read
+  policy. The current product does not promise owner-private report libraries.
+- Report and plan mutations require the owner or an administrator in application
+  use cases. Object identifiers do not grant permission to mutate another user's
+  records. Similar feature-specific checks protect areas, indicators and
+  schedules; do not infer a different read policy from ownership alone.
+- SSE checks current identity on connection and expires no later than the
+  presented token. It has per-user/global admission bounds. Already-open streams
+  do not re-read account state for each message; reconnects repeat authentication.
 
-### LLM boundary
-- Evidence is presented inside clearly delimited data blocks with an explicit statement that it is untrusted content and not instructions. A heuristic scanner flags instruction-like text in evidence (for example "ignore previous instructions", "system prompt") and marks the item; flagged items are excluded from generation by default.
-- The LLM has no tools with side effects. It returns a JSON document validated against the template schema. Citations are checked against the evidence bundle; unknown citations are removed and the report is marked with a validation warning. URLs in output that are not in the evidence are removed.
-- Yardstick and confidence linting is applied to every key judgement; a report that fails validation is stored as `needs_review`, never silently published.
-- Reports carry a permanent banner: machine-generated assessment from graded open sources; review before use.
-- Prompts, model, endpoint, token counts and validation results are stored with the report for auditability.
+### External feeds and content
 
-### Secrets
-- No secrets in code or in the repository; `.env.example` documents every variable. `gitleaks` in CI and pre-commit.
-- Keys entered through the Admin UI are encrypted with Fernet using `ASE_ENCRYPTION_KEY`; only the last four characters are ever displayed; the API has no read-back endpoint.
-- LLM API keys never reach the browser; all LLM calls are server-side.
-- Tile services that need a key (OS Maps) are proxied through the API with a short cache so the key stays server-side and quotas are enforced per user.
+- Feed HTTP requests use public-host checks and DNS pinning to reject private,
+  loopback, link-local and metadata destinations. Redirect hops are checked by
+  the guarded feed client. Administrator-selected model endpoints use the
+  separate trust boundary below.
+- Feed responses have per-request byte limits and timeouts. XML uses
+  `defusedxml`; text is stripped of markup and bounded before it enters events.
+  Parsed values and coordinates are constrained by domain/schema validation.
+- Dynamic Mastodon instances and watchlist requests use the guarded feed path.
+  Google News link resolution is deferred until report citation processing; it
+  does not fetch every article in a live feed or create an article archive.
+- The React report reader, social board, evidence annex and version comparison
+  render structured text nodes. Links must pass HTTP(S) URL checks. There is no
+  browser Markdown-to-HTML or DOMPurify rendering path in the implementation.
+- Optional Wayback archiving sends cited URLs to the Internet Archive after
+  report production; `ASE_ARCHIVE_ENABLED=false` disables that step. Optional
+  webhook routing requires a public destination and sends one bounded alert
+  notification without retries. Separate archive, tile and webhook adapter
+  review remains a deployment gate; the feed guard is not proof that every
+  outbound adapter has identical redirect and buffering behaviour.
 
-### Transport and browser hardening
-- HTTPS everywhere through Caddy; HSTS when exposed beyond localhost.
-- Strict Content Security Policy: `default-src 'self'`; scripts only from self with hashes; `connect-src` limited to self and the tile hosts; `frame-ancestors 'none'`; `object-src 'none'`.
-- `X-Content-Type-Options`, `Referrer-Policy: no-referrer`, minimal `Permissions-Policy`, CORS same-origin only.
-- No third-party analytics or fonts at runtime; fonts are self-hosted.
+### Model boundary
 
-### Availability and abuse
-- Per-user rate limits on report generation and on expensive on-demand upstream queries; a global concurrency cap on LLM calls.
-- Live store budgets prevent memory exhaustion; circuit breakers stop a misbehaving feed from consuming the poll loop.
-- Backups: nightly `pg_dump` to a mounted folder with retention; restore documented and tested.
+- Only administrators configure model profiles. Private/loopback endpoints are
+  allowed deliberately for self-hosted models. The administrator's endpoint
+  choice is the trust boundary; applying the public-feed policy would prevent
+  that supported local workflow.
+- Model keys are decrypted server-side and sent in an Authorization header.
+  Redirects are disabled. Chat and embedding adapters request identity encoding
+  and refuse compressed responses before consuming response content.
+- Chat responses stream under a 4 MiB cap and a 120-second default overall
+  deadline, including admission. A shared semaphore admits two chat requests at
+  once. Chat JSON structure is checked with a depth bound.
+- Embedding responses stream under a 2 MiB cap and a 30-second endpoint deadline,
+  with an application deadline around the call. Queries/indexing use a shared
+  process-local lock and per-user/global hourly model-call limits. Vectors must
+  contain finite numeric values, non-zero magnitude and at most 4,096 dimensions.
+- Gateway error messages contain safe status/context only. They never include
+  provider response excerpts, credentials, request headers or secret-bearing
+  connection details in report findings or usage records.
+- Evidence is delimited as untrusted data. Instruction-like material is screened
+  out before selection; models receive no side-effecting tools. Structured
+  assessment output is validated against doctrine, citation labels and the
+  information-quality ceiling. Failed validation retries once and then marks
+  the assessment for review instead of claiming success.
+- Saved versions retain evidence, assessment, findings, analysis, model and
+  usage metadata. Browser and document exports preserve the machine-generated
+  assessment warning. They do not imply that an analyst has reviewed the result.
 
-### Supply chain and build
-- Pinned, locked dependencies (`uv.lock`, `pnpm-lock.yaml`); Dependabot or Renovate; `pip-audit`, `npm audit`, `bandit`, `semgrep`, `trivy` on images in CI.
-- Docker images run as non-root with a read-only filesystem and a `tmpfs` for scratch; no added capabilities.
+### Durable data and secrets
 
-### Privacy and logging
-- Structured logs redact tokens, keys and passwords; IP addresses are kept only in the audit log with a retention setting.
-- The app stores no personal data beyond email, display name and audit events. Social-media items are held only in the expiring live tier unless a user pins them into evidence, which the audit log records.
+- Raw live events stay in the bounded in-memory store and are excluded from
+  database writes and backups. Saved report evidence is deliberately durable;
+  small hourly activity counts support baselines without preserving event rows.
+- Semantic search indexes already saved report assessment text, with one JSON
+  vector per indexed report and a latest-1,000-report bound. No pgvector service
+  or raw-event semantic archive is used. See
+  [ADR 0008](adr/0008-bounded-report-search.md).
+- Model credentials and administrator TOTP secrets use Fernet under
+  `ASE_ENCRYPTION_KEY`. Existing keys are never read back through profile APIs;
+  new TOTP enrolment material is returned once to the authorised enrolment flow.
+  Preserve the encryption key separately for recovery.
+- Real `.env` files are excluded from git. Structured logging has secret
+  redaction, and model/driver errors must remain safe before they reach logs.
+  Reports and frozen evidence can contain personal information present in public
+  sources; they need the same private storage care as account records.
 
-## 3. Residual risks recorded after the Phase 0 security review (4 September 2026)
+### Transport, runtime and recovery
 
-- Account lockout is a deliberate trade-off: five bad passwords lock a known address for fifteen minutes, so an attacker who knows an email can keep that user locked out at no cost. Accepted for a LAN or Tailscale deployment; before any public exposure, replace the hard lock with a challenge after repeated failures and alert on repeated `account_locked` audit entries.
-- Access tokens cannot be revoked inside their fifteen-minute lifetime (stateless JWT). Deactivation and role changes end refresh sessions immediately and take full effect at the next refresh.
-- The in-memory rate limiter protects a single process only; running several uvicorn workers or replicas would split the buckets. The compose file runs one worker on purpose.
-- Behind Caddy the API trusts `X-Forwarded-For` from the whole compose network (`ASE_FORWARDED_ALLOW_IPS=*`), which is safe only while the API port stays unpublished.
-- The body-size cap relies on `Content-Length` and on counting streamed chunks inside the API, plus Caddy's 64 KB limit at the edge; there is no separate JSON depth limit yet.
-- Secrets in `.env` are readable by anyone with access to the host or `docker inspect`. Acceptable for a single-operator machine.
-- HSTS stays commented out while the site uses Caddy's internal certificate; enabling it is a gate on the exposure checklist, not just a comment.
-- CI pins third-party actions to commit SHAs and runs pip-audit, bandit, pnpm audit, gitleaks, semgrep and a trivy image scan, but no CI run has been observed yet because the repository has no remote.
+- Development uses a same-origin Vite API proxy. Compose serves HTTPS through
+  Caddy's internal CA, with the API and database ports unpublished.
+- Caddy applies CSP, frame restrictions, MIME sniffing protection and referrer/
+  permission restrictions. Script sources are restricted to self; inline styles
+  and blob workers are specifically allowed for MapLibre. API responses have
+  their own restrictive headers. HSTS remains disabled for the default local
+  certificate setup and must be verified for an actual public deployment.
+- The API container runs as a non-root user with a read-only root filesystem,
+  temporary `/tmp` and `no-new-privileges`. Do not generalise these settings to
+  every service: PostgreSQL and Caddy have their own image/volume requirements.
+- The live store enforces category/item limits and an estimated memory budget.
+  Request body limits, stream admission, model timeouts and bounded search reduce
+  resource exposure. Process memory still requires representative-load testing.
+- [Backup/restore scripts](BACKUP_RESTORE.md) create consistent SQLite snapshots
+  or Compose PostgreSQL dumps, verify a strict hash manifest, refuse unsafe
+  paths, and restore only into new destinations. Actual `.env` inclusion is
+  explicit. No nightly schedule, automatic pruning or destructive restore is
+  installed. The offline SQLite drill is real; PostgreSQL command tests are
+  mocked and a live recovery drill remains outstanding.
 
-## 4. Verification plan
-- Unit tests for the SSRF guard, sanitiser, policy module, token rotation and validation linting, with coverage above 95 percent in those modules.
-- A weekly dependency audit workflow.
-- Before any exposure beyond the LAN: a self-review against the OWASP ASVS level 2 checklist, and an OWASP ZAP baseline scan against a staging container.
+### Supply chain
+
+Lockfiles, pinned CI actions and repository checks cover linting, type checking,
+tests, dependency audits, secret detection, SAST and container scanning. These
+are configured controls: no GitHub CI result has been observed because the
+repository has no configured remote. Record actual local results in the current
+implementation plan and do not describe workflow definitions as passing scans.
+
+## 3. Residual assumptions and exposure gates
+
+The [Phase 6 review](security/PHASE6_ASVS_REVIEW.md) is the detailed record of
+findings, fixes and remaining evidence. The principal operational gates are:
+
+1. Keep one API process. Rate limits, search coordination and stream/model
+   admission are in-process. Keep API/database ports private and narrow
+   forwarded-header trust if the Compose network boundary changes.
+2. Retain the verified PostgreSQL session-race regressions and define access-token
+   revocation/recovery expectations. Ordinary requests re-check active state and
+   role, but logout does not add a universal access-JWT deny list, and a running
+   SSE connection lasts until its deadline.
+3. Account lockout can be used to deny access to a known account. This remains a
+   documented LAN trade-off, not an acceptable default for unreviewed public
+   exposure. Host access also gives access to `.env`, volumes and recovery tools.
+4. Complete applicable ASVS level 2 requirements and an authenticated baseline
+   scan of an owned local/staging deployment. Verify actual TLS, cookies, CSP,
+   CORS, body limits, proxy trust and HSTS. No production scan is implied.
+5. Complete independent outbound-adapter checks and retain final dependency,
+   secret, SAST and image scan evidence. A synthetic PostgreSQL recovery drill
+   passed across all 19 migrated tables; repeat it with the operator's backups.
+   Hashes detect damage; they do not authenticate a replaced backup manifest.
+6. Exercise a configured real model and representative load. Define operational
+   log/audit/usage retention, storage permissions, backup scheduling and alert
+   handling for the deployed host. These are not installed by the scripts.
+
+No remaining gate authorises production changes, credential rotation, external
+disclosure, scheduled jobs or public exposure without a separate operator action.

@@ -64,6 +64,24 @@ describe('ReportsPage', () => {
 });
 
 describe('ReportPage', () => {
+  it.each(['user', 'admin'] as const)('limits shared report actions for a %s', async (role) => {
+    server.use(
+      http.get('/api/reports/:id', () =>
+        HttpResponse.json({
+          ...report,
+          report: { ...reportSummary, created_by: '77777777-7777-4777-8777-777777777777' },
+        }),
+      ),
+    );
+    renderApp(`/reports/${reportSummary.id}`, role);
+    await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+    expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeInTheDocument();
+    for (const name of ['Regenerate', 'Delete']) {
+      if (role === 'admin') expect(screen.getByRole('button', { name })).toBeInTheDocument();
+      else expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    }
+  });
+
   it('renders every section, the annex with safe links only, and deletes', async () => {
     const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
     expect(

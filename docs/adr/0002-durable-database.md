@@ -2,6 +2,13 @@
 
 Status: Accepted (proposed 2 September 2026, accepted by Alex 3 September 2026)
 
+Implementation note, 6 September 2026: SQLite is also supported for local
+development. Current geometry filtering uses the bounded live store, and saved
+report search uses bounded JSON vectors rather than pgvector (see
+[ADR 0008](0008-bounded-report-search.md)). Backup scripts support both databases;
+they do not install a nightly schedule. Follow the current
+[backup procedure](../BACKUP_RESTORE.md) for operational instructions.
+
 ## Context
 
 The durable data is small and relational: users, sessions, audit events, the source registry, encrypted credentials, areas of interest (polygons), collection plans, indicators, alerts, reports, frozen evidence (with geometry), and hourly baseline aggregates. Live feed data is explicitly not stored (see ADR 0003). The app runs on a single home machine or server under Docker Compose.

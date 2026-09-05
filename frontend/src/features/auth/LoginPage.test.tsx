@@ -1,14 +1,35 @@
 import { screen } from '@testing-library/react';
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { USER_PASSWORD, plainUser } from '@/test/fixtures';
+import { USER_PASSWORD, plainUser, tokenFor } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 import { useAuthStore } from '@/stores/auth';
 
 describe('LoginPage', () => {
+  it('includes an optional authenticator code in login', async () => {
+    let payload: unknown;
+    server.use(
+      http.post('/api/auth/login', async ({ request }) => {
+        payload = await request.json();
+        return HttpResponse.json(tokenFor(plainUser));
+      }),
+    );
+    const { user } = renderApp('/login', 'anonymous');
+    await user.type(screen.getByLabelText('Email'), plainUser.email);
+    await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
+    await user.type(screen.getByLabelText('Authenticator code'), '123456');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findByRole('group', { name: 'View mode' })).toBeInTheDocument();
+    expect(payload).toEqual({
+      email: plainUser.email,
+      password: USER_PASSWORD,
+      totp_code: '123456',
+    });
+  });
+
   it('signs in and lands on the globe', async () => {
     const { user, router } = renderApp('/login', 'anonymous');
     expect(screen.getByTestId('auth-backdrop')).toContainElement(screen.getByTestId('evil-eye'));

@@ -5,9 +5,9 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 default:
     @just --list
 
-# Run the API with auto-reload on http://localhost:8000
+# Run the API with auto-reload on http://localhost:8001
 dev-api:
-    cd backend && uv run uvicorn ase.main:app --reload --port 8000
+    cd backend && uv run uvicorn ase.main:app --reload --port 8001
 
 # Run the web app with Vite on http://localhost:5173
 dev-web:

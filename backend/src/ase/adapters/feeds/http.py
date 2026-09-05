@@ -12,6 +12,7 @@ import asyncio
 import ipaddress
 import json
 import socket
+from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -20,6 +21,7 @@ import httpx
 
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 3
+MAX_VALIDATORS = 256
 
 
 class FeedFetchError(Exception):
@@ -102,7 +104,7 @@ class FeedHttpClient:
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self._max_bytes = max_bytes
-        self._validators: dict[str, _Validators] = {}
+        self._validators: OrderedDict[str, _Validators] = OrderedDict()
         self._client = client or httpx.AsyncClient(
             timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
         )
@@ -117,8 +119,10 @@ class FeedHttpClient:
         current = url
         for _ in range(MAX_REDIRECTS + 1):
             address = await assert_public_host(current)
-            headers: dict[str, str] = {}
+            headers: dict[str, str] = {"Accept-Encoding": "identity"}
             validators = self._validators.get(url) if conditional else None
+            if validators is not None:
+                self._validators.move_to_end(url)
             if validators and validators.etag:
                 headers["If-None-Match"] = validators.etag
             if validators and validators.last_modified:
@@ -126,7 +130,7 @@ class FeedHttpClient:
             target, extensions = self._pinned(current, address, headers)
             try:
                 async with self._client.stream(
-                    "GET", target, headers=headers, extensions=extensions
+                    "GET", target, headers=headers, extensions=extensions, follow_redirects=False
                 ) as response:
                     if response.status_code == 304:
                         raise NotModified(url)
@@ -146,13 +150,16 @@ class FeedHttpClient:
                     etag=response.headers.get("etag"),
                     last_modified=response.headers.get("last-modified"),
                 )
+                self._validators.move_to_end(url)
+                while len(self._validators) > MAX_VALIDATORS:
+                    self._validators.popitem(last=False)
             return body
         raise FeedFetchError("Too many redirects")
 
     async def get_json(self, url: str, *, conditional: bool = True) -> Any:
         try:
             return json.loads(await self.get_bytes(url, conditional=conditional))
-        except ValueError as exc:
+        except (ValueError, RecursionError) as exc:
             raise FeedFetchError(f"Invalid JSON from {url}") from exc
 
     async def get_text(self, url: str, *, conditional: bool = True) -> str:
@@ -172,6 +179,10 @@ class FeedHttpClient:
         return pin_url(url, address), extensions
 
     async def _read_bounded(self, response: httpx.Response) -> bytes:
+        # HTTPX decodes compressed chunks before yielding them. Refuse that path so an
+        # upstream cannot allocate a decompression bomb before our byte limit applies.
+        if response.headers.get("content-encoding", "identity").strip().lower() != "identity":
+            raise FeedFetchError("Unsupported response content encoding")
         declared = response.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > self._max_bytes:
             raise FeedFetchError(f"Response too large ({declared} bytes)")

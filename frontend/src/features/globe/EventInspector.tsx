@@ -5,7 +5,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 
-import { CATEGORY_STYLES } from './layers/registry';
+import { CATEGORY_STYLES } from '@/lib/categories';
 
 export interface EventInspectorProps {
   event: LiveEvent;

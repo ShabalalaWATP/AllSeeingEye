@@ -17,10 +17,14 @@ from ase.api.routers import (
     events,
     health,
     me,
+    report_documents,
+    report_search,
     reports,
     schedules,
+    social,
     stream,
     tiles,
+    totp,
     trackers,
     warning,
 )
@@ -28,12 +32,16 @@ from ase.api.routers import (
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
+api_router.include_router(totp.router)
 api_router.include_router(me.router)
 api_router.include_router(events.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
+api_router.include_router(report_documents.router)
+api_router.include_router(report_search.router)
+api_router.include_router(social.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)

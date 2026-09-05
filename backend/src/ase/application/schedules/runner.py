@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from uuid import UUID
-
-import structlog
 
 from ase.application.ports import Clock
 from ase.application.ports.schedules import ScheduleStore
 from ase.domain.schedules import Schedule, next_run_after
 
-log = structlog.get_logger(__name__)
+log = logging.getLogger(__name__)
 
 INTERVAL = timedelta(seconds=60)
 Producer = Callable[[Schedule], Awaitable[UUID]]
@@ -49,7 +48,7 @@ class ScheduleRunner:
                 report_id = await self._producer(schedule)
             except Exception as exc:
                 error = f"{type(exc).__name__}: {exc}"[:300]
-                log.warning("schedule_failed", schedule=schedule.name, error=error)
+                log.warning("schedule_failed", extra={"schedule": schedule.name, "error": error})
             await self._schedules.mark_run(
                 schedule.id,
                 ran_at=now,

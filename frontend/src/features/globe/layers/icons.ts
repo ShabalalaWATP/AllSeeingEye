@@ -7,7 +7,7 @@ import type { Layer } from '@deck.gl/core';
 
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
-import { CATEGORY_STYLES } from './registry';
+import { CATEGORY_STYLES } from '@/lib/categories';
 
 export type IconKind = 'aircraft' | 'cyclone' | 'volcano';
 

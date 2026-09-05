@@ -63,14 +63,16 @@ class SetPasswordUseCase:
         if user is None or (token.purpose is TokenPurpose.RESET and not user.is_active):
             raise InvalidToken()
         validate_password(new_password, user.email)
+        # Claim the single-use link before changing credentials. A concurrent caller
+        # with the same stale token cannot overwrite the winning password.
+        if not await self._password_tokens.consume(token.id, now):
+            raise InvalidToken()
         user.password_hash = self._hasher.hash(new_password)
         if token.purpose is TokenPurpose.ACTIVATION:
             user.is_active = True
         user.failed_login_count = 0
         user.locked_until = None
         await self._users.save(user)
-        token.used_at = now
-        await self._password_tokens.save(token)
         # A new password invalidates every existing session.
         await self._refresh_tokens.revoke_all_for_user(user.id, now)
         await self._auditor.record(

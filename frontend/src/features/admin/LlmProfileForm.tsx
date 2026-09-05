@@ -11,6 +11,8 @@ const ROLE_LABELS: Record<LlmRole, string> = {
   direction: 'Direction',
   assessment: 'Assessment',
   devil: "Devil's advocate",
+  translation: 'Translation',
+  embeddings: 'Embeddings',
 };
 
 export interface LlmProfileFormProps {
