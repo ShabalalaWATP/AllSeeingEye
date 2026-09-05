@@ -37,7 +37,7 @@ export function Ticker({ events, selectedId, now, onSelect, limit = TICKER_LIMIT
                 <button
                   type="button"
                   aria-pressed={active}
-                  title={event.title}
+                  title={event.title_en ?? event.title}
                   onClick={() => {
                     onSelect(event);
                   }}
@@ -50,7 +50,7 @@ export function Ticker({ events, selectedId, now, onSelect, limit = TICKER_LIMIT
                     className="h-2 w-2 shrink-0 rounded-full"
                     style={{ backgroundColor: style.css }}
                   />
-                  <span className="truncate text-text">{event.title}</span>{' '}
+                  <span className="truncate text-text">{event.title_en ?? event.title}</span>{' '}
                   <span className="shrink-0 font-mono text-[11px] text-muted">
                     {formatAgo(event.published_at, now)}
                   </span>

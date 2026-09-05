@@ -79,10 +79,10 @@ export function EventRow({ event }: { event: LiveEvent }) {
           rel="noopener noreferrer"
           className="text-text hover:underline"
         >
-          {event.title}
+          {event.title_en ?? event.title}
         </a>
       ) : (
-        <span className="text-text">{event.title}</span>
+        <span className="text-text">{event.title_en ?? event.title}</span>
       )}
     </li>
   );

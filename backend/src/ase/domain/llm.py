@@ -21,6 +21,7 @@ class LlmRole(StrEnum):
     DIRECTION = "direction"
     ASSESSMENT = "assessment"
     DEVIL = "devil"
+    TRANSLATION = "translation"
 
 
 def normalise_base_url(value: str) -> str:

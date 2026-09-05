@@ -126,3 +126,18 @@ A concise, chronological record of how The All Seeing Eye is being built. Mainta
 
 - Phase 5 opened with the feeds that answered without a key. Bluesky's public view was probed again and still refused this host, so it stays out. Mastodon hashtag timelines work on any instance that leaves its public preview on; a connector polls the operator's instances and hashtags from a packaged watch list, reduces each post to text, keeps the account, hashtags, boosts and replies as attributes, and files everything at doctrine's floor (reliability E, credibility 6) because a public post is nobody's report. Outlet YouTube channels and subreddit listings are plain Atom feeds, so they became seeds for the existing RSS connector; the channels keep their outlet's reliability, the subreddits sit at the floor. Reddit answered the first feed and rate-limited the next three when they were polled within seconds, which is exactly why every subreddit polls on its own quarter-hour.
 - Language detection joined the pipeline as a stage that only touches events whose feed could not name a language, filling from the title (and the summary when the title is short). The design had named lingua; installed, its wheel brought 291 MB of models to a home machine that does not need them, so py3langid (4.5 MB, restricted to the twenty-four languages the feeds carry, with a confidence floor) took its place and the data sources document says so. Under test the container runs the stage with a null detector; the real detector has its own unit test on English, Ukrainian and French headlines.
+
+## 5 September 2026: translation queued, and a handoff
+
+- Foreign titles now have a path to English. A `Translator` port takes (text, language)
+  pairs and answers with English or nothing; a queue over the live store takes up to twenty
+  untranslated titles from the last day every half minute, translates them in one call,
+  collapses repeated titles inside the batch, caches by language and title so a story seen
+  through several feeds costs one translation, keeps an hourly call budget, and writes the
+  result back with `put` rather than `upsert` because the content hash has not changed. The
+  bus carries the updated events so open pages refresh, and the ticker, tracker rows and
+  country panel now show the English title when there is one. The LLM adapter behind the
+  new `translation` profile role and the container wiring are the next step.
+- `docs/HANDOFF_PROMPT.md` was written so another agent can continue: the conventions, what
+  exists phase by phase, the work in progress, what is left in order, the verified feed
+  reality, the environment traps and the checks that must pass before a commit.

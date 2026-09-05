@@ -122,7 +122,12 @@ def test_seeds_are_sound() -> None:
         assert spec.poll_interval.total_seconds() >= 15 * 60, spec.id
         assert spec.homepage.startswith("https://"), spec.id
         assert spec.licence_note, spec.id
-        assert spec.category in (Category.NEWS, Category.POLITICAL, Category.HUMANITARIAN)
+        assert spec.category in (
+            Category.NEWS,
+            Category.POLITICAL,
+            Category.HUMANITARIAN,
+            Category.SOCIAL,
+        )
         if "state_controlled" in spec.flags:
             assert seed.options.credibility is Credibility.DOUBTFUL
             assert "state_controlled" in seed.options.tags
