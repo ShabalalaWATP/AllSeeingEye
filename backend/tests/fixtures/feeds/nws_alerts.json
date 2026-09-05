@@ -1,0 +1,370 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.67a01bf1f93cc77ab46a1b5e04fcf93d702fcafc.001.1",
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -102.29,
+       48.82
+      ],
+      [
+       -102.48,
+       48.87
+      ],
+      [
+       -102.38,
+       49
+      ],
+      [
+       -101.84,
+       49
+      ],
+      [
+       -101.84,
+       48.83
+      ],
+      [
+       -102.29,
+       48.82
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.67a01bf1f93cc77ab46a1b5e04fcf93d702fcafc.001.1",
+    "@type": "wx:Alert",
+    "id": "urn:oid:2.49.0.1.840.0.67a01bf1f93cc77ab46a1b5e04fcf93d702fcafc.001.1",
+    "areaDesc": "Burke, ND; Renville, ND",
+    "geocode": {
+     "SAME": [
+      "038013",
+      "038075"
+     ],
+     "UGC": [
+      "NDC013",
+      "NDC075"
+     ]
+    },
+    "affectedZones": [
+     "https://api.weather.gov/zones/county/NDC013",
+     "https://api.weather.gov/zones/county/NDC075"
+    ],
+    "references": [],
+    "sent": "2026-09-05T03:52:00-05:00",
+    "effective": "2026-09-05T03:52:00-05:00",
+    "onset": "2026-09-05T03:52:00-05:00",
+    "expires": "2026-09-05T04:30:00-05:00",
+    "ends": "2026-09-05T04:30:00-05:00",
+    "status": "Actual",
+    "messageType": "Alert",
+    "category": "Met",
+    "severity": "Severe",
+    "certainty": "Observed",
+    "urgency": "Immediate",
+    "event": "Severe Thunderstorm Warning",
+    "sender": "w-nws.webmaster@noaa.gov",
+    "senderName": "NWS Bismarck ND",
+    "headline": "Severe Thunderstorm Warning issued September 5 at 3:52AM CDT until September 5 at 4:30AM CDT by NWS Bismarck ND",
+    "description": "SVRBIS\n\nThe National Weather Service in Bismarck has issued a\n\n* Severe Thunderstorm Warning for...\nNorthwestern Renville County in north central North Dakota...\nNortheastern Burke County in northwestern North Dakota...\n\n* Until 430 AM CDT.\n\n* At 352 AM CDT, a severe thunderstorm was located 5 miles northeast\nof Flaxton, or 43 miles north of Stanley, moving northeast at 30\nmph.\n\nHAZARD...60 mph wind gusts and half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage to\nroofs, siding, and trees.\n\n* Locations impacted include...\nFlaxton and Northgate.",
+    "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing damaging winds and large\nhail.\n\nTorrential rainfall is also occurring with this storm and may lead to\nflash flooding. Do not drive your vehicle through flooded roadways.",
+    "response": "Shelter",
+    "note": null,
+    "parameters": {
+     "AWIPSidentifier": [
+      "SVRBIS"
+     ],
+     "WMOidentifier": [
+      "WUUS53 KBIS 050852"
+     ],
+     "eventMotionDescription": [
+      "2026-09-05T08:52:00-00:00...storm...236DEG...24KT...48.94,-102.29"
+     ],
+     "windThreat": [
+      "RADAR INDICATED"
+     ],
+     "maxWindGust": [
+      "60 MPH"
+     ],
+     "hailThreat": [
+      "RADAR INDICATED"
+     ],
+     "maxHailSize": [
+      "1.25"
+     ],
+     "BLOCKCHANNEL": [
+      "EAS",
+      "NWEM",
+      "CMAS"
+     ],
+     "EAS-ORG": [
+      "WXR"
+     ],
+     "VTEC": [
+      "/O.NEW.KBIS.SV.W.0330.260905T0852Z-260905T0930Z/"
+     ],
+     "eventEndingTime": [
+      "2026-09-05T04:30:00-05:00"
+     ]
+    },
+    "scope": "Public",
+    "code": "IPAWSv1.0",
+    "language": "en-US",
+    "web": "http://www.weather.gov",
+    "eventCode": {
+     "SAME": [
+      "SVR"
+     ],
+     "NationalWeatherService": [
+      "SVW"
+     ]
+    }
+   }
+  },
+  {
+   "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.20be325dfab8af7f878e6916daea099559c7041b.001.1",
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -83.78,
+       40.47
+      ],
+      [
+       -83.62,
+       40.46
+      ],
+      [
+       -83.36,
+       40.4
+      ],
+      [
+       -83.36,
+       40.28
+      ],
+      [
+       -83.41,
+       40.22
+      ],
+      [
+       -83.5,
+       40.23
+      ],
+      [
+       -83.55,
+       40.23
+      ],
+      [
+       -83.6,
+       40.35
+      ],
+      [
+       -83.77,
+       40.45
+      ],
+      [
+       -83.78,
+       40.47
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.20be325dfab8af7f878e6916daea099559c7041b.001.1",
+    "@type": "wx:Alert",
+    "id": "urn:oid:2.49.0.1.840.0.20be325dfab8af7f878e6916daea099559c7041b.001.1",
+    "areaDesc": "Logan, OH; Union, OH",
+    "geocode": {
+     "SAME": [
+      "039091",
+      "039159"
+     ],
+     "UGC": [
+      "OHC091",
+      "OHC159"
+     ]
+    },
+    "affectedZones": [
+     "https://api.weather.gov/zones/county/OHC091",
+     "https://api.weather.gov/zones/county/OHC159"
+    ],
+    "references": [],
+    "sent": "2026-09-05T04:52:00-04:00",
+    "effective": "2026-09-05T04:52:00-04:00",
+    "onset": "2026-09-05T04:52:00-04:00",
+    "expires": "2026-09-05T07:45:00-04:00",
+    "ends": "2026-09-05T07:45:00-04:00",
+    "status": "Actual",
+    "messageType": "Alert",
+    "category": "Met",
+    "severity": "Severe",
+    "certainty": "Likely",
+    "urgency": "Immediate",
+    "event": "Flash Flood Warning",
+    "sender": "w-nws.webmaster@noaa.gov",
+    "senderName": "NWS Wilmington OH",
+    "headline": "Flash Flood Warning issued September 5 at 4:52AM EDT until September 5 at 7:45AM EDT by NWS Wilmington OH",
+    "description": "FFWILN\n\nThe National Weather Service in Wilmington has issued a\n\n* Flash Flood Warning for...\nNorthwestern Union County in central Ohio...\nEastern Logan County in west central Ohio...\n\n* Until 745 AM EDT.\n\n* At 452 AM EDT, radar and automated rain gauges indicated\nthunderstorms producing heavy rain across the warned area. Between\n1.5 and 2.5 inches of rain have fallen. Additional rainfall amounts\nof 0.5 to 1 inch are possible. Flash flooding is ongoing or\nexpected to begin shortly.\n\nHAZARD...Flash flooding caused by thunderstorms.\n\nSOURCE...Radar and automated gauges.\n\nIMPACT...Flash flooding of small creeks and streams, urban areas,\nhighways, streets and underpasses as well as other poor\ndrainage and low-lying areas.\n\n* Some locations that may experience flash flooding include...\nMarysville, West Mansfield, Rushsylvania, Raymond, East Liberty,\nPottersburg, Broadway and Somersville.",
+    "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nTo report flash flooding, go to our website at weather.gov/iln and\nsubmit your report via social media, when you can do so safely.",
+    "response": "Avoid",
+    "note": null,
+    "parameters": {
+     "AWIPSidentifier": [
+      "FFWILN"
+     ],
+     "WMOidentifier": [
+      "WGUS51 KILN 050852"
+     ],
+     "flashFloodDetection": [
+      "RADAR AND GAUGE INDICATED"
+     ],
+     "BLOCKCHANNEL": [
+      "EAS",
+      "NWEM",
+      "CMAS"
+     ],
+     "EAS-ORG": [
+      "WXR"
+     ],
+     "VTEC": [
+      "/O.NEW.KILN.FF.W.0083.260905T0852Z-260905T1145Z/"
+     ],
+     "eventEndingTime": [
+      "2026-09-05T07:45:00-04:00"
+     ]
+    },
+    "scope": "Public",
+    "code": "IPAWSv1.0",
+    "language": "en-US",
+    "web": "http://www.weather.gov",
+    "eventCode": {
+     "SAME": [
+      "FFW"
+     ],
+     "NationalWeatherService": [
+      "FFW"
+     ]
+    }
+   }
+  },
+  {
+   "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.46734c2349c5bea745a2735cce64ea580c44c235.002.1",
+   "type": "Feature",
+   "geometry": null,
+   "properties": {
+    "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.46734c2349c5bea745a2735cce64ea580c44c235.002.1",
+    "@type": "wx:Alert",
+    "id": "urn:oid:2.49.0.1.840.0.46734c2349c5bea745a2735cce64ea580c44c235.002.1",
+    "areaDesc": "Adams, IN; Allen, IN; De Kalb, IN; Huntington, IN; Noble, IN; Wells, IN; Whitley, IN; Allen, OH; Paulding, OH; Putnam, OH; Van Wert, OH",
+    "geocode": {
+     "SAME": [
+      "018001",
+      "018003",
+      "018033",
+      "018069",
+      "018113",
+      "018179",
+      "018183",
+      "039003",
+      "039125",
+      "039137",
+      "039161"
+     ],
+     "UGC": [
+      "INC001",
+      "INC003",
+      "INC033",
+      "INC069",
+      "INC113",
+      "INC179",
+      "INC183",
+      "OHC003",
+      "OHC125",
+      "OHC137",
+      "OHC161"
+     ]
+    },
+    "affectedZones": [
+     "https://api.weather.gov/zones/county/INC001",
+     "https://api.weather.gov/zones/county/INC003",
+     "https://api.weather.gov/zones/county/INC033",
+     "https://api.weather.gov/zones/county/INC069",
+     "https://api.weather.gov/zones/county/INC113",
+     "https://api.weather.gov/zones/county/INC179",
+     "https://api.weather.gov/zones/county/INC183",
+     "https://api.weather.gov/zones/county/OHC003",
+     "https://api.weather.gov/zones/county/OHC125",
+     "https://api.weather.gov/zones/county/OHC137",
+     "https://api.weather.gov/zones/county/OHC161"
+    ],
+    "references": [
+     {
+      "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f6cd5e0a7a92ae3a2b891bd055aa68ece786679d.001.1",
+      "identifier": "urn:oid:2.49.0.1.840.0.f6cd5e0a7a92ae3a2b891bd055aa68ece786679d.001.1",
+      "sender": "w-nws.webmaster@noaa.gov",
+      "sent": "2026-09-05T02:33:00-04:00"
+     }
+    ],
+    "sent": "2026-09-05T04:14:00-04:00",
+    "effective": "2026-09-05T04:14:00-04:00",
+    "onset": "2026-09-05T04:14:00-04:00",
+    "expires": "2026-09-05T08:00:00-04:00",
+    "ends": "2026-09-05T08:00:00-04:00",
+    "status": "Actual",
+    "messageType": "Update",
+    "category": "Met",
+    "severity": "Severe",
+    "certainty": "Possible",
+    "urgency": "Future",
+    "event": "Severe Thunderstorm Watch",
+    "sender": "w-nws.webmaster@noaa.gov",
+    "senderName": "NWS Northern Indiana",
+    "headline": "Severe Thunderstorm Watch issued September 5 at 4:14AM EDT until September 5 at 8:00AM EDT by NWS Northern Indiana",
+    "description": "SEVERE THUNDERSTORM WATCH 655 REMAINS VALID UNTIL 8 AM EDT THIS\nMORNING FOR THE FOLLOWING AREAS\n\nIN INDIANA THIS WATCH INCLUDES 7 COUNTIES\n\nIN NORTHERN INDIANA\n\nADAMS                 ALLEN IN              DE KALB\nHUNTINGTON            NOBLE                 WELLS\nWHITLEY\n\nIN OHIO THIS WATCH INCLUDES 4 COUNTIES\n\nIN NORTHWEST OHIO\n\nALLEN OH              PAULDING              PUTNAM\nVAN WERT\n\nTHIS INCLUDES THE CITIES OF ALBION, ANTWERP, AUBURN, BERNE,\nBLUFFTON, BLUFFTON, COLUMBIA CITY, COLUMBUS GROVE, CONTINENTAL,\nDECATUR, FORT WAYNE, GARRETT, HUNTINGTON, KENDALLVILLE, LEIPSIC,\nLIGONIER, LIMA, NEW HAVEN, OHIO CITY, OSSIAN, OTTAWA, PANDORA,\nPAULDING, PAYNE, ROANOKE, SOUTH WHITLEY, SPENCERVILLE, TRI-LAKES,\nAND VAN WERT.",
+    "instruction": null,
+    "response": "Monitor",
+    "note": null,
+    "parameters": {
+     "AWIPSidentifier": [
+      "WCNIWX"
+     ],
+     "WMOidentifier": [
+      "WWUS63 KIWX 050814"
+     ],
+     "BLOCKCHANNEL": [
+      "EAS",
+      "NWEM",
+      "CMAS"
+     ],
+     "EAS-ORG": [
+      "WXR"
+     ],
+     "VTEC": [
+      "/O.CON.KIWX.SV.A.0655.000000T0000Z-260905T1200Z/"
+     ],
+     "eventEndingTime": [
+      "2026-09-05T08:00:00-04:00"
+     ]
+    },
+    "scope": "Public",
+    "code": "IPAWSv1.0",
+    "language": "en-US",
+    "web": "http://www.weather.gov",
+    "eventCode": {
+     "SAME": [
+      "SVA"
+     ],
+     "NationalWeatherService": [
+      "SVA"
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+      xmlns:georss="http://www.georss.org/georss"
+      xmlns:atom="https://www.w3.org/2005/Atom">
+	<channel>
+		<title>Smithsonian / USGS Weekly Volcanic Activity Report</title>
+		<link>https://volcano.si.edu/reports_weekly.cfm</link>
+		<description>The Weekly Volcanic Activity Report is a cooperative project between the Smithsonian's Global Volcanism Program and the US Geological Survey's Volcano Hazards Program. Updated by 2300 UTC every Thursday, these notices are preliminary and subject to change as events are studied in more detail. This is not a comprehensive list of eruptions during the week, but rather a summary of activity that meet selected criteria. Carefully reviewed, detailed reports are published in the Bulletin of the Global Volcanism Network.</description>
+		<language>en-us</language>
+		<copyright>Smithsonian Institution</copyright>
+		<managingEditor>kuhns@si.edu (Sally Kuhn Sennert)</managingEditor>
+		<webMaster>gvp@si.edu (Ed Venzke)</webMaster>
+		<atom:link href="https://volcano.si.edu/news/WeeklyVolcanoRSS.xml" rel="self" type="application/rss+xml" />
+		<pubDate>Thu, 27 Aug 2026 03:30:31 -0500</pubDate>
+
+
+
+<item>
+<title>Ambae (Vanuatu) - Report for 20 August-26 August 2026 - New Eruptive Activity</title>
+<description>
+&lt;p&gt;The Vanuatu Meteorology and Geohazards Department (VMGD) reported that the eruption at Ambae continued during 21-26 August, with explosive activity producing tall ash plumes on 25 August. Continuous plumes of gas, steam, and ash were visible in satellite and webcam images drifting NW during 21-24 August and drifting NE on 25 August. Sulfur dioxide gas emissions were at moderate to high levels, and seismicity indicated high levels of activity. Thermal anomalies were identified in satellite data. The Wellington Volcanic Ash Advisory Center (VAAC) reported that ash plumes were significantly higher during 25-26 August. The eruption escalated at 2040 on 25 August, and by 2124 an ash plume had risen to 16.5 km (54,000 ft) a.s.l. and was drifting E based on satellite images. The ash plume altitude decreased to 15.2 km (50,000 ft) a.s.l. by 2153 and to 12.8 km (42,000 ft) a.s.l. by 0013 on 26 August. A strong sulfur dioxide signal was also detected. Ash plumes continued to be detected during the rest of the day on 26 August rising 3-4.6 km (10,000-15,000 ft) a.s.l. The Alert Level remained at 3 (on a scale of 0-5), and the public was warned to stay outside of Danger Zone B, defined as a 3-km radius around the active vents in Lake Voui, and to stay away from drainages during heavy rains.&lt;/p&gt;
+&lt;p&gt;Sources: Vanuatu Meteorology and Geohazards Department (VMGD),Wellington Volcanic Ash Advisory Center (VAAC) &lt;/p&gt;
+</description>
+<link>https://volcano.si.edu/reports_weekly.cfm</link>
+<guid isPermaLink="true">https://volcano.si.edu/reports_weekly.cfm#vn_257030</guid>
+<pubDate>Thu, 27 Aug 2026 03:30:31 -0400</pubDate>
+<georss:point>-15.3890 167.8350</georss:point>
+</item>
+<item>
+<title>Karangetang (Indonesia) - Report for 20 August-26 August 2026 - New Eruptive Activity</title>
+<description>
+&lt;p&gt;The Pusat Vulkanologi dan Mitigasi Bencana Geologi (PVMBG) and a news source reported that an eruption at Karangetang?s North Crater (Kawah Dua) continued during 20-26 August. Daily white plumes rose as high as 400 m above the summit and drifted in various directions. Incandescence at both the North and South craters was visible in some webcam images throughout the week, but was stronger at North Crater. Seismicity was variable but at high levels, and rumbling sounds were occasionally heard. Incandescence at the North summit and from the lava flows on the flanks was visible in webcam images at 0019 on 26 August and at 0737 on 27 August. The Alert Level remained at 2 (on a scale of 1-4) and the public was advised to stay 1.5 km away from both craters, with an extension to 2.5 km on the NW and SW flanks of North Crater.&lt;/p&gt;
+&lt;p&gt;Source: Pusat Vulkanologi dan Mitigasi Bencana Geologi (PVMBG, also known as CVGHM)&lt;/p&gt;
+</description>
+<link>https://volcano.si.edu/reports_weekly.cfm</link>
+<guid isPermaLink="true">https://volcano.si.edu/reports_weekly.cfm#vn_267020</guid>
+<pubDate>Thu, 27 Aug 2026 03:30:31 -0400</pubDate>
+<georss:point>2.7810 125.4070</georss:point>
+</item>
+<item>
+<title>Klyuchevskoy (Russia) - Report for 20 August-26 August 2026 - New Eruptive Activity</title>
+<description>
+&lt;p&gt;The Kamchatkan Volcanic Eruption Response Team (KVERT) reported that the eruption at Klyuchevskoy continued at the summit crater during 20-26 August. A thermal anomaly was identified in satellite images on most days; weather clouds sometimes obscured views. Ash plumes periodically rose as high as 6 km (19,680 ft) a.s.l. and drifted as far as 500 km NE and E. The Aviation Color Code remained at Orange (the second highest level on a four-color scale). Dates are based on UTC; specific events are in local time where noted.&lt;/p&gt;
+&lt;p&gt;Source: Kamchatkan Volcanic Eruption Response Team (KVERT)&lt;/p&gt;
+</description>
+<link>https://volcano.si.edu/reports_weekly.cfm</link>
+<guid isPermaLink="true">https://volcano.si.edu/reports_weekly.cfm#vn_300260</guid>
+<pubDate>Thu, 27 Aug 2026 03:30:31 -0400</pubDate>
+<georss:point>56.0560 160.6420</georss:point>
+</item>
+</channel>
+</rss>

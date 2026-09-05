@@ -6,13 +6,24 @@ from collections.abc import Iterable
 
 from ase.adapters.feeds.adsb import AdsbMilitaryConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
+from ase.adapters.feeds.cyclones import (
+    NHC_ATLANTIC,
+    NHC_EAST_PACIFIC,
+    JtwcConnector,
+    NhcConnector,
+)
+from ase.adapters.feeds.emsc import EmscConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
+from ase.adapters.feeds.nws import NwsAlertsConnector
 from ase.adapters.feeds.rss_sources import build_rss_connectors
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
+from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
 from ase.adapters.feeds.usgs import UsgsConnector
+from ase.adapters.feeds.volcanoes import VolcanoReportConnector
 from ase.application.ports import Clock
 from ase.application.ports.feeds import FeedConnector
 
@@ -30,6 +41,16 @@ def build_connectors(
         CisaKevConnector(http, clock),
         GdeltEventsConnector(http, clock),
         AdsbMilitaryConnector(http, clock),
+        EmscConnector(http, clock),
+        NhcConnector(http, clock, NHC_ATLANTIC),
+        NhcConnector(http, clock, NHC_EAST_PACIFIC),
+        JtwcConnector(http, clock),
+        VolcanoReportConnector(http, clock),
+        TsunamiConnector(http, clock, NTWC),
+        TsunamiConnector(http, clock, PTWC),
+        NwsAlertsConnector(http, clock),
+        WhoOutbreakConnector(http, clock),
+        IfrcGoConnector(http, clock),
         *build_rss_connectors(http, clock),
     ]
     return [connector for connector in connectors if connector.spec.id not in excluded]

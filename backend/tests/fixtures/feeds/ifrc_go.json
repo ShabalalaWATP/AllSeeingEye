@@ -1,0 +1,52 @@
+{
+ "results": [
+  {
+   "dtype": {
+    "id": 12,
+    "name": "Flood",
+    "summary": "",
+    "translation_module_original_language": "en"
+   },
+   "countries": [
+    {
+     "iso": "PH",
+     "iso3": "PHL",
+     "name": "Philippines"
+    }
+   ],
+   "num_affected": null,
+   "ifrc_severity_level": 0,
+   "ifrc_severity_level_display": "Yellow",
+   "glide": "",
+   "disaster_start_date": "2026-08-29T00:00:00Z",
+   "id": 8076,
+   "slug": null,
+   "name": "PHL: Flood - 08-2026 - PHL: Enhanced by Southwest Monsoon (Habagat) ",
+   "summary": "<p style=\"text-align: justify;\">The Southwest Monsoon (Habagat) has intensified over the Philippines, bringing persistent and at times heavy to intense rainfall over western and northern Luzon, Metro Manila, and parts of MIMAROPA and the Visayas. The enhanced monsoon is being further influenced by an two LPAs east of Extreme Northern Luzon, which may develop into a tropical cyclone and is expected"
+  },
+  {
+   "dtype": {
+    "id": 12,
+    "name": "Flood",
+    "summary": "",
+    "translation_module_original_language": "en"
+   },
+   "countries": [
+    {
+     "iso": "NP",
+     "iso3": "NPL",
+     "name": "Nepal"
+    }
+   ],
+   "num_affected": 84270,
+   "ifrc_severity_level": 1,
+   "ifrc_severity_level_display": "Orange",
+   "glide": "FF-2026-000162-NPL",
+   "disaster_start_date": "2026-08-26T00:00:00Z",
+   "id": 8073,
+   "slug": null,
+   "name": "Nepal: Rasuwa Flash Flood, 2026",
+   "summary": "<div class=\"OutlineElement Ltr SCXW107300033 BCX8\">\r\n<p class=\"Paragraph SCXW107300033 BCX8\" lang=\"EN-US\"><span class=\"NormalTextRun SCXW107300033 BCX8\">\u00a0<img src=\"https://prddsgofilestorage.blob.core.windows.net/api/emergencies/8073/IFRC-Disaster-Snapshot-Template_Rasuwa_Flash_Flood_1_Week.V2_Page_1.png\" alt=\"\" width=\"75%\"></span></p>\r\n<p class=\"Paragraph SCXW107300033 BCX8\" lang=\"EN-US\"><span cl"
+  }
+ ]
+}

@@ -189,3 +189,10 @@ class RssConnector:
             ),
             content_hash=content_hash(key, title, summary, published.isoformat()),
         )
+
+
+# Shared with the other XML connectors so each one does not grow its own copy.
+children = _children
+child_text = _child_text
+point_of = _point
+link_of = _link
