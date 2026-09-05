@@ -82,7 +82,7 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [ ] MGRS and OS grid reference in the coordinate readout
 - [x] Base-layer switcher: EOX Sentinel-2 cloudless satellite, hybrid (imagery under the vector boundaries and labels), and OS Maps Road, Outdoor and Light raster tiles proxied through `/api/tiles/os` with the key server-side, a byte-bounded cache and validated addresses (`/api/capabilities` tells the browser whether a key exists; the session token is attached to tile requests to our own origin only)
 - [ ] NASA GIBS daily imagery with a date picker; the mandatory OS logo alongside the OS attribution line
-- [ ] Admin source page in the UI
+- [x] Admin source page: every feed with its organisation, category, grade, poll interval, health status, last poll, last error and a reset button that clears the circuit breaker
 - [ ] Replace `useResource` and `useAuditLog` with TanStack Query
 
 ## Known follow-ups carried forward

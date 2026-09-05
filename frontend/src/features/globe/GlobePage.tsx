@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
+import { useNow } from '@/lib/hooks/useNow';
 import { useAuthStore } from '@/stores/auth';
 import { useCapabilitiesStore } from '@/stores/capabilities';
 import { useCountriesStore } from '@/stores/countries';
@@ -35,7 +36,6 @@ import { buildEventLayers } from './layers/registry';
 import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
-import { useNow } from './useNow';
 import { hasWebGl2 } from './webgl';
 
 /** Zoom used when the user focuses an event from a list. */

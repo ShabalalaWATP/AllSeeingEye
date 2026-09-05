@@ -69,7 +69,9 @@ describe('AdminUsersPage', () => {
 
   it('shows other failures with the API message', async () => {
     server.use(
-      http.post('/api/admin/users/:id/reset-link', () => apiError(404, 'not_found', 'User not found.')),
+      http.post('/api/admin/users/:id/reset-link', () =>
+        apiError(404, 'not_found', 'User not found.'),
+      ),
     );
     const { user } = renderApp('/admin/users', 'admin');
     const row = await findRow('Uma User');

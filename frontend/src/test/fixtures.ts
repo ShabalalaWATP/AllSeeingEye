@@ -1,4 +1,4 @@
-import type { LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import type { LiveEvent, Source, SourceHealth, StoreStats } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
 
@@ -80,7 +80,10 @@ export const auditPageOne: AuditEntry[] = [
   auditEntry(118, 'account_request_approved'),
 ];
 
-export const auditPageTwo: AuditEntry[] = [auditEntry(50, 'logout'), auditEntry(49, 'login_failed')];
+export const auditPageTwo: AuditEntry[] = [
+  auditEntry(50, 'logout'),
+  auditEntry(49, 'login_failed'),
+];
 
 /** A located, graded live event; override fields per test. */
 export function liveEvent(overrides: Partial<LiveEvent> = {}): LiveEvent {
@@ -138,13 +141,116 @@ export const storeStats: StoreStats = {
   estimated_bytes: 4096,
   budget_bytes: 1_048_576,
   per_category: [
-    { category: 'disaster', count: 1, oldest: '2026-09-05T00:00:00Z', newest: '2026-09-05T00:00:00Z' },
+    {
+      category: 'disaster',
+      count: 1,
+      oldest: '2026-09-05T00:00:00Z',
+      newest: '2026-09-05T00:00:00Z',
+    },
     { category: 'cyber', count: 1, oldest: '2026-09-04T12:00:00Z', newest: '2026-09-04T12:00:00Z' },
   ],
 };
 
 export const countries: Country[] = [
-  { iso2: 'GB', iso3: 'GBR', name: 'United Kingdom', bounds: [-7.6, 49.9, 1.8, 58.6], centroid: [-2.9, 54.3] },
-  { iso2: 'UA', iso3: 'UKR', name: 'Ukraine', bounds: [22.1, 44.4, 40.2, 52.4], centroid: [31.2, 48.4] },
-  { iso2: 'RU', iso3: 'RUS', name: 'Russia', bounds: [-180, 41.2, 180, 81.9], centroid: [97.7, 61.5] },
+  {
+    iso2: 'GB',
+    iso3: 'GBR',
+    name: 'United Kingdom',
+    bounds: [-7.6, 49.9, 1.8, 58.6],
+    centroid: [-2.9, 54.3],
+  },
+  {
+    iso2: 'UA',
+    iso3: 'UKR',
+    name: 'Ukraine',
+    bounds: [22.1, 44.4, 40.2, 52.4],
+    centroid: [31.2, 48.4],
+  },
+  {
+    iso2: 'RU',
+    iso3: 'RUS',
+    name: 'Russia',
+    bounds: [-180, 41.2, 180, 81.9],
+    centroid: [97.7, 61.5],
+  },
+];
+
+export function sourceHealth(overrides: Partial<SourceHealth> = {}): SourceHealth {
+  return {
+    source_id: 'usgs_earthquakes',
+    status: 'healthy',
+    last_success: '2026-09-05T00:00:00Z',
+    last_error: null,
+    last_error_at: null,
+    consecutive_failures: 0,
+    items_last_poll: 12,
+    last_latency_ms: 210,
+    next_poll_at: '2026-09-05T00:05:00Z',
+    polls: 3,
+    ...overrides,
+  };
+}
+
+export function source(overrides: Partial<Source> = {}): Source {
+  return {
+    id: 'usgs_earthquakes',
+    name: 'USGS earthquakes',
+    organisation: 'USGS',
+    category: 'disaster',
+    kind: 'geojson',
+    url: 'https://earthquake.usgs.gov/feed.geojson',
+    reliability: 'A',
+    poll_interval_seconds: 300,
+    language: 'en',
+    licence_note: 'Public domain',
+    homepage: 'https://earthquake.usgs.gov',
+    requires_key: false,
+    instrument: true,
+    flags: [],
+    health: sourceHealth(),
+    ...overrides,
+  };
+}
+
+export const sources: Source[] = [
+  source(),
+  source({
+    id: 'gdacs',
+    name: 'GDACS disaster alerts',
+    organisation: 'EC JRC and UN OCHA',
+    kind: 'rss',
+    poll_interval_seconds: 600,
+    instrument: false,
+    health: sourceHealth({
+      source_id: 'gdacs',
+      status: 'degraded',
+      last_success: '2026-09-04T22:00:00Z',
+      last_error: 'HTTP 503 from https://www.gdacs.org/xml/rss.xml',
+      last_error_at: '2026-09-05T00:01:00Z',
+      consecutive_failures: 3,
+      items_last_poll: 0,
+      last_latency_ms: null,
+      polls: 9,
+    }),
+  }),
+  source({
+    id: 'tass_en',
+    name: 'TASS English',
+    organisation: 'TASS',
+    category: 'news',
+    kind: 'rss',
+    reliability: 'C',
+    poll_interval_seconds: 1800,
+    instrument: false,
+    flags: ['state_controlled'],
+    health: sourceHealth({
+      source_id: 'tass_en',
+      status: 'idle',
+      last_success: null,
+      items_last_poll: 0,
+      last_latency_ms: null,
+      next_poll_at: null,
+      polls: 0,
+    }),
+  }),
 ];

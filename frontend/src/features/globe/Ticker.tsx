@@ -1,7 +1,8 @@
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
+import { formatAgo } from '@/lib/format';
+
 import { CATEGORY_STYLES } from './layers/registry';
-import { formatAgo } from './timeAgo';
 
 export const TICKER_LIMIT = 12;
 

@@ -20,6 +20,7 @@ import {
   liveEvents,
   pendingRequests,
   plainUser,
+  sources,
   storeStats,
   tokenFor,
 } from './fixtures';
@@ -185,6 +186,27 @@ export const handlers = [
     const before = new URL(request.url).searchParams.get('before');
     if (before === null) return HttpResponse.json({ items: auditPageOne, next_before: 118 });
     return HttpResponse.json({ items: auditPageTwo, next_before: null });
+  }),
+
+  http.get('/api/admin/sources', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({ items: sources });
+  }),
+
+  http.post('/api/admin/sources/:id/reset', ({ request, params }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    const target = sources.find((item) => item.id === params.id);
+    if (target === undefined) return apiError(404, 'not_found', 'Unknown source.');
+    return HttpResponse.json({
+      ...target.health,
+      status: 'idle',
+      consecutive_failures: 0,
+      last_error: null,
+      last_error_at: null,
+      next_poll_at: null,
+    });
   }),
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),

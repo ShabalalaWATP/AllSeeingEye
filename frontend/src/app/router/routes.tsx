@@ -20,6 +20,7 @@ const GlobePage = lazy(() => import('@/features/globe/GlobePage'));
 const AdminRequestsPage = lazy(() => import('@/features/admin/AdminRequestsPage'));
 const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
+const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -52,6 +53,7 @@ export const routes: RouteObject[] = [
               { path: 'requests', element: <AdminRequestsPage /> },
               { path: 'users', element: <AdminUsersPage /> },
               { path: 'audit', element: <AdminAuditPage /> },
+              { path: 'sources', element: <AdminSourcesPage /> },
             ],
           },
         ],

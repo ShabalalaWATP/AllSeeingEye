@@ -22,7 +22,9 @@ export default function AdminUsersPage() {
   const replace = useCallback(
     (updated: User) => {
       setData((current) =>
-        current === null ? current : current.map((item) => (item.id === updated.id ? updated : item)),
+        current === null
+          ? current
+          : current.map((item) => (item.id === updated.id ? updated : item)),
       );
     },
     [setData],

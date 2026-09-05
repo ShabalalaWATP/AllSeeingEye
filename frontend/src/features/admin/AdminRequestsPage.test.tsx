@@ -51,7 +51,11 @@ describe('AdminRequestsPage', () => {
   it('shows a plain confirmation when the server emailed the link itself', async () => {
     server.use(
       http.post('/api/admin/account-requests/:id/approve', () =>
-        HttpResponse.json({ user: plainUser, activation_link: null, expires_at: '2026-09-11T12:00:00Z' }),
+        HttpResponse.json({
+          user: plainUser,
+          activation_link: null,
+          expires_at: '2026-09-11T12:00:00Z',
+        }),
       ),
     );
     const { user } = renderApp('/admin/requests', 'admin');
@@ -104,7 +108,9 @@ describe('AdminRequestsPage', () => {
     first.unmount();
 
     server.use(
-      http.get('/api/admin/account-requests', () => apiError(500, 'server_error', 'Database down.')),
+      http.get('/api/admin/account-requests', () =>
+        apiError(500, 'server_error', 'Database down.'),
+      ),
     );
     renderApp('/admin/requests', 'admin');
     expect(await screen.findByRole('alert')).toHaveTextContent('Database down.');

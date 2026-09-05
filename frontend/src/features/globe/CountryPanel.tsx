@@ -1,9 +1,9 @@
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
+import { formatAgo } from '@/lib/format';
 import { countByCategory } from '@/stores/events';
 
 import { CATEGORY_STYLES, ORDERED_CATEGORIES } from './layers/registry';
-import { formatAgo } from './timeAgo';
 
 export const COUNTRY_PANEL_LIMIT = 8;
 

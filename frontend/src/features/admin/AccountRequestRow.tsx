@@ -82,7 +82,12 @@ export function AccountRequestRow({ request, onApproved, onRejected }: AccountRe
                   setReason(event.target.value);
                 }}
               />
-              <Button variant="danger" busy={reject.busy} disabled={busy} onClick={() => void reject.run()}>
+              <Button
+                variant="danger"
+                busy={reject.busy}
+                disabled={busy}
+                onClick={() => void reject.run()}
+              >
                 Confirm rejection
               </Button>
             </div>
