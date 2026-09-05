@@ -30,6 +30,7 @@ from ase.adapters.persistence.baselines import SqlBaselineRepository, SqlBaselin
 from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
 from ase.adapters.persistence.reports import SqlReportRepository
+from ase.adapters.persistence.schedules import SqlScheduleRepository
 from ase.adapters.persistence.session import (
     create_engine,
     create_session_factory,
@@ -94,6 +95,7 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.reports import ReportRepository
+from ase.application.ports.schedules import ScheduleRepository
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier, AlertRepository, IndicatorRepository
@@ -122,6 +124,7 @@ class Repositories:
     plans: PlanRepository
     indicators: IndicatorRepository
     alerts: AlertRepository
+    schedules: ScheduleRepository
     uow: UnitOfWork
 
 
@@ -195,6 +198,7 @@ class Container(FeatureWiring):
             WebhookNotifier(webhook, settings.feeds_user_agent) if webhook else NullNotifier()
         )
         self.evaluator = self.build_evaluator()
+        self.schedule_runner = self.build_schedule_runner()
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
@@ -223,6 +227,7 @@ class Container(FeatureWiring):
             plans=SqlPlanRepository(session),
             indicators=SqlIndicatorRepository(session),
             alerts=SqlAlertRepository(session),
+            schedules=SqlScheduleRepository(session),
             uow=SqlAlchemyUnitOfWork(session),
         )
 

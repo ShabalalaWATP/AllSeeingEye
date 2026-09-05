@@ -37,6 +37,9 @@ class AuditAction(StrEnum):
     INDICATOR_UPDATED = "indicator_updated"
     INDICATOR_DELETED = "indicator_deleted"
     ALERT_ACKNOWLEDGED = "alert_acknowledged"
+    SCHEDULE_CREATED = "schedule_created"
+    SCHEDULE_UPDATED = "schedule_updated"
+    SCHEDULE_DELETED = "schedule_deleted"
 
 
 @dataclass(slots=True)

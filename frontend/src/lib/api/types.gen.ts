@@ -658,6 +658,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Schedules */
+        get: operations["list_schedules_api_schedules_get"];
+        put?: never;
+        /** Create Schedule */
+        post: operations["create_schedule_api_schedules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Schedule */
+        put: operations["update_schedule_api_schedules__schedule_id__put"];
+        post?: never;
+        /** Delete Schedule */
+        delete: operations["delete_schedule_api_schedules__schedule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/account-requests": {
         parameters: {
             query?: never;
@@ -1898,6 +1934,91 @@ export interface components {
          * @enum {string}
          */
         Role: "user" | "admin";
+        /** ScheduleIn */
+        ScheduleIn: {
+            /** Name */
+            name: string;
+            /** Template Id */
+            template_id: string;
+            /** Country Iso */
+            country_iso?: string | null;
+            /** Plan Id */
+            plan_id?: string | null;
+            /**
+             * Hour Utc
+             * @default 6
+             */
+            hour_utc: number;
+            /**
+             * Cadence
+             * @default daily
+             */
+            cadence: string;
+            /**
+             * Weekday
+             * @default 0
+             */
+            weekday: number;
+            /** Window Hours */
+            window_hours?: number | null;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+        };
+        /** ScheduleOut */
+        ScheduleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Template Id */
+            template_id: string;
+            /** Country Iso */
+            country_iso: string | null;
+            /** Plan Id */
+            plan_id: string | null;
+            /** Hour Utc */
+            hour_utc: number;
+            /** Cadence */
+            cadence: string;
+            /** Weekday */
+            weekday: number;
+            /** Window Hours */
+            window_hours: number | null;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Next Run At
+             * Format: date-time
+             */
+            next_run_at: string;
+            /** Last Run At */
+            last_run_at: string | null;
+            /** Last Report Id */
+            last_report_id: string | null;
+            /** Last Error */
+            last_error: string | null;
+        };
+        /** SchedulesOut */
+        SchedulesOut: {
+            /** Items */
+            items: components["schemas"]["ScheduleOut"][];
+        };
         /** SetPasswordIn */
         SetPasswordIn: {
             /** Token */
@@ -3355,6 +3476,123 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AlertOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_schedules_api_schedules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchedulesOut"];
+                };
+            };
+        };
+    };
+    create_schedule_api_schedules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_schedule_api_schedules__schedule_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_schedule_api_schedules__schedule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

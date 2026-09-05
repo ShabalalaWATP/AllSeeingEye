@@ -209,5 +209,6 @@ export const llmProfiles: LlmProfile[] = [
 export * from './fixtures.direction';
 export * from './fixtures.events';
 export * from './fixtures.reports';
+export * from './fixtures.schedules';
 export * from './fixtures.trackers';
 export * from './fixtures.warning';

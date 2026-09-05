@@ -244,3 +244,24 @@ class AlertRow(Base):
     acknowledged_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     acknowledged_by: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     report_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+
+
+class ScheduleRow(Base):
+    __tablename__ = "schedules"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    template_id: Mapped[str] = mapped_column(String(40))
+    country_iso: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    plan_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    hour_utc: Mapped[int] = mapped_column(Integer)
+    cadence: Mapped[str] = mapped_column(String(16))
+    weekday: Mapped[int] = mapped_column(Integer, default=0)
+    window_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    next_run_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    last_report_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    last_error: Mapped[str | None] = mapped_column(String(300), nullable=True)

@@ -8,6 +8,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
@@ -27,6 +28,13 @@ from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES
+from ase.application.schedules.manage import (
+    CreateScheduleUseCase,
+    DeleteScheduleUseCase,
+    ListSchedulesUseCase,
+    UpdateScheduleUseCase,
+)
+from ase.application.schedules.runner import ScheduleRunner
 from ase.application.trackers.aviation import (
     AviationService,
     background,
@@ -41,7 +49,9 @@ from ase.application.warning.indicators import (
     ListIndicatorsUseCase,
     UpdateIndicatorUseCase,
 )
+from ase.domain.errors import InvalidRequest
 from ase.domain.report_records import ReportVersion
+from ase.domain.schedules import Schedule
 from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
@@ -239,6 +249,43 @@ class FeatureWiring:
                 country_iso=indicator.countries[0] if len(indicator.countries) == 1 else None,
                 window_hours=max(1, -(-indicator.window_minutes // 60)),
                 plan_id=indicator.plan_id,
+            )
+            record, _version = await self.generate_report(session).execute(
+                owner, request, RequestContext()
+            )
+            return record.id
+
+    def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:
+        r = self.repositories(session)
+        return CreateScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+
+    def update_schedule(self, session: AsyncSession) -> UpdateScheduleUseCase:
+        r = self.repositories(session)
+        return UpdateScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+
+    def delete_schedule(self, session: AsyncSession) -> DeleteScheduleUseCase:
+        r = self.repositories(session)
+        return DeleteScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+
+    def list_schedules(self, session: AsyncSession) -> ListSchedulesUseCase:
+        return ListSchedulesUseCase(self.repositories(session).schedules)
+
+    def build_schedule_runner(self) -> ScheduleRunner:
+        return ScheduleRunner(
+            SqlScheduleStore(self.session_factory), self.schedule_report, self.clock
+        )
+
+    async def schedule_report(self, schedule: Schedule) -> UUID:
+        """The product a schedule asks for, produced as its owner."""
+        async with self.session_factory() as session:
+            owner = await self.repositories(session).users.get_by_id(schedule.created_by)
+            if owner is None or not owner.is_active:
+                raise InvalidRequest("The schedule's owner is unavailable.")
+            request = ReportRequest(
+                template_id=schedule.template_id,
+                country_iso=schedule.country_iso,
+                window_hours=schedule.window_hours,
+                plan_id=schedule.plan_id,
             )
             record, _version = await self.generate_report(session).execute(
                 owner, request, RequestContext()

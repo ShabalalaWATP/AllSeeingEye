@@ -2,6 +2,7 @@
 import { http, HttpResponse } from 'msw';
 
 import { directionHandlers } from './handlers.direction';
+import { scheduleHandlers } from './handlers.schedules';
 import { warningHandlers } from './handlers.warning';
 
 import {
@@ -342,6 +343,7 @@ export const handlers = [
 
   ...directionHandlers,
   ...warningHandlers,
+  ...scheduleHandlers,
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 

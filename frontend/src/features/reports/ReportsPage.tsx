@@ -14,6 +14,7 @@ import { useResource } from '@/lib/hooks/useResource';
 import { useCountriesStore } from '@/stores/countries';
 
 import { GenerateForm } from './GenerateForm';
+import { SchedulesSection } from './SchedulesSection';
 
 const STATUS_CLASSES: Record<string, string> = {
   ready: 'bg-emerald-400/15 text-emerald-300',
@@ -129,6 +130,7 @@ export default function ReportsPage() {
           </tbody>
         </Table>
       )}
+      <SchedulesSection templates={templates.data ?? []} countries={countries} />
     </section>
   );
 }

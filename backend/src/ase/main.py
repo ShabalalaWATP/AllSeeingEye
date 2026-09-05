@@ -25,9 +25,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await container.scheduler.start()
         await container.aviation_monitor.start()
         await container.evaluator.start()
+        await container.schedule_runner.start()
     try:
         yield
     finally:
+        await container.schedule_runner.stop()
         await container.evaluator.stop()
         await container.aviation_monitor.stop()
         await container.scheduler.stop()
