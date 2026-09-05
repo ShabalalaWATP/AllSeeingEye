@@ -33,6 +33,8 @@ STATUS_BY_CODE: dict[str, int] = {
     "not_ready": 503,
     "upstream_unavailable": 502,
     "encryption_unavailable": 409,
+    "invalid_request": 422,
+    "no_model": 409,
 }
 
 

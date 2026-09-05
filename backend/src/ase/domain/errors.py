@@ -62,6 +62,16 @@ class EncryptionUnavailable(AppError):
     default_message = "Set ASE_ENCRYPTION_KEY before storing API keys."
 
 
+class InvalidRequest(AppError):
+    code = "invalid_request"
+    default_message = "The request is invalid."
+
+
+class NoModelAvailable(AppError):
+    code = "no_model"
+    default_message = "No enabled model profile can play this role. Add one under Admin, Models."
+
+
 class NotFound(AppError):
     code = "not_found"
     default_message = "The requested item does not exist."

@@ -95,8 +95,10 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 
 ### Reports
 - [x] LLM gateway: profiles for any OpenAI-compatible endpoint (name, base URL, model, roles, token and temperature limits), keys encrypted with Fernet under `ASE_ENCRYPTION_KEY` and shown only as a four-character hint, migration 0002, a connection test that must answer `{"ok": true}` through JSON-schema output, a usage log, audit entries, and the admin Models page (create, edit without resending the key, test, two-step delete)
-- [ ] Templates (INTSUM, INTREP, Country Brief, Ask the Eye), evidence selection and freezing, quality-of-information check, prompt composition, structured output, the validator (yardstick, confidence, citations, hedges, URLs), retry then needs_review
-- [ ] Report persistence (reports, versions, evidence, citations), reader, Markdown export, version history, Wayback archiving
+- [x] Doctrine vocabulary as matchers (yardstick bands with ranges, forbidden ICD 203 phrases, hedges, confidence phrases), the report body schema (JSON schema for the model plus a lenient parser), the linter (one term per judgement matching its probability, no hedges, confidence separate and never in the same sentence, reporting cites and contains no terms, unknown citations stripped, no foreign URLs, assumptions and alternatives required, confidence capped by the information base, change_from_previous when a previous version exists, length budgets)
+- [x] Templates as typed rows (INTSUM, INTREP, Country Brief, Ask the Eye) with evidence strategy and token budget; evidence selection by grade, recency, severity and per-source diversity with instruction-like text screened out; frozen evidence items; quality-of-information statistics with a confidence ceiling; prompt composition with the doctrine preamble; generation with one retry carrying the validator's findings, then needs_review or failed
+- [x] Persistence in migration 0003 (reports, report_versions with body, findings, evidence and quality as JSON plus the rendered Markdown), the reports API (templates, generate, list, read, Markdown export, delete by owner or admin, ten generations per user per hour), usage and audit entries
+- [ ] Reports page in the app (generate, list, reader with grade chips and evidence annex, export), version history on regeneration, Wayback archiving, devil's advocacy pass, direction call for free-form asks
 
 ## Known follow-ups carried forward
 

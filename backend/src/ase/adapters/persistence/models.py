@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Uuid
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
@@ -110,3 +110,40 @@ class LlmUsageRow(Base):
     prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+class ReportRow(Base):
+    __tablename__ = "reports"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    template: Mapped[str] = mapped_column(String(32), index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    scope: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    period_from: Mapped[datetime] = mapped_column(UTCDateTime)
+    period_to: Mapped[datetime] = mapped_column(UTCDateTime)
+    data_cutoff: Mapped[datetime] = mapped_column(UTCDateTime)
+    status: Mapped[str] = mapped_column(String(16), index=True)
+    created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    latest_version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class ReportVersionRow(Base):
+    __tablename__ = "report_versions"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    report_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("reports.id"), index=True)
+    number: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(16))
+    body: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    findings: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    evidence: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    quality: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    markdown: Mapped[str] = mapped_column(Text)
+    profile_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    model: Mapped[str] = mapped_column(String(120))
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    latency_ms: Mapped[float] = mapped_column(Float)
+    attempts: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)

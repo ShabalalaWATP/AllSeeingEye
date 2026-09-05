@@ -16,6 +16,7 @@ from ase.api.routers import (
     events,
     health,
     me,
+    reports,
     stream,
     tiles,
 )
@@ -28,6 +29,7 @@ api_router.include_router(events.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
 api_router.include_router(tiles.router)
+api_router.include_router(reports.router)
 api_router.include_router(stream.router)
 api_router.include_router(admin_requests.router)
 api_router.include_router(admin_users.router)

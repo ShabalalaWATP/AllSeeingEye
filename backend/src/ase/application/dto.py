@@ -65,4 +65,5 @@ class RateLimits:
     request_account_per_ip: int = 3
     forgot_per_ip: int = 3
     set_password_per_ip: int = 10
+    reports_per_user: int = 10
     hourly_window_seconds: int = 3600

@@ -26,6 +26,8 @@ class AuditAction(StrEnum):
     LLM_PROFILE_UPDATED = "llm_profile_updated"
     LLM_PROFILE_DELETED = "llm_profile_deleted"
     LLM_PROFILE_TESTED = "llm_profile_tested"
+    REPORT_GENERATED = "report_generated"
+    REPORT_DELETED = "report_deleted"
 
 
 @dataclass(slots=True)

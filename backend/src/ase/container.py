@@ -18,6 +18,7 @@ from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
+from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.session import (
     create_engine,
     create_session_factory,
@@ -77,7 +78,14 @@ from ase.application.ports.llm import (
     LlmUsageRepository,
     SecretCipher,
 )
+from ase.application.ports.reports import ReportRepository
 from ase.application.ports.tiles import TileProvider
+from ase.application.reports.access import (
+    DeleteReportUseCase,
+    GetReportUseCase,
+    ListReportsUseCase,
+)
+from ase.application.reports.generate import GenerateReportUseCase
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Settings
@@ -92,6 +100,7 @@ class Repositories:
     audit: AuditLogRepository
     llm_profiles: LlmProfileRepository
     llm_usage: LlmUsageRepository
+    reports: ReportRepository
     uow: UnitOfWork
 
 
@@ -140,9 +149,8 @@ class Container:
             if connectors is not None
             else build_connectors(self.http, self.clock, settings.disabled_feed_ids)
         )
-        self.grader = GradingService(
-            self.store, profiles_from_specs([c.spec for c in self.connectors]), self.clock
-        )
+        self.source_profiles = profiles_from_specs([c.spec for c in self.connectors])
+        self.grader = GradingService(self.store, self.source_profiles, self.clock)
         self.scheduler = FeedScheduler(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,
             grader=self.grader,
@@ -167,6 +175,7 @@ class Container:
             audit=SqlAuditLogRepository(session),
             llm_profiles=SqlLlmProfileRepository(session),
             llm_usage=SqlLlmUsageRepository(session),
+            reports=SqlReportRepository(session),
             uow=SqlAlchemyUnitOfWork(session),
         )
 
@@ -277,3 +286,31 @@ class Container:
 
     def list_llm_usage(self, session: AsyncSession) -> ListLlmUsageUseCase:
         return ListLlmUsageUseCase(self.repositories(session).llm_usage)
+
+    def generate_report(self, session: AsyncSession) -> GenerateReportUseCase:
+        r = self.repositories(session)
+        return GenerateReportUseCase(
+            store=self.store,
+            source_profiles=self.source_profiles,
+            countries=self.countries,
+            llm_profiles=r.llm_profiles,
+            usage=r.llm_usage,
+            cipher=self.cipher,
+            gateway=self.llm,
+            reports=r.reports,
+            clock=self.clock,
+            limiter=self.limiter,
+            limits=self.limits,
+            auditor=self._auditor(r),
+            uow=r.uow,
+        )
+
+    def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
+        return ListReportsUseCase(self.repositories(session).reports)
+
+    def get_report(self, session: AsyncSession) -> GetReportUseCase:
+        return GetReportUseCase(self.repositories(session).reports)
+
+    def delete_report(self, session: AsyncSession) -> DeleteReportUseCase:
+        r = self.repositories(session)
+        return DeleteReportUseCase(r.reports, self._auditor(r), r.uow)

@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     rate_limit_request_account_per_ip: int = Field(default=3, ge=1)
     rate_limit_forgot_per_ip: int = Field(default=3, ge=1)
     rate_limit_set_password_per_ip: int = Field(default=10, ge=1)
+    rate_limit_reports_per_user: int = Field(default=10, ge=1)
     # Feeds: on by default outside tests; polite identification is mandatory for most APIs.
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
@@ -114,4 +115,5 @@ class Settings(BaseSettings):
             request_account_per_ip=self.rate_limit_request_account_per_ip,
             forgot_per_ip=self.rate_limit_forgot_per_ip,
             set_password_per_ip=self.rate_limit_set_password_per_ip,
+            reports_per_user=self.rate_limit_reports_per_user,
         )
