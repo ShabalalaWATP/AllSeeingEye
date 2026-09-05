@@ -28,7 +28,8 @@ Top risks, in order: prompt injection through ingested content; server-side requ
 
 ### Untrusted content
 - Every upstream response has a size cap (5 MB default, per connector), a timeout, and a content-type check. XML is parsed with `defusedxml`; JSON depth and size are bounded.
-- Text fields are stripped of HTML in the normaliser with the standard-library parser (tags and attributes discarded, entities decoded), then truncated; links survive only as absolute http(s) URLs. The frontend renders text nodes only; the sole HTML rendering path is the sanitised report Markdown, passed through DOMPurify with a strict allow-list.
+- Text fields are stripped of HTML in the normaliser with the standard-library parser (tags and attributes discarded, entities decoded), then truncated; links survive only as absolute http(s) URLs.
+- LLM endpoints are configured only by administrators and may point at private addresses on purpose (a model on localhost is the normal self-hosted case), so the feed client's SSRF guard is deliberately not applied to them; the trust boundary is the admin role. Keys are encrypted with Fernet under `ASE_ENCRYPTION_KEY`, the API returns only the last four characters, and gateway errors quote the status and a short excerpt of the body, never the request. The frontend renders text nodes only; the sole HTML rendering path is the sanitised report Markdown, passed through DOMPurify with a strict allow-list.
 - Outbound requests only to hosts declared by the connector or present in the admin-managed source registry. DNS results are checked against private, loopback, link-local and metadata ranges before connecting, and again on redirects.
 - Adding or editing a source URL is admin only, validated (scheme, host, no credentials in URL), and logged.
 

@@ -1,5 +1,6 @@
 import type { LiveEvent, Source, SourceHealth, StoreStats } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
+import type { LlmProfile } from '@/lib/api/llm';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
 
 export const ADMIN_TOKEN = 'admin-access-token';
@@ -253,4 +254,20 @@ export const sources: Source[] = [
       polls: 0,
     }),
   }),
+];
+
+export const llmProfiles: LlmProfile[] = [
+  {
+    id: '55555555-5555-4555-8555-555555555555',
+    name: 'Local Llama',
+    base_url: 'http://localhost:11434/v1',
+    model: 'llama3.1:8b',
+    api_key_hint: '1234',
+    roles: ['assessment', 'direction'],
+    max_output_tokens: 2000,
+    temperature: 0.1,
+    enabled: true,
+    created_at: '2026-09-05T01:00:00Z',
+    updated_at: '2026-09-05T01:00:00Z',
+  },
 ];

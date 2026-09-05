@@ -1,0 +1,41 @@
+"""Ports for language-model profiles: storage, secret handling and the model call itself."""
+
+from __future__ import annotations
+
+from typing import Protocol
+from uuid import UUID
+
+from ase.domain.llm import LlmProfile, LlmRequest, LlmResult, LlmUsage
+
+
+class LlmProfileRepository(Protocol):
+    async def get(self, profile_id: UUID) -> LlmProfile | None: ...
+    async def list_all(self) -> list[LlmProfile]: ...
+    async def add(self, profile: LlmProfile) -> None: ...
+    async def save(self, profile: LlmProfile) -> None: ...
+    async def delete(self, profile_id: UUID) -> None: ...
+
+
+class LlmUsageRepository(Protocol):
+    async def add(self, usage: LlmUsage) -> None: ...
+    async def list_recent(self, limit: int) -> list[LlmUsage]: ...
+
+
+class SecretCipher(Protocol):
+    @property
+    def available(self) -> bool:
+        """False when no encryption key is configured; secrets cannot be stored then."""
+        ...
+
+    def encrypt(self, plaintext: str) -> str: ...
+    def decrypt(self, ciphertext: str) -> str: ...
+
+
+class LlmGatewayError(Exception):
+    """The model endpoint could not be used; the message never contains the key."""
+
+
+class LlmGateway(Protocol):
+    async def complete(
+        self, base_url: str, api_key: str, model: str, request: LlmRequest
+    ) -> LlmResult: ...

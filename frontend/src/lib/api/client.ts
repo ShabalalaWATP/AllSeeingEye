@@ -34,7 +34,7 @@ export function resetSessionBinding(): void {
   session = noSession;
 }
 
-export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface CallOptions {
   method?: HttpMethod;
@@ -45,12 +45,19 @@ export interface CallOptions {
 }
 
 /** Performs a request whose successful body is validated against `schema`. */
-export async function apiCall<T>(path: string, options: CallOptions & { schema: ZodType<T> }): Promise<T> {
+export async function apiCall<T>(
+  path: string,
+  options: CallOptions & { schema: ZodType<T> },
+): Promise<T> {
   const response = await execute(path, options);
   const data: unknown = await response.json();
   const parsed = options.schema.safeParse(data);
   if (!parsed.success) {
-    throw new ApiError(response.status, 'invalid_response', 'The server sent an unexpected response.');
+    throw new ApiError(
+      response.status,
+      'invalid_response',
+      'The server sent an unexpected response.',
+    );
   }
   return parsed.data;
 }

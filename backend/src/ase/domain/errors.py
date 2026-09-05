@@ -57,6 +57,11 @@ class RateLimited(AppError):
         super().__init__()
 
 
+class EncryptionUnavailable(AppError):
+    code = "encryption_unavailable"
+    default_message = "Set ASE_ENCRYPTION_KEY before storing API keys."
+
+
 class NotFound(AppError):
     code = "not_found"
     default_message = "The requested item does not exist."

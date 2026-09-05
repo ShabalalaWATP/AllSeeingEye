@@ -32,6 +32,7 @@ STATUS_BY_CODE: dict[str, int] = {
     "payload_too_large": 413,
     "not_ready": 503,
     "upstream_unavailable": 502,
+    "encryption_unavailable": 409,
 }
 
 

@@ -94,7 +94,7 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [ ] Contradiction rules (doubtful, improbable) and instrument anomaly flags; corroboration and contradiction identifiers on the event
 
 ### Reports
-- [ ] LLM gateway with profiles (OpenAI-compatible), encrypted keys, admin LLM page, usage log
+- [x] LLM gateway: profiles for any OpenAI-compatible endpoint (name, base URL, model, roles, token and temperature limits), keys encrypted with Fernet under `ASE_ENCRYPTION_KEY` and shown only as a four-character hint, migration 0002, a connection test that must answer `{"ok": true}` through JSON-schema output, a usage log, audit entries, and the admin Models page (create, edit without resending the key, test, two-step delete)
 - [ ] Templates (INTSUM, INTREP, Country Brief, Ask the Eye), evidence selection and freezing, quality-of-information check, prompt composition, structured output, the validator (yardstick, confidence, citations, hedges, URLs), retry then needs_review
 - [ ] Report persistence (reports, versions, evidence, citations), reader, Markdown export, version history, Wayback archiving
 

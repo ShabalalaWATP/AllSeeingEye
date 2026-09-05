@@ -35,8 +35,14 @@ describe('AppShell', () => {
       'href',
       '/admin/requests',
     );
-    expect(within(nav).getByRole('link', { name: 'Users' })).toHaveAttribute('href', '/admin/users');
-    expect(within(nav).getByRole('link', { name: 'Audit log' })).toHaveAttribute('href', '/admin/audit');
+    expect(within(nav).getByRole('link', { name: 'Users' })).toHaveAttribute(
+      'href',
+      '/admin/users',
+    );
+    expect(within(nav).getByRole('link', { name: 'Audit log' })).toHaveAttribute(
+      'href',
+      '/admin/audit',
+    );
   });
 
   it('switches between globe and map with the rail and the G and M keys', async () => {

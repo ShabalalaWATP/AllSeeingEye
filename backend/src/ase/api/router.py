@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from ase.api.routers import (
     admin_audit,
+    admin_llm,
     admin_requests,
     admin_sources,
     admin_users,
@@ -32,3 +33,4 @@ api_router.include_router(admin_requests.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin_sources.router)
+api_router.include_router(admin_llm.router)

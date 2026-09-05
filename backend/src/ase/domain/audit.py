@@ -22,6 +22,10 @@ class AuditAction(StrEnum):
     PASSWORD_SET = "password_set"
     USER_UPDATED = "user_updated"
     RESET_LINK_ISSUED = "reset_link_issued"
+    LLM_PROFILE_CREATED = "llm_profile_created"
+    LLM_PROFILE_UPDATED = "llm_profile_updated"
+    LLM_PROFILE_DELETED = "llm_profile_deleted"
+    LLM_PROFILE_TESTED = "llm_profile_tested"
 
 
 @dataclass(slots=True)

@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from xml.etree.ElementTree import Element, ParseError  # nosec B405 (types only; parsing is defused)
+
+# Types only: parsing goes through defusedxml below.
+from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 

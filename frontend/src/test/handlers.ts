@@ -18,6 +18,7 @@ import {
   auditPageTwo,
   countries,
   liveEvents,
+  llmProfiles,
   pendingRequests,
   plainUser,
   sources,
@@ -186,6 +187,56 @@ export const handlers = [
     const before = new URL(request.url).searchParams.get('before');
     if (before === null) return HttpResponse.json({ items: auditPageOne, next_before: 118 });
     return HttpResponse.json({ items: auditPageTwo, next_before: null });
+  }),
+
+  http.get('/api/admin/llm/profiles', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({ items: llmProfiles, encryption_available: true });
+  }),
+
+  http.post('/api/admin/llm/profiles', async ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    const body = (await request.json()) as Record<string, unknown>;
+    const key = typeof body.api_key === 'string' ? body.api_key : '';
+    return HttpResponse.json(
+      {
+        ...llmProfiles[0],
+        ...body,
+        id: '66666666-6666-4666-8666-666666666666',
+        api_key_hint: key.slice(-4),
+        api_key: undefined,
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.put('/api/admin/llm/profiles/:id', async ({ request, params }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    const target = llmProfiles.find((item) => item.id === params.id);
+    if (target === undefined) return apiError(404, 'not_found', 'Profile not found.');
+    const body = (await request.json()) as Record<string, unknown>;
+    const key = typeof body.api_key === 'string' ? body.api_key : '';
+    return HttpResponse.json({
+      ...target,
+      ...body,
+      api_key_hint: key === '' ? target.api_key_hint : key.slice(-4),
+      api_key: undefined,
+    });
+  }),
+
+  http.delete('/api/admin/llm/profiles/:id', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post('/api/admin/llm/profiles/:id/test', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({ ok: true, latency_ms: 812.4, model: 'llama3.1:8b', error: null });
   }),
 
   http.get('/api/admin/sources', ({ request }) => {

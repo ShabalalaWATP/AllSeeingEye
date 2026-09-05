@@ -47,6 +47,7 @@ def settings() -> Settings:
         env=Environment.TEST,
         database_url=os.environ.get("ASE_TEST_DATABASE_URL", "sqlite+aiosqlite://"),
         jwt_secret=SecretStr("t" * 40),
+        encryption_key=SecretStr("e" * 40),
         public_base_url="http://app.test",
         cookie_secure=False,
     )

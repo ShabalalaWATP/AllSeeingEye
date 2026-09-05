@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     max_streams_per_user: int = Field(default=4, ge=1, le=64)
     # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
     os_maps_key: SecretStr | None = None
+    # Encrypts API keys entered in the admin UI (any string of 32+ characters). Unset means
+    # LLM profiles cannot be stored.
+    encryption_key: SecretStr | None = None
 
     _generated_secret: bool = PrivateAttr(default=False)
 
@@ -74,6 +77,11 @@ class Settings(BaseSettings):
     @property
     def disabled_feed_ids(self) -> list[str]:
         return [item.strip() for item in self.feeds_disabled.split(",") if item.strip()]
+
+    @property
+    def encryption_key_value(self) -> str | None:
+        value = self.encryption_key.get_secret_value().strip() if self.encryption_key else ""
+        return value or None
 
     @property
     def os_maps_key_value(self) -> str | None:

@@ -21,6 +21,7 @@ dependencies = [
     "sse-starlette>=3.4.10",
     "httpx>=0.28.1",
     "defusedxml>=0.7.1",
+    "cryptography>=43",
 ]
 
 [project.scripts]

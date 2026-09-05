@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Uuid
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
@@ -78,3 +78,35 @@ class AuditLogRow(Base):
     subject: Mapped[str | None] = mapped_column(String(320), nullable=True)
     ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
     details: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+
+
+class LlmProfileRow(Base):
+    __tablename__ = "llm_profiles"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True)
+    base_url: Mapped[str] = mapped_column(String(512))
+    model: Mapped[str] = mapped_column(String(120))
+    api_key_encrypted: Mapped[str] = mapped_column(String(2048))
+    api_key_hint: Mapped[str] = mapped_column(String(8))
+    roles: Mapped[list[str]] = mapped_column(JSON, default=list)
+    max_output_tokens: Mapped[int] = mapped_column(Integer)
+    temperature: Mapped[float] = mapped_column(Float)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class LlmUsageRow(Base):
+    __tablename__ = "llm_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    profile_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    user_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    purpose: Mapped[str] = mapped_column(String(64))
+    ok: Mapped[bool] = mapped_column(Boolean)
+    latency_ms: Mapped[float] = mapped_column(Float)
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    error: Mapped[str | None] = mapped_column(String(500), nullable=True)
