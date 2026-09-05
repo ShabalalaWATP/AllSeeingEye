@@ -14,11 +14,11 @@ async def test_aircraft_become_events() -> None:
     events = await AdsbMilitaryConnector(http, FakeClock(NOW)).fetch()  # type: ignore[arg-type]
     assert [event.attributes["icao_hex"] for event in events] == ["ae4e0e", "ae1234"]
     herc, bomber = events
-    assert herc.id == event_id("adsb_mil", "ae4e0e")
+    assert herc.id == event_id("adsb", "ae4e0e")
     assert herc.category is Category.AVIATION and herc.subtype == "military_aircraft"
     assert herc.title == "RH451 (C30J)"
     assert herc.summary is not None
-    assert herc.summary.startswith("Airborne at 22250 ft, 250 kt, track 109°.")
+    assert herc.summary.startswith("Airborne at 22250 ft, 250 kt, track 109°, squawk 3404.")
     assert herc.url == "https://globe.adsb.lol/?icao=ae4e0e"
     assert herc.point is not None and herc.point.lat == 61.265724
     assert herc.geo_confidence is GeoConfidence.EXACT

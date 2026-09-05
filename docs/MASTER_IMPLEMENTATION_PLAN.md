@@ -133,7 +133,8 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Globe upgrades the trackers need: aircraft icons rotated to their heading, cyclone and volcano icons, grid clustering with counts below zoom 3 (a click flies in), and a time window control (1 h to 7 d or everything retained); playback over the window is still to come
 
 ### 3b. Aviation
-- [ ] adsb.lol interesting, LADD and PIA lists; emergency squawk polling (7700, 7600, 7500) as alerts; area-of-interest civil traffic through 250-nautical-mile point queries around seeded areas, with OpenSky anonymous bounding boxes as the fallback
+- [x] adsb.lol LADD and PIA lists with the database flags (military, interesting, PIA, LADD) as tags; emergency squawk polling (7500, 7700, 7600) as severe events; all traffic over eight watched areas through 250-nautical-mile point queries (`ase/resources/air_watch.json`); one event id per airframe whichever query saw it
+- [ ] OpenSky anonymous bounding boxes as the fallback for the watched areas
 - [ ] Aircraft rendering: heading icons, altitude colouring, short trails, callsign labels at high zoom; the Mictronics aircraft database for type and operator
 - [ ] Baselines: tiny hourly aggregates of military flights per country and emergencies per region (the one durable "normal levels" table); per-country activity against a 30-day baseline on the aviation board
 - [ ] GNSS interference hex map from `nac_p` and `nic`, updated hourly

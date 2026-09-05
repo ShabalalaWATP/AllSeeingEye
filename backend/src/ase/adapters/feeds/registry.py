@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from ase.adapters.feeds.adsb import AdsbMilitaryConnector
+from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
+from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.cyclones import (
     NHC_ATLANTIC,
@@ -41,6 +42,10 @@ def build_connectors(
         CisaKevConnector(http, clock),
         GdeltEventsConnector(http, clock),
         AdsbMilitaryConnector(http, clock),
+        AdsbListConnector(http, clock, LADD, subtype="ladd_aircraft", tags=frozenset({"ladd"})),
+        AdsbListConnector(http, clock, PIA, subtype="pia_aircraft", tags=frozenset({"pia"})),
+        AdsbSquawkConnector(http, clock),
+        AdsbAreaConnector(http, clock),
         EmscConnector(http, clock),
         NhcConnector(http, clock, NHC_ATLANTIC),
         NhcConnector(http, clock, NHC_EAST_PACIFIC),

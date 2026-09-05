@@ -1,0 +1,13 @@
+{
+  "note": "Areas polled for all traffic (civil and military) through adsb.lol point queries, which take a centre and a radius of at most 250 nautical miles. Chosen for tension areas where unusual movement matters. Seeded 5 September 2026.",
+  "areas": [
+    { "id": "black_sea", "name": "Black Sea and southern Ukraine", "lat": 45.0, "lon": 33.5, "radius_nm": 250 },
+    { "id": "eastern_med", "name": "Eastern Mediterranean and the Levant", "lat": 33.5, "lon": 34.5, "radius_nm": 250 },
+    { "id": "red_sea", "name": "Red Sea and Yemen", "lat": 16.0, "lon": 41.5, "radius_nm": 250 },
+    { "id": "gulf", "name": "Persian Gulf", "lat": 26.5, "lon": 53.0, "radius_nm": 250 },
+    { "id": "baltic", "name": "Baltic Sea and Kaliningrad", "lat": 57.5, "lon": 21.0, "radius_nm": 250 },
+    { "id": "taiwan_strait", "name": "Taiwan Strait", "lat": 24.0, "lon": 120.5, "radius_nm": 250 },
+    { "id": "korea", "name": "Korean peninsula", "lat": 37.5, "lon": 127.5, "radius_nm": 250 },
+    { "id": "south_china_sea", "name": "South China Sea", "lat": 14.0, "lon": 115.0, "radius_nm": 250 }
+  ]
+}
