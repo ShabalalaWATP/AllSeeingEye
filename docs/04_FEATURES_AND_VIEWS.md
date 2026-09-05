@@ -98,3 +98,59 @@ A single panel that answers "what is going on in X right now": flag and key fact
 
 ## 10. Deliberately out of scope for now
 - Mobile-native apps, multi-tenant organisations, paid data sources, scraping sites that offer no feed or API (policy question for Alex), storing raw feed history, user-to-user chat.
+
+## 11. Map feature inventory (5 September 2026)
+
+Status after Phases 0 to 2, checked against live feeds on 5 September 2026 (section O of `02_DATA_SOURCES.md`). "Built" is on the globe today. "Next" is scheduled in `MASTER_IMPLEMENTATION_PLAN.md` with a feed that answered. "Key" waits only for a free key that Alex has to obtain. "Open" means the source is not confirmed and the feature is not promised.
+
+| Feature on the globe or map | Feed | Status |
+|---|---|---|
+| Event points per category sized by severity, inspector with grade and provenance, ticker, per-category switches and counts | Every connector: USGS, GDACS, EONET, SWPC, CISA KEV, 21 RSS and Atom feeds, GDELT 2.0 events, adsb.lol military | Built |
+| Nation filter with fly-to, country panel with counts and latest items | Natural Earth polygons | Built |
+| Base layers: OpenFreeMap dark, EOX Sentinel-2 cloudless, hybrid, OS Maps Road, Outdoor and Light | Keyless except OS Maps | Built (OS Maps needs the key) |
+| Day and night terminator, lite mode, WGS84 readout that copies | Local computation | Built |
+| Military aircraft | adsb.lol `/v2/mil` (96 aircraft at the time of the check) | Built as points; heading icons, altitude colour, trails and callsign labels are next |
+| Interesting, LADD and PIA aircraft | adsb.lol `/v2/ladd`, `/v2/pia` and `dbFlags` | Next |
+| Civil traffic over areas of interest | adsb.lol `/v2/point/{lat}/{lon}/{radius}` up to 250 nm, no key; OpenSky anonymous bounding boxes, 400 credits a day | Next |
+| Emergency squawks 7700, 7600 and 7500 as alerts | adsb.lol `/v2/sqk/{code}` | Next |
+| GNSS interference hex map (the GPSJam method) | `nac_p` and `nic` fields present in adsb.lol responses | Next |
+| Tropical cyclones with centre, intensity and movement | NHC RSS `nhc:Cyclone` elements (Atlantic and East Pacific); JTWC RSS plus warning text with "NEAR 26.2N 127.5E" positions (West Pacific and Indian Ocean) | Next |
+| Volcanic activity, weekly | Smithsonian GVP RSS with `georss:point` | Next |
+| Tsunami bulletins | NTWC and PTWC Atom with `geo:lat` and `geo:long` | Next |
+| Earthquakes outside the US within seconds of detection | EMSC FDSN JSON | Next |
+| Severe weather polygons | NWS alerts API (polygons on some alerts, US only); Met Office UK warnings Atom | Next |
+| Daily satellite imagery with a date picker, night lights, GOES GeoColor every ten minutes | NASA GIBS WMTS; tiles verified for VIIRS true colour, the VIIRS day and night band and GOES-East GeoColor | Next |
+| Weather radar overlay | RainViewer, two hours of history | Could |
+| NAVAREA warning positions and areas | NGA broadcast warnings JSON (386 active); positions parsed from the warning text | Next |
+| Anti-shipping incidents | NGA ASAM answers 404 on every documented path; UKMTO is a link-out | Open |
+| Vessels at chokepoints, dark vessels, loitering, encounters | AISStream (key), Global Fishing Watch (token) | Key |
+| Satellites over an area, ground tracks, the ISS | CelesTrak GP JSON propagated with SGP4 | Next |
+| Launch sites with a countdown | Launch Library 2, 15 calls an hour | Next |
+| Aurora oval and planetary K index | SWPC ovation and K-index JSON | Next |
+| Internet outages by country, region and network | IODA alerts | Next |
+| Ransomware victims by country | ransomware.live recent victims | Next |
+| Conflict events | GDELT 2.0 events (built); HDX HAPI monthly aggregates by admin area | Built; aggregates next |
+| Assessed control of terrain in Ukraine | ISW ArcGIS: only historical feature services are discoverable; no current daily service found | Open |
+| Air-raid alerts by oblast | alerts.in.ua (token) over geoBoundaries ADM1 polygons | Key |
+| Active fires | NASA FIRMS (key by email) | Key |
+| Infrastructure on demand: airfields, ports, power stations | Overpass API | Later |
+| Country choropleths: news volume, conflict intensity, disaster alerts, outages, attention | Live store aggregates, IODA, Wikipedia page views | Next |
+| Time slider and playback over the retained window | Live store | Next |
+| Clustering and hex density at low zoom | deck.gl | Next |
+| Areas of interest drawn on the globe and saved per user | PostGIS | Phase 4 |
+| Arcs for story links and flight origin and destination | Live store | Later |
+| Ops room idle mode | Local | Phase 4 |
+
+## 12. Analysis feature inventory (5 September 2026)
+
+Built: NATO grading (reliability from the registry, credibility from corroboration, syndication folded), story clustering, evidence freezing with hashes and Wayback archives, the quality of information check with a confidence ceiling, doctrine-validated products (INTSUM, INTREP, Country Brief, Ask the Eye) with the PHIA yardstick and a separate confidence rating, versions with a "what changed" line, a direction call that turns a question into PIR, SIRs and EEIs and steers evidence selection, a devil's advocacy pass that can only lower confidence, instruction-like text screened out of evidence, usage and audit logs.
+
+Next, in the order the master plan schedules them:
+
+1. Tracker boards for hazards, curated conflicts, aviation, maritime warnings, space and cyber: activity now against the week before, trend, worst and latest event, countries touched, and a detail view with a timeline and the events themselves.
+2. Baselines for anomaly detection: tiny hourly aggregates (military flights per country, emergency squawks, jam percentages, outage alerts) so that "above twice the baseline" has a baseline. This is the one new durable table the architecture allows for "normal levels".
+3. Products: Disaster SITREP, Conflict Assessment, Aviation Activity Report, Maritime Activity Report, Cyber Summary, Warning Report, Competing Hypotheses, Source Evaluation.
+4. Direction and warning: areas of interest, collection plans with PIRs, keyword collection through Google News RSS queries and social watchlists, event tagging to PIRs, an indicators board with traffic lights over tracker signals and Polymarket probabilities, alert routing in-app and by webhook, scheduled INTSUMs.
+5. Context for briefs: sanctions programmes touching a country (UK Sanctions List XML and OFAC SDN XML), appeals and outbreaks (IFRC GO, WHO Disease Outbreak News, UNHCR), weather (Open-Meteo), attention (Wikipedia page views and the current events portal).
+6. Grading depth: contradiction rules (doubtful and improbable), instrument anomaly flags, corroboration and contradiction identifiers on events, and an evidence preview before generation for asks.
+7. Hardening: report diffing, semantic search over reports, PDF and DOCX export, backups.

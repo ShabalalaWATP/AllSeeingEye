@@ -206,3 +206,63 @@ Headline changes discovered during research: UCDP now requires an access token; 
 | lingua-language-detector 2.2.0 (March 2026) | Active, Rust-backed, 75 languages | Language detection on short titles |
 | fasttext | Upstream archived March 2024 | Avoid |
 | mordecai3 | Dormant pre-release, needs Elasticsearch | Avoid; build a small spaCy NER plus GeoNames matcher instead |
+
+## O. Live verification, 5 September 2026
+
+Every row was fetched from the development host with the project's User-Agent on 5 September 2026. Where this section disagrees with a row above, this section wins.
+
+| Source | What was fetched | Result | Consequence |
+|---|---|---|---|
+| adsb.lol | `/v2/mil`, `/v2/ladd`, `/v2/pia`, `/v2/sqk/7700`, `/v2/point/51.5/-0.1/100` | All 200; aircraft carry `nac_p`, `nic`, `emergency`, `dbFlags`, `squawk`, `category` | Military, interesting, LADD, PIA, emergency and area-of-interest civil traffic all work without a key; the GNSS interference map has its inputs |
+| adsb.fi | `/api/v2/mil` | 200 | Fallback for the military list |
+| OpenSky | anonymous `/states/all` with a UK bounding box | 200 (63 KB) | Area-of-interest civil traffic without an account, within the 400 daily credits |
+| NGA MSI | `broadcast-warn?status=active` | 200, 386 warnings, positions in free text | NAVAREA warnings need a coordinate parser ("19-23.0N 092-03.1W") |
+| NGA MSI | `asam` with every documented parameter set | 404 | Anti-shipping messages unavailable; UKMTO stays a link-out |
+| CelesTrak | `gp.php?GROUP=stations&FORMAT=json` | 200 | Satellite propagation with SGP4 |
+| Launch Library 2 | `launches/upcoming` | 200 | Launch schedule; 15 calls an hour |
+| SWPC | `ovation_aurora_latest.json`, `noaa-planetary-k-index.json` | 200, 200 | Aurora oval and K index |
+| EMSC | FDSN `event/1/query?format=json` | 200 | Fast earthquakes outside the US |
+| NHC | `index-at.xml`, `index-ep.xml` | 200 with `nhc:Cyclone` elements (centre, type, name, wind, pressure, movement) | Cyclone connector, Atlantic and East Pacific |
+| JTWC | `rss/jtwc.rss` and a warning text | 200; warning text carries "NEAR 26.2N 127.5E" and forecast positions | Cyclone connector, West Pacific and Indian Ocean |
+| Smithsonian GVP | `WeeklyVolcanoRSS.xml` | 200 with `georss:point` per item | Weekly volcano connector; the catalogue's "no coordinates" note was wrong |
+| NOAA tsunami | `PAAQAtom.xml`, `PHEBAtom.xml` | 200 with `geo:lat` and `geo:long` | Tsunami connector |
+| NWS | `alerts/active?status=actual&message_type=alert&severity=Severe` | 200; `limit` is rejected; some alerts carry polygons | Severe weather connector for the US |
+| Met Office | `WarningsRSS/Region/UK` | 200 (Atom, empty at the time) | UK warnings connector |
+| MeteoAlarm | Europe-wide Atom paths; then `feeds/meteoalarm-legacy-atom-france` | Europe-wide 404; per-country Atom with CAP elements answers 200 | One connector per chosen country |
+| Copernicus EMS | activations feed | No response | Deferred |
+| NASA GIBS | VIIRS true colour, VIIRS day and night band, GOES-East GeoColor tiles | 200; IMERG precipitation layer id not confirmed | Imagery layers with a date picker |
+| RainViewer | `weather-maps.json` | 200 | Optional radar overlay |
+| ransomware.live | `v2/recentvictims` | 200 (100 victims with country and group) | Cyber tracker |
+| IODA | `outages/alerts` | 200 | Outage alerts by country, region and network |
+| NVD | `cves/2.0` | 200 | Enrichment only |
+| URLhaus | `urls/recent` | 401 | Needs an auth key; not needed |
+| Polymarket Gamma | `markets?active=true` | 200 | Indicator inputs |
+| WHO Disease Outbreak News | OData with `$orderby=PublicationDate desc` | 200 | Outbreak connector (ordering is required; the default order starts in 2008) |
+| HDX HAPI | `coordination-context/conflict-events` with an encoded app identifier | 200; filters `start_date`, `end_date`, `location_code`, `admin_level` | Monthly conflict aggregates by admin area; no registration needed |
+| IFRC GO | `api/v2/event` | 200 | Humanitarian events for SITREPs |
+| UNHCR | `population/v1/population` | 200 | Country context |
+| FEWS NET | `api/ipcphase` | No response | Deferred |
+| ReliefWeb | `v1/disasters?appname=allseeingeye` | 410 | Pre-approved application name still required |
+| UK Sanctions List | GOV.UK content API lists XML, CSV, ODS and schema downloads at `sanctionslist.fcdo.gov.uk` | 200 | Sanctions context |
+| OFAC | `sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN.XML` | 200 (20 MB) | Sanctions context; the `RecentActions` path is 404 |
+| UN press | `press.un.org/en/rss.xml` | 200 | Already seeded |
+| CFR Global Conflict Tracker | RSS | 404 | Reference only, link out |
+| Google News RSS | keyword search with `when:1d`, Ukrainian edition | 200 | Keyword collection for PIRs and foreign-language headlines |
+| Bluesky public AppView | `searchPosts` with and without the User-Agent | 403 | Blocked from this host; Phase 5 must confirm before relying on it |
+| Mastodon | `mastodon.social` hashtag timeline | 200 | Social watchlists |
+| Reddit | `r/worldnews/new/.rss` | 200 with the project's User-Agent | Social watchlists without OAuth |
+| YouTube | channel RSS | 200 | Channel watchlists |
+| Telegram | `t.me/s/channel` | 200 (HTML) | Stays out per decision 7 (preview scraping) |
+| Kyiv Independent | `/feed/`, `/rss/` | 404 | Feed URL unknown |
+| ISW | `/feed` | 200 but HTML, not a feed | No feed; ArcGIS search finds only historical control-of-terrain services |
+| Focus Taiwan | `/rss/politics`, `/rss/all` | 404 | Taipei Times RSS answers instead |
+| NHK | Japanese `rss/news/cat6.xml` | 200 | Japanese-language feed available; no English RSS |
+| Critical Threats | `/feed` | 403 | Skip |
+| ACLED | `api/acled/read` | 200 HTML (login page) | Account required, as catalogued |
+| UCDP | `gedevents/25.1` | 401 | Token required, as catalogued |
+| Overpass | small military airfield query | 200 | Infrastructure on demand |
+| geoBoundaries | `gbOpen/UKR/ADM1` | 200 | Oblast polygons |
+| Wikimedia | page views per article; current events portal parse | 200, 200 | Attention signals and a daily digest |
+| GDELT DOC | `timelinetone` | 429 on the first call | Tone sparklines come from the live store, not from GDELT DOC |
+| Open-Meteo | current conditions | 200 | Weather context |
+| Wayback | availability API and Save Page Now | In use by the archiving job | Working since 5 September |

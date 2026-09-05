@@ -4,13 +4,28 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
-Phase 0 (Foundation) was built on 3 and 4 September 2026 after Alex approved the plan with two amendments: the 3D globe is the default view, and the logo is specifically the React Bits Evil Eye component. The acceptance flow has been exercised end to end in a browser: a visitor requested an account, the administrator approved it and received the activation link, the new user set a password, signed in and landed on the 3D globe. Both reviews (code quality and security) ran and their findings are fixed and committed.
+Phases 0 to 2 are built and committed (last commit `2fd8d22`, 5 September 2026). Phase 0 gave the foundation and auth; Phase 1 the fusion core, the live globe and the first connectors; Phase 2 the grading engine, the LLM gateway, the doctrine-validated report pipeline with versions, a Markdown download, the direction call for asks, the devil's advocacy pass and Wayback archiving. End-to-end generation against a real model is still untested because no endpoint or `ASE_ENCRYPTION_KEY` is configured on the development host.
 
-Phase 1 (fusion core and globe data) started on 4 September 2026 and its first two milestones are in place: the backend fusion core (unified event model, bounded in-memory store, scheduler with circuit breakers, five keyless connectors, the events API and the server-sent event stream) and the live globe (deck.gl markers over MapLibre, layer panel, ticker, inspector and a streaming client with token refresh). The compose stack has now been verified with Docker Desktop running: migrations ran on PostgreSQL, the API container reports healthy, and Caddy serves the SPA and passes the API through with the right headers on each.
+Phase 3 (trackers) started on 5 September 2026 after a product rethink (below). The tracker domain module and its port exist; the boards, API, connectors and pages follow the checklist in the Phase 3 section.
 
-Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job).
+Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job). The development API runs on port 8001 with `ASE_DEV_API_TARGET` in `frontend/.env.local`, because a stale listener holds port 8000 until the host is rebooted.
 
-Check results at the last run (5 September 2026): backend 123 tests passing on SQLite and on PostgreSQL, coverage 96.7 percent, ruff, mypy strict, import-linter, bandit and pip-audit clean; frontend 113 tests passing, coverage 97.4 percent statements and 93.9 percent branches, eslint and tsc clean, production build succeeds (the lazy globe chunk is 1.6 MB minified because it carries MapLibre and deck.gl); pre-commit and the file-length check pass.
+Check results at the last run (5 September 2026): backend 182 tests passing, coverage 97.3 percent, ruff, mypy strict, import-linter, bandit (11 pre-existing low findings, all asserts and enum strings) clean; frontend 170 tests passing, coverage 97.8 percent statements and 91.1 percent branches, eslint and tsc clean, production build succeeds; pre-commit and the file-length check pass.
+
+## Product rethink, 5 September 2026
+
+Alex asked for a hard look at what the map can actually show, what the analysis features actually are, and which free feeds really answer. Every candidate feed was fetched live from the development host and the results are recorded in `02_DATA_SOURCES.md` section O; the feature inventories are in `04_FEATURES_AND_VIEWS.md` sections 11 and 12. What changed:
+
+- Aviation is far richer without keys than the roadmap assumed. adsb.lol answers the military, interesting, LADD, PIA, emergency-squawk and 250-nautical-mile point queries with no key, and the aircraft records carry the integrity fields the GNSS interference map needs. OpenSky answers anonymous bounding-box queries within its 400 daily credits. Civil traffic over areas of interest, emergencies and the jam map therefore move into Phase 3 with nothing to wait for; a registered OpenSky account only raises the poll rate.
+- The disaster tracker has every feed it needs: NHC and JTWC cyclones with positions, Smithsonian volcano reports with coordinates (the catalogue said they had none), tsunami bulletins with coordinates, EMSC earthquakes, NWS severe weather polygons and Met Office warnings. MeteoAlarm's Europe-wide feed is gone but its per-country Atom feeds answer, so European warnings arrive one country at a time.
+- Maritime without keys is limited to NAVAREA warnings (386 active, positions in free text). NGA's anti-shipping path is gone. AIS and Global Fishing Watch stay behind free keys that only Alex can obtain, so the maritime module ships as warnings first and vessels when the keys arrive.
+- Space and cyber are fully keyless: CelesTrak elements with SGP4, Launch Library 2, SWPC, IODA outage alerts, ransomware.live and CISA KEV.
+- Conflict context: HDX HAPI answers with only an encoded application identifier (monthly conflict aggregates by admin area), WHO Disease Outbreak News, IFRC GO and UNHCR answer, and the UK Sanctions List and OFAC SDN exports download. ISW's current control-of-terrain layer is not discoverable as a public service (only historical ones are), so it is no longer promised. UCDP and ACLED need the token and account already listed.
+- Social: Mastodon, Reddit RSS and YouTube RSS answer; the Bluesky public AppView returns 403 from this host, so Phase 5 must re-check before relying on it. Telegram stays out per decision 7.
+- GDELT's DOC API rate-limits on the first call, so tone and volume sparklines come from the live store rather than from GDELT.
+- Two Phase 1 promises still wait on keys that only Alex can obtain, and they are the most visible gaps on the globe: NASA FIRMS active fires and OS Maps. A configured LLM endpoint is the single most valuable thing Alex can add, because the entire reporting stack has only been exercised with a scripted model.
+
+The revised order is: Phase 3a disaster and conflict trackers with their products and the globe upgrades they need (icons, clustering, time slider); Phase 3b aviation; Phase 3c maritime warnings, space and cyber; Phase 4 direction and warning on top of the tracker signals; Phase 5 social and languages; Phase 6 hardening. The one durable addition the architecture allows for "normal levels" (tiny hourly aggregates for baselines) lands in Phase 3b.
 
 ## Phase 0: Foundation
 
@@ -103,6 +118,32 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Wayback archiving (background task after generation: availability check, then Save Page Now; `ASE_ARCHIVE_ENABLED`), devil's advocacy pass (opt-in per report; can lower KJ1 confidence, never raise it), direction call for free-form asks (PIR, SIRs, EEIs and search terms that steer selection)
 - [ ] Evidence preview before generation for asks (show the direction call's selection to the user first)
 
+## Phase 3: Trackers
+
+Acceptance from the roadmap: each tracker has a board, a detail view, a globe layer and a report template. Feeds are the ones verified in `02_DATA_SOURCES.md` section O.
+
+### 3a. Framework, disasters and conflicts
+- [x] Tracker domain: hazards folded from connector subtypes, curated `Conflict` definitions, activity (24 h, 7 d, previous 7 d, trend), day buckets, hazard and conflict cards computed from the live store, never stored
+- [ ] Curated conflicts and tension areas as a packaged resource (Ukraine, Gaza and the West Bank, Israel and Hezbollah, Sudan, Yemen and the Red Sea, the central Sahel, eastern DR Congo, Myanmar, Somalia, Syria, Haiti, Ethiopia, north-east Nigeria, Cabo Delgado, Libya, Taiwan Strait, the Korean peninsula, the South China Sea, India and Pakistan, Armenia and Azerbaijan, Colombia, the Pakistan and Afghanistan border, Iran and Israel), each with countries, a bounding box, belligerents, keywords and a summary; admin editing is a later follow-up
+- [ ] Tracker service and API: `/api/trackers/disasters`, `/api/trackers/disasters/{hazard}`, `/api/trackers/conflicts`, `/api/trackers/conflicts/{id}` with cards, timelines and the events behind them
+- [ ] Connectors: NHC and JTWC cyclones (positions, intensity, movement), Smithsonian weekly volcano reports, NTWC and PTWC tsunami bulletins, EMSC earthquakes, NWS severe weather, Met Office UK warnings, WHO Disease Outbreak News, IFRC GO events, HDX HAPI monthly conflict aggregates
+- [ ] Products: Disaster SITREP (hazard scope, optional country) and Conflict Assessment (conflict scope: bounding box, countries and keywords steer selection; most likely and most dangerous courses of action with yardstick terms)
+- [ ] Trackers in the app: the rail entry goes live; boards with severity, activity, trend and the latest item; detail pages with timeline, event list, "show on globe" and "generate" buttons
+- [ ] Globe upgrades the trackers need: cyclone and volcano icons, clustering or hex density at low zoom, a time slider over the retained window
+
+### 3b. Aviation
+- [ ] adsb.lol interesting, LADD and PIA lists; emergency squawk polling (7700, 7600, 7500) as alerts; area-of-interest civil traffic through 250-nautical-mile point queries around seeded areas, with OpenSky anonymous bounding boxes as the fallback
+- [ ] Aircraft rendering: heading icons, altitude colouring, short trails, callsign labels at high zoom; the Mictronics aircraft database for type and operator
+- [ ] Baselines: tiny hourly aggregates of military flights per country and emergencies per region (the one durable "normal levels" table); per-country activity against a 30-day baseline on the aviation board
+- [ ] GNSS interference hex map from `nac_p` and `nic`, updated hourly
+- [ ] Aviation Activity Report template
+
+### 3c. Maritime, space and cyber
+- [ ] NAVAREA warnings with positions parsed from text as points and areas; Maritime Activity Report template; AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist
+- [ ] Space: CelesTrak groups propagated with SGP4 (satellites over an area now and next passes, ISS and chosen groups' ground tracks), Launch Library 2 launch sites with countdowns, SWPC aurora oval and K index; space summary in the country and area panels
+- [ ] Cyber: IODA outage alerts by country and region on the globe, ransomware victims by country and group, CISA KEV summary; Cyber Summary template
+- [ ] Sanctions context for briefs from the UK Sanctions List and OFAC SDN exports (programmes touching a country)
+
 ## Known follow-ups carried forward
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.
@@ -114,9 +155,10 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 
 ## Later phases
 
-See `05_ROADMAP.md`: Phase 1 fusion core and globe data, Phase 2 grading and reports, Phase 3 trackers, Phase 4 direction and warning, Phase 5 social and languages, Phase 6 hardening.
+See `05_ROADMAP.md` and the revision note at its end: Phase 3 trackers in three slices (3a disasters and conflicts, 3b aviation, 3c maritime warnings, space and cyber), Phase 4 direction and warning on top of the tracker signals, Phase 5 social and languages, Phase 6 hardening.
 
 ## Blockers
 
 - No git remote yet, so CI has not run.
-- Keys only Alex can obtain: an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`) for the OS Maps base layers, a NASA FIRMS map key for active fires, and OpenSky credentials for civil flights. The code paths exist or are planned; without the keys those layers stay hidden.
+- No LLM endpoint or `ASE_ENCRYPTION_KEY` on the development host, so every report has been generated with a scripted model only.
+- Keys only Alex can obtain, in order of visible impact: a NASA FIRMS map key (active fires, the most obvious gap on the globe), an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`), an AISStream key and a Global Fishing Watch token (vessels), an alerts.in.ua token (air-raid alerts), a UCDP token and an ACLED account (conflict event history), a ReliefWeb application name (the API answers 410 until it is approved), and optionally OpenSky credentials (only to poll civil traffic more often) and Cloudflare Radar (IODA covers outages without it).

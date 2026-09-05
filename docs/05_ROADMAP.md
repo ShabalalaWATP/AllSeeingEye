@@ -58,3 +58,7 @@ Acceptance: an indicator fires on synthetic data within one pipeline cycle and p
 | Memory creep in the live store | Hard budgets, prune loop, admin visibility, alert when above 80 percent |
 | Windows development friction | Docker for PostgreSQL; pure-Python dependencies; client-side PDF/DOCX export avoids native toolchains |
 | Scope creep | MoSCoW list in `04_FEATURES_AND_VIEWS.md`; every phase ships something usable |
+
+## Revision, 5 September 2026
+
+After Phases 0 to 2 shipped, every candidate feed was fetched live (see `02_DATA_SOURCES.md` section O) and the plan was reordered around what answers without a key. Phase 3 now runs in three slices: 3a the tracker framework with the disaster and conflict trackers, their products and the globe upgrades they need (icons, clustering, a time slider); 3b aviation, which turned out to be far richer without keys than assumed (area-of-interest civil traffic, emergencies and the GNSS interference map all come from adsb.lol and anonymous OpenSky); 3c maritime warnings, space and cyber, with AIS and Global Fishing Watch behind their free keys. Phase 4 builds direction and warning on the tracker signals and the hourly baselines that 3b introduces. Phase 5 must re-check Bluesky, which refused this host, and keeps Telegram out per decision 7. The checklists live in `MASTER_IMPLEMENTATION_PLAN.md`.
