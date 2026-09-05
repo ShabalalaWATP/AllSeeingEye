@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
+import { useAuthStore } from '@/stores/auth';
+import { useCapabilitiesStore } from '@/stores/capabilities';
 import { useCountriesStore } from '@/stores/countries';
 import {
   countByCategory,
@@ -18,12 +20,14 @@ import {
 } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
+import { BaseLayerToolbar } from './BaseLayerToolbar';
 import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
+import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { buildEventLayers } from './layers/registry';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
@@ -36,9 +40,21 @@ export const FOCUS_ZOOM = 4;
 export default function GlobePage() {
   const mode = useGlobeStore((state) => state.mode);
   const setMode = useGlobeStore((state) => state.setMode);
+  const baseLayer = useGlobeStore((state) => state.baseLayer);
+  const setBaseLayer = useGlobeStore((state) => state.setBaseLayer);
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
-  const engine = useGlobeEngine(containerRef, mode, supported);
+  // Only our own tile proxy ever sees the session token; the engine checks the origin.
+  const createEngine = useCallback(
+    () => createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken }),
+    [],
+  );
+  const engine = useGlobeEngine(containerRef, mode, supported, baseLayer, createEngine);
+  const osMaps = useCapabilitiesStore((state) => state.osMaps);
+  const loadCapabilities = useCapabilitiesStore((state) => state.load);
+  useEffect(() => {
+    void loadCapabilities();
+  }, [loadCapabilities]);
   useLiveEvents();
   const now = useNow();
 
@@ -127,6 +143,7 @@ export default function GlobePage() {
       <ModeToolbar mode={mode} onChange={setMode} />
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+        <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
         <NationFilter
           countries={countries}
           value={country}

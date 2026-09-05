@@ -500,6 +500,99 @@
         ]
       }
     },
+    "/api/capabilities": {
+      "get": {
+        "tags": [
+          "capabilities"
+        ],
+        "summary": "Capabilities",
+        "operationId": "capabilities_api_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/tiles/os/{layer}/{z}/{x}/{y}.png": {
+      "get": {
+        "tags": [
+          "tiles"
+        ],
+        "summary": "Os Tile",
+        "operationId": "os_tile_api_tiles_os__layer___z___x___y__png_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "layer",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Layer"
+            }
+          },
+          {
+            "name": "z",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Z"
+            }
+          },
+          {
+            "name": "x",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "X"
+            }
+          },
+          {
+            "name": "y",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Y"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/stream": {
       "get": {
         "tags": [
@@ -1180,6 +1273,28 @@
           "next_before"
         ],
         "title": "AuditPageOut"
+      },
+      "CapabilitiesOut": {
+        "properties": {
+          "os_maps": {
+            "type": "boolean",
+            "title": "Os Maps"
+          },
+          "os_layers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Os Layers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "os_maps",
+          "os_layers"
+        ],
+        "title": "CapabilitiesOut",
+        "description": "What this deployment can offer the browser beyond the always-on features."
       },
       "Category": {
         "type": "string",

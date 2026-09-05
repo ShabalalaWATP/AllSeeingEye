@@ -29,3 +29,10 @@ class CountryOut(BaseModel):
 
 class CountriesOut(BaseModel):
     items: list[CountryOut]
+
+
+class CapabilitiesOut(BaseModel):
+    """What this deployment can offer the browser beyond the always-on features."""
+
+    os_maps: bool
+    os_layers: list[str]

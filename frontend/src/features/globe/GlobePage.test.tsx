@@ -1,4 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
@@ -9,6 +10,7 @@ import { FakeMap } from '@/test/fakeMap';
 import { FakeEventStreamClient } from '@/test/fakeStream';
 import { USER_TOKEN, liveEvent } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+import { server } from '@/test/server';
 
 import { FOCUS_ZOOM } from './GlobePage';
 
@@ -84,7 +86,10 @@ describe('GlobePage', () => {
     });
 
     await user.click(screen.getByRole('switch', { name: 'Disasters 1' }));
-    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
     expect(overlayLayerIds()).toEqual([]);
   });
 
@@ -121,22 +126,88 @@ describe('GlobePage', () => {
       disasters.props.onClick({ object: flood });
     });
     const drawer = screen.getByRole('complementary', { name: 'Event details' });
-    expect(within(drawer).getByRole('heading', { name: 'Flash flood in Valencia' })).toBeInTheDocument();
+    expect(
+      within(drawer).getByRole('heading', { name: 'Flash flood in Valencia' }),
+    ).toBeInTheDocument();
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
 
     await user.click(within(strip).getByRole('button', { name: /^Flash flood in Valencia/ }));
-    expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [-0.38, 39.47], zoom: FOCUS_ZOOM });
+    expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({
+      center: [-0.38, 39.47],
+      zoom: FOCUS_ZOOM,
+    });
     expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
 
     act(() => {
-      client.emit({ event: 'event.expire', data: JSON.stringify({ ids: ['e9'], count: 1 }), id: null });
+      client.emit({
+        event: 'event.expire',
+        data: JSON.stringify({ ids: ['e9'], count: 1 }),
+        id: null,
+      });
     });
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
 
     unmount();
     expect(client.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('switches base layers and offers OS styles only when the server proxies them', async () => {
+    mockWebGl2(true);
+    const { user } = renderApp('/', 'user');
+    await waitFor(() => {
+      expect(FakeMap.instances).toHaveLength(1);
+    });
+    const map = FakeMap.instances[0]!;
+    act(() => {
+      map.fire('style.load');
+    });
+    const group = screen.getByRole('group', { name: 'Base layer' });
+    expect(within(group).queryByRole('button', { name: 'OS Road' })).not.toBeInTheDocument();
+    await user.click(within(group).getByRole('button', { name: 'Satellite' }));
+    expect(useGlobeStore.getState().baseLayer).toBe('satellite');
+    expect(map.addSource).toHaveBeenCalledWith(
+      'ase-base-raster',
+      expect.objectContaining({ type: 'raster' }),
+    );
+    expect(within(group).getByRole('button', { name: 'Satellite' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    // Our tile proxy gets the session token; nothing else does.
+    const transform = map.options.transformRequest as (url: string) => {
+      headers?: Record<string, string>;
+    };
+    expect(transform('http://localhost:3000/api/tiles/os/Road_3857/7/1/1.png').headers).toEqual({
+      Authorization: `Bearer ${USER_TOKEN}`,
+    });
+    expect(transform('https://tiles.maps.eox.at/a.jpg').headers).toBeUndefined();
+  });
+
+  it('shows the Ordnance Survey styles when the server has a key', async () => {
+    mockWebGl2(true);
+    server.use(
+      http.get('/api/capabilities', () =>
+        HttpResponse.json({
+          os_maps: true,
+          os_layers: ['Light_3857', 'Outdoor_3857', 'Road_3857'],
+        }),
+      ),
+    );
+    const { user } = renderApp('/', 'user');
+    const osRoad = await screen.findByRole('button', { name: 'OS Road' });
+    await waitFor(() => {
+      expect(FakeMap.instances).toHaveLength(1);
+    });
+    act(() => {
+      FakeMap.instances[0]!.fire('style.load');
+    });
+    await user.click(osRoad);
+    expect(FakeMap.instances[0]!.addSource).toHaveBeenLastCalledWith(
+      'ase-base-raster',
+      expect.objectContaining({ tiles: ['/api/tiles/os/Road_3857/{z}/{x}/{y}.png'] }),
+    );
   });
 
   it('filters the globe to one nation and flies there', async () => {
@@ -147,7 +218,9 @@ describe('GlobePage', () => {
     await user.type(picker, 'Ukraine');
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [31.2, 48.4], zoom: 4 });
     const panel = screen.getByRole('region', { name: 'Ukraine panel' });
-    expect(within(panel).getByText('Nothing in the live tier for this nation.')).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Nothing in the live tier for this nation.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Disasters 0' })).toBeInTheDocument();
     expect(overlayLayerIds()).toEqual([]);
     const strip = screen.getByRole('navigation', { name: 'Latest events' });

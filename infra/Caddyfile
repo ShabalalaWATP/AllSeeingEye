@@ -22,7 +22,7 @@
 			X-Frame-Options DENY
 			Permissions-Policy "camera=(), microphone=(), geolocation=()"
 			# MapLibre sets inline styles on its controls, hence style-src 'unsafe-inline'.
-			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org; connect-src 'self' https://tiles.openfreemap.org; worker-src 'self' blob:; font-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+			Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tiles.openfreemap.org https://tiles.maps.eox.at; connect-src 'self' https://tiles.openfreemap.org https://tiles.maps.eox.at; worker-src 'self' blob:; font-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
 			# Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		}
 		root * /srv

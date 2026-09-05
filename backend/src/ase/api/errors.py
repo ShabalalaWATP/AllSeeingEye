@@ -31,6 +31,7 @@ STATUS_BY_CODE: dict[str, int] = {
     "user_inactive": 409,
     "payload_too_large": 413,
     "not_ready": 503,
+    "upstream_unavailable": 502,
 }
 
 
@@ -52,6 +53,11 @@ class PayloadTooLarge(AppError):
 class InvalidQuery(AppError):
     code = "validation_error"
     default_message = "The request is invalid."
+
+
+class UpstreamUnavailable(AppError):
+    code = "upstream_unavailable"
+    default_message = "An upstream service did not answer as expected."
 
 
 def envelope(code: str, message: str, fields: dict[str, str] | None = None) -> dict[str, Any]:

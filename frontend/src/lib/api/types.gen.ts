@@ -225,6 +225,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tiles/os/{layer}/{z}/{x}/{y}.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Os Tile */
+        get: operations["os_tile_api_tiles_os__layer___z___x___y__png_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stream": {
         parameters: {
             query?: never;
@@ -468,6 +502,16 @@ export interface components {
             items: components["schemas"]["AuditEntryOut"][];
             /** Next Before */
             next_before: number | null;
+        };
+        /**
+         * CapabilitiesOut
+         * @description What this deployment can offer the browser beyond the always-on features.
+         */
+        CapabilitiesOut: {
+            /** Os Maps */
+            os_maps: boolean;
+            /** Os Layers */
+            os_layers: string[];
         };
         /**
          * Category
@@ -1146,6 +1190,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CountriesOut"];
+                };
+            };
+        };
+    };
+    capabilities_api_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapabilitiesOut"];
+                };
+            };
+        };
+    };
+    os_tile_api_tiles_os__layer___z___x___y__png_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                layer: string;
+                z: number;
+                x: number;
+                y: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

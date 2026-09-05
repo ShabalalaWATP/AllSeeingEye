@@ -79,7 +79,8 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Tests for the parser, client, store, registry, panels and the page with the overlay and stream client mocked; live globe confirmed in the browser against the dev API
 - [x] Nation filter (name or code, Enter completes a prefix) that scopes the layers, counts and ticker to one nation and flies the camera to it; country panel v1 with per-category counts and the latest events for that nation
 - [ ] Day and night terminator; lite mode; coordinate readout
-- [ ] Base-layer switcher: OS Maps proxy, EOX satellite, GIBS, hybrid
+- [x] Base-layer switcher: EOX Sentinel-2 cloudless satellite, hybrid (imagery under the vector boundaries and labels), and OS Maps Road, Outdoor and Light raster tiles proxied through `/api/tiles/os` with the key server-side, a byte-bounded cache and validated addresses (`/api/capabilities` tells the browser whether a key exists; the session token is attached to tile requests to our own origin only)
+- [ ] NASA GIBS daily imagery with a date picker; the mandatory OS logo alongside the OS attribution line
 - [ ] Admin source page in the UI
 - [ ] Replace `useResource` and `useAuditLog` with TanStack Query
 

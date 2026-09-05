@@ -27,6 +27,7 @@ from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.requests import (
     ApproveRequestUseCase,
@@ -56,6 +57,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.application.ports.feeds import FeedConnector
+from ase.application.ports.tiles import TileProvider
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Settings
@@ -115,9 +117,14 @@ class Container:
         self.scheduler = FeedScheduler(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock
         )
+        os_key = settings.os_maps_key_value
+        self.tiles: TileProvider = (
+            OsMapsTileProvider(os_key) if os_key is not None else NullTileProvider()
+        )
 
     async def dispose(self) -> None:
         await self.http.aclose()
+        await self.tiles.aclose()
         await self.engine.dispose()
 
     def repositories(self, session: AsyncSession) -> Repositories:

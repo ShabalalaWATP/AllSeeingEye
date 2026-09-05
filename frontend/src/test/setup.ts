@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
 configure({ asyncUtilTimeout: 4000 });
 
 import { initialAuthState, useAuthStore } from '@/stores/auth';
+import { initialCapabilitiesState, useCapabilitiesStore } from '@/stores/capabilities';
 import { initialCountriesState, useCountriesStore } from '@/stores/countries';
 import { initialEventsState, useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
@@ -50,7 +51,8 @@ afterEach(() => {
   server.resetHandlers();
   cleanup();
   useAuthStore.setState(initialAuthState);
-  useGlobeStore.setState({ mode: 'globe' });
+  useGlobeStore.setState({ mode: 'globe', baseLayer: 'dark' });
+  useCapabilitiesStore.setState({ ...initialCapabilitiesState });
   useEventsStore.setState({ ...initialEventsState });
   useCountriesStore.setState({ ...initialCountriesState });
   clearCookies();

@@ -3,8 +3,15 @@ import type { RefObject } from 'react';
 
 import type { ViewMode } from '@/stores/globe';
 
-import type { DataLayer, FlyToTarget, MapEngine, MapEngineFactory, Projection } from './engine/MapEngine';
+import type {
+  DataLayer,
+  FlyToTarget,
+  MapEngine,
+  MapEngineFactory,
+  Projection,
+} from './engine/MapEngine';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
+import type { BaseLayer } from './engine/baseLayers';
 
 export function projectionFor(mode: ViewMode): Projection {
   return mode === 'globe' ? 'globe' : 'mercator';
@@ -24,6 +31,7 @@ export function useGlobeEngine(
   containerRef: RefObject<HTMLDivElement | null>,
   mode: ViewMode,
   enabled: boolean,
+  baseLayer: BaseLayer = 'dark',
   createEngine: MapEngineFactory = createMapLibreEngine,
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
@@ -43,6 +51,10 @@ export function useGlobeEngine(
   useEffect(() => {
     engineRef.current?.setProjection(projectionFor(mode));
   }, [mode, enabled]);
+
+  useEffect(() => {
+    engineRef.current?.setBaseLayer(baseLayer);
+  }, [baseLayer, enabled]);
 
   const setLayers = useCallback((layers: readonly DataLayer[]) => {
     engineRef.current?.setLayers(layers);

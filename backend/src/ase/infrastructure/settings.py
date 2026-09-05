@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
+    # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
+    os_maps_key: SecretStr | None = None
 
     _generated_secret: bool = PrivateAttr(default=False)
 
@@ -71,6 +73,11 @@ class Settings(BaseSettings):
     @property
     def disabled_feed_ids(self) -> list[str]:
         return [item.strip() for item in self.feeds_disabled.split(",") if item.strip()]
+
+    @property
+    def os_maps_key_value(self) -> str | None:
+        value = self.os_maps_key.get_secret_value().strip() if self.os_maps_key else ""
+        return value or None
 
     @property
     def is_dev(self) -> bool:
