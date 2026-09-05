@@ -10,7 +10,11 @@ export interface LayerPanelProps {
   stats: StoreStats | null;
   status: StreamStatus;
   error: string | null;
+  terminator: boolean;
+  lite: boolean;
   onToggle: (category: Category) => void;
+  onToggleTerminator: () => void;
+  onToggleLite: () => void;
 }
 
 const MEBIBYTE = 1_048_576;
@@ -22,7 +26,43 @@ export function formatBudget(stats: StoreStats): string {
 }
 
 /** Per-category visibility switches with live counts, plus the store budget line. */
-export function LayerPanel({ counts, hidden, stats, status, error, onToggle }: LayerPanelProps) {
+function Toggle({
+  label,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onToggle}
+      className={`flex w-full items-center justify-between rounded px-1.5 py-1 text-left text-sm hover:bg-surface-2 ${
+        checked ? 'text-text' : 'text-muted'
+      }`}
+    >
+      <span>{label}</span>{' '}
+      <span className="font-mono text-[11px] uppercase text-muted">{checked ? 'on' : 'off'}</span>
+    </button>
+  );
+}
+
+export function LayerPanel({
+  counts,
+  hidden,
+  stats,
+  status,
+  error,
+  terminator,
+  lite,
+  onToggle,
+  onToggleTerminator,
+  onToggleLite,
+}: LayerPanelProps) {
   return (
     <section
       aria-label="Layers"
@@ -55,12 +95,18 @@ export function LayerPanel({ counts, hidden, stats, status, error, onToggle }: L
                   style={{ backgroundColor: style.css, opacity: shown ? 1 : 0.3 }}
                 />
                 <span className="flex-1">{style.label}</span>{' '}
-                <span className="font-mono text-xs text-muted tabular-nums">{counts[category] ?? 0}</span>
+                <span className="font-mono text-xs text-muted tabular-nums">
+                  {counts[category] ?? 0}
+                </span>
               </button>
             </li>
           );
         })}
       </ul>
+      <div className="mt-1 border-t border-line pt-1">
+        <Toggle label="Day and night" checked={terminator} onToggle={onToggleTerminator} />
+        <Toggle label="Lite mode" checked={lite} onToggle={onToggleLite} />
+      </div>
       {stats !== null && (
         <p className="mt-1 px-1 font-mono text-[11px] text-muted">{formatBudget(stats)}</p>
       )}

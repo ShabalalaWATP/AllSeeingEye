@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
+import { useGlobeStore } from '@/stores/globe';
 
 import { useViewNavigation } from './useViewNavigation';
 
@@ -58,11 +59,12 @@ function RailLink({ to, children }: { to: string; children: ReactNode }) {
 export function LeftRail() {
   const { mode, onGlobePage, showGlobe, showMap } = useViewNavigation();
   const isAdmin = useAuthStore(selectIsAdmin);
+  const lite = useGlobeStore((state) => state.lite);
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-ground">
       <Link to="/" className="flex items-center gap-3 px-4 py-4">
-        <BrandMark />
+        <BrandMark still={lite} />
         <Wordmark className="min-w-0 leading-snug" />
       </Link>
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 px-2">

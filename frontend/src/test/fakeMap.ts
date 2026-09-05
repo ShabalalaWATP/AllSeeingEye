@@ -39,6 +39,7 @@ export class FakeMap {
   readonly setSky = vi.fn();
   readonly setPaintProperty = vi.fn();
   readonly flyTo = vi.fn();
+  readonly jumpTo = vi.fn();
   readonly remove = vi.fn();
   readonly addControl = vi.fn();
   readonly removeControl = vi.fn();

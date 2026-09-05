@@ -13,6 +13,8 @@ const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
 describe('LayerPanel', () => {
   it('lists every category with its count, reports the budget and toggles', async () => {
     const onToggle = vi.fn();
+    const onToggleTerminator = vi.fn();
+    const onToggleLite = vi.fn();
     render(
       <LayerPanel
         counts={{ disaster: 3 }}
@@ -20,13 +22,35 @@ describe('LayerPanel', () => {
         stats={storeStats}
         status="live"
         error={null}
+        terminator
+        lite={false}
         onToggle={onToggle}
+        onToggleTerminator={onToggleTerminator}
+        onToggleLite={onToggleLite}
       />,
     );
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(11);
-    expect(screen.getByRole('switch', { name: 'Disasters 3' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveAttribute('aria-checked', 'false');
+    expect(switches).toHaveLength(13);
+    expect(screen.getByRole('switch', { name: 'Day and night on' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('switch', { name: 'Lite mode off' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    await userEvent.click(screen.getByRole('switch', { name: 'Day and night on' }));
+    expect(onToggleTerminator).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole('switch', { name: 'Lite mode off' }));
+    expect(onToggleLite).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('switch', { name: 'Disasters 3' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
     expect(screen.getByRole('status')).toHaveTextContent('Live');
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('switch', { name: 'Cyber 0' }));
@@ -35,13 +59,24 @@ describe('LayerPanel', () => {
 
   it('shows the load error and no budget line before the first load', () => {
     render(
-      <LayerPanel counts={{}} hidden={[]} stats={null} status="offline" error="Down." onToggle={vi.fn()} />,
+      <LayerPanel
+        counts={{}}
+        hidden={[]}
+        stats={null}
+        status="offline"
+        error="Down."
+        terminator={false}
+        lite
+        onToggle={vi.fn()}
+        onToggleTerminator={vi.fn()}
+        onToggleLite={vi.fn()}
+      />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Down.');
     expect(screen.queryByText(/events,/)).not.toBeInTheDocument();
-    expect(formatBudget({ ...storeStats, estimated_bytes: 2_621_440, budget_bytes: 8_388_608 })).toBe(
-      '2 events, 2.5 of 8 MB',
-    );
+    expect(
+      formatBudget({ ...storeStats, estimated_bytes: 2_621_440, budget_bytes: 8_388_608 }),
+    ).toBe('2 events, 2.5 of 8 MB');
   });
 });
 
@@ -60,7 +95,9 @@ describe('EventInspector', () => {
       />,
     );
     const drawer = screen.getByRole('complementary', { name: 'Event details' });
-    expect(within(drawer).getByRole('heading', { name: 'M4.2 near Somewhere' })).toBeInTheDocument();
+    expect(
+      within(drawer).getByRole('heading', { name: 'M4.2 near Somewhere' }),
+    ).toBeInTheDocument();
     expect(within(drawer).getByText('Magnitude 4.2 near Somewhere')).toBeInTheDocument();
     expect(within(drawer).getByTitle('Instrument data')).toHaveTextContent('Grade A2');
     expect(within(drawer).getByText('usgs earthquakes')).toBeInTheDocument();

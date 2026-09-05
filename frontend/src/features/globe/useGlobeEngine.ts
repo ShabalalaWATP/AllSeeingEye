@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { RefObject } from 'react';
 
-import type { ViewMode } from '@/stores/globe';
+import type { BaseLayer, ViewMode } from '@/stores/globe';
 
 import type {
+  CursorHandler,
   DataLayer,
   FlyToTarget,
   MapEngine,
@@ -11,7 +12,6 @@ import type {
   Projection,
 } from './engine/MapEngine';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
-import type { BaseLayer } from './engine/baseLayers';
 
 export function projectionFor(mode: ViewMode): Projection {
   return mode === 'globe' ? 'globe' : 'mercator';
@@ -20,33 +20,46 @@ export function projectionFor(mode: ViewMode): Projection {
 export interface GlobeEngineHandle {
   setLayers: (layers: readonly DataLayer[]) => void;
   flyTo: (target: FlyToTarget) => void;
+  /** Subscribes to cursor positions; safe to call before the engine has mounted. */
+  onCursor: (handler: CursorHandler) => () => void;
+}
+
+export interface GlobeEngineOptions {
+  enabled: boolean;
+  mode: ViewMode;
+  baseLayer?: BaseLayer;
+  lite?: boolean;
+  createEngine?: MapEngineFactory;
 }
 
 /**
- * Mounts a map engine into the container for the life of the component, keeps
- * its projection in step with the view mode, and hands back stable callbacks
- * for the data layers and camera.
+ * Mounts a map engine into the container for the life of the component, keeps its
+ * projection, base layer and lite setting in step with the view state, and hands
+ * back stable callbacks for the data layers, the camera and the cursor.
  */
 export function useGlobeEngine(
   containerRef: RefObject<HTMLDivElement | null>,
-  mode: ViewMode,
-  enabled: boolean,
-  baseLayer: BaseLayer = 'dark',
-  createEngine: MapEngineFactory = createMapLibreEngine,
+  { enabled, mode, baseLayer = 'dark', lite = false, createEngine }: GlobeEngineOptions,
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
+  const cursorHandlers = useRef(new Set<CursorHandler>());
+  const factory = createEngine ?? createMapLibreEngine;
 
   useEffect(() => {
     const container = containerRef.current;
     if (!enabled || container === null) return;
-    const engine = createEngine();
+    const engine = factory();
     engine.mount(container);
+    const offCursor = engine.onCursor((position) => {
+      for (const handler of cursorHandlers.current) handler(position);
+    });
     engineRef.current = engine;
     return () => {
+      offCursor();
       engine.destroy();
       engineRef.current = null;
     };
-  }, [containerRef, createEngine, enabled]);
+  }, [containerRef, factory, enabled]);
 
   useEffect(() => {
     engineRef.current?.setProjection(projectionFor(mode));
@@ -56,6 +69,10 @@ export function useGlobeEngine(
     engineRef.current?.setBaseLayer(baseLayer);
   }, [baseLayer, enabled]);
 
+  useEffect(() => {
+    engineRef.current?.setLite(lite);
+  }, [lite, enabled]);
+
   const setLayers = useCallback((layers: readonly DataLayer[]) => {
     engineRef.current?.setLayers(layers);
   }, []);
@@ -64,5 +81,12 @@ export function useGlobeEngine(
     engineRef.current?.flyTo(target);
   }, []);
 
-  return useMemo(() => ({ setLayers, flyTo }), [setLayers, flyTo]);
+  const onCursor = useCallback((handler: CursorHandler) => {
+    cursorHandlers.current.add(handler);
+    return () => {
+      cursorHandlers.current.delete(handler);
+    };
+  }, []);
+
+  return useMemo(() => ({ setLayers, flyTo, onCursor }), [setLayers, flyTo, onCursor]);
 }

@@ -78,7 +78,8 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Layer panel with per-category switches, counts, store budget and connection status; ticker of the latest events; event inspector (grade with rationale, provenance, summary, attributes, tags, http(s) links only)
 - [x] Tests for the parser, client, store, registry, panels and the page with the overlay and stream client mocked; live globe confirmed in the browser against the dev API
 - [x] Nation filter (name or code, Enter completes a prefix) that scopes the layers, counts and ticker to one nation and flies the camera to it; country panel v1 with per-category counts and the latest events for that nation
-- [ ] Day and night terminator; lite mode; coordinate readout
+- [x] Day and night terminator (solar position from the clock, the night hemisphere as one deck.gl polygon refreshed every half minute), lite mode (no atmosphere, no camera animation, no terminator, brand mark held still) and a WGS84 coordinate readout that copies on click; base layer, terminator and lite mode persist in the browser, the view mode never does
+- [ ] MGRS and OS grid reference in the coordinate readout
 - [x] Base-layer switcher: EOX Sentinel-2 cloudless satellite, hybrid (imagery under the vector boundaries and labels), and OS Maps Road, Outdoor and Light raster tiles proxied through `/api/tiles/os` with the key server-side, a byte-bounded cache and validated addresses (`/api/capabilities` tells the browser whether a key exists; the session token is attached to tile requests to our own origin only)
 - [ ] NASA GIBS daily imagery with a date picker; the mandatory OS logo alongside the OS attribution line
 - [ ] Admin source page in the UI
@@ -101,3 +102,4 @@ See `05_ROADMAP.md`: Phase 1 fusion core and globe data, Phase 2 grading and rep
 ## Blockers
 
 - No git remote yet, so CI has not run.
+- Keys only Alex can obtain: an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`) for the OS Maps base layers, a NASA FIRMS map key for active fires, and OpenSky credentials for civil flights. The code paths exist or are planned; without the keys those layers stay hidden.

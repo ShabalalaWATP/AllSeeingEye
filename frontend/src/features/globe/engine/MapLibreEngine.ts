@@ -11,6 +11,7 @@ import type { RequestParameters, SkySpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import type {
+  CursorHandler,
   DataLayer,
   EngineOptions,
   FlyToTarget,
@@ -75,6 +76,7 @@ export class MapLibreEngine implements MapEngine {
   private overlay: MapboxOverlay | null = null;
   private projection: Projection = 'globe';
   private baseLayer: BaseLayer = 'dark';
+  private lite = false;
   private styleReady = false;
 
   constructor(private readonly options: EngineOptions = {}) {}
@@ -93,7 +95,7 @@ export class MapLibreEngine implements MapEngine {
     map.addControl(this.overlay);
     map.on('style.load', () => {
       this.styleReady = true;
-      map.setSky(GLOBE_SKY);
+      this.applySky();
       for (const [layer, property, value] of PAINT_OVERRIDES) {
         if (map.getLayer(layer) !== undefined) map.setPaintProperty(layer, property, value);
       }
@@ -117,8 +119,26 @@ export class MapLibreEngine implements MapEngine {
     this.applyBaseLayer();
   }
 
+  setLite(lite: boolean): void {
+    this.lite = lite;
+    this.applySky();
+  }
+
   flyTo(target: FlyToTarget): void {
-    this.map?.flyTo({ center: target.center, zoom: target.zoom });
+    if (this.lite) this.map?.jumpTo({ center: target.center, zoom: target.zoom });
+    else this.map?.flyTo({ center: target.center, zoom: target.zoom });
+  }
+
+  onCursor(handler: CursorHandler): () => void {
+    const map = this.map;
+    if (map === null) return () => undefined;
+    const listener = (event: { lngLat: { lng: number; lat: number } }) => {
+      handler({ lon: event.lngLat.lng, lat: event.lngLat.lat });
+    };
+    map.on('mousemove', listener);
+    return () => {
+      map.off('mousemove', listener);
+    };
   }
 
   setLayers(layers: readonly DataLayer[]): void {
@@ -146,6 +166,11 @@ export class MapLibreEngine implements MapEngine {
     const token = this.options.authHeader?.() ?? null;
     if (token === null || !isApiRequest(url, window.location.origin)) return { url };
     return { url, headers: { Authorization: `Bearer ${token}` } };
+  }
+
+  private applySky(): void {
+    if (this.map === null || !this.styleReady) return;
+    this.map.setSky(this.lite ? { ...GLOBE_SKY, 'atmosphere-blend': 0 } : GLOBE_SKY);
   }
 
   private applyProjection(): void {

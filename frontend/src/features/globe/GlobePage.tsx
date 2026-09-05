@@ -1,8 +1,9 @@
 /**
  * The root view: a full-bleed 3D globe (default) with an explicit Map mode
- * toggle, live event markers, the nation filter, layer panel, country panel,
- * ticker and inspector. When WebGL2 is unavailable the engine is not mounted
- * and the page explains why; the panels still work from the event mirror.
+ * toggle, live event markers, the day and night terminator, base layers, the
+ * nation filter, layer panel, country panel, ticker, inspector and coordinate
+ * readout. When WebGL2 is unavailable the engine is not mounted and the page
+ * explains why; the panels still work from the event mirror.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -21,6 +22,7 @@ import {
 import { useGlobeStore } from '@/stores/globe';
 
 import { BaseLayerToolbar } from './BaseLayerToolbar';
+import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
 import { LayerPanel } from './LayerPanel';
@@ -28,7 +30,9 @@ import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
+import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
+import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
 import { useNow } from './useNow';
@@ -37,26 +41,41 @@ import { hasWebGl2 } from './webgl';
 /** Zoom used when the user focuses an event from a list. */
 export const FOCUS_ZOOM = 4;
 
+// Only our own tile proxy ever sees the session token; the engine checks the origin.
+const createEngine = () =>
+  createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken });
+
 export default function GlobePage() {
   const mode = useGlobeStore((state) => state.mode);
   const setMode = useGlobeStore((state) => state.setMode);
   const baseLayer = useGlobeStore((state) => state.baseLayer);
   const setBaseLayer = useGlobeStore((state) => state.setBaseLayer);
+  const terminator = useGlobeStore((state) => state.terminator);
+  const toggleTerminator = useGlobeStore((state) => state.toggleTerminator);
+  const lite = useGlobeStore((state) => state.lite);
+  const toggleLite = useGlobeStore((state) => state.toggleLite);
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
-  // Only our own tile proxy ever sees the session token; the engine checks the origin.
-  const createEngine = useCallback(
-    () => createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken }),
-    [],
-  );
-  const engine = useGlobeEngine(containerRef, mode, supported, baseLayer, createEngine);
+  const engine = useGlobeEngine(containerRef, {
+    enabled: supported,
+    mode,
+    baseLayer,
+    lite,
+    createEngine,
+  });
+  useLiveEvents();
+  const now = useNow();
+
   const osMaps = useCapabilitiesStore((state) => state.osMaps);
+  const capabilitiesLoaded = useCapabilitiesStore((state) => state.loaded);
   const loadCapabilities = useCapabilitiesStore((state) => state.load);
   useEffect(() => {
     void loadCapabilities();
   }, [loadCapabilities]);
-  useLiveEvents();
-  const now = useNow();
+  useEffect(() => {
+    // A remembered OS layer is meaningless on a server without an OS key.
+    if (capabilitiesLoaded && !osMaps && isOsLayer(baseLayer)) setBaseLayer('dark');
+  }, [baseLayer, capabilitiesLoaded, osMaps, setBaseLayer]);
 
   const countries = useCountriesStore((state) => state.items);
   const countryByIso = useCountriesStore((state) => state.byIso);
@@ -90,8 +109,10 @@ export default function GlobePage() {
 
   useEffect(() => {
     if (!supported) return;
-    engine.setLayers(buildEventLayers(scoped, hidden, onPick, selectedId));
-  }, [engine, hidden, scoped, onPick, selectedId, supported]);
+    const events = buildEventLayers(scoped, hidden, onPick, selectedId);
+    const night = terminator && !lite ? [buildTerminatorLayer(new Date(now))] : [];
+    engine.setLayers([...night, ...events]);
+  }, [engine, hidden, lite, now, onPick, scoped, selectedId, supported, terminator]);
 
   const focus = useCallback(
     (event: LiveEvent) => {
@@ -156,7 +177,11 @@ export default function GlobePage() {
           stats={stats}
           status={status}
           error={error}
+          terminator={terminator}
+          lite={lite}
           onToggle={toggleCategory}
+          onToggleTerminator={toggleTerminator}
+          onToggleLite={toggleLite}
         />
         {nation !== null && (
           <CountryPanel
@@ -168,6 +193,7 @@ export default function GlobePage() {
           />
         )}
       </div>
+      {supported && <CoordinateReadout engine={engine} />}
       {selected !== null && <EventInspector event={selected} onClose={close} />}
     </div>
   );

@@ -12,10 +12,12 @@ export interface BrandMarkProps {
   size?: number;
   /** Purely visual repeat of the mark (a loading screen next to the rail's own mark). */
   decorative?: boolean;
+  /** Hold the flames still (lite mode); reduced motion has the same effect. */
+  still?: boolean;
 }
 
-export function BrandMark({ size = 40, decorative = false }: BrandMarkProps) {
-  const reducedMotion = useReducedMotion();
+export function BrandMark({ size = 40, decorative = false, still = false }: BrandMarkProps) {
+  const reducedMotion = useReducedMotion() || still;
   const visible = usePageVisible();
 
   return (

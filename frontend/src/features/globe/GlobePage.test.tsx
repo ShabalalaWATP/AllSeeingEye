@@ -82,7 +82,7 @@ describe('GlobePage', () => {
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getAllByRole('button')).toHaveLength(2);
     await waitFor(() => {
-      expect(overlayLayerIds()).toEqual(['events-disaster']);
+      expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
     });
 
     await user.click(screen.getByRole('switch', { name: 'Disasters 1' }));
@@ -90,7 +90,7 @@ describe('GlobePage', () => {
       'aria-checked',
       'false',
     );
-    expect(overlayLayerIds()).toEqual([]);
+    expect(overlayLayerIds()).toEqual(['terminator']);
   });
 
   it('streams new events, opens the inspector on pick and focuses from the ticker', async () => {
@@ -222,14 +222,49 @@ describe('GlobePage', () => {
       within(panel).getByText('Nothing in the live tier for this nation.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Disasters 0' })).toBeInTheDocument();
-    expect(overlayLayerIds()).toEqual([]);
+    expect(overlayLayerIds()).toEqual(['terminator']);
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getByText('Waiting for events')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Clear nation filter' }));
     expect(screen.queryByRole('region', { name: 'Ukraine panel' })).not.toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
+  });
+
+  it('drops the terminator, atmosphere and animation in lite mode and reads the cursor', async () => {
+    mockWebGl2(true);
+    const { user } = renderApp('/', 'user');
+    await waitFor(() => {
+      expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
+    });
+    const map = FakeMap.instances[0]!;
+    act(() => {
+      map.fire('style.load');
+    });
+    expect(map.setSky).toHaveBeenLastCalledWith(
+      expect.objectContaining({ 'atmosphere-blend': expect.any(Array) }),
+    );
+    await user.click(screen.getByRole('switch', { name: 'Day and night on' }));
     expect(overlayLayerIds()).toEqual(['events-disaster']);
+    await user.click(screen.getByRole('switch', { name: 'Day and night off' }));
+    expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
+
+    await user.click(screen.getByRole('switch', { name: 'Lite mode off' }));
+    expect(useGlobeStore.getState().lite).toBe(true);
+    expect(overlayLayerIds()).toEqual(['events-disaster']);
+    expect(map.setSky).toHaveBeenLastCalledWith(expect.objectContaining({ 'atmosphere-blend': 0 }));
+    const strip = screen.getByRole('navigation', { name: 'Latest events' });
+    await user.click(within(strip).getAllByRole('button')[0]!);
+    expect(map.jumpTo).toHaveBeenCalledWith({ center: [10, 50], zoom: FOCUS_ZOOM });
+    expect(map.flyTo).not.toHaveBeenCalled();
+
+    act(() => {
+      map.fire('mousemove', { lngLat: { lng: -0.1278, lat: 51.5074 } });
+    });
+    expect(screen.getByRole('button', { name: 'Copy coordinates' })).toHaveTextContent(
+      '51.5074° N, 0.1278° W',
+    );
   });
 
   it('asks the session for a fresh token when the stream says so', async () => {

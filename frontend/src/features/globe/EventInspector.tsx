@@ -46,7 +46,11 @@ export function EventInspector({ event, onClose }: EventInspectorProps) {
             className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider"
             style={{ color: style.css, backgroundColor: `${style.css}1f` }}
           >
-            <span aria-hidden="true" className="h-2 w-2 rounded-full" style={{ backgroundColor: style.css }} />
+            <span
+              aria-hidden="true"
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: style.css }}
+            />
             {style.label}
           </span>
           <span
@@ -55,7 +59,9 @@ export function EventInspector({ event, onClose }: EventInspectorProps) {
           >
             Grade {event.grade}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-wider text-muted">{event.subtype}</span>
+          <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
+            {event.subtype}
+          </span>
         </div>
         <Button variant="ghost" aria-label="Close" onClick={onClose} className="px-2 py-1">
           ×
@@ -92,7 +98,9 @@ export function EventInspector({ event, onClose }: EventInspectorProps) {
             </>
           )}
         </dl>
-        {event.summary !== null && <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>}
+        {event.summary !== null && (
+          <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
+        )}
         {attributes.length > 0 && (
           <dl className={`mt-3 ${dl}`}>
             {attributes.map(([key, value]) => (
@@ -106,7 +114,10 @@ export function EventInspector({ event, onClose }: EventInspectorProps) {
         {event.tags.length > 0 && (
           <p className="mt-3 flex flex-wrap gap-1">
             {event.tags.map((tag) => (
-              <span key={tag} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted">
+              <span
+                key={tag}
+                className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted"
+              >
                 {tag}
               </span>
             ))}

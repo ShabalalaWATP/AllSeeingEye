@@ -51,7 +51,8 @@ afterEach(() => {
   server.resetHandlers();
   cleanup();
   useAuthStore.setState(initialAuthState);
-  useGlobeStore.setState({ mode: 'globe', baseLayer: 'dark' });
+  useGlobeStore.setState({ mode: 'globe', baseLayer: 'dark', terminator: true, lite: false });
+  localStorage.clear();
   useCapabilitiesStore.setState({ ...initialCapabilitiesState });
   useEventsStore.setState({ ...initialEventsState });
   useCountriesStore.setState({ ...initialCountriesState });

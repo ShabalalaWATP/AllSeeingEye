@@ -73,7 +73,11 @@ export function buildEventLayers(
       getRadius: (event) => (event.id === selectedId ? radiusFor(event) + 4 : radiusFor(event)),
       getFillColor: (event) => [...style.colour, event.id === selectedId ? 255 : 190],
       getLineColor: (event) => (event.id === selectedId ? [255, 255, 255, 255] : [7, 7, 11, 200]),
-      updateTriggers: { getRadius: [selectedId], getFillColor: [selectedId], getLineColor: [selectedId] },
+      updateTriggers: {
+        getRadius: [selectedId],
+        getFillColor: [selectedId],
+        getLineColor: [selectedId],
+      },
       onClick: (info: PickInfo) => {
         onPick(info.object ?? null);
         return true;
