@@ -133,3 +133,13 @@ class FakeHttp:
                 return str(payload)
         msg = f"no fixture for {url}"
         raise KeyError(msg)
+
+    async def get_bytes(self, url: str, *, conditional: bool = True) -> bytes:
+        self.requests.append(url)
+        if self.not_modified:
+            raise NotModified(url)
+        for key, payload in self.payloads.items():
+            if key in url:
+                return payload if isinstance(payload, bytes) else str(payload).encode("utf-8")
+        msg = f"no fixture for {url}"
+        raise KeyError(msg)

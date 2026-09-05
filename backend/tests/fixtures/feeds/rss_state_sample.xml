@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+  <channel>
+    <title>travel.example.gov: Travel Advisories</title>
+    <item>
+      <title>Bonaire - Level 1: Exercise Normal Precautions</title>
+      <link>https://travel.example.gov/destination.bes.html</link>
+      <pubDate>Sat, 05 Sep 2026</pubDate>
+      <description><![CDATA[Exercise normal precautionSummary not available]]></description>
+      <category domain="Threat-Level">Level 1: Exercise Normal Precautions</category>
+      <category domain="Country-Tag">BE</category>
+      <category domain="Keyword">advisory</category>
+      <guid>https://travel.example.gov/destination.bes.html</guid>
+    </item>
+    <item>
+      <title>Somewhere - Level 4: Do Not Travel</title>
+      <link>https://travel.example.gov/destination.xx.html</link>
+      <category domain="Country-Tag">not-a-code</category>
+      <guid>https://travel.example.gov/destination.xx.html</guid>
+    </item>
+  </channel>
+</rss>

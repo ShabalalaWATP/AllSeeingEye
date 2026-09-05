@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:georss="http://www.georss.org/georss" version="2.0">
+  <channel>
+    <title><![CDATA[Sample World]]></title>
+    <item>
+      <title><![CDATA[Mistrial declared in murder case, after jury deadlocks ]]></title>
+      <description><![CDATA[The mistrial puts the case &amp; its <b>future</b> in limbo.]]></description>
+      <link>https://example.org/news/articles/cpwlrj2je1po?at_medium=RSS</link>
+      <guid isPermaLink="false">https://example.org/news/articles/cpwlrj2je1po#0</guid>
+      <pubDate>Fri, 04 Sep 2026 22:48:38 GMT</pubDate>
+      <dc:creator>Sam Reporter</dc:creator>
+      <category>World</category>
+      <category>Courts</category>
+    </item>
+    <item>
+      <title>Escalating hostilities drive new displacement</title>
+      <link>https://example.org/report/sudan/alert</link>
+      <guid isPermaLink="true">https://example.org/report/sudan/alert</guid>
+      <pubDate>Fri, 04 Sep 2026 20:04:36 +0000</pubDate>
+      <description>
+        &lt;div class="tag country"&gt;Country: Sudan&lt;/div&gt;
+        &lt;p&gt;&lt;img src="https://example.org/x.png" alt&gt;&lt;/p&gt;
+        &lt;p&gt;More than 23,000 people have reportedly been displaced.&lt;/p&gt;
+      </description>
+      <georss:point>11.45 34.2</georss:point>
+    </item>
+    <item>
+      <title>No key at all</title>
+      <description>Skipped because it has neither guid nor link.</description>
+    </item>
+    <item>
+      <link>https://example.org/no-title</link>
+      <description>Skipped because it has no title.</description>
+    </item>
+    <item>
+      <title>Undated item</title>
+      <link>https://example.org/undated</link>
+      <pubDate>not a date</pubDate>
+    </item>
+  </channel>
+</rss>

@@ -8,6 +8,7 @@ from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.rss_sources import build_rss_connectors
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
 from ase.adapters.feeds.usgs import UsgsConnector
 from ase.application.ports import Clock
@@ -25,5 +26,6 @@ def build_connectors(
         SwpcAlertsConnector(http, clock),
         SwpcScalesConnector(http, clock),
         CisaKevConnector(http, clock),
+        *build_rss_connectors(http, clock),
     ]
     return [connector for connector in connectors if connector.spec.id not in excluded]

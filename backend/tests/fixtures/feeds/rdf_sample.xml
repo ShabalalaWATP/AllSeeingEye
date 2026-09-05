@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel rdf:about="https://example.org/rdf">
+    <title>Sample RDF</title>
+  </channel>
+  <item rdf:about="https://example.org/en/acquitted/a-79027008">
+    <title>Outrage as tycoon acquitted in journalist&apos;s murder</title>
+    <link>https://example.org/en/acquitted/a-79027008</link>
+    <description>A businessman has been found not guilty of complicity to murder.</description>
+    <dc:date>2026-09-04T19:31:00Z</dc:date>
+    <dc:subject>World</dc:subject>
+  </item>
+  <item rdf:about="https://example.org/en/undated">
+    <title>Item with a link but no date or body</title>
+    <link>https://example.org/en/undated</link>
+  </item>
+</rdf:RDF>

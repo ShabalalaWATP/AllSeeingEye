@@ -63,7 +63,9 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Starter connectors without keys: USGS earthquakes, GDACS, NASA EONET, NOAA SWPC alerts and scales, CISA KEV
 - [x] `/api/events`, `/api/events/stats`, `/api/stream` (server-sent events with a token-lifetime deadline), `/api/admin/sources` with reset
 - [x] Feeds start and stop with the application lifespan; `ASE_FEEDS_*` settings; tests with fixtures only (no live network)
-- [ ] More connectors: OpenSky (OAuth2), ADS-B (adsb.lol, airplanes.live), GDELT GEO and DOC, Google News RSS, the outlet RSS set, GOV.UK FCDO and US travel advisories, UN press, ReliefWeb (once the app name is approved), NASA FIRMS (key)
+- [x] Generic RSS 2.0, RDF and Atom connector with 21 seeded sources verified live on 5 September 2026: GOV.UK FCDO news and travel advice, US State travel advisories (country codes from the feed), UN News, UN press, ReliefWeb updates RSS, Crisis Group, and outlets (BBC, DW, France 24, Al Jazeera, Guardian, Le Monde, SCMP, Nikkei Asia, Times of Israel, Anadolu, Dawn, Meduza, Ukrainska Pravda, TASS flagged state controlled)
+- [x] GDELT 2.0 events connector: follows `lastupdate.txt` to the newest export zip (size-checked), keeps protest and conflict CAMEO root codes, grades C with credibility from the source count; the GEO API answers 404 and the DOC API is limited to one call per five seconds, so neither is used
+- [ ] More connectors: OpenSky (OAuth2), ADS-B (adsb.lol, airplanes.live), Google News RSS editions, more outlets in more languages (Kyiv Independent, Focus Taiwan, NHK World, ISW and Kyodo answered 404 or 403 and need confirmed URLs), NASA FIRMS (key), EMSC
 - [ ] Country resolution from Natural Earth polygons for events with coordinates; `country_iso` on every located event
 - [ ] Admin source overrides persisted (enable, disable, interval)
 
