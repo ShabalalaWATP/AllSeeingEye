@@ -32,6 +32,8 @@ pnpm dev
 
 Open http://localhost:5173, sign in with the administrator you created, and you land on the globe.
 
+If port 8000 is already taken, start the API on another port (`--port 8001`) and tell the dev server where it is with `ASE_DEV_API_TARGET=http://127.0.0.1:8001` in `frontend/.env.local` (ignored by git). Live feeds poll from the moment the API starts; set `ASE_FEEDS_DISABLED` to a comma-separated list of source ids to leave some out.
+
 ## Full stack with Docker Compose
 
 Set `POSTGRES_PASSWORD` and `ASE_JWT_SECRET` in `.env`, then:

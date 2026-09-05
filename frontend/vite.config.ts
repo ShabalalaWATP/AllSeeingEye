@@ -2,9 +2,13 @@ import { fileURLToPath, URL } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 // The dev server proxies /api to the FastAPI backend so cookies stay same-origin.
+// Point it elsewhere with ASE_DEV_API_TARGET in frontend/.env.local (never committed).
+const localEnv = loadEnv('development', process.cwd(), 'ASE_');
+const apiTarget = localEnv.ASE_DEV_API_TARGET ?? 'http://127.0.0.1:8000';
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -24,7 +28,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         // 127.0.0.1 rather than localhost: Node may resolve localhost to ::1 first.
-        target: 'http://127.0.0.1:8000',
+        target: apiTarget,
         changeOrigin: false,
       },
     },
