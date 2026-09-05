@@ -30,7 +30,7 @@ Checks:    uvx pre-commit run --all-files ; python scripts/check_file_length.py
 ## Conventions (non-negotiable)
 
 - Layering: `domain` imports nothing from other layers; `application` imports `domain` only; `adapters`, `api` and `infrastructure` may import `application` and `domain`. Enforced by `import-linter` in the backend and by review in the frontend (features do not import each other; they share through `components`, `lib` and `stores`).
-- Ports are `typing.Protocol` classes under `ase/application/ports/`; adapters implement them; `ase/container.py` is the only place that wires concrete classes.
+- Ports are `typing.Protocol` classes under `ase/application/ports/`; adapters implement them; the `ase.container` package (`ase/container/__init__.py` and its `features.py` mixin) is the only place that wires concrete classes.
 - Routers and React components are thin. Business rules live in use cases (backend) and hooks or stores (frontend).
 - File length: 350 lines target, 400 hard maximum (CI fails). Split by responsibility, never by line count.
 - Security: follow `docs/07_SECURITY_BY_DESIGN.md`. Never log or echo secrets. Never render HTML from data. Validate at boundaries. Authorisation is checked at object level in the application layer, not only at the route.

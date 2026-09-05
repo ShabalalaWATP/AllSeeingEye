@@ -13,6 +13,7 @@ from ase.api.routers import (
     auth,
     capabilities,
     countries,
+    direction,
     events,
     health,
     me,
@@ -33,6 +34,7 @@ api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
+api_router.include_router(direction.router)
 api_router.include_router(admin_requests.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)

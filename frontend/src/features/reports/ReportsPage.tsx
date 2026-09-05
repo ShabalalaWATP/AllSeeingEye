@@ -41,7 +41,7 @@ export default function ReportsPage() {
   const conflicts = useResource(fetchConflictBoard);
   const hazards = useResource(fetchDisasterBoard);
   const initial = Object.fromEntries(
-    ['template', 'country', 'conflict', 'hazard']
+    ['template', 'country', 'conflict', 'hazard', 'plan']
       .map((key) => [key, params.get(key)])
       .filter((entry): entry is [string, string] => entry[1] !== null),
   );

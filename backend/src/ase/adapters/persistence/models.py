@@ -138,6 +138,37 @@ class ReportRow(Base):
     latest_version: Mapped[int] = mapped_column(Integer, default=1)
 
 
+class AoiRow(Base):
+    __tablename__ = "aois"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(String(1000), default="")
+    kind: Mapped[str] = mapped_column(String(16))
+    west: Mapped[float | None] = mapped_column(Float, nullable=True)
+    south: Mapped[float | None] = mapped_column(Float, nullable=True)
+    east: Mapped[float | None] = mapped_column(Float, nullable=True)
+    north: Mapped[float | None] = mapped_column(Float, nullable=True)
+    countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    created_by: Mapped[UUID] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class CollectionPlanRow(Base):
+    __tablename__ = "collection_plans"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(String(2000), default="")
+    aoi_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    pirs: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
 class ActivitySampleRow(Base):
     __tablename__ = "activity_samples"
     __table_args__ = (

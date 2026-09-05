@@ -28,6 +28,11 @@ class AuditAction(StrEnum):
     LLM_PROFILE_TESTED = "llm_profile_tested"
     REPORT_GENERATED = "report_generated"
     REPORT_DELETED = "report_deleted"
+    AOI_CREATED = "aoi_created"
+    AOI_DELETED = "aoi_deleted"
+    PLAN_CREATED = "plan_created"
+    PLAN_UPDATED = "plan_updated"
+    PLAN_DELETED = "plan_deleted"
 
 
 @dataclass(slots=True)

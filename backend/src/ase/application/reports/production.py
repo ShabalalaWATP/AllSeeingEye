@@ -56,6 +56,7 @@ class Job:
     hazard: Hazard | None = None
     terms: tuple[str, ...] = ()
     background: str | None = None
+    direction: Direction | None = None
 
 
 @dataclass(slots=True)
@@ -178,6 +179,8 @@ class Producer:
     async def _direct(
         self, job: Job, profile_for: ProfileLookup, totals: Totals
     ) -> Direction | None:
+        if job.direction is not None:
+            return job.direction
         question = (job.request.question or "").strip()
         if not job.template.needs_question or not question:
             return None

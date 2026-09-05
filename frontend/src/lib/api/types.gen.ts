@@ -516,6 +516,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/direction/aois": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Aois */
+        get: operations["list_aois_api_direction_aois_get"];
+        put?: never;
+        /** Create Aoi */
+        post: operations["create_aoi_api_direction_aois_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/aois/{aoi_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Aoi */
+        delete: operations["delete_aoi_api_direction_aois__aoi_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plans */
+        get: operations["list_plans_api_direction_plans_get"];
+        put?: never;
+        /** Create Plan */
+        post: operations["create_plan_api_direction_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/direction/plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Plan */
+        get: operations["get_plan_api_direction_plans__plan_id__get"];
+        /** Update Plan */
+        put: operations["update_plan_api_direction_plans__plan_id__put"];
+        post?: never;
+        /** Delete Plan */
+        delete: operations["delete_plan_api_direction_plans__plan_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/account-requests": {
         parameters: {
             query?: never;
@@ -778,6 +850,55 @@ export interface components {
             previous_7d: number;
             /** Trend */
             trend: number | null;
+        };
+        /** AoiIn */
+        AoiIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Kind */
+            kind: string;
+            /** Bbox */
+            bbox?: number[] | null;
+            /** Countries */
+            countries?: string[];
+        };
+        /** AoiOut */
+        AoiOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Kind */
+            kind: string;
+            /** Bbox */
+            bbox: number[] | null;
+            /** Countries */
+            countries: string[];
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AoisOut */
+        AoisOut: {
+            /** Items */
+            items: components["schemas"]["AoiOut"][];
         };
         /** ApproveIn */
         ApproveIn: {
@@ -1290,6 +1411,92 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** PirIn */
+        PirIn: {
+            /** Text */
+            text: string;
+            /** Sirs */
+            sirs?: components["schemas"]["SirIn"][];
+        };
+        /** PirOut */
+        PirOut: {
+            /** Code */
+            code: string;
+            /** Text */
+            text: string;
+            /** Sirs */
+            sirs: components["schemas"]["SirOut"][];
+        };
+        /** PlanEvidenceOut */
+        PlanEvidenceOut: {
+            plan: components["schemas"]["PlanOut"];
+            aoi: components["schemas"]["AoiOut"] | null;
+            /** Considered */
+            considered: number;
+            /** Sirs */
+            sirs: components["schemas"]["SirEvidenceOut"][];
+        };
+        /** PlanIn */
+        PlanIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Aoi Id */
+            aoi_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Pirs */
+            pirs: components["schemas"]["PirIn"][];
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+        };
+        /** PlanOut */
+        PlanOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Aoi Id */
+            aoi_id: string | null;
+            /** Countries */
+            countries: string[];
+            /** Pirs */
+            pirs: components["schemas"]["PirOut"][];
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** PlansOut */
+        PlansOut: {
+            /** Items */
+            items: components["schemas"]["PlanOut"][];
+        };
         /** PointOut */
         PointOut: {
             /** Lon */
@@ -1336,6 +1543,8 @@ export interface components {
             hazard?: string | null;
             /** Conflict */
             conflict?: string | null;
+            /** Plan */
+            plan?: string | null;
         };
         /** ReportOut */
         ReportOut: {
@@ -1476,6 +1685,35 @@ export interface components {
             token: string;
             /** New Password */
             new_password: string;
+        };
+        /** SirEvidenceOut */
+        SirEvidenceOut: {
+            /** Code */
+            code: string;
+            /** Text */
+            text: string;
+            /** Events */
+            events: components["schemas"]["EventOut"][];
+        };
+        /** SirIn */
+        SirIn: {
+            /** Text */
+            text: string;
+            /** Keywords */
+            keywords?: string[];
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+        };
+        /** SirOut */
+        SirOut: {
+            /** Code */
+            code: string;
+            /** Text */
+            text: string;
+            /** Keywords */
+            keywords: string[];
+            /** Categories */
+            categories: components["schemas"]["Category"][];
         };
         /** SourceHealthOut */
         SourceHealthOut: {
@@ -2488,6 +2726,236 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ConflictDetailOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_aois_api_direction_aois_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AoisOut"];
+                };
+            };
+        };
+    };
+    create_aoi_api_direction_aois_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AoiIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AoiOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_aoi_api_direction_aois__aoi_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aoi_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_plans_api_direction_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlansOut"];
+                };
+            };
+        };
+    };
+    create_plan_api_direction_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_api_direction_plans__plan_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanEvidenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_plan_api_direction_plans__plan_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_plan_api_direction_plans__plan_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

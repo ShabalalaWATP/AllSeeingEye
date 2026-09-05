@@ -75,7 +75,7 @@ backend/src/ase/
   infrastructure/  Settings, database session, scheduler, event bus, security primitives, structured logging.
 ```
 
-Dependency rule: `api` and `adapters` depend on `application` and `domain`; `application` depends only on `domain`; `domain` depends on nothing. A lightweight composition root (`ase/container.py`) wires adapters to ports at startup. Tests substitute fakes at the port boundary.
+Dependency rule: `api` and `adapters` depend on `application` and `domain`; `application` depends only on `domain`; `domain` depends on nothing. A lightweight composition root (the `ase.container` package: the core plus a feature-factory mixin) wires adapters to ports at startup. Tests substitute fakes at the port boundary.
 
 ### 4.2 Ports (the seams)
 

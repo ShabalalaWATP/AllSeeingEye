@@ -1,6 +1,8 @@
 /** Default MSW handlers implementing docs/api/AUTH_API.md against the fixtures. */
 import { http, HttpResponse } from 'msw';
 
+import { directionHandlers } from './handlers.direction';
+
 import {
   ACTIVATION_LINK,
   ADMIN_PASSWORD,
@@ -336,6 +338,8 @@ export const handlers = [
       ? HttpResponse.json(conflictDetail)
       : apiError(404, 'not_found', 'No such conflict'),
   ),
+
+  ...directionHandlers,
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 

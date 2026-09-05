@@ -145,6 +145,7 @@ export interface ReportRequest {
   devils_advocacy?: boolean;
   hazard?: string;
   conflict?: string;
+  plan?: string;
 }
 
 export async function fetchTemplates(): Promise<ReportTemplate[]> {

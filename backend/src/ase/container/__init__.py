@@ -1,4 +1,8 @@
-"""Composition root: the only module that wires concrete adapters to application ports."""
+"""Composition root: the only package that wires concrete adapters to application ports.
+
+The core here builds the shared services and the auth and admin use cases; the feature
+factories (reports, trackers, direction) live in the mixin in features.py.
+"""
 
 from __future__ import annotations
 
@@ -22,6 +26,7 @@ from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
 from ase.adapters.persistence.baselines import SqlBaselineRepository, SqlBaselineSink
+from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.session import (
@@ -77,6 +82,7 @@ from ase.application.ports import (
 )
 from ase.application.ports.archive import Archiver
 from ase.application.ports.baselines import BaselineRepository
+from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
@@ -88,23 +94,9 @@ from ase.application.ports.llm import (
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
-from ase.application.reports.access import (
-    DeleteReportUseCase,
-    GetReportUseCase,
-    ListReportsUseCase,
-)
-from ase.application.reports.archiving import archive_evidence
-from ase.application.reports.generate import GenerateReportUseCase
-from ase.application.trackers.aviation import (
-    AviationMonitor,
-    AviationService,
-    WatchedArea,
-    background,
-)
-from ase.application.trackers.boards import TrackerService
-from ase.application.trackers.modules import ModuleService, cyber_summary, maritime_summary
+from ase.application.trackers.aviation import AviationMonitor, WatchedArea
+from ase.container.features import FeatureWiring
 from ase.domain.aviation import JamMap
-from ase.domain.report_records import ReportVersion
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Settings
@@ -123,10 +115,12 @@ class Repositories:
     llm_usage: LlmUsageRepository
     reports: ReportRepository
     baselines: BaselineRepository
+    aois: AoiRepository
+    plans: PlanRepository
     uow: UnitOfWork
 
 
-class Container:
+class Container(FeatureWiring):
     def __init__(
         self,
         settings: Settings,
@@ -204,15 +198,6 @@ class Container:
         await self.archiver.aclose()
         await self.engine.dispose()
 
-    async def archive_report_version(self, version: ReportVersion) -> None:
-        """Background job after generation: preserve the URLs the version cites."""
-        try:
-            async with self.session_factory() as session:
-                r = self.repositories(session)
-                await archive_evidence(self.archiver, r.reports, r.uow, version)
-        except Exception:
-            log.warning("archive.job_failed", report_version=str(version.id), exc_info=True)
-
     def repositories(self, session: AsyncSession) -> Repositories:
         return Repositories(
             users=SqlUserRepository(session),
@@ -224,6 +209,8 @@ class Container:
             llm_usage=SqlLlmUsageRepository(session),
             reports=SqlReportRepository(session),
             baselines=SqlBaselineRepository(session),
+            aois=SqlAoiRepository(session),
+            plans=SqlPlanRepository(session),
             uow=SqlAlchemyUnitOfWork(session),
         )
 
@@ -334,56 +321,3 @@ class Container:
 
     def list_llm_usage(self, session: AsyncSession) -> ListLlmUsageUseCase:
         return ListLlmUsageUseCase(self.repositories(session).llm_usage)
-
-    def generate_report(self, session: AsyncSession) -> GenerateReportUseCase:
-        r = self.repositories(session)
-        return GenerateReportUseCase(
-            store=self.store,
-            source_profiles=self.source_profiles,
-            countries=self.countries,
-            conflicts=self.conflicts,
-            backgrounds={
-                "aviation_activity": lambda: self.aviation_background(session),
-                "maritime_activity": self._maritime_background,
-                "cyber_summary": self._cyber_background,
-            },
-            llm_profiles=r.llm_profiles,
-            usage=r.llm_usage,
-            cipher=self.cipher,
-            gateway=self.llm,
-            reports=r.reports,
-            clock=self.clock,
-            limiter=self.limiter,
-            limits=self.limits,
-            auditor=self._auditor(r),
-            uow=r.uow,
-        )
-
-    def trackers(self) -> TrackerService:
-        return TrackerService(self.store, self.conflicts, self.clock)
-
-    def modules(self) -> ModuleService:
-        return ModuleService(self.store, self.clock)
-
-    def aviation(self) -> AviationService:
-        return AviationService(self.store, self.jam, self.clock, self.watch_areas)
-
-    async def _maritime_background(self) -> str:
-        return maritime_summary(self.modules().maritime_board())
-
-    async def _cyber_background(self) -> str:
-        return cyber_summary(self.modules().cyber_board())
-
-    async def aviation_background(self, session: AsyncSession) -> str:
-        """The aviation board as a paragraph for the aviation report's background."""
-        return await background(self.aviation(), self.repositories(session).baselines)
-
-    def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
-        return ListReportsUseCase(self.repositories(session).reports)
-
-    def get_report(self, session: AsyncSession) -> GetReportUseCase:
-        return GetReportUseCase(self.repositories(session).reports)
-
-    def delete_report(self, session: AsyncSession) -> DeleteReportUseCase:
-        r = self.repositories(session)
-        return DeleteReportUseCase(r.reports, self._auditor(r), r.uow)

@@ -146,6 +146,7 @@ async def test_generate_read_export_and_delete(
         "devils_advocacy": False,
         "hazard": None,
         "conflict": None,
+        "plan": None,
     }
     version = payload["version"]
     assert version["attempts"] == 1 and version["model"] == "llama3.1:8b"

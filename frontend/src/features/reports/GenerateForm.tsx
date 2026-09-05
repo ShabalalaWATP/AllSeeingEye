@@ -17,7 +17,7 @@ export interface GenerateFormProps {
   countries: readonly Country[];
   conflicts: readonly Choice[];
   hazards: readonly Choice[];
-  initial?: Partial<Record<'template' | 'country' | 'conflict' | 'hazard', string>>;
+  initial?: Partial<Record<'template' | 'country' | 'conflict' | 'hazard' | 'plan', string>>;
   busy: boolean;
   error: string | null;
   onSubmit: (request: ReportRequest) => void;
@@ -52,6 +52,7 @@ export function GenerateForm({
     if (question.trim() !== '') request.question = question.trim();
     if (windowHours.trim() !== '') request.window_hours = Number(windowHours);
     if (advocacy) request.devils_advocacy = true;
+    if (initial.plan !== undefined) request.plan = initial.plan;
     onSubmit(request);
   };
 
@@ -121,6 +122,12 @@ export function GenerateForm({
           }}
         />
       </div>
+      {initial.plan !== undefined && (
+        <p className="text-sm text-muted">
+          Scoped by a collection plan: its area, nations, requirements and background steer the
+          evidence, and its first requirement is the question unless you ask another.
+        </p>
+      )}
       {template?.needs_question && (
         <TextAreaField
           label="Question"
@@ -129,7 +136,7 @@ export function GenerateForm({
           onChange={(event) => {
             setQuestion(event.target.value);
           }}
-          required
+          required={initial.plan === undefined}
           maxLength={1000}
         />
       )}

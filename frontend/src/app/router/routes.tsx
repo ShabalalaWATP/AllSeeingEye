@@ -37,6 +37,8 @@ const SpacePage = lazy(() =>
 const CyberPage = lazy(() =>
   import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
 );
+const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
+const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -71,6 +73,8 @@ export const routes: RouteObject[] = [
           { path: 'trackers/maritime', element: <MaritimePage /> },
           { path: 'trackers/space', element: <SpacePage /> },
           { path: 'trackers/cyber', element: <CyberPage /> },
+          { path: 'direction', element: <DirectionPage /> },
+          { path: 'direction/plans/:id', element: <PlanPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

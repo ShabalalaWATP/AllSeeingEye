@@ -1258,6 +1258,330 @@
         }
       }
     },
+    "/api/direction/aois": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "List Aois",
+        "operationId": "list_aois_api_direction_aois_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AoisOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Create Aoi",
+        "operationId": "create_aoi_api_direction_aois_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AoiIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AoiOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/direction/aois/{aoi_id}": {
+      "delete": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Delete Aoi",
+        "operationId": "delete_aoi_api_direction_aois__aoi_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "aoi_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Aoi Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/direction/plans": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "List Plans",
+        "operationId": "list_plans_api_direction_plans_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlansOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Create Plan",
+        "operationId": "create_plan_api_direction_plans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/direction/plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Get Plan",
+        "operationId": "get_plan_api_direction_plans__plan_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanEvidenceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Update Plan",
+        "operationId": "update_plan_api_direction_plans__plan_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "direction"
+        ],
+        "summary": "Delete Plan",
+        "operationId": "delete_plan_api_direction_plans__plan_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/account-requests": {
       "get": {
         "tags": [
@@ -2050,6 +2374,137 @@
           "trend"
         ],
         "title": "ActivityOut"
+      },
+      "AoiIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Description",
+            "default": ""
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^(bbox|countries)$",
+            "title": "Kind"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Countries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind"
+        ],
+        "title": "AoiIn"
+      },
+      "AoiOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "kind",
+          "bbox",
+          "countries",
+          "created_by",
+          "created_at"
+        ],
+        "title": "AoiOut"
+      },
+      "AoisOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AoiOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AoisOut"
       },
       "ApproveIn": {
         "properties": {
@@ -3636,6 +4091,239 @@
         ],
         "title": "MessageOut"
       },
+      "PirIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "sirs": {
+            "items": {
+              "$ref": "#/components/schemas/SirIn"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Sirs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "PirIn"
+      },
+      "PirOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "sirs": {
+            "items": {
+              "$ref": "#/components/schemas/SirOut"
+            },
+            "type": "array",
+            "title": "Sirs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text",
+          "sirs"
+        ],
+        "title": "PirOut"
+      },
+      "PlanEvidenceOut": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "aoi": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AoiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "considered": {
+            "type": "integer",
+            "title": "Considered"
+          },
+          "sirs": {
+            "items": {
+              "$ref": "#/components/schemas/SirEvidenceOut"
+            },
+            "type": "array",
+            "title": "Sirs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "aoi",
+          "considered",
+          "sirs"
+        ],
+        "title": "PlanEvidenceOut"
+      },
+      "PlanIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "aoi_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aoi Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Countries"
+          },
+          "pirs": {
+            "items": {
+              "$ref": "#/components/schemas/PirIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Pirs"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "pirs"
+        ],
+        "title": "PlanIn"
+      },
+      "PlanOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "aoi_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aoi Id"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "pirs": {
+            "items": {
+              "$ref": "#/components/schemas/PirOut"
+            },
+            "type": "array",
+            "title": "Pirs"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "aoi_id",
+          "countries",
+          "pirs",
+          "enabled",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PlanOut"
+      },
+      "PlansOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PlansOut"
+      },
       "PointOut": {
         "properties": {
           "lon": {
@@ -3792,6 +4480,18 @@
               }
             ],
             "title": "Conflict"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
           }
         },
         "type": "object",
@@ -4119,6 +4819,97 @@
           "new_password"
         ],
         "title": "SetPasswordIn"
+      },
+      "SirEvidenceOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text",
+          "events"
+        ],
+        "title": "SirEvidenceOut"
+      },
+      "SirIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Keywords"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "maxItems": 11,
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "SirIn"
+      },
+      "SirOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "text",
+          "keywords",
+          "categories"
+        ],
+        "title": "SirOut"
       },
       "SourceHealthOut": {
         "properties": {

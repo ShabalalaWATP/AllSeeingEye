@@ -21,6 +21,7 @@ class ReportRequest:
     devils_advocacy: bool = False
     hazard: str | None = None
     conflict_id: str | None = None
+    plan_id: UUID | None = None
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
@@ -35,4 +36,5 @@ class ReportRequest:
             devils_advocacy=bool(scope.get("devils_advocacy", False)),
             hazard=scope.get("hazard") or None,
             conflict_id=scope.get("conflict") or None,
+            plan_id=UUID(str(scope["plan"])) if scope.get("plan") else None,
         )

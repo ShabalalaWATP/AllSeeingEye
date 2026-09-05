@@ -34,6 +34,7 @@ class ReportCreateIn(BaseModel):
     devils_advocacy: bool = False
     hazard: str | None = Field(default=None, max_length=32)
     conflict: str | None = Field(default=None, max_length=64)
+    plan: UUID | None = None
 
     def to_request(self) -> ReportRequest:
         return ReportRequest(
@@ -46,6 +47,7 @@ class ReportCreateIn(BaseModel):
             devils_advocacy=self.devils_advocacy,
             hazard=self.hazard.strip().lower() if self.hazard else None,
             conflict_id=self.conflict.strip().lower() if self.conflict else None,
+            plan_id=self.plan,
         )
 
 

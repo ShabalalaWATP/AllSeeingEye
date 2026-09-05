@@ -9,7 +9,7 @@ import { viewTitle } from './TopBar';
 import { isEditableTarget } from './useViewShortcuts';
 
 describe('AppShell', () => {
-  it('shows the brand, the rail items with phase labels, and the user', async () => {
+  it('shows the brand, the rail items and the user', async () => {
     renderApp('/', 'user');
     expect(await screen.findByRole('img', { name: 'The All Seeing Eye' })).toBeInTheDocument();
     expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
@@ -20,11 +20,10 @@ describe('AppShell', () => {
       'href',
       '/trackers',
     );
-    for (const [label, phase] of [['Direction', 'Phase 4']]) {
-      const button = within(nav).getByRole('button', { name: new RegExp(`^${label!}`) });
-      expect(button).toBeDisabled();
-      expect(button).toHaveTextContent(phase!);
-    }
+    expect(within(nav).getByRole('link', { name: 'Direction' })).toHaveAttribute(
+      'href',
+      '/direction',
+    );
     expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
     expect(screen.getByText('Globe', { selector: 'p' })).toBeInTheDocument();
   });

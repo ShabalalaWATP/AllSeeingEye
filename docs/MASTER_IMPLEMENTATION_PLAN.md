@@ -6,7 +6,7 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 Phases 0 to 3 are built and committed (last commit `477af44`, 5 September 2026). Phase 0 gave the foundation and auth; Phase 1 the fusion core, the live globe and the first connectors; Phase 2 the grading engine, the LLM gateway and the doctrine-validated report pipeline with versions, a Markdown download, the direction call, the devil's advocacy pass and Wayback archiving; Phase 3 the trackers: boards and detail pages for hazards and 23 curated conflicts, the aviation module (lists, emergency squawks, watched areas, hourly baselines, the GNSS interference map), maritime warnings, space and cyber boards, twenty new connectors, five new products and the globe upgrades (icons, low-zoom clustering, a time window, the interference layer). End-to-end generation against a real model is still untested because no endpoint or `ASE_ENCRYPTION_KEY` is configured on the development host.
 
-Phase 4 (direction and warning) is next: areas of interest, collection plans with PIRs, event tagging, an indicators board over the tracker signals and baselines, alert routing and scheduled products.
+Phase 4 (direction and warning) is under way: areas of interest, collection plans with PIRs and SIRs, evidence per requirement and plan-scoped reports are live. Next come PIR tagging in the pipeline, an indicators board over the tracker signals and baselines, alert routing and scheduled products.
 
 Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job). The development API runs on port 8001 with `ASE_DEV_API_TARGET` in `frontend/.env.local`, because a stale listener holds port 8000 until the host is rebooted.
 
@@ -147,6 +147,20 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Boards and pages: maritime (warnings by area and kind, notable and latest), space (stations now with altitude, upcoming launches, the K index and space weather alerts), cyber (outage signals and ransomware by nation and group, the week's exploited vulnerabilities); Maritime Activity Report and Cyber Summary templates with the boards as background; the trackers page lists every module
 - [ ] AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist; SWPC aurora oval as a globe overlay; satellites over an area and next passes
 - [ ] Sanctions context for briefs from the UK Sanctions List and OFAC SDN exports (programmes touching a country)
+
+## Phase 4: Direction and warning
+
+Acceptance from the roadmap: an indicator fires on synthetic data within one pipeline cycle and produces an alert and a report.
+
+- [x] Direction domain: areas of interest (a bounding box or a set of nations), collection plans with numbered PIRs and SIRs (keywords and categories, codes assigned by the domain), matching and scope rules, and the plan's direction derived from its requirements
+- [x] Persistence (migration 0006: `aois`, `collection_plans`), owner-or-admin rules in the use cases, audit actions, `/api/direction/aois` and `/api/direction/plans`
+- [x] Evidence on demand: `GET /api/direction/plans/{id}` gathers the last week from the live store inside the plan's area or nations and lists the matches per SIR; nothing is precomputed or stored
+- [x] Plan-scoped reports: `plan` on the report request; the plan's area, nations and keywords steer selection, its description reaches the model as uncited background, its requirements replace the direction call, and the first PIR is the question unless another is asked; the scope records the plan so regeneration repeats it
+- [x] Direction in the app: the rail entry replaced its placeholder; areas and plans on one page with compact forms; a plan page with the evidence per requirement and a "Generate assessment" link into the prefilled report form
+- [ ] PIR tagging of live events in the pipeline and a plan filter on the globe
+- [ ] Indicators: rules over store counts, baselines and keywords, an evaluator in the scheduler loop, an alerts table, `alert` messages on the stream with a bell in the shell, an optional webhook (`ASE_ALERT_WEBHOOK_URL`, public hosts only)
+- [ ] Scheduled products (a plan can ask for a daily INTSUM) and ops-room mode
+- [ ] Editing plans in the app (the API already accepts `PUT`) and more than one PIR per form
 
 ## Known follow-ups carried forward
 

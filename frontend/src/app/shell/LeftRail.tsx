@@ -13,8 +13,6 @@ const itemClass =
 const idleClass = 'text-muted hover:bg-surface-2 hover:text-text';
 const activeClass = 'bg-surface-2 text-text';
 
-const laterItems = [{ label: 'Direction', phase: 'Phase 4' }];
-
 function RailButton({
   active,
   onClick,
@@ -72,18 +70,7 @@ export function LeftRail() {
         </RailButton>
         <RailLink to="/trackers">Trackers</RailLink>
         <RailLink to="/reports">Reports</RailLink>
-        {laterItems.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            disabled
-            className={`${itemClass} text-muted/60`}
-            title={`Available in ${item.phase}`}
-          >
-            <span>{item.label}</span>
-            <span className="font-mono text-[10px] uppercase tracking-wide">{item.phase}</span>
-          </button>
-        ))}
+        <RailLink to="/direction">Direction</RailLink>
         {isAdmin ? (
           <div className="mt-4 flex flex-col gap-1">
             <div className="px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">

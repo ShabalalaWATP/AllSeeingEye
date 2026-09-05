@@ -7,6 +7,7 @@ the previous key judgements shown to the model so it can say what changed.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
+from dataclasses import replace
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -14,6 +15,7 @@ from uuid import UUID
 from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
+from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
@@ -28,6 +30,7 @@ from ase.application.reports.production import Job, Producer
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template, template_for
 from ase.domain.audit import AuditAction
+from ase.domain.collection import CollectionPlan
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
@@ -52,6 +55,8 @@ class GenerateReportUseCase:
         source_profiles: Mapping[str, SourceProfile],
         countries: CountryDirectory,
         conflicts: ConflictDirectory,
+        plans: PlanRepository,
+        aois: AoiRepository,
         llm_profiles: LlmProfileRepository,
         usage: LlmUsageRepository,
         cipher: SecretCipher,
@@ -74,6 +79,8 @@ class GenerateReportUseCase:
         )
         self._countries = countries
         self._conflicts = conflicts
+        self._plans = plans
+        self._aois = aois
         self._llm_profiles = llm_profiles
         self._cipher = cipher
         self._reports = reports
@@ -88,9 +95,10 @@ class GenerateReportUseCase:
     ) -> tuple[ReportRecord, ReportVersion]:
         """A new report from the live evidence: version 1 of a new record."""
         template = self._template(request)
+        plan = await self._plan(request)
         profile = await self._prepare(actor, request.profile_id, template)
         now = self._clock.now()
-        job = await self._job(actor, template, request, profile, now)
+        job = await self._job(actor, template, request, profile, now, plan=plan)
         version = await self._producer.produce(job, self._profile_for)
         record = ReportRecord(
             id=version.report_id,
@@ -121,10 +129,18 @@ class GenerateReportUseCase:
             raise NotFound()
         request = ReportRequest.from_scope(record.template, record.scope)
         template = self._template(request)
+        plan = await self._plan(request)
         profile = await self._prepare(actor, None, template)
         now = self._clock.now()
         job = await self._job(
-            actor, template, request, profile, now, previous=previous, report_id=record.id
+            actor,
+            template,
+            request,
+            profile,
+            now,
+            previous=previous,
+            report_id=record.id,
+            plan=plan,
         )
         version = await self._producer.produce(job, self._profile_for)
         record.status = version.status
@@ -159,12 +175,17 @@ class GenerateReportUseCase:
         *,
         previous: ReportVersion | None = None,
         report_id: UUID | None = None,
+        plan: CollectionPlan | None = None,
     ) -> Job:
         country = self._countries.get(request.country_iso) if request.country_iso else None
         conflict = self._conflict(request)
         hazard = self._hazard(request)
         provider = self._backgrounds.get(template.id)
         background = await provider() if provider is not None else self._background(conflict)
+        aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
+        if plan is not None:
+            background = plan.description or None
+            request = replace(request, question=request.question or plan.pirs[0].text)
         return Job(
             actor=actor,
             template=template,
@@ -172,16 +193,19 @@ class GenerateReportUseCase:
             profile=profile,
             now=now,
             window=self._window(request, template),
-            title=self._title(template, request, country, conflict, hazard),
+            title=self._title(template, request, country, conflict, hazard, plan),
             scope=self._scope(request, template),
             country_name=country.name if country else None,
             previous=previous,
             report_id=report_id,
-            bbox=conflict.bbox if conflict else None,
-            countries=conflict.countries if conflict else (),
+            bbox=conflict.bbox if conflict else (aoi.bbox if aoi else None),
+            countries=conflict.countries
+            if conflict
+            else (plan.countries or (aoi.countries if aoi else ()) if plan else ()),
             hazard=hazard,
-            terms=conflict.keywords if conflict else (),
+            terms=conflict.keywords if conflict else (plan.search_terms() if plan else ()),
             background=background,
+            direction=plan.direction() if plan is not None else None,
         )
 
     async def _finish(
@@ -208,13 +232,21 @@ class GenerateReportUseCase:
             raise InvalidRequest(str(exc)) from exc
         if template.needs_country and not request.country_iso:
             raise InvalidRequest("This template needs a country.")
-        if template.needs_question and not (request.question or "").strip():
+        if template.needs_question and not (request.question or "").strip() and not request.plan_id:
             raise InvalidRequest("This template needs a question.")
         if template.needs_conflict and self._conflict(request) is None:
             raise InvalidRequest("This template needs a conflict from the tracker list.")
         if template.needs_hazard and self._hazard(request) is None:
             raise InvalidRequest("This template needs a hazard from the disaster tracker.")
         return template
+
+    async def _plan(self, request: ReportRequest) -> CollectionPlan | None:
+        if request.plan_id is None:
+            return None
+        plan = await self._plans.get(request.plan_id)
+        if plan is None or not plan.pirs:
+            raise InvalidRequest("Unknown collection plan.")
+        return plan
 
     def _conflict(self, request: ReportRequest) -> Conflict | None:
         return self._conflicts.get(request.conflict_id) if request.conflict_id else None
@@ -255,7 +287,10 @@ class GenerateReportUseCase:
         country: Any,
         conflict: Conflict | None,
         hazard: Hazard | None,
+        plan: CollectionPlan | None = None,
     ) -> str:
+        if plan is not None:
+            return f"{template.title}: {plan.name}"
         if conflict is not None:
             return f"{template.title}: {conflict.name}"
         place = country.name if country else request.country_iso
@@ -284,4 +319,5 @@ class GenerateReportUseCase:
             "devils_advocacy": request.devils_advocacy,
             "hazard": request.hazard,
             "conflict": request.conflict_id,
+            "plan": str(request.plan_id) if request.plan_id else None,
         }
