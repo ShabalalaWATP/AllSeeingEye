@@ -155,4 +155,19 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     };
     expect(plain(own)).toEqual({ url: own });
   });
+
+  it('turns the globe in slow eastward steps while spinning and stops on demand', () => {
+    const engine = createMapLibreEngine();
+    engine.mount(document.createElement('div'));
+    const map = FakeMap.instances[0]!;
+    engine.spin(true);
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+    expect(map.easeTo.mock.calls[0]?.[0]).toMatchObject({ center: [25, 30], duration: 30_000 });
+    map.fire('moveend');
+    expect(map.easeTo).toHaveBeenCalledTimes(2);
+    engine.spin(false);
+    expect(map.stop).toHaveBeenCalledTimes(1);
+    map.fire('moveend');
+    expect(map.easeTo).toHaveBeenCalledTimes(2);
+  });
 });

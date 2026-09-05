@@ -32,6 +32,8 @@ import type { BaseLayer } from './baseLayers';
 export const DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 export const INITIAL_CENTER: [number, number] = [10, 30];
 export const INITIAL_ZOOM = 1.6;
+export const SPIN_DEGREES = 15;
+export const SPIN_STEP_MS = 30_000;
 
 /** Dark atmosphere: the glow fades out as the user zooms towards street scale. */
 export const GLOBE_SKY: SkySpecification = {
@@ -78,6 +80,7 @@ export class MapLibreEngine implements MapEngine {
   private baseLayer: BaseLayer = 'dark';
   private lite = false;
   private styleReady = false;
+  private spinning = false;
 
   constructor(private readonly options: EngineOptions = {}) {}
 
@@ -106,7 +109,29 @@ export class MapLibreEngine implements MapEngine {
       // Development aid only: lets the browser console inspect the live map.
       (window as unknown as { __aseMap?: MapLibreMap }).__aseMap = map;
     }
+    map.on('moveend', () => {
+      if (this.spinning) this.spinStep();
+    });
     this.map = map;
+  }
+
+  spin(enabled: boolean): void {
+    if (this.spinning === enabled) return;
+    this.spinning = enabled;
+    if (enabled) this.spinStep();
+    else this.map?.stop();
+  }
+
+  /** One slow eastward step; moveend chains the next while spinning stays on. */
+  private spinStep(): void {
+    const map = this.map;
+    if (map === null || !this.spinning) return;
+    const center = map.getCenter();
+    map.easeTo({
+      center: [center.lng + SPIN_DEGREES, center.lat],
+      duration: SPIN_STEP_MS,
+      easing: (t: number) => t,
+    });
   }
 
   setProjection(projection: Projection): void {

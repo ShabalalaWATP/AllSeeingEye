@@ -40,6 +40,11 @@ export class FakeMap {
   readonly setPaintProperty = vi.fn();
   readonly flyTo = vi.fn();
   readonly jumpTo = vi.fn();
+  readonly easeTo = vi.fn();
+  readonly stop = vi.fn();
+  getCenter(): { lng: number; lat: number } {
+    return { lng: 10, lat: 30 };
+  }
   readonly remove = vi.fn();
   readonly addControl = vi.fn();
   readonly removeControl = vi.fn();

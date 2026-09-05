@@ -20,6 +20,9 @@ export default mergeConfig(
       // default 5 s per test is too tight and produced false failures.
       testTimeout: 15_000,
       hookTimeout: 15_000,
+      // Every page test boots the shell (rail, top bar, alert count) through MSW; with one
+      // worker per core the first renders starve and time out, so half the cores is the cap.
+      maxWorkers: '50%',
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html', 'lcov'],

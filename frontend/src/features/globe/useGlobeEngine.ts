@@ -20,6 +20,7 @@ export function projectionFor(mode: ViewMode): Projection {
 export interface GlobeEngineHandle {
   setLayers: (layers: readonly DataLayer[]) => void;
   flyTo: (target: FlyToTarget) => void;
+  spin: (enabled: boolean) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
   onCursor: (handler: CursorHandler) => () => void;
   /** Subscribes to camera moves with the zoom after each; safe before the engine mounts. */
@@ -91,6 +92,10 @@ export function useGlobeEngine(
     engineRef.current?.flyTo(target);
   }, []);
 
+  const spin = useCallback((enabled: boolean) => {
+    engineRef.current?.spin(enabled);
+  }, []);
+
   const onCursor = useCallback((handler: CursorHandler) => {
     cursorHandlers.current.add(handler);
     return () => {
@@ -106,7 +111,7 @@ export function useGlobeEngine(
   }, []);
 
   return useMemo(
-    () => ({ setLayers, flyTo, onCursor, onView }),
-    [setLayers, flyTo, onCursor, onView],
+    () => ({ setLayers, flyTo, spin, onCursor, onView }),
+    [setLayers, flyTo, spin, onCursor, onView],
   );
 }

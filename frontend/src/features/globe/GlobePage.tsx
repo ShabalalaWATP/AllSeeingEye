@@ -64,6 +64,7 @@ export default function GlobePage() {
   const toggleLite = useGlobeStore((state) => state.toggleLite);
   const interference = useGlobeStore((state) => state.interference);
   const toggleInterference = useGlobeStore((state) => state.toggleInterference);
+  const opsRoom = useGlobeStore((state) => state.opsRoom);
   const [jamCells, setJamCells] = useState<JamCell[]>([]);
   useEffect(() => {
     if (!interference) return;
@@ -184,6 +185,15 @@ export default function GlobePage() {
     zoom,
   ]);
 
+  // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
+  useEffect(() => {
+    if (!supported) return;
+    engine.spin(opsRoom && mode === 'globe' && !lite);
+    return () => {
+      engine.spin(false);
+    };
+  }, [engine, lite, mode, opsRoom, supported]);
+
   const focus = useCallback(
     (event: LiveEvent) => {
       select(event.id);
@@ -231,44 +241,46 @@ export default function GlobePage() {
           </Alert>
         </div>
       )}
-      <ModeToolbar mode={mode} onChange={setMode} />
+      {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
-      <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
-        <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
-        <NationFilter
-          countries={countries}
-          value={country}
-          onChange={changeNation}
-          error={countriesError}
-        />
-        <LayerPanel
-          counts={counts}
-          hidden={hidden}
-          stats={stats}
-          status={status}
-          error={error}
-          terminator={terminator}
-          lite={lite}
-          windowHours={windowHours}
-          onWindow={setWindow}
-          onToggle={toggleCategory}
-          onToggleTerminator={toggleTerminator}
-          onToggleLite={toggleLite}
-          interference={interference}
-          onToggleInterference={toggleInterference}
-        />
-        {nation !== null && (
-          <CountryPanel
-            country={nation}
-            events={scoped}
-            selectedId={selectedId}
-            now={now}
-            onSelect={focus}
+      {!opsRoom && (
+        <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+          <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
+          <NationFilter
+            countries={countries}
+            value={country}
+            onChange={changeNation}
+            error={countriesError}
           />
-        )}
-      </div>
-      {supported && <CoordinateReadout engine={engine} />}
-      {selected !== null && (
+          <LayerPanel
+            counts={counts}
+            hidden={hidden}
+            stats={stats}
+            status={status}
+            error={error}
+            terminator={terminator}
+            lite={lite}
+            windowHours={windowHours}
+            onWindow={setWindow}
+            onToggle={toggleCategory}
+            onToggleTerminator={toggleTerminator}
+            onToggleLite={toggleLite}
+            interference={interference}
+            onToggleInterference={toggleInterference}
+          />
+          {nation !== null && (
+            <CountryPanel
+              country={nation}
+              events={scoped}
+              selectedId={selectedId}
+              now={now}
+              onSelect={focus}
+            />
+          )}
+        </div>
+      )}
+      {supported && !opsRoom && <CoordinateReadout engine={engine} />}
+      {selected !== null && !opsRoom && (
         <EventInspector event={selected} storySize={storySize} onClose={close} />
       )}
     </div>

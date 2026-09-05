@@ -22,12 +22,15 @@ export interface GlobeState {
   lite: boolean;
   /** Draw the GNSS interference cells from the aviation tracker. */
   interference: boolean;
+  /** Wall-screen idle mode: no chrome, a turning globe, the ticker and the alerts. Never persisted. */
+  opsRoom: boolean;
   setMode: (mode: ViewMode) => void;
   toggleMode: () => void;
   setBaseLayer: (layer: BaseLayer) => void;
   toggleTerminator: () => void;
   toggleLite: () => void;
   toggleInterference: () => void;
+  setOpsRoom: (on: boolean) => void;
 }
 
 export const useGlobeStore = create<GlobeState>()(
@@ -38,6 +41,10 @@ export const useGlobeStore = create<GlobeState>()(
       terminator: true,
       lite: false,
       interference: false,
+      opsRoom: false,
+      setOpsRoom: (on) => {
+        set({ opsRoom: on });
+      },
       setMode: (mode) => {
         set({ mode });
       },
