@@ -4,12 +4,25 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from ase.api.routers import admin_audit, admin_requests, admin_users, auth, health, me
+from ase.api.routers import (
+    admin_audit,
+    admin_requests,
+    admin_sources,
+    admin_users,
+    auth,
+    events,
+    health,
+    me,
+    stream,
+)
 
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
 api_router.include_router(me.router)
+api_router.include_router(events.router)
+api_router.include_router(stream.router)
 api_router.include_router(admin_requests.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)
+api_router.include_router(admin_sources.router)

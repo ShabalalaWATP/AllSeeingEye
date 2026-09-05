@@ -49,6 +49,11 @@ class PayloadTooLarge(AppError):
     default_message = "The request body is too large."
 
 
+class InvalidQuery(AppError):
+    code = "validation_error"
+    default_message = "The request is invalid."
+
+
 def envelope(code: str, message: str, fields: dict[str, str] | None = None) -> dict[str, Any]:
     error: dict[str, Any] = {"code": code, "message": message}
     if fields:

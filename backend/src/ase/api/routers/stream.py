@@ -1,0 +1,86 @@
+"""Server-Sent Events: live upserts, expiries and source health for the browser."""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from collections.abc import AsyncIterator
+from datetime import timedelta
+from typing import Annotated, Any
+
+from fastapi import APIRouter, Query
+from sse_starlette.sse import EventSourceResponse
+
+from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.routers.events import parse_categories
+from ase.api.schemas_events import EventOut, SourceHealthOut
+from ase.application.feeds.health import SourceHealth
+from ase.application.ports.feeds import BusMessage
+from ase.domain.events import Category, Event
+
+router = APIRouter(tags=["stream"])
+PING_SECONDS = 15
+
+
+def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
+    """Turn a bus message into a JSON-safe payload, or None when the filter drops it."""
+    if message.kind == "event.upsert":
+        events = message.payload.get("events")
+        if not isinstance(events, list):
+            return None
+        selected = [
+            EventOut.from_event(e).model_dump(mode="json")
+            for e in events
+            if isinstance(e, Event) and (not wanted or e.category in wanted)
+        ]
+        if not selected:
+            return None
+        return {"source_id": message.payload.get("source_id"), "events": selected}
+    if message.kind == "event.expire":
+        ids = message.payload.get("ids")
+        id_list = [str(i) for i in ids] if isinstance(ids, tuple | list) else []
+        return {"ids": id_list, "count": len(id_list)}
+    if message.kind == "source.health":
+        health = message.payload.get("health")
+        if isinstance(health, SourceHealth):
+            return SourceHealthOut.from_health(health).model_dump(mode="json")
+    return None
+
+
+@router.get("/stream")
+async def stream(
+    user: CurrentUser,
+    container: ContainerDep,
+    categories: Annotated[str | None, Query(max_length=200)] = None,
+) -> EventSourceResponse:
+    wanted = parse_categories(categories)
+    lifetime = timedelta(minutes=container.settings.access_token_minutes)
+    deadline = container.clock.now() + lifetime
+
+    async def generate() -> AsyncIterator[dict[str, str]]:
+        subscription = container.bus.subscribe()
+        try:
+            yield {
+                "event": "hello",
+                "data": json.dumps({"expires_in": int(lifetime.total_seconds())}),
+            }
+            while True:
+                remaining = (deadline - container.clock.now()).total_seconds()
+                if remaining <= 0:
+                    yield {"event": "bye", "data": json.dumps({"reason": "token_expired"})}
+                    return
+                # Wake at least every ping so the deadline is honoured on a quiet stream.
+                try:
+                    async with asyncio.timeout(min(remaining, PING_SECONDS)):
+                        message = await anext(aiter(subscription))
+                except TimeoutError:
+                    continue
+                except StopAsyncIteration:
+                    return
+                payload = serialise(message, wanted)
+                if payload is not None:
+                    yield {"event": message.kind, "data": json.dumps(payload)}
+        finally:
+            subscription.close()
+
+    return EventSourceResponse(generate(), ping=PING_SECONDS)

@@ -1,0 +1,22 @@
+[
+ {
+  "product_id": "TIVA",
+  "issue_datetime": "2026-09-04 20:07:08.480",
+  "message": "Space Weather Message Code: ALTTP4\r\nSerial Number: 717\r\nIssue Time: 2026 Sep 04 2007 UTC\r\n\r\nALERT: Type IV Radio Emission \nBegin Time: 2026 Sep 04 1924 UTC\nComment: "
+ },
+ {
+  "product_id": "TIIA",
+  "issue_datetime": "2026-09-04 20:06:40.117",
+  "message": "Space Weather Message Code: ALTTP2\r\nSerial Number: 1528\r\nIssue Time: 2026 Sep 04 2006 UTC\r\n\r\nALERT: Type II Radio Emission \nBegin Time: 2026 Sep 04 1922 UTC\nEstimate Velocity: 698 km/s\nComment: "
+ },
+ {
+  "product_id": "EF3A",
+  "issue_datetime": "2026-09-04 12:08:53.197",
+  "message": "Space Weather Message Code: ALTEF3\r\nSerial Number: 3735\r\nIssue Time: 2026 Sep 04 1208 UTC\r\n\r\nCONTINUED ALERT: Electron 2MeV Integral Flux exceeded 1,000pfu\nContinuation of Serial Number: 3734\nBegin Time: 2026 Aug 31 1146 UTC\n\nYesterday Maximum 2MeV Flux: 830 pfu\nMax time: 2026 Sep 04 1200 UTC"
+ },
+ {
+  "product_id": "TIIA",
+  "issue_datetime": "2026-09-03 16:44:28.023",
+  "message": "Space Weather Message Code: ALTTP2\r\nSerial Number: 1527\r\nIssue Time: 2026 Sep 03 1644 UTC\r\n\r\nALERT: Type II Radio Emission \nBegin Time: 2026 Sep 03 1629 UTC\nEstimate Velocity: 1,359 km/s\nComment: "
+ }
+]

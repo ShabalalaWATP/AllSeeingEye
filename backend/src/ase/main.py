@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -12,6 +12,7 @@ from ase.api.errors import register_error_handlers
 from ase.api.middleware import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from ase.api.router import api_router
 from ase.application.ports import Clock, EmailSender, RateLimiter
+from ase.application.ports.feeds import FeedConnector
 from ase.container import Container
 from ase.infrastructure.logging import configure_logging
 from ase.infrastructure.settings import Settings
@@ -19,9 +20,14 @@ from ase.infrastructure.settings import Settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    yield
     container: Container = app.state.container
-    await container.dispose()
+    if container.settings.feeds_enabled:
+        await container.scheduler.start()
+    try:
+        yield
+    finally:
+        await container.scheduler.stop()
+        await container.dispose()
 
 
 def create_app(
@@ -30,10 +36,17 @@ def create_app(
     clock: Clock | None = None,
     limiter: RateLimiter | None = None,
     email_sender: EmailSender | None = None,
+    connectors: Sequence[FeedConnector] | None = None,
 ) -> FastAPI:
     settings = settings or Settings()
     configure_logging(settings)
-    container = Container(settings, clock=clock, limiter=limiter, email_sender=email_sender)
+    container = Container(
+        settings,
+        clock=clock,
+        limiter=limiter,
+        email_sender=email_sender,
+        connectors=connectors,
+    )
     app = FastAPI(
         title="The All Seeing Eye API",
         version=__version__,

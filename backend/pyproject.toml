@@ -18,6 +18,9 @@ dependencies = [
     "pyjwt>=2.9",
     "structlog>=24.4",
     "typer>=0.12",
+    "sse-starlette>=3.4.10",
+    "httpx>=0.28.1",
+    "defusedxml>=0.7.1",
 ]
 
 [project.scripts]
@@ -34,6 +37,8 @@ dev = [
     "bandit>=1.8",
     "pip-audit>=2.7",
     "import-linter>=2.1",
+    "types-defusedxml>=0.7.0.20260504",
+    "pytest-timeout>=2.4.0",
 ]
 
 [build-system]
@@ -46,6 +51,7 @@ packages = ["src/ase"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+timeout = 120
 addopts = "--cov=ase --cov-report=term-missing --cov-fail-under=90"
 
 [tool.coverage.run]

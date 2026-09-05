@@ -1,37 +1,44 @@
-"""Security headers on every response and a request body size cap."""
+"""Security headers on every response and a request body size cap (pure ASGI, stream safe)."""
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
-
-from fastapi import Request, Response
-from starlette.datastructures import Headers
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request
+from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from ase.api.errors import PayloadTooLarge, handle_app_error
 
-NO_STORE_PREFIXES = ("/api/auth", "/api/me", "/api/admin")
+NO_STORE_PREFIXES = ("/api/auth", "/api/me", "/api/admin", "/api/events", "/api/stream")
 DOCS_PREFIXES = ("/api/docs", "/api/openapi.json")
 API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
 
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        response = await call_next(request)
-        headers = response.headers
-        headers["X-Content-Type-Options"] = "nosniff"
-        headers["Referrer-Policy"] = "no-referrer"
-        headers["X-Frame-Options"] = "DENY"
-        path = request.url.path
-        if not path.startswith(DOCS_PREFIXES):
-            headers["Content-Security-Policy"] = API_CSP
-        if path.startswith(NO_STORE_PREFIXES):
-            headers["Cache-Control"] = "no-store"
-        return response
+class SecurityHeadersMiddleware:
+    """Adds the API's headers to every HTTP response without buffering streamed bodies."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        path = str(scope.get("path", ""))
+
+        async def send_with_headers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers["X-Content-Type-Options"] = "nosniff"
+                headers["Referrer-Policy"] = "no-referrer"
+                headers["X-Frame-Options"] = "DENY"
+                if not path.startswith(DOCS_PREFIXES):
+                    headers["Content-Security-Policy"] = API_CSP
+                if path.startswith(NO_STORE_PREFIXES):
+                    headers["Cache-Control"] = "no-store"
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
 
 
 class BodySizeLimitMiddleware:

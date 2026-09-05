@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     rate_limit_request_account_per_ip: int = Field(default=3, ge=1)
     rate_limit_forgot_per_ip: int = Field(default=3, ge=1)
     rate_limit_set_password_per_ip: int = Field(default=10, ge=1)
+    # Feeds: on by default outside tests; polite identification is mandatory for most APIs.
+    feeds_enabled: bool | None = None
+    feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
+    feeds_disabled: str = ""
+    live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
 
     _generated_secret: bool = PrivateAttr(default=False)
 
@@ -55,7 +60,17 @@ class Settings(BaseSettings):
             self._generated_secret = True
         if self.cookie_secure is None:
             self.cookie_secure = self.env is Environment.PROD
+        if self.feeds_enabled is None:
+            self.feeds_enabled = self.env is not Environment.TEST
         return self
+
+    @property
+    def feeds_user_agent(self) -> str:
+        return f"TheAllSeeingEye/0.1 (+{self.feeds_contact})"
+
+    @property
+    def disabled_feed_ids(self) -> list[str]:
+        return [item.strip() for item in self.feeds_disabled.split(",") if item.strip()]
 
     @property
     def is_dev(self) -> bool:

@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import secrets
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.bus.memory import InMemoryEventBus
+from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
@@ -21,6 +25,7 @@ from ase.adapters.persistence.users import SqlAccountRequestRepository, SqlUserR
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
+from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.requests import (
     ApproveRequestUseCase,
@@ -34,6 +39,9 @@ from ase.application.auth.login import LoginUseCase
 from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
+from ase.application.feeds.health import HealthRegistry
+from ase.application.feeds.pipeline import Normaliser, Pipeline
+from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.ports import (
     AccountRequestRepository,
     AuditLogRepository,
@@ -45,6 +53,7 @@ from ase.application.ports import (
     UnitOfWork,
     UserRepository,
 )
+from ase.application.ports.feeds import FeedConnector
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Settings
@@ -68,6 +77,7 @@ class Container:
         clock: Clock | None = None,
         limiter: RateLimiter | None = None,
         email_sender: EmailSender | None = None,
+        connectors: Sequence[FeedConnector] | None = None,
     ) -> None:
         self.settings = settings
         self.clock: Clock = clock or SystemClock()
@@ -86,8 +96,25 @@ class Container:
         self.refresh_ttl = timedelta(days=settings.refresh_token_days)
         # Verified against on unknown emails so login timing does not reveal existence.
         self._dummy_hash = self.hasher.hash(secrets.token_urlsafe(16))
+        # The fusion core: bounded live store, in-process bus, connectors and their scheduler.
+        self.store = InMemoryEventStore(
+            memory_budget_bytes=settings.live_store_memory_mb * 1024 * 1024
+        )
+        self.bus = InMemoryEventBus()
+        self.health = HealthRegistry()
+        self.pipeline = Pipeline([Normaliser()])
+        self.http = FeedHttpClient(settings.feeds_user_agent)
+        self.connectors: list[FeedConnector] = (
+            list(connectors)
+            if connectors is not None
+            else build_connectors(self.http, self.clock, settings.disabled_feed_ids)
+        )
+        self.scheduler = FeedScheduler(
+            self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock
+        )
 
     async def dispose(self) -> None:
+        await self.http.aclose()
         await self.engine.dispose()
 
     def repositories(self, session: AsyncSession) -> Repositories:

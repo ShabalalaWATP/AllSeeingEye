@@ -1,0 +1,221 @@
+{
+ "type": "FeatureCollection",
+ "metadata": {
+  "generated": 1788563994000,
+  "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson",
+  "title": "USGS All Earthquakes, Past Hour",
+  "status": 200,
+  "api": "2.7.0",
+  "count": 10
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "mag": 2.5,
+    "place": "59 km S of Whites City, New Mexico",
+    "time": 1788563657862,
+    "updated": 1788563969187,
+    "tz": null,
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026rliwah",
+    "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/tx2026rliwah.geojson",
+    "felt": null,
+    "cdi": null,
+    "mmi": null,
+    "alert": null,
+    "status": "automatic",
+    "tsunami": 0,
+    "sig": 96,
+    "net": "tx",
+    "code": "2026rliwah",
+    "ids": ",tx2026rliwah,",
+    "sources": ",tx,",
+    "types": ",origin,phase-data,",
+    "nst": 32,
+    "dmin": 0.1,
+    "rms": 0.4,
+    "gap": 72,
+    "magType": "ml",
+    "type": "earthquake",
+    "title": "M 2.5 - 59 km S of Whites City, New Mexico"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -104.381,
+     31.641,
+     3.948
+    ]
+   },
+   "id": "tx2026rliwah"
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "mag": 1.6,
+    "place": "58 km S of Whites City, New Mexico",
+    "time": 1788563597400,
+    "updated": 1788563851217,
+    "tz": null,
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026rliuzh",
+    "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/tx2026rliuzh.geojson",
+    "felt": null,
+    "cdi": null,
+    "mmi": null,
+    "alert": null,
+    "status": "automatic",
+    "tsunami": 0,
+    "sig": 39,
+    "net": "tx",
+    "code": "2026rliuzh",
+    "ids": ",tx2026rliuzh,",
+    "sources": ",tx,",
+    "types": ",origin,phase-data,",
+    "nst": 26,
+    "dmin": 0.1,
+    "rms": 0.4,
+    "gap": 71,
+    "magType": "ml",
+    "type": "earthquake",
+    "title": "M 1.6 - 58 km S of Whites City, New Mexico"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -104.381,
+     31.648,
+     4.6314
+    ]
+   },
+   "id": "tx2026rliuzh"
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "mag": 1.4,
+    "place": "12 km E of Fox, Alaska",
+    "time": 1788563000622,
+    "updated": 1788563106225,
+    "tz": null,
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rodngl",
+    "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/aka2026rodngl.geojson",
+    "felt": null,
+    "cdi": null,
+    "mmi": null,
+    "alert": null,
+    "status": "automatic",
+    "tsunami": 0,
+    "sig": 30,
+    "net": "ak",
+    "code": "a2026rodngl",
+    "ids": ",aka2026rodngl,",
+    "sources": ",ak,",
+    "types": ",origin,phase-data,",
+    "nst": 20,
+    "dmin": 0.2,
+    "rms": 0.6,
+    "gap": 63,
+    "magType": "ml",
+    "type": "earthquake",
+    "title": "M 1.4 - 12 km E of Fox, Alaska"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -147.364,
+     64.956,
+     0.8
+    ]
+   },
+   "id": "aka2026rodngl"
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "mag": 0.57,
+    "place": "6 km NW of The Geysers, CA",
+    "time": 1788562208810,
+    "updated": 1788562304540,
+    "tz": null,
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75429887",
+    "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/nc75429887.geojson",
+    "felt": null,
+    "cdi": null,
+    "mmi": null,
+    "alert": null,
+    "status": "automatic",
+    "tsunami": 0,
+    "sig": 5,
+    "net": "nc",
+    "code": "75429887",
+    "ids": ",nc75429887,",
+    "sources": ",nc,",
+    "types": ",nearby-cities,origin,phase-data,",
+    "nst": 8,
+    "dmin": 0.009777,
+    "rms": 0.04,
+    "gap": 113,
+    "magType": "md",
+    "type": "earthquake",
+    "title": "M 0.6 - 6 km NW of The Geysers, CA"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.816665649414,
+     38.8089981079102,
+     2.24000000953674
+    ]
+   },
+   "id": "nc75429887"
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "mag": 2,
+    "place": "20 km SSW of Denali National Park, Alaska",
+    "time": 1788561575588,
+    "updated": 1788561727204,
+    "tz": null,
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rocqpx",
+    "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/aka2026rocqpx.geojson",
+    "felt": null,
+    "cdi": null,
+    "mmi": null,
+    "alert": null,
+    "status": "automatic",
+    "tsunami": 0,
+    "sig": 62,
+    "net": "ak",
+    "code": "a2026rocqpx",
+    "ids": ",aka2026rocqpx,",
+    "sources": ",ak,",
+    "types": ",origin,phase-data,",
+    "nst": 26,
+    "dmin": 0.1,
+    "rms": 0.7,
+    "gap": 89,
+    "magType": "ml",
+    "type": "earthquake",
+    "title": "M 2.0 - 20 km SSW of Denali National Park, Alaska"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -151.81,
+     63.357,
+     0.5
+    ]
+   },
+   "id": "aka2026rocqpx"
+  }
+ ],
+ "bbox": [
+  -155.85966491699,
+  19.370500564575,
+  0,
+  -103.519,
+  64.956,
+  13.939999580383
+ ]
+}

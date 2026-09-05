@@ -1,0 +1,334 @@
+{
+	"title": "EONET Events",
+	"description": "Natural events from EONET.",
+	"link": "https://eonet.gsfc.nasa.gov/api/v3/events",
+	"events": [
+		{
+			"id": "EONET_23868",
+			"title": "Emergency Stabilization BAER McConnell, Humboldt, Nevada",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_23868",
+			"closed": null,
+				"categories": [
+					{
+					"id": "wildfires",
+					"title": "Wildfires"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "IRWIN",
+					"url": "https://irwin.doi.gov/observer/incidents/2026-NVWID-020663"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": 500.00,
+					"magnitudeUnit": "acres",
+					"date": "2026-09-03T13:03:00Z",
+					"type": "Point", 
+							"coordinates": [ -117.74215, 41.517567 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_23869",
+			"title": "Wildfire Ayers Pond, Prairie, Montana",
+            "description": "25 Miles SE from Terry, MT",
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_23869",
+			"closed": null,
+				"categories": [
+					{
+					"id": "wildfires",
+					"title": "Wildfires"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "IRWIN",
+					"url": "https://irwin.doi.gov/observer/incidents/2026-MTMCD-000777"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": 565.80,
+					"magnitudeUnit": "acres",
+					"date": "2026-09-03T01:45:00Z",
+					"type": "Point", 
+							"coordinates": [ -104.83045, 46.65069 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_23870",
+			"title": "Wildfire Snow, Custer, Montana",
+            "description": "30 Miles E from Miles City, MT",
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_23870",
+			"closed": null,
+				"categories": [
+					{
+					"id": "wildfires",
+					"title": "Wildfires"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "IRWIN",
+					"url": "https://irwin.doi.gov/observer/incidents/2026-MTLG14-000775"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": 1100.00,
+					"magnitudeUnit": "acres",
+					"date": "2026-09-02T22:16:00Z",
+					"type": "Point", 
+							"coordinates": [ -105.185017, 46.48575 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_23800",
+			"title": "Hurricane Marie",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_23800",
+			"closed": null,
+				"categories": [
+					{
+					"id": "severeStorms",
+					"title": "Severe Storms"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "JTWC",
+					"url": "https://www.metoc.navy.mil/jtwc/products/ep1326.tcw"
+				},
+
+							{
+					"id": "NOAA_NHC",
+					"url": "https://www.nhc.noaa.gov/archive/2026/MARIE.shtml"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": 40.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T06:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -108.1, 14.1 ]
+							},
+
+							{
+							"magnitudeValue": 40.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T12:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -108.5, 14.8 ]
+							},
+
+							{
+							"magnitudeValue": 50.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T18:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -109.2, 15.4 ]
+							},
+
+							{
+							"magnitudeValue": 55.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T00:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -109.9, 15.9 ]
+							},
+
+							{
+							"magnitudeValue": 55.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T06:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -110.6, 16.4 ]
+							},
+
+							{
+							"magnitudeValue": 60.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T12:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -111.3, 16.8 ]
+							},
+
+							{
+							"magnitudeValue": 60.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T18:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -112, 17.7 ]
+							},
+
+							{
+							"magnitudeValue": 70.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-03T00:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -112.7, 18.2 ]
+							},
+
+							{
+							"magnitudeValue": 75.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-03T06:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -113.4, 18.7 ]
+							},
+
+							{
+							"magnitudeValue": 80.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-03T12:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -114.4, 19 ]
+							},
+
+							{
+							"magnitudeValue": 80.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-03T18:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -115.1, 19.1 ]
+							},
+
+							{
+							"magnitudeValue": 80.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-04T00:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -115.9, 19.5 ]
+							},
+
+							{
+							"magnitudeValue": 85.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-04T06:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -116.7, 19.7 ]
+							},
+
+							{
+							"magnitudeValue": 85.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-04T12:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -117.6, 19.9 ]
+							},
+
+							{
+							"magnitudeValue": 85.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-04T18:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -118.2, 20.1 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_23739",
+			"title": "Tropical Storm Edouard",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_23739",
+			"closed": null,
+				"categories": [
+					{
+					"id": "severeStorms",
+					"title": "Severe Storms"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "NOAA_NHC",
+					"url": "https://www.nhc.noaa.gov/archive/2026/EDOUARD.shtml"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": 35.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T03:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -91.8, 28.6 ]
+							},
+
+							{
+							"magnitudeValue": 35.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T09:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -92.8, 29 ]
+							},
+
+							{
+							"magnitudeValue": 45.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T15:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -93.3, 29.4 ]
+							},
+
+							{
+							"magnitudeValue": 45.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-01T21:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -94, 29.945 ]
+							},
+
+							{
+							"magnitudeValue": 30.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T03:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -94.6, 30.5 ]
+							},
+
+							{
+							"magnitudeValue": 30.00,
+					"magnitudeUnit": "kts",
+					"date": "2026-09-02T09:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -95, 30.8 ]
+							}
+
+						
+			]
+		}
+
+		]
+}
