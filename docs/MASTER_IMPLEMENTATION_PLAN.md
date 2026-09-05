@@ -100,7 +100,8 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Persistence in migration 0003 (reports, report_versions with body, findings, evidence and quality as JSON plus the rendered Markdown), the reports API (templates, generate, list, read, Markdown export, delete by owner or admin, ten generations per user per hour), usage and audit entries
 - [x] Reports in the app: a generate form (product, nation, window, question), the list with status badges, and a reader with judgements (yardstick term and confidence chips, evidence labels), reporting, assessment, assumptions, alternatives, indicators, gaps, sourcing, validator findings and the evidence annex with http(s) links only; Markdown copied to the clipboard; owner or admin delete
 - [x] Version history on regeneration (a further version keeps the scope, sees the previous key judgements and must state what changed) and a Markdown download in the reader
-- [ ] Wayback archiving, devil's advocacy pass, direction call for free-form asks
+- [x] Wayback archiving (background task after generation: availability check, then Save Page Now; `ASE_ARCHIVE_ENABLED`), devil's advocacy pass (opt-in per report; can lower KJ1 confidence, never raise it), direction call for free-form asks (PIR, SIRs, EEIs and search terms that steer selection)
+- [ ] Evidence preview before generation for asks (show the direction call's selection to the user first)
 
 ## Known follow-ups carried forward
 

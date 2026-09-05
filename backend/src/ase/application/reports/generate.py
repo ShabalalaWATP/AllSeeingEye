@@ -1,4 +1,4 @@
-"""Generate a report: select and freeze evidence, ask the model, validate, retry once, persist.
+"""Generate a report: resolve template, profile and scope, produce a version, persist it.
 
 Regeneration produces a further version of an existing report from the same scope, with
 the previous key judgements shown to the model so it can say what changed.
@@ -7,10 +7,9 @@ the previous key judgements shown to the model so it can say what changed.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
@@ -24,11 +23,11 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.reports import ReportRepository
-from ase.application.reports.drafting import Draft, draft_body
-from ase.application.reports.render import render_markdown
-from ase.application.reports.selection import select_evidence
+from ase.application.reports.production import Job, Producer
+from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template, template_for
 from ase.domain.audit import AuditAction
+from ase.domain.countries import Country
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
@@ -36,40 +35,12 @@ from ase.domain.errors import (
     NotFound,
     RateLimited,
 )
-from ase.domain.events import Category
-from ase.domain.evidence import quality_of_information
 from ase.domain.grading import SourceProfile
-from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
+from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.report_records import ReportRecord, ReportVersion
-from ase.domain.reports import (
-    ReportBody,
-    ReportHeader,
-    ReportStatus,
-)
 from ase.domain.users import User
-from ase.domain.validation import Severity
 
-
-@dataclass(frozen=True, slots=True)
-class ReportRequest:
-    template_id: str
-    country_iso: str | None = None
-    categories: tuple[Category, ...] = ()
-    question: str | None = None
-    window_hours: int | None = None
-    profile_id: UUID | None = None
-
-    @classmethod
-    def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
-        categories = tuple(Category(str(c)) for c in scope.get("categories") or [])
-        window = scope.get("window_hours")
-        return cls(
-            template_id=template_id,
-            country_iso=scope.get("country") or None,
-            categories=categories,
-            question=scope.get("question") or None,
-            window_hours=int(window) if window else None,
-        )
+__all__ = ["GenerateReportUseCase", "ReportRequest"]
 
 
 class GenerateReportUseCase:
@@ -90,13 +61,16 @@ class GenerateReportUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
     ) -> None:
-        self._store = store
-        self._source_profiles = source_profiles
+        self._producer = Producer(
+            store=store,
+            source_profiles=source_profiles,
+            cipher=cipher,
+            gateway=gateway,
+            usage=usage,
+        )
         self._countries = countries
         self._llm_profiles = llm_profiles
-        self._usage = usage
         self._cipher = cipher
-        self._gateway = gateway
         self._reports = reports
         self._clock = clock
         self._limiter = limiter
@@ -111,13 +85,14 @@ class GenerateReportUseCase:
         template = self._template(request)
         profile = await self._prepare(actor, request.profile_id, template)
         now = self._clock.now()
-        version = await self._produce(actor, template, request, profile, now, previous=None)
+        job = self._job(actor, template, request, profile, now)
+        version = await self._producer.produce(job, self._profile_for)
         record = ReportRecord(
             id=version.report_id,
             template=template.id,
-            title=self._title(template, request),
-            scope=self._scope(request, template),
-            period_from=now - self._window(request, template),
+            title=job.title,
+            scope=dict(job.scope),
+            period_from=now - job.window,
             period_to=now,
             data_cutoff=now,
             status=version.status,
@@ -143,12 +118,13 @@ class GenerateReportUseCase:
         template = self._template(request)
         profile = await self._prepare(actor, None, template)
         now = self._clock.now()
-        version = await self._produce(
+        job = self._job(
             actor, template, request, profile, now, previous=previous, report_id=record.id
         )
+        version = await self._producer.produce(job, self._profile_for)
         record.status = version.status
         record.latest_version = version.number
-        record.period_from = now - self._window(request, template)
+        record.period_from = now - job.window
         record.period_to = now
         record.data_cutoff = now
         await self._reports.add_version(record, version)
@@ -168,7 +144,7 @@ class GenerateReportUseCase:
             raise EncryptionUnavailable()
         return profile
 
-    async def _produce(
+    def _job(
         self,
         actor: User,
         template: Template,
@@ -176,60 +152,22 @@ class GenerateReportUseCase:
         profile: LlmProfile,
         now: datetime,
         *,
-        previous: ReportVersion | None,
+        previous: ReportVersion | None = None,
         report_id: UUID | None = None,
-    ) -> ReportVersion:
-        window = self._window(request, template)
-        selection = select_evidence(
-            self._store,
-            self._source_profiles,
-            template.strategy,
+    ) -> Job:
+        country = self._countries.get(request.country_iso) if request.country_iso else None
+        return Job(
+            actor=actor,
+            template=template,
+            request=request,
+            profile=profile,
             now=now,
-            country_iso=request.country_iso,
-            categories=request.categories,
-        )
-        quality = quality_of_information(selection.items, selection.flagged)
-        header = ReportHeader(
-            template=template.id,
-            title=self._title(template, request),
+            window=self._window(request, template),
+            title=self._title(template, request, country),
             scope=self._scope(request, template),
-            period_from=now - window,
-            period_to=now,
-            data_cutoff=now,
-        )
-        earlier = previous.body.key_judgements if previous is not None else ()
-        draft = await draft_body(
-            self._gateway,
-            profile,
-            self._cipher.decrypt(profile.api_key_encrypted),
-            template,
-            header,
-            request.question,
-            quality,
-            selection.items,
-            earlier,
-        )
-        await self._log_usage(profile, actor, template, draft, now)
-        body = draft.body or ReportBody()
-        status = self._status(draft)
-        markdown = render_markdown(header, body, selection.items, quality, draft.findings)
-        return ReportVersion(
-            id=uuid4(),
-            report_id=report_id or uuid4(),
-            number=previous.number + 1 if previous is not None else 1,
-            status=status,
-            body=body,
-            findings=tuple(draft.findings),
-            evidence=selection.items,
-            quality=quality,
-            markdown=markdown,
-            profile_id=profile.id,
-            model=draft.model or profile.model,
-            prompt_tokens=draft.prompt_tokens,
-            completion_tokens=draft.completion_tokens,
-            latency_ms=draft.latency_ms,
-            attempts=draft.attempts,
-            created_at=now,
+            country_name=country.name if country else None,
+            previous=previous,
+            report_id=report_id,
         )
 
     async def _finish(
@@ -265,22 +203,29 @@ class GenerateReportUseCase:
     def _window(request: ReportRequest, template: Template) -> timedelta:
         return timedelta(hours=request.window_hours or template.strategy.window_hours)
 
-    async def _profile(self, profile_id: UUID | None, role: LlmRole) -> LlmProfile:
-        if profile_id is not None:
-            profile = await self._llm_profiles.get(profile_id)
-            if profile is None or not profile.allows(role):
-                raise NoModelAvailable()
-            return profile
+    async def _profile_for(self, role: LlmRole) -> LlmProfile | None:
+        """The first enabled profile that plays the role, or None."""
         for candidate in await self._llm_profiles.list_all():
             if candidate.allows(role):
                 return candidate
-        raise NoModelAvailable()
+        return None
 
-    def _title(self, template: Template, request: ReportRequest) -> str:
+    async def _profile(self, profile_id: UUID | None, role: LlmRole) -> LlmProfile:
+        if profile_id is not None:
+            chosen = await self._llm_profiles.get(profile_id)
+            if chosen is None or not chosen.allows(role):
+                raise NoModelAvailable()
+            return chosen
+        profile = await self._profile_for(role)
+        if profile is None:
+            raise NoModelAvailable()
+        return profile
+
+    @staticmethod
+    def _title(template: Template, request: ReportRequest, country: Country | None) -> str:
         if request.question:
             return f"{template.title}: {request.question.strip()[:120]}"
         if request.country_iso:
-            country = self._countries.get(request.country_iso)
             return f"{template.title}: {country.name if country else request.country_iso}"
         return f"{template.title}: global"
 
@@ -290,30 +235,5 @@ class GenerateReportUseCase:
             "categories": [category.value for category in request.categories],
             "question": request.question,
             "window_hours": int(self._window(request, template).total_seconds() // 3600),
+            "devils_advocacy": request.devils_advocacy,
         }
-
-    @staticmethod
-    def _status(draft: Draft) -> ReportStatus:
-        if draft.body is None:
-            return ReportStatus.FAILED
-        if draft.has_errors:
-            return ReportStatus.NEEDS_REVIEW
-        return ReportStatus.READY
-
-    async def _log_usage(
-        self, profile: LlmProfile, actor: User, template: Template, draft: Draft, now: datetime
-    ) -> None:
-        errors = [f.message for f in draft.findings if f.severity is Severity.ERROR]
-        await self._usage.add(
-            LlmUsage(
-                at=now,
-                profile_id=profile.id,
-                user_id=actor.id,
-                purpose=f"report:{template.id}",
-                ok=draft.body is not None,
-                latency_ms=draft.latency_ms,
-                prompt_tokens=draft.prompt_tokens,
-                completion_tokens=draft.completion_tokens,
-                error="; ".join(errors)[:500] or None,
-            )
-        )

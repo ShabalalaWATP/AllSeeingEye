@@ -68,6 +68,7 @@ class EvidenceItem:
     content_hash: str
     instrument: bool = False
     flags: tuple[str, ...] = ()
+    archive_url: str | None = None
 
     @classmethod
     def from_event(

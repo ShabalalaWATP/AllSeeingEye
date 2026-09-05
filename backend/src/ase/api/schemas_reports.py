@@ -8,8 +8,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from ase.application.reports.generate import ReportRequest
+from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
+from ase.domain.advocacy import advocacy_to_dict
+from ase.domain.direction import direction_to_dict
 from ase.domain.events import Category
 from ase.domain.report_records import (
     ReportRecord,
@@ -29,6 +31,7 @@ class ReportCreateIn(BaseModel):
     question: str | None = Field(default=None, max_length=1000)
     window_hours: int | None = Field(default=None, ge=1, le=24 * 14)
     profile_id: UUID | None = None
+    devils_advocacy: bool = False
 
     def to_request(self) -> ReportRequest:
         return ReportRequest(
@@ -38,6 +41,7 @@ class ReportCreateIn(BaseModel):
             question=self.question.strip() if self.question else None,
             window_hours=self.window_hours,
             profile_id=self.profile_id,
+            devils_advocacy=self.devils_advocacy,
         )
 
 
@@ -115,10 +119,14 @@ class ReportVersionOut(BaseModel):
     latency_ms: float
     attempts: int
     created_at: datetime
+    direction: dict[str, Any] | None
+    devils_advocacy: dict[str, Any] | None
 
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            direction=direction_to_dict(version.direction) if version.direction else None,
+            devils_advocacy=advocacy_to_dict(version.advocacy) if version.advocacy else None,
             number=version.number,
             status=version.status,
             body=body_to_dict(version.body),

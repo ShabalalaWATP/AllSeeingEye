@@ -80,8 +80,29 @@ export const evidenceItemSchema = z.object({
   grade_rationale: z.string(),
   country_iso: z.string().nullable(),
   flags: z.array(z.string()),
+  archive_url: z.string().nullable(),
 });
 export type EvidenceItem = z.infer<typeof evidenceItemSchema>;
+
+export const directionSchema = z.object({
+  pir: z.string(),
+  sirs: z.array(z.string()),
+  eeis: z.array(z.string()),
+  search_terms: z.array(z.string()),
+  categories: z.array(z.string()),
+});
+export type Direction = z.infer<typeof directionSchema>;
+
+export const advocacySchema = z.object({
+  target: z.string(),
+  argument: z.string(),
+  evidence: labels,
+  lower_confidence: z.boolean(),
+  rationale: z.string(),
+  confidence_before: z.string().nullable(),
+  confidence_after: z.string().nullable(),
+});
+export type DevilsAdvocacy = z.infer<typeof advocacySchema>;
 
 export const findingSchema = z.object({
   rule: z.string(),
@@ -105,6 +126,8 @@ export const reportVersionSchema = z.object({
   latency_ms: z.number(),
   attempts: z.number().int(),
   created_at: z.string(),
+  direction: directionSchema.nullable(),
+  devils_advocacy: advocacySchema.nullable(),
 });
 export type ReportVersion = z.infer<typeof reportVersionSchema>;
 
@@ -117,6 +140,7 @@ export interface ReportRequest {
   categories?: z.infer<typeof categorySchema>[];
   question?: string;
   window_hours?: number;
+  devils_advocacy?: boolean;
 }
 
 export async function fetchTemplates(): Promise<ReportTemplate[]> {

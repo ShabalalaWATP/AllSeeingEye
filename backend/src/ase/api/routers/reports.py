@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Query, Response
 from fastapi.responses import PlainTextResponse
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
@@ -43,10 +43,12 @@ async def create_report(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
+    background: BackgroundTasks,
 ) -> ReportOut:
     record, version = await container.generate_report(session).execute(
         user, body.to_request(), context
     )
+    background.add_task(container.archive_report_version, version)
     return ReportOut.build(record, version)
 
 
@@ -57,8 +59,10 @@ async def regenerate_report(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
+    background: BackgroundTasks,
 ) -> ReportOut:
     record, version = await container.generate_report(session).regenerate(user, report_id, context)
+    background.add_task(container.archive_report_version, version)
     return ReportOut.build(record, version)
 
 

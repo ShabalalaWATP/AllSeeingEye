@@ -139,6 +139,7 @@ class ReportVersionRow(Base):
     findings: Mapped[list[Any]] = mapped_column(JSON, default=list)
     evidence: Mapped[list[Any]] = mapped_column(JSON, default=list)
     quality: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    analysis: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     markdown: Mapped[str] = mapped_column(Text)
     profile_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     model: Mapped[str] = mapped_column(String(120))

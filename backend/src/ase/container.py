@@ -7,8 +7,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
@@ -70,6 +72,7 @@ from ase.application.ports import (
     UnitOfWork,
     UserRepository,
 )
+from ase.application.ports.archive import Archiver
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
@@ -85,10 +88,14 @@ from ase.application.reports.access import (
     GetReportUseCase,
     ListReportsUseCase,
 )
+from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.domain.report_records import ReportVersion
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
 from ase.infrastructure.settings import Settings
+
+log = structlog.get_logger(__name__)
 
 
 @dataclass(slots=True)
@@ -159,12 +166,27 @@ class Container:
         self.tiles: TileProvider = (
             OsMapsTileProvider(os_key) if os_key is not None else NullTileProvider()
         )
+        self.archiver: Archiver = (
+            WaybackArchiver(settings.feeds_user_agent)
+            if settings.archive_enabled
+            else NullArchiver()
+        )
 
     async def dispose(self) -> None:
         await self.http.aclose()
         await self._llm_gateway.aclose()
         await self.tiles.aclose()
+        await self.archiver.aclose()
         await self.engine.dispose()
+
+    async def archive_report_version(self, version: ReportVersion) -> None:
+        """Background job after generation: preserve the URLs the version cites."""
+        try:
+            async with self.session_factory() as session:
+                r = self.repositories(session)
+                await archive_evidence(self.archiver, r.reports, r.uow, version)
+        except Exception:
+            log.warning("archive.job_failed", report_version=str(version.id), exc_info=True)
 
     def repositories(self, session: AsyncSession) -> Repositories:
         return Repositories(

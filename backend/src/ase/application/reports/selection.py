@@ -50,6 +50,14 @@ def score(event: Event, now: datetime, window: timedelta) -> float:
     )  # fmt: skip
 
 
+def term_matches(event: Event, terms: Sequence[str]) -> int:
+    """How many of the (lower-cased) search terms appear in the title or summary."""
+    if not terms:
+        return 0
+    text = f"{event.title} {event.summary or ''}".lower()
+    return sum(1 for term in terms if term in text)
+
+
 def select_evidence(
     store: EventStore,
     profiles: Mapping[str, SourceProfile],
@@ -58,8 +66,13 @@ def select_evidence(
     now: datetime,
     country_iso: str | None = None,
     categories: Sequence[Category] = (),
+    terms: Sequence[str] = (),
 ) -> Selection:
-    """Freeze the best evidence for the scope; items with instruction-like text are left out."""
+    """Freeze the best evidence for the scope; items with instruction-like text are left out.
+
+    Search terms (from the direction call) put matching items ahead of the rest and boost
+    them by the number of terms matched; unmatched items only fill the remaining places.
+    """
     window = timedelta(hours=strategy.window_hours)
     wanted = frozenset(categories) or strategy.categories
     pool = store.query(
@@ -70,7 +83,13 @@ def select_evidence(
             limit=MAX_POOL,
         )
     )
-    ranked = sorted(pool, key=lambda event: score(event, now, window), reverse=True)
+    lowered = tuple(term.lower().strip() for term in terms if term.strip())
+
+    def rank(event: Event) -> tuple[int, float]:
+        matches = term_matches(event, lowered)
+        return (1 if matches else 0, score(event, now, window) * (1 + 0.25 * matches))
+
+    ranked = sorted(pool, key=rank, reverse=True)
     per_source: dict[str, int] = {}
     chosen: list[EvidenceItem] = []
     flagged = 0

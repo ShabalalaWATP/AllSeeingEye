@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from ase.domain.advocacy import DevilsAdvocacy
+from ase.domain.direction import Direction
 from ase.domain.doctrine import term_for
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.reports import ReportBody, ReportHeader
@@ -12,6 +14,35 @@ from ase.domain.validation import Finding
 
 def _cites(labels: Sequence[str]) -> str:
     return f" [{', '.join(labels)}]" if labels else ""
+
+
+def _direction_lines(direction: Direction | None) -> list[str]:
+    if direction is None:
+        return []
+    lines = ["## Direction", ""]
+    lines.extend(f"- {line}" for line in direction.lines())
+    if direction.search_terms:
+        lines.append(f"- Search terms: {', '.join(direction.search_terms)}")
+    lines.append("")
+    return lines
+
+
+def _advocacy_lines(advocacy: DevilsAdvocacy | None) -> list[str]:
+    if advocacy is None:
+        return []
+    lines = ["## Devil's advocacy", ""]
+    lines.append(
+        f"Contrarian view on {advocacy.target}: {advocacy.argument}{_cites(advocacy.evidence)}"
+    )
+    if advocacy.confidence_before is not None and advocacy.confidence_after is not None:
+        lines.append(
+            f"Confidence on {advocacy.target} lowered from {advocacy.confidence_before.value} "
+            f"to {advocacy.confidence_after.value}. {advocacy.rationale}".rstrip()
+        )
+    else:
+        lines.append(f"Confidence unchanged. {advocacy.rationale}".rstrip())
+    lines.append("")
+    return lines
 
 
 def _header_lines(header: ReportHeader) -> list[str]:
@@ -105,14 +136,15 @@ def _annex_lines(
         lines.extend(f"- {f.severity.value}: {f.location}: {f.message}" for f in findings)
         lines.append("")
     lines += ["## Evidence annex", ""]
-    lines.append("| Label | Grade | Source | Published | Title | Link |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("| Label | Grade | Source | Published | Title | Link | Archive |")
+    lines.append("|---|---|---|---|---|---|---|")
     for item in evidence:
         title = item.title.replace("|", "\\|")
         link = f"[link]({item.url})" if item.url else ""
+        archive = f"[archive]({item.archive_url})" if item.archive_url else ""
         lines.append(
             f"| {item.label} | {item.grade} | {item.source_name} | "
-            f"{item.published_at:%Y-%m-%d %H:%M} | {title} | {link} |"
+            f"{item.published_at:%Y-%m-%d %H:%M} | {title} | {link} | {archive} |"
         )
     lines.append("")
     return lines
@@ -124,11 +156,16 @@ def render_markdown(
     evidence: Sequence[EvidenceItem],
     quality: QualityOfInformation,
     findings: Sequence[Finding] = (),
+    *,
+    direction: Direction | None = None,
+    advocacy: DevilsAdvocacy | None = None,
 ) -> str:
     lines = (
         _header_lines(header)
+        + _direction_lines(direction)
         + _judgement_lines(body)
         + _analysis_lines(body)
+        + _advocacy_lines(advocacy)
         + _closing_lines(body)
         + _annex_lines(evidence, quality, findings)
     )

@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from ase.domain.advocacy import DevilsAdvocacy, advocacy_from_dict, advocacy_to_dict
+from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
@@ -58,6 +60,31 @@ class ReportVersion:
     latency_ms: float
     attempts: int
     created_at: datetime
+    direction: Direction | None = None
+    advocacy: DevilsAdvocacy | None = None
+
+
+def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
+    """The direction and the devil's advocacy view, or None when the version has neither."""
+    if version.direction is None and version.advocacy is None:
+        return None
+    return {
+        "direction": direction_to_dict(version.direction) if version.direction else None,
+        "devils_advocacy": advocacy_to_dict(version.advocacy) if version.advocacy else None,
+    }
+
+
+def analysis_from_dict(
+    data: Mapping[str, Any] | None,
+) -> tuple[Direction | None, DevilsAdvocacy | None]:
+    if not data:
+        return None, None
+    direction = data.get("direction")
+    advocacy = data.get("devils_advocacy")
+    return (
+        direction_from_dict(direction) if direction else None,
+        advocacy_from_dict(advocacy) if advocacy else None,
+    )
 
 
 def body_to_dict(body: ReportBody) -> dict[str, Any]:
@@ -142,6 +169,7 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             content_hash=str(row.get("content_hash", "")),
             instrument=bool(row.get("instrument", False)),
             flags=tuple(str(flag) for flag in row.get("flags", [])),
+            archive_url=row.get("archive_url"),
         )
         for row in rows
     )

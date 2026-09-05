@@ -16,7 +16,7 @@ import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useResource } from '@/lib/hooks/useResource';
 
-import { EvidenceAnnex, ReportBodyView } from './ReportSections';
+import { AdvocacyView, DirectionView, EvidenceAnnex, ReportBodyView } from './ReportSections';
 import { StatusBadge } from './ReportsPage';
 
 function versionFromQuery(value: string | null): number | undefined {
@@ -114,7 +114,9 @@ export default function ReportPage() {
           </ul>
         </Alert>
       )}
+      <DirectionView direction={version.direction} />
       <ReportBodyView body={version.body} />
+      <AdvocacyView advocacy={version.devils_advocacy} />
       <EvidenceAnnex
         evidence={version.evidence}
         findings={version.findings}

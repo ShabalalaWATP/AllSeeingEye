@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     feeds_disabled: str = ""
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
     max_streams_per_user: int = Field(default=4, ge=1, le=64)
+    # Wayback Machine snapshots of cited URLs after each report: on by default outside tests.
+    archive_enabled: bool | None = None
     # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
     os_maps_key: SecretStr | None = None
     # Encrypts API keys entered in the admin UI (any string of 32+ characters). Unset means
@@ -69,6 +71,8 @@ class Settings(BaseSettings):
             self.cookie_secure = self.env is Environment.PROD
         if self.feeds_enabled is None:
             self.feeds_enabled = self.env is not Environment.TEST
+        if self.archive_enabled is None:
+            self.archive_enabled = self.env is not Environment.TEST
         return self
 
     @property

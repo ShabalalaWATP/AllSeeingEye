@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from uuid import UUID
 
 from sqlalchemy import delete, select
@@ -12,6 +13,8 @@ from ase.domain.errors import NotFound
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
+    analysis_from_dict,
+    analysis_to_dict,
     body_from_dict,
     body_to_dict,
     evidence_from_list,
@@ -41,7 +44,10 @@ def _record_from_row(row: ReportRow) -> ReportRecord:
 
 
 def _version_from_row(row: ReportVersionRow) -> ReportVersion:
+    direction, advocacy = analysis_from_dict(row.analysis)
     return ReportVersion(
+        direction=direction,
+        advocacy=advocacy,
         id=row.id,
         report_id=row.report_id,
         number=row.number,
@@ -71,6 +77,7 @@ def _version_row(version: ReportVersion) -> ReportVersionRow:
         findings=findings_to_list(version.findings),
         evidence=evidence_to_list(version.evidence),
         quality=quality_to_dict(version.quality),
+        analysis=analysis_to_dict(version),
         markdown=version.markdown,
         profile_id=version.profile_id,
         model=version.model,
@@ -127,6 +134,20 @@ class SqlReportRepository:
             )
         ).first()
         return _version_from_row(row) if row else None
+
+    async def set_archives(
+        self, version_id: UUID, archives: Mapping[str, str], markdown: str
+    ) -> None:
+        row = await self._session.get(ReportVersionRow, version_id)
+        if row is None:
+            return
+        # A new list, so the JSON column registers the change.
+        row.evidence = [
+            {**item, "archive_url": archives.get(str(item.get("label")), item.get("archive_url"))}
+            for item in row.evidence
+        ]
+        row.markdown = markdown
+        await self._session.flush()
 
     async def list_recent(self, limit: int) -> list[ReportRecord]:
         rows = await self._session.scalars(

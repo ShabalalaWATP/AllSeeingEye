@@ -32,7 +32,7 @@ pnpm dev
 
 Open http://localhost:5173, sign in with the administrator you created, and you land on the globe.
 
-If port 8000 is already taken, start the API on another port (`--port 8001`) and tell the dev server where it is with `ASE_DEV_API_TARGET=http://127.0.0.1:8001` in `frontend/.env.local` (ignored by git). Live feeds poll from the moment the API starts; set `ASE_FEEDS_DISABLED` to a comma-separated list of source ids to leave some out.
+If port 8000 is already taken, start the API on another port (`--port 8001`) and tell the dev server where it is with `ASE_DEV_API_TARGET=http://127.0.0.1:8001` in `frontend/.env.local` (ignored by git). Live feeds poll from the moment the API starts; set `ASE_FEEDS_DISABLED` to a comma-separated list of source ids to leave some out. After each report the URLs it cites are sent to the Wayback Machine for preservation; set `ASE_ARCHIVE_ENABLED=false` to keep them on this host.
 
 ## Full stack with Docker Compose
 

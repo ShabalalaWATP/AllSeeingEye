@@ -364,6 +364,7 @@ export const report: Report = {
         grade_rationale: 'Corroborated by Al Jazeera English (40 min later)',
         country_iso: 'UA',
         flags: [],
+        archive_url: 'https://web.archive.org/web/20260905000000/https://example.org/e1',
       },
       {
         label: 'E2',
@@ -379,6 +380,7 @@ export const report: Report = {
         grade_rationale: 'State-controlled outlet, uncorroborated',
         country_iso: 'RU',
         flags: ['state_controlled'],
+        archive_url: null,
       },
     ],
     quality: { items: 2, confidence_ceiling: 'moderate' },
@@ -389,5 +391,7 @@ export const report: Report = {
     latency_ms: 8123.4,
     attempts: 1,
     created_at: '2026-09-05T01:00:00Z',
+    direction: null,
+    devils_advocacy: null,
   },
 };

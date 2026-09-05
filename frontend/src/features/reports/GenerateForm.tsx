@@ -21,6 +21,7 @@ export function GenerateForm({ templates, countries, busy, error, onSubmit }: Ge
   const [country, setCountry] = useState('');
   const [question, setQuestion] = useState('');
   const [windowHours, setWindowHours] = useState('');
+  const [advocacy, setAdvocacy] = useState(false);
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
@@ -29,6 +30,7 @@ export function GenerateForm({ templates, countries, busy, error, onSubmit }: Ge
     if (country !== '') request.country = country;
     if (question.trim() !== '') request.question = question.trim();
     if (windowHours.trim() !== '') request.window_hours = Number(windowHours);
+    if (advocacy) request.devils_advocacy = true;
     onSubmit(request);
   };
 
@@ -83,6 +85,18 @@ export function GenerateForm({ templates, countries, busy, error, onSubmit }: Ge
           maxLength={1000}
         />
       )}
+      <label className="flex items-center gap-2 text-sm text-text">
+        <input
+          type="checkbox"
+          checked={advocacy}
+          onChange={(event) => {
+            setAdvocacy(event.target.checked);
+          }}
+          className="accent-ember"
+        />
+        Devil&apos;s advocacy: a second model call attacks the top judgement and can lower its
+        confidence
+      </label>
       {template && <p className="text-sm text-muted">{template.purpose}</p>}
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>

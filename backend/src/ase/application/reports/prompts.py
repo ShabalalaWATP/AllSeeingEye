@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from ase.application.reports.templates import Template
+from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmMessage
@@ -79,6 +80,7 @@ def compose_messages(
     evidence: Sequence[EvidenceItem],
     findings: Sequence[Finding] = (),
     previous: Sequence[KeyJudgement] = (),
+    direction: Direction | None = None,
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
@@ -90,6 +92,12 @@ def compose_messages(
     ]
     if question:
         parts.append(f"Question to answer: {question}")
+    if direction is not None:
+        parts.append(
+            "Direction. Answer by EEI: write one assessment section per EEI, headed by the "
+            "EEI id and its text, and name in each gap the EEI it leaves open:"
+        )
+        parts.extend(direction.lines())
     parts.append(f"Quality of information check: {quality.describe()}")
     if quality.confidence_ceiling.value != "high":
         parts.append(

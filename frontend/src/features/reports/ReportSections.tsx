@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
-import type { EvidenceItem, Finding, ReportBody } from '@/lib/api/reports';
+import type {
+  DevilsAdvocacy,
+  Direction,
+  EvidenceItem,
+  Finding,
+  ReportBody,
+} from '@/lib/api/reports';
 import { probabilityTerm } from '@/lib/doctrine';
 import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
@@ -24,6 +30,54 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="text-base font-semibold text-text">{title}</h2>
       {children}
     </section>
+  );
+}
+
+/** What an Ask the Eye question became: the requirement it serves, broken into SIRs and EEIs. */
+export function DirectionView({ direction }: { direction: Direction | null }) {
+  if (direction === null) return null;
+  const rows = [
+    ['PIR-1', direction.pir],
+    ...direction.sirs.map((text, index) => [`SIR-${String(index + 1)}`, text]),
+    ...direction.eeis.map((text, index) => [`EEI-${String(index + 1)}`, text]),
+  ];
+  return (
+    <Section title="Direction">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+        {rows.map(([id, text]) => (
+          <div key={id} className="contents">
+            <dt className="font-mono text-xs text-muted">{id}</dt>
+            <dd>{text}</dd>
+          </div>
+        ))}
+      </dl>
+      {direction.search_terms.length > 0 && (
+        <p className="text-xs text-muted">Search terms: {direction.search_terms.join(', ')}</p>
+      )}
+    </Section>
+  );
+}
+
+/** The contrarian view of the top judgement, and what it did to the confidence rating. */
+export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) {
+  if (advocacy === null) return null;
+  const lowered = advocacy.confidence_before !== null && advocacy.confidence_after !== null;
+  return (
+    <Section title="Devil's advocacy">
+      <div className="rounded-card border border-amber-300/40 bg-surface p-3 text-sm">
+        <p>
+          <span className="mr-2 font-mono text-xs text-muted">on {advocacy.target}</span>
+          {advocacy.argument}
+          <Labels labels={advocacy.evidence} />
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          {lowered
+            ? `Confidence on ${advocacy.target} lowered from ${advocacy.confidence_before ?? ''} to ${advocacy.confidence_after ?? ''}.`
+            : 'Confidence unchanged.'}{' '}
+          {advocacy.rationale}
+        </p>
+      </div>
+    </Section>
   );
 }
 
@@ -194,6 +248,7 @@ export function EvidenceAnnex({
                 <th className="px-2 py-1">Source</th>
                 <th className="px-2 py-1">Published</th>
                 <th className="px-2 py-1">Item</th>
+                <th className="px-2 py-1">Archive</th>
               </tr>
             </thead>
             <tbody>
@@ -225,6 +280,18 @@ export function EvidenceAnnex({
                     ) : (
                       item.title
                     )}
+                  </td>
+                  <td className="px-2 py-1">
+                    {isHttpUrl(item.archive_url) ? (
+                      <a
+                        href={item.archive_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted hover:underline"
+                      >
+                        archive
+                      </a>
+                    ) : null}
                   </td>
                 </tr>
               ))}

@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from ase.application.ports.llm import LlmGateway, LlmGatewayError
 from ase.application.reports.prompts import compose_messages
 from ase.application.reports.templates import Template
+from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmProfile, LlmRequest
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
@@ -43,6 +44,7 @@ async def draft_body(
     quality: QualityOfInformation,
     evidence: Sequence[EvidenceItem],
     previous: Sequence[KeyJudgement],
+    direction: Direction | None = None,
 ) -> Draft:
     """Ask the model up to twice; the second attempt quotes the validator's findings back."""
     draft = Draft()
@@ -60,6 +62,7 @@ async def draft_body(
             evidence=evidence,
             findings=draft.findings,
             previous=previous,
+            direction=direction,
         )
         llm_request = LlmRequest(
             messages=messages,
