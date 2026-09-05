@@ -19,7 +19,10 @@ describe('RequestAccountPage', () => {
     server.use(
       http.post('/api/auth/request-account', async ({ request }) => {
         body = await request.json();
-        return Response.json({ message: 'If the address is eligible, an administrator will review the request.' }, { status: 202 });
+        return Response.json(
+          { message: 'If the address is eligible, an administrator will review the request.' },
+          { status: 202 },
+        );
       }),
     );
     const { user } = renderApp('/request-account', 'anonymous');

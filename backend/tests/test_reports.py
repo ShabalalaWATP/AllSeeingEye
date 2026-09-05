@@ -105,6 +105,8 @@ async def test_generate_read_export_and_delete(
         "intrep",
         "country_brief",
         "ask",
+        "disaster_sitrep",
+        "conflict_assessment",
     ]
 
     no_model = await client.post(
@@ -139,6 +141,8 @@ async def test_generate_read_export_and_delete(
         "question": None,
         "window_hours": 12,
         "devils_advocacy": False,
+        "hazard": None,
+        "conflict": None,
     }
     version = payload["version"]
     assert version["attempts"] == 1 and version["model"] == "llama3.1:8b"

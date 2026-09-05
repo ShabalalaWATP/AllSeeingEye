@@ -23,11 +23,13 @@ from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import Template
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
+from ase.domain.events import BoundingBox
 from ase.domain.evidence import EvidenceItem, quality_of_information
 from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
+from ase.domain.trackers import Hazard
 from ase.domain.users import User
 from ase.domain.validation import Finding, Severity
 
@@ -49,6 +51,11 @@ class Job:
     country_name: str | None
     previous: ReportVersion | None = None
     report_id: UUID | None = None
+    bbox: BoundingBox | None = None
+    countries: tuple[str, ...] = ()
+    hazard: Hazard | None = None
+    terms: tuple[str, ...] = ()
+    background: str | None = None
 
 
 @dataclass(slots=True)
@@ -101,7 +108,10 @@ class Producer:
             now=job.now,
             country_iso=job.request.country_iso,
             categories=job.request.categories,
-            terms=direction.search_terms if direction else (),
+            terms=direction.search_terms if direction else job.terms,
+            bbox=job.bbox,
+            countries=job.countries,
+            hazard=job.hazard,
         )
         quality = quality_of_information(selection.items, selection.flagged)
         header = ReportHeader(
@@ -125,6 +135,7 @@ class Producer:
             selection.items,
             earlier,
             direction=direction,
+            background=job.background,
         )
         await self._log(
             job, job.profile, f"report:{job.template.id}", draft.body is not None, draft

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
@@ -47,8 +47,14 @@ export default function ConflictPage() {
             </span>
           )}
         </div>
-        <div>
+        <div className="flex flex-wrap gap-2">
           <ShowOnGlobe country={conflict.countries[0] ?? null} />
+          <Link
+            to={`/reports?template=conflict_assessment&conflict=${conflict.id}`}
+            className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
+          >
+            Generate assessment
+          </Link>
         </div>
       </header>
       <section aria-label="Conflict events by day" className="flex flex-col gap-2">

@@ -128,7 +128,7 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Tracker service and API: `/api/trackers/disasters`, `/api/trackers/disasters/{hazard}`, `/api/trackers/conflicts`, `/api/trackers/conflicts/{id}` with cards, timelines and the events behind them
 - [x] Connectors: NHC and JTWC cyclones (positions, intensity, movement), Smithsonian weekly volcano reports, NTWC and PTWC tsunami bulletins, EMSC earthquakes, NWS severe weather, WHO Disease Outbreak News, IFRC GO events (ten sources, each tested against a captured sample)
 - [ ] Met Office UK warnings and MeteoAlarm per-country feeds (both answer but were empty or unseen at capture time, so no parser is written yet); HDX HAPI monthly conflict aggregates for the conflict detail view
-- [ ] Products: Disaster SITREP (hazard scope, optional country) and Conflict Assessment (conflict scope: bounding box, countries and keywords steer selection; most likely and most dangerous courses of action with yardstick terms)
+- [x] Products: Disaster SITREP (hazard scope, optional country) and Conflict Assessment (conflict scope: bounding box, countries and keywords steer selection, the curated summary goes to the model as background that must not be cited; most likely and most dangerous courses of action with yardstick terms); the tracker detail pages link to a prefilled generate form
 - [x] Trackers in the app: the rail entry is live; boards with activity, trend, red alerts and the latest item; detail pages with a fourteen-day timeline, the event list and "show on globe" (the "generate" buttons arrive with the tracker templates)
 - [ ] Globe upgrades the trackers need: cyclone and volcano icons, clustering or hex density at low zoom, a time slider over the retained window
 

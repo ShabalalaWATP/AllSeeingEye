@@ -81,6 +81,7 @@ def compose_messages(
     findings: Sequence[Finding] = (),
     previous: Sequence[KeyJudgement] = (),
     direction: Direction | None = None,
+    background: str | None = None,
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
@@ -92,6 +93,11 @@ def compose_messages(
     ]
     if question:
         parts.append(f"Question to answer: {question}")
+    if background:
+        parts.append(
+            "Background from the curated tracker (context, not evidence; never cite it): "
+            f"{background}"
+        )
     if direction is not None:
         parts.append(
             "Direction. Answer by EEI: write one assessment section per EEI, headed by the "

@@ -983,6 +983,151 @@
         }
       }
     },
+    "/api/trackers/disasters": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Disaster Board",
+        "operationId": "disaster_board_api_trackers_disasters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HazardBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/disasters/{hazard}": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Disaster Detail",
+        "operationId": "disaster_detail_api_trackers_disasters__hazard__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "hazard",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Hazard"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HazardDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trackers/conflicts": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Conflict Board",
+        "operationId": "conflict_board_api_trackers_conflicts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/conflicts/{conflict_id}": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Conflict Detail",
+        "operationId": "conflict_detail_api_trackers_conflicts__conflict_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conflict_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conflict Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/account-requests": {
       "get": {
         "tags": [
@@ -1741,6 +1886,41 @@
         ],
         "title": "AccountRequestsOut"
       },
+      "ActivityOut": {
+        "properties": {
+          "last_24h": {
+            "type": "integer",
+            "title": "Last 24H"
+          },
+          "last_7d": {
+            "type": "integer",
+            "title": "Last 7D"
+          },
+          "previous_7d": {
+            "type": "integer",
+            "title": "Previous 7D"
+          },
+          "trend": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "last_24h",
+          "last_7d",
+          "previous_7d",
+          "trend"
+        ],
+        "title": "ActivityOut"
+      },
       "ApproveIn": {
         "properties": {
           "role": {
@@ -1958,6 +2138,170 @@
         ],
         "title": "CategoryStatsOut"
       },
+      "ConflictBoardOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictCardOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ConflictBoardOut"
+      },
+      "ConflictCardOut": {
+        "properties": {
+          "conflict": {
+            "$ref": "#/components/schemas/ConflictOut"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/ActivityOut"
+          },
+          "reporting_7d": {
+            "type": "integer",
+            "title": "Reporting 7D"
+          },
+          "fatalities_7d": {
+            "type": "integer",
+            "title": "Fatalities 7D"
+          },
+          "max_severity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Severity"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "top": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "conflict",
+          "activity",
+          "reporting_7d",
+          "fatalities_7d",
+          "max_severity",
+          "latest",
+          "top"
+        ],
+        "title": "ConflictCardOut"
+      },
+      "ConflictDetailOut": {
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/ConflictCardOut"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/DayBucketOut"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card",
+          "timeline",
+          "events"
+        ],
+        "title": "ConflictDetailOut"
+      },
+      "ConflictOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Bbox"
+          },
+          "belligerents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Belligerents"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "countries",
+          "bbox",
+          "belligerents",
+          "keywords",
+          "summary"
+        ],
+        "title": "ConflictOut"
+      },
       "CountriesOut": {
         "properties": {
           "items": {
@@ -2032,6 +2376,37 @@
           "centroid"
         ],
         "title": "CountryOut"
+      },
+      "DayBucketOut": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "max_severity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "count",
+          "max_severity"
+        ],
+        "title": "DayBucketOut"
       },
       "EventOut": {
         "properties": {
@@ -2278,6 +2653,133 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "Hazard": {
+        "type": "string",
+        "enum": [
+          "earthquake",
+          "tropical_cyclone",
+          "flood",
+          "volcano",
+          "wildfire",
+          "drought",
+          "tsunami",
+          "severe_weather",
+          "other"
+        ],
+        "title": "Hazard"
+      },
+      "HazardBoardOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HazardCardOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "HazardBoardOut"
+      },
+      "HazardCardOut": {
+        "properties": {
+          "hazard": {
+            "$ref": "#/components/schemas/Hazard"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/ActivityOut"
+          },
+          "red_alerts": {
+            "type": "integer",
+            "title": "Red Alerts"
+          },
+          "max_severity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Severity"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "top": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "hazard",
+          "title",
+          "activity",
+          "red_alerts",
+          "max_severity",
+          "countries",
+          "latest",
+          "top"
+        ],
+        "title": "HazardCardOut"
+      },
+      "HazardDetailOut": {
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/HazardCardOut"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/DayBucketOut"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card",
+          "timeline",
+          "events"
+        ],
+        "title": "HazardDetailOut"
       },
       "HealthOut": {
         "properties": {
@@ -2786,6 +3288,30 @@
             "type": "boolean",
             "title": "Devils Advocacy",
             "default": false
+          },
+          "hazard": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hazard"
+          },
+          "conflict": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conflict"
           }
         },
         "type": "object",
@@ -3380,6 +3906,14 @@
             "type": "boolean",
             "title": "Needs Question"
           },
+          "needs_conflict": {
+            "type": "boolean",
+            "title": "Needs Conflict"
+          },
+          "needs_hazard": {
+            "type": "boolean",
+            "title": "Needs Hazard"
+          },
           "window_hours": {
             "type": "integer",
             "title": "Window Hours"
@@ -3392,6 +3926,8 @@
           "purpose",
           "needs_country",
           "needs_question",
+          "needs_conflict",
+          "needs_hazard",
           "window_hours"
         ],
         "title": "TemplateOut"

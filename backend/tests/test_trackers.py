@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-
 import pytest
 from httpx import AsyncClient
 
 from ase.adapters.geo.conflicts import ConflictIndex, _conflict
 from ase.container import Container
-from ase.domain.events import BoundingBox, Category, Event, Point
+from ase.domain.events import Category
 from ase.domain.trackers import (
-    Conflict,
     Hazard,
     activity,
     conflict_card,
@@ -22,102 +19,7 @@ from ase.domain.trackers import (
 from ase.domain.users import User
 from feeds_helpers import NOW, make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
-
-UKRAINE = Conflict(
-    id="ukraine",
-    name="Russia's war in Ukraine",
-    status="war",
-    countries=("UA",),
-    bbox=BoundingBox(west=22.0, south=44.0, east=41.0, north=52.5),
-    keywords=("Kharkiv",),
-)
-
-
-def conflict_events(now: datetime = NOW) -> list[Event]:
-    return [
-        make_event(
-            "k1",
-            published_at=now,
-            source_id="gdelt",
-            category=Category.CONFLICT,
-            subtype="battle",
-            title="Shelling in Kharkiv",
-            point=Point(36.2, 49.9),
-            country_iso="UA",
-            severity=0.7,
-        ),
-        make_event(
-            "k2",
-            source_id="gdelt",
-            category=Category.CONFLICT,
-            subtype="strike",
-            title="Drone strike near Sumy",
-            point=Point(34.8, 50.9),
-            country_iso="UA",
-            published_at=now - timedelta(days=3),
-            severity=0.9,
-        ).with_changes(attributes={"fatalities": 4}),
-        make_event(
-            "k3",
-            source_id="gdelt",
-            category=Category.CONFLICT,
-            subtype="battle",
-            title="Last week's clash",
-            point=Point(37.0, 48.5),
-            country_iso="UA",
-            published_at=now - timedelta(days=10),
-        ),
-        make_event(
-            "n1",
-            published_at=now,
-            source_id="bbc",
-            category=Category.NEWS,
-            title="Talks in Kyiv",
-            point=None,
-            country_iso="UA",
-        ),
-        make_event(
-            "far",
-            published_at=now,
-            source_id="gdelt",
-            category=Category.CONFLICT,
-            title="Clash in Sudan",
-            point=Point(32.5, 15.6),
-            country_iso="SD",
-        ),
-    ]
-
-
-def disaster_events(now: datetime = NOW) -> list[Event]:
-    return [
-        make_event(
-            "q1",
-            subtype="earthquake",
-            title="M6.1 quake",
-            severity=0.9,
-            country_iso="JP",
-            published_at=now,
-        ),
-        make_event(
-            "q2",
-            subtype="earthquake",
-            title="M4.5 quake",
-            severity=0.3,
-            country_iso="JP",
-            published_at=now - timedelta(days=9),
-        ),
-        make_event(
-            "c1",
-            subtype="tropical_cyclone",
-            title="Hurricane Marie",
-            severity=0.6,
-            published_at=now,
-        ),
-        make_event(
-            "v1", subtype="volcanoes", title="Ambae erupts", country_iso="VU", published_at=now
-        ).with_changes(tags=frozenset({"volcanoes", "gdacs_red"})),
-        make_event("x1", subtype="landslides", title="Landslide", published_at=now),
-    ]
+from tracker_helpers import UKRAINE, conflict_events, disaster_events
 
 
 def test_activity_timeline_and_hazard_folding() -> None:

@@ -7,18 +7,37 @@ import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { ReportRequest, ReportTemplate } from '@/lib/api/reports';
 
+export interface Choice {
+  id: string;
+  label: string;
+}
+
 export interface GenerateFormProps {
   templates: readonly ReportTemplate[];
   countries: readonly Country[];
+  conflicts: readonly Choice[];
+  hazards: readonly Choice[];
+  initial?: Partial<Record<'template' | 'country' | 'conflict' | 'hazard', string>>;
   busy: boolean;
   error: string | null;
   onSubmit: (request: ReportRequest) => void;
 }
 
-/** Choose a product, a scope and (for Ask the Eye) a question. */
-export function GenerateForm({ templates, countries, busy, error, onSubmit }: GenerateFormProps) {
-  const [templateId, setTemplateId] = useState(templates[0]?.id ?? 'intsum');
-  const [country, setCountry] = useState('');
+/** Choose a product and its scope: a nation, a question, a curated conflict or a hazard. */
+export function GenerateForm({
+  templates,
+  countries,
+  conflicts,
+  hazards,
+  initial = {},
+  busy,
+  error,
+  onSubmit,
+}: GenerateFormProps) {
+  const [templateId, setTemplateId] = useState(initial.template ?? templates[0]?.id ?? 'intsum');
+  const [country, setCountry] = useState(initial.country ?? '');
+  const [conflict, setConflict] = useState(initial.conflict ?? '');
+  const [hazard, setHazard] = useState(initial.hazard ?? '');
   const [question, setQuestion] = useState('');
   const [windowHours, setWindowHours] = useState('');
   const [advocacy, setAdvocacy] = useState(false);
@@ -28,6 +47,8 @@ export function GenerateForm({ templates, countries, busy, error, onSubmit }: Ge
     event.preventDefault();
     const request: ReportRequest = { template: templateId };
     if (country !== '') request.country = country;
+    if (template?.needs_conflict && conflict !== '') request.conflict = conflict;
+    if (template?.needs_hazard && hazard !== '') request.hazard = hazard;
     if (question.trim() !== '') request.question = question.trim();
     if (windowHours.trim() !== '') request.window_hours = Number(windowHours);
     if (advocacy) request.devils_advocacy = true;
@@ -49,6 +70,33 @@ export function GenerateForm({ templates, countries, busy, error, onSubmit }: Ge
           }}
           options={templates.map((item) => ({ value: item.id, label: item.title }))}
         />
+        {template?.needs_conflict ? (
+          <SelectField
+            label="Conflict"
+            hint="From the conflict tracker."
+            value={conflict}
+            onChange={(event) => {
+              setConflict(event.target.value);
+            }}
+            options={[
+              { value: '', label: 'Choose a conflict' },
+              ...conflicts.map((item) => ({ value: item.id, label: item.label })),
+            ]}
+          />
+        ) : template?.needs_hazard ? (
+          <SelectField
+            label="Hazard"
+            hint="From the disaster tracker."
+            value={hazard}
+            onChange={(event) => {
+              setHazard(event.target.value);
+            }}
+            options={[
+              { value: '', label: 'Choose a hazard' },
+              ...hazards.map((item) => ({ value: item.id, label: item.label })),
+            ]}
+          />
+        ) : null}
         <SelectField
           label="Nation"
           hint={template?.needs_country ? 'Required for this product.' : 'Optional scope.'}

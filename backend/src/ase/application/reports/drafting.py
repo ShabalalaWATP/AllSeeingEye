@@ -45,6 +45,7 @@ async def draft_body(
     evidence: Sequence[EvidenceItem],
     previous: Sequence[KeyJudgement],
     direction: Direction | None = None,
+    background: str | None = None,
 ) -> Draft:
     """Ask the model up to twice; the second attempt quotes the validator's findings back."""
     draft = Draft()
@@ -63,6 +64,7 @@ async def draft_body(
             findings=draft.findings,
             previous=previous,
             direction=direction,
+            background=background,
         )
         llm_request = LlmRequest(
             messages=messages,

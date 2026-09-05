@@ -31,6 +31,8 @@ class Template:
     role: LlmRole = LlmRole.ASSESSMENT
     needs_question: bool = False
     needs_country: bool = False
+    needs_conflict: bool = False
+    needs_hazard: bool = False
 
 
 ALL = frozenset[Category]()
@@ -102,6 +104,58 @@ TEMPLATES: dict[str, Template] = {
         strategy=EvidenceStrategy(ALL, window_hours=72, max_items=40, per_source_cap=8),
         token_budget=6_000,
         needs_question=True,
+    ),
+    "disaster_sitrep": Template(
+        id="disaster_sitrep",
+        title="Disaster SITREP",
+        purpose=(
+            "One hazard's current picture: what the instruments and agencies report, who is "
+            "affected, and what the response is."
+        ),
+        sections=(
+            "Event facts: what the instrument and agency feeds report (magnitude, category, "
+            "alert level, location, timing), as reporting with grades and citations.",
+            "Impact and exposure: populations and places affected as reported (exposure "
+            "estimates, warnings issued), cited.",
+            "Response: appeals, agency actions and outbreak notices in the window, cited.",
+            "Key judgements: one to three on trajectory and needs, each with one yardstick "
+            "term and a confidence rating.",
+            "Gaps: what is not yet known; next-update criteria as indicators.",
+            "Sourcing statement.",
+        ),
+        strategy=EvidenceStrategy(
+            frozenset({Category.DISASTER, Category.HUMANITARIAN}),
+            window_hours=72,
+            max_items=40,
+            per_source_cap=10,
+        ),
+        token_budget=5_000,
+        needs_hazard=True,
+    ),
+    "conflict_assessment": Template(
+        id="conflict_assessment",
+        title="Conflict assessment",
+        purpose=(
+            "One curated conflict: recent activity, assessed courses of action, warning "
+            "indicators and the humanitarian picture."
+        ),
+        sections=(
+            "Belligerents and objectives: who is fighting and what each side is trying to "
+            "achieve, from the evidence and the curated background.",
+            "Recent activity by front or theme: reporting with grades and citations, with "
+            "counts where the evidence gives them.",
+            "Assessed courses of action: the most likely and the most dangerous course over "
+            "the next two weeks as key judgements, each with one yardstick term and a "
+            "confidence rating.",
+            "Indicators and warning: the watch condition and the indicators that would "
+            "confirm or overturn the assessed courses.",
+            "Humanitarian picture: displacement, access and outbreaks as reported, cited.",
+            "Gaps and collection recommendations.",
+            "Sourcing statement.",
+        ),
+        strategy=EvidenceStrategy(ALL, window_hours=168, max_items=50, per_source_cap=8),
+        token_budget=7_000,
+        needs_conflict=True,
     ),
 }
 

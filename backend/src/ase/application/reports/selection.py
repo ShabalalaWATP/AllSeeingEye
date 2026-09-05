@@ -9,9 +9,10 @@ from datetime import datetime, timedelta
 
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.reports.templates import EvidenceStrategy
-from ase.domain.events import Category, Credibility, Event, Reliability
+from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
 from ase.domain.evidence import EvidenceItem, injection_flags
 from ase.domain.grading import SourceProfile
+from ase.domain.trackers import Hazard, hazard_of
 
 CREDIBILITY_WEIGHT = {
     Credibility.CONFIRMED: 1.0,
@@ -58,6 +59,32 @@ def term_matches(event: Event, terms: Sequence[str]) -> int:
     return sum(1 for term in terms if term in text)
 
 
+def _pool(
+    store: EventStore,
+    categories: frozenset[Category],
+    since: datetime,
+    country_iso: str | None,
+    bbox: BoundingBox | None,
+    countries: Sequence[str],
+) -> list[Event]:
+    """One query for the box or country, one per extra country, merged by event id."""
+    queries = [
+        EventQuery(
+            categories=categories, country_iso=country_iso, bbox=bbox, since=since, limit=MAX_POOL
+        )
+    ]
+    queries.extend(
+        EventQuery(categories=categories, country_iso=iso, since=since, limit=MAX_POOL)
+        for iso in countries
+        if iso != country_iso
+    )
+    seen: dict[str, Event] = {}
+    for query in queries:
+        for event in store.query(query):
+            seen.setdefault(event.id, event)
+    return list(seen.values())
+
+
 def select_evidence(
     store: EventStore,
     profiles: Mapping[str, SourceProfile],
@@ -67,22 +94,22 @@ def select_evidence(
     country_iso: str | None = None,
     categories: Sequence[Category] = (),
     terms: Sequence[str] = (),
+    bbox: BoundingBox | None = None,
+    countries: Sequence[str] = (),
+    hazard: Hazard | None = None,
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
-    Search terms (from the direction call) put matching items ahead of the rest and boost
-    them by the number of terms matched; unmatched items only fill the remaining places.
+    Search terms (from the direction call or a conflict's keywords) put matching items
+    ahead of the rest and boost them by the number of terms matched; unmatched items only
+    fill the remaining places. A bounding box and extra countries widen the pool (a
+    conflict area); a hazard narrows it to one kind of disaster.
     """
     window = timedelta(hours=strategy.window_hours)
     wanted = frozenset(categories) or strategy.categories
-    pool = store.query(
-        EventQuery(
-            categories=wanted,
-            country_iso=country_iso,
-            since=now - window,
-            limit=MAX_POOL,
-        )
-    )
+    pool = _pool(store, wanted, now - window, country_iso, bbox, countries)
+    if hazard is not None:
+        pool = [event for event in pool if hazard_of(event) is hazard]
     lowered = tuple(term.lower().strip() for term in terms if term.strip())
 
     def rank(event: Event) -> tuple[int, float]:

@@ -13,6 +13,8 @@ export const templateSchema = z.object({
   purpose: z.string(),
   needs_country: z.boolean(),
   needs_question: z.boolean(),
+  needs_conflict: z.boolean(),
+  needs_hazard: z.boolean(),
   window_hours: z.number().int(),
 });
 export type ReportTemplate = z.infer<typeof templateSchema>;
@@ -141,6 +143,8 @@ export interface ReportRequest {
   question?: string;
   window_hours?: number;
   devils_advocacy?: boolean;
+  hazard?: string;
+  conflict?: string;
 }
 
 export async function fetchTemplates(): Promise<ReportTemplate[]> {

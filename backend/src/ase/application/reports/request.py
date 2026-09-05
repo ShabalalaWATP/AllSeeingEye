@@ -19,6 +19,8 @@ class ReportRequest:
     window_hours: int | None = None
     profile_id: UUID | None = None
     devils_advocacy: bool = False
+    hazard: str | None = None
+    conflict_id: str | None = None
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
@@ -31,4 +33,6 @@ class ReportRequest:
             question=scope.get("question") or None,
             window_hours=int(window) if window else None,
             devils_advocacy=bool(scope.get("devils_advocacy", False)),
+            hazard=scope.get("hazard") or None,
+            conflict_id=scope.get("conflict") or None,
         )

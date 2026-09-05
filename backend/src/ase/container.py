@@ -319,6 +319,7 @@ class Container:
             store=self.store,
             source_profiles=self.source_profiles,
             countries=self.countries,
+            conflicts=self.conflicts,
             llm_profiles=r.llm_profiles,
             usage=r.llm_usage,
             cipher=self.cipher,

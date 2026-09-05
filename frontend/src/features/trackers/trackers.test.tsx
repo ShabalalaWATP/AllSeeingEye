@@ -1,8 +1,11 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { renderApp } from '@/test/render';
 import { useEventsStore } from '@/stores/events';
+import { report } from '@/test/fixtures';
+import { renderApp } from '@/test/render';
+import { server } from '@/test/server';
 
 describe('trackers', () => {
   it('lists conflicts and hazards with their activity', async () => {
@@ -56,5 +59,47 @@ describe('trackers', () => {
   it('shows the error for an unknown conflict', async () => {
     renderApp('/trackers/conflicts/nope', 'user');
     expect(await screen.findByText('No such conflict', {}, { timeout: 5000 })).toBeInTheDocument();
+  });
+});
+
+describe('tracker products', () => {
+  it('links a conflict to a prefilled assessment form that posts the conflict scope', async () => {
+    let body: Record<string, unknown> | null = null;
+    server.use(
+      http.post('/api/reports', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(report, { status: 201 });
+      }),
+    );
+    const { user } = renderApp('/trackers/conflicts/ukraine', 'user');
+    const generate = await screen.findByRole(
+      'link',
+      { name: 'Generate assessment' },
+      { timeout: 5000 },
+    );
+    expect(generate).toHaveAttribute(
+      'href',
+      '/reports?template=conflict_assessment&conflict=ukraine',
+    );
+    await user.click(generate);
+    const form = await screen.findByRole('form', { name: 'Generate a report' }, { timeout: 5000 });
+    expect(within(form).getByLabelText('Product')).toHaveValue('conflict_assessment');
+    await waitFor(() => {
+      expect(within(form).getByLabelText('Conflict')).toHaveValue('ukraine');
+    });
+    await user.click(within(form).getByRole('button', { name: 'Generate' }));
+    await waitFor(() => {
+      expect(body).toEqual({ template: 'conflict_assessment', conflict: 'ukraine' });
+    });
+  });
+
+  it('offers a SITREP for a hazard', async () => {
+    renderApp('/trackers/disasters/earthquake', 'user');
+    const generate = await screen.findByRole(
+      'link',
+      { name: 'Generate SITREP' },
+      { timeout: 5000 },
+    );
+    expect(generate).toHaveAttribute('href', '/reports?template=disaster_sitrep&hazard=earthquake');
   });
 });

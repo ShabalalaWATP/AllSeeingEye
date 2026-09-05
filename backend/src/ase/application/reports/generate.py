@@ -23,11 +23,11 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.reports import ReportRepository
+from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template, template_for
 from ase.domain.audit import AuditAction
-from ase.domain.countries import Country
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
@@ -38,6 +38,7 @@ from ase.domain.errors import (
 from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 from ase.domain.users import User
 
 __all__ = ["GenerateReportUseCase", "ReportRequest"]
@@ -50,6 +51,7 @@ class GenerateReportUseCase:
         store: EventStore,
         source_profiles: Mapping[str, SourceProfile],
         countries: CountryDirectory,
+        conflicts: ConflictDirectory,
         llm_profiles: LlmProfileRepository,
         usage: LlmUsageRepository,
         cipher: SecretCipher,
@@ -69,6 +71,7 @@ class GenerateReportUseCase:
             usage=usage,
         )
         self._countries = countries
+        self._conflicts = conflicts
         self._llm_profiles = llm_profiles
         self._cipher = cipher
         self._reports = reports
@@ -156,6 +159,8 @@ class GenerateReportUseCase:
         report_id: UUID | None = None,
     ) -> Job:
         country = self._countries.get(request.country_iso) if request.country_iso else None
+        conflict = self._conflict(request)
+        hazard = self._hazard(request)
         return Job(
             actor=actor,
             template=template,
@@ -163,11 +168,16 @@ class GenerateReportUseCase:
             profile=profile,
             now=now,
             window=self._window(request, template),
-            title=self._title(template, request, country),
+            title=self._title(template, request, country, conflict, hazard),
             scope=self._scope(request, template),
             country_name=country.name if country else None,
             previous=previous,
             report_id=report_id,
+            bbox=conflict.bbox if conflict else None,
+            countries=conflict.countries if conflict else (),
+            hazard=hazard,
+            terms=conflict.keywords if conflict else (),
+            background=self._background(conflict),
         )
 
     async def _finish(
@@ -187,8 +197,7 @@ class GenerateReportUseCase:
         )
         await self._uow.commit()
 
-    @staticmethod
-    def _template(request: ReportRequest) -> Template:
+    def _template(self, request: ReportRequest) -> Template:
         try:
             template = template_for(request.template_id)
         except ValueError as exc:
@@ -197,7 +206,21 @@ class GenerateReportUseCase:
             raise InvalidRequest("This template needs a country.")
         if template.needs_question and not (request.question or "").strip():
             raise InvalidRequest("This template needs a question.")
+        if template.needs_conflict and self._conflict(request) is None:
+            raise InvalidRequest("This template needs a conflict from the tracker list.")
+        if template.needs_hazard and self._hazard(request) is None:
+            raise InvalidRequest("This template needs a hazard from the disaster tracker.")
         return template
+
+    def _conflict(self, request: ReportRequest) -> Conflict | None:
+        return self._conflicts.get(request.conflict_id) if request.conflict_id else None
+
+    @staticmethod
+    def _hazard(request: ReportRequest) -> Hazard | None:
+        try:
+            return Hazard(request.hazard) if request.hazard else None
+        except ValueError:
+            return None
 
     @staticmethod
     def _window(request: ReportRequest, template: Template) -> timedelta:
@@ -222,12 +245,31 @@ class GenerateReportUseCase:
         return profile
 
     @staticmethod
-    def _title(template: Template, request: ReportRequest, country: Country | None) -> str:
+    def _title(
+        template: Template,
+        request: ReportRequest,
+        country: Any,
+        conflict: Conflict | None,
+        hazard: Hazard | None,
+    ) -> str:
+        if conflict is not None:
+            return f"{template.title}: {conflict.name}"
+        place = country.name if country else request.country_iso
+        if hazard is not None:
+            where = f" in {place}" if place else ""
+            return f"{template.title}: {HAZARD_TITLES[hazard].lower()}{where}"
         if request.question:
             return f"{template.title}: {request.question.strip()[:120]}"
-        if request.country_iso:
-            return f"{template.title}: {country.name if country else request.country_iso}"
+        if place:
+            return f"{template.title}: {place}"
         return f"{template.title}: global"
+
+    @staticmethod
+    def _background(conflict: Conflict | None) -> str | None:
+        if conflict is None:
+            return None
+        sides = ", ".join(conflict.belligerents) or "not listed"
+        return f"{conflict.name} ({conflict.status}). {conflict.summary} Belligerents: {sides}."
 
     def _scope(self, request: ReportRequest, template: Template) -> dict[str, Any]:
         return {
@@ -236,4 +278,6 @@ class GenerateReportUseCase:
             "question": request.question,
             "window_hours": int(self._window(request, template).total_seconds() // 3600),
             "devils_advocacy": request.devils_advocacy,
+            "hazard": request.hazard,
+            "conflict": request.conflict_id,
         }

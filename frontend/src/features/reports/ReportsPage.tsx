@@ -1,10 +1,11 @@
 import { useCallback, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import { fetchReports, fetchTemplates, generateReport } from '@/lib/api/reports';
+import { fetchConflictBoard, fetchDisasterBoard } from '@/lib/api/trackers';
 import type { ReportRequest } from '@/lib/api/reports';
 import { STATUS_LABELS } from '@/lib/doctrine';
 import { formatUtc } from '@/lib/format';
@@ -34,8 +35,16 @@ export function StatusBadge({ status }: { status: string }) {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const reports = useResource(fetchReports);
   const templates = useResource(fetchTemplates);
+  const conflicts = useResource(fetchConflictBoard);
+  const hazards = useResource(fetchDisasterBoard);
+  const initial = Object.fromEntries(
+    ['template', 'country', 'conflict', 'hazard']
+      .map((key) => [key, params.get(key)])
+      .filter((entry): entry is [string, string] => entry[1] !== null),
+  );
   const countries = useCountriesStore((state) => state.items);
   const loadCountries = useCountriesStore((state) => state.load);
   useEffect(() => {
@@ -63,6 +72,12 @@ export default function ReportsPage() {
         <GenerateForm
           templates={templates.data}
           countries={countries}
+          conflicts={(conflicts.data ?? []).map((card) => ({
+            id: card.conflict.id,
+            label: card.conflict.name,
+          }))}
+          hazards={(hazards.data ?? []).map((card) => ({ id: card.hazard, label: card.title }))}
+          initial={initial}
           busy={generate.busy}
           error={generate.error === null ? null : describeError(generate.error)}
           onSubmit={(request) => void generate.run(request)}

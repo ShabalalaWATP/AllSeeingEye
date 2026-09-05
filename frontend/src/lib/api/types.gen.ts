@@ -363,6 +363,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trackers/disasters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Disaster Board */
+        get: operations["disaster_board_api_trackers_disasters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/disasters/{hazard}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Disaster Detail */
+        get: operations["disaster_detail_api_trackers_disasters__hazard__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/conflicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conflict Board */
+        get: operations["conflict_board_api_trackers_conflicts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/conflicts/{conflict_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conflict Detail */
+        get: operations["conflict_detail_api_trackers_conflicts__conflict_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/account-requests": {
         parameters: {
             query?: never;
@@ -615,6 +683,17 @@ export interface components {
             /** Items */
             items: components["schemas"]["AccountRequestOut"][];
         };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Last 24H */
+            last_24h: number;
+            /** Last 7D */
+            last_7d: number;
+            /** Previous 7D */
+            previous_7d: number;
+            /** Trend */
+            trend: number | null;
+        };
         /** ApproveIn */
         ApproveIn: {
             /** @default user */
@@ -685,6 +764,51 @@ export interface components {
             /** Newest */
             newest: string | null;
         };
+        /** ConflictBoardOut */
+        ConflictBoardOut: {
+            /** Items */
+            items: components["schemas"]["ConflictCardOut"][];
+        };
+        /** ConflictCardOut */
+        ConflictCardOut: {
+            conflict: components["schemas"]["ConflictOut"];
+            activity: components["schemas"]["ActivityOut"];
+            /** Reporting 7D */
+            reporting_7d: number;
+            /** Fatalities 7D */
+            fatalities_7d: number;
+            /** Max Severity */
+            max_severity: number | null;
+            latest: components["schemas"]["EventOut"] | null;
+            top: components["schemas"]["EventOut"] | null;
+        };
+        /** ConflictDetailOut */
+        ConflictDetailOut: {
+            card: components["schemas"]["ConflictCardOut"];
+            /** Timeline */
+            timeline: components["schemas"]["DayBucketOut"][];
+            /** Events */
+            events: components["schemas"]["EventOut"][];
+        };
+        /** ConflictOut */
+        ConflictOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Countries */
+            countries: string[];
+            /** Bbox */
+            bbox: number[];
+            /** Belligerents */
+            belligerents: string[];
+            /** Keywords */
+            keywords: string[];
+            /** Summary */
+            summary: string;
+        };
         /** CountriesOut */
         CountriesOut: {
             /** Items */
@@ -710,6 +834,18 @@ export interface components {
                 number,
                 number
             ];
+        };
+        /** DayBucketOut */
+        DayBucketOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Count */
+            count: number;
+            /** Max Severity */
+            max_severity: number | null;
         };
         /** EventOut */
         EventOut: {
@@ -786,6 +922,39 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * Hazard
+         * @enum {string}
+         */
+        Hazard: "earthquake" | "tropical_cyclone" | "flood" | "volcano" | "wildfire" | "drought" | "tsunami" | "severe_weather" | "other";
+        /** HazardBoardOut */
+        HazardBoardOut: {
+            /** Items */
+            items: components["schemas"]["HazardCardOut"][];
+        };
+        /** HazardCardOut */
+        HazardCardOut: {
+            hazard: components["schemas"]["Hazard"];
+            /** Title */
+            title: string;
+            activity: components["schemas"]["ActivityOut"];
+            /** Red Alerts */
+            red_alerts: number;
+            /** Max Severity */
+            max_severity: number | null;
+            /** Countries */
+            countries: string[];
+            latest: components["schemas"]["EventOut"] | null;
+            top: components["schemas"]["EventOut"] | null;
+        };
+        /** HazardDetailOut */
+        HazardDetailOut: {
+            card: components["schemas"]["HazardCardOut"];
+            /** Timeline */
+            timeline: components["schemas"]["DayBucketOut"][];
+            /** Events */
+            events: components["schemas"]["EventOut"][];
         };
         /** HealthOut */
         HealthOut: {
@@ -971,6 +1140,10 @@ export interface components {
              * @default false
              */
             devils_advocacy: boolean;
+            /** Hazard */
+            hazard?: string | null;
+            /** Conflict */
+            conflict?: string | null;
         };
         /** ReportOut */
         ReportOut: {
@@ -1201,6 +1374,10 @@ export interface components {
             needs_country: boolean;
             /** Needs Question */
             needs_question: boolean;
+            /** Needs Conflict */
+            needs_conflict: boolean;
+            /** Needs Hazard */
+            needs_hazard: boolean;
             /** Window Hours */
             window_hours: number;
         };
@@ -1892,6 +2069,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disaster_board_api_trackers_disasters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HazardBoardOut"];
+                };
+            };
+        };
+    };
+    disaster_detail_api_trackers_disasters__hazard__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hazard: components["schemas"]["Hazard"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HazardDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conflict_board_api_trackers_conflicts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConflictBoardOut"];
+                };
+            };
+        };
+    };
+    conflict_detail_api_trackers_conflicts__conflict_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conflict_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConflictDetailOut"];
                 };
             };
             /** @description Validation Error */

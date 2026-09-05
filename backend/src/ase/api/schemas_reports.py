@@ -32,6 +32,8 @@ class ReportCreateIn(BaseModel):
     window_hours: int | None = Field(default=None, ge=1, le=24 * 14)
     profile_id: UUID | None = None
     devils_advocacy: bool = False
+    hazard: str | None = Field(default=None, max_length=32)
+    conflict: str | None = Field(default=None, max_length=64)
 
     def to_request(self) -> ReportRequest:
         return ReportRequest(
@@ -42,6 +44,8 @@ class ReportCreateIn(BaseModel):
             window_hours=self.window_hours,
             profile_id=self.profile_id,
             devils_advocacy=self.devils_advocacy,
+            hazard=self.hazard.strip().lower() if self.hazard else None,
+            conflict_id=self.conflict.strip().lower() if self.conflict else None,
         )
 
 
@@ -51,6 +55,8 @@ class TemplateOut(BaseModel):
     purpose: str
     needs_country: bool
     needs_question: bool
+    needs_conflict: bool
+    needs_hazard: bool
     window_hours: int
 
     @classmethod
@@ -61,6 +67,8 @@ class TemplateOut(BaseModel):
             purpose=template.purpose,
             needs_country=template.needs_country,
             needs_question=template.needs_question,
+            needs_conflict=template.needs_conflict,
+            needs_hazard=template.needs_hazard,
             window_hours=template.strategy.window_hours,
         )
 
