@@ -102,6 +102,7 @@ from ase.application.trackers.aviation import (
     background,
 )
 from ase.application.trackers.boards import TrackerService
+from ase.application.trackers.modules import ModuleService, cyber_summary, maritime_summary
 from ase.domain.aviation import JamMap
 from ase.domain.report_records import ReportVersion
 from ase.infrastructure.clock import SystemClock
@@ -341,7 +342,11 @@ class Container:
             source_profiles=self.source_profiles,
             countries=self.countries,
             conflicts=self.conflicts,
-            backgrounds={"aviation_activity": lambda: self.aviation_background(session)},
+            backgrounds={
+                "aviation_activity": lambda: self.aviation_background(session),
+                "maritime_activity": self._maritime_background,
+                "cyber_summary": self._cyber_background,
+            },
             llm_profiles=r.llm_profiles,
             usage=r.llm_usage,
             cipher=self.cipher,
@@ -357,8 +362,17 @@ class Container:
     def trackers(self) -> TrackerService:
         return TrackerService(self.store, self.conflicts, self.clock)
 
+    def modules(self) -> ModuleService:
+        return ModuleService(self.store, self.clock)
+
     def aviation(self) -> AviationService:
         return AviationService(self.store, self.jam, self.clock, self.watch_areas)
+
+    async def _maritime_background(self) -> str:
+        return maritime_summary(self.modules().maritime_board())
+
+    async def _cyber_background(self) -> str:
+        return cyber_summary(self.modules().cyber_board())
 
     async def aviation_background(self, session: AsyncSession) -> str:
         """The aviation board as a paragraph for the aviation report's background."""

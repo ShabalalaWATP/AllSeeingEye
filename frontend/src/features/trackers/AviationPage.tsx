@@ -108,7 +108,10 @@ export default function AviationPage() {
           <Stat label="LADD" value={data.ladd} />
           <Stat label="PIA" value={data.pia} />
           <Stat label="Emergencies" value={data.emergencies.length} />
-          <Stat label="Jam cells" value={`${String(data.jam_red)} red, ${String(data.jam_amber)} amber`} />
+          <Stat
+            label="Jam cells"
+            value={`${String(data.jam_red)} red, ${String(data.jam_amber)} amber`}
+          />
         </div>
         {data.jam_updated_at !== null && (
           <p className="font-mono text-xs text-muted">

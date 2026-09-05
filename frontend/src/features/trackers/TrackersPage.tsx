@@ -9,6 +9,29 @@ import { useResource } from '@/lib/hooks/useResource';
 
 import { ActivityCells } from './TrackerParts';
 
+const MODULES = [
+  {
+    to: '/trackers/aviation',
+    title: 'Aviation',
+    blurb: 'Military and unusual flying against baseline, emergencies, GNSS interference.',
+  },
+  {
+    to: '/trackers/maritime',
+    title: 'Maritime',
+    blurb: 'Broadcast warnings: exercises, closures, security incidents, GNSS notices.',
+  },
+  {
+    to: '/trackers/space',
+    title: 'Space',
+    blurb: 'Stations overhead, the launch schedule and the geomagnetic picture.',
+  },
+  {
+    to: '/trackers/cyber',
+    title: 'Cyber',
+    blurb: 'Outage signals, ransomware claims and newly exploited vulnerabilities.',
+  },
+];
+
 function ConflictBoard({ items }: { items: readonly ConflictCard[] }) {
   return (
     <Table caption="Conflicts">
@@ -92,14 +115,16 @@ export default function TrackersPage() {
         Boards are computed from the live store as you open them: activity now against the week
         before, the worst item and the newest, for every curated conflict and every hazard.
       </p>
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Aviation</h2>
-        <p className="text-sm text-muted">
-          <Link to="/trackers/aviation" className="text-text hover:underline">
-            Military and unusual flying against baseline, emergencies and GNSS interference
-          </Link>
-        </p>
-      </div>
+      <ul aria-label="Modules" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {MODULES.map((module) => (
+          <li key={module.to} className="rounded-card border border-line bg-surface p-3">
+            <Link to={module.to} className="font-medium text-text hover:underline">
+              {module.title}
+            </Link>
+            <p className="mt-1 text-xs text-muted">{module.blurb}</p>
+          </li>
+        ))}
+      </ul>
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Conflicts</h2>
         {conflicts.error === null ? null : (

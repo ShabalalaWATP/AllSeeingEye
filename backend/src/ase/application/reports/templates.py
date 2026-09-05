@@ -183,6 +183,56 @@ TEMPLATES: dict[str, Template] = {
         ),
         token_budget=5_000,
     ),
+    "maritime_activity": Template(
+        id="maritime_activity",
+        title="Maritime activity report",
+        purpose=(
+            "Broadcast warnings, exercises and closures, security incidents and GNSS notices "
+            "at sea, with the shipping reporting of the period."
+        ),
+        sections=(
+            "Warnings by region: what the NAVAREA warnings say, by area, as reporting with "
+            "grades and citations.",
+            "Exercises and closures: live firing, missile and rocket areas, and where they are.",
+            "Security incidents: piracy, armed robbery, attacks and suspicious approaches.",
+            "GNSS interference notices and what they imply for navigation.",
+            "Key judgements: one to three on the maritime picture, each with one yardstick term "
+            "and a confidence rating.",
+            "Gaps and sourcing statement.",
+        ),
+        strategy=EvidenceStrategy(
+            frozenset({Category.MARITIME, Category.NEWS, Category.CONFLICT}),
+            window_hours=72,
+            max_items=50,
+            per_source_cap=30,
+        ),
+        token_budget=5_000,
+    ),
+    "cyber_summary": Template(
+        id="cyber_summary",
+        title="Cyber summary",
+        purpose=(
+            "Newly exploited vulnerabilities, ransomware claims by country and group, and "
+            "internet outages and shutdowns, from the week's feeds."
+        ),
+        sections=(
+            "New known exploited vulnerabilities: what was added and who is affected, cited.",
+            "Ransomware activity: claims by group and by nation, as reporting; remember the "
+            "claims are criminal statements graded possibly true.",
+            "Outages and shutdowns: where connectivity dropped and what else was happening "
+            "there, cited.",
+            "Key judgements: one to three on the cyber picture, each with one yardstick term "
+            "and a confidence rating.",
+            "Gaps and sourcing statement.",
+        ),
+        strategy=EvidenceStrategy(
+            frozenset({Category.CYBER, Category.NEWS}),
+            window_hours=168,
+            max_items=50,
+            per_source_cap=25,
+        ),
+        token_budget=5_000,
+    ),
 }
 
 

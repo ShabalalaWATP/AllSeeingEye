@@ -108,6 +108,8 @@ async def test_generate_read_export_and_delete(
         "disaster_sitrep",
         "conflict_assessment",
         "aviation_activity",
+        "maritime_activity",
+        "cyber_summary",
     ]
 
     no_model = await client.post(

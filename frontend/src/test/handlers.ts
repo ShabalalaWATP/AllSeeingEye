@@ -19,17 +19,20 @@ import {
   conflictCard,
   aviationBoard,
   conflictDetail,
+  cyberBoard,
   countries,
   hazardCard,
   hazardDetail,
   jamMap,
   liveEvents,
+  maritimeBoard,
   llmProfiles,
   pendingRequests,
   plainUser,
   report,
   reportSummary,
   reportTemplates,
+  spaceBoard,
   sources,
   storeStats,
   tokenFor,
@@ -321,6 +324,12 @@ export const handlers = [
   http.get('/api/trackers/aviation', () => HttpResponse.json(aviationBoard)),
 
   http.get('/api/trackers/aviation/jamming', () => HttpResponse.json(jamMap)),
+
+  http.get('/api/trackers/maritime', () => HttpResponse.json(maritimeBoard)),
+
+  http.get('/api/trackers/space', () => HttpResponse.json(spaceBoard)),
+
+  http.get('/api/trackers/cyber', () => HttpResponse.json(cyberBoard)),
 
   http.get('/api/trackers/conflicts/:id', ({ params }) =>
     params.id === 'ukraine'

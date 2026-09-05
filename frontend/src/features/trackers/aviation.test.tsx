@@ -18,7 +18,9 @@ describe('aviation tracker', () => {
     expect(screen.getByText('1 red, 3 amber')).toBeInTheDocument();
     const emergencies = screen.getByRole('region', { name: 'Emergencies' });
     expect(
-      within(emergencies).getByRole('link', { name: 'RCH123 (C17): squawk 7700, general emergency' }),
+      within(emergencies).getByRole('link', {
+        name: 'RCH123 (C17): squawk 7700, general emergency',
+      }),
     ).toHaveAttribute('href', 'https://globe.adsb.lol/?icao=ae1234');
     const nations = screen.getByRole('table', { name: 'Military aircraft by nation' });
     const ukraine = within(nations).getByText('UA').closest('tr')!;
@@ -37,13 +39,11 @@ describe('aviation tracker', () => {
 
   it('links from the trackers page', async () => {
     renderApp('/trackers', 'user');
-    expect(
-      await screen.findByRole(
-        'link',
-        { name: /Military and unusual flying against baseline/ },
-        { timeout: 5000 },
-      ),
-    ).toHaveAttribute('href', '/trackers/aviation');
+    const modules = await screen.findByRole('list', { name: 'Modules' }, { timeout: 5000 });
+    expect(within(modules).getByRole('link', { name: 'Aviation' })).toHaveAttribute(
+      'href',
+      '/trackers/aviation',
+    );
   });
 
   it('draws only the amber and red interference cells as squares', () => {

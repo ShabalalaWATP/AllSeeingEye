@@ -1107,6 +1107,84 @@
         ]
       }
     },
+    "/api/trackers/maritime": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Maritime Board",
+        "operationId": "maritime_board_api_trackers_maritime_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaritimeBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/space": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Space Board",
+        "operationId": "space_board_api_trackers_space_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/trackers/cyber": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Cyber Board",
+        "operationId": "cyber_board_api_trackers_cyber_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CyberBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/trackers/conflicts": {
       "get": {
         "tags": [
@@ -2586,6 +2664,77 @@
         ],
         "title": "CountryOut"
       },
+      "CyberBoardOut": {
+        "properties": {
+          "outages_24h": {
+            "type": "integer",
+            "title": "Outages 24H"
+          },
+          "outages_by_country": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "Outages By Country"
+          },
+          "ransomware_7d": {
+            "type": "integer",
+            "title": "Ransomware 7D"
+          },
+          "ransomware_by_country": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "Ransomware By Country"
+          },
+          "ransomware_by_group": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "Ransomware By Group"
+          },
+          "kev_7d": {
+            "type": "integer",
+            "title": "Kev 7D"
+          },
+          "latest_outages": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Latest Outages"
+          },
+          "latest_claims": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Latest Claims"
+          },
+          "latest_kev": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Latest Kev"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outages_24h",
+          "outages_by_country",
+          "ransomware_7d",
+          "ransomware_by_country",
+          "ransomware_by_group",
+          "kev_7d",
+          "latest_outages",
+          "latest_claims",
+          "latest_kev"
+        ],
+        "title": "CyberBoardOut"
+      },
       "DayBucketOut": {
         "properties": {
           "day": {
@@ -3424,6 +3573,56 @@
         ],
         "title": "LoginIn"
       },
+      "MaritimeBoardOut": {
+        "properties": {
+          "warnings_total": {
+            "type": "integer",
+            "title": "Warnings Total"
+          },
+          "located": {
+            "type": "integer",
+            "title": "Located"
+          },
+          "by_area": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Area"
+          },
+          "by_kind": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Kind"
+          },
+          "notable": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Notable"
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Latest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "warnings_total",
+          "located",
+          "by_area",
+          "by_kind",
+          "notable",
+          "latest"
+        ],
+        "title": "MaritimeBoardOut"
+      },
       "MessageOut": {
         "properties": {
           "message": {
@@ -4134,6 +4333,67 @@
         ],
         "title": "SourcesOut"
       },
+      "SpaceBoardOut": {
+        "properties": {
+          "stations": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Stations"
+          },
+          "launches": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Launches"
+          },
+          "kp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kp"
+          },
+          "kp_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kp Level"
+          },
+          "alerts_24h": {
+            "type": "integer",
+            "title": "Alerts 24H"
+          },
+          "latest_alerts": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Latest Alerts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stations",
+          "launches",
+          "kp",
+          "kp_level",
+          "alerts_24h",
+          "latest_alerts"
+        ],
+        "title": "SpaceBoardOut"
+      },
       "StoreStatsOut": {
         "properties": {
           "total": {
@@ -4164,6 +4424,36 @@
           "per_category"
         ],
         "title": "StoreStatsOut"
+      },
+      "TallyOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "max_severity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "count",
+          "max_severity"
+        ],
+        "title": "TallyOut"
       },
       "TemplateOut": {
         "properties": {

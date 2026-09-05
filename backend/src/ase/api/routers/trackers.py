@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_aviation import AviationBoardOut, JamCellOut, JamMapOut
+from ase.api.schemas_modules import CyberBoardOut, MaritimeBoardOut, SpaceBoardOut
 from ase.api.schemas_trackers import (
     ConflictBoardOut,
     ConflictCardOut,
@@ -50,6 +51,21 @@ async def jamming(user: CurrentUser, container: ContainerDep) -> JamMapOut:
         cells=[JamCellOut.from_cell(cell) for cell in service.jam_cells()],
         updated_at=container.jam.updated_at,
     )
+
+
+@router.get("/maritime")
+async def maritime_board(user: CurrentUser, container: ContainerDep) -> MaritimeBoardOut:
+    return MaritimeBoardOut.from_board(container.modules().maritime_board())
+
+
+@router.get("/space")
+async def space_board(user: CurrentUser, container: ContainerDep) -> SpaceBoardOut:
+    return SpaceBoardOut.from_board(container.modules().space_board())
+
+
+@router.get("/cyber")
+async def cyber_board(user: CurrentUser, container: ContainerDep) -> CyberBoardOut:
+    return CyberBoardOut.from_board(container.modules().cyber_board())
 
 
 @router.get("/conflicts")

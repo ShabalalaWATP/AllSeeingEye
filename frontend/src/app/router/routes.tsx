@@ -28,6 +28,15 @@ const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
 const ConflictPage = lazy(() => import('@/features/trackers/ConflictPage'));
 const HazardPage = lazy(() => import('@/features/trackers/HazardPage'));
 const AviationPage = lazy(() => import('@/features/trackers/AviationPage'));
+const MaritimePage = lazy(() =>
+  import('@/features/trackers/ModulePages').then((m) => ({ default: m.MaritimePage })),
+);
+const SpacePage = lazy(() =>
+  import('@/features/trackers/ModulePages').then((m) => ({ default: m.SpacePage })),
+);
+const CyberPage = lazy(() =>
+  import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
+);
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -59,6 +68,9 @@ export const routes: RouteObject[] = [
           { path: 'trackers/conflicts/:id', element: <ConflictPage /> },
           { path: 'trackers/disasters/:hazard', element: <HazardPage /> },
           { path: 'trackers/aviation', element: <AviationPage /> },
+          { path: 'trackers/maritime', element: <MaritimePage /> },
+          { path: 'trackers/space', element: <SpacePage /> },
+          { path: 'trackers/cyber', element: <CyberPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

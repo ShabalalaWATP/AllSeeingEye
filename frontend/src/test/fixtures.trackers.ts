@@ -1,5 +1,6 @@
 /** Tracker boards and details built from the live event fixture. */
 import type { AviationBoard, JamMap } from '@/lib/api/aviation';
+import type { CyberBoard, MaritimeBoard, SpaceBoard } from '@/lib/api/modules';
 import type { ConflictCard, ConflictDetail, HazardCard, HazardDetail } from '@/lib/api/trackers';
 
 import { liveEvent } from './fixtures.events';
@@ -87,7 +88,13 @@ export const aviationBoard: AviationBoard = {
     }),
   ],
   areas: [
-    { id: 'black_sea', name: 'Black Sea and southern Ukraine', count: 120, military: 6, baseline: 110 },
+    {
+      id: 'black_sea',
+      name: 'Black Sea and southern Ukraine',
+      count: 120,
+      military: 6,
+      baseline: 110,
+    },
     { id: 'baltic', name: 'Baltic Sea and Kaliningrad', count: 80, military: 2, baseline: null },
   ],
   jam_amber: 3,
@@ -102,4 +109,77 @@ export const jamMap: JamMap = {
     { lon: 0.5, lat: 51.5, size: 1, good: 200, bad: 1, percent_bad: 0, level: 'green' },
   ],
   updated_at: '2026-09-05T08:30:00Z',
+};
+
+export const maritimeBoard: MaritimeBoard = {
+  warnings_total: 2,
+  located: 1,
+  by_area: [
+    { key: '4', count: 1, max_severity: 0.6 },
+    { key: 'P', count: 1, max_severity: 0.3 },
+  ],
+  by_kind: [
+    { key: 'military_exercise', count: 1, max_severity: 0.6 },
+    { key: 'hazard', count: 1, max_severity: 0.3 },
+  ],
+  notable: [
+    liveEvent({
+      id: 'w1',
+      category: 'maritime',
+      subtype: 'navarea_warning',
+      title: 'NAVAREA 4 2026/1: GUNNERY EXERCISE',
+      point: { lon: -76.5, lat: 39.2 },
+      severity: 0.6,
+      url: 'https://msi.nga.mil/NavWarnings?navArea=4',
+    }),
+  ],
+  latest: [],
+};
+
+export const spaceBoard: SpaceBoard = {
+  stations: [
+    liveEvent({
+      id: 'iss',
+      category: 'space',
+      subtype: 'satellite',
+      title: 'ISS (ZARYA)',
+      point: { lon: 10, lat: 20 },
+      attributes: { altitude_km: 420.3, speed_km_s: 7.66 },
+    }),
+  ],
+  launches: [
+    liveEvent({
+      id: 'l1',
+      category: 'space',
+      subtype: 'launch',
+      title: 'Launch: Spectrum',
+      point: { lon: 15.6, lat: 69.1 },
+      attributes: { net: '2026-09-05T20:00:00+00:00' },
+    }),
+  ],
+  kp: 5.33,
+  kp_level: 'storm',
+  alerts_24h: 1,
+  latest_alerts: [],
+};
+
+export const cyberBoard: CyberBoard = {
+  outages_24h: 1,
+  outages_by_country: [{ key: 'TN', count: 1, max_severity: 0.8 }],
+  ransomware_7d: 1,
+  ransomware_by_country: [{ key: 'US', count: 1, max_severity: 0.5 }],
+  ransomware_by_group: [{ key: 'akira', count: 1, max_severity: 0.5 }],
+  kev_7d: 1,
+  latest_outages: [],
+  latest_claims: [],
+  latest_kev: [
+    liveEvent({
+      id: 'k1',
+      category: 'cyber',
+      subtype: 'kev',
+      title: 'CVE-2026-0001 added to KEV',
+      point: null,
+      url: null,
+    }),
+  ],
 };

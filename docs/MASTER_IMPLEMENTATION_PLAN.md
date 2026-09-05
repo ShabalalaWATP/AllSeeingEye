@@ -144,7 +144,7 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 
 ### 3c. Maritime, space and cyber
 - [x] Connectors: NAVAREA broadcast warnings (positions parsed from the text, kind and severity from keywords), space stations propagated with SGP4 from CelesTrak elements cached for two hours, Launch Library 2 upcoming launches at their pads, the SWPC planetary K index, ransomware.live victim claims (credibility possibly true, as criminal statements) and IODA outage alerts (critical and warning only); country-level events now sit at the nation's centroid with country-level geo confidence, so outages and claims appear on the globe; the maritime retention window grew to six hours so warnings polled every two hours survive
-- [ ] Boards and pages: maritime (warnings by area and kind), space (ISS and stations now, next launches, the K index), cyber (outages and ransomware by country, recent KEV additions); Maritime Activity Report and Cyber Summary templates
+- [x] Boards and pages: maritime (warnings by area and kind, notable and latest), space (stations now with altitude, upcoming launches, the K index and space weather alerts), cyber (outage signals and ransomware by nation and group, the week's exploited vulnerabilities); Maritime Activity Report and Cyber Summary templates with the boards as background; the trackers page lists every module
 - [ ] AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist; SWPC aurora oval as a globe overlay; satellites over an area and next passes
 - [ ] Sanctions context for briefs from the UK Sanctions List and OFAC SDN exports (programmes touching a country)
 

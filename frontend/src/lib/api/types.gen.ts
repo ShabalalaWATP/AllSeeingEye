@@ -431,6 +431,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trackers/maritime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Maritime Board */
+        get: operations["maritime_board_api_trackers_maritime_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/space": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Space Board */
+        get: operations["space_board_api_trackers_space_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trackers/cyber": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cyber Board */
+        get: operations["cyber_board_api_trackers_cyber_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trackers/conflicts": {
         parameters: {
             query?: never;
@@ -916,6 +967,27 @@ export interface components {
                 number
             ];
         };
+        /** CyberBoardOut */
+        CyberBoardOut: {
+            /** Outages 24H */
+            outages_24h: number;
+            /** Outages By Country */
+            outages_by_country: components["schemas"]["TallyOut"][];
+            /** Ransomware 7D */
+            ransomware_7d: number;
+            /** Ransomware By Country */
+            ransomware_by_country: components["schemas"]["TallyOut"][];
+            /** Ransomware By Group */
+            ransomware_by_group: components["schemas"]["TallyOut"][];
+            /** Kev 7D */
+            kev_7d: number;
+            /** Latest Outages */
+            latest_outages: components["schemas"]["EventOut"][];
+            /** Latest Claims */
+            latest_claims: components["schemas"]["EventOut"][];
+            /** Latest Kev */
+            latest_kev: components["schemas"]["EventOut"][];
+        };
         /** DayBucketOut */
         DayBucketOut: {
             /**
@@ -1198,6 +1270,21 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MaritimeBoardOut */
+        MaritimeBoardOut: {
+            /** Warnings Total */
+            warnings_total: number;
+            /** Located */
+            located: number;
+            /** By Area */
+            by_area: components["schemas"]["TallyOut"][];
+            /** By Kind */
+            by_kind: components["schemas"]["TallyOut"][];
+            /** Notable */
+            notable: components["schemas"]["EventOut"][];
+            /** Latest */
+            latest: components["schemas"]["EventOut"][];
+        };
         /** MessageOut */
         MessageOut: {
             /** Message */
@@ -1456,6 +1543,21 @@ export interface components {
             /** Items */
             items: components["schemas"]["SourceOut"][];
         };
+        /** SpaceBoardOut */
+        SpaceBoardOut: {
+            /** Stations */
+            stations: components["schemas"]["EventOut"][];
+            /** Launches */
+            launches: components["schemas"]["EventOut"][];
+            /** Kp */
+            kp: number | null;
+            /** Kp Level */
+            kp_level: string | null;
+            /** Alerts 24H */
+            alerts_24h: number;
+            /** Latest Alerts */
+            latest_alerts: components["schemas"]["EventOut"][];
+        };
         /** StoreStatsOut */
         StoreStatsOut: {
             /** Total */
@@ -1466,6 +1568,15 @@ export interface components {
             budget_bytes: number;
             /** Per Category */
             per_category: components["schemas"]["CategoryStatsOut"][];
+        };
+        /** TallyOut */
+        TallyOut: {
+            /** Key */
+            key: string;
+            /** Count */
+            count: number;
+            /** Max Severity */
+            max_severity: number | null;
         };
         /** TemplateOut */
         TemplateOut: {
@@ -2274,6 +2385,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JamMapOut"];
+                };
+            };
+        };
+    };
+    maritime_board_api_trackers_maritime_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaritimeBoardOut"];
+                };
+            };
+        };
+    };
+    space_board_api_trackers_space_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceBoardOut"];
+                };
+            };
+        };
+    };
+    cyber_board_api_trackers_cyber_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CyberBoardOut"];
                 };
             };
         };
