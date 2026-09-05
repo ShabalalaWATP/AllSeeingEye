@@ -202,3 +202,45 @@ class ReportVersionRow(Base):
     latency_ms: Mapped[float] = mapped_column(Float)
     attempts: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class IndicatorRow(Base):
+    __tablename__ = "indicators"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(String(1000), default="")
+    plan_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    west: Mapped[float | None] = mapped_column(Float, nullable=True)
+    south: Mapped[float | None] = mapped_column(Float, nullable=True)
+    east: Mapped[float | None] = mapped_column(Float, nullable=True)
+    north: Mapped[float | None] = mapped_column(Float, nullable=True)
+    categories: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    keywords: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    threshold: Mapped[int] = mapped_column(Integer, default=1)
+    window_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    cooldown_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    severity_floor: Mapped[float] = mapped_column(Float, default=0.0)
+    report_template: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class AlertRow(Base):
+    __tablename__ = "alerts"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    indicator_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    fired_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    summary: Mapped[str] = mapped_column(String(1000), default="")
+    count: Mapped[int] = mapped_column(Integer)
+    threshold: Mapped[int] = mapped_column(Integer)
+    event_ids: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    countries: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    acknowledged_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    acknowledged_by: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    report_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)

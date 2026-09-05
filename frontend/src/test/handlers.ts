@@ -2,6 +2,7 @@
 import { http, HttpResponse } from 'msw';
 
 import { directionHandlers } from './handlers.direction';
+import { warningHandlers } from './handlers.warning';
 
 import {
   ACTIVATION_LINK,
@@ -340,6 +341,7 @@ export const handlers = [
   ),
 
   ...directionHandlers,
+  ...warningHandlers,
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 

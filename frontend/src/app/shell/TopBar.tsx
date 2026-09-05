@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useAuthStore } from '@/stores/auth';
+
+import { AlertBell } from './AlertBell';
 import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
 
@@ -10,6 +12,9 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/reports')) return 'Reports';
+  if (pathname.startsWith('/trackers')) return 'Trackers';
+  if (pathname.startsWith('/direction')) return 'Direction';
+  if (pathname.startsWith('/warning')) return 'Warning';
   return 'The All Seeing Eye';
 }
 
@@ -30,6 +35,7 @@ export function TopBar() {
         {viewTitle(pathname, mode)}
       </p>
       <div className="flex items-center gap-3 text-sm">
+        <AlertBell />
         <span className="text-text">{user?.display_name}</span>
         <Button variant="ghost" busy={busy} onClick={() => void run()}>
           Logout

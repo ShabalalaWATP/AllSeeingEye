@@ -14,34 +14,44 @@ from sse_starlette.sse import EventSourceResponse
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.routers.events import parse_categories
 from ase.api.schemas_events import EventOut, SourceHealthOut
+from ase.api.schemas_warning import AlertOut
 from ase.application.feeds.health import SourceHealth
 from ase.application.ports.feeds import BusMessage
 from ase.domain.errors import RateLimited
 from ase.domain.events import Category, Event
+from ase.domain.warning import Alert
 
 router = APIRouter(tags=["stream"])
 PING_SECONDS = 15
 STREAM_RETRY_SECONDS = 15
 
 
+def _serialise_upsert(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
+    events = message.payload.get("events")
+    if not isinstance(events, list):
+        return None
+    selected = [
+        EventOut.from_event(e).model_dump(mode="json")
+        for e in events
+        if isinstance(e, Event) and (not wanted or e.category in wanted)
+    ]
+    if not selected:
+        return None
+    return {"source_id": message.payload.get("source_id"), "events": selected}
+
+
 def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
     """Turn a bus message into a JSON-safe payload, or None when the filter drops it."""
     if message.kind == "event.upsert":
-        events = message.payload.get("events")
-        if not isinstance(events, list):
-            return None
-        selected = [
-            EventOut.from_event(e).model_dump(mode="json")
-            for e in events
-            if isinstance(e, Event) and (not wanted or e.category in wanted)
-        ]
-        if not selected:
-            return None
-        return {"source_id": message.payload.get("source_id"), "events": selected}
+        return _serialise_upsert(message, wanted)
     if message.kind == "event.expire":
         ids = message.payload.get("ids")
         id_list = [str(i) for i in ids] if isinstance(ids, tuple | list) else []
         return {"ids": id_list, "count": len(id_list)}
+    if message.kind == "alert":
+        alert = message.payload.get("alert")
+        if isinstance(alert, Alert):
+            return AlertOut.from_alert(alert).model_dump(mode="json")
     if message.kind == "source.health":
         health = message.payload.get("health")
         if isinstance(health, SourceHealth):

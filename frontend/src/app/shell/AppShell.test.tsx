@@ -24,6 +24,7 @@ describe('AppShell', () => {
       'href',
       '/direction',
     );
+    expect(within(nav).getByRole('link', { name: 'Warning' })).toHaveAttribute('href', '/warning');
     expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
     expect(screen.getByText('Globe', { selector: 'p' })).toBeInTheDocument();
   });
@@ -106,6 +107,7 @@ describe('AppShell', () => {
     expect(viewTitle('/', 'globe')).toBe('Globe');
     expect(viewTitle('/', 'map')).toBe('Map');
     expect(viewTitle('/admin/audit', 'globe')).toBe('Admin');
+    expect(viewTitle('/warning', 'globe')).toBe('Warning');
     expect(viewTitle('/elsewhere', 'globe')).toBe('The All Seeing Eye');
 
     const editable = document.createElement('div');

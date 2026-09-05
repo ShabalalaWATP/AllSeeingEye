@@ -38,6 +38,7 @@ const CyberPage = lazy(() =>
   import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
 );
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
+const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
@@ -75,6 +76,7 @@ export const routes: RouteObject[] = [
           { path: 'trackers/cyber', element: <CyberPage /> },
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
+          { path: 'warning', element: <WarningPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

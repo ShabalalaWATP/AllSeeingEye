@@ -24,6 +24,7 @@ from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
+from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
 from ase.adapters.persistence.baselines import SqlBaselineRepository, SqlBaselineSink
 from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
@@ -36,6 +37,7 @@ from ase.adapters.persistence.session import (
 )
 from ase.adapters.persistence.tokens import SqlPasswordTokenRepository, SqlRefreshTokenRepository
 from ase.adapters.persistence.users import SqlAccountRequestRepository, SqlUserRepository
+from ase.adapters.persistence.warning import SqlAlertRepository, SqlIndicatorRepository
 from ase.adapters.security.cipher import FernetCipher
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
@@ -94,6 +96,7 @@ from ase.application.ports.llm import (
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
+from ase.application.ports.warning import AlertNotifier, AlertRepository, IndicatorRepository
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.features import FeatureWiring
 from ase.domain.aviation import JamMap
@@ -117,6 +120,8 @@ class Repositories:
     baselines: BaselineRepository
     aois: AoiRepository
     plans: PlanRepository
+    indicators: IndicatorRepository
+    alerts: AlertRepository
     uow: UnitOfWork
 
 
@@ -185,6 +190,11 @@ class Container(FeatureWiring):
             self.clock,
             self.watch_areas,
         )
+        webhook = settings.alert_webhook_url
+        self.notifier: AlertNotifier = (
+            WebhookNotifier(webhook, settings.feeds_user_agent) if webhook else NullNotifier()
+        )
+        self.evaluator = self.build_evaluator()
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
@@ -211,6 +221,8 @@ class Container(FeatureWiring):
             baselines=SqlBaselineRepository(session),
             aois=SqlAoiRepository(session),
             plans=SqlPlanRepository(session),
+            indicators=SqlIndicatorRepository(session),
+            alerts=SqlAlertRepository(session),
             uow=SqlAlchemyUnitOfWork(session),
         )
 

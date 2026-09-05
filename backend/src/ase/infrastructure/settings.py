@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     max_streams_per_user: int = Field(default=4, ge=1, le=64)
     # Wayback Machine snapshots of cited URLs after each report: on by default outside tests.
     archive_enabled: bool | None = None
+    alert_webhook_url: str | None = None
     # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
     os_maps_key: SecretStr | None = None
     # Encrypts API keys entered in the admin UI (any string of 32+ characters). Unset means
@@ -73,6 +74,9 @@ class Settings(BaseSettings):
             self.feeds_enabled = self.env is not Environment.TEST
         if self.archive_enabled is None:
             self.archive_enabled = self.env is not Environment.TEST
+        url = self.alert_webhook_url
+        if url is not None and not url.startswith(("http://", "https://")):
+            raise ValueError("ASE_ALERT_WEBHOOK_URL must be an http or https URL")
         return self
 
     @property

@@ -33,6 +33,10 @@ class AuditAction(StrEnum):
     PLAN_CREATED = "plan_created"
     PLAN_UPDATED = "plan_updated"
     PLAN_DELETED = "plan_deleted"
+    INDICATOR_CREATED = "indicator_created"
+    INDICATOR_UPDATED = "indicator_updated"
+    INDICATOR_DELETED = "indicator_deleted"
+    ALERT_ACKNOWLEDGED = "alert_acknowledged"
 
 
 @dataclass(slots=True)

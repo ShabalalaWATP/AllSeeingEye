@@ -588,6 +588,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/warning/indicators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Indicators */
+        get: operations["list_indicators_api_warning_indicators_get"];
+        put?: never;
+        /** Create Indicator */
+        post: operations["create_indicator_api_warning_indicators_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/indicators/{indicator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Indicator */
+        put: operations["update_indicator_api_warning_indicators__indicator_id__put"];
+        post?: never;
+        /** Delete Indicator */
+        delete: operations["delete_indicator_api_warning_indicators__indicator_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Alerts */
+        get: operations["list_alerts_api_warning_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/warning/alerts/{alert_id}/ack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge Alert */
+        post: operations["acknowledge_alert_api_warning_alerts__alert_id__ack_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/account-requests": {
         parameters: {
             query?: never;
@@ -850,6 +920,49 @@ export interface components {
             previous_7d: number;
             /** Trend */
             trend: number | null;
+        };
+        /** AlertOut */
+        AlertOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Indicator Id
+             * Format: uuid
+             */
+            indicator_id: string;
+            /**
+             * Fired At
+             * Format: date-time
+             */
+            fired_at: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /** Count */
+            count: number;
+            /** Threshold */
+            threshold: number;
+            /** Event Ids */
+            event_ids: string[];
+            /** Countries */
+            countries: string[];
+            /** Acknowledged At */
+            acknowledged_at: string | null;
+            /** Acknowledged By */
+            acknowledged_by: string | null;
+            /** Report Id */
+            report_id: string | null;
+        };
+        /** AlertsOut */
+        AlertsOut: {
+            /** Items */
+            items: components["schemas"]["AlertOut"][];
+            /** Unacknowledged */
+            unacknowledged: number;
         };
         /** AoiIn */
         AoiIn: {
@@ -1236,6 +1349,112 @@ export interface components {
             status: string;
             /** Version */
             version: string;
+        };
+        /** IndicatorIn */
+        IndicatorIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Countries */
+            countries?: string[];
+            /** Bbox */
+            bbox?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
+            /** Categories */
+            categories?: components["schemas"]["Category"][];
+            /** Keywords */
+            keywords?: string[];
+            /**
+             * Threshold
+             * @default 1
+             */
+            threshold: number;
+            /**
+             * Window Minutes
+             * @default 60
+             */
+            window_minutes: number;
+            /**
+             * Cooldown Minutes
+             * @default 60
+             */
+            cooldown_minutes: number;
+            /**
+             * Severity Floor
+             * @default 0
+             */
+            severity_floor: number;
+            /** Report Template */
+            report_template?: string | null;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+        };
+        /** IndicatorOut */
+        IndicatorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Plan Id */
+            plan_id: string | null;
+            /** Countries */
+            countries: string[];
+            /** Bbox */
+            bbox: number[] | null;
+            /** Categories */
+            categories: components["schemas"]["Category"][];
+            /** Keywords */
+            keywords: string[];
+            /** Threshold */
+            threshold: number;
+            /** Window Minutes */
+            window_minutes: number;
+            /** Cooldown Minutes */
+            cooldown_minutes: number;
+            /** Severity Floor */
+            severity_floor: number;
+            /** Report Template */
+            report_template: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** IndicatorsOut */
+        IndicatorsOut: {
+            /** Items */
+            items: components["schemas"]["IndicatorOut"][];
         };
         /** JamCellOut */
         JamCellOut: {
@@ -2956,6 +3175,186 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_indicators_api_warning_indicators_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndicatorsOut"];
+                };
+            };
+        };
+    };
+    create_indicator_api_warning_indicators_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IndicatorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndicatorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_indicator_api_warning_indicators__indicator_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IndicatorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndicatorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_indicator_api_warning_indicators__indicator_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                indicator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_alerts_api_warning_alerts_get: {
+        parameters: {
+            query?: {
+                hours?: number | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_alert_api_warning_alerts__alert_id__ack_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertOut"];
+                };
             };
             /** @description Validation Error */
             422: {

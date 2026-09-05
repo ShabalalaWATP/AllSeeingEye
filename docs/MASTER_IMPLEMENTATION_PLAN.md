@@ -158,7 +158,8 @@ Acceptance from the roadmap: an indicator fires on synthetic data within one pip
 - [x] Plan-scoped reports: `plan` on the report request; the plan's area, nations and keywords steer selection, its description reaches the model as uncited background, its requirements replace the direction call, and the first PIR is the question unless another is asked; the scope records the plan so regeneration repeats it
 - [x] Direction in the app: the rail entry replaced its placeholder; areas and plans on one page with compact forms; a plan page with the evidence per requirement and a "Generate assessment" link into the prefilled report form
 - [ ] PIR tagging of live events in the pipeline and a plan filter on the globe
-- [ ] Indicators: rules over store counts, baselines and keywords, an evaluator in the scheduler loop, an alerts table, `alert` messages on the stream with a bell in the shell, an optional webhook (`ASE_ALERT_WEBHOOK_URL`, public hosts only)
+- [x] Indicators: standing rules (nations or a box, categories, keywords, a severity floor, a threshold over a window, a cooldown) evaluated every minute over the live store by a background loop; alerts persist (migration 0007, pruned after 30 days), travel the stream as `alert` messages, reach an optional webhook (`ASE_ALERT_WEBHOOK_URL`, public hosts only, one POST, no retry) and can open a report as the owner; `/api/warning/indicators` and `/api/warning/alerts` with acknowledgement; a Warning page and an alert count in the shell
+- [ ] Baseline-relative indicators (military aircraft or area traffic against the 30-day mean) and email routing once a transport exists
 - [ ] Scheduled products (a plan can ask for a daily INTSUM) and ops-room mode
 - [ ] Editing plans in the app (the API already accepts `PUT`) and more than one PIR per form
 

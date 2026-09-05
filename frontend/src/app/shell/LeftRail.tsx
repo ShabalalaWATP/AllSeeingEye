@@ -71,6 +71,7 @@ export function LeftRail() {
         <RailLink to="/trackers">Trackers</RailLink>
         <RailLink to="/reports">Reports</RailLink>
         <RailLink to="/direction">Direction</RailLink>
+        <RailLink to="/warning">Warning</RailLink>
         {isAdmin ? (
           <div className="mt-4 flex flex-col gap-1">
             <div className="px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
