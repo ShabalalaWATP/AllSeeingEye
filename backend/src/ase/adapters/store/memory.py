@@ -65,6 +65,12 @@ class InMemoryEventStore:
             added=added, updated=updated, unchanged=unchanged, changed_ids=tuple(changed_ids)
         )
 
+    def put(self, events: Iterable[Event]) -> None:
+        for event in events:
+            if event.id in self._events:
+                self._remove(event.id)
+            self._insert(event)
+
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
 

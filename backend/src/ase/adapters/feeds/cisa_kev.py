@@ -29,6 +29,7 @@ SPEC = SourceSpec(
     poll_interval=timedelta(hours=1),
     licence_note="CC0 1.0",
     homepage="https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+    flags=frozenset({"authoritative"}),
 )
 
 RECENT_DAYS = 30

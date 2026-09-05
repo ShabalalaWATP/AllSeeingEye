@@ -34,6 +34,7 @@ SPEC = SourceSpec(
     poll_interval=timedelta(minutes=10),
     licence_note="Feed declares public domain; JRC terms of use apply",
     homepage="https://www.gdacs.org/",
+    instrument=True,
 )
 
 NS = {"gdacs": "http://www.gdacs.org", "georss": "http://www.georss.org/georss"}

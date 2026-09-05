@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterable, Mapping
+from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Protocol
@@ -67,6 +67,10 @@ class StoreStats:
 
 class EventStore(Protocol):
     def upsert(self, events: Iterable[Event]) -> UpsertResult: ...
+    def put(self, events: Iterable[Event]) -> None:
+        """Replace events regardless of content hash (used when grades change)."""
+        ...
+
     def get(self, event_id: str) -> Event | None: ...
     def query(self, query: EventQuery) -> list[Event]: ...
     def prune(self, now: datetime) -> PruneResult: ...
@@ -82,6 +86,12 @@ class BusMessage:
 class Subscription(Protocol):
     def __aiter__(self) -> AsyncIterator[BusMessage]: ...
     def close(self) -> None: ...
+
+
+class Grader(Protocol):
+    def regrade(self, events: Sequence[Event]) -> list[Event]:
+        """Regrade the categories the batch touched; return the events whose grade changed."""
+        ...
 
 
 class EventBus(Protocol):

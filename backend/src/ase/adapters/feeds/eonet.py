@@ -32,6 +32,7 @@ SPEC = SourceSpec(
     poll_interval=timedelta(minutes=10),
     licence_note="NASA open data",
     homepage="https://eonet.gsfc.nasa.gov/docs/v3",
+    instrument=True,
 )
 
 _CAMEL = re.compile(r"(?<!^)(?=[A-Z])")

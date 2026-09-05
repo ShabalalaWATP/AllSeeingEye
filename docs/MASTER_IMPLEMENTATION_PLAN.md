@@ -85,6 +85,19 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Admin source page: every feed with its organisation, category, grade, poll interval, health status, last poll, last error and a reset button that clears the circuit breaker
 - [ ] Replace `useResource` and `useAuditLog` with TanStack Query
 
+## Phase 2: Grading and reporting
+
+### Grading engine
+- [x] Story clustering: stemmed title tokens with Jaccard similarity inside a 48-hour window (any category), plus same-subtype events within 150 km and 12 hours for disasters; deterministic story ids
+- [x] Credibility per doctrine section 4.3: confirmed with two or more independent corroborations, probably true with one, instruments and authoritative registries probably true, state-controlled or interested-party single sources possibly true, other single sources possibly true when consistent with the picture (same country or within 150 km, same category, same window) and otherwise cannot be judged; independence by parent organisation with near-identical text across organisations folded as syndication; a rationale string on every item
+- [x] Regrading runs after every poll for the categories the batch touched and republishes neighbours whose grade moved; grades are recomputed as items arrive
+- [ ] Contradiction rules (doubtful, improbable) and instrument anomaly flags; corroboration and contradiction identifiers on the event
+
+### Reports
+- [ ] LLM gateway with profiles (OpenAI-compatible), encrypted keys, admin LLM page, usage log
+- [ ] Templates (INTSUM, INTREP, Country Brief, Ask the Eye), evidence selection and freezing, quality-of-information check, prompt composition, structured output, the validator (yardstick, confidence, citations, hedges, URLs), retry then needs_review
+- [ ] Report persistence (reports, versions, evidence, citations), reader, Markdown export, version history, Wayback archiving
+
 ## Known follow-ups carried forward
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.

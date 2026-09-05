@@ -42,6 +42,7 @@ from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
 from ase.application.feeds.geo import CountryStage
+from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
@@ -114,9 +115,13 @@ class Container:
             if connectors is not None
             else build_connectors(self.http, self.clock, settings.disabled_feed_ids)
         )
-        self.scheduler = FeedScheduler(
-            self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock
+        self.grader = GradingService(
+            self.store, profiles_from_specs([c.spec for c in self.connectors]), self.clock
         )
+        self.scheduler = FeedScheduler(
+            self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,
+            grader=self.grader,
+        )  # fmt: skip
         os_key = settings.os_maps_key_value
         self.tiles: TileProvider = (
             OsMapsTileProvider(os_key) if os_key is not None else NullTileProvider()

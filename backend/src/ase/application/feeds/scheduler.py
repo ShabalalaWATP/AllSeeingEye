@@ -12,8 +12,9 @@ from datetime import timedelta
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.ports import Clock
-from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector
+from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.domain.errors import NotFound
+from ase.domain.events import Event
 
 SleepFn = Callable[[float], Awaitable[None]]
 
@@ -41,6 +42,7 @@ class FeedScheduler:
         prune_interval: timedelta = timedelta(seconds=60),
         jitter: float = 0.1,
         sleep: SleepFn = asyncio.sleep,
+        grader: Grader | None = None,
     ) -> None:
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._pipeline = pipeline
@@ -52,6 +54,7 @@ class FeedScheduler:
         self._prune_interval = prune_interval
         self._jitter = jitter
         self._sleep = sleep
+        self._grader = grader
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._prune_task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
@@ -113,14 +116,26 @@ class FeedScheduler:
         )
         if result.changed_ids:
             changed = set(result.changed_ids)
+            fresh = [e for e in events if e.id in changed]
+            if self._grader is not None:
+                fresh = self._regraded(fresh)
             await self._bus.publish(
-                BusMessage(
-                    "event.upsert",
-                    {"source_id": source_id, "events": [e for e in events if e.id in changed]},
-                )
+                BusMessage("event.upsert", {"source_id": source_id, "events": fresh})
             )
         await self._bus.publish(BusMessage("source.health", {"health": entry}))
         return PollOutcome(source_id, ok=True, fetched=len(events), changed=result.changed)
+
+    def _regraded(self, fresh: list[Event]) -> list[Event]:
+        """Grades the batch in context and merges any neighbours whose grade moved."""
+        assert self._grader is not None  # noqa: S101
+        latest = {event.id: event for event in fresh}
+        for event in self._grader.regrade(fresh):
+            latest[event.id] = event
+        for event_id in list(latest):
+            stored = self._store.get(event_id)
+            if stored is not None:
+                latest[event_id] = stored
+        return list(latest.values())
 
     async def _run_connector(self, connector: FeedConnector) -> None:
         interval = connector.spec.poll_interval.total_seconds()
