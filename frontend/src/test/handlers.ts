@@ -16,6 +16,7 @@ import {
   adminUser,
   auditPageOne,
   auditPageTwo,
+  countries,
   liveEvents,
   pendingRequests,
   plainUser,
@@ -189,6 +190,8 @@ export const handlers = [
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 
   http.get('/api/events/stats', () => HttpResponse.json(storeStats)),
+
+  http.get('/api/countries', () => HttpResponse.json({ items: countries })),
 
   // The page tests replace the stream client; anything that still reaches the
   // network gets a clean failure instead of an unhandled request.

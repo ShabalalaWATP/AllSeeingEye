@@ -66,7 +66,7 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Generic RSS 2.0, RDF and Atom connector with 21 seeded sources verified live on 5 September 2026: GOV.UK FCDO news and travel advice, US State travel advisories (country codes from the feed), UN News, UN press, ReliefWeb updates RSS, Crisis Group, and outlets (BBC, DW, France 24, Al Jazeera, Guardian, Le Monde, SCMP, Nikkei Asia, Times of Israel, Anadolu, Dawn, Meduza, Ukrainska Pravda, TASS flagged state controlled)
 - [x] GDELT 2.0 events connector: follows `lastupdate.txt` to the newest export zip (size-checked), keeps protest and conflict CAMEO root codes, grades C with credibility from the source count; the GEO API answers 404 and the DOC API is limited to one call per five seconds, so neither is used
 - [ ] More connectors: OpenSky (OAuth2), ADS-B (adsb.lol, airplanes.live), Google News RSS editions, more outlets in more languages (Kyiv Independent, Focus Taiwan, NHK World, ISW and Kyodo answered 404 or 403 and need confirmed URLs), NASA FIRMS (key), EMSC
-- [ ] Country resolution from Natural Earth polygons for events with coordinates; `country_iso` on every located event
+- [x] Country resolution: Natural Earth 1:110m admin-0 polygons packaged as a 175 KB resource (built by `scripts/build_countries.py`, public domain), a pure point-in-polygon in the domain, a bounding-box index in an adapter, a pipeline stage that fills `country_iso` on located events, and `/api/countries` for the frontend
 - [ ] Admin source overrides persisted (enable, disable, interval)
 
 ### Frontend live globe
@@ -76,7 +76,7 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] deck.gl `MapboxOverlay` on the MapLibre engine; one scatterplot layer per category from the layer registry (shared colours)
 - [x] Layer panel with per-category switches, counts, store budget and connection status; ticker of the latest events; event inspector (grade with rationale, provenance, summary, attributes, tags, http(s) links only)
 - [x] Tests for the parser, client, store, registry, panels and the page with the overlay and stream client mocked; live globe confirmed in the browser against the dev API
-- [ ] Nation filter and country panel v1
+- [x] Nation filter (name or code, Enter completes a prefix) that scopes the layers, counts and ticker to one nation and flies the camera to it; country panel v1 with per-category counts and the latest events for that nation
 - [ ] Day and night terminator; lite mode; coordinate readout
 - [ ] Base-layer switcher: OS Maps proxy, EOX satellite, GIBS, hybrid
 - [ ] Admin source page in the UI

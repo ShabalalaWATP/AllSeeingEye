@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
@@ -39,6 +40,7 @@ from ase.application.auth.login import LoginUseCase
 from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
 from ase.application.auth.set_password import SetPasswordUseCase
+from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
@@ -102,7 +104,8 @@ class Container:
         )
         self.bus = InMemoryEventBus()
         self.health = HealthRegistry()
-        self.pipeline = Pipeline([Normaliser()])
+        self.countries = CountryIndex.from_resource()
+        self.pipeline = Pipeline([Normaliser(), CountryStage(self.countries)])
         self.http = FeedHttpClient(settings.feeds_user_agent)
         self.connectors: list[FeedConnector] = (
             list(connectors)

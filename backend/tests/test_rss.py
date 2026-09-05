@@ -133,7 +133,7 @@ def test_seeds_are_sound() -> None:
 def test_registry_includes_and_can_disable_feeds() -> None:
     every = build_connectors(FakeHttp(), FakeClock(NOW))  # type: ignore[arg-type]
     all_ids = {c.spec.id for c in every}
-    assert {"usgs_earthquakes", "gdacs", "bbc_world", "tass_en"} <= all_ids
+    assert {"usgs_earthquakes", "gdacs", "gdelt_events", "bbc_world", "tass_en"} <= all_ids
     fewer = build_connectors(FakeHttp(), FakeClock(NOW), disabled=["bbc_world", " tass_en "])  # type: ignore[arg-type]
     assert {"bbc_world", "tass_en"}.isdisjoint({c.spec.id for c in fewer})
     assert len(fewer) == len(every) - 2

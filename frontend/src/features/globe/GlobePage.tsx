@@ -1,19 +1,23 @@
 /**
  * The root view: a full-bleed 3D globe (default) with an explicit Map mode
- * toggle, live event markers, the layer panel, the ticker and the inspector.
- * When WebGL2 is unavailable the engine is not mounted and the page explains
- * why; the panels still work from the event mirror.
+ * toggle, live event markers, the nation filter, layer panel, country panel,
+ * ticker and inspector. When WebGL2 is unavailable the engine is not mounted
+ * and the page explains why; the panels still work from the event mirror.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
-import { countByCategory, selectSelectedEvent, useEventsStore } from '@/stores/events';
+import { zoomForBounds } from '@/lib/api/geo';
+import { useCountriesStore } from '@/stores/countries';
+import { countByCategory, filterByCountry, selectSelectedEvent, useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
+import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
+import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
 import { buildEventLayers } from './layers/registry';
 import { useGlobeEngine } from './useGlobeEngine';
@@ -21,7 +25,7 @@ import { useLiveEvents } from './useLiveEvents';
 import { useNow } from './useNow';
 import { hasWebGl2 } from './webgl';
 
-/** Zoom used when the user focuses an event from the ticker. */
+/** Zoom used when the user focuses an event from a list. */
 export const FOCUS_ZOOM = 4;
 
 export default function GlobePage() {
@@ -33,16 +37,27 @@ export default function GlobePage() {
   useLiveEvents();
   const now = useNow();
 
-  const list = useEventsStore((state) => state.list);
+  const countries = useCountriesStore((state) => state.items);
+  const countryByIso = useCountriesStore((state) => state.byIso);
+  const loadCountries = useCountriesStore((state) => state.load);
+  useEffect(() => {
+    void loadCountries();
+  }, [loadCountries]);
+
   const hidden = useEventsStore((state) => state.hidden);
+  const country = useEventsStore((state) => state.country);
   const selectedId = useEventsStore((state) => state.selectedId);
   const selected = useEventsStore(selectSelectedEvent);
   const stats = useEventsStore((state) => state.stats);
   const status = useEventsStore((state) => state.status);
   const error = useEventsStore((state) => state.error);
   const select = useEventsStore((state) => state.select);
+  const setCountry = useEventsStore((state) => state.setCountry);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
-  const counts = useMemo(() => countByCategory(list), [list]);
+  const list = useEventsStore((state) => state.list);
+  const scoped = useMemo(() => filterByCountry(list, country), [list, country]);
+  const counts = useMemo(() => countByCategory(scoped), [scoped]);
+  const nation = country === null ? null : (countryByIso[country] ?? null);
 
   const onPick = useCallback(
     (event: LiveEvent | null) => {
@@ -53,8 +68,8 @@ export default function GlobePage() {
 
   useEffect(() => {
     if (!supported) return;
-    engine.setLayers(buildEventLayers(list, hidden, onPick, selectedId));
-  }, [engine, hidden, list, onPick, selectedId, supported]);
+    engine.setLayers(buildEventLayers(scoped, hidden, onPick, selectedId));
+  }, [engine, hidden, scoped, onPick, selectedId, supported]);
 
   const focus = useCallback(
     (event: LiveEvent) => {
@@ -64,6 +79,17 @@ export default function GlobePage() {
       }
     },
     [engine, select],
+  );
+
+  const changeNation = useCallback(
+    (iso: string | null) => {
+      setCountry(iso);
+      const target = iso === null ? null : countryByIso[iso];
+      if (target !== null && target !== undefined) {
+        engine.flyTo({ center: target.centroid, zoom: zoomForBounds(target.bounds) });
+      }
+    },
+    [countryByIso, engine, setCountry],
   );
 
   const close = useCallback(() => {
@@ -93,15 +119,27 @@ export default function GlobePage() {
         </div>
       )}
       <ModeToolbar mode={mode} onChange={setMode} />
-      <Ticker events={list} selectedId={selectedId} now={now} onSelect={focus} />
-      <LayerPanel
-        counts={counts}
-        hidden={hidden}
-        stats={stats}
-        status={status}
-        error={error}
-        onToggle={toggleCategory}
-      />
+      <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
+      <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+        <NationFilter countries={countries} value={country} onChange={changeNation} />
+        <LayerPanel
+          counts={counts}
+          hidden={hidden}
+          stats={stats}
+          status={status}
+          error={error}
+          onToggle={toggleCategory}
+        />
+        {nation !== null && (
+          <CountryPanel
+            country={nation}
+            events={scoped}
+            selectedId={selectedId}
+            now={now}
+            onSelect={focus}
+          />
+        )}
+      </div>
       {selected !== null && <EventInspector event={selected} onClose={close} />}
     </div>
   );

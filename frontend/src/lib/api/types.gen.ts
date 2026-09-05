@@ -157,6 +157,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Events */
+        get: operations["list_events_api_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Store Stats */
+        get: operations["store_stats_api_events_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Event */
+        get: operations["get_event_api_events__event_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/countries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Countries */
+        get: operations["list_countries_api_countries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream */
+        get: operations["stream_api_stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/account-requests": {
         parameters: {
             query?: never;
@@ -276,6 +361,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["list_sources_api_admin_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sources/{source_id}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Source */
+        post: operations["reset_source_api_admin_sources__source_id__reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -350,6 +469,105 @@ export interface components {
             /** Next Before */
             next_before: number | null;
         };
+        /**
+         * Category
+         * @enum {string}
+         */
+        Category: "news" | "conflict" | "disaster" | "aviation" | "maritime" | "space" | "cyber" | "social" | "political" | "humanitarian" | "economic";
+        /** CategoryStatsOut */
+        CategoryStatsOut: {
+            category: components["schemas"]["Category"];
+            /** Count */
+            count: number;
+            /** Oldest */
+            oldest: string | null;
+            /** Newest */
+            newest: string | null;
+        };
+        /** CountriesOut */
+        CountriesOut: {
+            /** Items */
+            items: components["schemas"]["CountryOut"][];
+        };
+        /** CountryOut */
+        CountryOut: {
+            /** Iso2 */
+            iso2: string;
+            /** Iso3 */
+            iso3: string;
+            /** Name */
+            name: string;
+            /** Bounds */
+            bounds: [
+                number,
+                number,
+                number,
+                number
+            ];
+            /** Centroid */
+            centroid: [
+                number,
+                number
+            ];
+        };
+        /** EventOut */
+        EventOut: {
+            /** Id */
+            id: string;
+            /** Source Id */
+            source_id: string;
+            category: components["schemas"]["Category"];
+            /** Subtype */
+            subtype: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string | null;
+            /** Url */
+            url: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Language */
+            language: string;
+            /** Title En */
+            title_en: string | null;
+            point: components["schemas"]["PointOut"] | null;
+            geo_confidence: components["schemas"]["GeoConfidence"];
+            /** Country Iso */
+            country_iso: string | null;
+            /** Tags */
+            tags: string[];
+            /** Severity */
+            severity: number | null;
+            reliability: components["schemas"]["Reliability"];
+            /** Credibility */
+            credibility: number;
+            /** Grade */
+            grade: string;
+            /** Grade Rationale */
+            grade_rationale: string;
+            /** Story Id */
+            story_id: string | null;
+            /** Attributes */
+            attributes: {
+                [key: string]: string | number | boolean | null;
+            };
+        };
+        /** EventsOut */
+        EventsOut: {
+            /** Items */
+            items: components["schemas"]["EventOut"][];
+            /** Count */
+            count: number;
+        };
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
             /**
@@ -358,6 +576,11 @@ export interface components {
              */
             email: string;
         };
+        /**
+         * GeoConfidence
+         * @enum {string}
+         */
+        GeoConfidence: "exact" | "city" | "admin1" | "country" | "none";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -385,6 +608,13 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** PointOut */
+        PointOut: {
+            /** Lon */
+            lon: number;
+            /** Lat */
+            lat: number;
+        };
         /** ReadyOut */
         ReadyOut: {
             /** Status */
@@ -395,6 +625,12 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /**
+         * Reliability
+         * @description NATO source reliability (AJP-2.1 Table 3.1).
+         * @enum {string}
+         */
+        Reliability: "A" | "B" | "C" | "D" | "E" | "F";
         /** RequestAccountIn */
         RequestAccountIn: {
             /**
@@ -433,6 +669,83 @@ export interface components {
             token: string;
             /** New Password */
             new_password: string;
+        };
+        /** SourceHealthOut */
+        SourceHealthOut: {
+            /** Source Id */
+            source_id: string;
+            status: components["schemas"]["SourceStatus"];
+            /** Last Success */
+            last_success: string | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Error At */
+            last_error_at: string | null;
+            /** Consecutive Failures */
+            consecutive_failures: number;
+            /** Items Last Poll */
+            items_last_poll: number;
+            /** Last Latency Ms */
+            last_latency_ms: number | null;
+            /** Next Poll At */
+            next_poll_at: string | null;
+            /** Polls */
+            polls: number;
+        };
+        /**
+         * SourceKind
+         * @enum {string}
+         */
+        SourceKind: "api" | "rss" | "geojson" | "websocket";
+        /** SourceOut */
+        SourceOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Organisation */
+            organisation: string;
+            category: components["schemas"]["Category"];
+            kind: components["schemas"]["SourceKind"];
+            /** Url */
+            url: string;
+            reliability: components["schemas"]["Reliability"];
+            /** Poll Interval Seconds */
+            poll_interval_seconds: number;
+            /** Language */
+            language: string;
+            /** Licence Note */
+            licence_note: string;
+            /** Homepage */
+            homepage: string;
+            /** Requires Key */
+            requires_key: boolean;
+            /** Instrument */
+            instrument: boolean;
+            /** Flags */
+            flags: string[];
+            health: components["schemas"]["SourceHealthOut"];
+        };
+        /**
+         * SourceStatus
+         * @enum {string}
+         */
+        SourceStatus: "idle" | "healthy" | "degraded" | "disabled";
+        /** SourcesOut */
+        SourcesOut: {
+            /** Items */
+            items: components["schemas"]["SourceOut"][];
+        };
+        /** StoreStatsOut */
+        StoreStatsOut: {
+            /** Total */
+            total: number;
+            /** Estimated Bytes */
+            estimated_bytes: number;
+            /** Budget Bytes */
+            budget_bytes: number;
+            /** Per Category */
+            per_category: components["schemas"]["CategoryStatsOut"][];
         };
         /** TokenResponse */
         TokenResponse: {
@@ -730,6 +1043,144 @@ export interface operations {
             };
         };
     };
+    list_events_api_events_get: {
+        parameters: {
+            query?: {
+                categories?: string | null;
+                bbox?: string | null;
+                country?: string | null;
+                since?: string | null;
+                sources?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    store_stats_api_events_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreStatsOut"];
+                };
+            };
+        };
+    };
+    get_event_api_events__event_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_countries_api_countries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountriesOut"];
+                };
+            };
+        };
+    };
+    stream_api_stream_get: {
+        parameters: {
+            query?: {
+                categories?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_requests_api_admin_account_requests_get: {
         parameters: {
             query?: {
@@ -934,6 +1385,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuditPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sources_api_admin_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourcesOut"];
+                };
+            };
+        };
+    };
+    reset_source_api_admin_sources__source_id__reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceHealthOut"];
                 };
             };
             /** @description Validation Error */

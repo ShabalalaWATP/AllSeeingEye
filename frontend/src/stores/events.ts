@@ -16,6 +16,8 @@ export interface EventsState {
   byId: Record<string, LiveEvent>;
   list: LiveEvent[];
   hidden: Category[];
+  /** ISO 3166-1 alpha-2 code of the nation filter, or null for the whole world. */
+  country: string | null;
   stats: StoreStats | null;
   status: StreamStatus;
   loaded: boolean;
@@ -27,6 +29,7 @@ export interface EventsState {
   handleStreamMessage: (message: SseMessage) => void;
   setStatus: (status: StreamStatus) => void;
   toggleCategory: (category: Category) => void;
+  setCountry: (iso: string | null) => void;
   select: (id: string | null) => void;
   reset: () => void;
 }
@@ -35,6 +38,7 @@ export const initialEventsState = {
   byId: {} as Record<string, LiveEvent>,
   list: [] as LiveEvent[],
   hidden: [] as Category[],
+  country: null as string | null,
   stats: null as StoreStats | null,
   status: 'offline' as StreamStatus,
   loaded: false,
@@ -123,6 +127,10 @@ export const useEventsStore = create<EventsState>()((set, get) => ({
     });
   },
 
+  setCountry: (iso) => {
+    set({ country: iso });
+  },
+
   select: (id) => {
     set({ selectedId: id });
   },
@@ -132,10 +140,20 @@ export const useEventsStore = create<EventsState>()((set, get) => ({
   },
 }));
 
-export const selectVisibleEvents = (state: EventsState): LiveEvent[] =>
-  state.hidden.length === 0
-    ? state.list
-    : state.list.filter((event) => !state.hidden.includes(event.category));
+/** Events inside the nation filter, before category switches apply. */
+export function filterByCountry(events: LiveEvent[], country: string | null): LiveEvent[] {
+  return country === null ? events : events.filter((event) => event.country_iso === country);
+}
+
+export const selectCountryEvents = (state: EventsState): LiveEvent[] =>
+  filterByCountry(state.list, state.country);
+
+export const selectVisibleEvents = (state: EventsState): LiveEvent[] => {
+  const scoped = selectCountryEvents(state);
+  return state.hidden.length === 0
+    ? scoped
+    : scoped.filter((event) => !state.hidden.includes(event.category));
+};
 
 export const selectSelectedEvent = (state: EventsState): LiveEvent | null =>
   state.selectedId === null ? null : (state.byId[state.selectedId] ?? null);

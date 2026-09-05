@@ -7,7 +7,9 @@ import { server } from '@/test/server';
 import {
   MAX_CLIENT_EVENTS,
   countByCategory,
+  filterByCountry,
   initialEventsState,
+  selectCountryEvents,
   selectSelectedEvent,
   selectVisibleEvents,
   useEventsStore,
@@ -76,6 +78,20 @@ describe('events store', () => {
     expect(useEventsStore.getState().status).toBe('live');
     useEventsStore.getState().reset();
     expect(useEventsStore.getState().list).toEqual([]);
+  });
+
+  it('scopes the mirror to one nation before the category switches apply', () => {
+    const german = liveEvent({ id: 'de', country_iso: 'DE' });
+    const british = liveEvent({ id: 'gb', country_iso: 'GB', category: 'cyber' });
+    const nowhere = liveEvent({ id: 'no', country_iso: null });
+    useEventsStore.getState().applyUpsert([german, british, nowhere]);
+    expect(filterByCountry([german, british], null)).toEqual([german, british]);
+    useEventsStore.getState().setCountry('GB');
+    expect(selectCountryEvents(useEventsStore.getState()).map((e) => e.id)).toEqual(['gb']);
+    useEventsStore.getState().toggleCategory('cyber');
+    expect(selectVisibleEvents(useEventsStore.getState())).toEqual([]);
+    useEventsStore.getState().setCountry(null);
+    expect(selectVisibleEvents(useEventsStore.getState()).map((e) => e.id)).toEqual(['de', 'no']);
   });
 
   it('bounds the client mirror by dropping the oldest observed events', () => {

@@ -139,6 +139,26 @@ describe('GlobePage', () => {
     expect(client.stop).toHaveBeenCalledTimes(1);
   });
 
+  it('filters the globe to one nation and flies there', async () => {
+    mockWebGl2(true);
+    const { user } = renderApp('/', 'user');
+    await screen.findByRole('switch', { name: 'Disasters 1' });
+    const picker = await screen.findByRole('combobox', { name: 'Nation filter' });
+    await user.type(picker, 'Ukraine');
+    expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [31.2, 48.4], zoom: 4 });
+    const panel = screen.getByRole('region', { name: 'Ukraine panel' });
+    expect(within(panel).getByText('Nothing in the live tier for this nation.')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Disasters 0' })).toBeInTheDocument();
+    expect(overlayLayerIds()).toEqual([]);
+    const strip = screen.getByRole('navigation', { name: 'Latest events' });
+    expect(within(strip).getByText('Waiting for events')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Clear nation filter' }));
+    expect(screen.queryByRole('region', { name: 'Ukraine panel' })).not.toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(overlayLayerIds()).toEqual(['events-disaster']);
+  });
+
   it('asks the session for a fresh token when the stream says so', async () => {
     mockWebGl2(true);
     renderApp('/', 'user');

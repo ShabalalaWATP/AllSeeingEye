@@ -265,6 +265,294 @@
         ]
       }
     },
+    "/api/events": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "List Events",
+        "operationId": "list_events_api_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "categories",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Categories"
+            }
+          },
+          {
+            "name": "bbox",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bbox"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Country"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "name": "sources",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sources"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/stats": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Store Stats",
+        "operationId": "store_stats_api_events_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreStatsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/events/{event_id}": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Event",
+        "operationId": "get_event_api_events__event_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/countries": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "List Countries",
+        "operationId": "list_countries_api_countries_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountriesOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/stream": {
+      "get": {
+        "tags": [
+          "stream"
+        ],
+        "summary": "Stream",
+        "operationId": "stream_api_stream_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "categories",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Categories"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/account-requests": {
       "get": {
         "tags": [
@@ -619,6 +907,79 @@
           }
         }
       }
+    },
+    "/api/admin/sources": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Sources",
+        "operationId": "list_sources_api_admin_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourcesOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/sources/{source_id}/reset": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Reset Source",
+        "operationId": "reset_source_api_admin_sources__source_id__reset_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceHealthOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -820,6 +1181,349 @@
         ],
         "title": "AuditPageOut"
       },
+      "Category": {
+        "type": "string",
+        "enum": [
+          "news",
+          "conflict",
+          "disaster",
+          "aviation",
+          "maritime",
+          "space",
+          "cyber",
+          "social",
+          "political",
+          "humanitarian",
+          "economic"
+        ],
+        "title": "Category"
+      },
+      "CategoryStatsOut": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "oldest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest"
+          },
+          "newest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "count",
+          "oldest",
+          "newest"
+        ],
+        "title": "CategoryStatsOut"
+      },
+      "CountriesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CountryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "CountriesOut"
+      },
+      "CountryOut": {
+        "properties": {
+          "iso2": {
+            "type": "string",
+            "title": "Iso2"
+          },
+          "iso3": {
+            "type": "string",
+            "title": "Iso3"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "bounds": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Bounds"
+          },
+          "centroid": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Centroid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "iso2",
+          "iso3",
+          "name",
+          "bounds",
+          "centroid"
+        ],
+        "title": "CountryOut"
+      },
+      "EventOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "subtype": {
+            "type": "string",
+            "title": "Subtype"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Published At"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "title_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title En"
+          },
+          "point": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PointOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "geo_confidence": {
+            "$ref": "#/components/schemas/GeoConfidence"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
+          "reliability": {
+            "$ref": "#/components/schemas/Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "grade_rationale": {
+            "type": "string",
+            "title": "Grade Rationale"
+          },
+          "story_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Story Id"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "category",
+          "subtype",
+          "title",
+          "summary",
+          "url",
+          "published_at",
+          "observed_at",
+          "language",
+          "title_en",
+          "point",
+          "geo_confidence",
+          "country_iso",
+          "tags",
+          "severity",
+          "reliability",
+          "credibility",
+          "grade",
+          "grade_rationale",
+          "story_id",
+          "attributes"
+        ],
+        "title": "EventOut"
+      },
+      "EventsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "EventsOut"
+      },
       "ForgotPasswordIn": {
         "properties": {
           "email": {
@@ -833,6 +1537,17 @@
           "email"
         ],
         "title": "ForgotPasswordIn"
+      },
+      "GeoConfidence": {
+        "type": "string",
+        "enum": [
+          "exact",
+          "city",
+          "admin1",
+          "country",
+          "none"
+        ],
+        "title": "GeoConfidence"
       },
       "HTTPValidationError": {
         "properties": {
@@ -899,6 +1614,24 @@
         ],
         "title": "MessageOut"
       },
+      "PointOut": {
+        "properties": {
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lon",
+          "lat"
+        ],
+        "title": "PointOut"
+      },
       "ReadyOut": {
         "properties": {
           "status": {
@@ -929,6 +1662,19 @@
         },
         "type": "object",
         "title": "RejectIn"
+      },
+      "Reliability": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "title": "Reliability",
+        "description": "NATO source reliability (AJP-2.1 Table 3.1)."
       },
       "RequestAccountIn": {
         "properties": {
@@ -1020,6 +1766,250 @@
           "new_password"
         ],
         "title": "SetPasswordIn"
+      },
+      "SourceHealthOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SourceStatus"
+          },
+          "last_success": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_error_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error At"
+          },
+          "consecutive_failures": {
+            "type": "integer",
+            "title": "Consecutive Failures"
+          },
+          "items_last_poll": {
+            "type": "integer",
+            "title": "Items Last Poll"
+          },
+          "last_latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Latency Ms"
+          },
+          "next_poll_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Poll At"
+          },
+          "polls": {
+            "type": "integer",
+            "title": "Polls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "status",
+          "last_success",
+          "last_error",
+          "last_error_at",
+          "consecutive_failures",
+          "items_last_poll",
+          "last_latency_ms",
+          "next_poll_at",
+          "polls"
+        ],
+        "title": "SourceHealthOut"
+      },
+      "SourceKind": {
+        "type": "string",
+        "enum": [
+          "api",
+          "rss",
+          "geojson",
+          "websocket"
+        ],
+        "title": "SourceKind"
+      },
+      "SourceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "reliability": {
+            "$ref": "#/components/schemas/Reliability"
+          },
+          "poll_interval_seconds": {
+            "type": "integer",
+            "title": "Poll Interval Seconds"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "licence_note": {
+            "type": "string",
+            "title": "Licence Note"
+          },
+          "homepage": {
+            "type": "string",
+            "title": "Homepage"
+          },
+          "requires_key": {
+            "type": "boolean",
+            "title": "Requires Key"
+          },
+          "instrument": {
+            "type": "boolean",
+            "title": "Instrument"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "health": {
+            "$ref": "#/components/schemas/SourceHealthOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "organisation",
+          "category",
+          "kind",
+          "url",
+          "reliability",
+          "poll_interval_seconds",
+          "language",
+          "licence_note",
+          "homepage",
+          "requires_key",
+          "instrument",
+          "flags",
+          "health"
+        ],
+        "title": "SourceOut"
+      },
+      "SourceStatus": {
+        "type": "string",
+        "enum": [
+          "idle",
+          "healthy",
+          "degraded",
+          "disabled"
+        ],
+        "title": "SourceStatus"
+      },
+      "SourcesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SourceOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "SourcesOut"
+      },
+      "StoreStatsOut": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "estimated_bytes": {
+            "type": "integer",
+            "title": "Estimated Bytes"
+          },
+          "budget_bytes": {
+            "type": "integer",
+            "title": "Budget Bytes"
+          },
+          "per_category": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryStatsOut"
+            },
+            "type": "array",
+            "title": "Per Category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "estimated_bytes",
+          "budget_bytes",
+          "per_category"
+        ],
+        "title": "StoreStatsOut"
       },
       "TokenResponse": {
         "properties": {

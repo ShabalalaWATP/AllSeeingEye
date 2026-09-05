@@ -1,4 +1,5 @@
 import type { LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import type { Country } from '@/lib/api/geoSchemas';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
 
 export const ADMIN_TOKEN = 'admin-access-token';
@@ -97,7 +98,7 @@ export function liveEvent(overrides: Partial<LiveEvent> = {}): LiveEvent {
     title_en: null,
     point: { lon: 10, lat: 50 },
     geo_confidence: 'exact',
-    country_iso: null,
+    country_iso: 'DE',
     tags: ['earthquake'],
     severity: 0.5,
     reliability: 'A',
@@ -141,3 +142,9 @@ export const storeStats: StoreStats = {
     { category: 'cyber', count: 1, oldest: '2026-09-04T12:00:00Z', newest: '2026-09-04T12:00:00Z' },
   ],
 };
+
+export const countries: Country[] = [
+  { iso2: 'GB', iso3: 'GBR', name: 'United Kingdom', bounds: [-7.6, 49.9, 1.8, 58.6], centroid: [-2.9, 54.3] },
+  { iso2: 'UA', iso3: 'UKR', name: 'Ukraine', bounds: [22.1, 44.4, 40.2, 52.4], centroid: [31.2, 48.4] },
+  { iso2: 'RU', iso3: 'RUS', name: 'Russia', bounds: [-180, 41.2, 180, 81.9], centroid: [97.7, 61.5] },
+];

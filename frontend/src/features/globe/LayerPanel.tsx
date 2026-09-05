@@ -26,7 +26,7 @@ export function LayerPanel({ counts, hidden, stats, status, error, onToggle }: L
   return (
     <section
       aria-label="Layers"
-      className="absolute top-16 left-3 z-10 w-52 rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
+      className="shrink-0 rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
     >
       <div className="mb-1 flex items-center justify-between px-1">
         <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Layers</h2>
