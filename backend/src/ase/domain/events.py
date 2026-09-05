@@ -14,6 +14,7 @@ JsonScalar = str | int | float | bool | None
 MAX_TITLE = 300
 MAX_SUMMARY = 2_000
 MAX_ATTRIBUTES = 40
+MAX_ATTRIBUTE_CHARS = 500
 
 
 class Category(StrEnum):
@@ -134,4 +135,8 @@ class Event:
 def freeze_attributes(attributes: Mapping[str, JsonScalar]) -> Mapping[str, JsonScalar]:
     """Bound and freeze category-specific extras."""
     items = list(attributes.items())[:MAX_ATTRIBUTES]
-    return MappingProxyType(dict(items))
+    bounded = {
+        key: value[:MAX_ATTRIBUTE_CHARS] if isinstance(value, str) else value
+        for key, value in items
+    }
+    return MappingProxyType(bounded)

@@ -17,6 +17,7 @@ from ase.adapters.feeds.http import (
     NotModified,
     assert_public_host,
     is_public_address,
+    pin_url,
 )
 
 
@@ -56,7 +57,7 @@ async def test_assert_public_host_rejects_bad_urls(monkeypatch: pytest.MonkeyPat
         return [(None, None, None, None, ("93.184.216.34", 0))]
 
     monkeypatch.setattr(loop, "getaddrinfo", resolves_public)
-    await assert_public_host("https://example.com/feed")
+    assert await assert_public_host("https://example.com/feed") == "93.184.216.34"
 
     async def cannot_resolve(*_: Any, **__: Any) -> list[tuple[Any, ...]]:
         raise socket.gaierror("nope")
@@ -150,3 +151,32 @@ async def test_transport_errors_are_wrapped(no_dns: None) -> None:
     with pytest.raises(FeedFetchError, match="ConnectError"):
         await client.get_bytes("https://feeds.test/x")
     await client.aclose()
+
+
+async def test_pinned_requests_present_the_host_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def resolve(url: str) -> str | None:
+        return "93.184.216.34"
+
+    monkeypatch.setattr(feed_http, "assert_public_host", resolve)
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json={"ok": True})
+
+    client = make_client(handler)
+    assert await client.get_json("https://feeds.test:8443/a.json") == {"ok": True}
+    request = seen[0]
+    # The connection goes to the address that was checked; the name travels in Host and SNI.
+    assert request.url.host == "93.184.216.34" and request.url.port == 8443
+    assert request.headers["host"] == "feeds.test:8443"
+    assert request.extensions["sni_hostname"] == "feeds.test"
+    assert await client.get_text("http://feeds.test/plain", conditional=False) == '{"ok":true}'
+    assert "sni_hostname" not in seen[1].extensions
+    await client.aclose()
+
+
+async def test_literal_addresses_need_no_pinning() -> None:
+    assert await assert_public_host("https://93.184.216.34/feed") is None
+    assert pin_url("http://feeds.test/x?y=1", "2001:db8::1") == "http://[2001:db8::1]/x?y=1"
+    assert pin_url("https://feeds.test:8443/x", "93.184.216.34") == "https://93.184.216.34:8443/x"

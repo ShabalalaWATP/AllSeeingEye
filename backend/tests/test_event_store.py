@@ -7,7 +7,14 @@ from datetime import timedelta
 from ase.adapters.store.memory import InMemoryEventStore, estimate_bytes
 from ase.application.feeds.budgets import RetentionBudget
 from ase.application.ports.feeds import EventQuery
-from ase.domain.events import BoundingBox, Category, Point
+from ase.domain.events import (
+    MAX_ATTRIBUTE_CHARS,
+    MAX_ATTRIBUTES,
+    BoundingBox,
+    Category,
+    Point,
+    freeze_attributes,
+)
 from feeds_helpers import NOW, make_event
 
 
@@ -76,9 +83,13 @@ def test_prune_by_memory_budget() -> None:
     per_event = estimate_bytes(sample)
     store = InMemoryEventStore(memory_budget_bytes=per_event * 2 + 10)
     store.upsert([make_event(f"m{i}", observed_at=NOW + timedelta(seconds=i)) for i in range(5)])
-    assert store.stats().estimated_bytes > store.stats().budget_bytes
+    # The budget holds from the moment of insertion; the next prune announces the losses.
+    assert store.stats().total == 2
+    assert store.stats().estimated_bytes <= store.stats().budget_bytes
     result = store.prune(NOW)
     assert result.evicted == 3
+    assert len(result.ids) == 3
+    assert store.prune(NOW).ids == ()
     stats = store.stats()
     assert stats.total == 2
     assert stats.estimated_bytes <= stats.budget_bytes
@@ -90,3 +101,10 @@ def test_stats_empty_store() -> None:
     stats = InMemoryEventStore().stats()
     assert stats.total == 0
     assert stats.per_category == ()
+
+
+def test_attributes_are_bounded_in_count_and_length() -> None:
+    frozen = freeze_attributes({"long": "x" * 900, "n": 1, **{f"k{i}": i for i in range(60)}})
+    assert len(frozen) == MAX_ATTRIBUTES
+    assert len(str(frozen["long"])) == MAX_ATTRIBUTE_CHARS
+    assert frozen["n"] == 1

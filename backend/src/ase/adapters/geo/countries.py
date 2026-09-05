@@ -9,23 +9,14 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
 from typing import Any
 
+from ase.domain.countries import Country
 from ase.domain.geometry import Bounds, Ring, bounds_contain, point_in_polygon, ring_bounds
 
 RESOURCE = "countries_110m.json"
-
-
-@dataclass(frozen=True, slots=True)
-class Country:
-    iso2: str
-    iso3: str
-    name: str
-    bounds: Bounds
-    centroid: tuple[float, float]  # (lon, lat) of the largest polygon's box
 
 
 @lru_cache(maxsize=1)

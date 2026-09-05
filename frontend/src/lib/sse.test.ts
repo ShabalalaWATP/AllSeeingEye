@@ -41,10 +41,16 @@ describe('EventStreamClient', () => {
     const calls: { token: string | null }[] = [];
     const responses = [
       () =>
-        new Response(streamOf(['event: hello\ndata: {}\n\nevent: event.upsert\n', 'data: {"events":[]}\n\nevent: bye\ndata: {}\n\n']), {
-          status: 200,
-          headers: { 'Content-Type': 'text/event-stream' },
-        }),
+        new Response(
+          streamOf([
+            'event: hello\ndata: {}\n\nevent: event.upsert\n',
+            'data: {"events":[]}\n\nevent: bye\ndata: {}\n\n',
+          ]),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'text/event-stream' },
+          },
+        ),
       () => new Response(streamOf(['event: hello\ndata: {}\n\n']), { status: 200 }),
     ];
     const fetchImpl = vi.fn((_: RequestInfo | URL, init?: RequestInit) => {
@@ -117,6 +123,27 @@ describe('EventStreamClient', () => {
     failing.stop();
   });
 
+  it('never opens a stream when stopped while the token is being fetched', async () => {
+    const fetchImpl = vi.fn();
+    let release: (token: string | null) => void = () => undefined;
+    const client = new EventStreamClient({
+      url: '/api/stream',
+      fetchImpl,
+      getToken: () =>
+        new Promise<string | null>((resolve) => {
+          release = resolve;
+        }),
+      onMessage: () => undefined,
+      onStatus: () => undefined,
+    });
+    client.start();
+    client.stop();
+    release('late-token');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it('treats a 401 as a request for a refreshed token', async () => {
     const tokens: boolean[] = [];
     let served = 0;
@@ -125,7 +152,9 @@ describe('EventStreamClient', () => {
       fetchImpl: () => {
         served += 1;
         return Promise.resolve(
-          served === 1 ? new Response(null, { status: 401 }) : new Response(streamOf([]), { status: 200 }),
+          served === 1
+            ? new Response(null, { status: 401 })
+            : new Response(streamOf([]), { status: 200 }),
         );
       },
       minBackoffMs: 1,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -57,6 +57,7 @@ class JwtAccessTokenIssuer:
                 user_id=UUID(str(payload["sub"])),
                 role=Role(str(payload.get("role"))),
                 jti=str(payload["jti"]),
+                expires_at=datetime.fromtimestamp(expires, tz=UTC),
             )
         except (TypeError, ValueError) as exc:
             raise Unauthenticated() from exc

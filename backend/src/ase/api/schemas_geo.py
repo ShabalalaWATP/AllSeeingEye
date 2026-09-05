@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from ase.adapters.geo.countries import Country
+from ase.domain.countries import Country
 
 
 class CountryOut(BaseModel):

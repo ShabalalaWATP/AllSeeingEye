@@ -10,7 +10,7 @@ import pytest
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.feeds.health import CircuitBreaker, HealthRegistry, SourceStatus
-from ase.application.feeds.pipeline import Normaliser, Pipeline, clean_text
+from ase.application.feeds.pipeline import Normaliser, Pipeline, clean_text, safe_url
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.ports.feeds import BusMessage
 from ase.domain.errors import NotFound
@@ -22,6 +22,24 @@ def test_clean_text_bounds_and_strips() -> None:
     assert clean_text("", 10) is None
     assert clean_text(None, 10) is None
     assert clean_text("x" * 20, 10) == "xxxxxxxxx…"
+
+
+def test_markup_is_stripped_and_only_http_links_survive() -> None:
+    assert (
+        clean_text("<b>Bold</b> &amp; <script>alert(1)</script> text", 100)
+        == "Bold & alert(1) text"
+    )
+    assert clean_text("<p></p>", 10) is None
+    assert safe_url(None) is None
+    assert safe_url("javascript:alert(1)") is None
+    assert safe_url("/relative/path") is None
+    assert safe_url("https://" + "x" * 3000) is None
+    assert safe_url("  https://example.org/a?b=1 ") == "https://example.org/a?b=1"
+    event = make_event("h", title="<i>Quake</i>", summary="<div>Ten km</div>").with_changes(
+        url="javascript:x"
+    )
+    out = Normaliser().process([event])[0]
+    assert out.title == "Quake" and out.summary == "Ten km" and out.url is None
 
 
 def test_normaliser_drops_untitled_and_duplicates() -> None:

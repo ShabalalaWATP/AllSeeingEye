@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.api.cookies import CSRF_COOKIE, CSRF_HEADER
 from ase.api.errors import CsrfFailed
-from ase.application.dto import RequestContext
+from ase.application.dto import AccessClaims, RequestContext
 from ase.application.policy import require_admin
 from ase.container import Container
 from ase.domain.errors import Unauthenticated
@@ -66,6 +66,19 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def get_access_claims(
+    container: ContainerDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+) -> AccessClaims:
+    """The verified claims of the presented token, for routes that need its real expiry."""
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise Unauthenticated()
+    return container.issuer.verify(credentials.credentials)
+
+
+ClaimsDep = Annotated[AccessClaims, Depends(get_access_claims)]
 
 
 def get_admin_user(user: CurrentUser) -> User:

@@ -84,7 +84,12 @@ def read_export(data: bytes) -> list[list[str]]:
             raise FeedFetchError("GDELT export zip must hold exactly one file")
         if members[0].file_size > MAX_CSV_BYTES:
             raise FeedFetchError("GDELT export is larger than allowed")
-        text = archive.read(members[0]).decode("utf-8", "replace")
+        # The declared size is untrusted metadata: count the inflated bytes as well.
+        with archive.open(members[0]) as member:
+            raw = member.read(MAX_CSV_BYTES + 1)
+        if len(raw) > MAX_CSV_BYTES:
+            raise FeedFetchError("GDELT export inflates beyond the allowed size")
+        text = raw.decode("utf-8", "replace")
     except zipfile.BadZipFile as exc:
         raise FeedFetchError("GDELT export is not a zip file") from exc
     reader = csv.reader(io.StringIO(text), delimiter="\t", quoting=csv.QUOTE_NONE)

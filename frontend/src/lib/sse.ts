@@ -73,6 +73,8 @@ export class EventStreamClient {
     while (this.running) {
       this.options.onStatus(this.attempts === 0 ? 'connecting' : 'reconnecting');
       const token = await this.options.getToken(refresh);
+      // stop() may have run while the token was being fetched; never open a stream after it.
+      if (this.stopped()) return;
       if (token === null) {
         this.running = false;
         this.options.onStatus('offline');

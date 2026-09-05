@@ -40,7 +40,7 @@ def _first_url(notes: object) -> str | None:
         return None
     for part in notes.split(";"):
         candidate = part.strip()
-        if candidate.startswith("http"):
+        if candidate.startswith(("https://", "http://")):
             return candidate.split(" ")[0]
     return None
 

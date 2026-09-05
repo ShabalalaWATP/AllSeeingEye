@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
-from xml.etree.ElementTree import Element, ParseError  # types only; parsing is defused
+from xml.etree.ElementTree import Element, ParseError  # nosec B405 (types only; parsing is defused)
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 

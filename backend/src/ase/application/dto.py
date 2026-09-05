@@ -21,6 +21,7 @@ class AccessClaims:
     user_id: UUID
     role: Role
     jti: str
+    expires_at: datetime
 
 
 @dataclass(frozen=True, slots=True)

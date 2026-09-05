@@ -46,6 +46,7 @@ from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
+from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports import (
     AccountRequestRepository,
     AuditLogRepository,
@@ -58,6 +59,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.application.ports.feeds import FeedConnector
+from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.tiles import TileProvider
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -107,7 +109,8 @@ class Container:
         )
         self.bus = InMemoryEventBus()
         self.health = HealthRegistry()
-        self.countries = CountryIndex.from_resource()
+        self.countries: CountryDirectory = CountryIndex.from_resource()
+        self.streams = StreamLimiter(settings.max_streams_per_user)
         self.pipeline = Pipeline([Normaliser(), CountryStage(self.countries)])
         self.http = FeedHttpClient(settings.feeds_user_agent)
         self.connectors: list[FeedConnector] = (

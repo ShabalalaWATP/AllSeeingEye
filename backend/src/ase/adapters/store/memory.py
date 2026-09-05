@@ -44,6 +44,8 @@ class InMemoryEventStore:
         self._by_category: dict[Category, set[str]] = {}
         self._by_country: dict[str, set[str]] = {}
         self._estimated_bytes = 0
+        # Evicted between prunes to hold the memory budget; announced at the next prune.
+        self._pending_expiry: list[str] = []
 
     def upsert(self, events: Iterable[Event]) -> UpsertResult:
         added = updated = unchanged = 0
@@ -61,6 +63,7 @@ class InMemoryEventStore:
                 self._insert(event)
                 updated += 1
                 changed_ids.append(event.id)
+        self._enforce_budget(self._pending_expiry)
         return UpsertResult(
             added=added, updated=updated, unchanged=unchanged, changed_ids=tuple(changed_ids)
         )
@@ -107,12 +110,9 @@ class InMemoryEventStore:
                 evicted.extend(remaining[:overflow])
         for event_id in expired + evicted:
             self._remove(event_id)
-        if self._estimated_bytes > self._memory_budget:
-            for event_id in sorted(self._events, key=lambda i: self._events[i].observed_at):
-                if self._estimated_bytes <= self._memory_budget:
-                    break
-                self._remove(event_id)
-                evicted.append(event_id)
+        evicted.extend(self._pending_expiry)
+        self._pending_expiry = []
+        self._enforce_budget(evicted)
         pruned_ids = tuple((expired + evicted)[:MAX_PRUNE_IDS])
         return PruneResult(expired=len(expired), evicted=len(evicted), ids=pruned_ids)
 
@@ -142,6 +142,16 @@ class InMemoryEventStore:
                 result.extend(self._by_category.get(category, ()))
             return result
         return list(self._events)
+
+    def _enforce_budget(self, evicted: list[str]) -> None:
+        """Drops the oldest observed events until the memory estimate fits the budget."""
+        if self._estimated_bytes <= self._memory_budget:
+            return
+        for event_id in sorted(self._events, key=lambda i: self._events[i].observed_at):
+            if self._estimated_bytes <= self._memory_budget:
+                break
+            self._remove(event_id)
+            evicted.append(event_id)
 
     def _insert(self, event: Event) -> None:
         self._events[event.id] = event

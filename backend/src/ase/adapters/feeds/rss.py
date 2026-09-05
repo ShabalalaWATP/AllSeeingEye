@@ -5,13 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from html import unescape
-from html.parser import HTMLParser
-from xml.etree.ElementTree import Element, ParseError  # types only; parsing is defused
+from xml.etree.ElementTree import Element, ParseError  # nosec B405 (types only; parsing is defused)
 
 from defusedxml.ElementTree import fromstring as safe_fromstring
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.application.feeds.pipeline import strip_html
 from ase.application.ports import Clock
 from ase.domain.events import (
     Credibility,
@@ -40,29 +39,6 @@ class RssOptions:
     rationale: str = "Single-outlet report, not yet corroborated"
     # RSS <category domain="..."> whose text is an ISO 3166-1 alpha-2 country code.
     country_category_domain: str | None = None
-
-
-class _TextExtractor(HTMLParser):
-    """Collects the text of an HTML fragment; tags and attributes are discarded."""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.parts: list[str] = []
-
-    def handle_data(self, data: str) -> None:
-        if data.strip():
-            self.parts.append(data.strip())
-
-
-def strip_html(value: str | None) -> str | None:
-    """Plain text from a feed body that may hold literal or entity-escaped HTML."""
-    if not value:
-        return None
-    extractor = _TextExtractor()
-    extractor.feed(unescape(value))
-    extractor.close()
-    text = " ".join(extractor.parts)
-    return text or None
 
 
 def _local(tag: str) -> str:

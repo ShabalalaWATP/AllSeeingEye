@@ -45,6 +45,6 @@ describe('countries store', () => {
     );
     await useCountriesStore.getState().load();
     expect(useCountriesStore.getState().error).toBe('No atlas.');
-    expect(useCountriesStore.getState().loaded).toBe(true);
+    expect(useCountriesStore.getState().loaded).toBe(false);
   });
 });

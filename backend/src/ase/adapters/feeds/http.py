@@ -1,4 +1,10 @@
-"""Outbound HTTP for connectors: size caps, timeouts, conditional requests, no private hosts."""
+"""Outbound HTTP for connectors: size caps, timeouts, conditional requests, no private hosts.
+
+The SSRF guard resolves the hostname itself, checks every address, and then connects to
+the address it checked (with the original host name in the Host header and the TLS
+handshake), so a hostile DNS server cannot answer the check with a public address and
+the connection with a private one.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +14,7 @@ import json
 import socket
 from dataclasses import dataclass
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
 
@@ -45,8 +51,13 @@ def is_public_address(host: str) -> bool:
     )
 
 
-async def assert_public_host(url: str) -> None:
-    """Refuse URLs whose host resolves to private, loopback or link-local space (SSRF guard)."""
+async def assert_public_host(url: str) -> str | None:
+    """Refuse URLs whose host resolves to private space; return the address to connect to.
+
+    Returns None for a literal public IP address (nothing to pin) and raises on any
+    private, loopback or link-local answer. Callers must connect to the returned address
+    rather than resolving again, which is what closes the DNS rebinding window.
+    """
     parts = urlsplit(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
         raise FeedFetchError(f"Unsupported URL: {url}")
@@ -56,12 +67,29 @@ async def assert_public_host(url: str) -> None:
     if not is_public_address(host):
         raise FeedFetchError(f"Refusing to fetch a non-public address: {host}")
     try:
+        ipaddress.ip_address(host)
+        return None
+    except ValueError:
+        pass
+    try:
         infos = await asyncio.get_running_loop().getaddrinfo(host, None, type=socket.SOCK_STREAM)
     except socket.gaierror as exc:
         raise FeedFetchError(f"Cannot resolve {host}") from exc
-    for info in infos:
-        if not is_public_address(str(info[4][0])):
+    addresses = [str(info[4][0]) for info in infos]
+    for address in addresses:
+        if not is_public_address(address):
             raise FeedFetchError(f"Refusing to fetch {host}: resolves to a non-public address")
+    if not addresses:
+        raise FeedFetchError(f"Cannot resolve {host}")
+    return addresses[0]
+
+
+def pin_url(url: str, address: str) -> str:
+    """The same URL with the host replaced by the address that was checked."""
+    parts = urlsplit(url)
+    literal = f"[{address}]" if ":" in address else address
+    netloc = literal if parts.port is None else f"{literal}:{parts.port}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
 
 
 class FeedHttpClient:
@@ -88,22 +116,25 @@ class FeedHttpClient:
     async def get_bytes(self, url: str, *, conditional: bool = True) -> bytes:
         current = url
         for _ in range(MAX_REDIRECTS + 1):
-            await assert_public_host(current)
+            address = await assert_public_host(current)
             headers: dict[str, str] = {}
             validators = self._validators.get(url) if conditional else None
             if validators and validators.etag:
                 headers["If-None-Match"] = validators.etag
             if validators and validators.last_modified:
                 headers["If-Modified-Since"] = validators.last_modified
+            target, extensions = self._pinned(current, address, headers)
             try:
-                async with self._client.stream("GET", current, headers=headers) as response:
+                async with self._client.stream(
+                    "GET", target, headers=headers, extensions=extensions
+                ) as response:
                     if response.status_code == 304:
                         raise NotModified(url)
                     if response.is_redirect:
                         location = response.headers.get("location")
                         if not location:
                             raise FeedFetchError("Redirect without a location")
-                        current = str(response.url.join(location))
+                        current = urljoin(current, location)
                         continue
                     if response.status_code >= 400:
                         raise FeedFetchError(f"HTTP {response.status_code} from {current}")
@@ -126,6 +157,19 @@ class FeedHttpClient:
 
     async def get_text(self, url: str, *, conditional: bool = True) -> str:
         return (await self.get_bytes(url, conditional=conditional)).decode("utf-8", "replace")
+
+    @staticmethod
+    def _pinned(
+        url: str, address: str | None, headers: dict[str, str]
+    ) -> tuple[str, dict[str, Any]]:
+        """Connect to the checked address while presenting the original host name."""
+        if address is None:
+            return url, {}
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+        headers["Host"] = host if parts.port is None else f"{host}:{parts.port}"
+        extensions: dict[str, Any] = {"sni_hostname": host} if parts.scheme == "https" else {}
+        return pin_url(url, address), extensions
 
     async def _read_bounded(self, response: httpx.Response) -> bytes:
         declared = response.headers.get("content-length")

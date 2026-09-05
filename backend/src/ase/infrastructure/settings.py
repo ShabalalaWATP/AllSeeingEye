@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
+    max_streams_per_user: int = Field(default=4, ge=1, le=64)
     # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
     os_maps_key: SecretStr | None = None
 

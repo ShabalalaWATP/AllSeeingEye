@@ -31,7 +31,8 @@ export const useCountriesStore = create<CountriesState>()((set, get) => ({
       for (const country of items) byIso[country.iso2] = country;
       set({ items, byIso, loaded: true, error: null });
     } catch (caught) {
-      set({ error: describeError(caught), loaded: true });
+      // Not marked loaded, so the next mount tries again.
+      set({ error: describeError(caught) });
     }
   },
 }));

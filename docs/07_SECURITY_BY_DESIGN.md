@@ -28,7 +28,7 @@ Top risks, in order: prompt injection through ingested content; server-side requ
 
 ### Untrusted content
 - Every upstream response has a size cap (5 MB default, per connector), a timeout, and a content-type check. XML is parsed with `defusedxml`; JSON depth and size are bounded.
-- Text fields are stripped of HTML with `nh3` and truncated. The frontend renders text nodes only; the sole HTML rendering path is the sanitised report Markdown, passed through DOMPurify with a strict allow-list.
+- Text fields are stripped of HTML in the normaliser with the standard-library parser (tags and attributes discarded, entities decoded), then truncated; links survive only as absolute http(s) URLs. The frontend renders text nodes only; the sole HTML rendering path is the sanitised report Markdown, passed through DOMPurify with a strict allow-list.
 - Outbound requests only to hosts declared by the connector or present in the admin-managed source registry. DNS results are checked against private, loopback, link-local and metadata ranges before connecting, and again on redirects.
 - Adding or editing a source URL is admin only, validated (scheme, host, no credentials in URL), and logged.
 

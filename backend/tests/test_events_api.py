@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from ase.adapters.persistence.base import Base
+from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
 from ase.domain.events import Category, Point
@@ -175,3 +176,32 @@ async def test_admin_sources_list_and_reset(client: AsyncClient, admin: User, us
     ).status_code == 404
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     assert (await client.get("/api/admin/sources", headers=bearer(user_token))).status_code == 403
+
+
+async def test_stream_honours_the_token_expiry_and_the_per_user_cap(
+    app: FastAPI, container: Container, user: User, clock: FakeClock
+) -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+        container.streams = StreamLimiter(0)
+        blocked = await client.get("/api/stream", headers=bearer(token))
+        assert blocked.status_code == 429
+        assert blocked.headers["retry-after"] == "15"
+        container.streams = StreamLimiter()
+
+        # Opened ten minutes into a fifteen-minute token, the stream lives five more minutes.
+        clock.advance(timedelta(minutes=10))
+
+        async def end_stream_later() -> None:
+            await asyncio.sleep(0.2)
+            clock.advance(timedelta(minutes=6))
+            await container.bus.publish(BusMessage("event.expire", {"ids": (), "count": 0}))
+
+        closer = asyncio.create_task(end_stream_later())
+        response = await client.get("/api/stream", headers=bearer(token))
+        await closer
+        assert response.status_code == 200
+        first = next(line for line in response.text.splitlines() if line.startswith("data:"))
+        assert json.loads(first.split(":", 1)[1]) == {"expires_in": 300}
+        assert response.text.rstrip().endswith('{"reason": "token_expired"}')
+        assert container.streams.held(user.id) == 0

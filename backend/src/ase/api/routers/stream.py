@@ -11,15 +11,17 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Query
 from sse_starlette.sse import EventSourceResponse
 
-from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.routers.events import parse_categories
 from ase.api.schemas_events import EventOut, SourceHealthOut
 from ase.application.feeds.health import SourceHealth
 from ase.application.ports.feeds import BusMessage
+from ase.domain.errors import RateLimited
 from ase.domain.events import Category, Event
 
 router = APIRouter(tags=["stream"])
 PING_SECONDS = 15
+STREAM_RETRY_SECONDS = 15
 
 
 def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
@@ -50,19 +52,24 @@ def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any
 @router.get("/stream")
 async def stream(
     user: CurrentUser,
+    claims: ClaimsDep,
     container: ContainerDep,
     categories: Annotated[str | None, Query(max_length=200)] = None,
 ) -> EventSourceResponse:
     wanted = parse_categories(categories)
+    now = container.clock.now()
+    # The stream ends when the presented token does, never later than a full lifetime.
     lifetime = timedelta(minutes=container.settings.access_token_minutes)
-    deadline = container.clock.now() + lifetime
+    deadline = min(claims.expires_at, now + lifetime)
+    if not container.streams.acquire(user.id):
+        raise RateLimited(retry_after=STREAM_RETRY_SECONDS)
 
     async def generate() -> AsyncIterator[dict[str, str]]:
         subscription = container.bus.subscribe()
         try:
             yield {
                 "event": "hello",
-                "data": json.dumps({"expires_in": int(lifetime.total_seconds())}),
+                "data": json.dumps({"expires_in": int((deadline - now).total_seconds())}),
             }
             while True:
                 remaining = (deadline - container.clock.now()).total_seconds()
@@ -82,5 +89,6 @@ async def stream(
                     yield {"event": message.kind, "data": json.dumps(payload)}
         finally:
             subscription.close()
+            container.streams.release(user.id)
 
     return EventSourceResponse(generate(), ping=PING_SECONDS)

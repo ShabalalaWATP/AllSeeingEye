@@ -140,7 +140,7 @@ class FeedScheduler:
     async def _run_connector(self, connector: FeedConnector) -> None:
         interval = connector.spec.poll_interval.total_seconds()
         # Spread the first polls so a restart does not hit every upstream at once.
-        await self._sleep(random.uniform(0, min(5.0, interval * self._jitter)))  # noqa: S311
+        await self._sleep(random.uniform(0, min(5.0, interval * self._jitter)))  # noqa: S311 # nosec B311
         while not self._stopping.is_set():
             await self.poll_once(connector)
             entry = self._health.get(connector.spec.id)
@@ -149,7 +149,9 @@ class FeedScheduler:
             delay = interval
             if entry.next_poll_at is not None:
                 delay = max(1.0, (entry.next_poll_at - self._clock.now()).total_seconds())
-            await self._sleep(delay * random.uniform(1 - self._jitter, 1 + self._jitter))  # noqa: S311
+            await self._sleep(
+                delay * random.uniform(1 - self._jitter, 1 + self._jitter)  # noqa: S311 # nosec B311
+            )
 
     async def _prune_loop(self) -> None:
         while not self._stopping.is_set():
