@@ -9,6 +9,7 @@ import type { ViewMode } from '@/stores/globe';
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
+  if (pathname.startsWith('/reports')) return 'Reports';
   return 'The All Seeing Eye';
 }
 

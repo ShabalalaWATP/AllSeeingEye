@@ -3,6 +3,7 @@ import { Fragment } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { formatUtc } from '@/lib/format';
+import { isHttpUrl } from '@/lib/urls';
 
 import { CATEGORY_STYLES } from './layers/registry';
 
@@ -13,16 +14,7 @@ export interface EventInspectorProps {
   onClose: () => void;
 }
 
-/** Only http(s) links become anchors; anything else from a feed stays as text. */
-export function isHttpUrl(value: string | null): value is string {
-  if (value === null) return false;
-  try {
-    const protocol = new URL(value).protocol;
-    return protocol === 'https:' || protocol === 'http:';
-  } catch {
-    return false;
-  }
-}
+export { isHttpUrl };
 
 export function sourceLabel(sourceId: string): string {
   return sourceId.replace(/_/g, ' ');

@@ -22,6 +22,8 @@ const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
 const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'));
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
+const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
+const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -47,6 +49,8 @@ export const routes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { index: true, element: <GlobePage /> },
+          { path: 'reports', element: <ReportsPage /> },
+          { path: 'reports/:id', element: <ReportPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

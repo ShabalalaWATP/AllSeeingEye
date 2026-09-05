@@ -15,10 +15,10 @@ describe('AppShell', () => {
     expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
+    expect(within(nav).getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     for (const [label, phase] of [
       ['Trackers', 'Phase 3'],
       ['Direction', 'Phase 4'],
-      ['Reports', 'Phase 2'],
     ]) {
       const button = within(nav).getByRole('button', { name: new RegExp(`^${label!}`) });
       expect(button).toBeDisabled();

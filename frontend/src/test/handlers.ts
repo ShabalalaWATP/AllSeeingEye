@@ -21,6 +21,9 @@ import {
   llmProfiles,
   pendingRequests,
   plainUser,
+  report,
+  reportSummary,
+  reportTemplates,
   sources,
   storeStats,
   tokenFor,
@@ -259,6 +262,29 @@ export const handlers = [
       next_poll_at: null,
     });
   }),
+
+  http.get('/api/reports/templates', () => HttpResponse.json({ items: reportTemplates })),
+
+  http.get('/api/reports', () => HttpResponse.json({ items: [reportSummary] })),
+
+  http.post('/api/reports', async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const id = '99999999-9999-4999-8999-999999999999';
+    return HttpResponse.json(
+      { ...report, report: { ...reportSummary, id, template: String(body.template) } },
+      { status: 201 },
+    );
+  }),
+
+  http.get('/api/reports/:id', ({ params }) => {
+    if (params.id === reportSummary.id) return HttpResponse.json(report);
+    if (params.id === '99999999-9999-4999-8999-999999999999') {
+      return HttpResponse.json({ ...report, report: { ...reportSummary, id: params.id } });
+    }
+    return apiError(404, 'not_found', 'Report not found.');
+  }),
+
+  http.delete('/api/reports/:id', () => new HttpResponse(null, { status: 204 })),
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
 

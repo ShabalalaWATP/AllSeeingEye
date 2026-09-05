@@ -16,7 +16,6 @@ const activeClass = 'bg-surface-2 text-text';
 const laterItems = [
   { label: 'Trackers', phase: 'Phase 3' },
   { label: 'Direction', phase: 'Phase 4' },
-  { label: 'Reports', phase: 'Phase 2' },
 ];
 
 function RailButton({
@@ -74,6 +73,7 @@ export function LeftRail() {
         <RailButton active={onGlobePage && mode === 'map'} onClick={showMap} shortcut="M">
           Map
         </RailButton>
+        <RailLink to="/reports">Reports</RailLink>
         {laterItems.map((item) => (
           <button
             key={item.label}

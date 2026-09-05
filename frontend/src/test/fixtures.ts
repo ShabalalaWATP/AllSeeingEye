@@ -1,6 +1,7 @@
 import type { LiveEvent, Source, SourceHealth, StoreStats } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { LlmProfile } from '@/lib/api/llm';
+import type { Report, ReportSummary, ReportTemplate } from '@/lib/api/reports';
 import type { AccountRequest, AuditEntry, TokenResponse, User } from '@/lib/api/schemas';
 
 export const ADMIN_TOKEN = 'admin-access-token';
@@ -271,3 +272,122 @@ export const llmProfiles: LlmProfile[] = [
     updated_at: '2026-09-05T01:00:00Z',
   },
 ];
+
+export const reportTemplates: ReportTemplate[] = [
+  {
+    id: 'intsum',
+    title: 'Intelligence summary',
+    purpose: 'A periodic summary of what happened in the scope and what it means.',
+    needs_country: false,
+    needs_question: false,
+    window_hours: 48,
+  },
+  {
+    id: 'ask',
+    title: 'Ask the Eye',
+    purpose: 'A free-form question answered from the live evidence, judgements first.',
+    needs_country: false,
+    needs_question: true,
+    window_hours: 72,
+  },
+];
+
+export const reportSummary: ReportSummary = {
+  id: '88888888-8888-4888-8888-888888888888',
+  template: 'intsum',
+  title: 'Intelligence summary: Ukraine',
+  scope: { country: 'UA', categories: [], question: null, window_hours: 48 },
+  period_from: '2026-09-03T01:00:00Z',
+  period_to: '2026-09-05T01:00:00Z',
+  status: 'ready',
+  created_by: plainUser.id,
+  created_at: '2026-09-05T01:00:00Z',
+  latest_version: 1,
+};
+
+export const report: Report = {
+  report: reportSummary,
+  version: {
+    number: 1,
+    status: 'ready',
+    body: {
+      key_judgements: [
+        {
+          id: 'KJ1',
+          statement: 'We assess it is highly likely that fighting around Kharkiv will intensify.',
+          probability: 'highly_likely',
+          confidence: 'moderate',
+          confidence_statement: 'Two independent organisations; volatile front.',
+          supporting_evidence: ['E1', 'E2'],
+          contradicting_evidence: [],
+          assumptions: ['A1'],
+          change_from_previous: null,
+          indicators: ['Reinforcements on the northern road'],
+        },
+      ],
+      reporting: [
+        {
+          theme: 'Ground activity',
+          items: [{ text: 'Shelling was reported overnight.', evidence: ['E1'], grade: 'B2' }],
+        },
+      ],
+      assessment: [{ heading: 'Trajectory', text: 'The front is active.', evidence: ['E1'] }],
+      assumptions: [{ id: 'A1', text: 'Supply lines stay open.', lynchpin: true }],
+      alternative_hypotheses: [
+        { text: 'A local pause.', why_less_likely: 'No mediator is active.', evidence: ['E2'] },
+      ],
+      indicators_and_warning: { watch_condition: 'elevated', changes: ['More hotspots'] },
+      gaps: [{ text: 'No reporting on the eastern road.', eei: 'EEI-1' }],
+      collection_recommendations: ['Task FIRMS review.'],
+      sourcing_statement: 'Two independent organisations; syndicated copies counted once.',
+    },
+    findings: [
+      {
+        rule: 'citation',
+        severity: 'warning',
+        location: 'KJ1',
+        message: 'Unknown evidence E9 removed',
+      },
+    ],
+    evidence: [
+      {
+        label: 'E1',
+        event_id: 'e1',
+        source_id: 'bbc_world',
+        source_name: 'BBC News World',
+        category: 'conflict',
+        title: 'Shelling in Kharkiv',
+        summary: 'Overnight shelling.',
+        url: 'https://example.org/e1',
+        published_at: '2026-09-04T22:00:00Z',
+        grade: 'B2',
+        grade_rationale: 'Corroborated by Al Jazeera English (40 min later)',
+        country_iso: 'UA',
+        flags: [],
+      },
+      {
+        label: 'E2',
+        event_id: 'e2',
+        source_id: 'tass_en',
+        source_name: 'TASS English',
+        category: 'news',
+        title: 'Ministry statement',
+        summary: null,
+        url: 'javascript:alert(1)',
+        published_at: '2026-09-04T20:00:00Z',
+        grade: 'C3',
+        grade_rationale: 'State-controlled outlet, uncorroborated',
+        country_iso: 'RU',
+        flags: ['state_controlled'],
+      },
+    ],
+    quality: { items: 2, confidence_ceiling: 'moderate' },
+    markdown: '# Intelligence summary: Ukraine\n\n## Key judgements',
+    model: 'llama3.1:8b',
+    prompt_tokens: 1200,
+    completion_tokens: 600,
+    latency_ms: 8123.4,
+    attempts: 1,
+    created_at: '2026-09-05T01:00:00Z',
+  },
+};
