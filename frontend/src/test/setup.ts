@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
 configure({ asyncUtilTimeout: 4000 });
 
 import { initialAuthState, useAuthStore } from '@/stores/auth';
+import { initialEventsState, useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
 import { clearCookies, mockMatchMedia, mockWebGl2, resetVisibility } from './env';
@@ -49,6 +50,7 @@ afterEach(() => {
   cleanup();
   useAuthStore.setState(initialAuthState);
   useGlobeStore.setState({ mode: 'globe' });
+  useEventsStore.setState({ ...initialEventsState });
   clearCookies();
   resetVisibility();
 });

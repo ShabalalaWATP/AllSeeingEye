@@ -6,9 +6,11 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 Phase 0 (Foundation) was built on 3 and 4 September 2026 after Alex approved the plan with two amendments: the 3D globe is the default view, and the logo is specifically the React Bits Evil Eye component. The acceptance flow has been exercised end to end in a browser: a visitor requested an account, the administrator approved it and received the activation link, the new user set a password, signed in and landed on the 3D globe. Both reviews (code quality and security) ran and their findings are fixed and committed.
 
-Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11 and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`); the Docker daemon was not running during the build sessions, so PostgreSQL via compose and the container images are unverified locally, and tests run against SQLite (CI has a PostgreSQL job).
+Phase 1 (fusion core and globe data) started on 4 September 2026 and its first two milestones are in place: the backend fusion core (unified event model, bounded in-memory store, scheduler with circuit breakers, five keyless connectors, the events API and the server-sent event stream) and the live globe (deck.gl markers over MapLibre, layer panel, ticker, inspector and a streaming client with token refresh). The compose stack has now been verified with Docker Desktop running: migrations ran on PostgreSQL, the API container reports healthy, and Caddy serves the SPA and passes the API through with the right headers on each.
 
-Check results at the last run (4 September 2026): backend 87 tests passing, coverage 98.4 percent, ruff, mypy strict, import-linter, bandit and pip-audit clean; frontend 86 tests passing, coverage 96.5 percent statements and 95.8 percent branches, eslint and tsc clean, production build succeeds; file-length check passes.
+Environment facts: Windows 11 host; git 2.51, Python 3.13, uv 0.11, Node 22, npm 11, Docker Desktop and the Docker CLI are installed; pnpm 11 is installed at user level through npm (corepack cannot write its shims without administrator rights); `just` and `pre-commit` are not installed (use `uvx pre-commit` and plain commands, or `uv tool install rust-just`). Backend tests run against SQLite by default and against PostgreSQL when `ASE_TEST_DATABASE_URL` points at one (CI has a PostgreSQL job).
+
+Check results at the last run (5 September 2026): backend 123 tests passing on SQLite and on PostgreSQL, coverage 96.7 percent, ruff, mypy strict, import-linter, bandit and pip-audit clean; frontend 113 tests passing, coverage 97.4 percent statements and 93.9 percent branches, eslint and tsc clean, production build succeeds (the lazy globe chunk is 1.6 MB minified because it carries MapLibre and deck.gl); pre-commit and the file-length check pass.
 
 ## Phase 0: Foundation
 
@@ -52,13 +54,41 @@ Check results at the last run (4 September 2026): backend 87 tests passing, cove
 - [x] Code quality review and security review completed with findings fixed (see `DEVELOPMENT_STORY.md`)
 - [x] All checks green locally; coverage at or above 90 percent on both sides
 
-## Known follow-ups carried into Phase 1
+## Phase 1: Fusion core and globe data
+
+### Backend fusion core
+- [x] Unified `Event` model with grade, provenance, geo confidence, severity and frozen attributes; `SourceSpec` and the source registry
+- [x] Ports for connectors, the event store and the event bus; in-memory store with per-category retention windows, caps and a memory budget; in-memory bus
+- [x] Normaliser pipeline, health registry with circuit breakers, feed scheduler (timeouts, jitter, backoff, resume), hardened feed HTTP client (SSRF guard, size caps, conditional requests)
+- [x] Starter connectors without keys: USGS earthquakes, GDACS, NASA EONET, NOAA SWPC alerts and scales, CISA KEV
+- [x] `/api/events`, `/api/events/stats`, `/api/stream` (server-sent events with a token-lifetime deadline), `/api/admin/sources` with reset
+- [x] Feeds start and stop with the application lifespan; `ASE_FEEDS_*` settings; tests with fixtures only (no live network)
+- [ ] More connectors: OpenSky (OAuth2), ADS-B (adsb.lol, airplanes.live), GDELT GEO and DOC, Google News RSS, the outlet RSS set, GOV.UK FCDO and US travel advisories, UN press, ReliefWeb (once the app name is approved), NASA FIRMS (key)
+- [ ] Country resolution from Natural Earth polygons for events with coordinates; `country_iso` on every located event
+- [ ] Admin source overrides persisted (enable, disable, interval)
+
+### Frontend live globe
+- [x] zod schemas for events, stats, sources and stream payloads; typed events API module
+- [x] Fetch-based server-sent events client with bearer auth, reconnect with backoff, and a fresh token on `bye` or 401
+- [x] Events store: bounded client mirror (5,000), upsert and expiry from the stream, category visibility, selection
+- [x] deck.gl `MapboxOverlay` on the MapLibre engine; one scatterplot layer per category from the layer registry (shared colours)
+- [x] Layer panel with per-category switches, counts, store budget and connection status; ticker of the latest events; event inspector (grade with rationale, provenance, summary, attributes, tags, http(s) links only)
+- [x] Tests for the parser, client, store, registry, panels and the page with the overlay and stream client mocked; live globe confirmed in the browser against the dev API
+- [ ] Nation filter and country panel v1
+- [ ] Day and night terminator; lite mode; coordinate readout
+- [ ] Base-layer switcher: OS Maps proxy, EOX satellite, GIBS, hybrid
+- [ ] Admin source page in the UI
+- [ ] Replace `useResource` and `useAuditLog` with TanStack Query
+
+## Known follow-ups carried forward
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.
 - The bootstrap session refresh fires even when no CSRF cookie exists, producing a harmless 403 in the console on first visit; skip the call when the cookie is absent.
-- Run the compose stack once Docker Desktop is running: confirm the PostgreSQL migration path, the Caddy headers on API and SPA routes, and the image builds.
 - Push to GitHub to get a first CI run; several workflow steps (semgrep, trivy, the PostgreSQL job) have never executed.
 - Consider a JSON depth limit alongside the body size cap, and a challenge instead of a hard lockout before any public exposure.
+- Split deck.gl and MapLibre into their own chunks (the globe chunk is 1.6 MB minified) once the layer set settles.
+- The live globe loads up to 2,000 events on entry and mirrors at most 5,000; revisit both caps with the retention windows when more connectors land.
+- Source names are not exposed to non-admin users, so the inspector shows the source id; a public sources summary endpoint would fix that.
 
 ## Later phases
 
@@ -66,5 +96,4 @@ See `05_ROADMAP.md`: Phase 1 fusion core and globe data, Phase 2 grading and rep
 
 ## Blockers
 
-- Docker Desktop was not running; the compose stack and the PostgreSQL migration path are unverified until it is started (`docker compose up --build`).
 - No git remote yet, so CI has not run.

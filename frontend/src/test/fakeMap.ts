@@ -25,6 +25,8 @@ export class FakeMap {
   readonly setPaintProperty = vi.fn();
   readonly flyTo = vi.fn();
   readonly remove = vi.fn();
+  readonly addControl = vi.fn();
+  readonly removeControl = vi.fn();
   /** Only these style layers "exist", so overrides for unknown layers must be skipped. */
   readonly getLayer = vi.fn((id: string) =>
     ['background', 'water', 'boundary_country_z0-4'].includes(id) ? { id } : undefined,

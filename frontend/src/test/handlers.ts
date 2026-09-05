@@ -16,8 +16,10 @@ import {
   adminUser,
   auditPageOne,
   auditPageTwo,
+  liveEvents,
   pendingRequests,
   plainUser,
+  storeStats,
   tokenFor,
 } from './fixtures';
 
@@ -183,4 +185,12 @@ export const handlers = [
     if (before === null) return HttpResponse.json({ items: auditPageOne, next_before: 118 });
     return HttpResponse.json({ items: auditPageTwo, next_before: null });
   }),
+
+  http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),
+
+  http.get('/api/events/stats', () => HttpResponse.json(storeStats)),
+
+  // The page tests replace the stream client; anything that still reaches the
+  // network gets a clean failure instead of an unhandled request.
+  http.get('/api/stream', () => new HttpResponse(null, { status: 503 })),
 ];

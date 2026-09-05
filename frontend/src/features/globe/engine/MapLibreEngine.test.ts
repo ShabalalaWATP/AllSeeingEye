@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MapboxOverlay } from '@/test/fakeDeck';
 import { FakeMap } from '@/test/fakeMap';
 
 import { createMapLibreEngine, DARK_STYLE_URL, INITIAL_CENTER, INITIAL_ZOOM } from './MapLibreEngine';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
+vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
 
 describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
   beforeEach(() => {
     FakeMap.reset();
+    MapboxOverlay.reset();
   });
 
   it('mounts once, applies the projection after the style loads, flies and subscribes', () => {
@@ -16,6 +19,8 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     const container = document.createElement('div');
     engine.setProjection('mercator');
     engine.flyTo({ center: [0, 0], zoom: 2 });
+    engine.setLayers([{ id: 'early' }]);
+    expect(MapboxOverlay.instances).toHaveLength(0);
     // Subscribing before mount is a no-op whose unsubscribe is safe to call.
     const unsubscribe = engine.on('click', () => undefined);
     unsubscribe();
@@ -31,6 +36,13 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
       zoom: INITIAL_ZOOM,
     });
     expect(map.setProjection).not.toHaveBeenCalled();
+    // The deck.gl overlay is attached as a control and receives the data layers.
+    const overlay = MapboxOverlay.instances[0]!;
+    expect(overlay.props).toEqual({ interleaved: false, layers: [] });
+    expect(map.addControl).toHaveBeenCalledWith(overlay);
+    const layer = { id: 'events-disaster' };
+    engine.setLayers([layer]);
+    expect(overlay.setProps).toHaveBeenCalledWith({ layers: [layer] });
 
     map.fire('style.load');
     expect(map.setSky).toHaveBeenCalledTimes(1);

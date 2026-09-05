@@ -4,11 +4,14 @@
  * flattens to Mercator only between zoom 10 and 12) and a dark sky so the globe
  * has its atmosphere glow. Covered by a mocked smoke test only: jsdom has no WebGL.
  */
+import { MapboxOverlay } from '@deck.gl/mapbox';
+import type { Layer } from '@deck.gl/core';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import type { SkySpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import type {
+  DataLayer,
   FlyToTarget,
   MapEngine,
   MapEngineEvent,
@@ -60,6 +63,7 @@ export const PAINT_OVERRIDES: readonly PaintOverride[] = [
 
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
+  private overlay: MapboxOverlay | null = null;
   private projection: Projection = 'globe';
   private styleReady = false;
 
@@ -71,6 +75,9 @@ export class MapLibreEngine implements MapEngine {
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
     });
+    // deck.gl draws the data layers in its own canvas above the base map.
+    this.overlay = new MapboxOverlay({ interleaved: false, layers: [] });
+    map.addControl(this.overlay);
     map.on('style.load', () => {
       this.styleReady = true;
       map.setSky(GLOBE_SKY);
@@ -95,6 +102,10 @@ export class MapLibreEngine implements MapEngine {
     this.map?.flyTo({ center: target.center, zoom: target.zoom });
   }
 
+  setLayers(layers: readonly DataLayer[]): void {
+    this.overlay?.setProps({ layers: [...(layers as readonly Layer[])] });
+  }
+
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void {
     const map = this.map;
     if (map === null) return () => undefined;
@@ -107,6 +118,7 @@ export class MapLibreEngine implements MapEngine {
   destroy(): void {
     this.map?.remove();
     this.map = null;
+    this.overlay = null;
     this.styleReady = false;
   }
 

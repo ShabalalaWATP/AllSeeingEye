@@ -14,10 +14,15 @@ export interface FlyToTarget {
   zoom: number;
 }
 
+/** Data layers are opaque to the engine interface; the registry decides their shape. */
+export type DataLayer = object;
+
 export interface MapEngine {
   mount(container: HTMLElement): void;
   setProjection(projection: Projection): void;
   flyTo(target: FlyToTarget): void;
+  /** Replaces the data layers drawn over the base map. */
+  setLayers(layers: readonly DataLayer[]): void;
   /** Subscribes to an engine event and returns the unsubscribe function. */
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void;
   destroy(): void;

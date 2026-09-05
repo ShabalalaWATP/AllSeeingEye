@@ -1,16 +1,36 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 import { mockWebGl2 } from '@/test/env';
+import { MapboxOverlay } from '@/test/fakeDeck';
 import { FakeMap } from '@/test/fakeMap';
+import { FakeEventStreamClient } from '@/test/fakeStream';
+import { USER_TOKEN, liveEvent } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 
+import { FOCUS_ZOOM } from './GlobePage';
+
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
+vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
+
+interface PickableLayer {
+  id: string;
+  props: { onClick: (info: { object?: unknown }) => boolean };
+}
+
+function overlayLayerIds(): string[] {
+  const layers = MapboxOverlay.instances[0]?.props.layers as PickableLayer[] | undefined;
+  return (layers ?? []).map((layer) => layer.id);
+}
 
 describe('GlobePage', () => {
   beforeEach(() => {
     FakeMap.reset();
+    MapboxOverlay.reset();
+    FakeEventStreamClient.reset();
   });
 
   it('mounts the engine on the globe projection by default and switches to Mercator', async () => {
@@ -51,6 +71,84 @@ describe('GlobePage', () => {
     expect(map.setProjection).toHaveBeenLastCalledWith({ type: 'globe' });
   });
 
+  it('loads events into the panel, the ticker and one layer per located category', async () => {
+    mockWebGl2(true);
+    const { user } = renderApp('/', 'user');
+    expect(await screen.findByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
+    expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
+    const strip = screen.getByRole('navigation', { name: 'Latest events' });
+    expect(within(strip).getAllByRole('button')).toHaveLength(2);
+    await waitFor(() => {
+      expect(overlayLayerIds()).toEqual(['events-disaster']);
+    });
+
+    await user.click(screen.getByRole('switch', { name: 'Disasters 1' }));
+    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toHaveAttribute('aria-checked', 'false');
+    expect(overlayLayerIds()).toEqual([]);
+  });
+
+  it('streams new events, opens the inspector on pick and focuses from the ticker', async () => {
+    mockWebGl2(true);
+    const { user, unmount } = renderApp('/', 'user');
+    await screen.findByRole('switch', { name: 'Disasters 1' });
+    const client = FakeEventStreamClient.instances[0]!;
+    expect(client.start).toHaveBeenCalledTimes(1);
+    await expect(client.options.getToken(false)).resolves.toBe(USER_TOKEN);
+
+    const flood = liveEvent({
+      id: 'e9',
+      title: 'Flash flood in Valencia',
+      published_at: '2026-09-05T02:00:00Z',
+      point: { lon: -0.38, lat: 39.47 },
+    });
+    act(() => {
+      client.setStatus('live');
+      client.emit({
+        event: 'event.upsert',
+        data: JSON.stringify({ source_id: 'gdacs', events: [flood] }),
+        id: null,
+      });
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Live');
+    expect(screen.getByRole('switch', { name: 'Disasters 2' })).toBeInTheDocument();
+    const strip = screen.getByRole('navigation', { name: 'Latest events' });
+    expect(within(strip).getAllByRole('button')[0]).toHaveTextContent('Flash flood in Valencia');
+
+    const layers = MapboxOverlay.instances[0]!.props.layers as PickableLayer[];
+    const disasters = layers.find((layer) => layer.id === 'events-disaster')!;
+    act(() => {
+      disasters.props.onClick({ object: flood });
+    });
+    const drawer = screen.getByRole('complementary', { name: 'Event details' });
+    expect(within(drawer).getByRole('heading', { name: 'Flash flood in Valencia' })).toBeInTheDocument();
+    await user.click(within(drawer).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
+
+    await user.click(within(strip).getByRole('button', { name: /^Flash flood in Valencia/ }));
+    expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [-0.38, 39.47], zoom: FOCUS_ZOOM });
+    expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
+
+    act(() => {
+      client.emit({ event: 'event.expire', data: JSON.stringify({ ids: ['e9'], count: 1 }), id: null });
+    });
+    expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+
+    unmount();
+    expect(client.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks the session for a fresh token when the stream says so', async () => {
+    mockWebGl2(true);
+    renderApp('/', 'user');
+    await screen.findByRole('switch', { name: 'Disasters 1' });
+    const client = FakeEventStreamClient.instances[0]!;
+    // No CSRF cookie in this test, so the refresh fails and the session is dropped.
+    await expect(client.options.getToken(true)).resolves.toBeNull();
+    expect(useAuthStore.getState().status).toBe('anonymous');
+  });
+
   it('destroys the engine when the page unmounts', async () => {
     mockWebGl2(true);
     const { unmount } = renderApp('/', 'user');
@@ -61,13 +159,15 @@ describe('GlobePage', () => {
     expect(FakeMap.instances[0]!.remove).toHaveBeenCalledTimes(1);
   });
 
-  it('explains that WebGL2 is required instead of mounting the engine', async () => {
+  it('explains that WebGL2 is required but still lists events', async () => {
     mockWebGl2(false);
     renderApp('/', 'user');
     expect(await screen.findByText('WebGL2 is required')).toBeInTheDocument();
     expect(screen.queryByTestId('map-container')).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'View mode' })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
     expect(FakeMap.instances).toHaveLength(0);
+    expect(MapboxOverlay.instances).toHaveLength(0);
   });
 
   it('treats a throwing canvas probe as unsupported', async () => {
