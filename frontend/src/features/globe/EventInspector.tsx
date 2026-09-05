@@ -8,6 +8,8 @@ import { CATEGORY_STYLES } from './layers/registry';
 
 export interface EventInspectorProps {
   event: LiveEvent;
+  /** How many live items share this event's story, including itself. */
+  storySize?: number;
   onClose: () => void;
 }
 
@@ -29,7 +31,7 @@ export function sourceLabel(sourceId: string): string {
 const dl = 'grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-xs';
 
 /** The detail drawer for the selected event: grade, provenance, summary and attributes. */
-export function EventInspector({ event, onClose }: EventInspectorProps) {
+export function EventInspector({ event, storySize = 1, onClose }: EventInspectorProps) {
   const style = CATEGORY_STYLES[event.category];
   const attributes = Object.entries(event.attributes).filter(
     ([, value]) => value !== null && value !== '',
@@ -71,6 +73,12 @@ export function EventInspector({ event, onClose }: EventInspectorProps) {
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
         {event.title_en !== null && event.title_en !== event.title && (
           <p className="mt-1 text-muted">{event.title_en}</p>
+        )}
+        {event.grade_rationale !== '' && (
+          <p className="mt-2 text-xs text-muted">
+            <span className="font-mono text-text">{event.grade}</span> {event.grade_rationale}
+            {storySize > 1 ? ` (story of ${storySize} items)` : ''}
+          </p>
         )}
         <dl className={`mt-3 text-muted ${dl}`}>
           <dt>Source</dt>

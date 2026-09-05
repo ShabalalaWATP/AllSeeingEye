@@ -99,6 +99,13 @@ export default function GlobePage() {
   const scoped = useMemo(() => filterByCountry(list, country), [list, country]);
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const nation = country === null ? null : (countryByIso[country] ?? null);
+  const storySize = useMemo(
+    () =>
+      selected?.story_id == null
+        ? 1
+        : list.filter((event) => event.story_id === selected.story_id).length,
+    [list, selected],
+  );
 
   const onPick = useCallback(
     (event: LiveEvent | null) => {
@@ -194,7 +201,9 @@ export default function GlobePage() {
         )}
       </div>
       {supported && <CoordinateReadout engine={engine} />}
-      {selected !== null && <EventInspector event={selected} onClose={close} />}
+      {selected !== null && (
+        <EventInspector event={selected} storySize={storySize} onClose={close} />
+      )}
     </div>
   );
 }

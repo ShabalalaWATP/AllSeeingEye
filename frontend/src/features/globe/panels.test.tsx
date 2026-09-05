@@ -91,6 +91,7 @@ describe('EventInspector', () => {
           tags: ['seismic'],
           attributes: { magnitude: 4.2, depth_km: 10, note: '', flag: null },
         })}
+        storySize={3}
         onClose={onClose}
       />,
     );
@@ -100,6 +101,7 @@ describe('EventInspector', () => {
     ).toBeInTheDocument();
     expect(within(drawer).getByText('Magnitude 4.2 near Somewhere')).toBeInTheDocument();
     expect(within(drawer).getByTitle('Instrument data')).toHaveTextContent('Grade A2');
+    expect(within(drawer).getByText(/^Instrument data \(story of 3 items\)$/)).toBeInTheDocument();
     expect(within(drawer).getByText('usgs earthquakes')).toBeInTheDocument();
     expect(within(drawer).getByText('5 Sept 2026, 00:00 UTC')).toBeInTheDocument();
     expect(within(drawer).getByText('50.000, 10.000 (exact)')).toBeInTheDocument();
