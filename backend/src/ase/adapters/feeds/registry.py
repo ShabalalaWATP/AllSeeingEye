@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
+from ase.adapters.feeds.cyber import IodaConnector, RansomwareConnector
 from ase.adapters.feeds.cyclones import (
     NHC_ATLANTIC,
     NHC_EAST_PACIFIC,
@@ -19,8 +20,10 @@ from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
+from ase.adapters.feeds.navarea import NavareaConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
 from ase.adapters.feeds.rss_sources import build_rss_connectors
+from ase.adapters.feeds.space import KpConnector, LaunchConnector, SatelliteConnector
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
 from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
 from ase.adapters.feeds.usgs import UsgsConnector
@@ -56,6 +59,12 @@ def build_connectors(
         NwsAlertsConnector(http, clock),
         WhoOutbreakConnector(http, clock),
         IfrcGoConnector(http, clock),
+        NavareaConnector(http, clock),
+        SatelliteConnector(http, clock),
+        LaunchConnector(http, clock),
+        KpConnector(http, clock),
+        RansomwareConnector(http, clock),
+        IodaConnector(http, clock),
         *build_rss_connectors(http, clock),
     ]
     return [connector for connector in connectors if connector.spec.id not in excluded]

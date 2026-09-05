@@ -22,6 +22,7 @@ dependencies = [
     "httpx>=0.28.1",
     "defusedxml>=0.7.1",
     "cryptography>=43",
+    "sgp4>=2.27",
 ]
 
 [project.scripts]
@@ -71,7 +72,7 @@ files = ["src"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["asyncpg.*", "aiosqlite.*"]
+module = ["asyncpg.*", "aiosqlite.*", "sgp4", "sgp4.*"]
 ignore_missing_imports = true
 
 [tool.ruff]

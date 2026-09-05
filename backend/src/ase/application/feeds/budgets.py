@@ -17,7 +17,7 @@ class RetentionBudget:
 
 DEFAULT_BUDGETS: Mapping[Category, RetentionBudget] = {
     Category.AVIATION: RetentionBudget(timedelta(minutes=10), 15_000),
-    Category.MARITIME: RetentionBudget(timedelta(minutes=30), 20_000),
+    Category.MARITIME: RetentionBudget(timedelta(hours=6), 20_000),
     Category.DISASTER: RetentionBudget(timedelta(days=7), 150_000),
     Category.NEWS: RetentionBudget(timedelta(hours=72), 40_000),
     Category.CONFLICT: RetentionBudget(timedelta(days=30), 30_000),

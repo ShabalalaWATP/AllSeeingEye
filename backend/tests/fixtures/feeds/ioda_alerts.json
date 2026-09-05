@@ -1,0 +1,81 @@
+{
+ "data": [
+  {
+   "datasource": "ping-slash24",
+   "entity": {
+    "code": "TN",
+    "name": "Tunisia",
+    "subnames": [],
+    "type": "country",
+    "attrs": {
+     "fqid": "geo.netacuity.AF.TN"
+    }
+   },
+   "time": 1787998800,
+   "level": "normal",
+   "condition": "normal",
+   "value": 6124,
+   "historyValue": 7643,
+   "method": "median"
+  },
+  {
+   "datasource": "ping-slash24",
+   "entity": {
+    "code": "2497-2030",
+    "name": "IIJ -- Fukuoka",
+    "subnames": [],
+    "type": "geoasn",
+    "attrs": {
+     "fqid": "geoasn.2497-2030",
+     "org": "Internet Initiative Japan Inc."
+    }
+   },
+   "time": 1787996400,
+   "level": "critical",
+   "condition": "< 0.8",
+   "value": 387,
+   "historyValue": 488,
+   "method": "median"
+  },
+  {
+   "datasource": "bgp",
+   "entity": {
+    "code": "2947",
+    "name": "Enugu",
+    "subnames": [],
+    "type": "region",
+    "attrs": {
+     "fqid": "geo.netacuity.AF.NG.2947",
+     "country_code": "NG",
+     "country_name": "Nigeria",
+     "ne_region_id": "2862"
+    }
+   },
+   "time": 1787996400,
+   "level": "normal",
+   "condition": "normal",
+   "value": 301,
+   "historyValue": 301,
+   "method": "median"
+  },
+  {
+   "datasource": "bgp",
+   "entity": {
+    "code": "37405-NG",
+    "name": "UNIV-NG-NSUKKA -- Nigeria",
+    "subnames": [],
+    "type": "geoasn",
+    "attrs": {
+     "fqid": "geoasn.37405-NG",
+     "org": "University of Nigeria"
+    }
+   },
+   "time": 1787996400,
+   "level": "normal",
+   "condition": "normal",
+   "value": 256,
+   "historyValue": 256,
+   "method": "median"
+  }
+ ]
+}

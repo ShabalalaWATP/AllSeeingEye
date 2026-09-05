@@ -1,0 +1,74 @@
+{
+ "results": [
+  {
+   "id": "1b23eb18-e06e-4058-9b42-e95ca0980511",
+   "name": "Spectrum | Onward and Upward",
+   "net": "2026-09-05T20:00:00Z",
+   "window_start": "2026-09-05T20:00:00Z",
+   "window_end": "2026-09-05T21:00:00Z",
+   "last_updated": "2026-09-04T13:12:28Z",
+   "slug": "spectrum-onward-and-upward",
+   "url": "https://ll.thespacedevs.com/2.3.0/launches/1b23eb18-e06e-4058-9b42-e95ca0980511/",
+   "status": {
+    "name": "To Be Confirmed",
+    "abbrev": "TBC"
+   },
+   "launch_service_provider": {
+    "name": "Isar Aerospace"
+   },
+   "mission": {
+    "name": "Onward and Upward",
+    "type": "Test Flight"
+   },
+   "pad": {
+    "name": "Orbital Launch Pad",
+    "latitude": 69.1084,
+    "longitude": 15.5895,
+    "country_code": null,
+    "location": {
+     "name": "And\u00f8ya Spaceport"
+    }
+   },
+   "rocket": {
+    "configuration": {
+     "full_name": "Spectrum"
+    }
+   }
+  },
+  {
+   "id": "153ef8ef-b12b-43f4-a4bf-05b225c0cd37",
+   "name": "Falcon 9 Block 5 | Starlink Group 15-24",
+   "net": "2026-09-06T10:59:00Z",
+   "window_start": "2026-09-06T10:59:00Z",
+   "window_end": "2026-09-06T14:59:00Z",
+   "last_updated": "2026-08-28T18:41:46Z",
+   "slug": "falcon-9-block-5-starlink-group-15-24",
+   "url": "https://ll.thespacedevs.com/2.3.0/launches/153ef8ef-b12b-43f4-a4bf-05b225c0cd37/",
+   "status": {
+    "name": "Go for Launch",
+    "abbrev": "Go"
+   },
+   "launch_service_provider": {
+    "name": "SpaceX"
+   },
+   "mission": {
+    "name": "Starlink Group 15-24",
+    "type": "Communications"
+   },
+   "pad": {
+    "name": "Space Launch Complex 4E",
+    "latitude": 34.632,
+    "longitude": -120.611,
+    "country_code": null,
+    "location": {
+     "name": "Vandenberg SFB, CA, USA"
+    }
+   },
+   "rocket": {
+    "configuration": {
+     "full_name": "Falcon 9 Block 5"
+    }
+   }
+  }
+ ]
+}

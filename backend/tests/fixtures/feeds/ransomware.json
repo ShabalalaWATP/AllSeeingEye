@@ -1,0 +1,38 @@
+[
+ {
+  "activity": "Financial Services",
+  "attackdate": "2026-11-18 00:00:00.000000",
+  "claim_url": "",
+  "country": "US",
+  "description": "Paylogix is an insuretech pioneer offering premium technology sol\nutions that streamline the administration of voluntary benefits. \nTheir robust suite of services includes enrollment, premium billi\nng, alternative funding, and a software-as-a-service platform tai\nlored for groups of all sizes.\n\nWe w",
+  "discovered": "2026-01-15T13:48:29.435004+00:00",
+  "domain": "paylogix.com",
+  "group": "akira",
+  "url": "https://www.ransomware.live/id/UGF5bG9naXhAYWtpcmE=",
+  "victim": "Paylogix"
+ },
+ {
+  "activity": "Manufacturing",
+  "attackdate": "2026-09-05T04:28:40.580880+00:00",
+  "claim_url": "http://5butbkrljkaorg5maepuca25oma7eiwo6a2rlhvkblb4v6mf3ki2ovid.onion/companies/76/d-max-engineering-inc",
+  "country": "US",
+  "description": "D\u2011MAX Engineering, Inc. is a San Diego-based environmental consulting firm specializing in storm water services, particularly for governmental agencies.\u00a0 Our multidisciplinary team includes environmental scientists, engineers, chemists, and biologists. Our team is experienced with the National Pollu",
+  "discovered": "2026-09-05T04:29:03.242636+00:00",
+  "domain": "www.dmaxinc.com",
+  "group": "spacebears",
+  "url": "https://www.ransomware.live/id/RC1NQVggRW5naW5lZXJpbmcsIEluY0BzcGFjZWJlYXJz",
+  "victim": "D-MAX Engineering, Inc"
+ },
+ {
+  "activity": "Government & Defense",
+  "attackdate": "2026-09-05T01:47:00+00:00",
+  "claim_url": "/post/judicial-branch-of-the-province-of-jujuy/",
+  "country": "AR",
+  "description": "The official website of the Judicial Branch of Jujuy, Argentina. It provides court information, digital case management, mediation services, legal rulings, and judicial news for legal professionals and the public.\n\nNow i have your wordpress databases, login credentials to internal systems(thanks to ",
+  "discovered": "2026-09-05T02:50:45.984795+00:00",
+  "domain": "",
+  "group": "emperador",
+  "url": "https://www.ransomware.live/id/SnVkaWNpYWwgQnJhbmNoIG9mIHRoZSBQcm92aW5jZSBvZiBKdWp1eUBlbXBlcmFkb3I=",
+  "victim": "Judicial Branch of the Province of Jujuy"
+ }
+]

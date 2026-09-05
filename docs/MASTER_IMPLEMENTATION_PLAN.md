@@ -143,9 +143,9 @@ Acceptance from the roadmap: each tracker has a board, a detail view, a globe la
 - [x] Aviation in the app: a board page (counts, nations and watched areas against baseline, emergency squawks, a link to the activity report), a GNSS interference layer on the globe refreshed every five minutes while it is on, and emergency aircraft drawn in the critical colour
 
 ### 3c. Maritime, space and cyber
-- [ ] NAVAREA warnings with positions parsed from text as points and areas; Maritime Activity Report template; AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist
-- [ ] Space: CelesTrak groups propagated with SGP4 (satellites over an area now and next passes, ISS and chosen groups' ground tracks), Launch Library 2 launch sites with countdowns, SWPC aurora oval and K index; space summary in the country and area panels
-- [ ] Cyber: IODA outage alerts by country and region on the globe, ransomware victims by country and group, CISA KEV summary; Cyber Summary template
+- [x] Connectors: NAVAREA broadcast warnings (positions parsed from the text, kind and severity from keywords), space stations propagated with SGP4 from CelesTrak elements cached for two hours, Launch Library 2 upcoming launches at their pads, the SWPC planetary K index, ransomware.live victim claims (credibility possibly true, as criminal statements) and IODA outage alerts (critical and warning only); country-level events now sit at the nation's centroid with country-level geo confidence, so outages and claims appear on the globe; the maritime retention window grew to six hours so warnings polled every two hours survive
+- [ ] Boards and pages: maritime (warnings by area and kind), space (ISS and stations now, next launches, the K index), cyber (outages and ransomware by country, recent KEV additions); Maritime Activity Report and Cyber Summary templates
+- [ ] AISStream and Global Fishing Watch connectors behind capability flags for when the keys exist; SWPC aurora oval as a globe overlay; satellites over an area and next passes
 - [ ] Sanctions context for briefs from the UK Sanctions List and OFAC SDN exports (programmes touching a country)
 
 ## Known follow-ups carried forward

@@ -164,7 +164,7 @@ class Container:
         self.cipher: SecretCipher = FernetCipher(settings.encryption_key_value)
         self.llm: LlmGateway = OpenAiCompatibleGateway()
         self._llm_gateway = self.llm
-        self.pipeline = Pipeline([Normaliser(), CountryStage(self.countries)])
+        self.pipeline = Pipeline([Normaliser(), CountryStage(self.countries, self.countries)])
         self.http = FeedHttpClient(settings.feeds_user_agent)
         self.connectors: list[FeedConnector] = (
             list(connectors)
