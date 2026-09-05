@@ -9,7 +9,7 @@ describe('maritime, space and cyber trackers', () => {
     expect(
       await screen.findByRole('heading', { name: 'Maritime' }, { timeout: 5000 }),
     ).toBeInTheDocument();
-    const areas = screen.getByRole('list', { name: 'Warnings by area' });
+    const areas = await screen.findByRole('list', { name: 'Warnings by area' });
     expect(within(areas).getByText('4')).toBeInTheDocument();
     const notable = screen.getByRole('region', { name: 'Notable warnings' });
     expect(within(notable).getByText(/GUNNERY EXERCISE/)).toBeInTheDocument();
@@ -24,7 +24,7 @@ describe('maritime, space and cyber trackers', () => {
     expect(
       await screen.findByRole('heading', { name: 'Space' }, { timeout: 5000 }),
     ).toBeInTheDocument();
-    expect(screen.getByText('5.33 storm')).toBeInTheDocument();
+    expect(await screen.findByText('5.33 storm')).toBeInTheDocument();
     const stations = screen.getByRole('region', { name: 'Stations' });
     expect(within(stations).getByText('ISS (ZARYA)')).toBeInTheDocument();
     expect(within(stations).getByText(/420 km/)).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('maritime, space and cyber trackers', () => {
     expect(
       await screen.findByRole('heading', { name: 'Cyber' }, { timeout: 5000 }),
     ).toBeInTheDocument();
-    const outages = screen.getByRole('list', { name: 'Outages by nation' });
+    const outages = await screen.findByRole('list', { name: 'Outages by nation' });
     expect(within(outages).getByText('TN')).toBeInTheDocument();
     const groups = screen.getByRole('list', { name: 'Ransomware by group' });
     expect(within(groups).getByText('akira')).toBeInTheDocument();
