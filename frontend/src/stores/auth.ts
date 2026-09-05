@@ -8,6 +8,7 @@ import { create } from 'zustand';
 
 import * as authApi from '@/lib/api/auth';
 import { bindSession } from '@/lib/api/client';
+import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
 import type { TokenResponse, User } from '@/lib/api/schemas';
 
 export type AuthStatus = 'unknown' | 'anonymous' | 'authenticated';
@@ -64,6 +65,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   bootstrap: async () => {
+    // Without the CSRF cookie the refresh cannot succeed, so do not even ask.
+    if (readCookie(CSRF_COOKIE) === null) {
+      get().clearSession();
+      return;
+    }
     await get().refresh();
   },
 

@@ -40,7 +40,22 @@ describe('auth store', () => {
     });
   });
 
+  it('skips the refresh entirely when no CSRF cookie exists', async () => {
+    let calls = 0;
+    server.use(
+      http.post('/api/auth/refresh', () => {
+        calls += 1;
+        return apiError(403, 'csrf_failed', 'Missing CSRF token.');
+      }),
+    );
+    await useAuthStore.getState().bootstrap();
+    expect(calls).toBe(0);
+    expect(useAuthStore.getState()).toMatchObject({ status: 'anonymous', accessToken: null });
+  });
+
   it('ends anonymous when the refresh is rejected', async () => {
+    setCsrfCookie(CSRF_VALUE);
+    server.use(http.post('/api/auth/refresh', () => apiError(401, 'invalid_refresh', 'Expired.')));
     await useAuthStore.getState().bootstrap();
     expect(useAuthStore.getState()).toMatchObject({
       status: 'anonymous',
@@ -83,7 +98,9 @@ describe('auth store', () => {
   });
 
   it('surfaces invalid credentials without changing the session', async () => {
-    await expect(useAuthStore.getState().login('nobody@example.com', 'wrong')).rejects.toMatchObject({
+    await expect(
+      useAuthStore.getState().login('nobody@example.com', 'wrong'),
+    ).rejects.toMatchObject({
       code: 'invalid_credentials',
     });
     expect(useAuthStore.getState().status).toBe('unknown');

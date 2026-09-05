@@ -88,7 +88,6 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 ## Known follow-ups carried forward
 
 - Replace the hand-rolled `useResource` and `useAuditLog` hooks with TanStack Query (the architecture's choice for server state); two lint suppressions mark the spots.
-- The bootstrap session refresh fires even when no CSRF cookie exists, producing a harmless 403 in the console on first visit; skip the call when the cookie is absent.
 - Push to GitHub to get a first CI run; several workflow steps (semgrep, trivy, the PostgreSQL job) have never executed.
 - Consider a JSON depth limit alongside the body size cap, and a challenge instead of a hard lockout before any public exposure.
 - Split deck.gl and MapLibre into their own chunks (the globe chunk is 1.6 MB minified) once the layer set settles.
