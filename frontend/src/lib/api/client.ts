@@ -62,6 +62,15 @@ export async function apiCall<T>(
   return parsed.data;
 }
 
+/** Performs a request whose successful body is plain text (for example a Markdown export). */
+export async function apiText(path: string, options: CallOptions = {}): Promise<string> {
+  const response = await execute(path, {
+    ...options,
+    headers: { Accept: 'text/plain, text/markdown', ...options.headers },
+  });
+  return response.text();
+}
+
 /** Performs a request whose successful response has no body of interest (for example 204). */
 export async function apiSend(path: string, options: CallOptions = {}): Promise<void> {
   await execute(path, options);

@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 import { categorySchema } from './eventSchemas';
-import { apiCall, apiSend } from './client';
+import { apiCall, apiSend, apiText } from './client';
 
 export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
@@ -137,14 +137,23 @@ export function generateReport(request: ReportRequest): Promise<Report> {
   return apiCall('/api/reports', { method: 'POST', body: request, schema: reportSchema });
 }
 
-export function fetchReport(id: string): Promise<Report> {
-  return apiCall(`/api/reports/${encodeURIComponent(id)}`, { schema: reportSchema });
+export function fetchReport(id: string, version?: number): Promise<Report> {
+  const suffix = version === undefined ? '' : `?version=${String(version)}`;
+  return apiCall(`/api/reports/${encodeURIComponent(id)}${suffix}`, { schema: reportSchema });
+}
+
+export function regenerateReport(id: string): Promise<Report> {
+  return apiCall(`/api/reports/${encodeURIComponent(id)}/versions`, {
+    method: 'POST',
+    schema: reportSchema,
+  });
+}
+
+export function fetchReportMarkdown(id: string, version?: number): Promise<string> {
+  const suffix = version === undefined ? '' : `?version=${String(version)}`;
+  return apiText(`/api/reports/${encodeURIComponent(id)}/markdown${suffix}`);
 }
 
 export function deleteReport(id: string): Promise<void> {
   return apiSend(`/api/reports/${encodeURIComponent(id)}`, { method: 'DELETE' });
-}
-
-export function markdownUrl(id: string): string {
-  return `/api/reports/${encodeURIComponent(id)}/markdown`;
 }

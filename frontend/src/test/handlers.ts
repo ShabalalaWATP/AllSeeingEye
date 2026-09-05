@@ -284,6 +284,22 @@ export const handlers = [
     return apiError(404, 'not_found', 'Report not found.');
   }),
 
+  http.post('/api/reports/:id/versions', ({ params }) =>
+    HttpResponse.json(
+      {
+        report: { ...reportSummary, id: String(params.id), latest_version: 2 },
+        version: { ...report.version, number: 2 },
+      },
+      { status: 201 },
+    ),
+  ),
+
+  http.get('/api/reports/:id/markdown', () =>
+    HttpResponse.text('# Intelligence summary: Ukraine', {
+      headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+    }),
+  ),
+
   http.delete('/api/reports/:id', () => new HttpResponse(null, { status: 204 })),
 
   http.get('/api/events', () => HttpResponse.json({ items: liveEvents, count: liveEvents.length })),

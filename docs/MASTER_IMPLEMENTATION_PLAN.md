@@ -99,7 +99,8 @@ Check results at the last run (5 September 2026): backend 123 tests passing on S
 - [x] Templates as typed rows (INTSUM, INTREP, Country Brief, Ask the Eye) with evidence strategy and token budget; evidence selection by grade, recency, severity and per-source diversity with instruction-like text screened out; frozen evidence items; quality-of-information statistics with a confidence ceiling; prompt composition with the doctrine preamble; generation with one retry carrying the validator's findings, then needs_review or failed
 - [x] Persistence in migration 0003 (reports, report_versions with body, findings, evidence and quality as JSON plus the rendered Markdown), the reports API (templates, generate, list, read, Markdown export, delete by owner or admin, ten generations per user per hour), usage and audit entries
 - [x] Reports in the app: a generate form (product, nation, window, question), the list with status badges, and a reader with judgements (yardstick term and confidence chips, evidence labels), reporting, assessment, assumptions, alternatives, indicators, gaps, sourcing, validator findings and the evidence annex with http(s) links only; Markdown copied to the clipboard; owner or admin delete
-- [ ] Version history on regeneration, Wayback archiving, devil's advocacy pass, direction call for free-form asks, a download for the Markdown export
+- [x] Version history on regeneration (a further version keeps the scope, sees the previous key judgements and must state what changed) and a Markdown download in the reader
+- [ ] Wayback archiving, devil's advocacy pass, direction call for free-form asks
 
 ## Known follow-ups carried forward
 
