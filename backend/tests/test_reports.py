@@ -336,3 +336,48 @@ async def test_generation_faults_retry_limits_and_validation(
     )
     assert second.status_code == 429 and "retry-after" in second.headers
     assert quality_of_information([]).confidence_ceiling is Confidence.LOW
+
+
+async def test_regeneration_adds_a_version_that_must_state_what_changed(
+    client: AsyncClient, container: Container, admin: User, user: User
+) -> None:
+    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
+    container.llm = ScriptedGateway(json.dumps(good_body()))
+    first = await client.post("/api/reports", json={"template": "intsum"}, headers=bearer(token))
+    report_id = first.json()["report"]["id"]
+    assert first.json()["version"]["number"] == 1
+
+    # Without change markers the second version is stored for review.
+    container.llm = ScriptedGateway(json.dumps(good_body()), json.dumps(good_body()))
+    second = await client.post(f"/api/reports/{report_id}/versions", headers=bearer(token))
+    assert second.status_code == 201, second.text
+    assert second.json()["version"]["number"] == 2
+    assert second.json()["report"]["latest_version"] == 2
+    assert second.json()["report"]["status"] == "needs_review"
+    assert any(f["rule"] == "change" for f in second.json()["version"]["findings"])
+    prompt = container.llm.requests[0].messages[1].content
+    assert "previous version's key judgements" in prompt
+    assert "KJ1: We assess it is highly likely" in prompt
+
+    # With them, the third version is ready and the earlier versions stay readable.
+    judgements = [{**j, "change_from_previous": "unchanged"} for j in good_body()["key_judgements"]]
+    container.llm = ScriptedGateway(json.dumps(good_body(key_judgements=judgements)))
+    third = await client.post(f"/api/reports/{report_id}/versions", headers=bearer(token))
+    assert third.json()["report"]["status"] == "ready"
+    assert third.json()["version"]["number"] == 3
+    assert (
+        third.json()["version"]["body"]["key_judgements"][0]["change_from_previous"] == "unchanged"
+    )
+    latest = await client.get(f"/api/reports/{report_id}", headers=bearer(token))
+    assert latest.json()["version"]["number"] == 3
+    oldest = await client.get(f"/api/reports/{report_id}?version=1", headers=bearer(token))
+    assert oldest.json()["version"]["number"] == 1
+    listed = await client.get("/api/reports", headers=bearer(token))
+    assert listed.json()["items"][0]["latest_version"] == 3
+    missing = await client.post(
+        "/api/reports/00000000-0000-4000-8000-000000000000/versions", headers=bearer(token)
+    )
+    assert missing.status_code == 404

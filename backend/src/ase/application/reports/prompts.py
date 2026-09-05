@@ -9,6 +9,7 @@ from ase.application.reports.templates import Template
 from ase.domain.doctrine import YARDSTICK
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmMessage
+from ase.domain.reports import KeyJudgement
 from ase.domain.validation import Finding
 
 MAX_SUMMARY_CHARS = 600
@@ -77,6 +78,7 @@ def compose_messages(
     quality: QualityOfInformation,
     evidence: Sequence[EvidenceItem],
     findings: Sequence[Finding] = (),
+    previous: Sequence[KeyJudgement] = (),
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
@@ -97,6 +99,16 @@ def compose_messages(
     parts.extend(evidence_block(item) for item in evidence)
     if not evidence:
         parts.append("No evidence is available for this scope; say so in the judgements and gaps.")
+    if previous:
+        parts.append(
+            "This is a new version of an existing report. The previous version's key judgements "
+            "were the following; set change_from_previous on every judgement (new, unchanged, "
+            "strengthened, weakened or reversed) relative to them:"
+        )
+        parts.extend(
+            f"- {j.id}: {j.statement} ({j.probability.value}, {j.confidence.value} confidence)"
+            for j in previous
+        )
     if findings:
         parts.append("Your previous draft failed validation. Fix every point below:")
         parts.extend(f"- {finding.location}: {finding.message}" for finding in findings)

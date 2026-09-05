@@ -1,11 +1,14 @@
-"""Generate a report: select and freeze evidence, ask the model, validate, retry once, persist."""
+"""Generate a report: select and freeze evidence, ask the model, validate, retry once, persist.
+
+Regeneration produces a further version of an existing report from the same scope, with
+the previous key judgements shown to the model so it can say what changed.
+"""
 
 from __future__ import annotations
 
-import json
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
-from datetime import timedelta
+from collections.abc import Mapping
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -16,29 +19,35 @@ from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
     LlmGateway,
-    LlmGatewayError,
     LlmProfileRepository,
     LlmUsageRepository,
     SecretCipher,
 )
 from ase.application.ports.reports import ReportRepository
-from ase.application.reports.prompts import compose_messages
+from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.render import render_markdown
 from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import Template, template_for
 from ase.domain.audit import AuditAction
-from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NoModelAvailable, RateLimited
+from ase.domain.errors import (
+    EncryptionUnavailable,
+    InvalidRequest,
+    NoModelAvailable,
+    NotFound,
+    RateLimited,
+)
 from ase.domain.events import Category
-from ase.domain.evidence import EvidenceItem, QualityOfInformation, quality_of_information
+from ase.domain.evidence import quality_of_information
 from ase.domain.grading import SourceProfile
-from ase.domain.llm import LlmProfile, LlmRequest, LlmRole, LlmUsage
+from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.report_records import ReportRecord, ReportVersion
-from ase.domain.report_schema import REPORT_BODY_SCHEMA
-from ase.domain.reports import ReportBody, ReportHeader, ReportParseError, ReportStatus, parse_body
+from ase.domain.reports import (
+    ReportBody,
+    ReportHeader,
+    ReportStatus,
+)
 from ase.domain.users import User
-from ase.domain.validation import Finding, Severity, validate_body
-
-MAX_ATTEMPTS = 2
+from ase.domain.validation import Severity
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,16 +59,17 @@ class ReportRequest:
     window_hours: int | None = None
     profile_id: UUID | None = None
 
-
-@dataclass(slots=True)
-class _Draft:
-    body: ReportBody | None = None
-    findings: list[Finding] = field(default_factory=list)
-    model: str = ""
-    prompt_tokens: int | None = None
-    completion_tokens: int | None = None
-    latency_ms: float = 0.0
-    attempts: int = 0
+    @classmethod
+    def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
+        categories = tuple(Category(str(c)) for c in scope.get("categories") or [])
+        window = scope.get("window_hours")
+        return cls(
+            template_id=template_id,
+            country_iso=scope.get("country") or None,
+            categories=categories,
+            question=scope.get("question") or None,
+            window_hours=int(window) if window else None,
+        )
 
 
 class GenerateReportUseCase:
@@ -97,17 +107,79 @@ class GenerateReportUseCase:
     async def execute(
         self, actor: User, request: ReportRequest, context: RequestContext
     ) -> tuple[ReportRecord, ReportVersion]:
+        """A new report from the live evidence: version 1 of a new record."""
+        template = self._template(request)
+        profile = await self._prepare(actor, request.profile_id, template)
+        now = self._clock.now()
+        version = await self._produce(actor, template, request, profile, now, previous=None)
+        record = ReportRecord(
+            id=version.report_id,
+            template=template.id,
+            title=self._title(template, request),
+            scope=self._scope(request, template),
+            period_from=now - self._window(request, template),
+            period_to=now,
+            data_cutoff=now,
+            status=version.status,
+            created_by=actor.id,
+            created_at=now,
+            latest_version=1,
+        )
+        await self._reports.add(record, version)
+        await self._finish(actor, record, version, context)
+        return record, version
+
+    async def regenerate(
+        self, actor: User, report_id: UUID, context: RequestContext
+    ) -> tuple[ReportRecord, ReportVersion]:
+        """A further version of an existing report, judged against its previous judgements."""
+        record = await self._reports.get(report_id)
+        if record is None:
+            raise NotFound()
+        previous = await self._reports.get_version(report_id, record.latest_version)
+        if previous is None:
+            raise NotFound()
+        request = ReportRequest.from_scope(record.template, record.scope)
+        template = self._template(request)
+        profile = await self._prepare(actor, None, template)
+        now = self._clock.now()
+        version = await self._produce(
+            actor, template, request, profile, now, previous=previous, report_id=record.id
+        )
+        record.status = version.status
+        record.latest_version = version.number
+        record.period_from = now - self._window(request, template)
+        record.period_to = now
+        record.data_cutoff = now
+        await self._reports.add_version(record, version)
+        await self._finish(actor, record, version, context)
+        return record, version
+
+    async def _prepare(
+        self, actor: User, profile_id: UUID | None, template: Template
+    ) -> LlmProfile:
         retry_after = self._limiter.hit(
             f"reports:{actor.id}", self._limits.reports_per_user, self._limits.hourly_window_seconds
         )
         if retry_after is not None:
             raise RateLimited(retry_after)
-        template = self._template(request)
-        profile = await self._profile(request.profile_id, template.role)
+        profile = await self._profile(profile_id, template.role)
         if not self._cipher.available:
             raise EncryptionUnavailable()
-        now = self._clock.now()
-        window = timedelta(hours=request.window_hours or template.strategy.window_hours)
+        return profile
+
+    async def _produce(
+        self,
+        actor: User,
+        template: Template,
+        request: ReportRequest,
+        profile: LlmProfile,
+        now: datetime,
+        *,
+        previous: ReportVersion | None,
+        report_id: UUID | None = None,
+    ) -> ReportVersion:
+        window = self._window(request, template)
         selection = select_evidence(
             self._store,
             self._source_profiles,
@@ -120,33 +192,31 @@ class GenerateReportUseCase:
         header = ReportHeader(
             template=template.id,
             title=self._title(template, request),
-            scope=self._scope(request, window),
+            scope=self._scope(request, template),
             period_from=now - window,
             period_to=now,
             data_cutoff=now,
         )
-        draft = await self._draft(profile, template, header, request, quality, selection.items)
+        earlier = previous.body.key_judgements if previous is not None else ()
+        draft = await draft_body(
+            self._gateway,
+            profile,
+            self._cipher.decrypt(profile.api_key_encrypted),
+            template,
+            header,
+            request.question,
+            quality,
+            selection.items,
+            earlier,
+        )
         await self._log_usage(profile, actor, template, draft, now)
         body = draft.body or ReportBody()
         status = self._status(draft)
         markdown = render_markdown(header, body, selection.items, quality, draft.findings)
-        record = ReportRecord(
+        return ReportVersion(
             id=uuid4(),
-            template=template.id,
-            title=header.title,
-            scope=header.scope,
-            period_from=header.period_from,
-            period_to=header.period_to,
-            data_cutoff=header.data_cutoff,
-            status=status,
-            created_by=actor.id,
-            created_at=now,
-            latest_version=1,
-        )
-        version = ReportVersion(
-            id=uuid4(),
-            report_id=record.id,
-            number=1,
+            report_id=report_id or uuid4(),
+            number=previous.number + 1 if previous is not None else 1,
             status=status,
             body=body,
             findings=tuple(draft.findings),
@@ -161,16 +231,23 @@ class GenerateReportUseCase:
             attempts=draft.attempts,
             created_at=now,
         )
-        await self._reports.add(record, version)
+
+    async def _finish(
+        self, actor: User, record: ReportRecord, version: ReportVersion, context: RequestContext
+    ) -> None:
         await self._auditor.record(
             AuditAction.REPORT_GENERATED,
             actor=actor.id,
             subject=str(record.id),
             ip=context.ip,
-            details={"template": template.id, "status": status.value, "attempts": draft.attempts},
+            details={
+                "template": record.template,
+                "version": version.number,
+                "status": version.status.value,
+                "attempts": version.attempts,
+            },
         )
         await self._uow.commit()
-        return record, version
 
     @staticmethod
     def _template(request: ReportRequest) -> Template:
@@ -183,6 +260,10 @@ class GenerateReportUseCase:
         if template.needs_question and not (request.question or "").strip():
             raise InvalidRequest("This template needs a question.")
         return template
+
+    @staticmethod
+    def _window(request: ReportRequest, template: Template) -> timedelta:
+        return timedelta(hours=request.window_hours or template.strategy.window_hours)
 
     async def _profile(self, profile_id: UUID | None, role: LlmRole) -> LlmProfile:
         if profile_id is not None:
@@ -203,86 +284,24 @@ class GenerateReportUseCase:
             return f"{template.title}: {country.name if country else request.country_iso}"
         return f"{template.title}: global"
 
-    @staticmethod
-    def _scope(request: ReportRequest, window: timedelta) -> dict[str, Any]:
+    def _scope(self, request: ReportRequest, template: Template) -> dict[str, Any]:
         return {
             "country": request.country_iso,
             "categories": [category.value for category in request.categories],
             "question": request.question,
-            "window_hours": int(window.total_seconds() // 3600),
+            "window_hours": int(self._window(request, template).total_seconds() // 3600),
         }
 
-    async def _draft(
-        self,
-        profile: LlmProfile,
-        template: Template,
-        header: ReportHeader,
-        request: ReportRequest,
-        quality: QualityOfInformation,
-        evidence: Sequence[EvidenceItem],
-    ) -> _Draft:
-        draft = _Draft()
-        api_key = self._cipher.decrypt(profile.api_key_encrypted)
-        scope_line = self._title(template, request)
-        for attempt in range(1, MAX_ATTEMPTS + 1):
-            draft.attempts = attempt
-            messages = compose_messages(
-                template,
-                scope_line=scope_line,
-                period_from=header.period_from,
-                period_to=header.period_to,
-                question=request.question,
-                quality=quality,
-                evidence=evidence,
-                findings=draft.findings,
-            )
-            llm_request = LlmRequest(
-                messages=messages,
-                max_output_tokens=min(profile.max_output_tokens, template.token_budget),
-                temperature=profile.temperature,
-                json_schema=REPORT_BODY_SCHEMA,
-                schema_name="report",
-            )
-            try:
-                result = await self._gateway.complete(
-                    profile.base_url, api_key, profile.model, llm_request
-                )
-            except LlmGatewayError as exc:
-                draft.findings = [Finding("model", Severity.ERROR, "gateway", str(exc))]
-                continue
-            draft.model = result.model
-            draft.prompt_tokens = (draft.prompt_tokens or 0) + (result.prompt_tokens or 0)
-            draft.completion_tokens = (draft.completion_tokens or 0) + (
-                result.completion_tokens or 0
-            )
-            draft.latency_ms += result.latency_ms
-            try:
-                parsed = parse_body(json.loads(result.content))
-            except (ValueError, ReportParseError) as exc:
-                draft.findings = [Finding("schema", Severity.ERROR, "output", f"{exc}"[:300])]
-                continue
-            validated = validate_body(
-                parsed,
-                frozenset(item.label for item in evidence),
-                {item.label: item.url for item in evidence},
-                confidence_ceiling=quality.confidence_ceiling,
-            )
-            draft.body = validated.body
-            draft.findings = list(validated.findings)
-            if validated.passed:
-                break
-        return draft
-
     @staticmethod
-    def _status(draft: _Draft) -> ReportStatus:
+    def _status(draft: Draft) -> ReportStatus:
         if draft.body is None:
             return ReportStatus.FAILED
-        if any(f.severity is Severity.ERROR for f in draft.findings):
+        if draft.has_errors:
             return ReportStatus.NEEDS_REVIEW
         return ReportStatus.READY
 
     async def _log_usage(
-        self, profile: LlmProfile, actor: User, template: Template, draft: _Draft, now: Any
+        self, profile: LlmProfile, actor: User, template: Template, draft: Draft, now: datetime
     ) -> None:
         errors = [f.message for f in draft.findings if f.severity is Severity.ERROR]
         await self._usage.add(

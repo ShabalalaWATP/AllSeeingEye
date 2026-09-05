@@ -50,6 +50,18 @@ async def create_report(
     return ReportOut.build(record, version)
 
 
+@router.post("/{report_id}/versions", status_code=201)
+async def regenerate_report(
+    report_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> ReportOut:
+    record, version = await container.generate_report(session).regenerate(user, report_id, context)
+    return ReportOut.build(record, version)
+
+
 @router.get("/{report_id}")
 async def get_report(
     report_id: UUID,

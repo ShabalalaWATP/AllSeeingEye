@@ -8,6 +8,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
+from ase.domain.errors import NotFound
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
@@ -60,6 +61,27 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     )
 
 
+def _version_row(version: ReportVersion) -> ReportVersionRow:
+    return ReportVersionRow(
+        id=version.id,
+        report_id=version.report_id,
+        number=version.number,
+        status=version.status.value,
+        body=body_to_dict(version.body),
+        findings=findings_to_list(version.findings),
+        evidence=evidence_to_list(version.evidence),
+        quality=quality_to_dict(version.quality),
+        markdown=version.markdown,
+        profile_id=version.profile_id,
+        model=version.model,
+        prompt_tokens=version.prompt_tokens,
+        completion_tokens=version.completion_tokens,
+        latency_ms=version.latency_ms,
+        attempts=version.attempts,
+        created_at=version.created_at,
+    )
+
+
 class SqlReportRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -80,26 +102,16 @@ class SqlReportRepository:
                 latest_version=record.latest_version,
             )
         )
-        self._session.add(
-            ReportVersionRow(
-                id=version.id,
-                report_id=version.report_id,
-                number=version.number,
-                status=version.status.value,
-                body=body_to_dict(version.body),
-                findings=findings_to_list(version.findings),
-                evidence=evidence_to_list(version.evidence),
-                quality=quality_to_dict(version.quality),
-                markdown=version.markdown,
-                profile_id=version.profile_id,
-                model=version.model,
-                prompt_tokens=version.prompt_tokens,
-                completion_tokens=version.completion_tokens,
-                latency_ms=version.latency_ms,
-                attempts=version.attempts,
-                created_at=version.created_at,
-            )
-        )
+        self._session.add(_version_row(version))
+        await self._session.flush()
+
+    async def add_version(self, record: ReportRecord, version: ReportVersion) -> None:
+        row = await self._session.get(ReportRow, record.id)
+        if row is None:
+            raise NotFound()
+        row.status = record.status.value
+        row.latest_version = record.latest_version
+        self._session.add(_version_row(version))
         await self._session.flush()
 
     async def get(self, report_id: UUID) -> ReportRecord | None:
