@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from ase.adapters.feeds.adsb import AdsbMilitaryConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.gdacs import GdacsConnector
@@ -28,6 +29,7 @@ def build_connectors(
         SwpcScalesConnector(http, clock),
         CisaKevConnector(http, clock),
         GdeltEventsConnector(http, clock),
+        AdsbMilitaryConnector(http, clock),
         *build_rss_connectors(http, clock),
     ]
     return [connector for connector in connectors if connector.spec.id not in excluded]

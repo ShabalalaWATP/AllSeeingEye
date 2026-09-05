@@ -16,7 +16,15 @@ describe('countries store', () => {
       http.get('/api/countries', () => {
         requests += 1;
         return HttpResponse.json({
-          items: [{ iso2: 'GB', iso3: 'GBR', name: 'United Kingdom', bounds: [0, 0, 1, 1], centroid: [0.5, 0.5] }],
+          items: [
+            {
+              iso2: 'GB',
+              iso3: 'GBR',
+              name: 'United Kingdom',
+              bounds: [0, 0, 1, 1],
+              centroid: [0.5, 0.5],
+            },
+          ],
         });
       }),
     );

@@ -8,6 +8,8 @@ export interface NationFilterProps {
   /** ISO 3166-1 alpha-2 of the selected nation, or null for the whole world. */
   value: string | null;
   onChange: (iso: string | null) => void;
+  /** Why the country list could not be loaded, if it could not. */
+  error?: string | null;
 }
 
 /** Finds a nation by exact name, ISO code, or (on Enter) the first name that starts with the text. */
@@ -26,7 +28,7 @@ export function matchCountry(
 }
 
 /** A nation picker over the whole list; typing a full name or code selects it, Enter completes. */
-export function NationFilter({ countries, value, onChange }: NationFilterProps) {
+export function NationFilter({ countries, value, onChange, error = null }: NationFilterProps) {
   const listId = useId();
   const selected = value === null ? null : (countries.find((c) => c.iso2 === value) ?? null);
   const [text, setText] = useState('');
@@ -55,35 +57,42 @@ export function NationFilter({ countries, value, onChange }: NationFilterProps) 
   };
 
   return (
-    <div className="flex items-center gap-1 rounded-md border border-line bg-surface/90 p-1.5 backdrop-blur">
-      <input
-        type="text"
-        role="combobox"
-        aria-label="Nation filter"
-        aria-expanded="false"
-        aria-controls={listId}
-        list={listId}
-        placeholder="Nation"
-        autoComplete="off"
-        value={shown}
-        onChange={handleChange}
-        onKeyDown={handleKey}
-        className="min-w-0 flex-1 bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted focus:outline-none"
-      />
-      <datalist id={listId}>
-        {countries.map((country) => (
-          <option key={country.iso2} value={country.name} />
-        ))}
-      </datalist>
-      {selected !== null && (
-        <button
-          type="button"
-          aria-label="Clear nation filter"
-          onClick={clear}
-          className="rounded px-1.5 text-muted hover:bg-surface-2 hover:text-text"
-        >
-          ×
-        </button>
+    <div className="rounded-md border border-line bg-surface/90 p-1.5 backdrop-blur">
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          role="combobox"
+          aria-label="Nation filter"
+          aria-expanded="false"
+          aria-controls={listId}
+          list={listId}
+          placeholder="Nation"
+          autoComplete="off"
+          value={shown}
+          onChange={handleChange}
+          onKeyDown={handleKey}
+          className="min-w-0 flex-1 bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted focus:outline-none"
+        />
+        <datalist id={listId}>
+          {countries.map((country) => (
+            <option key={country.iso2} value={country.name} />
+          ))}
+        </datalist>
+        {selected !== null && (
+          <button
+            type="button"
+            aria-label="Clear nation filter"
+            onClick={clear}
+            className="rounded px-1.5 text-muted hover:bg-surface-2 hover:text-text"
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {error !== null && (
+        <p role="alert" className="mt-1 px-1.5 text-xs text-critical">
+          Nations unavailable: {error}
+        </p>
       )}
     </div>
   );

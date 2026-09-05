@@ -10,7 +10,12 @@ import { Alert } from '@/components/ui/Alert';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
 import { useCountriesStore } from '@/stores/countries';
-import { countByCategory, filterByCountry, selectSelectedEvent, useEventsStore } from '@/stores/events';
+import {
+  countByCategory,
+  filterByCountry,
+  selectSelectedEvent,
+  useEventsStore,
+} from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
 import { CountryPanel } from './CountryPanel';
@@ -40,6 +45,7 @@ export default function GlobePage() {
   const countries = useCountriesStore((state) => state.items);
   const countryByIso = useCountriesStore((state) => state.byIso);
   const loadCountries = useCountriesStore((state) => state.load);
+  const countriesError = useCountriesStore((state) => state.error);
   useEffect(() => {
     void loadCountries();
   }, [loadCountries]);
@@ -121,7 +127,12 @@ export default function GlobePage() {
       <ModeToolbar mode={mode} onChange={setMode} />
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
-        <NationFilter countries={countries} value={country} onChange={changeNation} />
+        <NationFilter
+          countries={countries}
+          value={country}
+          onChange={changeNation}
+          error={countriesError}
+        />
         <LayerPanel
           counts={counts}
           hidden={hidden}

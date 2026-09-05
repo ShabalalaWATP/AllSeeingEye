@@ -32,7 +32,9 @@ describe('NationFilter', () => {
   it('selects on a full name, a code, or Enter with a prefix, and clears', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
-    const { rerender } = render(<NationFilter countries={countries} value={null} onChange={onChange} />);
+    const { rerender } = render(
+      <NationFilter countries={countries} value={null} onChange={onChange} />,
+    );
     const input = screen.getByRole('combobox', { name: 'Nation filter' });
     expect(screen.queryByRole('button', { name: 'Clear nation filter' })).not.toBeInTheDocument();
     await user.type(input, 'United Kingdom');
@@ -55,6 +57,11 @@ describe('NationFilter', () => {
     expect(onChange).toHaveBeenCalledTimes(3);
   });
 
+  it('reports when the nation list could not be loaded', () => {
+    render(<NationFilter countries={[]} value={null} onChange={vi.fn()} error="No atlas." />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Nations unavailable: No atlas.');
+  });
+
   it('drops the selection when the text no longer names a nation', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
@@ -72,7 +79,13 @@ describe('CountryPanel', () => {
       liveEvent({ id: 'b', title: 'Advisory', category: 'political', country_iso: 'UA' }),
     ];
     render(
-      <CountryPanel country={countries[1]!} events={events} selectedId="b" now={NOW} onSelect={onSelect} />,
+      <CountryPanel
+        country={countries[1]!}
+        events={events}
+        selectedId="b"
+        now={NOW}
+        onSelect={onSelect}
+      />,
     );
     const panel = screen.getByRole('region', { name: 'Ukraine panel' });
     expect(within(panel).getByRole('heading', { name: 'Ukraine' })).toBeInTheDocument();
@@ -87,7 +100,15 @@ describe('CountryPanel', () => {
   });
 
   it('explains an empty nation', () => {
-    render(<CountryPanel country={countries[0]!} events={[]} selectedId={null} now={NOW} onSelect={vi.fn()} />);
+    render(
+      <CountryPanel
+        country={countries[0]!}
+        events={[]}
+        selectedId={null}
+        now={NOW}
+        onSelect={vi.fn()}
+      />,
+    );
     expect(screen.getByText('Nothing in the live tier for this nation.')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
