@@ -46,7 +46,7 @@ def test_unsupported_scripts_and_bidi_controls_remain_explicit(text: str) -> Non
     pdf = PdfReader(io.BytesIO(render_pdf(document)))
     output = "\n".join(page.extract_text() for page in pdf.pages)
     assert "".join(f"[U+{ord(character):04X}]" for character in text) in output
-    assert "including Arabic and CJK" in output
+    assert "Unsupported characters and text-direction controls" in output
     assert "DOCX export retains their original characters" in " ".join(output.split())
 
 

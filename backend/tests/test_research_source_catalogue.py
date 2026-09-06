@@ -15,6 +15,7 @@ from ase.container import Container
 from ase.container.research_sources import research_source_specs
 from ase.domain.events import Reliability
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch, ResearchQuery
+from ase.domain.research_plan import ResearchPlan
 from ase.domain.users import User
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
@@ -141,7 +142,12 @@ async def test_api_combines_live_and_research_without_urls_or_secrets(
 
 
 class CatalogueResearch:
-    async def collect(self, query: ResearchQuery) -> ResearchBatch:
+    def plan(self, query: ResearchQuery) -> ResearchPlan:
+        return ResearchPlan(
+            query.question, query.since, query.until, query.languages, (), 6, 45, 200
+        )
+
+    async def collect(self, query: ResearchQuery, *, replan=None) -> ResearchBatch:
         ids = ("research_google_news_fr", "research_import", "research_media")
         return ResearchBatch(
             tuple(
