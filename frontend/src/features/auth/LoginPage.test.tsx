@@ -202,7 +202,9 @@ describe('LoginPage', () => {
       'aria-current',
       'page',
     );
-    await user.click(navigation().getByRole('link', { name: 'Recovery' }));
+    expect(navigation().queryByRole('link', { name: 'Recovery' })).not.toBeInTheDocument();
+    await user.click(navigation().getByRole('link', { name: 'Sign in' }));
+    await user.click(await screen.findByRole('link', { name: 'Forgotten password' }));
     expect(await screen.findByRole('heading', { name: 'Forgotten password' })).toBeInTheDocument();
     await user.click(navigation().getByRole('link', { name: 'Sign in' }));
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();

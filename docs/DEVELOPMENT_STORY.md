@@ -555,3 +555,15 @@ preserving those earlier test results as historical evidence.
   and file-length checks passed. Desktop and 390/320-pixel browser checks verified
   navigation, visible focus, reduced motion and no horizontal overflow. Existing
   map/deck build size warnings remain. No deployment or remote push occurred.
+
+### 6 September 2026: black account-page refinement
+
+- Replaced the navy palette with near-black surfaces, neutral grey text and subtle
+  white grid squares. Removed the Recovery tab while retaining forgotten-password
+  access and its existing flow.
+- Reduced the eye's internal scale to give the outer flames room, moved the edge
+  feather beyond the artwork and removed negative mobile offsets. Desktop and
+  320-pixel browser captures show the complete eye within its panel.
+- All 39 focused account/brand tests passed; lint, types and build passed. No
+  authentication, API or approval policy changed. Coverage was not remeasured for
+  this small refinement; the previous full-suite results are recorded above.

@@ -17,7 +17,8 @@ export function AuthLayout() {
         <p className="auth-eyebrow">Open-source intelligence</p>
         <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
           <EvilEye
-            backgroundColor="#050e1d"
+            backgroundColor="#060606"
+            scale={0.4}
             maxFps={reducedMotion ? 1 : 24}
             flameSpeed={reducedMotion ? 0 : 1}
             pupilFollow={reducedMotion ? 0 : 1}
@@ -43,7 +44,6 @@ export function AuthLayout() {
           <nav className="auth-navigation" aria-label="Account access">
             <NavLink to="/login">Sign in</NavLink>
             <NavLink to="/request-account">Sign up</NavLink>
-            <NavLink to="/forgot-password">Recovery</NavLink>
           </nav>
           <div className="auth-form">
             <Outlet />
