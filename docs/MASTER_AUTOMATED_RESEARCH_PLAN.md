@@ -248,3 +248,17 @@ one old report-scope assertion was corrected and all five report-suite cases the
 passed. Combined backend coverage is 96.40%. Static checks, production build,
 OpenAPI consistency, dependency audits, secret scanning and all pre-commit hooks
 pass. No remote push, production migration or live SMTP/model evaluation was performed.
+
+
+## Next expansion plan, 6 September 2026
+
+[Research expansion implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md)
+is the proposed next backlog following `60f57e4`: deeper Russia, China and Iran
+coverage; query planning, claims, entities, history and verification; and shared
+improvements to the existing globe and flat map. Its companion
+[source matrix](REGIONAL_SOURCE_EXPANSION.md) records access/verification limits;
+the [geospatial specification](GEOSPATIAL_RESEARCH_PLAN.md) defines geometry,
+precision, private overlays, projection parity and acceptance tests.
+
+These documents are plans, not implemented connectors, activated sources or
+measured research-quality claims. Existing completed milestones remain above.

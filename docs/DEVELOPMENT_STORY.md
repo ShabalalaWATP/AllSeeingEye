@@ -657,3 +657,24 @@ preserving those earlier test results as historical evidence.
   96.40%. All final file-length and diff checks pass. The milestone is committed
   locally on `main`; no remote is configured. Database migrations, real SMTP
   delivery and configured-model evaluation remain operator follow-up.
+
+
+## 6 September 2026: regional research and map expansion planning
+
+- Reviewed current source seeds, research limits, language settings and shared
+  MapLibre/deck.gl architecture before planning the next expansion.
+- Prepared a sequenced implementation backlog plus Russia/China/Iran source and
+  geospatial specifications, with official source references and explicit access,
+  licence, original-language and coverage limitations.
+- The map audit identified country-centroid false precision, seam/polar clustering
+  limits and the need to keep private report overlays out of public event SSE.
+  The plan extends both existing projections through the same engine.
+- Added dependency/ownership/acceptance tables, bounded retention and migration
+  approach, real-model quality gates, source onboarding and real GPU checks.
+- Documentation only. No application source, credentials, operator database,
+  provider activation or deployment changed during this planning task.
+
+- Independent plan review added immutable map-view revisions, initial snapshot/SSE
+  reconciliation and existing live-layer truncation disclosure, and clarified the
+  language/source/map dependency sequence. Local links, encoding, file-length and
+  diff checks were performed; application tests are unchanged by these documents.
