@@ -1,11 +1,11 @@
 # Data Source Catalogue
 
-Status: source catalogue with dated verification. The original research was checked against official documentation on 2 September 2026; unconfirmed claims are marked UNVERIFIED. Section O records probes from this host. Section P records the implemented Phase 5 scope and its remaining limitations as of 6 September 2026. Older catalogue rows describe candidate capabilities, not a promise that every connector exists.
+Status: source catalogue with dated verification. The original research was checked against official documentation on 2 September 2026; unconfirmed claims are marked UNVERIFIED. Section O records probes from this host. Section P records the implemented Phase 5 scope and its remaining limitations as of 6 September 2026. Section Q records the active automated-research implementation. Older catalogue rows describe candidate capabilities, not a promise that every connector exists.
 
 Conventions:
 
 - **Auth**: none / free key / free account / paid.
-- **Reliability default**: the Admiralty-style baseline the registry ships with (A completely reliable to F cannot be judged). Instrument feeds (seismometers, satellites, ADS-B receivers) start at A; wire agencies and public broadcasters at B; national press at C; state-controlled media at C with a bias flag; community and social at E; unknown at F. Admins can override any of these. See `03_DOCTRINE_AND_REPORTING.md` section 4.
+- **Reliability default**: the registry uses separate A-F source reliability and 1-6 item credibility. Earlier rows are catalogue-era expectations; exact current grades and their inherited editorial basis live in the registry and authenticated `/sources` view. Instrument/platform categories do not confer a universal grade. New research publisher/account items are explicitly unassessed. See section Q and `03_DOCTRINE_AND_REPORTING.md` section 4.
 - **Phase**: when the connector is planned (see `05_ROADMAP.md`). "Could" means possible later, "Skip" means rejected with the reason given.
 - Every connector is polite: conditional requests, descriptive User-Agent with contact address, caching at or above the upstream refresh interval, and a circuit breaker.
 
@@ -278,3 +278,96 @@ Google News collection is a separate news feed, `google_news_watchlists`. It que
 The legacy Google News envelope can contain the publisher URL directly. That URL is decoded and checked for a public destination only after a report selects the item as cited evidence, within a 30-link, ten-second resolution budget. Uncited links and failed resolutions remain unchanged. No article HTML is fetched. A signature-free probe of the modern opaque-ID `batchexecute` path returned a null result with status 3 on 6 September 2026. Modern IDs therefore retain their original Google URL. Resolving them by extracting signatures from HTML would violate the feeds/APIs-only policy and is not implemented.
 
 Language detection and optional model-backed title translation are documented in [Phase 5 and Phase 6 operations](PHASE5_PHASE6_OPERATIONS.md). The adapters have offline tests; translation, report generation and embeddings have not been verified against a configured real model on this host. The probe results above are dated observations, not continuing availability guarantees.
+
+## Q. Active automated-research integration, 6 September 2026
+
+This section describes implemented adapter contracts, not new live availability
+probes. [The active plan](MASTER_AUTOMATED_RESEARCH_PLAN.md) records focused checks
+and remaining integration/evaluation. The older host probes in section O retain
+their original dates and must not be treated as current guarantees.
+
+| Provider | Implemented bounded scope | Attribution and coverage limits |
+| --- | --- | --- |
+| Google News research RSS | Question terms and requested publication interval, one admitted request per configured edition; first 200 feed items considered | Undocumented feed; no article HTML, linked-page scraping or guaranteed completeness; terms are not automatically translated |
+| Configured social RSS/Atom | Existing public feed seeds filtered by explicit terms and publication interval | Not arbitrary account discovery or full platform search; configured language is not independently verified; publisher/account metadata remains unverified |
+| SEC submissions | Explicit CIK; at most 20 recent filing metadata records in the requested dates | Filing date has day precision; no full filing contents/older pagination; filing assertions are not SEC verification |
+| SEC company directory | At most eight current name/ticker candidates | A candidate is not a confirmed intended identity or complete company register |
+| Google Public DNS | Current resolver snapshot; quick mode requests A, detailed requests A/AAAA/MX/NS | No target-host connection or historical DNS; shared addresses/servers do not identify owners |
+| Verisign RDAP | Explicit registered .com/.net domains, current registry metadata | No referral/contact crawl, registrable-domain guessing, beneficial ownership or historical-control proof |
+| Companies House | Current profile by number or at most 20 name-match candidates, using an optional operator API key | No request when key is absent; UK registry coverage, no filed documents/officer/ownership investigation; prefer `GB:` or `companies-house:` prefixes to distinguish bare SEC CIK numbers |
+| SSLMate certificate transparency | Optional authenticated exact-hostname query, first page of unexpired issuances, at most 20 retained records | No request without key; no wildcard/subdomain expansion or complete history; oldest discovered first, so not a latest-record guarantee; certificate validity is not observation or ownership |
+| Supplied documents/media | Local isolated extraction with page/row/paragraph or frame locators | Not a new public source; original publication/capture claims may be unknown; OCR and metadata do not authenticate content |
+
+The news edition map includes `en`, `fr`, `de`, `es`, `pt`, `uk`, `ru`, `ar`,
+`zh-cn`, `zh-tw`, `ja`, `ko` and `hi`. This is request configuration, not proof of
+translation quality, geographic relevance, Chinese-source access or balanced
+coverage. Unsupported language/focus requests remain visible in receipts. No
+Telegram preview scraping, paid API or additional cloud service is introduced.
+SSLMate is a current certificate snapshot capability, not a full historical archive.
+
+Private collection uses six requests/45 seconds/200 retained items in quick mode
+and 24 requests/180 seconds/800 items in detailed mode. The additional challenge
+pass shares six requests/45 seconds/200 items across judgements. These budgets
+limit collection, not total model latency or the amount of available information.
+Only selected report evidence and bounded receipts become durable; unselected
+material is transient. Requests stay behind the existing guarded HTTP boundary.
+
+### Source-rating transparency
+
+`domain/source_rating_catalog.py` records the explicit basis of inherited registry
+grades. `SourceRating` adds `ase-source-ratings-v1`, editorial/unassessed status,
+assessed grade, scope, limitations, provenance role, whether publisher reliability
+was assessed, and an optional review date. No historical review date, accuracy
+percentage or fresh performance study is invented. The metadata does not silently
+change grading or the per-judgement evidence policy.
+
+Aggregators and social platforms do not transfer their own reputation to an
+original publisher or account. Existing configured grades stay visible alongside
+that limitation; unknown/new research items remain explicitly unassessed. A changed
+configured grade without a matching recorded basis is not represented as a reviewed
+rating. Separate organisation keys are declarations, not proven independent sourcing.
+
+Selected evidence freezes this rating plus bounded scalar provenance such as
+original publisher/account/source claims, identifiers, locator and timestamp hints.
+The current `/sources` catalogue is authenticated and separate from historical
+report snapshots. Legacy missing ratings remain unknown rather than being filled
+from today's registry. Source links and hashes support traceability, not origin,
+claim authenticity or a preserved copy of an entire original webpage.
+
+`container/research_sources.py` registers every research edition/social source,
+SEC, Companies House, DNS, RDAP, certificate and private document/media event ID.
+All research catalogue entries are F/unassessed, with a source-specific basis and
+limits. Unknown news/social/upload origins share empty organisation provenance;
+separate editions or accounts therefore establish no extra known organisations.
+Registry/resolver endpoints share their collector organisation. Disabled source IDs
+and disabled parent feeds suppress their corresponding catalogue derivatives.
+No API URLs or keys are returned by `/api/sources`; listing a capability does not
+claim that credentials or local media tools are currently available.
+
+### Official provider contracts checked on 6 September 2026
+
+Companies House requires API authentication and permits 600 requests per five
+minutes. Its public data API is free; the implementation uses an operator key in
+per-request credentials, not a shared client's global headers. See the official
+[overview](https://developer.company-information.service.gov.uk/overview) and
+[developer guidelines](https://developer.company-information.service.gov.uk/developer-guidelines/).
+Configure `ASE_COMPANIES_HOUSE_KEY` separately; absence produces an unavailable receipt.
+
+SSLMate requests an authenticated account for production use; unauthenticated access
+is limited to personal/evaluation use. The free Small plan lists 100 single-hostname
+queries/hour, 75/minute, 5/second and a 15-second timeout, with possible reductions
+during high load. This app uses that optional account route through
+`ASE_CERTIFICATE_TRANSPARENCY_KEY`, without requiring a paid plan. See the
+[official pricing](https://sslmate.com/pricing/ct_search_api) and
+[API authentication and pagination contract](https://sslmate.com/help/reference/ct_search_api_v1).
+The app makes one request, disables wildcard/subdomain expansion and does not
+paginate. Validity dates remain distinct from observation/capture timestamps.
+
+SEC provides unauthenticated submissions data through its
+[EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).
+The app's bounded metadata selection does not validate filing assertions. DNS uses
+the [Google Public DNS JSON contract](https://developers.google.com/speed/public-dns/docs/doh/json),
+and registry scope follows [Verisign's RDAP help](https://www.verisign.com/news-insights/registration-data-access-protocol/help/).
+These primary contracts describe available services, not successful live probes
+from this installation. Credential requests use exact HTTPS origins, no redirects
+and no conditional cache, preserving the shared DNS-pinned public-address guard.

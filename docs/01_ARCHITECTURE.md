@@ -1,9 +1,10 @@
 # The All Seeing Eye: Architecture
 
-Status: current implementation, including the identity and team isolation
-changes, 6 September 2026. This replaces the initial proposal's descriptions of
+Status: current implementation and active automated-research integration,
+6 September 2026. This replaces the initial proposal's descriptions of
 components that were not built. Acceptance evidence and remaining work live in
-[the improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md); deployment gates live
+[the automated-research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md); earlier delivery
+evidence remains in [the improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md). Deployment gates live
 in [the Phase 6 security review](security/PHASE6_ASVS_REVIEW.md).
 
 ## 1. Design principles
@@ -19,7 +20,7 @@ in [the Phase 6 security review](security/PHASE6_ASVS_REVIEW.md).
    bounded and validated. The browser renders structured text, never source HTML.
 5. **One local application.** One API process runs collectors and background work,
    one relational database holds durable data, and one React application renders
-   it. No message broker, vector service or new cloud dependency is required.
+   it. Untrusted document/media extraction uses short-lived bounded subprocesses. No message broker, vector service or new cloud dependency is required.
 6. **Small explicit boundaries.** Protocol ports separate use cases from external
    systems. Composition stays in the `ase.container` package.
 
@@ -38,6 +39,14 @@ flowchart LR
   MODEL[Administrator-selected model endpoint] <--> API[FastAPI application]
   API <--> DB
   API <--> LIVE
+  API --> RESEARCH[Question and bounded private collection]
+  HTTP --> RESEARCH
+  RESEARCH --> PRIVATE[Transient private evidence]
+  UPLOAD[Authenticated supplied file] --> WORKER[Isolated extraction subprocess]
+  WORKER --> INPUT[Expiring private extracted input]
+  INPUT --> PRIVATE
+  PRIVATE --> SAVED[Selected frozen report evidence and receipts]
+  SAVED --> DB
   BUS --> SSE[Authenticated server-sent events]
   API <--> CADDY[Caddy / development proxy]
   SSE --> CADDY
@@ -57,6 +66,7 @@ scope. Optional keyed feeds are not prerequisites for the core application.
 | Development API | FastAPI, SQLite, collectors and background loops | Port 8001; `.env` and relative SQLite paths resolve from its working directory |
 | Development web | Vite on port 5173 | Same-origin `/api` proxy defaults to `127.0.0.1:8001` |
 | Compose `api` | Same application, migrations at startup | One uvicorn process on internal port 8000, non-root, read-only root filesystem and temporary `/tmp` |
+| Extraction subprocess | Parse one supplied document or media input | Shared two-slot admission, deadline and OS resource limits; no inherited application secrets or durable original files |
 | Compose `db` | PostgreSQL 16 with PostGIS image | Durable tier, private Compose network and database volume |
 | Compose `web` | Caddy TLS, static SPA and reverse proxy | Ports 80/443; local internal certificate by default |
 
@@ -68,8 +78,11 @@ access. See [security controls and gates](07_SECURITY_BY_DESIGN.md).
 Application lifespan starts and stops the feed scheduler, aviation monitor,
 indicator evaluator, scheduled report runner, translation queue and social
 monitor. Rate limits, live events, stream admission, chat admission and search
-locking are process-local. Adding workers requires shared coordination and a
-separate design decision.
+locking are process-local. Adding API workers requires shared coordination and a
+separate design decision. Parser subprocesses are isolated work units, not extra
+HTTP workers. Current synthetic Windows checks exercise the Job memory boundary;
+POSIX process-group/resource-limit logic has unit tests. The changed production
+image and full cross-platform operational behaviour still need final verification.
 
 ## 4. Backend architecture
 
@@ -100,6 +113,7 @@ Concrete wiring stays in this package; the split is not a new service boundary.
 
 | Port or boundary | Current implementation |
 |---|---|
+| Private research and inputs | Budgeted provider collection, owner-bound expiring extraction store and isolated document/media runner |
 | Feed connectors and HTTP | Dedicated feed adapters, shared RSS parsing, public-host validation and DNS pinning |
 | Event store and bus | Bounded in-memory store and in-process subscriptions |
 | Country resolution | Packaged Natural Earth boundaries with a pure point-in-polygon resolver |
@@ -171,7 +185,7 @@ holds small hourly aviation/social counts, not event payloads.
 | Teams and memberships | Named active/archived teams and explicit member/manager designations |
 | LLM profiles and usage | Encrypted credentials, profile roles and model-call outcomes |
 | AOIs, collection plans, indicators, alerts and schedules | Standing collection and warning configuration |
-| Reports and report versions | Assessment body, findings, frozen evidence JSON, quality, analysis, Markdown and model usage metadata |
+| Reports and report versions | Body, findings, selected frozen evidence, source rating/attributes, collection/citation/context/challenge metadata, Markdown and model usage |
 | Activity samples | Small hourly counts for baseline comparisons |
 | Report embeddings | One bounded vector per indexed report version |
 | Audit log | Security and operator actions |
@@ -197,7 +211,79 @@ also requires the current model/profile fingerprint. Cosine comparison runs in
 the application; there is no pgvector extension or raw-event index. See
 [ADR 0008](adr/0008-bounded-report-search.md) for limits and trade-offs.
 
-### 4.6 Authentication and access
+### 4.6 Private on-demand research and supplied inputs
+
+`application/research` coordinates explicitly scoped collection outside database
+locks. Quick/detailed budgets admit serial provider calls and produce completed,
+empty, failed, timed-out, unavailable, unsupported or exhausted receipts. The
+composition root selects free Google News/configured social, SEC, DNS, RDAP and
+optional authenticated Companies House/SSLMate providers. Missing optional keys
+produce unavailable receipts without a request. Quick DNS uses A; detailed uses
+A, AAAA, MX and NS. A separate bounded private store feeds report evidence selection;
+private collected results do not enter the shared globe store. Provider availability,
+request limits and language coverage are recorded rather than assumed.
+
+Selected evidence freezes source-rating policy and bounded scalar provenance.
+The pure research-context projection keeps publication, observation and capture
+separate, exposes captured identifiers/aliases as candidates, and labels declared
+source links and possible-copy cautions. It never merges names into identities or
+infers common ownership. Version JSON stores these disclosures; strict decoders
+preserve historical method versions and legacy absence without rebuilding them.
+
+Detailed research now has a bounded challenge stage: initial judgement queries
+share one collection budget, selected new material can trigger redrafting, and
+final judgements receive one batch challenge review. Provider/model failures and
+missing review remain explicit. The challenge model is not another independent
+source. Follow-ups reuse authorised frozen evidence and record new collection
+separately. Upload, challenge and context handoffs are integrated; focused
+production/SQL/export tests pass, with final combined acceptance still pending.
+
+`POST /api/research/inputs` admits an authenticated raw upload before reading its
+body. Its extracted input is bound to the exact user and security version for
+15 minutes; administrators do not acquire another user's transient input. The
+application rechecks authority around extraction and holds no administration lock
+across parser work. Two parser slots and independent pending/ready input caps
+bound work and storage. Originals are transient. Extracted text, locator/hash
+metadata and sanitised previews stay in bounded memory; access expires after
+15 minutes and physical removal occurs on the next store access. Only selected report
+evidence and bounded input provenance are durable, without the transient input ID.
+Frame bytes are separate from event and receipt JSON and appear only in the upload
+preview response. Raw uploads are limited to 8 MiB.
+
+Document/media extraction shares a subprocess protocol with deadlines, memory
+limits, bounded JSON output and child termination. Limits and parser exclusions
+are in [the active plan](MASTER_AUTOMATED_RESEARCH_PLAN.md). OCR is English-only
+and fallible; image metadata, frame times and hashes are not authenticity checks.
+This is a resource boundary, not an OS filesystem/network security sandbox.
+Linux's 512 MiB address-space limit applies per process; a compromised native
+parser could retain the service user's file access. Read-only container root and
+no-new-privileges do not make the writable application-data mount inaccessible.
+Private document/media focus does not send extracted terms to public providers.
+One API process is required for the process-local admission and expiring stores.
+
+Schedules persist saved questions/options in migration `0015`; `0016` adds opt-in
+change summaries and a schedule-origin alert alternative to an indicator origin.
+Comparisons use frozen evidence/assessment differences. They do not classify
+semantic importance, verify a correction or establish that a claim became true.
+Document/media focus cannot be scheduled because private uploads expire. Scoped
+PostgreSQL/migration and schedule checks pass; final combined acceptance remains.
+
+Generation is request-bound, not a background job queue. An optional client UUID
+in `X-Research-Run-ID` supports exact-user/security-version progress polling for
+30 minutes in one process. A 600-second deadline or disconnect cancels outstanding
+work; cancellation during saving cannot guarantee that no commit occurred.
+Clients must inspect Reports before retrying an uncertain result. See the
+[automated research API](api/AUTOMATED_RESEARCH_API.md).
+Long-running upload/report boundaries revalidate the current session; focused
+logout/expiry regression checks return 401 before input/report retention.
+
+`container/research_sources.py` supplies static capability profiles alongside live
+connectors. Every known research event source ID has specific unassessed F context;
+unknown news/social/upload origins have no asserted organisation independence.
+Registry/resolver endpoints share collector organisations, not verified claim
+origins. Selected evidence freezes the profile, including its policy and limits.
+
+### 4.7 Authentication and access
 
 The SPA holds access tokens in memory and refreshes through protected cookies.
 Each JWT identifies its refresh family and the account's security version.
@@ -246,7 +332,7 @@ scoped data and selections on access changes. Connection admission remains
 bounded per user and globally. Optional administrator TOTP has encrypted secrets,
 confirmed enrolment, replay protection and host-only recovery.
 
-### 4.7 External model boundary
+### 4.8 External model boundary
 
 Administrators may configure private or loopback model endpoints deliberately.
 That trust boundary is separate from the public-feed SSRF policy. Chat and
@@ -256,7 +342,7 @@ deadline including admission, and two concurrent requests per shared gateway.
 Embeddings have a 2 MiB cap and a 30-second endpoint deadline. Provider errors
 never include response excerpts, credentials or request payloads.
 
-### 4.8 Configuration and recovery
+### 4.9 Configuration and recovery
 
 Settings use the `ASE_` prefix and optional working-directory `.env`. Profiles
 encrypt keys under `ASE_ENCRYPTION_KEY`; the key must be preserved for recovery.
@@ -281,6 +367,12 @@ recovery of the operator's current database or the newer scope migrations.
 `app/` owns routing and shell composition. Feature folders own focused pages and
 hooks; shared UI, API clients, URL guards, formatting and stores live under
 `components/`, `lib/` and `stores/`. Features do not import each other.
+
+The question-first `/research` entry point and authenticated `/sources` catalogue
+are implemented. Report metadata disclosures use frozen version data; the current
+source catalogue never fills gaps in old reports. Upload/follow-up/context/challenge
+controls, progress and contextual research actions are integrated. Basic personal/team sharing uses the existing
+access policy, without cases, task allocation or mandatory reviewer queues.
 
 ### 5.2 Libraries
 

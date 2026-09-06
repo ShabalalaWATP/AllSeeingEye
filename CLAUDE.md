@@ -1,6 +1,6 @@
 # The All Seeing Eye (code name `ase`)
 
-Self-hosted OSINT fusion app: free feeds on a 3D globe (the default view), graded before an LLM writes mechanically validated assessments. The approved design lives in `docs/`. Read in this order when starting work: `docs/MASTER_FIX_IMPROVEMENT_PLAN.md`, `docs/01_ARCHITECTURE.md`, `docs/07_SECURITY_BY_DESIGN.md`, `docs/DEVELOPMENT_STORY.md`. `docs/MASTER_IMPLEMENTATION_PLAN.md` preserves the earlier Phase 0 to 6 delivery history; `docs/00_PROPOSAL_OVERVIEW.md` is the original proposal. API contracts live in `docs/api/`.
+Self-hosted OSINT fusion app: free feeds on a 3D globe (the default view), graded before an LLM writes mechanically validated assessments. The approved design lives in `docs/`. Read in this order when starting work: `docs/MASTER_AUTOMATED_RESEARCH_PLAN.md`, `docs/OSINT_PRODUCT_DIRECTION.md`, `docs/01_ARCHITECTURE.md`, `docs/07_SECURITY_BY_DESIGN.md`, `docs/DEVELOPMENT_STORY.md`. `docs/MASTER_IMPLEMENTATION_PLAN.md` preserves the earlier Phase 0 to 6 delivery history; `docs/00_PROPOSAL_OVERVIEW.md` is the original proposal. API contracts live in `docs/api/`.
 
 Phase 5 and Phase 6 features are implemented. See
 `docs/PHASE5_PHASE6_OPERATIONS.md` for operator flows and
@@ -8,7 +8,9 @@ Phase 5 and Phase 6 features are implemented. See
 equate local tests with public readiness, recovery of the operator's backups,
 a real-model integration or an observed GitHub CI run. A prior synthetic
 SQLite/PostgreSQL 17 recovery through migration `0011` is recorded separately;
-the broader improvement plan tracks current identity/team and analytical work.
+the earlier improvement plan preserves identity/team delivery history. The active
+automated-research plan tracks the current, unfinished collection/input/follow-up
+milestone. Its focused tests do not establish final integration or model quality.
 
 ## Layout
 

@@ -281,3 +281,150 @@ A concise, chronological record of how The All Seeing Eye is being built. Mainta
   The verified milestone is committed on `codex/report-evidence-scoring`, with no
   remote or push. Scoring, product direction, API, operations, ADR and scoped
   security-review documents were updated together.
+
+
+## 6 September 2026: bounded automated research implementation in progress
+
+- Started the full operator-research milestone on `codex/automated-research` from
+  `99c1e16`. No new milestone commit or remote is present. The new
+  [master automated-research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md) retains the
+  full acceptance checklist; earlier Phase 5/6 and scoring checks are historical.
+- Added private question-led quick/detailed collection with bounded request/time
+  budgets and explicit provider receipts. Supported components include undocumented
+  Google News RSS editions, configured social feeds, SEC CIK/identity candidates,
+  current DNS and .com/.net RDAP. Publisher/account claims remain unverified;
+  edition selection does not establish translated coverage. Optional Companies
+  House integration is still being implemented. No raw corpus or scraping added.
+- Every registered source now has an explicit qualitative inherited-grade basis,
+  scope and limitations. Frozen evidence retains that policy and scalar attribution,
+  identity/locator/time hints. No accuracy percentages or historical review dates
+  were invented. Source-rating/attribute tests reached 100 percent coverage across
+  five new modules, with 51 focused and 65 broader regressions recorded separately.
+- Added immutable research context with separate publication/capture/observation
+  timestamps, unmerged identity candidates and declared source/copy cautions.
+  Strict saved codecs preserve historical methods and unknown legacy metadata.
+  Context/SQL/API tests passed 34 cases at 100 percent new-module line/branch
+  coverage. Citation checks expose captured excerpts and review cues without
+  claiming that lexical support proves entailment.
+- Detailed research challenge processing now has bounded initial queries, one
+  shared contrary-evidence collection budget and final per-judgement batch review.
+  New selected evidence may trigger redrafting; a failed redraft retains the
+  original body and evidence together. Missing review remains explicit. The
+  challenge/context SQL and shared Markdown/PDF/DOCX paths passed focused scripted
+  production tests, 22 cases in this slice. Follow-up and upload handoffs remain
+  under combined integration; model agreement is not independent corroboration.
+- Added `/research`, authenticated `/sources`, and saved receipt/citation/rating
+  disclosures. The question UI passed 10 focused tests; the reader/source slice
+  passed 41 tests with type/build checks. Browser fixtures at 1440, 390 and 320
+  pixels covered request scope, errors/retry, disclosure, citation focus and search.
+  Upload/follow-up/context/challenge controls are still integrating.
+- Added migration `0015` for saved schedule questions/research options and `0016`
+  for opt-in deterministic change summaries and schedule-origin alerts. These
+  compare evidence/assessment records, not semantic importance or verified factual
+  corrections. Final combined database/background/UI checks remain outstanding.
+- Isolated document extraction preserves PDF physical pages, CSV row/line ranges,
+  JSON pointers and DOCX paragraphs under byte/text/structure limits. Its shared
+  worker passed 90 focused tests with 94.92 percent scoped coverage; an actual
+  Windows Job rejected an allocation beyond its 512 MiB limit. POSIX isolation has
+  unit-test evidence here, not an actual POSIX runtime check.
+- Media adapters passed 56 tests with 97.39 percent scoped coverage, including
+  synthetic English OCR and H.264/VP9 media checks; the event bridge passed 11 tests
+  at 100 percent. A hash-verified FFmpeg 9.0.1 runtime is local under ignored
+  `data/`. Distribution media tools were added to the API Dockerfile, but the
+  changed image has not yet been built or scanned. Metadata, frame offsets and
+  hashes are clues, not authenticity findings.
+- The private upload endpoint passed 44 tests with 97.24 percent scoped coverage,
+  including a real 76 KiB text upload through application and worker, disconnect
+  cancellation and cleanup. Exact-user/security-version binding, 15-minute logical
+  expiry and bounded storage apply. Physical expiry is lazy on store access;
+  original bytes and sanitised preview bytes do not become event/receipt JSON.
+- These slices passed their reported static and focused security checks. They do
+  not establish final full-suite coverage, hosted CI, production readiness or
+  real-model quality. The configured-model question and representative labelled
+  evaluation remain open. No operator database/configuration or deployment was
+  changed, and no commits or pushes were made for this unfinished milestone.
+
+## 6 September 2026: automated research integration and remaining release gates
+
+This entry supersedes the earlier same-day component-integration status, while
+preserving those earlier test results as historical evidence.
+
+- Integrated private upload previews and report handoff, authorised frozen-evidence
+  follow-ups, challenge/context/citation disclosures, request progress and contextual
+  research actions across existing views. Private document/media focus never sends
+  extracted terms to public search. Saved reports retain selected evidence and
+  bounded input metadata without the transient input ID or raw preview bytes.
+- Added optional Companies House company profiles/name candidates and SSLMate
+  certificate-transparency records. Both use operator-configured account keys and
+  return unavailable without a request when unset. SSLMate uses the free authenticated
+  allowance and first-page unexpired exact-hostname issuances, not full certificate
+  history. Quick domain research uses DNS A; detailed adds AAAA, MX and NS.
+- The authenticated source catalogue now includes every known research edition,
+  social source, record provider and private import ID. All research profiles are
+  F/unassessed with specific basis and limits. Unknown origins gain no declared
+  independence from platform/edition names; collector endpoints share organisations.
+  Eleven tests cover catalogue filtering, safe source output and actual saved-report
+  freezing. Ruff, mypy and Bandit passed; package-targeted coverage encountered a
+  NumPy import failure and is not reported as a pass.
+- Added optional `X-Research-Run-ID` and exact-user/security-version progress polling.
+  Generation stays synchronous, with a 600-second deadline and disconnect cancellation;
+  progress expires after 30 minutes. Saving can win cancellation, so the client must
+  inspect Reports before retrying an uncertain result. Private input access expires
+  after 15 minutes with lazy physical cleanup and an 8 MiB upload limit.
+- Scoped integration passed 145 PostgreSQL tests and actual migration verification.
+  Twenty-three schedule regressions include rejection of document/media schedules,
+  whose transient inputs cannot support unattended recurrence. Contextual actions
+  passed 35 focused tests and browser checks. These counts overlap other suites.
+- PDF international-text changes passed 15 tests at 98.77 percent scoped coverage.
+  Bundled fonts support Greek/Cyrillic, with explicit fallback for unsupported
+  Arabic/CJK; this is not full Arabic shaping or CJK rendering support.
+- Full frontend coverage passed 453 tests across 90 files in 112.25 seconds:
+  98.24 percent lines, 91.32 percent branches and 96.12 percent functions. Production
+  build and type checks passed. A full ESLint failure in progress handling was fixed
+  with a scoped pass; the final full lint rerun remains pending at this entry.
+- The initial new API image built successfully. Actual Linux TXT/CSV/PDF/PNG,
+  Tesseract, H.264 MP4 and VP9 WebM extraction checks passed. Worker/Tesseract
+  512 MiB per-process address-space limits were observed; a 550 MiB allocation
+  failed. Real stopped-worker cancellation and timeout reaped children and removed
+  temporary files. This is a killable resource boundary, not a filesystem/network
+  sandbox or aggregate process-tree memory cap. Native parser compromise could
+  retain service-user access to the writable application-data mount.
+- Initial-image Trivy reported zero fixable HIGH/CRITICAL findings, alongside 233
+  unfixed package-level findings (7 CRITICAL, 226 HIGH), including duplicates.
+  These are not 233 validated reachable application attack paths. Reachability has
+  not been established; no clean-security or remediation claim is made.
+- Long-running session revalidation passed 140 focused security tests. Four
+  independent paused-upload/report logout/expiry checks returned 401 without
+  retaining input or report. Full backend coverage, final image-snapshot rebuild
+  and security checks, the configured real-model endpoint and quality evaluation
+  remain pending. No deployment, operator-data change, new commit or remote push
+  is claimed. The master plan retains the full acceptance checklist.
+- Updated architecture, source contracts, product direction and the new
+  [automated research API](api/AUTOMATED_RESEARCH_API.md) together. Official provider
+  contracts and application budgets are distinct from successful live availability
+  probes and research-quality measurements.
+
+### Automated research integration verification, 6 September 2026
+
+- Committed the integrated implementation as `de72899`. It includes question-led
+  collection, explicit source policy, private uploads, frozen follow-ups, per-judgement
+  challenges, source/context inspectors, monitored questions and basic scoped sharing.
+- Full backend: 1,428 passed, two PostgreSQL-only skips, 96.47% coverage. A separate
+  19-test PostgreSQL run passed both skipped cases and the final report/upload session
+  guards. Earlier PostgreSQL research/migration verification passed 145 cases.
+- Full frontend: 453 passed, 98.24% lines and 91.32% branches. Full ESLint, TypeScript,
+  production builds and desktop/narrow browser checks passed. Fixtures were synthetic.
+- Fixed a reproducible request cancellation hang: Starlette's polling cancel scope
+  could swallow watcher cancellation. The watcher now awaits ASGI disconnect messages
+  directly; targeted and whole-suite regressions passed.
+- Ruff/formatting/mypy, architecture boundaries, file length, Bandit, dependency audits,
+  Gitleaks and Semgrep passed. Two Semgrep annotation-import false positives use the
+  existing narrow suppression convention; XML parsing still uses defusedxml. The
+  bundled font licence is preserved byte-for-byte, including upstream whitespace.
+- Final API/web images built and passed the fix-available HIGH/CRITICAL gate. All 397
+  checked API source/package files match the image; actual Linux document/OCR/video,
+  memory-limit, cancellation and timeout checks passed. Unfixed package advisories and
+  same-user parser isolation limits remain recorded in the security review.
+- No operator data was migrated and no deployment or remote push occurred. The only
+  outstanding research-quality acceptance item needs the intended model endpoint/name
+  and human review of the included eight synthetic evaluation cases.
