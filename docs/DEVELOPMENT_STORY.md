@@ -693,3 +693,19 @@ had no horizontal overflow, and closing the map removed its canvases. This is a
 functional browser check, not completion of the plan's full GPU benchmark matrix.
 The regional evaluation cases remain synthetic and await human/model evaluation.
 Detailed feature limits are in RESEARCH_EXPANSION_OPERATIONS.md.
+
+## 6 September 2026: automatic query translation foundation
+
+Added a bounded single-call translation stage using the existing LLM gateway.
+Strict parsing preserves requested language/term alignment and rejects changed,
+missing or introduced numeric identifiers and quoted phrases. Original terms,
+model identity and known token usage survive the result; provider errors are not
+copied into findings. Cancellation propagates and failed output has no retry.
+Twenty-two focused tests, Ruff, mypy and import-boundary checks passed.
+
+This stage is not yet wired into report production. Remaining integration must
+use the frozen team/global translation profile, preserve operator variants, freeze
+transformation provenance and account for calls in report totals. Replanning must
+share one collection deadline/request/item allowance across both passes; calling
+collection twice with fresh limits would violate the plan. No model-quality or
+end-to-end multilingual research completion is claimed by these unit tests.
