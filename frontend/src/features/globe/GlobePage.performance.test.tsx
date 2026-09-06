@@ -1,5 +1,5 @@
 import { act, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
@@ -36,6 +36,11 @@ async function mount() {
 }
 
 describe('globe rendering and motion', () => {
+  beforeAll(async () => {
+    // Measure layer behaviour after loading, not the lazy module transform on a cold worker.
+    await import('./GlobePage');
+  });
+
   beforeEach(() => {
     FakeMap.reset();
     MapboxOverlay.reset();

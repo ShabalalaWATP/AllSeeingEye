@@ -438,6 +438,14 @@ respects reduced motion. Auth screens use the full visual. Static icons derive
 from the real component. Preserve the component and
 `frontend/THIRD_PARTY_NOTICES.md`; never replace it with a redrawn imitation.
 
+Public account pages share a midnight-blue, technical-grid composition with the
+large eye and app name beside a quiet form column. Sign-in, signup (administrator
+approval) and recovery navigation remains available across those routes. On mobile
+the brand becomes a compact header. Auth-specific CSS leaves research and
+administration colours unchanged; reduced motion removes entry transitions and
+stops the flames. Container resize observation keeps the canvas matched to the
+responsive layout without changing the original shader.
+
 ## 6. Checks and remaining evidence
 
 Backend checks are pytest with SQLite by default, a 90 percent coverage gate,

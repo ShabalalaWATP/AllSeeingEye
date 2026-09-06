@@ -529,3 +529,29 @@ preserving those earlier test results as historical evidence.
 - Added operator instructions and ADR 0013. The standalone evaluation CLI remains
   OpenAI-compatible. No live AWS call, operator migration, deployment or remote push
   occurred. Validation evidence is recorded in the connection plan and scoped review.
+
+### 6 September 2026: midnight-blue account entrance
+
+- Reworked public account pages around a large original Evil Eye, prominent app
+  name and faint technical grid on deep navy. Added shared sign-in, signup and
+  recovery navigation. Signup still requests administrator approval; login,
+  authenticator codes, reset tokens and role-dependent destinations are unchanged.
+- Kept the forms on a calm surface, with restrained entry and navigation motion,
+  visible keyboard focus and reduced-motion support. The layout stacks into a
+  compact branded header at narrow widths. No dependencies or external assets were
+  added; the colour treatment is scoped to account pages.
+- Browser resizing reproduced a stale 232-pixel canvas inside a 640-pixel eye
+  container. Added container resize observation and verified matching 640-pixel
+  canvas/container dimensions after mobile-to-desktop resizing. Vendor attribution
+  records this small lifecycle adaptation; the original shader remains intact.
+- Reviewed implementation and access implications sequentially because the requested
+  review worker did not initialise. No authentication or backend policy changed.
+  Browser checks used an isolated local frontend with no operator API connection.
+- Removed cold lazy-module timing from login assertions and preloaded the globe
+  module before layer-performance tests after observing unrelated loading-time
+  failures. Authentication, routing and layer-behaviour assertions remain explicit.
+- Final verification: 505 frontend tests across 96 files passed, with 98.46% line
+  coverage and 91.86% branch coverage. Lint, TypeScript, formatting, production build
+  and file-length checks passed. Desktop and 390/320-pixel browser checks verified
+  navigation, visible focus, reduced motion and no horizontal overflow. Existing
+  map/deck build size warnings remain. No deployment or remote push occurred.

@@ -1,5 +1,5 @@
 /*
- * EvilEye: the React Bits "Evil Eye" background component, used verbatim as the
+ * EvilEye: the React Bits "Evil Eye" background component, used as the
  * brand mark of The All Seeing Eye.
  *
  * Source:     https://reactbits.dev/backgrounds/evil-eye
@@ -16,6 +16,7 @@
  *      the WebGL context.
  *   2. The `update` loop honours those two props and a `start` helper resumes the
  *      loop when `paused` returns to false. The cleanup also clears the resume ref.
+ *   3. Observe container resizing so responsive layouts update the canvas after layout.
  */
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef } from 'react';
@@ -276,6 +277,8 @@ export default function EvilEye({
       }
     }
     window.addEventListener('resize', resize);
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize);
+    resizeObserver?.observe(container);
     resize();
 
     const geometry = new Triangle(gl);
@@ -337,6 +340,7 @@ export default function EvilEye({
       resumeRef.current = null;
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', resize);
+      resizeObserver?.disconnect();
       container.removeEventListener('mousemove', onMouseMove);
       container.removeEventListener('mouseleave', onMouseLeave);
       container.removeChild(gl.canvas);

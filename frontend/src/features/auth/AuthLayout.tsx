@@ -1,32 +1,56 @@
 /** Public account pages: a live brand plane beside a quiet, opaque form. */
-import { Outlet } from 'react-router';
+import { NavLink, Outlet } from 'react-router';
 
 import EvilEye from '@/components/brand/EvilEye';
-import { Wordmark } from '@/components/brand/Wordmark';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
+
+import './auth.css';
 
 export function AuthLayout() {
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
 
   return (
-    <div className="grid min-h-dvh w-full bg-ground lg:grid-cols-2">
-      <div className="relative h-44 overflow-hidden bg-black sm:h-56 lg:h-auto lg:min-h-dvh">
-        <div className="absolute inset-0" aria-hidden="true" data-testid="auth-backdrop">
+    <div className="auth-shell">
+      <section className="auth-brand" aria-label="The All Seeing Eye">
+        <div className="auth-grid" aria-hidden="true" />
+        <p className="auth-eyebrow">Open-source intelligence</p>
+        <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
           <EvilEye
+            backgroundColor="#050e1d"
             maxFps={reducedMotion ? 1 : 24}
             flameSpeed={reducedMotion ? 0 : 1}
             pupilFollow={reducedMotion ? 0 : 1}
             paused={!visible}
           />
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/80 px-6 py-5 lg:bottom-auto lg:top-0 lg:bg-transparent lg:p-10">
-          <Wordmark className="sm:text-sm" />
+        <div className="auth-brand-copy">
+          <p className="auth-brand-name">
+            The All <br />
+            Seeing Eye<span>.</span>
+          </p>
+          <p className="auth-brand-description">
+            Public sources. Connected evidence. <br />A clearer picture.
+          </p>
         </div>
-      </div>
-      <main className="flex items-center justify-center border-line px-6 py-9 sm:px-10 sm:py-12 lg:border-l">
-        <div className="w-full max-w-sm">
-          <Outlet />
+        <div className="auth-brand-footer" aria-hidden="true">
+          <span>ASE / RESEARCH</span>
+          <span>OBSERVE · CONNECT · ASSESS</span>
+        </div>
+      </section>
+      <main className="auth-access" id="account-access">
+        <div className="auth-access-inner">
+          <nav className="auth-navigation" aria-label="Account access">
+            <NavLink to="/login">Sign in</NavLink>
+            <NavLink to="/request-account">Sign up</NavLink>
+            <NavLink to="/forgot-password">Recovery</NavLink>
+          </nav>
+          <div className="auth-form">
+            <Outlet />
+          </div>
+          <p className="auth-access-footer">
+            The All Seeing Eye <span>/</span> Research workspace
+          </p>
         </div>
       </main>
     </div>

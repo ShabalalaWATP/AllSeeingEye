@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
@@ -18,13 +18,16 @@ describe('LoginPage', () => {
         return HttpResponse.json(tokenFor(plainUser));
       }),
     );
-    const { user } = renderApp('/login', 'anonymous');
+    const { user, router } = renderApp('/login', 'anonymous');
     await user.type(screen.getByLabelText('Email'), plainUser.email);
     await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
     await user.click(screen.getByText('Use an authenticator code'));
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('group', { name: 'View mode' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(useAuthStore.getState().status).toBe('authenticated');
+      expect(router.state.location.pathname).toBe('/');
+    });
     expect(payload).toEqual({
       email: plainUser.email,
       password: USER_PASSWORD,
@@ -41,7 +44,8 @@ describe('LoginPage', () => {
     await user.type(screen.getByLabelText('Password'), USER_PASSWORD);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    expect(await screen.findByRole('group', { name: 'View mode' })).toBeInTheDocument();
+    // Authentication should not depend on the separately tested globe's lazy import.
+    expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
     expect(useAuthStore.getState().status).toBe('authenticated');
   });
@@ -184,9 +188,29 @@ describe('LoginPage', () => {
     );
   });
 
+  it('keeps account navigation available across signup and recovery', async () => {
+    const { user } = renderApp('/login', 'anonymous');
+    const navigation = () => within(screen.getByRole('navigation', { name: 'Account access' }));
+    expect(navigation().getByRole('link', { name: 'Sign in' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await user.click(navigation().getByRole('link', { name: 'Sign up' }));
+    expect(await screen.findByRole('heading', { name: 'Request an account' })).toBeInTheDocument();
+    expect(screen.getByText(/An administrator reviews every request/)).toBeInTheDocument();
+    expect(navigation().getByRole('link', { name: 'Sign up' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await user.click(navigation().getByRole('link', { name: 'Recovery' }));
+    expect(await screen.findByRole('heading', { name: 'Forgotten password' })).toBeInTheDocument();
+    await user.click(navigation().getByRole('link', { name: 'Sign in' }));
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+  });
+
   it('sends an already authenticated visitor to the globe', async () => {
     const { router } = renderApp('/login', 'user');
-    expect(await screen.findByRole('group', { name: 'View mode' })).toBeInTheDocument();
+    expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
   });
 });

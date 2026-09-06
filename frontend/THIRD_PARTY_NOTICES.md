@@ -34,6 +34,10 @@ are unchanged.
    rebuild the WebGL context.
 2. The `update` loop honours those two props, a `start` helper resumes the loop
    when `paused` returns to false, and the effect cleanup clears the resume ref.
+3. A `ResizeObserver` updates the canvas when the container changes size after
+   responsive layout. The effect disconnects the observer during cleanup and
+   retains the original window-resize fallback. The vendor file remains together
+   at 352 lines to preserve its source structure; its shader is unchanged.
 
 ### Licence text
 
