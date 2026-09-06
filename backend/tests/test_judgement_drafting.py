@@ -5,6 +5,8 @@ from copy import deepcopy
 from dataclasses import replace
 from uuid import uuid4
 
+import pytest
+
 from ase.application.reports.drafting import draft_body
 from ase.application.reports.templates import TEMPLATES
 from ase.domain.doctrine import Confidence
@@ -16,7 +18,8 @@ from feeds_helpers import NOW
 from report_helpers import GOOD_BODY, ScriptedGateway
 
 
-async def test_low_bundle_summary_cannot_lower_a_strong_judgements_own_limit():
+@pytest.mark.parametrize("language,style", [("en", "assessment"), ("fr", "briefing")])
+async def test_low_bundle_summary_cannot_lower_a_strong_judgements_own_limit(language, style):
     evidence = [item("E1", "A1"), item("E2", "B1"), item("E3", "F6")]
     data = deepcopy(GOOD_BODY)
     data["key_judgements"][0]["confidence"] = "high"
@@ -42,7 +45,9 @@ async def test_low_bundle_summary_cannot_lower_a_strong_judgements_own_limit():
         profile,
         "synthetic-key",
         TEMPLATES["intsum"],
-        ReportHeader("intsum", "Test", {}, NOW, NOW, NOW),
+        ReportHeader(
+            "intsum", "Test", {"report_language": language, "report_style": style}, NOW, NOW, NOW
+        ),
         None,
         quality,
         evidence,
@@ -55,3 +60,12 @@ async def test_low_bundle_summary_cannot_lower_a_strong_judgements_own_limit():
         "Confidence may not exceed low for any judgement"
         not in gateway.requests[0].messages[1].content
     )
+
+    assert (
+        "concise briefing" if style == "briefing" else "detailed assessment"
+    ) in gateway.requests[0].messages[0].content
+    assert (
+        "narrative sections in French"
+        if language == "fr"
+        else "narrative sections in British English"
+    ) in gateway.requests[0].messages[0].content

@@ -1,3 +1,5 @@
+import { ReportOptions } from '@/components/reports/ReportOptions';
+import type { Profile } from '@/lib/api/profile';
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
@@ -18,6 +20,7 @@ export interface Choice {
 }
 
 export interface GenerateFormProps {
+  preferences?: Profile;
   templates: readonly ReportTemplate[];
   plans: readonly CollectionPlan[];
   workspaces: Workspaces;
@@ -32,6 +35,7 @@ export interface GenerateFormProps {
 
 /** Choose a product and its scope: a nation, a question, a curated conflict or a hazard. */
 export function GenerateForm({
+  preferences,
   templates,
   plans,
   workspaces,
@@ -44,6 +48,12 @@ export function GenerateForm({
   onSubmit,
 }: GenerateFormProps) {
   const scope = useWorkspaceSelection(workspaces);
+  const [reportLanguage, setReportLanguage] = useState<
+    NonNullable<ReportRequest['report_language']>
+  >(preferences?.report_language ?? 'en');
+  const [reportStyle, setReportStyle] = useState<NonNullable<ReportRequest['report_style']>>(
+    preferences?.report_style ?? 'assessment',
+  );
   const [planId, setPlanId] = useState(initial.plan ?? '');
   const matchingPlans = plans.filter(
     (plan) => plan.enabled && (plan.team_id ?? '') === scope.teamId,
@@ -64,6 +74,8 @@ export function GenerateForm({
     if (!scope.ready || invalidPlan) return;
     const request: ReportRequest = {
       template: templateId,
+      report_language: reportLanguage,
+      report_style: reportStyle,
       research_focus: 'general',
       devils_advocacy: advocacy,
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
@@ -198,6 +210,13 @@ export function GenerateForm({
         Devil&apos;s advocacy: a second model call attacks the top judgement and can lower its
         confidence
       </label>
+      <ReportOptions
+        language={reportLanguage}
+        style={reportStyle}
+        onLanguage={setReportLanguage}
+        onStyle={setReportStyle}
+        disabled={busy}
+      />
       {template && <p className="text-sm text-muted">{template.purpose}</p>}
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>

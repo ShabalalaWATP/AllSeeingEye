@@ -78,6 +78,8 @@ describe('direction, advocacy and archives in the reader', () => {
       expect(body).toEqual({
         template: 'intsum',
         research_focus: 'general',
+        report_language: 'en',
+        report_style: 'assessment',
         devils_advocacy: true,
       });
     });

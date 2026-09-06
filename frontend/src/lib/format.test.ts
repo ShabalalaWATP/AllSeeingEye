@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatAgo, formatInterval, formatUtc } from './format';
+import { formatAgo, formatInterval, formatPersonalDate, formatUtc } from './format';
 
 describe('formatUtc', () => {
   it('formats ISO timestamps in UTC with a UK medium date', () => {
@@ -33,5 +33,27 @@ describe('formatInterval', () => {
     expect(formatInterval(3600)).toBe('1 h');
     expect(formatInterval(300)).toBe('5 min');
     expect(formatInterval(90)).toBe('90 s');
+  });
+});
+
+describe('formatPersonalDate', () => {
+  const timestamp = '2026-09-04T23:05:00Z';
+  it('applies timezone rollover and the selected date order', () => {
+    expect(formatPersonalDate(timestamp, { timezone: 'Europe/London', date_format: 'iso' })).toBe(
+      '2026-09-05 00:05 Europe/London',
+    );
+    expect(
+      formatPersonalDate(timestamp, { timezone: 'Europe/London', date_format: 'day_first' }),
+    ).toBe('05/09/2026, 00:05 Europe/London');
+    expect(
+      formatPersonalDate(timestamp, { timezone: 'America/New_York', date_format: 'month_first' }),
+    ).toBe('09/04/2026, 19:05 America/New_York');
+  });
+  it('keeps safe defaults and handles invalid stored values', () => {
+    expect(formatPersonalDate(timestamp)).toBe('04/09/2026, 23:05 UTC');
+    expect(formatPersonalDate(timestamp, { timezone: 'Invalid/Zone', date_format: 'iso' })).toBe(
+      formatUtc(timestamp),
+    );
+    expect(formatPersonalDate('invalid')).toBe('invalid');
   });
 });

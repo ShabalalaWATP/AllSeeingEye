@@ -16,6 +16,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.application.ports.mfa import MfaRepository
+from ase.application.ports.recovery_codes import RecoveryCodeRepository
 from ase.application.ports.totp import TotpProvider, TotpRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidCredentials, InvalidRequest, RateLimited, Unauthenticated
@@ -39,6 +40,7 @@ class MfaContext:
     uow: UnitOfWork
     refresh: RefreshTokenRepository
     sessions: SessionFactory
+    recovery: RecoveryCodeRepository
 
     def limit(self, context: RequestContext, token: str, *, sending: bool = False) -> None:
         prefix = "mfa-send" if sending else "mfa"

@@ -45,6 +45,8 @@ def conflict_background(conflict: Conflict | None) -> str | None:
 
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
+        "report_language": request.report_language,
+        "report_style": request.report_style,
         "country": request.country_iso,
         "categories": [category.value for category in request.categories],
         "question": request.question,

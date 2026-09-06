@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState, type SyntheticEvent } from 'react';
 
+import type { Profile } from '@/lib/api/profile';
+import { ReportOptions } from '@/components/reports/ReportOptions';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
@@ -15,6 +17,7 @@ import { FollowUpSummary } from './FollowUpSummary';
 import { ResearchProgress } from './ResearchProgress';
 
 export function ResearchForm({
+  preferences,
   workspaces,
   countries,
   countriesLoading,
@@ -23,6 +26,7 @@ export function ResearchForm({
   initialCountry,
   parent,
 }: {
+  preferences: Profile;
   workspaces: Workspaces;
   countries: readonly Country[];
   countriesLoading: boolean;
@@ -37,11 +41,21 @@ export function ResearchForm({
   const advanced = useRef<HTMLDetailsElement>(null);
   const [question, setQuestion] = useState(initialQuestion);
   const [mode, setMode] = useState<NonNullable<ReportRequest['research_mode']>>(
-    parent?.request.research_mode ?? 'quick',
+    parent?.request.research_mode ?? preferences.research_mode,
   );
   const [country, setCountry] = useState(parent?.request.country ?? (parent ? '' : initialCountry));
-  const [windowHours, setWindowHours] = useState(String(parent?.request.window_hours ?? 72));
-  const [selectedLanguages, setLanguages] = useState(parent?.request.research_languages ?? ['en']);
+  const [windowHours, setWindowHours] = useState(
+    String(parent?.request.window_hours ?? preferences.research_window_days * 24),
+  );
+  const [selectedLanguages, setLanguages] = useState(
+    parent?.request.research_languages ?? preferences.research_languages,
+  );
+  const [reportLanguage, setReportLanguage] = useState<
+    NonNullable<ReportRequest['report_language']>
+  >(parent?.request.report_language ?? preferences.report_language);
+  const [reportStyle, setReportStyle] = useState<NonNullable<ReportRequest['report_style']>>(
+    parent?.request.report_style ?? preferences.report_style,
+  );
   const [focus, setFocus] = useState<ResearchFocus>(parent?.request.research_focus ?? 'general');
   const [subject, setSubject] = useState(parent?.request.research_subject ?? '');
   const [validation, setValidation] = useState<string | null>(null);
@@ -97,6 +111,8 @@ export function ResearchForm({
       template: template.id,
       question: question.trim(),
       research_mode: mode,
+      report_language: reportLanguage,
+      report_style: reportStyle,
       research_languages: selectedLanguages,
       research_focus: focus,
       research_subject: focus === 'company' || focus === 'domain' ? subject.trim() : null,
@@ -206,6 +222,13 @@ export function ResearchForm({
             />
           </details>
         )}
+        <ReportOptions
+          language={reportLanguage}
+          style={reportStyle}
+          onLanguage={setReportLanguage}
+          onStyle={setReportStyle}
+          disabled={Boolean(parent)}
+        />
         {privateFocus && (
           <ResearchInput
             key={focus}

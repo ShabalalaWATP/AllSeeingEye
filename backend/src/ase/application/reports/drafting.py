@@ -66,6 +66,8 @@ async def draft_body(
             previous=previous,
             direction=direction,
             background=background,
+            report_language=str(header.scope.get("report_language", "en")),
+            report_style=str(header.scope.get("report_style", "assessment")),
         )
         llm_request = LlmRequest(
             messages=messages,

@@ -1,0 +1,64 @@
+"""Personal presentation and research defaults, never evidence or access policy."""
+
+import re
+from dataclasses import dataclass
+from typing import Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+DateFormat = Literal["day_first", "month_first", "iso"]
+ReportStyle = Literal["briefing", "assessment"]
+ExportFormat = Literal["pdf", "docx", "md"]
+ReportLanguage = Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"]
+
+
+@dataclass(frozen=True, slots=True)
+class PersonalProfile:
+    display_name: str
+    timezone: str = "UTC"
+    date_format: DateFormat = "day_first"
+    research_mode: Literal["quick", "detailed"] = "quick"
+    research_languages: tuple[str, ...] = ("en",)
+    research_window_days: Literal[1, 3, 7, 14] = 3
+    research_country: str | None = None
+    report_language: ReportLanguage = "en"
+    report_style: ReportStyle = "assessment"
+    export_format: ExportFormat = "pdf"
+
+    def __post_init__(self) -> None:
+        name = self.display_name.strip()
+        if not 1 <= len(name) <= 120 or any(ord(char) < 32 for char in name):
+            raise ValueError("Display name must contain 1 to 120 printable characters")
+        object.__setattr__(self, "display_name", name)
+        self._validate_preferences()
+
+    def _validate_preferences(self) -> None:
+        try:
+            if len(self.timezone) > 100:
+                raise ValueError("Invalid timezone")
+            ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError("Choose a valid IANA timezone") from exc
+        if self.date_format not in ("day_first", "month_first", "iso"):
+            raise ValueError("Invalid date format")
+        if self.research_mode not in ("quick", "detailed"):
+            raise ValueError("Invalid research mode")
+        if self.research_window_days not in (1, 3, 7, 14):
+            raise ValueError("Research window must be 1, 3, 7 or 14 days")
+        if self.research_country is not None and not re.fullmatch(
+            r"[A-Z]{2}", self.research_country
+        ):
+            raise ValueError("Country must use a two-letter uppercase code")
+        if not 1 <= len(self.research_languages) <= 8:
+            raise ValueError("Choose between one and eight source languages")
+        for language in (*self.research_languages, self.report_language):
+            if not re.fullmatch(r"[a-z]{2,3}(?:-[A-Za-z]{2,4})?", language):
+                raise ValueError("Invalid language code")
+        if self.report_language not in ("en", "fr", "de", "es", "ar", "ru", "uk", "zh"):
+            raise ValueError("Unsupported report language")
+        object.__setattr__(
+            self, "research_languages", tuple(dict.fromkeys(self.research_languages))
+        )
+        if self.report_style not in ("briefing", "assessment"):
+            raise ValueError("Invalid report style")
+        if self.export_format not in ("pdf", "docx", "md"):
+            raise ValueError("Invalid export format")

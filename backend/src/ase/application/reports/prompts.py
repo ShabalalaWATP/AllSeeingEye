@@ -98,9 +98,12 @@ def compose_messages(
     previous: Sequence[KeyJudgement] = (),
     direction: Direction | None = None,
     background: str | None = None,
+    report_language: str = "en",
+    report_style: str = "assessment",
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
+    system += "\n\n" + output_guidance(report_language, report_style)
     parts = [
         f"Scope: {scope_line}",
         f"Period: {period_from.strftime('%Y-%m-%d %H:%M')} to "
@@ -147,3 +150,31 @@ def compose_messages(
         parts.extend(f"- {finding.location}: {finding.message}" for finding in findings)
     parts.append("Write the report now as JSON matching the schema.")
     return (LlmMessage("system", system), LlmMessage("user", "\n".join(parts)))
+
+
+def output_guidance(language: str, style: str) -> str:
+    """Only bounded presentation choices enter system instructions, never arbitrary text."""
+    names = {
+        "en": "British English",
+        "fr": "French",
+        "de": "German",
+        "es": "Spanish",
+        "ar": "Arabic",
+        "ru": "Russian",
+        "uk": "Ukrainian",
+        "zh": "Chinese",
+    }
+    selected = names.get(language, "British English")
+    length = (
+        "Write a concise briefing: shorten narrative and avoid repetition."
+        if style == "briefing"
+        else "Write a detailed assessment explaining the evidence and reasoning."
+    )
+    return (
+        f"Presentation: {length} Write narrative sections in {selected}. "
+        "Retain key judgement statements in British English so the English PHIA yardstick "
+        "and sentence rules remain mechanically verifiable. Keep JSON keys, enum values, "
+        "evidence labels and source quotations unchanged. Presentation changes never remove "
+        "required sections, citations, contrary evidence, confidence explanations, uncertainty, "
+        "assumptions or intelligence gaps, and never change evidence grades or confidence limits."
+    )

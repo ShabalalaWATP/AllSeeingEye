@@ -99,6 +99,8 @@ describe('tracker products', () => {
         template: 'conflict_assessment',
         conflict: 'ukraine',
         research_focus: 'general',
+        report_language: 'en',
+        report_style: 'assessment',
         devils_advocacy: false,
       });
     });

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { AuthenticatorQr } from '@/components/account/AuthenticatorQr';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -15,7 +16,10 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
     heading.current?.focus();
   }, []);
   const isApp = mfa.method === 'authenticator';
-  const ready = isApp ? !challenge.enrollment_required || mfa.enrolment !== null : mfa.emailSent;
+  const isRecovery = mfa.method === 'recovery';
+  const ready =
+    isRecovery ||
+    (isApp ? !challenge.enrollment_required || mfa.enrolment !== null : mfa.emailSent);
 
   return (
     <form
@@ -47,7 +51,7 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
         </Alert>
       )}
       {challenge.methods.length > 1 ? (
-        <div className="flex gap-2" role="group" aria-label="Verification method">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Verification method">
           {challenge.methods.map((method) => (
             <Button
               key={method}
@@ -58,7 +62,11 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
                 mfa.chooseMethod(method);
               }}
             >
-              {method === 'authenticator' ? 'Authenticator app' : 'Email code'}
+              {method === 'authenticator'
+                ? 'Authenticator app'
+                : method === 'email'
+                  ? 'Email code'
+                  : 'Recovery code'}
             </Button>
           ))}
         </div>
@@ -66,8 +74,8 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
       {isApp && challenge.enrollment_required ? (
         <section className="space-y-3 border-y border-line py-4" aria-label="Authenticator setup">
           <p className="text-sm text-muted">
-            Add this account in your authenticator app using a setup key, then enter its six-digit
-            code.
+            Scan the QR code or enter the setup key in your authenticator app, then enter its
+            six-digit code.
           </p>
           {mfa.enrolment === null ? (
             <Button
@@ -80,7 +88,8 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
               Set up authenticator app
             </Button>
           ) : (
-            <div>
+            <div className="space-y-3">
+              <AuthenticatorQr uri={mfa.enrolment.provisioning_uri} />
               <p className="mb-2 text-xs text-muted">Setup key</p>
               <code className="block select-all break-all rounded bg-surface-2 p-3 font-mono text-sm tracking-wider">
                 {mfa.enrolment.secret}
@@ -92,7 +101,7 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
           )}
         </section>
       ) : null}
-      {!isApp ? (
+      {mfa.method === 'email' ? (
         <div className="space-y-3">
           <p className="text-sm text-muted" role="status">
             {mfa.emailSent
@@ -113,17 +122,25 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
       {ready ? (
         <>
           <TextField
-            label={isApp ? 'Authenticator code' : 'Email verification code'}
+            label={
+              isRecovery
+                ? 'Recovery code'
+                : isApp
+                  ? 'Authenticator code'
+                  : 'Email verification code'
+            }
             name="mfa_code"
             hint={
-              isApp
-                ? 'Enter the current six-digit code from your app.'
-                : 'Enter the most recent six-digit code from your email.'
+              isRecovery
+                ? 'Enter one unused recovery code. Each code works once.'
+                : isApp
+                  ? 'Enter the current six-digit code from your app.'
+                  : 'Enter the most recent six-digit code from your email.'
             }
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            maxLength={6}
+            inputMode={isRecovery ? 'text' : 'numeric'}
+            autoComplete={isRecovery ? 'off' : 'one-time-code'}
+            pattern={isRecovery ? '(?:[A-Fa-f0-9]|-){32,39}' : '[0-9]{6}'}
+            maxLength={isRecovery ? 39 : 6}
             required
             disabled={mfa.busy}
             className="min-h-12 font-mono tracking-widest"
@@ -134,7 +151,7 @@ export function MfaLoginStep({ challenge, onBack }: { challenge: PendingMfa; onB
           />
           <Button type="submit" busy={mfa.busy} className="min-h-12">
             {mfa.busy
-              ? 'Verifyingï¿½'
+              ? 'Verifying...'
               : challenge.enrollment_required
                 ? 'Enable MFA and continue'
                 : 'Verify and sign in'}

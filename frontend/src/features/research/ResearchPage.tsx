@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router';
 import { useCallback } from 'react';
+import { useProfile } from '@/stores/profile';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +16,7 @@ import { followUpRequest } from './followUpScope';
 export default function ResearchPage() {
   const [params] = useSearchParams();
   const workspaces = useWorkspaces();
+  const preferences = useProfile();
   const templates = useScopedResource(fetchTemplates);
   const countries = useScopedResource(fetchCountries);
   const parentId = params.get('parent');
@@ -72,15 +74,31 @@ export default function ResearchPage() {
             </Button>
           </Alert>
         )}
-        {(!parentId || parent.data?.report.report.id === parentId) && (
+        {!preferences.profile && !preferences.error && (
+          <LoadingNote label="Loading your research defaults" />
+        )}
+        {preferences.error && !preferences.profile && (
+          <Alert tone="error">
+            Research defaults could not be loaded.{' '}
+            <Button variant="secondary" onClick={() => void preferences.reload()}>
+              Retry preferences
+            </Button>
+          </Alert>
+        )}
+        {preferences.profile && (!parentId || parent.data?.report.report.id === parentId) && (
           <ResearchForm
             key={`${workspaces.key}:${params.toString()}:${parent.data?.report.version.number ?? ''}`}
+            preferences={preferences.profile}
             workspaces={workspaces}
             countries={countries.data ?? []}
             countriesLoading={countries.loading}
             template={template}
             initialQuestion={params.get('question') ?? ''}
-            initialCountry={(params.get('country') ?? '').toUpperCase()}
+            initialCountry={(
+              params.get('country') ??
+              preferences.profile.research_country ??
+              ''
+            ).toUpperCase()}
             parent={parentId ? (parent.data ?? undefined) : undefined}
           />
         )}

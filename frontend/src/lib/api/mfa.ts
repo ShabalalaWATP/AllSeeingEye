@@ -9,7 +9,7 @@ export type PendingMfa = components['schemas']['MfaPendingOut'];
 export type MfaStatus = components['schemas']['MfaStatusOut'];
 export type MfaMethod = PendingMfa['methods'][number];
 export type MfaEnrolment = components['schemas']['TotpEnrolOut'];
-const methodSchema = z.enum(['authenticator', 'email']);
+const methodSchema = z.enum(['authenticator', 'email', 'recovery']);
 export const pendingMfaSchema: z.ZodType<PendingMfa> = z.object({
   mfa_required: z.literal(true),
   challenge_token: z.string().min(1),

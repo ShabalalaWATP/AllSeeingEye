@@ -3,12 +3,18 @@ import { userEvent } from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { saveTextFile } from '@/lib/download';
 import { saveBinaryFile } from '@/lib/downloadBinary';
 import { applySession } from '@/test/render';
 import { server } from '@/test/server';
 
 import { ReportDiff } from './ReportDiff';
 import { ReportExports } from './ReportExports';
+
+vi.mock('@/lib/download', async (original) => ({
+  ...(await original<typeof import('@/lib/download')>()),
+  saveTextFile: vi.fn(),
+}));
 
 const changes = [
   {
@@ -65,6 +71,40 @@ describe('report documents', () => {
     expect(requests[1]).toContain('/export/docx?version=2');
     expect(revoke).toHaveBeenCalledTimes(2);
   });
+
+  it('uses the preferred Markdown action and downloads the selected immutable version', async () => {
+    let requested = '';
+    server.use(
+      http.get('/api/reports/:id/markdown', ({ request }) => {
+        requested = request.url;
+        return new HttpResponse('Saved report');
+      }),
+    );
+    render(<ReportExports id="report" version={3} title="Title" preferred="md" />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0]).toHaveAccessibleName('Download Markdown');
+    expect(screen.getAllByRole('button', { name: 'Download Markdown' })).toHaveLength(1);
+    await userEvent.setup().click(buttons[0]!);
+    await waitFor(() => expect(saveTextFile).toHaveBeenCalledWith('title-v3.md', 'Saved report'));
+    expect(requested).toContain('version=3');
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Download DOCX' })).toBeVisible();
+  });
+
+  it.each(['ar', 'zh'])(
+    'warns before downloading unsupported PDF text for %s without hiding alternatives',
+    (language) => {
+      render(
+        <ReportExports id="report" version={3} title="Title" preferred="pdf" language={language} />,
+      );
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'replace unsupported characters with code labels',
+      );
+      expect(screen.getByRole('status')).toHaveTextContent('Choose DOCX or Markdown');
+      expect(screen.getByRole('button', { name: 'Download DOCX' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeEnabled();
+    },
+  );
 
   it('reports download errors and releases URLs after browser download failures', async () => {
     server.use(

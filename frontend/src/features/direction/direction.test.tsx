@@ -119,6 +119,8 @@ describe('direction', () => {
         template: 'ask',
         plan: plan.id,
         research_focus: 'general',
+        report_language: 'en',
+        report_style: 'assessment',
         devils_advocacy: false,
       });
     });

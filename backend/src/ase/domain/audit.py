@@ -19,6 +19,7 @@ class AuditAction(StrEnum):
     MFA_ENABLED = "mfa_enabled"
     MFA_DISABLED = "mfa_disabled"
     MFA_RECOVERED = "mfa_recovered"
+    MFA_RECOVERY_CODES_GENERATED = "mfa_recovery_codes_generated"
     ACCOUNT_LOCKED = "account_locked"
     TOKEN_REFRESHED = "token_refreshed"
     REFRESH_REUSE_DETECTED = "refresh_reuse_detected"

@@ -128,6 +128,9 @@ describe('MFA sign-in', () => {
     expect(screen.queryByLabelText('Authenticator code')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Set up authenticator app' }));
     expect(await screen.findByText('SYNTHETICSETUPKEY')).toBeVisible();
+    expect(
+      screen.getByRole('img', { name: 'Scan this QR code with your authenticator app' }),
+    ).toBeVisible();
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Enable MFA and continue' }));
     await waitFor(() => {
@@ -170,4 +173,22 @@ it('discards verification when its page is abandoned and another identity signs 
     await response;
   });
   expect(useAuthStore.getState().user?.id).toBe(adminUser.id);
+});
+
+it('accepts a one-use recovery code only after the password challenge', async () => {
+  let body: unknown;
+  server.use(
+    http.post('/api/auth/mfa/verify', async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json(tokenFor(plainUser));
+    }),
+  );
+  const { user } = await begin({ methods: ['authenticator', 'recovery'] });
+  await user.click(screen.getByRole('button', { name: 'Recovery code' }));
+  const code = 'abcd-1234-abcd-1234-abcd-1234-abcd-1234';
+  await user.type(screen.getByLabelText('Recovery code'), code);
+  expect(screen.queryByRole('button', { name: 'Send email code' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Verify and sign in' }));
+  await waitFor(() => expect(useAuthStore.getState().status).toBe('authenticated'));
+  expect(body).toEqual({ challenge_token: pending.challenge_token, method: 'recovery', code });
 });

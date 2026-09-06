@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from ase.api.routers import (
     account,
+    account_sessions,
     admin_audit,
     admin_llm,
     admin_requests,
@@ -19,6 +20,8 @@ from ase.api.routers import (
     health,
     me,
     mfa,
+    profile,
+    recovery,
     report_documents,
     report_methodology,
     report_search,
@@ -44,6 +47,9 @@ api_router.include_router(mfa.router)
 api_router.include_router(teams.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)
+api_router.include_router(profile.router)
+api_router.include_router(account_sessions.router)
+api_router.include_router(recovery.router)
 api_router.include_router(events.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)

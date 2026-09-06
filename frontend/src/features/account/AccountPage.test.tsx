@@ -21,7 +21,7 @@ describe('account settings', () => {
     'shows %s identity with account controls and a teams link',
     async (role) => {
       useAuthStore.getState().setSession(tokenFor({ ...plainUser, role }));
-      renderApp('/account');
+      renderApp('/account?section=security');
       expect(await screen.findByRole('heading', { name: 'Account' })).toBeVisible();
       expect(screen.getByText(plainUser.email)).toBeVisible();
       expect(screen.getByRole('link', { name: 'View your teams' })).toHaveAttribute(
@@ -56,7 +56,7 @@ describe('account settings', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user, 'A different confirmation');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
     expect(screen.getByRole('alert')).toHaveTextContent('The two passwords do not match.');
@@ -78,7 +78,7 @@ describe('account settings', () => {
         ),
       ),
     );
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Change password' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('current password or authenticator');
@@ -117,7 +117,7 @@ describe('account settings', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    const { user, router } = renderApp('/account', 'user');
+    const { user, router } = renderApp('/account?section=security', 'user');
     await fill(user);
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
@@ -162,7 +162,7 @@ describe('account settings', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user);
     expect(screen.queryByLabelText('Authenticator code')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Send verification code' }));
@@ -205,7 +205,7 @@ describe('account settings', () => {
         return apiError(401, 'invalid_refresh', 'Session expired.');
       }),
     );
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Send verification code' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -224,7 +224,7 @@ describe('account settings', () => {
   });
 
   it('can reveal passwords from the keyboard without submitting', async () => {
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user);
     await user.tab();
     const show = screen.getByRole('button', { name: 'Show passwords' });
@@ -243,7 +243,7 @@ describe('account settings', () => {
       release = resolve;
     });
     vi.spyOn(accountApi, 'changePassword').mockReturnValue(pending);
-    const { user } = renderApp('/account', 'user');
+    const { user } = renderApp('/account?section=security', 'user');
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Change password' }));
     const replacement = {

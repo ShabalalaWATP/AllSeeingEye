@@ -22,7 +22,11 @@ class MfaManagement:
         enabled = await self.d.repo.email_enabled(user.id)
         if purpose is MfaPurpose.EMAIL_ENROL and enabled:
             raise InvalidRequest("Email verification is already enabled.")
-        if purpose in (MfaPurpose.EMAIL_DISABLE, MfaPurpose.PASSWORD_CHANGE) and not enabled:
+        if (
+            purpose
+            in (MfaPurpose.EMAIL_DISABLE, MfaPurpose.PASSWORD_CHANGE, MfaPurpose.RECOVERY_CODES)
+            and not enabled
+        ):
             raise InvalidRequest("Email verification is not enabled.")
         if purpose is MfaPurpose.EMAIL_DISABLE:
             await self.require_removable(user)
@@ -91,6 +95,7 @@ class MfaManagement:
         user = await self.d.credentials(actor, password, context)
         if user.role is not Role.ADMIN:
             raise Forbidden()
+        await self.d.recovery.clear(user.id)
         await self.d.totp.clear(user.id)
         await self.d.repo.set_email_enabled(user.id, False)
         await self.d.changed(user, AuditAction.MFA_RECOVERED, context)

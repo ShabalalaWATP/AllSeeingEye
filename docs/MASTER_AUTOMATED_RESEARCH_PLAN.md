@@ -222,3 +222,29 @@ representative human-labelled research-quality gate. See
 
 The MFA operations guide and authentication API describe the new contract. Full
 integration verification for this change is recorded in the development story.
+
+
+## Personal profile milestone, 6 September 2026
+
+- [x] Four personal settings sections for every role, separate from administration.
+- [x] Editable name, timezone/date format and private research/report defaults.
+- [x] Defaults consumed by research forms with URL/follow-up precedence; output
+  language/style frozen with the report; preferred export stays a presentation choice.
+- [x] Device/session inspection and confirmed individual/all-other revocation.
+- [x] Single-use recovery codes, fresh proof for rotation and local authenticator QR.
+- [x] Security review findings fixed: live-family profile revalidation and aborted
+  browser mutations across identity changes.
+- [x] Arabic/Chinese PDF limitation disclosed, with DOCX/Markdown alternatives.
+- [x] Final combined verification completed; coherent local milestone on `main`.
+
+Email remains read-only; verified email changes, uploads, passkeys, notifications
+and personal research libraries are outside this milestone. English judgement
+validation remains enforced. See [profile operations](PROFILE_OPERATIONS.md).
+
+
+Profile verification: 552 frontend tests passed (98.12% lines, 91.83% branches).
+The full backend run passed 1,741 tests and skipped 14 environment-dependent cases;
+one old report-scope assertion was corrected and all five report-suite cases then
+passed. Combined backend coverage is 96.40%. Static checks, production build,
+OpenAPI consistency, dependency audits, secret scanning and all pre-commit hooks
+pass. No remote push, production migration or live SMTP/model evaluation was performed.

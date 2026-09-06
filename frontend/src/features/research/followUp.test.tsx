@@ -8,6 +8,8 @@ import { server } from '@/test/server';
 import { followUpRequest } from './followUpScope';
 
 const privateScope = {
+  report_language: 'es',
+  report_style: 'briefing',
   research_mode: 'detailed',
   research_focus: 'document',
   research_languages: ['fr'],
@@ -159,6 +161,8 @@ describe('private and follow-up research', () => {
       parent_report_id: report.report.id,
       team_id: team.id,
       research_focus: 'document',
+      report_language: 'es',
+      report_style: 'briefing',
       research_mode: 'detailed',
       research_languages: ['fr'],
       window_hours: 168,

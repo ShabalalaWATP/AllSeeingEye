@@ -177,3 +177,37 @@ action and request IP, never passwords, authenticator codes or session identifie
 record enrolment start, enablement, disablement, recovery and failures. The
 current `AuditAction` enum is authoritative; team and operational actions share
 the administrator-only audit log.
+
+
+## Personal profile, sessions and recovery codes
+
+All routes below require a live authenticated session and act only on the current
+account, including when the caller is an administrator. Profile writes and session
+mutations revalidate the original family under account locks. Browser mutations
+abort on identity changes or unmount, preventing delayed 401 retries as a new user.
+
+| Route | Behaviour |
+| --- | --- |
+| `GET /api/me/profile` | Returns name and saved preferences, or defaults |
+| `PATCH /api/me/profile` | Partial update; unknown fields rejected, email/role/provider fields absent |
+| `GET /api/me/sessions` | Up to 100 live families, current first, with truncation flag |
+| `DELETE /api/me/sessions/{family_id}` | Revokes one owned family; current family clears cookies |
+| `POST /api/me/sessions/revoke-others` | Revokes all other owned live families, including beyond list limit |
+| `GET /api/auth/mfa/recovery` | Returns remaining count and availability, never code values |
+| `POST /api/auth/mfa/recovery/challenge` | Fresh password starts purpose-bound email verification |
+| `POST /api/auth/mfa/recovery/generate` | Fresh password and enabled factor proof replace the set and return ten codes once |
+
+Profile fields are `display_name`, `timezone`, `date_format`, `research_mode`,
+`research_languages`, `research_window_days`, nullable `research_country`,
+`report_language`, `report_style` and `export_format`. The generated OpenAPI schema
+is authoritative for enum values and bounds. Preferences cannot weaken evidence
+policy or change administrator model configuration.
+
+Recovery generation accepts `password`, `method` (authenticator/email), a six-digit
+`code` and the email `challenge_token` where applicable. Incorrect proof returns
+422 without ending a valid session. Codes contain 128 random bits each, persist as
+hashes and are consumed once. The existing password-first login challenge advertises
+`recovery` only when usable codes exist; `/api/auth/mfa/verify` accepts the code in
+unseparated hexadecimal or hyphenated form. Recovery cannot enrol MFA or replace
+the administrator's required factor. Migration `0020` adds preferences and `0021`
+adds recovery hashes. See [profile operations](../PROFILE_OPERATIONS.md).

@@ -46,7 +46,7 @@ describe('question-led research', () => {
       'user',
     );
     expect(await screen.findByRole('heading', { name: 'Research' })).toBeVisible();
-    expect(screen.getByLabelText('Your question')).toHaveValue('What changed in Ukraine?');
+    expect(await screen.findByLabelText('Your question')).toHaveValue('What changed in Ukraine?');
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Start research' })).toBeEnabled(),
     );
@@ -59,6 +59,8 @@ describe('question-led research', () => {
       question: 'What changed in Ukraine?',
       country: 'UA',
       window_hours: 72,
+      report_language: 'en',
+      report_style: 'assessment',
       research_mode: 'quick',
       research_languages: ['en'],
       research_focus: 'general',
@@ -100,6 +102,8 @@ describe('question-led research', () => {
         template: 'ask',
         question: 'Assess recent changes at Example Company.',
         window_hours: 168,
+        report_language: 'en',
+        report_style: 'assessment',
         research_mode: 'detailed',
         research_languages: ['en', 'fr'],
         research_focus: 'company',

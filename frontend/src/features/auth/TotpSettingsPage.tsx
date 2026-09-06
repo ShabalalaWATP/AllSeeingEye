@@ -1,3 +1,4 @@
+import { AuthenticatorQr } from '@/components/account/AuthenticatorQr';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -52,8 +53,7 @@ export function TotpSettingsPage() {
               {(['authenticator', 'email'] as const).map((option) => {
                 const active = status.methods.includes(option);
                 const available = status.available_methods.includes(option);
-                const lastRequired =
-                  active && status.required && status.methods.length === 1;
+                const lastRequired = active && status.required && status.methods.length === 1;
                 const title =
                   option === 'authenticator' ? 'Authenticator app' : 'Email verification';
                 return (
@@ -119,8 +119,10 @@ export function TotpSettingsPage() {
                     <>
                       <p className="text-sm text-muted">
                         Add a time-based account named The All Seeing Eye in your authenticator app.
-                        Enter this setup key, then confirm its code within ten minutes.
+                        Scan the QR code or enter the setup key, then confirm its code within ten
+                        minutes.
                       </p>
+                      <AuthenticatorQr uri={enrolment.provisioning_uri} />
                       <TextField
                         label="Authenticator setup key"
                         value={enrolment.secret}

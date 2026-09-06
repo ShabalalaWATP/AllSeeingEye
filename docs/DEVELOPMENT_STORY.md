@@ -615,3 +615,45 @@ preserving those earlier test results as historical evidence.
   LLM lifecycle, personal MFA and exception hardening, with appended combined coverage
   of 96.42%. Focused code re-review confirmed both final findings are resolved.
   No production migration, live mail, deployment or remote push was performed.
+
+
+## 6 September 2026: personal profiles and recovery
+
+- Replaced the basic account screen with Profile, Security, Research defaults and
+  Reports sections. Added private persisted preferences and editable display names.
+- Connected research and report preferences to actual request defaults, frozen
+  follow-ups, presentation prompts, report dates and preferred export buttons.
+  Evidence grading and English judgement validation remain unchanged.
+- Added current/other device management and ten single-use recovery codes with
+  password/factor proof. Codes are hash-only and security-version scoped. Added
+  local SVG authenticator QR rendering through the pinned qrcode package, plus
+  tzdata for portable IANA timezone validation.
+- Security review identified a revoked-family profile race and cross-account
+  retries of pending browser actions. Fixed both with under-lock revalidation
+  and synchronous identity-bound cancellation; added regressions.
+- Code review exposed the existing Arabic/Chinese PDF font limitation through new
+  output preferences. Shared notices recommend DOCX or Markdown before export.
+- Synthetic desktop and 390-pixel browser checks verified account layout, name
+  saving, security sections and the contextual PDF warning. Initial browser mock
+  routing intercepted source modules; the harness was corrected before UI checks.
+  No live account, SMTP/model call or operator database was used.
+- Added profile operations and updated MFA and authentication API documentation.
+
+- Final frontend run: 552 tests across 103 files passed, with 98.12% line and
+  91.83% branch coverage. Three old exact-payload assertions were updated for the
+  new report language/style fields; their 13 focused cases also passed. A final
+  18-case MFA run covers the completed local QR and recovery sign-in UI.
+- Production build, TypeScript, ESLint, formatting, OpenAPI consistency, Ruff,
+  mypy, import boundaries, Bandit, file-length and staged Gitleaks checks pass.
+  Frontend and Python dependency audits found no known vulnerabilities; the local
+  application package is not indexed by PyPI. Existing map/deck chunk warnings remain.
+
+- Full backend run: 1,741 passed and 14 environment-dependent cases skipped, with
+  96.38% combined coverage. One report lifecycle assertion expected the old frozen
+  scope without language/style. Updated those two expected fields, with no further
+  production change, and reran the report suite with combined coverage retained.
+
+- Final report-suite rerun passed all five cases; appended backend coverage is
+  96.40%. All final file-length and diff checks pass. The milestone is committed
+  locally on `main`; no remote is configured. Database migrations, real SMTP
+  delivery and configured-model evaluation remain operator follow-up.

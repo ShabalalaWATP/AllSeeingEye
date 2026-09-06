@@ -1,3 +1,4 @@
+import { profileHandlers } from './handlers.profile';
 /** Default MSW handlers implementing docs/api/AUTH_API.md against the fixtures. */
 import { http, HttpResponse } from 'msw';
 
@@ -80,6 +81,7 @@ interface SetPasswordBody {
 }
 
 export const handlers = [
+  ...profileHandlers,
   http.get('/api/auth/mfa', () =>
     HttpResponse.json({
       methods: [],

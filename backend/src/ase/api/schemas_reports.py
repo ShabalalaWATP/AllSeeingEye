@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Any, Self
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -43,6 +43,8 @@ class ReportCreateIn(BaseModel):
     conflict: str | None = Field(default=None, max_length=64)
     plan: UUID | None = None
     team_id: UUID | None = None
+    report_language: Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"] = "en"
+    report_style: Literal["briefing", "assessment"] = "assessment"
     research_mode: ResearchMode | None = None
     research_languages: list[Annotated[str, Field(pattern=r"^[a-z]{2,3}(-[A-Za-z]{2,4})?$")]] = (
         Field(default_factory=lambda: ["en"], min_length=1, max_length=8)
@@ -73,6 +75,8 @@ class ReportCreateIn(BaseModel):
             conflict_id=self.conflict.strip().lower() if self.conflict else None,
             plan_id=self.plan,
             team_id=self.team_id,
+            report_language=self.report_language,
+            report_style=self.report_style,
             research_mode=self.research_mode,
             research_languages=tuple(dict.fromkeys(self.research_languages)),
             research_focus=self.research_focus,

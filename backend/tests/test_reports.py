@@ -138,6 +138,8 @@ async def test_generate_read_export_and_delete(
     assert payload["report"]["status"] == "ready"
     assert payload["report"]["title"] == "Intelligence report: Ukraine"
     assert payload["report"]["scope"] == {
+        "report_language": "en",
+        "report_style": "assessment",
         "country": "UA",
         "categories": [],
         "question": None,

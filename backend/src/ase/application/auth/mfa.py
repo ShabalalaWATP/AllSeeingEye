@@ -71,6 +71,13 @@ class MfaUseCase:
         methods = (
             self.available_methods() if challenge.enrollment_required else await self.methods(user)
         )
+        if (
+            challenge.purpose is MfaPurpose.LOGIN
+            and not challenge.enrollment_required
+            and methods
+            and await self.d.recovery.count(user.id, user.security_version)
+        ):
+            methods = (*methods, MfaMethod.RECOVERY)
         if challenge.purpose is not MfaPurpose.LOGIN:
             methods = (MfaMethod.EMAIL,)
         return PendingMfa(
@@ -135,7 +142,19 @@ class MfaUseCase:
     ) -> AuthSession:
         self.d.limit(context, token)
         challenge, user = await self.d.load(token, MfaPurpose.LOGIN)
-        if not await self.verify_factor(challenge, user, method, code):
+        if method is MfaMethod.RECOVERY:
+            valid = bool(
+                not challenge.enrollment_required
+                and await self.methods(user)
+                and await self.d.recovery.consume(
+                    user.id,
+                    user.security_version,
+                    self.d.generator.hash(code.replace("-", "").upper()),
+                )
+            )
+        else:
+            valid = await self.verify_factor(challenge, user, method, code)
+        if not valid:
             await self.d.fail(challenge, user, context)
         if challenge.enrollment_required:
             if method is MfaMethod.EMAIL:

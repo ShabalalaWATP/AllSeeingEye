@@ -465,6 +465,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_api_me_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Profile */
+        patch: operations["update_profile_api_me_profile_patch"];
+        trace?: never;
+    };
+    "/api/me/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sessions */
+        get: operations["list_sessions_api_me_sessions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/sessions/revoke-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Other Sessions */
+        post: operations["revoke_other_sessions_api_me_sessions_revoke_others_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/sessions/{family_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke Session */
+        delete: operations["revoke_session_api_me_sessions__family_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/recovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_auth_mfa_recovery_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/recovery/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Challenge */
+        post: operations["challenge_api_auth_mfa_recovery_challenge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/mfa/recovery/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate */
+        post: operations["generate_api_auth_mfa_recovery_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/events": {
         parameters: {
             query?: never;
@@ -1475,6 +1595,42 @@ export interface components {
         AccountRequestsOut: {
             /** Items */
             items: components["schemas"]["AccountRequestOut"][];
+        };
+        /** AccountSessionOut */
+        AccountSessionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Current */
+            current: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Last Active At
+             * Format: date-time
+             */
+            last_active_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** User Agent */
+            user_agent: string | null;
+            /** Ip */
+            ip: string | null;
+        };
+        /** AccountSessionsOut */
+        AccountSessionsOut: {
+            /** Items */
+            items: components["schemas"]["AccountSessionOut"][];
+            /** Truncated */
+            truncated: boolean;
         };
         /** ActivityOut */
         ActivityOut: {
@@ -2660,7 +2816,7 @@ export interface components {
          * MfaMethod
          * @enum {string}
          */
-        MfaMethod: "authenticator" | "email";
+        MfaMethod: "authenticator" | "email" | "recovery";
         /** MfaPasswordIn */
         MfaPasswordIn: {
             /** Password */
@@ -2701,9 +2857,9 @@ export interface components {
         MfaVerifyIn: {
             /** Challenge Token */
             challenge_token: string;
+            method: components["schemas"]["MfaMethod"];
             /** Code */
             code: string;
-            method: components["schemas"]["MfaMethod"];
         };
         /** MismatchIndicatorOut */
         MismatchIndicatorOut: {
@@ -2835,6 +2991,70 @@ export interface components {
          * @enum {string}
          */
         Probability: "remote_chance" | "highly_unlikely" | "unlikely" | "realistic_possibility" | "likely" | "highly_likely" | "almost_certain";
+        /** ProfileOut */
+        ProfileOut: {
+            /** Display Name */
+            display_name: string;
+            /** Timezone */
+            timezone: string;
+            /**
+             * Date Format
+             * @enum {string}
+             */
+            date_format: "day_first" | "month_first" | "iso";
+            /**
+             * Research Mode
+             * @enum {string}
+             */
+            research_mode: "quick" | "detailed";
+            /** Research Languages */
+            research_languages: string[];
+            /**
+             * Research Window Days
+             * @enum {integer}
+             */
+            research_window_days: 1 | 3 | 7 | 14;
+            /** Research Country */
+            research_country: string | null;
+            /**
+             * Report Language
+             * @enum {string}
+             */
+            report_language: "en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh";
+            /**
+             * Report Style
+             * @enum {string}
+             */
+            report_style: "briefing" | "assessment";
+            /**
+             * Export Format
+             * @enum {string}
+             */
+            export_format: "pdf" | "docx" | "md";
+        };
+        /** ProfileUpdateIn */
+        ProfileUpdateIn: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Date Format */
+            date_format?: ("day_first" | "month_first" | "iso") | null;
+            /** Research Mode */
+            research_mode?: ("quick" | "detailed") | null;
+            /** Research Languages */
+            research_languages?: string[] | null;
+            /** Research Window Days */
+            research_window_days?: (1 | 3 | 7 | 14) | null;
+            /** Research Country */
+            research_country?: string | null;
+            /** Report Language */
+            report_language?: ("en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh") | null;
+            /** Report Style */
+            report_style?: ("briefing" | "assessment") | null;
+            /** Export Format */
+            export_format?: ("pdf" | "docx" | "md") | null;
+        };
         /** ReadyOut */
         ReadyOut: {
             /** Status */
@@ -2845,6 +3065,32 @@ export interface components {
          * @enum {string}
          */
         ReasoningEffort: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
+        /** RecoveryCodesOut */
+        RecoveryCodesOut: {
+            /** Codes */
+            codes: string[];
+        };
+        /** RecoveryGenerateIn */
+        RecoveryGenerateIn: {
+            /** Password */
+            password: string;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "authenticator" | "email";
+            /** Code */
+            code: string;
+            /** Challenge Token */
+            challenge_token?: string | null;
+        };
+        /** RecoveryStatusOut */
+        RecoveryStatusOut: {
+            /** Remaining */
+            remaining: number;
+            /** Available */
+            available: boolean;
+        };
         /** RejectIn */
         RejectIn: {
             /** Reason */
@@ -2953,6 +3199,18 @@ export interface components {
             plan?: string | null;
             /** Team Id */
             team_id?: string | null;
+            /**
+             * Report Language
+             * @default en
+             * @enum {string}
+             */
+            report_language: "en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh";
+            /**
+             * Report Style
+             * @default assessment
+             * @enum {string}
+             */
+            report_style: "briefing" | "assessment";
             research_mode?: components["schemas"]["ResearchMode"] | null;
             /** Research Languages */
             research_languages?: string[];
@@ -4899,6 +5157,212 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_api_me_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileOut"];
+                };
+            };
+        };
+    };
+    update_profile_api_me_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sessions_api_me_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountSessionsOut"];
+                };
+            };
+        };
+    };
+    revoke_other_sessions_api_me_sessions_revoke_others_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    revoke_session_api_me_sessions__family_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                family_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_auth_mfa_recovery_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryStatusOut"];
+                };
+            };
+        };
+    };
+    challenge_api_auth_mfa_recovery_challenge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaPasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaPendingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_api_auth_mfa_recovery_generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecoveryGenerateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesOut"];
+                };
             };
             /** @description Validation Error */
             422: {

@@ -9,10 +9,12 @@ from uuid import UUID
 class MfaMethod(StrEnum):
     AUTHENTICATOR = "authenticator"
     EMAIL = "email"
+    RECOVERY = "recovery"
 
 
 class MfaPurpose(StrEnum):
     LOGIN = "login"
+    RECOVERY_CODES = "recovery_codes"
     EMAIL_ENROL = "email_enrol"
     EMAIL_DISABLE = "email_disable"
     PASSWORD_CHANGE = "password_change"  # noqa: S105

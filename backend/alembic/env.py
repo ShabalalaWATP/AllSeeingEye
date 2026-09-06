@@ -13,6 +13,8 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     llm_bindings,
     mfa_models,
     models,
+    profile,
+    recovery_models,
     report_search,
     teams,
     token_families,

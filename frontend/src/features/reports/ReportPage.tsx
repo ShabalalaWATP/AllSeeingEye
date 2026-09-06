@@ -5,14 +5,9 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { describeError } from '@/lib/api/errors';
-import {
-  deleteReport,
-  fetchReport,
-  fetchReportMarkdown,
-  regenerateReport,
-} from '@/lib/api/reports';
-import { fileNameFor, saveTextFile } from '@/lib/download';
-import { formatUtc } from '@/lib/format';
+import { deleteReport, fetchReport, regenerateReport } from '@/lib/api/reports';
+import { useProfile } from '@/stores/profile';
+import { formatPersonalDate, formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
@@ -38,6 +33,7 @@ function versionFromQuery(value: string | null): number | undefined {
 
 export default function ReportPage() {
   const workspaces = useWorkspaces();
+  const preferences = useProfile();
   const { id = '' } = useParams();
   const [params] = useSearchParams();
   const requested = versionFromQuery(params.get('version'));
@@ -53,11 +49,6 @@ export default function ReportPage() {
     await navigate(`/reports/${id}`);
     await reload();
   });
-  const download = useAsyncAction(async () => {
-    if (data === null) return;
-    const text = await fetchReportMarkdown(id, data.version.number);
-    saveTextFile(fileNameFor(`${data.report.title}-v${data.version.number}`, 'md'), text);
-  });
 
   if (data === null) {
     return (
@@ -70,7 +61,7 @@ export default function ReportPage() {
   const { report, version } = data;
   const canEdit = workspaces.canManage(report);
   const versions = Array.from({ length: report.latest_version }, (_, index) => index + 1);
-  const actionError = remove.error ?? regenerate.error ?? download.error;
+  const actionError = remove.error ?? regenerate.error;
   return (
     <EvidenceNavigation evidence={version.evidence}>
       <article className="flex h-full min-w-0 flex-col gap-6 overflow-y-auto p-4 sm:p-6">
@@ -87,6 +78,9 @@ export default function ReportPage() {
             {version.period_from && version.period_to
               ? `${formatUtc(version.period_from)} to ${formatUtc(version.period_to)}`
               : 'Reporting period unknown for this legacy version'}
+          </p>
+          <p className="text-xs text-muted">
+            Version created: {formatPersonalDate(version.created_at, preferences.profile)}
           </p>
           <ReportReviewStatus status={version.status} />
           <details className="text-xs text-muted">
@@ -161,9 +155,6 @@ export default function ReportPage() {
                 Regenerate
               </Button>
             )}
-            <Button variant="secondary" busy={download.busy} onClick={() => void download.run()}>
-              Download Markdown
-            </Button>
             <CopyButton value={version.markdown} label="Copy Markdown" />
             {canEdit && (
               <Button variant="danger" busy={remove.busy} onClick={() => void remove.run()}>
@@ -171,7 +162,17 @@ export default function ReportPage() {
               </Button>
             )}
           </div>
-          <ReportExports id={id} version={version.number} title={report.title} />
+          <ReportExports
+            language={
+              typeof report.scope.report_language === 'string'
+                ? report.scope.report_language
+                : undefined
+            }
+            preferred={preferences.profile?.export_format ?? 'pdf'}
+            id={id}
+            version={version.number}
+            title={report.title}
+          />
         </section>
         <ReportDiff
           key={`${id}:${String(version.number)}`}

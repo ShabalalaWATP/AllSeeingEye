@@ -3,6 +3,8 @@ import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 
 const savedScope = z.object({
+  report_language: z.enum(['en', 'fr', 'de', 'es', 'ar', 'ru', 'uk', 'zh']).optional(),
+  report_style: z.enum(['briefing', 'assessment']).optional(),
   country: z.string().nullable().optional(),
   categories: z.array(categorySchema).optional(),
   window_hours: z.number().int().positive().optional(),
@@ -28,6 +30,8 @@ export function followUpRequest(parent: Report): ReportRequest {
     );
   }
   return {
+    report_language: scope.report_language ?? 'en',
+    report_style: scope.report_style ?? 'assessment',
     country: scope.country ?? null,
     categories: scope.categories ?? [],
     hazard: scope.hazard ?? null,

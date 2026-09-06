@@ -1,6 +1,6 @@
 # Multi-factor authentication operations
 
-All users can configure MFA under **My account > Multi-factor authentication**.
+All users can configure MFA under **Account > Security > Manage MFA methods**.
 Administrators must enrol one method after password verification before gaining a
 session. Email and authenticator methods can both be enabled. Setting up another
 method first allows administrators to remove a method without losing MFA protection.
@@ -8,7 +8,7 @@ method first allows administrators to remove a method without losing MFA protect
 ## Configuration and upgrade
 
 Before starting this version against an existing database, back up the intended
-database and apply migration `0019` using the documented migration workflow.
+database and apply migrations through `0021` using the documented migration workflow.
 No operator database was migrated during development. Existing administrator
 sessions require a new sign-in; existing authenticator secrets remain valid.
 Downgrade refuses configured factors to avoid silently deleting MFA protection.
@@ -37,7 +37,12 @@ requesting a replacement. Use the newest code. An authenticator code is single-u
 so wait for its next time step when signing in immediately after profile enrolment.
 
 Factor changes sign the account out on every device. Password resets retain MFA.
-If email delivery fails, use an already enabled authenticator or restore SMTP service.
+If email delivery fails, use an already enabled authenticator, a previously saved
+recovery code, or restore SMTP service. Recovery codes are generated under
+**Account > Security** after fresh password and factor verification. The set is
+shown once, stored only as hashes, and invalidated by password or factor changes.
+See [personal profile operations](PROFILE_OPERATIONS.md) for sessions and recovery.
+Authenticator enrolment now includes a QR code generated locally in the browser.
 For an administrator who has lost all usable factors, an authorised host operator can run:
 
 ```powershell

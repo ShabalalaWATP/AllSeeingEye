@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/Button';
+import { useProfile } from '@/stores/profile';
 import { useCallback, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 
@@ -12,7 +14,7 @@ import { fetchReports, fetchTemplates, generateReport } from '@/lib/api/reports'
 import { fetchConflictBoard, fetchDisasterBoard } from '@/lib/api/trackers';
 import type { ReportRequest } from '@/lib/api/reports';
 import { STATUS_LABELS } from '@/lib/doctrine';
-import { formatUtc } from '@/lib/format';
+import { formatPersonalDate, formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useResource } from '@/lib/hooks/useResource';
 import { useCountriesStore } from '@/stores/countries';
@@ -41,6 +43,7 @@ export function StatusBadge({ status }: { status: string }) {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
+  const preferences = useProfile();
   const [params] = useSearchParams();
   const reports = useScopedResource(fetchReports);
   const plans = useScopedResource(fetchPlans);
@@ -73,13 +76,22 @@ export default function ReportsPage() {
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Reports</h1>
       <ReportSearch />
-      {templates.data === null ? (
-        templates.loading ? (
+      {!preferences.profile && preferences.error && (
+        <Alert tone="error">
+          Report preferences could not be loaded.{' '}
+          <Button variant="secondary" onClick={() => void preferences.reload()}>
+            Retry preferences
+          </Button>
+        </Alert>
+      )}
+      {templates.data === null || !preferences.profile ? (
+        templates.loading || (!preferences.profile && !preferences.error) ? (
           <LoadingNote label="Loading products" />
         ) : null
       ) : (
         <GenerateForm
           key={`${workspaces.key}:${params.toString()}`}
+          preferences={preferences.profile}
           workspaces={workspaces}
           plans={plans.data ?? []}
           templates={templates.data}
@@ -137,7 +149,7 @@ export default function ReportsPage() {
                     <StatusBadge status={report.status} />
                   </Td>
                   <Td className="whitespace-nowrap text-xs text-muted">
-                    {formatUtc(report.created_at)}
+                    {formatPersonalDate(report.created_at, preferences.profile)}
                   </Td>
                 </tr>
               ))}

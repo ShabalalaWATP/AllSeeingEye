@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from ase.domain.events import Category
@@ -32,6 +32,8 @@ class ReportRequest:
     research_input_id: UUID | None = None
     parent_report_id: UUID | None = None
     parent_version: int | None = None
+    report_language: Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"] = "en"
+    report_style: Literal["briefing", "assessment"] = "assessment"
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
@@ -39,6 +41,8 @@ class ReportRequest:
         window = scope.get("window_hours")
         return cls(
             template_id=template_id,
+            report_language=scope.get("report_language", "en"),
+            report_style=scope.get("report_style", "assessment"),
             country_iso=scope.get("country") or None,
             categories=categories,
             question=scope.get("question") or None,

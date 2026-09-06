@@ -56,6 +56,8 @@ describe('ReportsPage', () => {
     ).toBeInTheDocument();
     expect(body).toEqual({
       template: 'ask',
+      report_language: 'en',
+      report_style: 'assessment',
       research_focus: 'general',
       devils_advocacy: false,
       country: 'UA',
