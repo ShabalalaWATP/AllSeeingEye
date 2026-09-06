@@ -70,6 +70,8 @@ def profile(mode: ResearchMode) -> EvaluationProfile:
         advocacy=True,
         research_mode=mode,
         research_languages=("fr", "en"),
+        reasoning_effort="max",
+        max_output_tokens=16000,
     )
 
 
@@ -89,6 +91,8 @@ async def test_detailed_replay_runs_collection_redraft_and_all_judgement_review(
     assert schemas.index("report") < schemas.index("challenge_plan")
     assert schemas.index("challenge_plan") < len(schemas) - 1 - schemas[::-1].index("report")
     assert "challenge_plan" in schemas and "challenge_reviews" in schemas
+    assert all(record["reasoning_effort"] == "max" for record in gateway.records)
+    assert all(record["max_output_tokens"] == 16000 for record in gateway.records)
     assert "advocacy" not in schemas
     replay = result["collection_evaluation"]
     assert replay["kind"] == "synthetic_provider_replay"

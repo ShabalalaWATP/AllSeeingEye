@@ -17,6 +17,7 @@ from ase.domain.research import ResearchBatch, ResearchQuery
 from ase.domain.users import User
 from feeds_helpers import make_event
 from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_documents_helpers import document_records
 from report_helpers import PROFILE, ScriptedGateway, good_body
 
@@ -55,12 +56,7 @@ class CallbackGateway(ScriptedGateway):
 
 
 async def model_setup(client: AsyncClient, container: Container, admin: User) -> NoPublicCollection:
-    response = await client.post(
-        "/api/admin/llm/profiles",
-        json={**PROFILE, "roles": ["assessment", "direction"]},
-        headers=bearer(await login_token(client, admin.email, ADMIN_PASSWORD)),
-    )
-    assert response.status_code == 201, response.text
+    await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
     container.llm = CallbackGateway()
     collection = NoPublicCollection()
     container.research = collection

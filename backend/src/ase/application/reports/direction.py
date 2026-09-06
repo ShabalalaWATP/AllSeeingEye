@@ -66,8 +66,9 @@ async def direct(
     draft = DirectionDraft()
     request = LlmRequest(
         messages=direction_messages(question, country_name, languages),
-        max_output_tokens=min(profile.max_output_tokens, DIRECTION_TOKENS),
+        max_output_tokens=profile.token_budget(DIRECTION_TOKENS),
         temperature=profile.temperature,
+        reasoning_effort=profile.reasoning_effort,
         json_schema=DIRECTION_SCHEMA,
         schema_name="direction",
     )

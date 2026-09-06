@@ -17,7 +17,15 @@ from ase.application.ports.llm import LlmGateway, LlmGatewayError
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import template_for
-from ase.domain.llm import LlmProfile, LlmRequest, LlmResult, LlmRole, LlmUsage, normalise_base_url
+from ase.domain.llm import (
+    LlmProfile,
+    LlmRequest,
+    LlmResult,
+    LlmRole,
+    LlmUsage,
+    ReasoningEffort,
+    normalise_base_url,
+)
 from ase.domain.report_records import (
     analysis_to_dict,
     body_to_dict,
@@ -40,6 +48,7 @@ class EvaluationProfile(BaseModel):
     model: str = Field(min_length=1, max_length=120)
     max_output_tokens: int = Field(default=4000, ge=64, le=32000)
     temperature: float = Field(default=0.0, ge=0, le=2)
+    reasoning_effort: ReasoningEffort | None = None
     direction: bool = False
     advocacy: bool = False
     research_mode: ResearchMode | None = None
@@ -78,6 +87,7 @@ class RecordingGateway:
             "requested_model": model,
             "max_output_tokens": request.max_output_tokens,
             "temperature": request.temperature,
+            "reasoning_effort": request.reasoning_effort,
             "messages": messages,
             "prompt_sha256": hashlib.sha256(
                 json.dumps(messages, sort_keys=True).encode()
@@ -130,6 +140,7 @@ async def evaluate_case(
         roles=frozenset(roles),
         max_output_tokens=configuration.max_output_tokens,
         temperature=configuration.temperature,
+        reasoning_effort=configuration.reasoning_effort,
         enabled=True,
         created_at=case.as_of,
         updated_at=case.as_of,

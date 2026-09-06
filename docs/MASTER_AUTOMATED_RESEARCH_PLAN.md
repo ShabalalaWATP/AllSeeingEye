@@ -178,7 +178,10 @@ These checks use scripted models and do not close the configured-model or
 representative human-labelled research-quality gate. See
 [evaluation instructions](../backend/evaluations/README.md).
 
-- Obtain the intended model endpoint/name, review the included eight synthetic
+- The user selected OpenAI `https://api.openai.com/v1`, `gpt-5.6-luna` at Max
+  reasoning on 6 September 2026. The administrator connection work is tracked in
+  [AI connections](AI_CONNECTIONS_PLAN.md), with [operator instructions](AI_CONNECTIONS_OPERATIONS.md).
+  Enter the account key through the app, review the included eight synthetic
   evaluation cases and reference judgements, and run the real pipeline against
   that model. Report quality/citation measures separately from software coverage.
 - Configure optional Companies House/SSLMate credentials only when those capabilities

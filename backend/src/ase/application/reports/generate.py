@@ -14,12 +14,14 @@ from uuid import UUID
 from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
+from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.llm import (
+    LlmBindingRepository,
     LlmGateway,
     LlmProfileRepository,
     LlmUsageRepository,
@@ -46,12 +48,11 @@ from ase.domain.collection import CollectionPlan
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
-    NoModelAvailable,
     NotFound,
     RateLimited,
 )
 from ase.domain.grading import SourceProfile
-from ase.domain.llm import LlmProfile, LlmRole
+from ase.domain.llm import LlmProfile
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.trackers import Conflict, Hazard
 from ase.domain.users import User
@@ -85,6 +86,7 @@ class GenerateReportUseCase:
         research: ResearchCollection | None = None,
         private_store_factory: Callable[[], EventStore] | None = None,
         research_inputs: ResearchInputStore | None = None,
+        llm_bindings: LlmBindingRepository | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -101,7 +103,7 @@ class GenerateReportUseCase:
         self._conflicts = conflicts
         self._plans = plans
         self._aois = aois
-        self._llm_profiles = llm_profiles
+        self._routing = ModelRouting(llm_profiles, llm_bindings)
         self._cipher = cipher
         self._reports = reports
         self._clock = clock
@@ -124,16 +126,18 @@ class GenerateReportUseCase:
         template = self._template(request)
         plan = await self._authorisation.prepare(actor, request)
         inputs = await self._research_inputs.prepare(actor, request)
-        profile = await self._prepare(actor, request.profile_id, template)
+        routing = await self._prepare(actor, request, template)
+        profile = routing.required(template.role)
         now = self._clock.now()
         job = inputs.apply(await self._job(actor, template, request, profile, now, plan=plan))
         await self._uow.rollback()
         version = await self._producer.produce(
             job,
-            self._profile_for,
+            routing.profile_for,
             lambda: self._authorisation.finish(actor, request, None, plan, inputs.parent),
             progress=progress,
         )
+        version.model_routing = routing.provenance
         record = ReportRecord(
             id=version.report_id,
             template=template.id,
@@ -175,7 +179,8 @@ class GenerateReportUseCase:
             actor, request, previous, owner_id=record.created_by
         )
         template = self._template(request)
-        profile = await self._prepare(actor, None, template)
+        routing = await self._prepare(actor, request, template)
+        profile = routing.required(template.role)
         now = self._clock.now()
         job = await self._job(
             actor,
@@ -191,10 +196,11 @@ class GenerateReportUseCase:
         await self._uow.rollback()
         version = await self._producer.produce(
             job,
-            self._profile_for,
+            routing.profile_for,
             lambda: self._authorisation.finish(actor, request, record, plan, inputs.parent),
             progress=progress,
         )
+        version.model_routing = routing.provenance
         record.status = version.status
         record.latest_version = version.number
         record.period_from = now - job.window
@@ -205,17 +211,19 @@ class GenerateReportUseCase:
         return record, version
 
     async def _prepare(
-        self, actor: User, profile_id: UUID | None, template: Template
-    ) -> LlmProfile:
+        self, actor: User, request: ReportRequest, template: Template
+    ) -> RoleProfiles:
         retry_after = self._limiter.hit(
             f"reports:{actor.id}", self._limits.reports_per_user, self._limits.hourly_window_seconds
         )
         if retry_after is not None:
             raise RateLimited(retry_after)
-        profile = await self._profile(profile_id, template.role)
+        routing = await self._routing.snapshot(
+            team_id=request.team_id, profile_id=request.profile_id, role=template.role
+        )
         if not self._cipher.available:
             raise EncryptionUnavailable()
-        return profile
+        return routing
 
     async def _job(
         self,
@@ -301,21 +309,3 @@ class GenerateReportUseCase:
             return Hazard(request.hazard) if request.hazard else None
         except ValueError:
             return None
-
-    async def _profile_for(self, role: LlmRole) -> LlmProfile | None:
-        """The first enabled profile that plays the role, or None."""
-        for candidate in await self._llm_profiles.list_all():
-            if candidate.allows(role):
-                return candidate
-        return None
-
-    async def _profile(self, profile_id: UUID | None, role: LlmRole) -> LlmProfile:
-        if profile_id is not None:
-            chosen = await self._llm_profiles.get(profile_id)
-            if chosen is None or not chosen.allows(role):
-                raise NoModelAvailable()
-            return chosen
-        profile = await self._profile_for(role)
-        if profile is None:
-            raise NoModelAvailable()
-        return profile

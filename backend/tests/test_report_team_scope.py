@@ -9,7 +9,8 @@ from ase.container import Container
 from ase.domain.errors import NotFound
 from ase.domain.teams import MembershipRole
 from ase.domain.users import Role, User
-from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, create_user, login_token
+from helpers import USER_PASSWORD, bearer, create_user, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_documents_helpers import document_records
 from report_helpers import PROFILE, ScriptedGateway
 from team_helpers import CONTEXT, team_service
@@ -77,10 +78,7 @@ async def test_membership_revoked_during_model_call_cannot_persist_report(
 ) -> None:
     team = await team_for(container, admin, user)
     record = await save_team_report(container, user, team.id)
-    admin_headers = bearer(await login_token(client, admin.email, ADMIN_PASSWORD))
-    assert (
-        await client.post("/api/admin/llm/profiles", json=PROFILE, headers=admin_headers)
-    ).status_code == 201
+    await seed_legacy_profile(container, PROFILE)
 
     class RevokingGateway(ScriptedGateway):
         async def complete(self, base_url, api_key, model, request):

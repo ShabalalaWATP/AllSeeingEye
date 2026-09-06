@@ -69,8 +69,9 @@ async def draft_body(
         )
         llm_request = LlmRequest(
             messages=messages,
-            max_output_tokens=min(profile.max_output_tokens, template.token_budget),
+            max_output_tokens=profile.token_budget(template.token_budget),
             temperature=profile.temperature,
+            reasoning_effort=profile.reasoning_effort,
             json_schema=REPORT_BODY_SCHEMA,
             schema_name="report",
         )

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 from typing import Any, Literal
@@ -25,6 +27,19 @@ class LlmRole(StrEnum):
     EMBEDDINGS = "embeddings"
 
 
+class ReasoningEffort(StrEnum):
+    NONE = "none"
+    MINIMAL = "minimal"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    XHIGH = "xhigh"
+    MAX = "max"
+
+
+TEXT_ROLES = frozenset({LlmRole.DIRECTION, LlmRole.ASSESSMENT, LlmRole.DEVIL, LlmRole.TRANSLATION})
+
+
 def normalise_base_url(value: str) -> str:
     """An absolute http(s) URL without a trailing slash; local endpoints are allowed.
 
@@ -32,6 +47,8 @@ def normalise_base_url(value: str) -> str:
     a self-hosted app, so private addresses are accepted here on purpose.
     """
     candidate = value.strip().rstrip("/")
+    if any(ord(char) < 33 or ord(char) == 127 for char in candidate):
+        raise ValueError("The base URL cannot contain whitespace or control characters.")
     parts = urlsplit(candidate)
     if parts.scheme not in ("http", "https") or not parts.netloc:
         msg = "The base URL must be an absolute http(s) address."
@@ -39,6 +56,9 @@ def normalise_base_url(value: str) -> str:
     if parts.username or parts.password:
         msg = "Credentials do not belong in the base URL."
         raise ValueError(msg)
+    if parts.query or parts.fragment:
+        raise ValueError("The base URL cannot contain a query or fragment.")
+    _ = parts.port  # Validate ports before any credential-bearing request.
     return candidate
 
 
@@ -53,7 +73,7 @@ class LlmProfile:
     name: str
     base_url: str
     model: str
-    api_key_encrypted: str
+    api_key_encrypted: str = field(repr=False)
     api_key_hint: str
     roles: frozenset[LlmRole]
     max_output_tokens: int
@@ -61,9 +81,63 @@ class LlmProfile:
     enabled: bool
     created_at: datetime
     updated_at: datetime
+    reasoning_effort: ReasoningEffort | None = None
+    revision: int = 1
+    tested_at: datetime | None = None
+    tested_revision: int | None = None
+    tested_config_hash: str | None = None
+    test_generation: int = 0
 
     def allows(self, role: LlmRole) -> bool:
         return self.enabled and role in self.roles
+
+    def token_budget(self, stage_limit: int) -> int:
+        limit = (
+            MAX_OUTPUT_TOKENS
+            if self.reasoning_effort is not None or self.model == "gpt-5.6-luna"
+            else stage_limit
+        )
+        return min(self.max_output_tokens, limit)
+
+    @property
+    def config_hash(self) -> str:
+        """Bind proof to saved request settings and the encrypted key revision.
+
+        Operational enablement is excluded so explicit activation can enable a tested
+        draft. Every ordinary edit still advances revision and invalidates its proof.
+        """
+        values = (
+            str(self.id),
+            self.revision,
+            self.name,
+            self.base_url,
+            self.model,
+            self.api_key_encrypted,
+            sorted(self.roles),
+            self.max_output_tokens,
+            self.temperature,
+            self.reasoning_effort,
+        )
+        return hashlib.sha256(json.dumps(values, separators=(",", ":")).encode()).hexdigest()
+
+    @property
+    def is_tested(self) -> bool:
+        return (
+            self.tested_at is not None
+            and self.tested_revision == self.revision
+            and self.tested_config_hash == self.config_hash
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class LlmConnectionBinding:
+    team_id: UUID | None
+    profile_id: UUID
+    profile_revision: int
+    tested_config_hash: str
+    activated_at: datetime
+    activated_by: UUID
+    revision: int = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +153,7 @@ class LlmRequest:
     temperature: float
     json_schema: Mapping[str, Any] | None = None
     schema_name: str = "response"
+    reasoning_effort: ReasoningEffort | None = None
 
 
 @dataclass(frozen=True, slots=True)

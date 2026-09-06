@@ -2,43 +2,34 @@
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
+from ase.application.access import AccessPolicy
+from ase.application.admin.llm_testing import SessionCheck
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
 from ase.application.ports import Clock, UnitOfWork
-from ase.application.ports.embeddings import EmbeddingGateway
 from ase.application.ports.llm import (
-    LlmGateway,
-    LlmGatewayError,
+    LlmBindingRepository,
     LlmProfileRepository,
     LlmUsageRepository,
     SecretCipher,
 )
 from ase.domain.audit import AuditAction
-from ase.domain.errors import EncryptionUnavailable, NotFound
+from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound
 from ase.domain.llm import (
-    LlmMessage,
+    TEXT_ROLES,
     LlmProfile,
-    LlmRequest,
     LlmRole,
     LlmUsage,
+    ReasoningEffort,
     key_hint,
     normalise_base_url,
 )
-from ase.domain.report_search import checked_vector
 from ase.domain.users import User
-
-TEST_PROMPT = 'Reply with exactly this JSON object and nothing else: {"ok": true}'
-TEST_SCHEMA = {
-    "type": "object",
-    "properties": {"ok": {"type": "boolean"}},
-    "required": ["ok"],
-    "additionalProperties": False,
-}
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,25 +41,35 @@ class ProfileInput:
     max_output_tokens: int
     temperature: float
     enabled: bool
-    api_key: str | None = None
+    api_key: str | None = field(default=None, repr=False)
+    reasoning_effort: ReasoningEffort | None = None
 
-
-@dataclass(frozen=True, slots=True)
-class TestOutcome:
-    ok: bool
-    latency_ms: float
-    model: str | None = None
-    error: str | None = None
-    prompt_tokens: int | None = None
-    completion_tokens: int | None = None
+    def __post_init__(self) -> None:
+        if (
+            not self.name.strip()
+            or len(self.name) > 80
+            or not self.model.strip()
+            or len(self.model) > 120
+            or not 64 <= self.max_output_tokens <= 32_000
+            or not math.isfinite(self.temperature)
+            or not 0 <= self.temperature <= 2
+            or any(role not in LlmRole for role in self.roles)
+            or (self.reasoning_effort is not None and self.reasoning_effort not in ReasoningEffort)
+        ):
+            raise InvalidRequest("The model profile settings are invalid.")
+        try:
+            normalise_base_url(self.base_url)
+        except ValueError as exc:
+            raise InvalidRequest("The model endpoint address is invalid.") from exc
 
 
 class ListLlmProfilesUseCase:
-    def __init__(self, profiles: LlmProfileRepository) -> None:
+    def __init__(self, profiles: LlmProfileRepository, access: AccessPolicy) -> None:
         self._profiles = profiles
+        self._access = access
 
     async def execute(self, actor: User) -> list[LlmProfile]:
-        require_admin(actor)
+        require_admin((await self._access.context(actor)).actor)
         return await self._profiles.list_all()
 
 
@@ -80,15 +81,26 @@ class CreateLlmProfileUseCase:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        access: AccessPolicy,
+        bindings: LlmBindingRepository,
     ) -> None:
         self._profiles = profiles
+        self._access = access
         self._cipher = cipher
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
+        self._bindings = bindings
 
-    async def execute(self, actor: User, data: ProfileInput, context: RequestContext) -> LlmProfile:
-        require_admin(actor)
+    async def execute(
+        self,
+        actor: User,
+        data: ProfileInput,
+        context: RequestContext,
+        *,
+        before_save: SessionCheck | None = None,
+    ) -> LlmProfile:
+        require_admin((await self._access.context(actor, for_update=True)).actor)
         if not self._cipher.available:
             raise EncryptionUnavailable()
         api_key = data.api_key or ""
@@ -103,10 +115,13 @@ class CreateLlmProfileUseCase:
             roles=data.roles,
             max_output_tokens=data.max_output_tokens,
             temperature=data.temperature,
-            enabled=data.enabled,
+            enabled=data.enabled and data.roles == frozenset({LlmRole.EMBEDDINGS}),
             created_at=now,
             updated_at=now,
+            reasoning_effort=data.reasoning_effort,
         )
+        if before_save is not None:
+            await before_save()
         await self._profiles.add(profile)
         await self._auditor.record(
             AuditAction.LLM_PROFILE_CREATED,
@@ -127,27 +142,50 @@ class UpdateLlmProfileUseCase:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        access: AccessPolicy,
+        bindings: LlmBindingRepository,
     ) -> None:
         self._profiles = profiles
+        self._access = access
         self._cipher = cipher
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
+        self._bindings = bindings
 
     async def execute(
-        self, actor: User, profile_id: UUID, data: ProfileInput, context: RequestContext
+        self,
+        actor: User,
+        profile_id: UUID,
+        data: ProfileInput,
+        context: RequestContext,
+        *,
+        before_save: SessionCheck | None = None,
     ) -> LlmProfile:
-        require_admin(actor)
+        require_admin((await self._access.context(actor, for_update=True)).actor)
         profile = await self._profiles.get(profile_id)
         if profile is None:
             raise NotFound()
+        if await self._bindings.is_bound(profile_id):
+            raise InvalidRequest(
+                "An active connection cannot be edited. Create a replacement profile."
+            )
+        await _protect_legacy_profile(profile, self._bindings)
+        destination = normalise_base_url(data.base_url)
+        if profile.api_key_hint and destination != profile.base_url and not data.api_key:
+            raise InvalidRequest("Supply a new API key when changing the credential destination.")
         profile.name = data.name.strip()
         profile.base_url = normalise_base_url(data.base_url)
         profile.model = data.model.strip()
         profile.roles = data.roles
         profile.max_output_tokens = data.max_output_tokens
         profile.temperature = data.temperature
-        profile.enabled = data.enabled
+        profile.enabled = data.enabled and data.roles == frozenset({LlmRole.EMBEDDINGS})
+        profile.reasoning_effort = data.reasoning_effort
+        profile.revision += 1
+        profile.tested_at = None
+        profile.tested_revision = None
+        profile.tested_config_hash = None
         changed_key = False
         if data.api_key:
             if not self._cipher.available:
@@ -156,6 +194,8 @@ class UpdateLlmProfileUseCase:
             profile.api_key_hint = key_hint(data.api_key)
             changed_key = True
         profile.updated_at = self._clock.now()
+        if before_save is not None:
+            await before_save()
         await self._profiles.save(profile)
         await self._auditor.record(
             AuditAction.LLM_PROFILE_UPDATED,
@@ -173,16 +213,39 @@ class UpdateLlmProfileUseCase:
 
 
 class DeleteLlmProfileUseCase:
-    def __init__(self, profiles: LlmProfileRepository, auditor: Auditor, uow: UnitOfWork) -> None:
+    def __init__(
+        self,
+        profiles: LlmProfileRepository,
+        auditor: Auditor,
+        uow: UnitOfWork,
+        access: AccessPolicy,
+        bindings: LlmBindingRepository,
+    ) -> None:
         self._profiles = profiles
+        self._access = access
         self._auditor = auditor
         self._uow = uow
+        self._bindings = bindings
 
-    async def execute(self, actor: User, profile_id: UUID, context: RequestContext) -> None:
-        require_admin(actor)
+    async def execute(
+        self,
+        actor: User,
+        profile_id: UUID,
+        context: RequestContext,
+        *,
+        before_save: SessionCheck | None = None,
+    ) -> None:
+        require_admin((await self._access.context(actor, for_update=True)).actor)
         profile = await self._profiles.get(profile_id)
         if profile is None:
             raise NotFound()
+        if await self._bindings.is_bound(profile_id):
+            raise InvalidRequest(
+                "An active connection cannot be deleted. Apply a replacement first."
+            )
+        await _protect_legacy_profile(profile, self._bindings)
+        if before_save is not None:
+            await before_save()
         await self._profiles.delete(profile_id)
         await self._auditor.record(
             AuditAction.LLM_PROFILE_DELETED, actor=actor.id, subject=profile.name, ip=context.ip
@@ -190,132 +253,18 @@ class DeleteLlmProfileUseCase:
         await self._uow.commit()
 
 
-class TestLlmProfileUseCase:
-    """Probe the configured capability, using embeddings for embeddings-only profiles."""
-
-    def __init__(
-        self,
-        profiles: LlmProfileRepository,
-        usage: LlmUsageRepository,
-        cipher: SecretCipher,
-        gateway: LlmGateway,
-        clock: Clock,
-        auditor: Auditor,
-        uow: UnitOfWork,
-        *,
-        embeddings: EmbeddingGateway | None = None,
-    ) -> None:
-        self._profiles = profiles
-        self._usage = usage
-        self._cipher = cipher
-        self._gateway = gateway
-        self._clock = clock
-        self._auditor = auditor
-        self._uow = uow
-        self._embeddings = embeddings
-
-    async def execute(self, actor: User, profile_id: UUID, context: RequestContext) -> TestOutcome:
-        require_admin(actor)
-        profile = await self._profiles.get(profile_id)
-        if profile is None:
-            raise NotFound()
-        if not self._cipher.available:
-            raise EncryptionUnavailable()
-        request = LlmRequest(
-            messages=(LlmMessage("user", TEST_PROMPT),),
-            max_output_tokens=min(profile.max_output_tokens, 200),
-            temperature=0.0,
-            json_schema=TEST_SCHEMA,
-            schema_name="connection_test",
-        )
-        embeddings_only = profile.roles == frozenset({LlmRole.EMBEDDINGS})
-        outcome = (
-            await self._call_embeddings(profile)
-            if embeddings_only
-            else await self._call(profile, request)
-        )
-        await self._usage.add(
-            LlmUsage(
-                at=self._clock.now(),
-                profile_id=profile.id,
-                user_id=actor.id,
-                purpose="embeddings" if embeddings_only else "connection_test",
-                ok=outcome.ok,
-                latency_ms=outcome.latency_ms,
-                error=outcome.error,
-                prompt_tokens=outcome.prompt_tokens,
-                completion_tokens=outcome.completion_tokens,
-            )
-        )
-        await self._auditor.record(
-            AuditAction.LLM_PROFILE_TESTED,
-            actor=actor.id,
-            subject=profile.name,
-            ip=context.ip,
-            details={"ok": outcome.ok, "error": outcome.error},
-        )
-        await self._uow.commit()
-        return outcome
-
-    async def _call_embeddings(self, profile: LlmProfile) -> TestOutcome:
-        if self._embeddings is None:
-            return TestOutcome(
-                ok=False, latency_ms=0, error="The embeddings gateway is unavailable."
-            )
-        try:
-            api_key = self._cipher.decrypt(profile.api_key_encrypted)
-            result = await self._embeddings.embed(
-                profile.base_url, api_key, profile.model, ("Semantic search connection test.",)
-            )
-            if len(result.vectors) != 1:
-                raise ValueError("Expected one embedding.")
-            checked_vector(result.vectors[0])
-        except Exception:
-            return TestOutcome(
-                ok=False,
-                latency_ms=0,
-                error="The embeddings connection test failed. Check the model profile.",
-            )
-        return TestOutcome(
-            ok=True,
-            latency_ms=result.latency_ms,
-            model=profile.model,
-            prompt_tokens=result.prompt_tokens,
-        )
-
-    async def _call(self, profile: LlmProfile, request: LlmRequest) -> TestOutcome:
-        try:
-            api_key = self._cipher.decrypt(profile.api_key_encrypted)
-            result = await self._gateway.complete(profile.base_url, api_key, profile.model, request)
-        except LlmGatewayError as exc:
-            return TestOutcome(ok=False, latency_ms=0.0, error=str(exc))
-        except Exception as exc:  # the stored key may be unreadable after a key rotation
-            return TestOutcome(ok=False, latency_ms=0.0, error=str(exc))
-        try:
-            parsed = json.loads(result.content)
-        except (ValueError, RecursionError):
-            return TestOutcome(
-                ok=False, latency_ms=result.latency_ms, model=result.model,
-                error="The model did not answer with JSON.",
-            )  # fmt: skip
-        if parsed != {"ok": True}:
-            return TestOutcome(
-                ok=False, latency_ms=result.latency_ms, model=result.model,
-                error="The model answered, but not with the expected object.",
-            )  # fmt: skip
-        return TestOutcome(
-            ok=True,
-            latency_ms=result.latency_ms,
-            model=result.model,
-            prompt_tokens=result.prompt_tokens,
-            completion_tokens=result.completion_tokens,
-        )
-
-
 class ListLlmUsageUseCase:
-    def __init__(self, usage: LlmUsageRepository) -> None:
+    def __init__(self, usage: LlmUsageRepository, access: AccessPolicy) -> None:
         self._usage = usage
+        self._access = access
 
     async def execute(self, actor: User, limit: int) -> list[LlmUsage]:
-        require_admin(actor)
+        require_admin((await self._access.context(actor)).actor)
         return await self._usage.list_recent(limit)
+
+
+async def _protect_legacy_profile(profile: LlmProfile, bindings: LlmBindingRepository) -> None:
+    if profile.enabled and profile.roles & TEXT_ROLES and await bindings.get(None) is None:
+        raise InvalidRequest(
+            "Legacy text configuration is in use. Apply a tested global replacement first."
+        )

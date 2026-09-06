@@ -450,3 +450,31 @@ preserving those earlier test results as historical evidence.
 - Updated evaluation instructions and the active plan. No model endpoint was
   contacted, real credentials read, operator database changed or deployment made.
   Actual-model runs and representative human-reviewed labels remain outstanding.
+
+### 6 September 2026: administrator AI connections
+
+- Added the requested OpenAI `gpt-5.6-luna` Max preset, account model discovery,
+  encrypted key entry and explicit configure/test/apply controls. Kept the
+  existing Chat Completions adapter with reasoning-compatible completion budgets
+  and propagated settings through all text stages and the evaluation harness.
+- Added global defaults, team overrides, return-to-global and reuse of the same
+  saved connection for multiple audiences. Running research captures its settings
+  before outbound calls; saved report versions expose non-secret routing metadata.
+  Shared feed translation remains global and embeddings keep their separate role.
+- Protected active profiles from in-place changes. New text profiles remain drafts
+  until tested and applied; existing migrated legacy selection is preserved until
+  a global replacement is deliberately applied. Migration `0017` preserves old
+  encrypted configuration and refuses a downgrade that would lose routing policy.
+- Focused independent review reproduced and closed stale team confirmation and
+  direct-enable workflow bypasses. Durable assignment revisions, ordered probe
+  generations and original-session rechecks protect activation. Credential changes
+  cannot silently reuse a key at a different endpoint; network errors are sanitised.
+- SQLite/PostgreSQL migration checks and 42 PostgreSQL lifecycle/routing tests
+  passed on disposable databases. Browser checks used synthetic responses at
+  desktop and narrow widths. Broader suite results are recorded in the
+  [connection plan](AI_CONNECTIONS_PLAN.md); scoped review limits are recorded in
+  [the security review](security/AI_CONNECTIONS_REVIEW.md).
+- Added operator instructions, ADR 0012 and a credential-free Luna evaluation
+  profile. No real provider call, operator migration, deployment or remote push
+  occurred. The administrator must enter the key through the app and test actual
+  account access; representative research-quality evaluation remains outstanding.

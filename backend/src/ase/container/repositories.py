@@ -8,6 +8,7 @@ from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepo
 from ase.adapters.persistence.baselines import SqlBaselineRepository
 from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
+from ase.adapters.persistence.llm_bindings import SqlLlmBindingRepository
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.schedules import SqlScheduleRepository
 from ase.adapters.persistence.tokens import SqlPasswordTokenRepository, SqlRefreshTokenRepository
@@ -24,6 +25,7 @@ from ase.application.ports import (
 from ase.application.ports.baselines import BaselineRepository
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.llm import (
+    LlmBindingRepository,
     LlmProfileRepository,
     LlmUsageRepository,
 )
@@ -41,6 +43,7 @@ class Repositories:
     audit: AuditLogRepository
     llm_profiles: LlmProfileRepository
     llm_usage: LlmUsageRepository
+    llm_bindings: LlmBindingRepository
     reports: ReportRepository
     baselines: BaselineRepository
     aois: AoiRepository
@@ -60,6 +63,7 @@ def build_repositories(session: AsyncSession) -> Repositories:
         audit=SqlAuditLogRepository(session),
         llm_profiles=SqlLlmProfileRepository(session),
         llm_usage=SqlLlmUsageRepository(session),
+        llm_bindings=SqlLlmBindingRepository(session),
         reports=SqlReportRepository(session),
         baselines=SqlBaselineRepository(session),
         aois=SqlAoiRepository(session),

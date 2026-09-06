@@ -24,7 +24,6 @@ from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
-from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
 from ase.adapters.persistence.baselines import SqlBaselineSink
@@ -35,7 +34,6 @@ from ase.adapters.persistence.session import (
 )
 from ase.adapters.persistence.totp import SqlTotpRepository
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
-from ase.adapters.security.cipher import FernetCipher
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
@@ -43,21 +41,6 @@ from ase.adapters.security.totp import EncryptedTotpProvider
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.adapters.translate.language import LangidDetector, NullDetector
-from ase.application.admin.audit import ListAuditUseCase
-from ase.application.admin.llm import (
-    CreateLlmProfileUseCase,
-    DeleteLlmProfileUseCase,
-    ListLlmProfilesUseCase,
-    ListLlmUsageUseCase,
-    TestLlmProfileUseCase,
-    UpdateLlmProfileUseCase,
-)
-from ase.application.admin.requests import (
-    ApproveRequestUseCase,
-    ListRequestsUseCase,
-    RejectRequestUseCase,
-)
-from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
 from ase.application.auditing import Auditor
 from ase.application.auth.account_requests import ForgotPasswordUseCase, RequestAccountUseCase
 from ase.application.auth.change_password import ChangePasswordUseCase
@@ -78,11 +61,11 @@ from ase.application.ports.archive import Archiver
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.language import LanguageDetector
-from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.tiles import TileProvider
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
+from ase.container.admin import AdminWiring
 from ase.container.features import FeatureWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
@@ -96,7 +79,7 @@ from ase.infrastructure.settings import Environment, Settings
 log = structlog.get_logger(__name__)
 
 
-class Container(FeatureWiring, ResearchInputWiring):
+class Container(FeatureWiring, ResearchInputWiring, AdminWiring):
     def __init__(
         self,
         settings: Settings,
@@ -133,9 +116,7 @@ class Container(FeatureWiring, ResearchInputWiring):
         self.countries: CountryDirectory = CountryIndex.from_resource()
         self.conflicts: ConflictDirectory = ConflictIndex.from_resource()
         self.streams = StreamLimiter(settings.max_streams_per_user)
-        self.cipher: SecretCipher = FernetCipher(settings.encryption_key_value)
-        self.llm: LlmGateway = OpenAiCompatibleGateway()
-        self._llm_gateway = self.llm
+        self.initialise_models(settings.encryption_key_value)
         self.embedding_gateway = OpenAiEmbeddingGateway()
         self._embedding_gateway = self.embedding_gateway
         self.embedding_lock = asyncio.Lock()
@@ -283,66 +264,3 @@ class Container(FeatureWiring, ResearchInputWiring):
             r.users, r.password_tokens, r.refresh_tokens, self.hasher, self.totp(session),
             self.clock, self.limiter, self._auditor(r), r.uow,
         )  # fmt: skip
-
-    def list_requests(self, session: AsyncSession) -> ListRequestsUseCase:
-        return ListRequestsUseCase(self.repositories(session).requests)
-
-    def approve_request(self, session: AsyncSession) -> ApproveRequestUseCase:
-        r = self.repositories(session)
-        return ApproveRequestUseCase(
-            r.users, r.requests, r.password_tokens, self.generator, self.links, self.email_sender,
-            self.clock, self._auditor(r), r.uow,
-        )  # fmt: skip
-
-    def reject_request(self, session: AsyncSession) -> RejectRequestUseCase:
-        r = self.repositories(session)
-        return RejectRequestUseCase(r.requests, self.clock, self._auditor(r), r.uow, r.users)
-
-    def list_users(self, session: AsyncSession) -> ListUsersUseCase:
-        return ListUsersUseCase(self.repositories(session).users)
-
-    def update_user(self, session: AsyncSession) -> UpdateUserUseCase:
-        r = self.repositories(session)
-        return UpdateUserUseCase(
-            r.users, r.refresh_tokens, r.password_tokens, self.clock, self._auditor(r), r.uow
-        )
-
-    def issue_reset_link(self, session: AsyncSession) -> IssueResetLinkUseCase:
-        r = self.repositories(session)
-        return IssueResetLinkUseCase(
-            r.users, r.password_tokens, self.generator, self.links, self.clock,
-            self._auditor(r), r.uow,
-        )  # fmt: skip
-
-    def list_audit(self, session: AsyncSession) -> ListAuditUseCase:
-        return ListAuditUseCase(self.repositories(session).audit)
-
-    def list_llm_profiles(self, session: AsyncSession) -> ListLlmProfilesUseCase:
-        return ListLlmProfilesUseCase(self.repositories(session).llm_profiles)
-
-    def create_llm_profile(self, session: AsyncSession) -> CreateLlmProfileUseCase:
-        r = self.repositories(session)
-        return CreateLlmProfileUseCase(
-            r.llm_profiles, self.cipher, self.clock, self._auditor(r), r.uow
-        )
-
-    def update_llm_profile(self, session: AsyncSession) -> UpdateLlmProfileUseCase:
-        r = self.repositories(session)
-        return UpdateLlmProfileUseCase(
-            r.llm_profiles, self.cipher, self.clock, self._auditor(r), r.uow
-        )
-
-    def delete_llm_profile(self, session: AsyncSession) -> DeleteLlmProfileUseCase:
-        r = self.repositories(session)
-        return DeleteLlmProfileUseCase(r.llm_profiles, self._auditor(r), r.uow)
-
-    def test_llm_profile(self, session: AsyncSession) -> TestLlmProfileUseCase:
-        r = self.repositories(session)
-        return TestLlmProfileUseCase(
-            r.llm_profiles, r.llm_usage, self.cipher, self.llm, self.clock,
-            self._auditor(r), r.uow,
-            embeddings=self.embedding_gateway,
-        )  # fmt: skip
-
-    def list_llm_usage(self, session: AsyncSession) -> ListLlmUsageUseCase:
-        return ListLlmUsageUseCase(self.repositories(session).llm_usage)

@@ -207,8 +207,9 @@ async def challenge_call(
             parts.extend(evidence_block(item) for item in evidence)
         request = LlmRequest(
             messages=(LlmMessage("system", system), LlmMessage("user", "\n".join(parts))),
-            max_output_tokens=min(profile.max_output_tokens, 8000 if review else 2500),
+            max_output_tokens=profile.token_budget(8000 if review else 2500),
             temperature=profile.temperature,
+            reasoning_effort=profile.reasoning_effort,
             json_schema=REVIEW_SCHEMA if review else PLAN_SCHEMA,
             schema_name="challenge_reviews" if review else "challenge_plan",
         )

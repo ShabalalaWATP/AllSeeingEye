@@ -7,14 +7,20 @@ import time
 from collections.abc import Sequence
 
 from ase.application.access import AccessPolicy
+from ase.application.model_routing import ModelRouting
 from ase.application.ports.embeddings import EmbeddingGateway, ReportEmbeddingRepository
-from ase.application.ports.llm import LlmProfileRepository, LlmUsageRepository, SecretCipher
+from ase.application.ports.llm import (
+    LlmBindingRepository,
+    LlmProfileRepository,
+    LlmUsageRepository,
+    SecretCipher,
+)
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.reports.access import GetReportUseCase
 from ase.domain.errors import InvalidRequest, NoModelAvailable, NotFound, RateLimited
-from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
+from ase.domain.llm import LlmProfile, LlmUsage
 from ase.domain.report_records import ReportRecord
 from ase.domain.report_search import (
     INDEX_BATCH,
@@ -50,10 +56,11 @@ class ReportSearchService:
         lock: asyncio.Lock,
         uow: UnitOfWork,
         access: AccessPolicy,
+        bindings: LlmBindingRepository | None = None,
     ) -> None:
         self._reports = reports
         self._embeddings = embeddings
-        self._profiles = profiles
+        self._routing = ModelRouting(profiles, bindings)
         self._usage = usage
         self._cipher = cipher
         self._gateway = gateway
@@ -64,15 +71,7 @@ class ReportSearchService:
         self._access = access
 
     async def _profile(self) -> LlmProfile | None:
-        profiles = await self._profiles.list_all()
-        return next(
-            (
-                profile
-                for profile in profiles
-                if profile.allows(LlmRole.EMBEDDINGS) and self._cipher.available
-            ),
-            None,
-        )
+        return await self._routing.embeddings() if self._cipher.available else None
 
     async def _records(self, actor: User) -> list[ReportRecord]:
         access = await self._access.context(actor)

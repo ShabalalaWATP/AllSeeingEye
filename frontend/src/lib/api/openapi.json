@@ -3665,6 +3665,175 @@
           }
         }
       }
+    },
+    "/api/admin/llm/profiles/{profile_id}/models": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Discover Models",
+        "operationId": "discover_models_api_admin_llm_profiles__profile_id__models_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmModelsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/connections": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Connections",
+        "operationId": "list_connections_api_admin_llm_connections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmConnectionsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Activate Connection",
+        "operationId": "activate_connection_api_admin_llm_connections_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LlmConnectionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmConnectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/llm/connections/team/{team_id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Reset Team Connection",
+        "operationId": "reset_team_connection_api_admin_llm_connections_team__team_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6428,6 +6597,142 @@
         ],
         "title": "JudgementCitationCheckOut"
       },
+      "LlmConnectionIn": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "expected_profile_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Profile Revision"
+          },
+          "tested_config_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Tested Config Hash"
+          },
+          "expected_binding_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Binding Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile_id",
+          "expected_profile_revision",
+          "tested_config_hash"
+        ],
+        "title": "LlmConnectionIn"
+      },
+      "LlmConnectionOut": {
+        "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "title": "Profile Revision"
+          },
+          "tested_config_hash": {
+            "type": "string",
+            "title": "Tested Config Hash"
+          },
+          "activated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Activated At"
+          },
+          "activated_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Activated By"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "profile_id",
+          "profile_revision",
+          "tested_config_hash",
+          "activated_at",
+          "activated_by",
+          "revision"
+        ],
+        "title": "LlmConnectionOut"
+      },
+      "LlmConnectionsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LlmConnectionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "LlmConnectionsOut"
+      },
+      "LlmModelsOut": {
+        "properties": {
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models"
+        ],
+        "title": "LlmModelsOut"
+      },
       "LlmProfileIn": {
         "properties": {
           "name": {
@@ -6472,7 +6777,17 @@
           "enabled": {
             "type": "boolean",
             "title": "Enabled",
-            "default": true
+            "default": false
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningEffort"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "api_key": {
             "anyOf": [
@@ -6548,6 +6863,63 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningEffort"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "tested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested At"
+          },
+          "tested_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested Revision"
+          },
+          "tested_config_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested Config Hash"
+          },
+          "is_tested": {
+            "type": "boolean",
+            "title": "Is Tested"
+          },
+          "is_bound": {
+            "type": "boolean",
+            "title": "Is Bound",
+            "default": false
           }
         },
         "type": "object",
@@ -6562,7 +6934,13 @@
           "temperature",
           "enabled",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "reasoning_effort",
+          "revision",
+          "tested_at",
+          "tested_revision",
+          "tested_config_hash",
+          "is_tested"
         ],
         "title": "LlmProfileOut"
       },
@@ -6630,6 +7008,40 @@
               }
             ],
             "title": "Error"
+          },
+          "revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision"
+          },
+          "tested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested At"
+          },
+          "tested_config_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested Config Hash"
           }
         },
         "type": "object",
@@ -6637,7 +7049,10 @@
           "ok",
           "latency_ms",
           "model",
-          "error"
+          "error",
+          "revision",
+          "tested_at",
+          "tested_config_hash"
         ],
         "title": "LlmTestOut"
       },
@@ -7012,6 +7427,58 @@
         ],
         "title": "MismatchIndicatorOut"
       },
+      "ModelRoutingOut": {
+        "properties": {
+          "policy": {
+            "type": "string",
+            "enum": [
+              "legacy",
+              "global",
+              "team"
+            ],
+            "title": "Policy"
+          },
+          "destination_team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination Team Id"
+          },
+          "binding_team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding Team Id"
+          },
+          "profiles": {
+            "items": {
+              "$ref": "#/components/schemas/RoutedModelOut"
+            },
+            "type": "array",
+            "title": "Profiles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy",
+          "destination_team_id",
+          "binding_team_id",
+          "profiles"
+        ],
+        "title": "ModelRoutingOut"
+      },
       "PirIn": {
         "properties": {
           "text": {
@@ -7313,6 +7780,19 @@
           "status"
         ],
         "title": "ReadyOut"
+      },
+      "ReasoningEffort": {
+        "type": "string",
+        "enum": [
+          "none",
+          "minimal",
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ],
+        "title": "ReasoningEffort"
       },
       "RejectIn": {
         "properties": {
@@ -8275,6 +8755,16 @@
       },
       "ReportVersionOut": {
         "properties": {
+          "model_routing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelRoutingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "research_context": {
             "anyOf": [
               {
@@ -9249,6 +9739,61 @@
           "admin"
         ],
         "title": "Role"
+      },
+      "RoutedModelOut": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/LlmRole"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "title": "Profile Revision"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReasoningEffort"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "title": "Max Output Tokens"
+          },
+          "temperature": {
+            "type": "number",
+            "title": "Temperature"
+          },
+          "profile_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Profile Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "profile_id",
+          "profile_revision",
+          "model",
+          "reasoning_effort",
+          "max_output_tokens",
+          "temperature",
+          "profile_updated_at"
+        ],
+        "title": "RoutedModelOut"
       },
       "ScheduleIn": {
         "properties": {

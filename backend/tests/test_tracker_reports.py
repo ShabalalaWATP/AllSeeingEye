@@ -8,7 +8,8 @@ from httpx import AsyncClient
 
 from ase.container import Container
 from ase.domain.users import User
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, good_body
 from tracker_helpers import conflict_events, disaster_events
 
@@ -16,9 +17,8 @@ from tracker_helpers import conflict_events, disaster_events
 async def test_conflict_assessment_and_disaster_sitrep_scope_the_evidence(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     now = container.clock.now()
     container.store.upsert([*conflict_events(now), *disaster_events(now)])
 

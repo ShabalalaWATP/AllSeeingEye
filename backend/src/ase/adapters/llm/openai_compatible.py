@@ -16,6 +16,7 @@ from typing import Any
 
 import httpx
 
+from ase.adapters.llm.model_discovery import discover_models, model_id
 from ase.application.ports.llm import LlmGatewayError
 from ase.domain.llm import LlmRequest, LlmResult
 
@@ -51,6 +52,12 @@ def build_payload(model: str, request: LlmRequest) -> dict[str, Any]:
         "temperature": request.temperature,
         "max_tokens": request.max_output_tokens,
     }
+    if request.reasoning_effort is not None or model == "gpt-5.6-luna":
+        payload.pop("temperature")
+        payload.pop("max_tokens")
+        payload["max_completion_tokens"] = request.max_output_tokens
+        if request.reasoning_effort is not None:
+            payload["reasoning_effort"] = request.reasoning_effort
     if request.json_schema is not None:
         payload["response_format"] = {
             "type": "json_schema",
@@ -69,6 +76,11 @@ def parse_completion(data: Any, fallback_model: str, latency_ms: float) -> LlmRe
     choices = data.get("choices")
     if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
         raise LlmGatewayError("The model endpoint returned no choices.")
+    if choices[0].get("finish_reason") == "length":
+        raise LlmGatewayError(
+            "The model exhausted its completion token budget before finishing. "
+            "Increase the token budget or reduce reasoning effort."
+        )
     message = choices[0].get("message")
     content = message.get("content") if isinstance(message, dict) else None
     if not isinstance(content, str) or not content.strip():
@@ -79,7 +91,7 @@ def parse_completion(data: Any, fallback_model: str, latency_ms: float) -> LlmRe
     completion = usage.get("completion_tokens")
     return LlmResult(
         content=content,
-        model=str(data.get("model") or fallback_model),
+        model=model_id(data.get("model") or fallback_model),
         latency_ms=latency_ms,
         prompt_tokens=prompt if isinstance(prompt, int) else None,
         completion_tokens=completion if isinstance(completion, int) else None,
@@ -102,12 +114,23 @@ class OpenAiCompatibleGateway:
     async def aclose(self) -> None:
         await self._client.aclose()
 
+    async def list_models(self, base_url: str, api_key: str) -> tuple[str, ...]:
+        try:
+            async with asyncio.timeout(min(self._timeout, 15)), self._admission:
+                return await discover_models(self._client, base_url, api_key)
+        except (TimeoutError, httpx.TimeoutException):
+            raise LlmGatewayError("The model discovery endpoint timed out.") from None
+        except httpx.HTTPError:
+            raise LlmGatewayError("Could not reach the model discovery endpoint.") from None
+
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
     ) -> LlmResult:
-        headers = {"Content-Type": "application/json", "Accept-Encoding": "identity"}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept-Encoding": "identity",
+            "Authorization": f"Bearer {api_key}" if api_key else "",
+        }
         started = time.perf_counter()
         try:
             async with (
@@ -118,6 +141,7 @@ class OpenAiCompatibleGateway:
                     f"{base_url}/chat/completions",
                     json=build_payload(model, request),
                     headers=headers,
+                    auth=None,
                     timeout=self._timeout,
                     follow_redirects=False,
                 ) as response,

@@ -26,7 +26,8 @@ from ase.domain.direction import (
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Category
 from ase.domain.users import User
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 
 FULL_PROFILE = {**PROFILE, "roles": ["direction", "assessment", "devil"]}
@@ -92,9 +93,8 @@ def test_advocacy_parsing_checks_and_confidence_steps() -> None:
 async def test_ask_runs_direction_then_the_advocate(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=FULL_PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, FULL_PROFILE)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     gateway = ScriptedGateway(json.dumps(DIRECTION), json.dumps(good_body()), json.dumps(ADVOCACY))
     container.llm = gateway
@@ -169,13 +169,12 @@ async def test_ask_runs_direction_then_the_advocate(
 async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     ask = {"template": "ask", "question": "What next?", "devils_advocacy": True}
 
     # No profile plays the direction or devil roles: warnings, and the report still lands.
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     container.llm = ScriptedGateway(json.dumps(good_body()))
     plain = await client.post("/api/reports", json=ask, headers=bearer(token))
     assert plain.status_code == 201
@@ -185,10 +184,12 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert plain.json()["version"]["devils_advocacy"] is None
     assert plain.json()["version"]["status"] == "ready"
 
-    profiles = await client.get("/api/admin/llm/profiles", headers=bearer(admin_token))
-    for profile in profiles.json()["items"]:
-        await client.delete(f"/api/admin/llm/profiles/{profile['id']}", headers=bearer(admin_token))
-    await client.post("/api/admin/llm/profiles", json=FULL_PROFILE, headers=bearer(admin_token))
+    async with container.session_factory() as session:
+        profiles = container.repositories(session).llm_profiles
+        for profile in await profiles.list_all():
+            await profiles.delete(profile.id)
+        await session.commit()
+    await seed_legacy_profile(container, FULL_PROFILE)
 
     # A direction call that fails, then an advocate that fails: both recorded as warnings.
     container.llm = ScriptedGateway("!offline", json.dumps(good_body()), "!down")

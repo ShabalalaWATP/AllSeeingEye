@@ -1242,6 +1242,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/profiles/{profile_id}/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Discover Models */
+        get: operations["discover_models_api_admin_llm_profiles__profile_id__models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Connections */
+        get: operations["list_connections_api_admin_llm_connections_get"];
+        /** Activate Connection */
+        put: operations["activate_connection_api_admin_llm_connections_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/connections/team/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Reset Team Connection */
+        delete: operations["reset_team_connection_api_admin_llm_connections_team__team_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2139,6 +2191,58 @@ export interface components {
             /** Reasons */
             reasons: string[];
         };
+        /** LlmConnectionIn */
+        LlmConnectionIn: {
+            /** Team Id */
+            team_id?: string | null;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Expected Profile Revision */
+            expected_profile_revision: number;
+            /** Tested Config Hash */
+            tested_config_hash: string;
+            /** Expected Binding Revision */
+            expected_binding_revision?: number | null;
+        };
+        /** LlmConnectionOut */
+        LlmConnectionOut: {
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Revision */
+            profile_revision: number;
+            /** Tested Config Hash */
+            tested_config_hash: string;
+            /**
+             * Activated At
+             * Format: date-time
+             */
+            activated_at: string;
+            /**
+             * Activated By
+             * Format: uuid
+             */
+            activated_by: string;
+            /** Revision */
+            revision: number;
+        };
+        /** LlmConnectionsOut */
+        LlmConnectionsOut: {
+            /** Items */
+            items: components["schemas"]["LlmConnectionOut"][];
+        };
+        /** LlmModelsOut */
+        LlmModelsOut: {
+            /** Models */
+            models: string[];
+        };
         /** LlmProfileIn */
         LlmProfileIn: {
             /** Name */
@@ -2161,9 +2265,10 @@ export interface components {
             temperature: number;
             /**
              * Enabled
-             * @default true
+             * @default false
              */
             enabled: boolean;
+            reasoning_effort?: components["schemas"]["ReasoningEffort"] | null;
             /** Api Key */
             api_key?: string | null;
         };
@@ -2200,6 +2305,22 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
+            /** Revision */
+            revision: number;
+            /** Tested At */
+            tested_at: string | null;
+            /** Tested Revision */
+            tested_revision: number | null;
+            /** Tested Config Hash */
+            tested_config_hash: string | null;
+            /** Is Tested */
+            is_tested: boolean;
+            /**
+             * Is Bound
+             * @default false
+             */
+            is_bound: boolean;
         };
         /** LlmProfilesOut */
         LlmProfilesOut: {
@@ -2224,6 +2345,12 @@ export interface components {
             model: string | null;
             /** Error */
             error: string | null;
+            /** Revision */
+            revision: number | null;
+            /** Tested At */
+            tested_at: string | null;
+            /** Tested Config Hash */
+            tested_config_hash: string | null;
         };
         /** LlmUsageOut */
         LlmUsageOut: {
@@ -2368,6 +2495,20 @@ export interface components {
             /** Explanation */
             explanation: string;
         };
+        /** ModelRoutingOut */
+        ModelRoutingOut: {
+            /**
+             * Policy
+             * @enum {string}
+             */
+            policy: "legacy" | "global" | "team";
+            /** Destination Team Id */
+            destination_team_id: string | null;
+            /** Binding Team Id */
+            binding_team_id: string | null;
+            /** Profiles */
+            profiles: components["schemas"]["RoutedModelOut"][];
+        };
         /** PirIn */
         PirIn: {
             /** Text */
@@ -2475,6 +2616,11 @@ export interface components {
             /** Status */
             status: string;
         };
+        /**
+         * ReasoningEffort
+         * @enum {string}
+         */
+        ReasoningEffort: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
         /** RejectIn */
         RejectIn: {
             /** Reason */
@@ -2775,6 +2921,7 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            model_routing?: components["schemas"]["ModelRoutingOut"] | null;
             research_context?: components["schemas"]["ResearchContextOut"] | null;
             challenge?: components["schemas"]["ReportChallengeOut"] | null;
             citation_checks?: components["schemas"]["ReportCitationChecksOut"] | null;
@@ -3125,6 +3272,29 @@ export interface components {
          * @enum {string}
          */
         Role: "user" | "manager" | "admin";
+        /** RoutedModelOut */
+        RoutedModelOut: {
+            role: components["schemas"]["LlmRole"];
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Revision */
+            profile_revision: number;
+            /** Model */
+            model: string;
+            reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
+            /** Max Output Tokens */
+            max_output_tokens: number;
+            /** Temperature */
+            temperature: number;
+            /**
+             * Profile Updated At
+             * Format: date-time
+             */
+            profile_updated_at: string;
+        };
         /** ScheduleIn */
         ScheduleIn: {
             /** Name */
@@ -6072,6 +6242,121 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LlmUsagePageOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_models_api_admin_llm_profiles__profile_id__models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmModelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_connections_api_admin_llm_connections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmConnectionsOut"];
+                };
+            };
+        };
+    };
+    activate_connection_api_admin_llm_connections_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LlmConnectionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_team_connection_api_admin_llm_connections_team__team_id__delete: {
+        parameters: {
+            query: {
+                expected_revision: number;
+            };
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

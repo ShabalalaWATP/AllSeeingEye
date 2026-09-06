@@ -23,6 +23,7 @@ from ase.application.direction.plans import (
     UpdatePlanUseCase,
 )
 from ase.application.dto import RequestContext
+from ase.application.model_routing import ModelRouting
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES
 from ase.application.schedules.manage import (
@@ -50,7 +51,7 @@ from ase.application.warning.indicators import (
     UpdateIndicatorUseCase,
 )
 from ase.container.reporting import ReportWiring
-from ase.domain.errors import InvalidRequest
+from ase.domain.errors import InvalidRequest, NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.schedules import Schedule
 from ase.domain.warning import Alert, Indicator
@@ -309,8 +310,14 @@ class FeatureWiring(ReportWiring):
 
     async def _translation_profile(self) -> LlmProfile | None:
         async with self.session_factory() as session:
-            profiles = await self.repositories(session).llm_profiles.list_all()
-            return next((p for p in profiles if p.allows(LlmRole.TRANSLATION)), None)
+            repos = self.repositories(session)
+            try:
+                routing = await ModelRouting(repos.llm_profiles, repos.llm_bindings).snapshot(
+                    role=LlmRole.TRANSLATION
+                )
+            except NoModelAvailable:
+                return None
+            return routing.required(LlmRole.TRANSLATION)
 
     async def _translation_usage(self, usage: LlmUsage) -> None:
         # No transaction is held open while awaiting the model.

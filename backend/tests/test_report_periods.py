@@ -16,6 +16,7 @@ from ase.container import Container
 from ase.domain.users import User
 from feeds_helpers import make_event
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, FakeClock, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from production_integration_helpers import RecordingUsage, production_job, production_record
 from report_helpers import PROFILE, ScriptedGateway
 
@@ -111,8 +112,7 @@ async def test_custom_window_regeneration_via_api_uses_current_evidence_and_date
 ) -> None:
     token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     headers = bearer(token)
-    profile = await client.post("/api/admin/llm/profiles", json=PROFILE, headers=headers)
-    assert profile.status_code == 201
+    await seed_legacy_profile(container, PROFILE)
     container.llm = ScriptedGateway("{}", "{}", "{}", "{}")
     original_now = clock.now()
     container.store.upsert(

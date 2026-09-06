@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from httpx import AsyncClient
 
-from ase.application.admin.llm import TestLlmProfileUseCase as ProbeProfile
+from ase.application.admin.llm_testing import TestLlmProfileUseCase as ProbeProfile
 from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.domain.llm import LlmRole
@@ -75,6 +75,7 @@ async def test_missing_or_invalid_embedding_probe(container: Container, admin: U
                 container._auditor(repos),
                 repos.uow,
                 embeddings=gateway,
+                access=container.access_policy(session),
             )
             outcome = await probe.execute(admin, profile.id, RequestContext(None, None))
             assert not outcome.ok

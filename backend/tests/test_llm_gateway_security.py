@@ -18,6 +18,7 @@ from ase.container import Container
 from ase.domain.llm import LlmMessage, LlmRequest
 from ase.domain.users import User
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE
 
 REQUEST = LlmRequest((LlmMessage("user", "private-prompt-marker"),), 30, 0.0)
@@ -191,10 +192,7 @@ async def test_provider_error_is_safe_in_persisted_reports_and_usage(
     admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     profile = {**PROFILE, "api_key": SECRET}
-    created = await client.post(
-        "/api/admin/llm/profiles", json=profile, headers=bearer(admin_token)
-    )
-    assert created.status_code == 201
+    await seed_legacy_profile(container, profile)
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["authorization"] == f"Bearer {SECRET}"

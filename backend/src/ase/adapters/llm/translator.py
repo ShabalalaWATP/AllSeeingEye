@@ -52,8 +52,9 @@ def translation_request(items: Sequence[tuple[str, str]], profile: LlmProfile) -
                 ),
             ),
         ),
-        max_output_tokens=min(profile.max_output_tokens, MAX_TOKENS),
+        max_output_tokens=profile.token_budget(MAX_TOKENS),
         temperature=0.0,
+        reasoning_effort=profile.reasoning_effort,
         json_schema=schema,
         schema_name="translation",
     )

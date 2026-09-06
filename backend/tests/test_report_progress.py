@@ -17,7 +17,8 @@ from ase.application.ports.feeds import EventQuery
 from ase.application.reports.production import Producer
 from ase.domain.llm import LlmUsage
 from ase.domain.research_runs import ResearchStage
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from production_integration_helpers import RecordingUsage, StageGateway, production_job
 from report_documents_helpers import document_records
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
@@ -187,9 +188,8 @@ async def test_producer_stages_are_observed_and_saving_precedes_final_authorisat
 async def test_create_and_regenerate_expose_optional_progress_header(
     client, container, admin, user
 ):
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     container.store.upsert(tuple(filled_store().query(EventQuery(limit=10))))
     container.llm = ScriptedGateway(json.dumps(good_body()), json.dumps(good_body()))
     run_id = uuid4()
@@ -213,9 +213,8 @@ async def test_create_and_regenerate_expose_optional_progress_header(
 async def test_real_asgi_disconnect_cancels_model_and_leaves_no_report_or_usage(
     app, client, container, admin, user
 ):
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     entered, cleaned = asyncio.Event(), asyncio.Event()
 
     class WaitingGateway:

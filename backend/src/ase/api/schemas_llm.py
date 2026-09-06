@@ -8,13 +8,17 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, SecretStr, field_validator
 
-from ase.application.admin.llm import ProfileInput, TestOutcome
+from ase.application.admin.llm import ProfileInput
+from ase.application.admin.llm_connections import ConnectionInput
+from ase.application.admin.llm_testing import TestOutcome
 from ase.domain.llm import (
     MAX_OUTPUT_TOKENS,
     MIN_OUTPUT_TOKENS,
+    LlmConnectionBinding,
     LlmProfile,
     LlmRole,
     LlmUsage,
+    ReasoningEffort,
     normalise_base_url,
 )
 
@@ -26,7 +30,8 @@ class LlmProfileIn(BaseModel):
     roles: list[LlmRole] = Field(default_factory=lambda: [LlmRole.ASSESSMENT])
     max_output_tokens: int = Field(default=4_000, ge=MIN_OUTPUT_TOKENS, le=MAX_OUTPUT_TOKENS)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
-    enabled: bool = True
+    enabled: bool = False
+    reasoning_effort: ReasoningEffort | None = None
     # Blank on update keeps the stored key; on create an empty key means a keyless endpoint.
     api_key: SecretStr | None = Field(default=None, max_length=512)
 
@@ -46,6 +51,7 @@ class LlmProfileIn(BaseModel):
             temperature=self.temperature,
             enabled=self.enabled,
             api_key=key or None,
+            reasoning_effort=self.reasoning_effort,
         )
 
 
@@ -61,9 +67,16 @@ class LlmProfileOut(BaseModel):
     enabled: bool
     created_at: datetime
     updated_at: datetime
+    reasoning_effort: ReasoningEffort | None
+    revision: int
+    tested_at: datetime | None
+    tested_revision: int | None
+    tested_config_hash: str | None
+    is_tested: bool
+    is_bound: bool = False
 
     @classmethod
-    def from_profile(cls, profile: LlmProfile) -> Self:
+    def from_profile(cls, profile: LlmProfile, *, is_bound: bool = False) -> Self:
         return cls(
             id=profile.id,
             name=profile.name,
@@ -76,6 +89,13 @@ class LlmProfileOut(BaseModel):
             enabled=profile.enabled,
             created_at=profile.created_at,
             updated_at=profile.updated_at,
+            reasoning_effort=profile.reasoning_effort,
+            revision=profile.revision,
+            tested_at=profile.tested_at,
+            tested_revision=profile.tested_revision,
+            tested_config_hash=profile.tested_config_hash,
+            is_tested=profile.is_tested,
+            is_bound=is_bound,
         )
 
 
@@ -89,6 +109,9 @@ class LlmTestOut(BaseModel):
     latency_ms: float
     model: str | None
     error: str | None
+    revision: int | None
+    tested_at: datetime | None
+    tested_config_hash: str | None
 
     @classmethod
     def from_outcome(cls, outcome: TestOutcome) -> Self:
@@ -97,6 +120,9 @@ class LlmTestOut(BaseModel):
             latency_ms=round(outcome.latency_ms, 1),
             model=outcome.model,
             error=outcome.error,
+            revision=outcome.revision,
+            tested_at=outcome.tested_at,
+            tested_config_hash=outcome.tested_config_hash,
         )
 
 
@@ -130,3 +156,50 @@ class LlmUsageOut(BaseModel):
 
 class LlmUsagePageOut(BaseModel):
     items: list[LlmUsageOut]
+
+
+class LlmModelsOut(BaseModel):
+    models: list[str]
+
+
+class LlmConnectionIn(BaseModel):
+    team_id: UUID | None = None
+    profile_id: UUID
+    expected_profile_revision: int = Field(ge=1)
+    tested_config_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    expected_binding_revision: int | None = Field(default=None, ge=1)
+
+    def to_input(self) -> ConnectionInput:
+        return ConnectionInput(
+            self.team_id,
+            self.profile_id,
+            self.expected_profile_revision,
+            self.tested_config_hash,
+            self.expected_binding_revision,
+        )
+
+
+class LlmConnectionOut(BaseModel):
+    team_id: UUID | None
+    profile_id: UUID
+    profile_revision: int
+    tested_config_hash: str
+    activated_at: datetime
+    activated_by: UUID
+    revision: int
+
+    @classmethod
+    def from_binding(cls, binding: LlmConnectionBinding) -> Self:
+        return cls(
+            team_id=binding.team_id,
+            profile_id=binding.profile_id,
+            profile_revision=binding.profile_revision,
+            tested_config_hash=binding.tested_config_hash,
+            activated_at=binding.activated_at,
+            activated_by=binding.activated_by,
+            revision=binding.revision,
+        )
+
+
+class LlmConnectionsOut(BaseModel):
+    items: list[LlmConnectionOut]

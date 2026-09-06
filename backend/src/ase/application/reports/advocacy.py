@@ -74,8 +74,9 @@ async def advocate(
     target = body.key_judgements[0].id
     request = LlmRequest(
         messages=advocacy_messages(body, evidence),
-        max_output_tokens=min(profile.max_output_tokens, ADVOCACY_TOKENS),
+        max_output_tokens=profile.token_budget(ADVOCACY_TOKENS),
         temperature=profile.temperature,
+        reasoning_effort=profile.reasoning_effort,
         json_schema=ADVOCACY_SCHEMA,
         schema_name="advocacy",
     )

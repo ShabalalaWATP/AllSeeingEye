@@ -210,6 +210,12 @@ export const handlers = [
     return HttpResponse.json({ items: llmProfiles, encryption_available: true });
   }),
 
+  http.get('/api/admin/llm/connections', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({ items: [] });
+  }),
+
   http.post('/api/admin/llm/profiles', async ({ request }) => {
     const gate = requireAdmin(request);
     if (!gate.ok) return gate.response;

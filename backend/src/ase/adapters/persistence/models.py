@@ -141,6 +141,12 @@ class LlmProfileRow(Base):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    reasoning_effort: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    tested_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    tested_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tested_config_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    test_generation: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class LlmUsageRow(Base):

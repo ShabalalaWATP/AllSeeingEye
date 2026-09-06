@@ -22,6 +22,7 @@ from ase.domain.users import User
 from ase.domain.validation import Finding, Severity
 from feeds_helpers import NOW
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 
 
@@ -116,10 +117,7 @@ async def test_generate_read_export_and_delete(
         "/api/reports", json={"template": "intsum"}, headers=bearer(user_token)
     )
     assert no_model.status_code == 409 and no_model.json()["error"]["code"] == "no_model"
-    created = await client.post(
-        "/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token)
-    )
-    assert created.status_code == 201
+    await seed_legacy_profile(container, PROFILE)
 
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     judgements = good_body()["key_judgements"]
@@ -204,7 +202,7 @@ async def test_generation_faults_retry_limits_and_validation(
 ) -> None:
     admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     bad = await client.post("/api/reports", json={"template": "nope"}, headers=bearer(token))
     assert bad.status_code == 422 and bad.json()["error"]["code"] == "invalid_request"
@@ -269,9 +267,8 @@ async def test_generation_faults_retry_limits_and_validation(
 async def test_regeneration_adds_a_version_that_must_state_what_changed(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     container.llm = ScriptedGateway(json.dumps(good_body()))
     first = await client.post("/api/reports", json={"template": "intsum"}, headers=bearer(token))

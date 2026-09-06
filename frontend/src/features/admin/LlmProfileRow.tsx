@@ -1,122 +1,197 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
-import { Td } from '@/components/ui/Table';
+import { Alert } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
-import { deleteLlmProfile, testLlmProfile } from '@/lib/api/llm';
+import { deleteLlmProfile, fetchLlmModels, testLlmProfile } from '@/lib/api/llm';
 import type { LlmProfile, LlmTestResult } from '@/lib/api/llm';
+import type { Team } from '@/lib/api/teams';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+
+import { LlmApplyConnection } from './LlmApplyConnection';
 
 export interface LlmProfileRowProps {
   profile: LlmProfile;
-  onEdit: (profile: LlmProfile) => void;
+  teams: readonly Team[];
+  disabled: boolean;
+  applying: boolean;
+  hasGlobal: boolean;
+  legacyProtected: boolean;
+  expanded?: boolean;
+  onEdit: (profile: LlmProfile, models: readonly string[]) => void;
   onDeleted: (id: string) => void;
+  onTested: (profile: LlmProfile) => void;
+  onApply: (profile: LlmProfile, teamId: string | null) => void;
 }
 
-function describeTest(result: LlmTestResult): string {
-  if (result.ok)
-    return `OK, ${Math.round(result.latency_ms)} ms${result.model ? `, ${result.model}` : ''}`;
-  return `Failed: ${result.error ?? 'unknown error'}`;
-}
-
-/** One profile with its connection test, edit and two-step delete. */
-export function LlmProfileRow({ profile, onEdit, onDeleted }: LlmProfileRowProps) {
+/** A saved draft can discover models and test credentials before any routing change. */
+export function LlmProfileRow({
+  profile,
+  teams,
+  disabled,
+  applying,
+  hasGlobal,
+  legacyProtected,
+  expanded = false,
+  onEdit,
+  onDeleted,
+  onTested,
+  onApply,
+}: LlmProfileRowProps) {
+  const row = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (expanded) row.current?.querySelector('button')?.focus();
+  }, [expanded]);
   const [result, setResult] = useState<LlmTestResult | null>(null);
-  const [confirming, setConfirming] = useState(false);
+  const [models, setModels] = useState<string[] | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const test = useAsyncAction(async () => {
-    setResult(await testLlmProfile(profile.id));
+    setResult(null);
+    onTested({ ...profile, is_tested: false });
+    const outcome = await testLlmProfile(profile.id);
+    setResult(outcome);
+    onTested({
+      ...profile,
+      is_tested: outcome.ok,
+      tested_at: outcome.tested_at,
+      tested_revision: outcome.revision,
+      tested_config_hash: outcome.tested_config_hash,
+    });
+  });
+  const discover = useAsyncAction(async () => {
+    setModels((await fetchLlmModels(profile.id)).models);
   });
   const remove = useAsyncAction(async () => {
     await deleteLlmProfile(profile.id);
     onDeleted(profile.id);
   });
-  const error = test.error ?? remove.error;
-
+  const error = test.error ?? discover.error ?? remove.error;
+  const busy = disabled || applying || test.busy || discover.busy || remove.busy;
+  const textProfile = !profile.roles.includes('embeddings');
+  const tested =
+    profile.is_tested &&
+    profile.tested_revision === profile.revision &&
+    profile.tested_config_hash !== null;
   return (
-    <tr>
-      <Td>
-        <div className="font-medium text-text">{profile.name}</div>
-        <div className="font-mono text-xs text-muted">{profile.model}</div>
-        <div className="text-xs text-muted">{profile.base_url}</div>
-      </Td>
-      <Td className="font-mono text-xs">
-        {profile.api_key_hint === '' ? 'no key' : `…${profile.api_key_hint}`}
-      </Td>
-      <Td>
-        <div className="flex flex-wrap gap-1">
-          {profile.roles.map((role) => (
-            <span
-              key={role}
-              className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-muted"
-            >
-              {role}
-            </span>
-          ))}
-        </div>
-      </Td>
-      <Td>
-        <span
-          className={`rounded px-1.5 py-0.5 font-mono text-[11px] uppercase ${
-            profile.enabled ? 'bg-emerald-400/15 text-emerald-300' : 'bg-zinc-500/15 text-muted'
-          }`}
-        >
-          {profile.enabled ? 'enabled' : 'disabled'}
-        </span>
-      </Td>
-      <Td>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            busy={test.busy}
-            onClick={() => void test.run()}
-            aria-label={`Test ${profile.name}`}
-          >
-            Test
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onEdit(profile);
-            }}
-            aria-label={`Edit ${profile.name}`}
-          >
-            Edit
-          </Button>
-          {confirming ? (
+    <li ref={row} className="min-w-0 border-t border-line py-4">
+      <details open={expanded}>
+        <summary className="cursor-pointer text-sm font-medium">
+          {profile.name}{' '}
+          <span className="ml-2 font-normal text-muted">
+            {tested ? 'Test passed' : 'Needs a test'}
+          </span>
+        </summary>
+        <div className="mt-4 space-y-4">
+          <div className="space-y-1 text-sm">
+            <p className="break-all font-mono">
+              {profile.model}
+              {profile.reasoning_effort && (
+                <span className="ml-2 text-muted">· {profile.reasoning_effort}</span>
+              )}
+            </p>
+            <p className="break-all text-xs text-muted">{profile.base_url}</p>
+            <p className="text-xs text-muted">
+              {profile.api_key_hint ? `Stored key ending ${profile.api_key_hint}` : 'No stored key'}{' '}
+              ·{' '}
+              {profile.roles.includes('embeddings')
+                ? `Embeddings ${profile.enabled ? 'enabled' : 'disabled'}`
+                : profile.is_bound
+                  ? 'Active text connection'
+                  : 'Text connection draft'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {!profile.is_bound && (
+              <Button
+                variant="secondary"
+                disabled={busy}
+                onClick={() => void discover.run()}
+                aria-label={`Load models for ${profile.name}`}
+              >
+                {discover.busy ? 'Loading models…' : 'Load account models'}
+              </Button>
+            )}
             <Button
-              variant="danger"
-              busy={remove.busy}
-              onClick={() => void remove.run()}
-              aria-label={`Confirm delete ${profile.name}`}
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void test.run()}
+              aria-label={`Test ${profile.name}`}
             >
-              Confirm delete
+              {test.busy ? 'Testing connection…' : 'Test connection'}
             </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setConfirming(true);
-              }}
-              aria-label={`Delete ${profile.name}`}
-            >
-              Delete
-            </Button>
+            {!profile.is_bound && (
+              <Button
+                variant="ghost"
+                disabled={busy || legacyProtected}
+                onClick={() => onEdit(profile, models ?? [])}
+                aria-label={`Edit ${profile.name}`}
+              >
+                Edit draft
+              </Button>
+            )}
+            {!profile.is_bound &&
+              (!confirmingDelete ? (
+                <Button
+                  variant="ghost"
+                  disabled={busy || legacyProtected}
+                  onClick={() => setConfirmingDelete(true)}
+                  aria-label={`Delete ${profile.name}`}
+                >
+                  Delete draft
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  disabled={busy}
+                  onClick={() => void remove.run()}
+                  aria-label={`Confirm delete ${profile.name}`}
+                >
+                  Confirm delete
+                </Button>
+              ))}
+          </div>
+          {legacyProtected && (
+            <p className="text-xs text-muted">
+              Apply a tested global replacement before editing or deleting this legacy connection.
+            </p>
+          )}
+          {profile.is_bound && (
+            <p className="text-xs text-muted">
+              This connection is already in use. Reuse its saved credentials for another scope, or
+              create a replacement to change its configuration.
+            </p>
+          )}
+          <p className="text-xs text-muted">
+            {!profile.is_bound && 'Loading models contacts this saved endpoint. '}Testing sends a
+            short request and may use provider tokens. A listed model is not a compatibility
+            guarantee.
+          </p>
+          {models !== null && (
+            <p role="status" className="text-sm text-muted">
+              {models.length === 0
+                ? 'The provider returned no model list. Enter a model ID in Edit draft.'
+                : `${models.length} models returned by this account. Choose one in Edit draft.`}
+            </p>
+          )}
+          {result !== null && (
+            <p role="status" className={`text-sm ${result.ok ? 'text-text' : 'text-critical'}`}>
+              {result.ok
+                ? `Connection test passed in ${Math.round(result.latency_ms)} ms.`
+                : `Connection test failed: ${result.error ?? 'No compatible response received.'}`}
+            </p>
+          )}
+          {error !== null && <Alert tone="error">{describeError(error)}</Alert>}
+          {tested && textProfile && (
+            <LlmApplyConnection
+              profile={profile}
+              teams={teams}
+              busy={busy}
+              hasGlobal={hasGlobal}
+              onApply={(teamId) => onApply(profile, teamId)}
+            />
           )}
         </div>
-        {result !== null && (
-          <p
-            role="status"
-            className={`mt-1 text-xs ${result.ok ? 'text-emerald-300' : 'text-critical'}`}
-          >
-            {describeTest(result)}
-          </p>
-        )}
-        {error !== null && (
-          <p role="alert" className="mt-1 text-xs text-critical">
-            {describeError(error)}
-          </p>
-        )}
-      </Td>
-    </tr>
+      </details>
+    </li>
   );
 }

@@ -9,7 +9,8 @@ from ase.container import Container
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch, ResearchQuery
 from ase.domain.users import User
 from feeds_helpers import make_event
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, good_body
 
 
@@ -44,14 +45,8 @@ class CollectedResearch:
 async def test_research_api_saves_receipt_without_publishing_live_items(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    response = await client.post(
-        "/api/admin/llm/profiles",
-        json={**PROFILE, "roles": ["assessment", "direction"]},
-        headers=bearer(admin_token),
-    )
-    assert response.status_code == 201
+    await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
     research = CollectedResearch()
     container.research = research
     direction = json.dumps(

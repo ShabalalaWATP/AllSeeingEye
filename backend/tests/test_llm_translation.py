@@ -15,11 +15,11 @@ from ase.domain.events import MAX_TITLE
 from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.users import User
 from feeds_helpers import make_event
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway
 
 
-async def test_translation_configured_in_admin_reaches_store_stream_and_usage(
+async def test_translation_legacy_profile_reaches_store_stream_and_usage(
     container: Container,
     client: AsyncClient,
     admin: User,
@@ -34,14 +34,7 @@ async def test_translation_configured_in_admin_reaches_store_stream_and_usage(
     )
     container.store.upsert([event])
     assert await queue.run_once() == 0  # absence is retried once an admin adds the role
-    headers = bearer(await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD))
-    response = await client.post(
-        "/api/admin/llm/profiles",
-        json={**PROFILE, "roles": ["translation"]},
-        headers=headers,
-    )
-    assert response.status_code == 201
-    assert response.json()["roles"] == ["translation"]
+    await seed_legacy_profile(container, {**PROFILE, "roles": ["translation"]})
     stream = container.bus.subscribe()
     assert await queue.run_once() == 1
     message = await anext(aiter(stream))

@@ -16,6 +16,7 @@ from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
 from ase.domain.citation_check_records import citation_checks_from_dict
 from ase.domain.errors import NotFound
+from ase.domain.model_routing_records import routing_from_dict
 from ase.domain.report_assessment_records import assessment_from_dict
 from ase.domain.report_records import (
     ReportRecord,
@@ -57,6 +58,7 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     direction, advocacy = analysis_from_dict(row.analysis)
     period = (row.analysis or {}).get("period") or {}
     return ReportVersion(
+        model_routing=routing_from_dict((row.analysis or {}).get("model_routing")),
         direction=direction,
         advocacy=advocacy,
         assessment=assessment_from_dict((row.analysis or {}).get("assessment")),

@@ -21,6 +21,8 @@ from ase.domain.evidence_attributes import (
     evidence_attributes_to_list,
 )
 from ase.domain.evidence_matrix import ReportAssessment
+from ase.domain.model_routing import ModelRoutingRecord
+from ase.domain.model_routing_records import routing_to_dict
 from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
 from ase.domain.research_context import ResearchContext
@@ -85,6 +87,7 @@ class ReportVersion:
     citation_checks: ReportCitationChecks | None = None
     research_context: ResearchContext | None = None
     challenge: ReportChallenge | None = None
+    model_routing: ModelRoutingRecord | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
@@ -98,9 +101,11 @@ def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
         and version.citation_checks is None
         and version.research_context is None
         and version.challenge is None
+        and version.model_routing is None
     ):
         return None
     return {
+        "model_routing": routing_to_dict(version.model_routing),
         **({"challenge": challenge_to_dict(version.challenge)} if version.challenge else {}),
         "direction": direction_to_dict(version.direction) if version.direction else None,
         "devils_advocacy": advocacy_to_dict(version.advocacy) if version.advocacy else None,

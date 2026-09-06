@@ -14,7 +14,8 @@ from ase.adapters.persistence.models import LlmUsageRow, ReportRow, ReportVersio
 from ase.api.session_guard import validate_request_session
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import Unauthenticated
-from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 
 
@@ -23,8 +24,7 @@ from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 async def test_original_session_must_survive_blocked_model_until_save(
     client, container, admin, user, clock, reason, mutation
 ):
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     claims = container.issuer.verify(token)
     container.store.upsert(tuple(filled_store().query(EventQuery(limit=10))))

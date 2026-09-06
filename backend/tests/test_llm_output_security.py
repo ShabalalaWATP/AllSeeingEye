@@ -10,6 +10,7 @@ from ase.application.ports.feeds import EventQuery
 from ase.container import Container
 from ase.domain.users import User
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, filled_store, good_body
 
 
@@ -24,7 +25,7 @@ async def test_report_retries_and_records_safe_deep_json_failure(
 ) -> None:
     admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    await client.post("/api/admin/llm/profiles", json=PROFILE, headers=bearer(admin_token))
+    await seed_legacy_profile(container, PROFILE)
     container.llm = ScriptedGateway(nested_output(), nested_output())
     response = await client.post(
         "/api/reports", json={"template": "intsum"}, headers=bearer(user_token)
@@ -43,10 +44,9 @@ async def test_report_retries_and_records_safe_deep_json_failure(
 async def test_direction_and_advocacy_degrade_without_losing_the_report(
     client: httpx.AsyncClient, container: Container, admin: User, user: User
 ) -> None:
-    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     profile = {**PROFILE, "roles": ["assessment", "direction", "devil"]}
-    await client.post("/api/admin/llm/profiles", json=profile, headers=bearer(admin_token))
+    await seed_legacy_profile(container, profile)
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     container.llm = ScriptedGateway(nested_output(), json.dumps(good_body()), nested_output())
     response = await client.post(

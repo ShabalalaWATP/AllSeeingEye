@@ -139,7 +139,7 @@ async def test_gateway_calls_chat_completions_and_reports_faults() -> None:
         await gateway.complete("http://localhost:11434/v1", "sk-local-secret", "denied", request)
     assert "401" in str(denied.value)
     keyless = next(r for r in seen if json.loads(r.content)["model"] == "down")
-    assert "authorization" not in keyless.headers
+    assert keyless.headers["authorization"] == ""
     await gateway.aclose()
 
 
@@ -186,7 +186,13 @@ async def test_admin_manages_profiles_without_ever_seeing_the_key(
     container.llm = gateway
     tested = await client.post(f"/api/admin/llm/profiles/{profile_id}/test", headers=bearer(token))
     assert tested.status_code == 200
-    assert tested.json() == {"ok": True, "latency_ms": 12.5, "model": "llama3.1:8b", "error": None}
+    assert {key: tested.json()[key] for key in ("ok", "latency_ms", "model", "error")} == {
+        "ok": True,
+        "latency_ms": 12.5,
+        "model": "llama3.1:8b",
+        "error": None,
+    }
+    assert tested.json()["revision"] == 3 and tested.json()["tested_config_hash"]
     assert gateway.calls[0][1] == "sk-new-key-9876"  # decrypted only for the call
     assert gateway.calls[0][3].json_schema is not None
 

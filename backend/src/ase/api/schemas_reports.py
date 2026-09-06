@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from ase.api.schemas_challenge import ReportChallengeOut
 from ase.api.schemas_citation_checks import ReportCitationChecksOut
+from ase.api.schemas_model_routing import ModelRoutingOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.api.schemas_research import ResearchReceiptOut
@@ -148,6 +149,7 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    model_routing: ModelRoutingOut | None = None
     research_context: ResearchContextOut | None = None
     challenge: ReportChallengeOut | None = None
     citation_checks: ReportCitationChecksOut | None = None
@@ -175,6 +177,9 @@ class ReportVersionOut(BaseModel):
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            model_routing=ModelRoutingOut.model_validate(version.model_routing)
+            if version.model_routing
+            else None,
             research_context=(
                 ResearchContextOut.model_validate(version.research_context)
                 if version.research_context is not None

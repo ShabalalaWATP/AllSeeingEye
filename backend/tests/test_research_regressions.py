@@ -21,7 +21,8 @@ from ase.domain.research import (
 from ase.domain.teams import MembershipRole
 from ase.domain.users import User
 from feeds_helpers import make_event
-from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, login_token
+from helpers import USER_PASSWORD, bearer, login_token
+from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, good_body
 from research_records_helpers import CLOCK, RecordService
 from team_helpers import CONTEXT, team_service
@@ -65,14 +66,8 @@ class CollectionProbe:
         )
 
 
-async def prepare_models(client: httpx.AsyncClient, admin: User) -> None:
-    headers = bearer(await login_token(client, admin.email, ADMIN_PASSWORD))
-    response = await client.post(
-        "/api/admin/llm/profiles",
-        json={**PROFILE, "roles": ["assessment", "direction"]},
-        headers=headers,
-    )
-    assert response.status_code == 201, response.text
+async def prepare_models(client: httpx.AsyncClient, admin: User, container: Container) -> None:
+    await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
 
 
 async def test_language_case_variants_make_one_guarded_edition_request(
@@ -185,7 +180,7 @@ async def test_research_plans_queries_for_non_question_template(
     user: User,
     mode: str,
 ) -> None:
-    await prepare_models(client, admin)
+    await prepare_models(client, admin, container)
     probe = CollectionProbe()
     container.research = probe
     gateway = ScriptedGateway(DIRECTION, json.dumps(good_body()))
@@ -224,7 +219,7 @@ async def test_membership_revoked_during_collection_blocks_report_and_usage(
         await service.set_member(
             admin, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
         )
-    await prepare_models(client, admin)
+    await prepare_models(client, admin, container)
     revoked = False
 
     async def revoke_membership() -> None:
