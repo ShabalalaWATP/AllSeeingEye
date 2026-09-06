@@ -1,4 +1,7 @@
 import { Fragment, useEffect, useRef } from 'react';
+import { Link } from 'react-router';
+
+import { eventResearchHref } from '@/lib/researchNavigation';
 
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { formatUtc } from '@/lib/format';
@@ -152,18 +155,25 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           </p>
         )}
       </div>
-      {isHttpUrl(event.url) && (
-        <div className="border-t border-line p-3">
+      <div className="flex flex-wrap items-center gap-x-4 border-t border-line px-3 py-1">
+        <Link
+          to={eventResearchHref(event)}
+          className="inline-flex min-h-11 items-center text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+          title="Review the question before starting research"
+        >
+          Research this
+        </Link>
+        {isHttpUrl(event.url) && (
           <a
             href={event.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-ember hover:underline"
+            className="inline-flex min-h-11 items-center text-sm text-muted hover:underline"
           >
             Open source
           </a>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   );
 }

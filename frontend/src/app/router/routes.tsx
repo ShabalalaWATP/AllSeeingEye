@@ -27,6 +27,8 @@ const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
 const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
 const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
+const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
+const SourcesPage = lazy(() => import('@/features/sources/SourcesPage'));
 const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
 const ConflictPage = lazy(() => import('@/features/trackers/ConflictPage'));
@@ -69,6 +71,8 @@ export const routes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { index: true, element: <GlobePage /> },
+          { path: 'research', element: <ResearchPage /> },
+          { path: 'sources', element: <SourcesPage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
           { path: 'trackers', element: <TrackersPage /> },

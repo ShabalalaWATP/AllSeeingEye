@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchDisasterDetail } from '@/lib/api/trackers';
+import { researchHref } from '@/lib/researchNavigation';
 import { useResource } from '@/lib/hooks/useResource';
 
 import { ActivityCells, BackToTrackers, EventRow, ShowOnGlobe, Timeline } from './TrackerParts';
@@ -41,6 +42,16 @@ export default function HazardPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ShowOnGlobe country={card.countries[0] ?? null} />
+          <Link
+            to={researchHref(
+              `What public evidence establishes the location, timing and reported impact of recent ${card.title.toLowerCase()}? Distinguish official observations from unverified claims and identify evidence gaps.`,
+              card.countries.length === 1 ? card.countries[0] : null,
+            )}
+            className="inline-flex min-h-11 items-center px-3 text-sm text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+            title="Review the question before starting research"
+          >
+            Research this hazard
+          </Link>
           <Link
             to={`/reports?template=disaster_sitrep&hazard=${card.hazard}`}
             className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"

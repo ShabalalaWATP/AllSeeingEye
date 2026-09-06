@@ -80,6 +80,33 @@ export function SchedulesSection({
                 <Td className="font-medium">
                   {item.name}
                   <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
+                  {item.notify_on_change && (
+                    <p className="mt-2 text-xs font-normal text-muted">
+                      {item.last_change_summary ?? 'Change monitoring enabled. Awaiting baseline.'}
+                    </p>
+                  )}
+                  {item.last_change?.previous_report_id && (
+                    <Link
+                      className="mt-1 block text-xs font-normal underline"
+                      to={`/reports/${item.last_change.previous_report_id}`}
+                    >
+                      Previous compared report
+                    </Link>
+                  )}
+                  {item.question && (
+                    <details className="mt-2 text-xs font-normal">
+                      <summary className="cursor-pointer">Saved question</summary>
+                      <p className="mt-2 whitespace-pre-wrap">{item.question}</p>
+                      <p className="mt-1 text-muted">
+                        {item.research_mode
+                          ? `${item.research_mode} research, ${item.research_languages.join(', ')}, ${item.research_focus}`
+                          : 'Existing live evidence'}
+                      </p>
+                      {item.research_subject && (
+                        <p className="mt-1 text-muted">{item.research_subject}</p>
+                      )}
+                    </details>
+                  )}
                 </Td>
                 <Td className="font-mono text-xs text-muted">
                   {item.template_id}

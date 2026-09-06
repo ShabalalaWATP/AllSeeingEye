@@ -6,8 +6,12 @@ import json
 from collections.abc import Sequence
 
 from ase.application.reports.assessment_export import assessment_sections
+from ase.application.reports.challenge_export import challenge_sections
+from ase.application.reports.citation_export import citation_sections
+from ase.application.reports.context_export import context_sections
 from ase.application.reports.export_text import evidence_metadata, review_notice, safe_url
 from ase.application.reports.frozen_header import frozen_period_line
+from ase.application.reports.research_export import research_sections
 from ase.domain.doctrine import term_for
 from ase.domain.errors import InvalidRequest
 from ase.domain.evidence import EvidenceItem
@@ -173,7 +177,7 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
         if version.direction.categories:
             doc.add(f"Collection categories: {', '.join(version.direction.categories)}")
     _body(doc, version.body)
-    if version.advocacy is not None:
+    if version.advocacy is not None and version.challenge is None:
         advocacy = version.advocacy
         doc.heading("Devil's advocacy")
         doc.add(
@@ -184,7 +188,13 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
             f"Confidence before: {advocacy.confidence_before or 'unchanged'}; "
             f"after: {advocacy.confidence_after or 'unchanged'}."
         )
-    for heading, paragraphs in assessment_sections(version.assessment):
+    for heading, paragraphs in (
+        *assessment_sections(version.assessment),
+        *citation_sections(version.citation_checks),
+        *research_sections(version.research),
+        *challenge_sections(version.challenge),
+        *context_sections(version.research_context),
+    ):
         doc.heading(heading)
         for paragraph in paragraphs:
             doc.add(paragraph)

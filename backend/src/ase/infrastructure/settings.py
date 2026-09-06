@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     alert_webhook_url: str | None = None
     # Ordnance Survey Data Hub key (free OpenData plan). Unset means no OS Maps base layers.
     os_maps_key: SecretStr | None = None
+    companies_house_key: SecretStr | None = None
+    certificate_transparency_key: SecretStr | None = None
+    research_tesseract_path: str | None = None
+    research_ffmpeg_path: str | None = None
+    research_ffprobe_path: str | None = None
     # Encrypts API keys entered in the admin UI (any string of 32+ characters). Unset means
     # LLM profiles cannot be stored.
     encryption_key: SecretStr | None = None

@@ -7,6 +7,7 @@ from datetime import timedelta
 from enum import StrEnum
 
 from ase.domain.events import Category, Reliability
+from ase.domain.source_ratings import SourceRating, source_rating_for
 
 
 class SourceKind(StrEnum):
@@ -33,11 +34,17 @@ class SourceSpec:
     requires_key: bool = False
     instrument: bool = False
     flags: frozenset[str] = frozenset()
+    rating: SourceRating | None = None
 
     def __post_init__(self) -> None:
         if self.poll_interval < timedelta(seconds=30):
             msg = f"{self.id}: poll interval must be at least 30 seconds"
             raise ValueError(msg)
+        if self.rating is None or (
+            self.rating.assessed_grade is not None
+            and self.rating.assessed_grade != self.reliability
+        ):
+            object.__setattr__(self, "rating", source_rating_for(self.id, self.reliability))
 
     @property
     def independence_key(self) -> str:

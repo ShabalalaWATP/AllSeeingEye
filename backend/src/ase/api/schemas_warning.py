@@ -100,7 +100,8 @@ class IndicatorsOut(BaseModel):
 
 class AlertOut(BaseModel):
     id: UUID
-    indicator_id: UUID
+    indicator_id: UUID | None
+    schedule_id: UUID | None
     fired_at: datetime
     title: str
     summary: str
@@ -119,6 +120,7 @@ class AlertOut(BaseModel):
         return cls(
             id=alert.id,
             indicator_id=alert.indicator_id,
+            schedule_id=alert.schedule_id,
             fired_at=alert.fired_at,
             title=alert.title,
             summary=alert.summary,

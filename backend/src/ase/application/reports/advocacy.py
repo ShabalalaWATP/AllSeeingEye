@@ -115,12 +115,17 @@ async def advocate(
 
 def apply_advocacy(body: ReportBody, advocacy: DevilsAdvocacy) -> tuple[ReportBody, DevilsAdvocacy]:
     """Lower the target judgement's confidence one step when the advocate asks; never raise it."""
-    judgement = body.key_judgements[0]
-    if not advocacy.lower_confidence or judgement.confidence is Confidence.LOW:
+    judgement = next((row for row in body.key_judgements if row.id == advocacy.target), None)
+    if judgement is None or not advocacy.lower_confidence or judgement.confidence is Confidence.LOW:
         return body, replace(advocacy, lower_confidence=False)
     after = lowered(judgement.confidence)
     adjusted = replace(judgement, confidence=after)
     return (
-        replace(body, key_judgements=(adjusted, *body.key_judgements[1:])),
+        replace(
+            body,
+            key_judgements=tuple(
+                adjusted if row.id == judgement.id else row for row in body.key_judgements
+            ),
+        ),
         replace(advocacy, confidence_before=judgement.confidence, confidence_after=after),
     )

@@ -102,8 +102,14 @@ export function LeftRail({
         <RailLink to="/trackers" onNavigate={onNavigate}>
           Trackers
         </RailLink>
+        <RailLink to="/research" onNavigate={onNavigate}>
+          Research
+        </RailLink>
         <RailLink to="/reports" onNavigate={onNavigate}>
           Reports
+        </RailLink>
+        <RailLink to="/sources" onNavigate={onNavigate}>
+          Source catalogue
         </RailLink>
         <RailLink to="/direction" onNavigate={onNavigate}>
           Direction

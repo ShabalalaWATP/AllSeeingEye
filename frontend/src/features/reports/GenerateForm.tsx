@@ -64,6 +64,7 @@ export function GenerateForm({
     if (!scope.ready || invalidPlan) return;
     const request: ReportRequest = {
       template: templateId,
+      research_focus: 'general',
       devils_advocacy: advocacy,
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
     };

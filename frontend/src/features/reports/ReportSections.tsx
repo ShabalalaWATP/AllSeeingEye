@@ -6,6 +6,8 @@ import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
 import { Labels } from './EvidenceLinks';
 import { JudgementEvidence } from './JudgementEvidence';
+import { JudgementCitationChecks } from './CitationChecks';
+import type { CitationChecks } from '@/lib/api/reportResearch';
 export { EvidenceAnnex } from './EvidenceAnnex';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -69,9 +71,11 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
 export function ReportBodyView({
   body,
   assessment,
+  citationChecks,
 }: {
   body: ReportBody;
   assessment?: ReportAssessment | null | undefined;
+  citationChecks?: CitationChecks | null | undefined;
 }) {
   return (
     <div className="flex flex-col gap-6 text-sm text-text">
@@ -109,6 +113,11 @@ export function ReportBodyView({
                     </p>
                   )}
                   {rating && <JudgementEvidence assessment={rating} />}
+                  <JudgementCitationChecks
+                    check={citationChecks?.judgements.find(
+                      (item) => item.judgement_id === judgement.id,
+                    )}
+                  />
                 </li>
               );
             })}

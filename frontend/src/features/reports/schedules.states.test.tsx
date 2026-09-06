@@ -82,6 +82,8 @@ describe('schedule states', () => {
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'World morning',
+        notify_on_change: false,
+        research_focus: 'general',
         enabled: true,
         template_id: 'intsum',
         country_iso: null,

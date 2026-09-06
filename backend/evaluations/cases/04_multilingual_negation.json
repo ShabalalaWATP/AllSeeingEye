@@ -1,0 +1,16 @@
+{
+  "id": "multilingual_negation",
+  "title": "A machine translation drops French negation",
+  "question": "What does the supplied original statement establish about the fictional Bellac bridge?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [{"id": "engineers", "name": "Fictional municipal engineers", "organisation": "engineers", "flags": ["authoritative"]}],
+  "events": [
+    {"key": "bridge_original", "source": "engineers", "title": "Le pont de Bellac n'a pas été détruit", "title_en": "Bellac bridge has been destroyed", "language": "fr", "summary": "Le pont n'a pas été détruit. Il reste fermé par précaution pendant l'inspection. Aucun blessé n'est confirmé. Le contrôle est prévu le 7 septembre 2026.", "published_at": "2026-09-06T10:00:00Z", "reliability": "B"}
+  ],
+  "reference": {
+    "reference_facts": ["The original French denies destruction.", "The bridge remains closed as a precaution during inspection; no injury is confirmed.", "The inspection is scheduled for 7 September 2026."],
+    "required_event_keys": ["bridge_original"],
+    "required_caveats": ["Identify the conflict between the original and unverified translated headline.", "A denial of destruction does not establish that the bridge is open or structurally safe."],
+    "forbidden_inferences": ["The bridge is destroyed.", "The bridge is open.", "No injuries occurred, rather than no injury is confirmed."]
+  }
+}

@@ -8,7 +8,7 @@ import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { SelectField, TextField } from '@/components/ui/Field';
+import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { ReportTemplate } from '@/lib/api/reports';
 import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
@@ -61,19 +61,50 @@ export function ScheduleForm({
   const [name, setName] = useState('');
   const [template, setTemplate] = useState('intsum');
   const [country, setCountry] = useState('');
+  const [question, setQuestion] = useState('');
+  const [notifyOnChange, setNotifyOnChange] = useState(false);
+  const [researchMode, setResearchMode] = useState<'' | 'quick' | 'detailed'>('');
+  const [languages, setLanguages] = useState('en');
+  const [focus, setFocus] = useState<NonNullable<ScheduleRequest['research_focus']>>('general');
+  const [subject, setSubject] = useState('');
+  const needsQuestion = templates.find((item) => item.id === template)?.needs_question === true;
+  const languageCodes = languages
+    .split(',')
+    .map((code) => code.trim().toLowerCase())
+    .filter(Boolean);
+  const validLanguages =
+    languageCodes.length >= 1 &&
+    languageCodes.length <= 8 &&
+    languageCodes.every((code) => /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code));
+  const subjectScoped = needsQuestion && researchMode !== '' && focus !== 'general';
+  const invalidQuestion =
+    needsQuestion &&
+    ((!question.trim() && (!selectedPlan || researchMode !== '')) ||
+      (researchMode !== '' && !validLanguages));
   const [hour, setHour] = useState('6');
   const [cadence, setCadence] = useState<'daily' | 'weekdays' | 'weekly'>('daily');
   const [weekday, setWeekday] = useState('0');
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!scope.ready || invalidPlan) return;
+    if (!scope.ready || invalidPlan || invalidQuestion) return;
     onSubmit({
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
       ...(selectedPlan ? { plan_id: selectedPlan } : {}),
+      ...(needsQuestion && question.trim() ? { question: question.trim() } : {}),
+      ...(needsQuestion && researchMode
+        ? {
+            research_mode: researchMode,
+            research_languages: [...new Set(languageCodes)],
+            research_focus: focus,
+            research_subject: subject.trim() || null,
+          }
+        : {}),
+      research_focus: needsQuestion && researchMode ? focus : 'general',
+      notify_on_change: needsQuestion && notifyOnChange,
       name: name.trim(),
       enabled: true,
       template_id: template,
-      country_iso: country === '' ? null : country,
+      country_iso: subjectScoped || country === '' ? null : country,
       hour_utc: Number(hour),
       cadence,
       weekday: Number(weekday),
@@ -125,12 +156,13 @@ export function ScheduleForm({
             setTemplate(event.target.value);
           }}
           options={templates
-            .filter((item) => !item.needs_conflict && !item.needs_hazard && !item.needs_question)
+            .filter((item) => !item.needs_conflict && !item.needs_hazard)
             .map((item) => ({ value: item.id, label: item.title }))}
         />
         <SelectField
           label="Nation"
-          value={country}
+          disabled={subjectScoped}
+          value={subjectScoped ? '' : country}
           onChange={(event) => {
             setCountry(event.target.value);
           }}
@@ -167,9 +199,77 @@ export function ScheduleForm({
           />
         )}
       </div>
+      {needsQuestion && (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-sm font-medium">Saved research question</legend>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={notifyOnChange}
+              onChange={(event) => setNotifyOnChange(event.target.checked)}
+            />
+            Notify in app when evidence changes
+          </label>
+          <p className="text-xs text-muted">
+            The first successful run establishes a baseline. Later alerts compare evidence, source
+            flags and recorded assessments. This does not verify importance, corrections or
+            retractions.
+          </p>
+          <TextAreaField
+            label="Question"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            maxLength={1000}
+            required={!selectedPlan || researchMode !== ''}
+            hint="Repeated at each scheduled run. A collection plan can supply the question when using live evidence."
+          />
+          <SelectField
+            label="Collection depth"
+            value={researchMode}
+            onChange={(event) => setResearchMode(event.target.value as '' | 'quick' | 'detailed')}
+            options={[
+              { value: '', label: 'Existing live evidence' },
+              { value: 'quick', label: 'Quick research' },
+              { value: 'detailed', label: 'Detailed research' },
+            ]}
+            hint="Research uses bounded public-source collection and the configured assessment model each run. It creates a report every time, even if little has changed."
+          />
+          {researchMode && (
+            <>
+              <TextField
+                label="Research languages"
+                value={languages}
+                onChange={(event) => setLanguages(event.target.value)}
+                maxLength={64}
+                hint="One to eight comma-separated language codes, for example en, uk."
+                error={validLanguages ? undefined : 'Enter one to eight valid language codes.'}
+              />
+              <SelectField
+                label="Research focus"
+                value={focus}
+                onChange={(event) => {
+                  setFocus(event.target.value as typeof focus);
+                  if (event.target.value !== 'general') setCountry('');
+                }}
+                options={['general', 'company', 'domain', 'document', 'media'].map((value) => ({
+                  value,
+                  label: value.charAt(0).toUpperCase() + value.slice(1),
+                }))}
+              />
+              <TextField
+                label="Research subject"
+                value={subject}
+                onChange={(event) => setSubject(event.target.value)}
+                maxLength={300}
+                hint="Optional organisation, domain or document URL to focus the question."
+              />
+            </>
+          )}
+        </fieldset>
+      )}
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>
-        <Button type="submit" busy={busy} disabled={!scope.ready || invalidPlan}>
+        <Button type="submit" busy={busy} disabled={!scope.ready || invalidPlan || invalidQuestion}>
           Add schedule
         </Button>
       </div>

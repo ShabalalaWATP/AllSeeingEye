@@ -115,7 +115,12 @@ describe('direction', () => {
     expect(within(form).getByLabelText('Question')).not.toBeRequired();
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
-      expect(captured).toEqual({ template: 'ask', plan: plan.id, devils_advocacy: false });
+      expect(captured).toEqual({
+        template: 'ask',
+        plan: plan.id,
+        research_focus: 'general',
+        devils_advocacy: false,
+      });
     });
   });
 });

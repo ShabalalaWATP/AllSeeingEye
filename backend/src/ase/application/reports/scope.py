@@ -53,4 +53,14 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
         "hazard": request.hazard,
         "conflict": request.conflict_id,
         "plan": str(request.plan_id) if request.plan_id else None,
+        **(
+            {
+                "research_mode": request.research_mode.value,
+                "research_languages": list(request.research_languages),
+                "research_focus": request.research_focus.value,
+                "research_subject": request.research_subject,
+            }
+            if request.research_mode
+            else {}
+        ),
     }

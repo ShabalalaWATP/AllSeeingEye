@@ -53,6 +53,10 @@ def compare_versions(
         ("Direction", before.direction, after.direction),
         ("Devil's advocacy", before.advocacy, after.advocacy),
         ("Automated evidence assessment", before.assessment, after.assessment),
+        ("Literal citation checks", before.citation_checks, after.citation_checks),
+        ("Collection coverage", before.research, after.research),
+        ("Judgement challenge", before.challenge, after.challenge),
+        ("Research context", before.research_context, after.research_context),
     ):
         changes.extend(
             _changes(

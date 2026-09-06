@@ -153,6 +153,25 @@ async def test_transport_errors_are_wrapped(no_dns: None) -> None:
     await client.aclose()
 
 
+async def test_zero_redirect_budget_makes_exactly_one_request(no_dns: None) -> None:
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        return httpx.Response(302, headers={"Location": "https://other.test/final"})
+
+    client = make_client(handler)
+    try:
+        with pytest.raises(FeedFetchError, match="redirects"):
+            await client.get_text("https://feeds.test/start", max_redirects=0)
+        assert seen == ["https://feeds.test/start"]
+        with pytest.raises(ValueError, match="budget"):
+            await client.get_bytes("https://feeds.test/start", max_redirects=-1)
+        assert len(seen) == 1
+    finally:
+        await client.aclose()
+
+
 async def test_pinned_requests_present_the_host_name(monkeypatch: pytest.MonkeyPatch) -> None:
     async def resolve(url: str) -> str | None:
         return "93.184.216.34"

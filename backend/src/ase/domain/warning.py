@@ -81,7 +81,7 @@ class Indicator:
 @dataclass(frozen=True, slots=True)
 class Alert:
     id: UUID
-    indicator_id: UUID
+    indicator_id: UUID | None
     fired_at: datetime
     title: str
     summary: str
@@ -89,6 +89,7 @@ class Alert:
     threshold: int
     event_ids: tuple[str, ...]
     countries: tuple[str, ...]
+    schedule_id: UUID | None = None
     acknowledged_at: datetime | None = None
     acknowledged_by: UUID | None = None
     report_id: UUID | None = None

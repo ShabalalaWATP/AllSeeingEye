@@ -12,6 +12,7 @@ from ase.application.reports.templates import EvidenceStrategy
 from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
 from ase.domain.evidence import EvidenceItem, injection_flags
 from ase.domain.grading import SourceProfile
+from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.trackers import Hazard, hazard_of
 
 CREDIBILITY_WEIGHT = {
@@ -183,6 +184,7 @@ def select_evidence(
                 source_name=profile.name if profile else event.source_id,
                 independence_key=profile.independence_key if profile else "",
                 instrument=profile.instrument if profile else False,
+                source_rating=profile.rating if profile else unassessed_source_rating(),
                 flags=sorted(
                     (profile.flags if profile else frozenset())
                     | event.tags & {"state_controlled", "interested_party"}

@@ -26,6 +26,10 @@ import { ReportExports } from './ReportExports';
 import { StatusBadge } from './ReportsPage';
 import { ReportAssessmentSummary } from './ReportAssessmentSummary';
 import { ReportMethodology } from './ReportMethodology';
+import { ResearchCoverage } from './ResearchCoverage';
+import { CitationCheckMethod } from './CitationChecks';
+import { ResearchContextView } from './ResearchContext';
+import { ReportChallengeView } from './ReportChallenge';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -113,6 +117,40 @@ export default function ReportPage() {
               </Link>
             ))}
           </nav>
+          {actionError === null ? null : <Alert tone="error">{describeError(actionError)}</Alert>}
+        </header>
+        {version.status !== 'ready' && (
+          <Alert
+            tone={version.status === 'failed' ? 'error' : 'warning'}
+            title="Validator findings"
+          >
+            <ul className="list-disc pl-5">
+              {version.findings.map((finding, index) => (
+                <li key={index}>
+                  <span className="font-mono text-xs">{finding.severity}</span> {finding.location}:{' '}
+                  {finding.message}
+                </li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+        <ReportBodyView
+          body={version.body}
+          assessment={version.assessment}
+          citationChecks={version.citation_checks}
+        />
+        {version.challenge ? (
+          <ReportChallengeView challenge={version.challenge} />
+        ) : (
+          <AdvocacyView advocacy={version.devils_advocacy} />
+        )}
+        <Link
+          to={`/research?parent=${encodeURIComponent(id)}`}
+          className="w-fit rounded border border-line px-4 py-3 text-sm font-medium hover:bg-surface-2"
+        >
+          Ask a follow-up question
+        </Link>
+        <section aria-label="Report actions" className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {canEdit && (
               <Button
@@ -134,34 +172,19 @@ export default function ReportPage() {
             )}
           </div>
           <ReportExports id={id} version={version.number} title={report.title} />
-          {actionError === null ? null : <Alert tone="error">{describeError(actionError)}</Alert>}
-        </header>
+        </section>
         <ReportDiff
           key={`${id}:${String(version.number)}`}
           id={id}
           current={version.number}
           latest={report.latest_version}
         />
-        {version.status !== 'ready' && (
-          <Alert
-            tone={version.status === 'failed' ? 'error' : 'warning'}
-            title="Validator findings"
-          >
-            <ul className="list-disc pl-5">
-              {version.findings.map((finding, index) => (
-                <li key={index}>
-                  <span className="font-mono text-xs">{finding.severity}</span> {finding.location}:{' '}
-                  {finding.message}
-                </li>
-              ))}
-            </ul>
-          </Alert>
-        )}
-        <DirectionView direction={version.direction} />
+        <ResearchCoverage receipt={version.research} />
+        <ResearchContextView context={version.research_context} />
+        <CitationCheckMethod checks={version.citation_checks} />
         <ReportAssessmentSummary assessment={version.assessment} />
         <ReportMethodology savedMethod={version.assessment?.method_version} />
-        <ReportBodyView body={version.body} assessment={version.assessment} />
-        <AdvocacyView advocacy={version.devils_advocacy} />
+        <DirectionView direction={version.direction} />
         <EvidenceAnnex
           evidence={version.evidence}
           findings={version.findings}

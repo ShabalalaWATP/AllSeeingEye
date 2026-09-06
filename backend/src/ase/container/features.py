@@ -331,6 +331,11 @@ class FeatureWiring(ReportWiring):
                 plan_id=schedule.plan_id,
                 team_id=schedule.team_id,
                 automation=True,
+                question=schedule.question,
+                research_mode=schedule.research_mode,
+                research_languages=schedule.research_languages,
+                research_focus=schedule.research_focus,
+                research_subject=schedule.research_subject,
             )
             record, _version = await self.generate_report(session).execute(
                 owner, request, RequestContext()

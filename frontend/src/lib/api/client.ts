@@ -39,6 +39,9 @@ export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export interface CallOptions {
   method?: HttpMethod;
   body?: unknown;
+  /** Reusable binary body for private imports; cannot be combined with a JSON body. */
+  rawBody?: Blob;
+  signal?: AbortSignal;
   headers?: Record<string, string>;
   /** When true (default) the bearer token is attached and a 401 triggers one refresh and retry. */
   auth?: boolean;
@@ -86,12 +89,18 @@ export async function apiSend(path: string, options: CallOptions = {}): Promise<
 }
 
 async function execute(path: string, options: CallOptions): Promise<Response> {
+  if (options.body !== undefined && options.rawBody !== undefined) {
+    throw new ApiError(0, 'invalid_request', 'Choose either a JSON or binary request body.');
+  }
+  options.signal?.throwIfAborted();
   const auth = options.auth ?? true;
   const first = await send(path, options, auth ? session.getAccessToken() : null);
   if (first.status !== 401 || !auth) {
     return ensureOk(first);
   }
+  options.signal?.throwIfAborted();
   const token = await session.refreshAccessToken();
+  options.signal?.throwIfAborted();
   if (token === null) {
     session.onSessionLost();
     throw await toApiError(first);
@@ -106,16 +115,22 @@ async function execute(path: string, options: CallOptions): Promise<Response> {
 async function send(path: string, options: CallOptions, token: string | null): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json', ...options.headers };
   const init: RequestInit = { method: options.method ?? 'GET', credentials: 'include', headers };
+  if (options.signal !== undefined) init.signal = options.signal;
   if (options.body !== undefined) {
     headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(options.body);
+  } else if (options.rawBody !== undefined) {
+    headers['Content-Type'] = 'application/octet-stream';
+    init.body = options.rawBody;
   }
   if (token !== null) {
     headers.Authorization = `Bearer ${token}`;
   }
   try {
     return await fetch(new URL(path, window.location.origin), init);
-  } catch {
+  } catch (error) {
+    if (options.signal?.aborted) throw options.signal.reason;
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
     throw new ApiError(0, 'network_error', 'The server could not be reached.');
   }
 }

@@ -1,0 +1,46 @@
+import { z } from 'zod';
+import type { Report, ReportRequest } from '@/lib/api/reports';
+import { categorySchema } from '@/lib/api/eventSchemas';
+
+const savedScope = z.object({
+  country: z.string().nullable().optional(),
+  categories: z.array(categorySchema).optional(),
+  window_hours: z.number().int().positive().optional(),
+  devils_advocacy: z.boolean().optional(),
+  hazard: z.string().nullable().optional(),
+  conflict: z.string().nullable().optional(),
+  plan: z.string().nullable().optional(),
+  research_mode: z.enum(['quick', 'detailed']).optional(),
+  research_languages: z.array(z.string()).min(1).max(8).optional(),
+  research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']).optional(),
+  research_subject: z.string().nullable().optional(),
+});
+
+/** Reuse explicit saved scope only; unknown or incomplete private scope must never widen. */
+export function followUpRequest(parent: Report): ReportRequest {
+  const scope = savedScope.parse(parent.report.scope);
+  if (
+    (parent.report.scope.research_input || parent.report.scope.research_reuse) &&
+    !['document', 'media'].includes(scope.research_focus ?? '')
+  ) {
+    throw new Error(
+      'The saved private research scope is incomplete. A follow-up cannot safely start.',
+    );
+  }
+  return {
+    country: scope.country ?? null,
+    categories: scope.categories ?? [],
+    hazard: scope.hazard ?? null,
+    conflict: scope.conflict ?? null,
+    plan: scope.plan ?? null,
+    research_subject: scope.research_subject ?? null,
+    ...(scope.window_hours === undefined ? {} : { window_hours: scope.window_hours }),
+    template: 'ask',
+    parent_report_id: parent.report.id,
+    team_id: parent.report.team_id,
+    research_focus: scope.research_focus ?? 'general',
+    research_mode: scope.research_mode ?? 'quick',
+    research_languages: scope.research_languages ?? ['en'],
+    devils_advocacy: scope.devils_advocacy ?? false,
+  };
+}

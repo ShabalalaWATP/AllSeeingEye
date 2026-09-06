@@ -5,10 +5,11 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Header, Query, Request, Response
 from fastapi.responses import PlainTextResponse
 
-from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.report_run import run_generation
 from ase.api.schemas_reports import (
     ReportCreateIn,
     ReportOut,
@@ -16,6 +17,7 @@ from ase.api.schemas_reports import (
     ReportSummaryOut,
     TemplatesOut,
 )
+from ase.api.session_guard import validate_request_session
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -38,15 +40,25 @@ async def list_reports(
 
 @router.post("", status_code=201)
 async def create_report(
+    request: Request,
     body: ReportCreateIn,
     user: CurrentUser,
+    claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
     background: BackgroundTasks,
+    run_id: Annotated[UUID | None, Header(alias="X-Research-Run-ID")] = None,
 ) -> ReportOut:
-    record, version = await container.generate_report(session).execute(
-        user, body.to_request(), context
+    record, version = await run_generation(
+        request,
+        user,
+        container.research_runs,
+        run_id,
+        lambda progress: container.generate_report(session).execute(
+            user, body.to_request(), context, progress=progress
+        ),
+        before_save=lambda: validate_request_session(container, claims),
     )
     background.add_task(container.archive_report_version, version)
     return ReportOut.build(record, version)
@@ -54,14 +66,26 @@ async def create_report(
 
 @router.post("/{report_id}/versions", status_code=201)
 async def regenerate_report(
+    request: Request,
     report_id: UUID,
     user: CurrentUser,
+    claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
     background: BackgroundTasks,
+    run_id: Annotated[UUID | None, Header(alias="X-Research-Run-ID")] = None,
 ) -> ReportOut:
-    record, version = await container.generate_report(session).regenerate(user, report_id, context)
+    record, version = await run_generation(
+        request,
+        user,
+        container.research_runs,
+        run_id,
+        lambda progress: container.generate_report(session).regenerate(
+            user, report_id, context, progress=progress
+        ),
+        before_save=lambda: validate_request_session(container, claims),
+    )
     background.add_task(container.archive_report_version, version)
     return ReportOut.build(record, version)
 

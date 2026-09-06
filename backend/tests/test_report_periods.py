@@ -121,11 +121,13 @@ async def test_custom_window_regeneration_via_api_uses_current_evidence_and_date
                 "inside",
                 title="Inside original window",
                 published_at=original_now - timedelta(minutes=55),
+                observed_at=original_now,
             ),
             make_event(
                 "outside",
                 title="Outside requested window",
                 published_at=original_now - timedelta(hours=2),
+                observed_at=original_now,
             ),
         ]
     )
@@ -139,7 +141,16 @@ async def test_custom_window_regeneration_via_api_uses_current_evidence_and_date
     assert [item["title"] for item in first["version"]["evidence"]] == ["Inside original window"]
 
     clock.advance(timedelta(minutes=10))
-    container.store.upsert([make_event("current", title="New reporting", published_at=clock.now())])
+    container.store.upsert(
+        [
+            make_event(
+                "current",
+                title="New reporting",
+                published_at=clock.now(),
+                observed_at=clock.now(),
+            )
+        ]
+    )
     report_id = first["report"]["id"]
     updated = await client.post(f"/api/reports/{report_id}/versions", headers=headers)
     assert updated.status_code == 201, updated.text

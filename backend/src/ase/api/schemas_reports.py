@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Self
+from typing import Annotated, Any, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
+from ase.api.schemas_challenge import ReportChallengeOut
+from ase.api.schemas_citation_checks import ReportCitationChecksOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
+from ase.api.schemas_research import ResearchReceiptOut
+from ase.api.schemas_research_context import ResearchContextOut
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
@@ -23,6 +27,7 @@ from ase.domain.report_records import (
     quality_to_dict,
 )
 from ase.domain.reports import ReportStatus
+from ase.domain.research import ResearchFocus, ResearchMode
 
 
 class ReportCreateIn(BaseModel):
@@ -37,6 +42,22 @@ class ReportCreateIn(BaseModel):
     conflict: str | None = Field(default=None, max_length=64)
     plan: UUID | None = None
     team_id: UUID | None = None
+    research_mode: ResearchMode | None = None
+    research_languages: list[Annotated[str, Field(pattern=r"^[a-z]{2,3}(-[A-Za-z]{2,4})?$")]] = (
+        Field(default_factory=lambda: ["en"], min_length=1, max_length=8)
+    )
+    research_focus: ResearchFocus = ResearchFocus.GENERAL
+    research_subject: str | None = Field(default=None, max_length=300)
+    research_input_id: UUID | None = None
+    parent_report_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def research_requires_question(self) -> Self:
+        if self.research_mode and (not self.question or not self.question.strip()):
+            raise ValueError("On-demand research requires a question")
+        if self.research_mode and self.country and self.research_focus is not ResearchFocus.GENERAL:
+            raise ValueError("Country filters are unavailable for record-focused research")
+        return self
 
     def to_request(self) -> ReportRequest:
         return ReportRequest(
@@ -51,6 +72,12 @@ class ReportCreateIn(BaseModel):
             conflict_id=self.conflict.strip().lower() if self.conflict else None,
             plan_id=self.plan,
             team_id=self.team_id,
+            research_mode=self.research_mode,
+            research_languages=tuple(dict.fromkeys(self.research_languages)),
+            research_focus=self.research_focus,
+            research_subject=self.research_subject,
+            research_input_id=self.research_input_id,
+            parent_report_id=self.parent_report_id,
         )
 
 
@@ -121,6 +148,10 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    research_context: ResearchContextOut | None = None
+    challenge: ReportChallengeOut | None = None
+    citation_checks: ReportCitationChecksOut | None = None
+    research: ResearchReceiptOut | None = None
     assessment: ReportAssessmentOut | None = None
     period_from: datetime | None
     period_to: datetime | None
@@ -144,6 +175,22 @@ class ReportVersionOut(BaseModel):
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            research_context=(
+                ResearchContextOut.model_validate(version.research_context)
+                if version.research_context is not None
+                else None
+            ),
+            challenge=ReportChallengeOut.model_validate(version.challenge)
+            if version.challenge
+            else None,
+            citation_checks=(
+                ReportCitationChecksOut.model_validate(version.citation_checks)
+                if version.citation_checks
+                else None
+            ),
+            research=ResearchReceiptOut.model_validate(version.research)
+            if version.research
+            else None,
             assessment=(
                 ReportAssessmentOut.model_validate(version.assessment)
                 if version.assessment

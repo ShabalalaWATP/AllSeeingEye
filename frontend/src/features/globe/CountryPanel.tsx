@@ -1,3 +1,6 @@
+import { Link } from 'react-router';
+
+import { researchHref } from '@/lib/researchNavigation';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Country } from '@/lib/api/geoSchemas';
 import { formatAgo } from '@/lib/format';
@@ -31,6 +34,16 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
           {country.iso2} · {events.length} live
         </span>
       </div>
+      <Link
+        to={researchHref(
+          `What are the most significant recent developments in ${country.name}, what evidence supports or challenges them, and what remains uncertain?`,
+          country.iso2,
+        )}
+        className="inline-flex min-h-11 items-center px-1 text-xs text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+        title="Review the question before starting research"
+      >
+        Research this country
+      </Link>
       {present.length > 0 ? (
         <ul className="mt-1 flex flex-wrap gap-1 px-1">
           {present.map((category) => (

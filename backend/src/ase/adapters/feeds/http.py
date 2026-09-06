@@ -13,7 +13,7 @@ import ipaddress
 import json
 import socket
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -30,6 +30,52 @@ class FeedFetchError(Exception):
 
 class NotModified(Exception):
     """The upstream answered 304: nothing new since the last poll (an outcome, not a fault)."""
+
+
+def _https_origin(url: str) -> tuple[str, int] | None:
+    try:
+        parts = urlsplit(url)
+        if (
+            parts.scheme != "https"
+            or not parts.hostname
+            or parts.username is not None
+            or parts.password is not None
+            or any(ord(char) < 33 or ord(char) > 126 for char in url)
+        ):
+            return None
+        port = parts.port if parts.port is not None else 443
+        return (parts.hostname.lower(), port) if port > 0 else None
+    except ValueError:
+        return None
+
+
+@dataclass(frozen=True, slots=True)
+class FeedCredential:
+    """Request-local authorisation bound to one exact HTTPS origin, never shared headers."""
+
+    origin: str
+    authorization: str = field(repr=False)
+
+    def __post_init__(self) -> None:
+        try:
+            parts = urlsplit(self.origin)
+            valid = _https_origin(self.origin) is not None and not (
+                parts.path or parts.query or parts.fragment
+            )
+        except ValueError:
+            valid = False
+        if not valid:
+            raise ValueError("A credential requires an exact HTTPS origin without a path.")
+        if (
+            not self.authorization
+            or len(self.authorization) > 8192
+            or any(ord(char) < 32 or ord(char) > 126 for char in self.authorization)
+        ):
+            raise ValueError("Invalid request authorisation value.")
+
+    def require_origin(self, url: str) -> None:
+        if _https_origin(url) != _https_origin(self.origin):
+            raise FeedFetchError("Request credential origin does not match the destination.")
 
 
 @dataclass(slots=True)
@@ -103,6 +149,8 @@ class FeedHttpClient:
         max_bytes: int = DEFAULT_MAX_BYTES,
         client: httpx.AsyncClient | None = None,
     ) -> None:
+        if client is not None and (client.auth is not None or "authorization" in client.headers):
+            raise ValueError("Shared feed clients must not carry global authorisation.")
         self._max_bytes = max_bytes
         self._validators: OrderedDict[str, _Validators] = OrderedDict()
         self._client = client or httpx.AsyncClient(
@@ -115,11 +163,40 @@ class FeedHttpClient:
     async def aclose(self) -> None:
         await self._client.aclose()
 
-    async def get_bytes(self, url: str, *, conditional: bool = True) -> bytes:
+    async def get_bytes(
+        self,
+        url: str,
+        *,
+        conditional: bool = True,
+        max_redirects: int = MAX_REDIRECTS,
+        credential: FeedCredential | None = None,
+    ) -> bytes:
+        if credential is not None:
+            credential.require_origin(url)
+            conditional, max_redirects = False, 0
+        try:
+            return await self._get_bytes(url, conditional, max_redirects, credential)
+        except (FeedFetchError, NotModified):
+            if credential is not None:
+                raise FeedFetchError("Authenticated feed request failed.") from None
+            raise
+
+    async def _get_bytes(
+        self,
+        url: str,
+        conditional: bool,
+        max_redirects: int,
+        credential: FeedCredential | None,
+    ) -> bytes:
+        if not 0 <= max_redirects <= MAX_REDIRECTS:
+            raise ValueError("Invalid redirect budget")
         current = url
-        for _ in range(MAX_REDIRECTS + 1):
+        for _ in range(max_redirects + 1):
             address = await assert_public_host(current)
-            headers: dict[str, str] = {"Accept-Encoding": "identity"}
+            headers: dict[str, str] = {
+                "Accept-Encoding": "identity",
+                **({"Authorization": credential.authorization} if credential else {}),
+            }
             validators = self._validators.get(url) if conditional else None
             if validators is not None:
                 self._validators.move_to_end(url)
@@ -156,14 +233,44 @@ class FeedHttpClient:
             return body
         raise FeedFetchError("Too many redirects")
 
-    async def get_json(self, url: str, *, conditional: bool = True) -> Any:
+    async def get_json(
+        self,
+        url: str,
+        *,
+        conditional: bool = True,
+        max_redirects: int = MAX_REDIRECTS,
+        credential: FeedCredential | None = None,
+    ) -> Any:
         try:
-            return json.loads(await self.get_bytes(url, conditional=conditional))
+            return json.loads(
+                await self.get_bytes(
+                    url,
+                    conditional=conditional,
+                    max_redirects=max_redirects,
+                    credential=credential,
+                )
+            )
         except (ValueError, RecursionError) as exc:
+            if credential is not None:
+                raise FeedFetchError("Authenticated feed returned invalid JSON.") from None
             raise FeedFetchError(f"Invalid JSON from {url}") from exc
 
-    async def get_text(self, url: str, *, conditional: bool = True) -> str:
-        return (await self.get_bytes(url, conditional=conditional)).decode("utf-8", "replace")
+    async def get_text(
+        self,
+        url: str,
+        *,
+        conditional: bool = True,
+        max_redirects: int = MAX_REDIRECTS,
+        credential: FeedCredential | None = None,
+    ) -> str:
+        return (
+            await self.get_bytes(
+                url,
+                conditional=conditional,
+                max_redirects=max_redirects,
+                credential=credential,
+            )
+        ).decode("utf-8", "replace")
 
     @staticmethod
     def _pinned(

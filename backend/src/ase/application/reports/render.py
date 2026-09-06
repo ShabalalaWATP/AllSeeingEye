@@ -5,14 +5,22 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from ase.application.reports.assessment_export import assessment_sections
+from ase.application.reports.challenge_export import challenge_sections
+from ase.application.reports.citation_export import citation_sections
+from ase.application.reports.context_export import context_sections
 from ase.application.reports.export_text import markdown_fields, plain_markdown, review_notice
 from ase.application.reports.markdown_annex import annex_lines
+from ase.application.reports.research_export import research_sections
 from ase.domain.advocacy import DevilsAdvocacy
+from ase.domain.challenge import ReportChallenge
+from ase.domain.citation_checks import ReportCitationChecks
 from ase.domain.direction import Direction
 from ase.domain.doctrine import term_for
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
+from ase.domain.research_context import ResearchContext
+from ase.domain.research_records import ResearchReceipt
 from ase.domain.validation import Finding
 
 
@@ -147,6 +155,10 @@ def render_markdown(
     status: ReportStatus | None = None,
     period_line: str | None = None,
     assessment: ReportAssessment | None = None,
+    citation_checks: ReportCitationChecks | None = None,
+    research: ResearchReceipt | None = None,
+    challenge: ReportChallenge | None = None,
+    research_context: ResearchContext | None = None,
 ) -> str:
     header, body = markdown_fields(header), markdown_fields(body)
     direction, advocacy = markdown_fields(direction), markdown_fields(advocacy)
@@ -157,11 +169,17 @@ def render_markdown(
         *_direction_lines(direction),
         *_judgement_lines(body),
         *_analysis_lines(body),
-        *_advocacy_lines(advocacy),
+        *_advocacy_lines(advocacy if challenge is None else None),
         *_closing_lines(body),
         *[
             line
-            for title, paragraphs in assessment_sections(assessment)
+            for title, paragraphs in (
+                *assessment_sections(assessment),
+                *citation_sections(citation_checks),
+                *research_sections(research),
+                *challenge_sections(challenge),
+                *context_sections(research_context),
+            )
             for line in (
                 f"## {plain_markdown(title)}",
                 "",

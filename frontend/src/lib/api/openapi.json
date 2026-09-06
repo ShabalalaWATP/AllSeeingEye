@@ -1151,6 +1151,25 @@
             "HTTPBearer": []
           }
         ],
+        "parameters": [
+          {
+            "name": "X-Research-Run-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Research-Run-Id"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1206,6 +1225,23 @@
               "type": "string",
               "format": "uuid",
               "title": "Report Id"
+            }
+          },
+          {
+            "name": "X-Research-Run-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Research-Run-Id"
             }
           }
         ],
@@ -1385,6 +1421,115 @@
               "text/plain": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/inputs": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Import Input",
+        "operationId": "import_input_api_research_inputs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchInputOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "maxLength": 8388608
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/runs/{run_id}": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Get Research Run",
+        "operationId": "get_research_run_api_research_runs__run_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRunOut"
                 }
               }
             }
@@ -1688,6 +1833,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SocialBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/sources": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "List Sources",
+        "operationId": "list_sources_api_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ase__api__routers__sources__SourcesOut"
                 }
               }
             }
@@ -3170,7 +3341,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SourcesOut"
+                  "$ref": "#/components/schemas/ase__api__schemas_events__SourcesOut"
                 }
               }
             }
@@ -3603,9 +3774,28 @@
             "title": "Id"
           },
           "indicator_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Indicator Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
           },
           "fired_at": {
             "type": "string",
@@ -3707,6 +3897,7 @@
         "required": [
           "id",
           "indicator_id",
+          "schedule_id",
           "fired_at",
           "title",
           "summary",
@@ -4267,6 +4458,24 @@
         "title": "CapabilitiesOut",
         "description": "What this deployment can offer the browser beyond the always-on features."
       },
+      "CapturedIdentityValueOut": {
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "title": "Namespace"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "namespace",
+          "value"
+        ],
+        "title": "CapturedIdentityValueOut"
+      },
       "Category": {
         "type": "string",
         "enum": [
@@ -4327,6 +4536,171 @@
         ],
         "title": "CategoryStatsOut"
       },
+      "ChallengeAdvocacyOut": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "argument": {
+            "type": "string",
+            "title": "Argument"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "lower_confidence": {
+            "type": "boolean",
+            "title": "Lower Confidence"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "confidence_before": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Confidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence_after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Confidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "target",
+          "argument",
+          "evidence",
+          "lower_confidence",
+          "rationale",
+          "confidence_before",
+          "confidence_after"
+        ],
+        "title": "ChallengeAdvocacyOut"
+      },
+      "ChallengeReviewOut": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "unavailable",
+              "invalid"
+            ],
+            "title": "Status"
+          },
+          "advocacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChallengeAdvocacyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "statement",
+          "status",
+          "advocacy",
+          "explanation"
+        ],
+        "title": "ChallengeReviewOut"
+      },
+      "ChallengeSearchOut": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "attempted",
+              "unavailable",
+              "plan_missing",
+              "budget_exhausted"
+            ],
+            "title": "Status"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionAttemptOut"
+            },
+            "type": "array",
+            "title": "Attempts"
+          },
+          "collected_items": {
+            "type": "integer",
+            "title": "Collected Items"
+          },
+          "selected_event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Event Ids"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "statement",
+          "terms",
+          "status",
+          "attempts",
+          "collected_items",
+          "selected_event_ids",
+          "explanation"
+        ],
+        "title": "ChallengeSearchOut"
+      },
       "ChangeKind": {
         "type": "string",
         "enum": [
@@ -4370,6 +4744,150 @@
           "new_password"
         ],
         "title": "ChangePasswordIn"
+      },
+      "CitationCheckOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "supporting",
+              "contradicting"
+            ],
+            "title": "Relation"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CitationStatus"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          },
+          "source_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Content Hash"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrozenExcerptOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/MismatchIndicatorOut"
+            },
+            "type": "array",
+            "title": "Indicators"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "relation",
+          "status",
+          "evidence_id",
+          "source_content_hash",
+          "excerpt",
+          "indicators",
+          "reasons"
+        ],
+        "title": "CitationCheckOut"
+      },
+      "CitationStatus": {
+        "type": "string",
+        "enum": [
+          "absent",
+          "context_insufficient",
+          "excerpt_present",
+          "review_required"
+        ],
+        "title": "CitationStatus"
+      },
+      "CollectionAttemptOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CollectionStatus"
+          },
+          "result_count": {
+            "type": "integer",
+            "title": "Result Count"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_name",
+          "status",
+          "result_count",
+          "explanation",
+          "language"
+        ],
+        "title": "CollectionAttemptOut"
+      },
+      "CollectionStatus": {
+        "type": "string",
+        "enum": [
+          "completed",
+          "empty",
+          "unavailable",
+          "unsupported",
+          "failed",
+          "timed_out",
+          "budget_exhausted"
+        ],
+        "title": "CollectionStatus"
       },
       "Confidence": {
         "type": "string",
@@ -5126,6 +5644,40 @@
         ],
         "title": "EvidenceAssessmentOut"
       },
+      "EvidenceAttributeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "title": "EvidenceAttributeOut"
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -5147,6 +5699,43 @@
           "email"
         ],
         "title": "ForgotPasswordIn"
+      },
+      "FrozenExcerptOut": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "start",
+          "end",
+          "text",
+          "sha256"
+        ],
+        "title": "FrozenExcerptOut"
       },
       "GeoConfidence": {
         "type": "string",
@@ -5806,6 +6395,39 @@
         ],
         "title": "JudgementAssessmentOut"
       },
+      "JudgementCitationCheckOut": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CitationStatus"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationCheckOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "status",
+          "citations",
+          "reasons"
+        ],
+        "title": "JudgementCitationCheckOut"
+      },
       "LlmProfileIn": {
         "properties": {
           "name": {
@@ -6350,6 +6972,46 @@
         ],
         "title": "MessageOut"
       },
+      "MismatchIndicatorOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "name_mismatch",
+              "date_mismatch",
+              "number_mismatch",
+              "negation_mismatch"
+            ],
+            "title": "Kind"
+          },
+          "claim_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Claim Values"
+          },
+          "excerpt_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excerpt Values"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "claim_values",
+          "excerpt_values",
+          "explanation"
+        ],
+        "title": "MismatchIndicatorOut"
+      },
       "PirIn": {
         "properties": {
           "text": {
@@ -6752,6 +7414,58 @@
         ],
         "title": "ReportAssessmentOut"
       },
+      "ReportChallengeOut": {
+        "properties": {
+          "searches": {
+            "items": {
+              "$ref": "#/components/schemas/ChallengeSearchOut"
+            },
+            "type": "array",
+            "title": "Searches"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/ChallengeReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          },
+          "redrafted": {
+            "type": "boolean",
+            "title": "Redrafted"
+          },
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "request_limit": {
+            "type": "integer",
+            "title": "Request Limit"
+          },
+          "seconds_limit": {
+            "type": "integer",
+            "title": "Seconds Limit"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "searches",
+          "reviews",
+          "redrafted",
+          "method_version",
+          "request_limit",
+          "seconds_limit",
+          "limitations"
+        ],
+        "title": "ReportChallengeOut"
+      },
       "ReportChangeOut": {
         "properties": {
           "section": {
@@ -6797,6 +7511,35 @@
           "after"
         ],
         "title": "ReportChangeOut"
+      },
+      "ReportCitationChecksOut": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "judgements": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementCitationCheckOut"
+            },
+            "type": "array",
+            "title": "Judgements"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "judgements",
+          "limitations"
+        ],
+        "title": "ReportCitationChecksOut"
       },
       "ReportComparisonOut": {
         "properties": {
@@ -6942,6 +7685,66 @@
               }
             ],
             "title": "Team Id"
+          },
+          "research_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "research_languages": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2,3}(-[A-Za-z]{2,4})?$"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Research Languages"
+          },
+          "research_focus": {
+            "$ref": "#/components/schemas/ResearchFocus",
+            "default": "general"
+          },
+          "research_subject": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Subject"
+          },
+          "research_input_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Input Id"
+          },
+          "parent_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Report Id"
           }
         },
         "type": "object",
@@ -7142,6 +7945,23 @@
               }
             ],
             "title": "Story Id"
+          },
+          "source_rating": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRatingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAttributeOut"
+            },
+            "type": "array",
+            "title": "Attributes"
           }
         },
         "type": "object",
@@ -7455,6 +8275,46 @@
       },
       "ReportVersionOut": {
         "properties": {
+          "research_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchContextOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "challenge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportChallengeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "citation_checks": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportCitationChecksOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "research": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchReceiptOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "assessment": {
             "anyOf": [
               {
@@ -7684,6 +8544,684 @@
         ],
         "title": "RequestStatus"
       },
+      "ResearchChange": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "unchanged",
+              "changed",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Version Id"
+          },
+          "previous_report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Report Id"
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "baseline_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Version Id"
+          },
+          "added": {
+            "type": "integer",
+            "title": "Added",
+            "default": 0
+          },
+          "removed": {
+            "type": "integer",
+            "title": "Removed",
+            "default": 0
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated",
+            "default": 0
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "report_id",
+          "version_id"
+        ],
+        "title": "ResearchChange"
+      },
+      "ResearchContextOut": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchTimelineEntryOut"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "identity_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchIdentityCandidateOut"
+            },
+            "type": "array",
+            "title": "Identity Candidates"
+          },
+          "source_chains": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchSourceEdgeOut"
+            },
+            "type": "array",
+            "title": "Source Chains"
+          },
+          "source_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchSourceRelationshipOut"
+            },
+            "type": "array",
+            "title": "Source Relationships"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "timeline",
+          "identity_candidates",
+          "source_chains",
+          "source_relationships",
+          "limitations"
+        ],
+        "title": "ResearchContextOut"
+      },
+      "ResearchFocus": {
+        "type": "string",
+        "enum": [
+          "general",
+          "company",
+          "domain",
+          "document",
+          "media"
+        ],
+        "title": "ResearchFocus"
+      },
+      "ResearchIdentityCandidateOut": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "identifiers": {
+            "items": {
+              "$ref": "#/components/schemas/CapturedIdentityValueOut"
+            },
+            "type": "array",
+            "title": "Identifiers"
+          },
+          "aliases": {
+            "items": {
+              "$ref": "#/components/schemas/CapturedIdentityValueOut"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "declared_match_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Match Status"
+          },
+          "status": {
+            "type": "string",
+            "const": "unverified_candidate",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "identifiers",
+          "aliases",
+          "declared_match_status",
+          "status"
+        ],
+        "title": "ResearchIdentityCandidateOut"
+      },
+      "ResearchInputOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Media Type"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "imported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Imported At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "event_count": {
+            "type": "integer",
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Event Count"
+          },
+          "extracted_characters": {
+            "type": "integer",
+            "maximum": 200000.0,
+            "minimum": 0.0,
+            "title": "Extracted Characters"
+          },
+          "preview": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Preview"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Limitations"
+          },
+          "previews": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchInputPreviewOut"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Previews"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "media_type",
+          "sha256",
+          "imported_at",
+          "expires_at",
+          "event_count",
+          "extracted_characters",
+          "preview",
+          "limitations"
+        ],
+        "title": "ResearchInputOut"
+      },
+      "ResearchInputPreviewOut": {
+        "properties": {
+          "seconds": {
+            "type": "number",
+            "maximum": 600.0,
+            "minimum": 0.0,
+            "title": "Seconds"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "png_base64": {
+            "type": "string",
+            "maxLength": 1398104,
+            "title": "Png Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seconds",
+          "sha256",
+          "png_base64"
+        ],
+        "title": "ResearchInputPreviewOut"
+      },
+      "ResearchMode": {
+        "type": "string",
+        "enum": [
+          "quick",
+          "detailed"
+        ],
+        "title": "ResearchMode"
+      },
+      "ResearchReceiptOut": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "focus": {
+            "type": "string",
+            "title": "Focus"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionAttemptOut"
+            },
+            "type": "array",
+            "title": "Attempts"
+          },
+          "collected_items": {
+            "type": "integer",
+            "title": "Collected Items"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "mode",
+          "focus",
+          "languages",
+          "terms",
+          "since",
+          "until",
+          "attempts",
+          "collected_items",
+          "policy_version"
+        ],
+        "title": "ResearchReceiptOut"
+      },
+      "ResearchRunOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ResearchStage"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "stage",
+          "started_at",
+          "updated_at",
+          "expires_at",
+          "report_id"
+        ],
+        "title": "ResearchRunOut"
+      },
+      "ResearchSourceEdgeOut": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "collector_source_id": {
+            "type": "string",
+            "title": "Collector Source Id"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "declared_publisher",
+              "declared_account",
+              "declared_source"
+            ],
+            "title": "Relation"
+          },
+          "declared_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Name"
+          },
+          "declared_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Id"
+          },
+          "declared_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Url"
+          },
+          "status": {
+            "type": "string",
+            "const": "unverified_attribution",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "collector_source_id",
+          "relation",
+          "declared_name",
+          "declared_id",
+          "declared_url",
+          "status"
+        ],
+        "title": "ResearchSourceEdgeOut"
+      },
+      "ResearchSourceRelationshipOut": {
+        "properties": {
+          "evidence_labels": {
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Evidence Labels"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "shared_parent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shared Parent"
+          },
+          "status": {
+            "type": "string",
+            "const": "unverified_relationship",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_labels",
+          "reasons",
+          "shared_parent",
+          "status"
+        ],
+        "title": "ResearchSourceRelationshipOut"
+      },
+      "ResearchStage": {
+        "type": "string",
+        "enum": [
+          "planning",
+          "collecting",
+          "drafting",
+          "challenging",
+          "validating",
+          "saving",
+          "completed",
+          "cancelled",
+          "failed",
+          "timed_out"
+        ],
+        "title": "ResearchStage"
+      },
+      "ResearchTimelineEntryOut": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Published At"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "timestamp_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp Basis"
+          },
+          "date_precision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Precision"
+          },
+          "current_snapshot": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Snapshot"
+          },
+          "record_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Kind"
+          },
+          "temporal_attributes": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAttributeOut"
+            },
+            "type": "array",
+            "title": "Temporal Attributes"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "title",
+          "published_at",
+          "captured_at",
+          "observed_at",
+          "timestamp_basis",
+          "date_precision",
+          "current_snapshot",
+          "record_kind",
+          "temporal_attributes",
+          "limitations"
+        ],
+        "title": "ResearchTimelineEntryOut"
+      },
       "ResetLinkOut": {
         "properties": {
           "reset_link": {
@@ -7799,6 +9337,59 @@
               }
             ],
             "title": "Team Id"
+          },
+          "notify_on_change": {
+            "type": "boolean",
+            "title": "Notify On Change",
+            "default": false
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "research_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "research_languages": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2,3}(-[A-Za-z]{2,4})?$"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Research Languages"
+          },
+          "research_focus": {
+            "$ref": "#/components/schemas/ResearchFocus",
+            "default": "general"
+          },
+          "research_subject": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Subject"
           }
         },
         "additionalProperties": false,
@@ -7935,6 +9526,73 @@
               }
             ],
             "title": "Team Id"
+          },
+          "notify_on_change": {
+            "type": "boolean",
+            "title": "Notify On Change"
+          },
+          "last_change": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_change_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Change Summary"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "research_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "research_languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Research Languages"
+          },
+          "research_focus": {
+            "$ref": "#/components/schemas/ResearchFocus"
+          },
+          "research_subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Subject"
           }
         },
         "type": "object",
@@ -7955,7 +9613,15 @@
           "last_run_at",
           "last_report_id",
           "last_error",
-          "team_id"
+          "team_id",
+          "notify_on_change",
+          "last_change",
+          "last_change_summary",
+          "question",
+          "research_mode",
+          "research_languages",
+          "research_focus",
+          "research_subject"
         ],
         "title": "ScheduleOut"
       },
@@ -8441,6 +10107,87 @@
         ],
         "title": "SourceOut"
       },
+      "SourceRatingOut": {
+        "properties": {
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "editorial",
+              "unassessed"
+            ],
+            "title": "Status"
+          },
+          "assessed_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reliability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "provenance_role": {
+            "type": "string",
+            "enum": [
+              "originator",
+              "publisher",
+              "aggregator",
+              "platform",
+              "unassessed"
+            ],
+            "title": "Provenance Role"
+          },
+          "publisher_reliability_assessed": {
+            "type": "boolean",
+            "title": "Publisher Reliability Assessed"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_version",
+          "status",
+          "assessed_grade",
+          "basis",
+          "scope",
+          "limitations",
+          "provenance_role",
+          "publisher_reliability_assessed",
+          "reviewed_at"
+        ],
+        "title": "SourceRatingOut"
+      },
       "SourceStatus": {
         "type": "string",
         "enum": [
@@ -8451,21 +10198,57 @@
         ],
         "title": "SourceStatus"
       },
-      "SourcesOut": {
+      "SourceSummaryOut": {
         "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/SourceOut"
-            },
-            "type": "array",
-            "title": "Items"
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "parent_organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Organisation"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "reliability": {
+            "$ref": "#/components/schemas/Reliability"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/SourceRatingOut"
           }
         },
         "type": "object",
         "required": [
-          "items"
+          "id",
+          "name",
+          "organisation",
+          "parent_organisation",
+          "category",
+          "language",
+          "reliability",
+          "rating"
         ],
-        "title": "SourcesOut"
+        "title": "SourceSummaryOut"
       },
       "SpaceBoardOut": {
         "properties": {
@@ -9062,6 +10845,38 @@
           "range_description"
         ],
         "title": "YardstickBandOut"
+      },
+      "ase__api__routers__sources__SourcesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SourceSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "SourcesOut"
+      },
+      "ase__api__schemas_events__SourcesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SourceOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "SourcesOut"
       }
     },
     "securitySchemes": {

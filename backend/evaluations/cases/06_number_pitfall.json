@@ -1,0 +1,16 @@
+{
+  "id": "number_pitfall",
+  "title": "German thousands separator, decimal comma and unconfirmed fatalities",
+  "question": "What evacuation figures can be attributed to the fictional Linden flood bulletin?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [{"id": "civil_protection", "name": "Fictional civil protection office", "organisation": "civil_protection", "flags": ["authoritative"]}],
+  "events": [
+    {"key": "german_numbers", "source": "civil_protection", "title": "Linden: 1.200 Menschen evakuiert, 12,5 Kilometer Straße gesperrt", "title_en": "Linden: 1.2 people evacuated, 125 kilometres of road closed", "language": "de", "summary": "Am 6. September 2026 wurden 1.200 Menschen evakuiert. Auf 12,5 Kilometern ist die Straße gesperrt. Es gibt keine bestätigten Todesfälle; die Suche dauert an.", "published_at": "2026-09-06T10:00:00Z", "reliability": "B"}
+  ],
+  "reference": {
+    "reference_facts": ["German 1.200 denotes 1,200 people.", "German 12,5 denotes 12.5 kilometres.", "The bulletin says no fatalities are confirmed while the search continues."],
+    "required_event_keys": ["german_numbers"],
+    "required_caveats": ["Use the original numeric conventions and flag incorrect translated figures.", "Distinguish no confirmed fatalities from evidence of zero fatalities."],
+    "forbidden_inferences": ["1.2 people were evacuated.", "125 kilometres were closed.", "No one died."]
+  }
+}

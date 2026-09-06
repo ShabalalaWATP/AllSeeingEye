@@ -21,6 +21,7 @@ from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.search import ReportSearchService
+from ase.container.research import private_research_store
 from ase.domain.report_records import ReportVersion
 
 if TYPE_CHECKING:
@@ -37,6 +38,8 @@ if TYPE_CHECKING:
     from ase.application.ports.feeds import EventBus
     from ase.application.ports.geo import CountryDirectory
     from ase.application.ports.llm import LlmGateway, SecretCipher
+    from ase.application.ports.research import ResearchCollection
+    from ase.application.ports.research_inputs import ResearchInputStore
     from ase.application.ports.services import Clock, RateLimiter
     from ase.application.ports.trackers import ConflictDirectory
     from ase.application.ports.warning import AlertNotifier
@@ -72,6 +75,8 @@ class ReportWiring:
         bus: EventBus
         jam: JamMap
         watch_areas: tuple[WatchedArea, ...]
+        research: ResearchCollection
+        research_inputs: ResearchInputStore
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def _auditor(self, repos: Repositories) -> Auditor: ...
@@ -96,6 +101,9 @@ class ReportWiring:
         r = self.repositories(session)
         return GenerateReportUseCase(
             store=self.store,
+            research=self.research,
+            research_inputs=self.research_inputs,
+            private_store_factory=private_research_store,
             source_profiles=self.source_profiles,
             countries=self.countries,
             conflicts=self.conflicts,

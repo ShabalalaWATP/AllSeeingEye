@@ -1,4 +1,7 @@
-import { render, screen, within } from '@testing-library/react';
+import { render as renderUi, screen, within } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router';
+
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +10,8 @@ import { countries, liveEvent } from '@/test/fixtures';
 
 import { CountryPanel } from './CountryPanel';
 import { NationFilter, matchCountry } from './NationFilter';
+
+const render = (ui: ReactElement) => renderUi(ui, { wrapper: MemoryRouter });
 
 const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
 
@@ -124,4 +129,16 @@ describe('CountryPanel', () => {
     expect(screen.getByText('Nothing in the live tier for this nation.')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+});
+
+it('offers a country-scoped research draft even with no live events', () => {
+  const country = countries[0];
+  if (!country) throw new Error('Missing country fixture');
+  render(
+    <CountryPanel country={country} events={[]} selectedId={null} now={NOW} onSelect={vi.fn()} />,
+  );
+  const link = screen.getByRole('link', { name: 'Research this country' });
+  const destination = new URL(link.getAttribute('href') ?? '', 'http://local.test');
+  expect(destination.searchParams.get('country')).toBe(country.iso2);
+  expect(destination.searchParams.get('question')).toContain(country.name);
 });

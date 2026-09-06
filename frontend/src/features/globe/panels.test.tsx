@@ -1,4 +1,7 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render as renderUi, screen, within } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router';
+
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +10,8 @@ import { liveEvent, storeStats } from '@/test/fixtures';
 import { EventInspector, isHttpUrl, sourceLabel } from './EventInspector';
 import { LayerPanel, formatBudget } from './LayerPanel';
 import { Ticker } from './Ticker';
+
+const render = (ui: ReactElement) => renderUi(ui, { wrapper: MemoryRouter });
 
 const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
 
@@ -175,7 +180,7 @@ describe('EventInspector', () => {
         onClose={vi.fn()}
       />,
     );
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open source' })).not.toBeInTheDocument();
     expect(screen.queryByText('Position')).not.toBeInTheDocument();
     expect(screen.queryByText('Severity')).not.toBeInTheDocument();
     expect(isHttpUrl('http://example.org/x')).toBe(true);
@@ -212,4 +217,19 @@ describe('Ticker', () => {
     render(<Ticker events={[]} selectedId={null} now={NOW} onSelect={vi.fn()} />);
     expect(screen.getByText('Waiting for events')).toBeInTheDocument();
   });
+});
+
+it('offers a research draft even when an event has no safe source URL', () => {
+  render(
+    <EventInspector
+      event={liveEvent({ url: 'javascript:alert(1)', country_iso: 'GB' })}
+      onClose={vi.fn()}
+    />,
+  );
+  const link = screen.getByRole('link', { name: 'Research this' });
+  const destination = new URL(link.getAttribute('href') ?? '', 'http://local.test');
+  expect(destination.pathname).toBe('/research');
+  expect(destination.searchParams.get('country')).toBe('GB');
+  expect(destination.searchParams.get('question')).toContain('M4.2 near Somewhere');
+  expect(destination.searchParams.get('question')).not.toContain('javascript:');
 });

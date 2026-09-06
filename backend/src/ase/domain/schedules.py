@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID
 
+from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_changes import ResearchChange
+
 CADENCES = ("daily", "weekdays", "weekly")
 
 
@@ -28,6 +31,13 @@ class Schedule:
     last_report_id: UUID | None = None
     last_error: str | None = None
     team_id: UUID | None = None
+    notify_on_change: bool = False
+    last_change: ResearchChange | None = None
+    question: str | None = None
+    research_mode: ResearchMode | None = None
+    research_languages: tuple[str, ...] = ("en",)
+    research_focus: ResearchFocus = ResearchFocus.GENERAL
+    research_subject: str | None = None
 
 
 def next_run_after(now: datetime, hour_utc: int, cadence: str, weekday: int = 0) -> datetime:

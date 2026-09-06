@@ -75,7 +75,11 @@ describe('direction, advocacy and archives in the reader', () => {
     await user.click(within(form).getByRole('checkbox', { name: /Devil's advocacy/ }));
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
-      expect(body).toEqual({ template: 'intsum', devils_advocacy: true });
+      expect(body).toEqual({
+        template: 'intsum',
+        research_focus: 'general',
+        devils_advocacy: true,
+      });
     });
   });
 });

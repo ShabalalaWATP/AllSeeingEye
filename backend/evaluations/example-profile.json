@@ -1,0 +1,9 @@
+{
+  "name": "Local evaluation",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "model": "replace-with-an-installed-model",
+  "max_output_tokens": 4000,
+  "temperature": 0.0,
+  "direction": false,
+  "advocacy": false
+}

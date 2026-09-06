@@ -13,8 +13,10 @@ from datetime import datetime
 
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Event
+from ase.domain.evidence_attributes import EvidenceAttribute, freeze_evidence_attributes
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.source_provenance import ProvenanceItem, organisation_groups
+from ase.domain.source_ratings import SourceRating
 
 # Phrases that read as instructions to the model rather than as reporting.
 INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
@@ -76,6 +78,8 @@ class EvidenceItem:
     geo_confidence: str | None = None
     observed_at: datetime | None = None
     story_id: str | None = None
+    source_rating: SourceRating | None = None
+    attributes: tuple[EvidenceAttribute, ...] = ()
 
     @classmethod
     def from_event(
@@ -88,7 +92,11 @@ class EvidenceItem:
         independence_key: str,
         instrument: bool = False,
         flags: Sequence[str] = (),
+        source_rating: SourceRating | None = None,
     ) -> EvidenceItem:
+        snapshot_at = captured_at
+        if captured_at.utcoffset() is not None and event.observed_at.utcoffset() is not None:
+            snapshot_at = max(captured_at, event.observed_at)
         return cls(
             label=label,
             event_id=event.id,
@@ -100,7 +108,7 @@ class EvidenceItem:
             summary=event.summary,
             url=event.url,
             published_at=event.published_at,
-            captured_at=captured_at,
+            captured_at=snapshot_at,
             grade=event.grade,
             reliability=event.reliability.value,
             credibility=int(event.credibility),
@@ -116,6 +124,8 @@ class EvidenceItem:
             geo_confidence=event.geo_confidence.value,
             observed_at=event.observed_at,
             story_id=event.story_id,
+            source_rating=source_rating,
+            attributes=freeze_evidence_attributes(event.attributes),
         )
 
 

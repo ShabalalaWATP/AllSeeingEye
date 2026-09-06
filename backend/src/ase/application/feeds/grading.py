@@ -8,6 +8,7 @@ from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.events import Event
 from ase.domain.grading import SourceProfile, cutoff_for, grade_events
+from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.sources import SourceSpec
 
 MAX_POOL = 5_000
@@ -21,6 +22,7 @@ def profiles_from_specs(specs: Sequence[SourceSpec]) -> dict[str, SourceProfile]
             name=spec.name,
             instrument=spec.instrument,
             flags=spec.flags,
+            rating=spec.rating or unassessed_source_rating(),
         )
         for spec in specs
     }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Activity, DayBucket } from '@/lib/api/trackers';
+import { eventResearchHref } from '@/lib/researchNavigation';
 import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 import { useEventsStore } from '@/stores/events';
@@ -84,6 +85,14 @@ export function EventRow({ event }: { event: LiveEvent }) {
       ) : (
         <span className="text-text">{event.title_en ?? event.title}</span>
       )}
+      <Link
+        to={eventResearchHref(event)}
+        aria-label={`Research this report: ${event.title}`}
+        title="Review the question before starting research"
+        className="inline-flex min-h-11 items-center text-xs text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+      >
+        Research this
+      </Link>
     </li>
   );
 }

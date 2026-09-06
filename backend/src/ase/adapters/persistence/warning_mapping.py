@@ -59,6 +59,7 @@ def _alert_from_row(row: AlertRow) -> Alert:
     return Alert(
         id=row.id,
         indicator_id=row.indicator_id,
+        schedule_id=row.schedule_id,
         fired_at=row.fired_at,
         title=row.title,
         summary=row.summary,
@@ -78,6 +79,7 @@ def _alert_row(alert: Alert) -> AlertRow:
     return AlertRow(
         id=alert.id,
         indicator_id=alert.indicator_id,
+        schedule_id=alert.schedule_id,
         fired_at=alert.fired_at,
         title=alert.title,
         summary=alert.summary,

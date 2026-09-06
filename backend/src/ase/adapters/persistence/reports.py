@@ -13,6 +13,8 @@ from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.access import Visibility
+from ase.domain.challenge_records import challenge_from_dict
+from ase.domain.citation_check_records import citation_checks_from_dict
 from ase.domain.errors import NotFound
 from ase.domain.report_assessment_records import assessment_from_dict
 from ase.domain.report_records import (
@@ -30,6 +32,8 @@ from ase.domain.report_records import (
     quality_to_dict,
 )
 from ase.domain.reports import ReportStatus
+from ase.domain.research_context_records import context_from_dict
+from ase.domain.research_records import research_from_dict
 
 
 def _record_from_row(row: ReportRow) -> ReportRecord:
@@ -56,6 +60,10 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
         direction=direction,
         advocacy=advocacy,
         assessment=assessment_from_dict((row.analysis or {}).get("assessment")),
+        research=research_from_dict((row.analysis or {}).get("research")),
+        challenge=challenge_from_dict((row.analysis or {}).get("challenge")),
+        citation_checks=citation_checks_from_dict((row.analysis or {}).get("citation_checks")),
+        research_context=context_from_dict((row.analysis or {}).get("research_context")),
         id=row.id,
         report_id=row.report_id,
         number=row.number,

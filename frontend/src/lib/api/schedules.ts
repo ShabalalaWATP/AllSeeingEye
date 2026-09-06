@@ -8,6 +8,27 @@ import { apiCall, apiSend } from './client';
 
 export const scheduleSchema = z.object({
   team_id: z.uuid().nullable(),
+  notify_on_change: z.boolean(),
+  last_change_summary: z.string().nullable(),
+  last_change: z
+    .object({
+      status: z.enum(['baseline', 'unchanged', 'changed', 'unavailable']),
+      report_id: z.uuid(),
+      version_id: z.uuid(),
+      previous_report_id: z.uuid().nullable(),
+      previous_version_id: z.uuid().nullable(),
+      baseline_version_id: z.uuid().nullable(),
+      added: z.number().int(),
+      removed: z.number().int(),
+      updated: z.number().int(),
+      reasons: z.array(z.string()),
+    })
+    .nullable(),
+  question: z.string().nullable(),
+  research_mode: z.enum(['quick', 'detailed']).nullable(),
+  research_languages: z.array(z.string()),
+  research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
+  research_subject: z.string().nullable(),
   id: z.string(),
   name: z.string(),
   template_id: z.string(),

@@ -32,6 +32,8 @@ async def archive_evidence(
     cited = version.body.cited_labels() | frozenset(
         version.advocacy.evidence if version.advocacy else ()
     )
+    if version.challenge:
+        cited |= version.challenge.cited_labels()
     archives: dict[str, str] = {}
     for item in version.evidence:
         if item.label not in cited or not archivable(item) or item.url is None:
@@ -56,6 +58,10 @@ async def archive_evidence(
         advocacy=version.advocacy,
         status=version.status,
         assessment=version.assessment,
+        citation_checks=version.citation_checks,
+        research=version.research,
+        challenge=version.challenge,
+        research_context=version.research_context,
         period_line=frozen_period_line(record, version),
     )
     await reports.set_archives(version.id, archives, markdown)

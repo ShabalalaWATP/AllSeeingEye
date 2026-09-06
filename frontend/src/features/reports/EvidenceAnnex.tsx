@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import type { EvidenceItem, Finding } from '@/lib/api/reports';
 import type { EvidenceAssessment, ReportAssessment } from '@/lib/api/reportAssessment';
 import { formatUtc } from '@/lib/format';
-import { isHttpUrl } from '@/lib/urls';
+import { SourceLink } from '@/components/ui/SourceLink';
+import { SourceRatingDetails } from '@/components/sources/SourceRatingDetails';
 
 import { evidenceId } from './EvidenceLinks';
 
@@ -22,29 +23,6 @@ function known(value: string | null | undefined): string {
 
 function time(value: string | null | undefined): string {
   return value && Number.isFinite(Date.parse(value)) ? formatUtc(value) : 'Unknown';
-}
-
-function SourceLink({ url, children }: { url: string | null; children: ReactNode }) {
-  if (!isHttpUrl(url)) return null;
-  const parsed = new URL(url);
-  if (
-    parsed.username ||
-    parsed.password ||
-    Array.from(url).some(
-      (character) => character.charCodeAt(0) <= 32 || character.charCodeAt(0) === 127,
-    )
-  )
-    return null;
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-ember underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
-    >
-      {children}
-    </a>
-  );
 }
 
 function EvidenceDetails({
@@ -117,6 +95,24 @@ function EvidenceDetails({
             <span className="font-mono text-xs">{known(item.content_hash)}</span>
           </Metadata>
         </dl>
+        <SourceRatingDetails rating={item.source_rating} frozen />
+        <details className="min-w-0 text-xs">
+          <summary className="cursor-pointer py-2 font-medium">Retained source attributes</summary>
+          {item.attributes?.length ? (
+            <dl className="mt-2 space-y-3 [overflow-wrap:anywhere]">
+              {item.attributes.map((attribute, index) => (
+                <div key={index}>
+                  <dt className="font-mono text-muted">{attribute.key}</dt>
+                  <dd className="mt-1 whitespace-pre-wrap">
+                    {attribute.value === null ? 'Not recorded (null)' : String(attribute.value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-2 text-muted">No source attributes recorded for this version.</p>
+          )}
+        </details>
         <p className="text-xs text-muted">
           Independent sourcing is not verified; topic grouping does not establish corroboration.
           Coordinates reflect the recorded location precision.

@@ -1,0 +1,23 @@
+{
+  "id": "syndicated_copies",
+  "title": "Three publishers repeating one fictional wire report",
+  "question": "How much independent support exists for the reported warehouse explosion?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {"id": "wire", "name": "Fictional Wire", "organisation": "fictional_wire"},
+    {"id": "daily_a", "name": "Fictional Daily A, wire syndication", "organisation": "fictional_wire"},
+    {"id": "daily_b", "name": "Fictional Daily B, wire syndication", "organisation": "fictional_wire"}
+  ],
+  "events": [
+    {"key": "original", "source": "wire", "title": "Warehouse explosion reported in fictional Eastford", "summary": "A single witness reports an explosion. The cause and casualty count remain unverified. This is one Fictional Wire dispatch.", "published_at": "2026-09-06T09:00:00Z", "reliability": "C"},
+    {"key": "copy_a", "source": "daily_a", "title": "Warehouse explosion reported in fictional Eastford", "summary": "A single witness reports an explosion. The cause and casualty count remain unverified. This is one Fictional Wire dispatch.", "published_at": "2026-09-06T09:05:00Z", "reliability": "C"},
+    {"key": "copy_b", "source": "daily_b", "title": "Warehouse explosion reported in fictional Eastford", "summary": "A single witness reports an explosion. The cause and casualty count remain unverified. This is one Fictional Wire dispatch.", "published_at": "2026-09-06T09:10:00Z", "reliability": "C"}
+  ],
+  "reference": {
+    "reference_facts": ["All three items repeat one dispatch and one witness."],
+    "required_event_keys": ["original"],
+    "required_caveats": ["Count the declared reporting organisation once.", "Repeated publication does not establish claim agreement independently."],
+    "forbidden_inferences": ["Three independent organisations confirm the explosion.", "Repetition warrants high confidence or grade 1."],
+    "expected_declared_organisation_groups": 1
+  }
+}

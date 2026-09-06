@@ -1,0 +1,23 @@
+{
+  "id": "conflicting_reports",
+  "title": "Conflicting reports about a fictional port",
+  "question": "What can be established about Northport reopening, and what remains disputed?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {"id": "port_operator", "name": "Fictional Northport operator", "organisation": "operator", "flags": ["interested_party"]},
+    {"id": "harbour_authority", "name": "Fictional harbour authority", "organisation": "authority", "flags": ["authoritative"]},
+    {"id": "ship_counter", "name": "Fictional vessel counter", "organisation": "counter", "instrument": true}
+  ],
+  "events": [
+    {"key": "operator_open", "source": "port_operator", "title": "Northport operator announces full reopening", "summary": "The operator says all cargo terminals reopened at 08:00 UTC on 6 September. No supporting throughput data is attached.", "published_at": "2026-09-06T09:00:00Z", "reliability": "C"},
+    {"key": "authority_partial", "source": "harbour_authority", "title": "Northport cargo terminals are not fully reopened", "summary": "The harbour authority says only berth 1 accepts cargo; berths 2 to 5 remain closed pending inspection. This directly disputes the operator's full-reopening announcement.", "published_at": "2026-09-06T10:00:00Z", "reliability": "B"},
+    {"key": "vessel_count", "source": "ship_counter", "title": "Northport approach sensor counts two arrivals", "summary": "Two vessel transits were detected in the approach channel from 08:00 to 10:00 UTC. The sensor cannot establish which berth was used or whether cargo was discharged.", "published_at": "2026-09-06T10:15:00Z", "reliability": "B"}
+  ],
+  "reference": {
+    "reference_facts": ["The operator claims full reopening; the authority explicitly limits access to berth 1.", "Two detected arrivals establish neither terminal capacity nor cargo discharge."],
+    "required_event_keys": ["operator_open", "authority_partial"],
+    "counterevidence_event_keys": ["authority_partial"],
+    "required_caveats": ["Attribute incompatible claims.", "Distinguish vessel movements from terminal operation."],
+    "forbidden_inferences": ["Full reopening is confirmed by the vessel count.", "The sensor proves the authority is wrong."]
+  }
+}

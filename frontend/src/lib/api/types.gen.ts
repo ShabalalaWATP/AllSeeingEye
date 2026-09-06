@@ -501,6 +501,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Input */
+        post: operations["import_input_api_research_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Research Run */
+        get: operations["get_research_run_api_research_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/export/{format}": {
         parameters: {
             query?: never;
@@ -612,6 +646,23 @@ export interface paths {
         };
         /** Social Board */
         get: operations["social_board_api_trackers_social_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["list_sources_api_sources_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1238,11 +1289,10 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            /**
-             * Indicator Id
-             * Format: uuid
-             */
-            indicator_id: string;
+            /** Indicator Id */
+            indicator_id: string | null;
+            /** Schedule Id */
+            schedule_id: string | null;
             /**
              * Fired At
              * Format: date-time
@@ -1460,6 +1510,13 @@ export interface components {
             /** Os Layers */
             os_layers: string[];
         };
+        /** CapturedIdentityValueOut */
+        CapturedIdentityValueOut: {
+            /** Namespace */
+            namespace: string;
+            /** Value */
+            value: string;
+        };
         /**
          * Category
          * @enum {string}
@@ -1475,6 +1532,58 @@ export interface components {
             /** Newest */
             newest: string | null;
         };
+        /** ChallengeAdvocacyOut */
+        ChallengeAdvocacyOut: {
+            /** Target */
+            target: string;
+            /** Argument */
+            argument: string;
+            /** Evidence */
+            evidence: string[];
+            /** Lower Confidence */
+            lower_confidence: boolean;
+            /** Rationale */
+            rationale: string;
+            confidence_before: components["schemas"]["Confidence"] | null;
+            confidence_after: components["schemas"]["Confidence"] | null;
+        };
+        /** ChallengeReviewOut */
+        ChallengeReviewOut: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Statement */
+            statement: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "unavailable" | "invalid";
+            advocacy: components["schemas"]["ChallengeAdvocacyOut"] | null;
+            /** Explanation */
+            explanation: string;
+        };
+        /** ChallengeSearchOut */
+        ChallengeSearchOut: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Statement */
+            statement: string;
+            /** Terms */
+            terms: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "attempted" | "unavailable" | "plan_missing" | "budget_exhausted";
+            /** Attempts */
+            attempts: components["schemas"]["CollectionAttemptOut"][];
+            /** Collected Items */
+            collected_items: number;
+            /** Selected Event Ids */
+            selected_event_ids: string[];
+            /** Explanation */
+            explanation: string;
+        };
         /**
          * ChangeKind
          * @enum {string}
@@ -1489,6 +1598,50 @@ export interface components {
             /** Totp Code */
             totp_code?: string | null;
         };
+        /** CitationCheckOut */
+        CitationCheckOut: {
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            status: components["schemas"]["CitationStatus"];
+            /** Evidence Id */
+            evidence_id: string | null;
+            /** Source Content Hash */
+            source_content_hash: string | null;
+            excerpt: components["schemas"]["FrozenExcerptOut"] | null;
+            /** Indicators */
+            indicators: components["schemas"]["MismatchIndicatorOut"][];
+            /** Reasons */
+            reasons: string[];
+        };
+        /**
+         * CitationStatus
+         * @enum {string}
+         */
+        CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CollectionAttemptOut */
+        CollectionAttemptOut: {
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            status: components["schemas"]["CollectionStatus"];
+            /** Result Count */
+            result_count: number;
+            /** Explanation */
+            explanation: string;
+            /** Language */
+            language: string | null;
+        };
+        /**
+         * CollectionStatus
+         * @enum {string}
+         */
+        CollectionStatus: "completed" | "empty" | "unavailable" | "unsupported" | "failed" | "timed_out" | "budget_exhausted";
         /**
          * Confidence
          * @enum {string}
@@ -1721,6 +1874,13 @@ export interface components {
             /** Reasons */
             reasons: string[];
         };
+        /** EvidenceAttributeOut */
+        EvidenceAttributeOut: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: string | number | boolean | null;
+        };
         /**
          * ExportFormat
          * @enum {string}
@@ -1733,6 +1893,22 @@ export interface components {
              * Format: email
              */
             email: string;
+        };
+        /** FrozenExcerptOut */
+        FrozenExcerptOut: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /** Text */
+            text: string;
+            /** Sha256 */
+            sha256: string;
         };
         /**
          * GeoConfidence
@@ -1953,6 +2129,16 @@ export interface components {
             /** Improvements */
             improvements: string[];
         };
+        /** JudgementCitationCheckOut */
+        JudgementCitationCheckOut: {
+            /** Judgement Id */
+            judgement_id: string;
+            status: components["schemas"]["CitationStatus"];
+            /** Citations */
+            citations: components["schemas"]["CitationCheckOut"][];
+            /** Reasons */
+            reasons: string[];
+        };
         /** LlmProfileIn */
         LlmProfileIn: {
             /** Name */
@@ -2168,6 +2354,20 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** MismatchIndicatorOut */
+        MismatchIndicatorOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "name_mismatch" | "date_mismatch" | "number_mismatch" | "negation_mismatch";
+            /** Claim Values */
+            claim_values: string[];
+            /** Excerpt Values */
+            excerpt_values: string[];
+            /** Explanation */
+            explanation: string;
+        };
         /** PirIn */
         PirIn: {
             /** Text */
@@ -2309,6 +2509,23 @@ export interface components {
             /** Limitations */
             limitations: string[];
         };
+        /** ReportChallengeOut */
+        ReportChallengeOut: {
+            /** Searches */
+            searches: components["schemas"]["ChallengeSearchOut"][];
+            /** Reviews */
+            reviews: components["schemas"]["ChallengeReviewOut"][];
+            /** Redrafted */
+            redrafted: boolean;
+            /** Method Version */
+            method_version: string;
+            /** Request Limit */
+            request_limit: number;
+            /** Seconds Limit */
+            seconds_limit: number;
+            /** Limitations */
+            limitations: string[];
+        };
         /** ReportChangeOut */
         ReportChangeOut: {
             /** Section */
@@ -2320,6 +2537,15 @@ export interface components {
             before: string | null;
             /** After */
             after: string | null;
+        };
+        /** ReportCitationChecksOut */
+        ReportCitationChecksOut: {
+            /** Method Version */
+            method_version: string;
+            /** Judgements */
+            judgements: components["schemas"]["JudgementCitationCheckOut"][];
+            /** Limitations */
+            limitations: string[];
         };
         /** ReportComparisonOut */
         ReportComparisonOut: {
@@ -2357,6 +2583,17 @@ export interface components {
             plan?: string | null;
             /** Team Id */
             team_id?: string | null;
+            research_mode?: components["schemas"]["ResearchMode"] | null;
+            /** Research Languages */
+            research_languages?: string[];
+            /** @default general */
+            research_focus: components["schemas"]["ResearchFocus"];
+            /** Research Subject */
+            research_subject?: string | null;
+            /** Research Input Id */
+            research_input_id?: string | null;
+            /** Parent Report Id */
+            parent_report_id?: string | null;
         };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {
@@ -2420,6 +2657,9 @@ export interface components {
             observed_at?: string | null;
             /** Story Id */
             story_id?: string | null;
+            source_rating?: components["schemas"]["SourceRatingOut"] | null;
+            /** Attributes */
+            attributes?: components["schemas"]["EvidenceAttributeOut"][];
         };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
@@ -2535,6 +2775,10 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            research_context?: components["schemas"]["ResearchContextOut"] | null;
+            challenge?: components["schemas"]["ReportChallengeOut"] | null;
+            citation_checks?: components["schemas"]["ReportCitationChecksOut"] | null;
+            research?: components["schemas"]["ResearchReceiptOut"] | null;
             assessment?: components["schemas"]["ReportAssessmentOut"] | null;
             /** Period From */
             period_from: string | null;
@@ -2607,6 +2851,265 @@ export interface components {
          * @enum {string}
          */
         RequestStatus: "pending" | "approved" | "rejected";
+        /** ResearchChange */
+        ResearchChange: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "baseline" | "unchanged" | "changed" | "unavailable";
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+            /** Previous Report Id */
+            previous_report_id?: string | null;
+            /** Previous Version Id */
+            previous_version_id?: string | null;
+            /** Baseline Version Id */
+            baseline_version_id?: string | null;
+            /**
+             * Added
+             * @default 0
+             */
+            added: number;
+            /**
+             * Removed
+             * @default 0
+             */
+            removed: number;
+            /**
+             * Updated
+             * @default 0
+             */
+            updated: number;
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: string[];
+        };
+        /** ResearchContextOut */
+        ResearchContextOut: {
+            /** Method Version */
+            method_version: string;
+            /** Timeline */
+            timeline: components["schemas"]["ResearchTimelineEntryOut"][];
+            /** Identity Candidates */
+            identity_candidates: components["schemas"]["ResearchIdentityCandidateOut"][];
+            /** Source Chains */
+            source_chains: components["schemas"]["ResearchSourceEdgeOut"][];
+            /** Source Relationships */
+            source_relationships: components["schemas"]["ResearchSourceRelationshipOut"][];
+            /** Limitations */
+            limitations: string[];
+        };
+        /**
+         * ResearchFocus
+         * @enum {string}
+         */
+        ResearchFocus: "general" | "company" | "domain" | "document" | "media";
+        /** ResearchIdentityCandidateOut */
+        ResearchIdentityCandidateOut: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Identifiers */
+            identifiers: components["schemas"]["CapturedIdentityValueOut"][];
+            /** Aliases */
+            aliases: components["schemas"]["CapturedIdentityValueOut"][];
+            /** Declared Match Status */
+            declared_match_status: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "unverified_candidate";
+        };
+        /** ResearchInputOut */
+        ResearchInputOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Filename */
+            filename: string;
+            /** Media Type */
+            media_type: string;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Imported At
+             * Format: date-time
+             */
+            imported_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Event Count */
+            event_count: number;
+            /** Extracted Characters */
+            extracted_characters: number;
+            /** Preview */
+            preview: string;
+            /** Limitations */
+            limitations: string[];
+            /** Previews */
+            previews?: components["schemas"]["ResearchInputPreviewOut"][];
+        };
+        /** ResearchInputPreviewOut */
+        ResearchInputPreviewOut: {
+            /** Seconds */
+            seconds: number;
+            /** Sha256 */
+            sha256: string;
+            /** Png Base64 */
+            png_base64: string;
+        };
+        /**
+         * ResearchMode
+         * @enum {string}
+         */
+        ResearchMode: "quick" | "detailed";
+        /** ResearchReceiptOut */
+        ResearchReceiptOut: {
+            /** Question */
+            question: string;
+            /** Mode */
+            mode: string;
+            /** Focus */
+            focus: string;
+            /** Languages */
+            languages: string[];
+            /** Terms */
+            terms: string[];
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Attempts */
+            attempts: components["schemas"]["CollectionAttemptOut"][];
+            /** Collected Items */
+            collected_items: number;
+            /** Policy Version */
+            policy_version: string;
+        };
+        /** ResearchRunOut */
+        ResearchRunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            stage: components["schemas"]["ResearchStage"];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Report Id */
+            report_id: string | null;
+        };
+        /** ResearchSourceEdgeOut */
+        ResearchSourceEdgeOut: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Collector Source Id */
+            collector_source_id: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "declared_publisher" | "declared_account" | "declared_source";
+            /** Declared Name */
+            declared_name: string | null;
+            /** Declared Id */
+            declared_id: string | null;
+            /** Declared Url */
+            declared_url: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "unverified_attribution";
+        };
+        /** ResearchSourceRelationshipOut */
+        ResearchSourceRelationshipOut: {
+            /** Evidence Labels */
+            evidence_labels: [
+                string,
+                string
+            ];
+            /** Reasons */
+            reasons: string[];
+            /** Shared Parent */
+            shared_parent: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "unverified_relationship";
+        };
+        /**
+         * ResearchStage
+         * @enum {string}
+         */
+        ResearchStage: "planning" | "collecting" | "drafting" | "challenging" | "validating" | "saving" | "completed" | "cancelled" | "failed" | "timed_out";
+        /** ResearchTimelineEntryOut */
+        ResearchTimelineEntryOut: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Title */
+            title: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Observed At */
+            observed_at: string | null;
+            /** Timestamp Basis */
+            timestamp_basis: string | null;
+            /** Date Precision */
+            date_precision: string | null;
+            /** Current Snapshot */
+            current_snapshot: boolean | null;
+            /** Record Kind */
+            record_kind: string | null;
+            /** Temporal Attributes */
+            temporal_attributes: components["schemas"]["EvidenceAttributeOut"][];
+            /** Limitations */
+            limitations: string[];
+        };
         /** ResetLinkOut */
         ResetLinkOut: {
             /** Reset Link */
@@ -2656,6 +3159,20 @@ export interface components {
             enabled: boolean;
             /** Team Id */
             team_id?: string | null;
+            /**
+             * Notify On Change
+             * @default false
+             */
+            notify_on_change: boolean;
+            /** Question */
+            question?: string | null;
+            research_mode?: components["schemas"]["ResearchMode"] | null;
+            /** Research Languages */
+            research_languages?: string[];
+            /** @default general */
+            research_focus: components["schemas"]["ResearchFocus"];
+            /** Research Subject */
+            research_subject?: string | null;
         };
         /** ScheduleOut */
         ScheduleOut: {
@@ -2705,6 +3222,19 @@ export interface components {
             last_error: string | null;
             /** Team Id */
             team_id: string | null;
+            /** Notify On Change */
+            notify_on_change: boolean;
+            last_change: components["schemas"]["ResearchChange"] | null;
+            /** Last Change Summary */
+            last_change_summary: string | null;
+            /** Question */
+            question: string | null;
+            research_mode: components["schemas"]["ResearchMode"] | null;
+            /** Research Languages */
+            research_languages: string[];
+            research_focus: components["schemas"]["ResearchFocus"];
+            /** Research Subject */
+            research_subject: string | null;
         };
         /** SchedulesOut */
         SchedulesOut: {
@@ -2866,15 +3396,52 @@ export interface components {
             flags: string[];
             health: components["schemas"]["SourceHealthOut"];
         };
+        /** SourceRatingOut */
+        SourceRatingOut: {
+            /** Policy Version */
+            policy_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "editorial" | "unassessed";
+            assessed_grade: components["schemas"]["Reliability"] | null;
+            /** Basis */
+            basis: string;
+            /** Scope */
+            scope: string;
+            /** Limitations */
+            limitations: string[];
+            /**
+             * Provenance Role
+             * @enum {string}
+             */
+            provenance_role: "originator" | "publisher" | "aggregator" | "platform" | "unassessed";
+            /** Publisher Reliability Assessed */
+            publisher_reliability_assessed: boolean;
+            /** Reviewed At */
+            reviewed_at: string | null;
+        };
         /**
          * SourceStatus
          * @enum {string}
          */
         SourceStatus: "idle" | "healthy" | "degraded" | "disabled";
-        /** SourcesOut */
-        SourcesOut: {
-            /** Items */
-            items: components["schemas"]["SourceOut"][];
+        /** SourceSummaryOut */
+        SourceSummaryOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Organisation */
+            organisation: string;
+            /** Parent Organisation */
+            parent_organisation: string | null;
+            category: components["schemas"]["Category"];
+            /** Language */
+            language: string;
+            reliability: components["schemas"]["Reliability"];
+            rating: components["schemas"]["SourceRatingOut"];
         };
         /** SpaceBoardOut */
         SpaceBoardOut: {
@@ -3091,6 +3658,16 @@ export interface components {
             high_percent: number;
             /** Range Description */
             range_description: string;
+        };
+        /** SourcesOut */
+        ase__api__routers__sources__SourcesOut: {
+            /** Items */
+            items: components["schemas"]["SourceSummaryOut"][];
+        };
+        /** SourcesOut */
+        ase__api__schemas_events__SourcesOut: {
+            /** Items */
+            items: components["schemas"]["SourceOut"][];
         };
     };
     responses: never;
@@ -3872,7 +4449,9 @@ export interface operations {
     create_report_api_reports_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Research-Run-ID"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3905,7 +4484,9 @@ export interface operations {
     regenerate_report_api_reports__report_id__versions_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Research-Run-ID"?: string | null;
+            };
             path: {
                 report_id: string;
             };
@@ -4015,6 +4596,72 @@ export interface operations {
                 };
                 content: {
                     "text/plain": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_input_api_research_inputs_post: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchInputOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_research_run_api_research_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchRunOut"];
                 };
             };
             /** @description Validation Error */
@@ -4206,6 +4853,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SocialBoardOut"];
+                };
+            };
+        };
+    };
+    list_sources_api_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ase__api__routers__sources__SourcesOut"];
                 };
             };
         };
@@ -5202,7 +5869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SourcesOut"];
+                    "application/json": components["schemas"]["ase__api__schemas_events__SourcesOut"];
                 };
             };
         };

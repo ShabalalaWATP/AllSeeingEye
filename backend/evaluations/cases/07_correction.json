@@ -1,0 +1,21 @@
+{
+  "id": "correction",
+  "title": "A later correction changes a fictional incident's casualty figure",
+  "question": "How should the casualty reporting from fictional Redhaven be presented at the cutoff?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {"id": "local_reporter", "name": "Fictional local reporter", "organisation": "local_reporter"},
+    {"id": "rescue_office", "name": "Fictional rescue office", "organisation": "rescue_office", "flags": ["authoritative"]}
+  ],
+  "events": [
+    {"key": "early_count", "source": "local_reporter", "title": "Early Redhaven report gives 20 deaths", "summary": "The reporter attributes a provisional figure of 20 deaths to an unnamed contact. No list or official statement is supplied.", "published_at": "2026-09-06T08:00:00Z", "reliability": "C"},
+    {"key": "corrected_count", "source": "rescue_office", "title": "Redhaven rescue office corrects casualty figures", "summary": "At 11:00 UTC the rescue office reports three confirmed deaths and 20 injuries. It says the earlier 20-death figure confused injuries with deaths. Its count remains subject to revision.", "published_at": "2026-09-06T11:00:00Z", "reliability": "B"}
+  ],
+  "reference": {
+    "reference_facts": ["The office reports three confirmed deaths and 20 injuries at 11:00 UTC.", "The earlier figure was provisional and is explicitly corrected by the later bulletin."],
+    "required_event_keys": ["early_count", "corrected_count"],
+    "counterevidence_event_keys": ["corrected_count"],
+    "required_caveats": ["Attribute the corrected count and its revision caveat.", "Explain the incompatibility instead of averaging or adding the two reports."],
+    "forbidden_inferences": ["There are 23 deaths.", "The best estimate is the average of three and 20.", "The corrected count is independently verified final truth."]
+  }
+}

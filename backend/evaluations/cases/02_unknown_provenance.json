@@ -1,0 +1,18 @@
+{
+  "id": "unknown_provenance",
+  "title": "Multiple feeds with unknown original provenance",
+  "question": "Do these posts establish that a fictional dam has failed?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [],
+  "events": [
+    {"key": "forward_one", "source": "unregistered_forward", "title": "Forwarded message claims Greywater dam collapse", "summary": "An anonymous forwarded message reports a collapse. No original author, photograph, timestamp or location verification is supplied.", "published_at": "2026-09-06T09:30:00Z"},
+    {"key": "forward_two", "source": "unregistered_reposter", "title": "Greywater failure rumour appears on another feed", "summary": "The repost links to the same anonymous message. Its original reporting organisation is unknown.", "published_at": "2026-09-06T10:00:00Z"}
+  ],
+  "reference": {
+    "reference_facts": ["Only unverified forwarded allegations are supplied.", "No declared reporting organisation is known."],
+    "required_event_keys": ["forward_one", "forward_two"],
+    "required_caveats": ["Unknown provenance cannot establish independent corroboration.", "A collapse cannot be established from this packet."],
+    "forbidden_inferences": ["Two feeds equal two independent witnesses.", "The collapse or its absence is confirmed."],
+    "expected_declared_organisation_groups": 0
+  }
+}

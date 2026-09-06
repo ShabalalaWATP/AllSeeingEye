@@ -145,7 +145,11 @@ class SqlWarningStore:
             return None if row is None else _alert_from_row(row)
 
     async def add_alert(self, alert: Alert, indicator: Indicator) -> bool:
-        if alert.report_id is not None:
+        if (
+            alert.report_id is not None
+            or alert.indicator_id is None
+            or alert.schedule_id is not None
+        ):
             return False  # Reports are linked only through the separately authorised path.
         async with self._session_factory() as session:
             row = await session.get(IndicatorRow, alert.indicator_id)
@@ -170,7 +174,11 @@ class SqlWarningStore:
     async def attach_report(self, alert_id: UUID, report_id: UUID) -> bool:
         async with self._session_factory() as session:
             row = await session.get(AlertRow, alert_id)
-            indicator = None if row is None else await session.get(IndicatorRow, row.indicator_id)
+            indicator = (
+                None
+                if row is None or row.indicator_id is None
+                else await session.get(IndicatorRow, row.indicator_id)
+            )
             if row is None or indicator is None:
                 return False
             access = await self._authorise(session, indicator, for_update=True)

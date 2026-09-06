@@ -26,6 +26,7 @@ export const alert: Alert = {
   team_id: null,
   id: 'd1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1',
   indicator_id: indicator.id,
+  schedule_id: null,
   fired_at: '2026-09-05T11:30:00Z',
   title: 'Kharkiv strikes: 3 items in the last 6 h',
   summary: 'Shelling in Kharkiv; Drone strike near Sumy; Strike on a depot',

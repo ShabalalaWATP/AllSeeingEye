@@ -1,9 +1,10 @@
 """Conservative grouping of declared provenance, without asserting source independence."""
 
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ase.domain.event_similarity import COPY_SIMILARITY, jaccard, text_tokens
+from ase.domain.source_ratings import SourceRating, unassessed_source_rating
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,6 +16,7 @@ class SourceProfile:
     name: str
     instrument: bool = False
     flags: frozenset[str] = frozenset()
+    rating: SourceRating = field(default_factory=unassessed_source_rating)
 
 
 class DisjointGroups:

@@ -17,6 +17,7 @@ NO_STORE_PREFIXES = (
     "/api/teams",
     "/api/direction",
     "/api/reports",
+    "/api/research",
     "/api/report-search",
     "/api/warning",
     "/api/schedules",
@@ -25,6 +26,8 @@ NO_STORE_PREFIXES = (
 DOCS_PREFIXES = ("/api/docs", "/api/openapi.json")
 API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
+IMPORT_MAX_BODY_BYTES = 8 * 1024 * 1024
+IMPORT_PATH = "/api/research/inputs"
 
 
 class SecurityHeadersMiddleware:
@@ -73,8 +76,13 @@ class BodySizeLimitMiddleware:
             await self.app(scope, receive, send)
             return
         declared = Headers(scope=scope).get("content-length")
-        if declared is not None and declared.isdigit() and int(declared) > self.max_bytes:
+        importing = scope.get("path") == IMPORT_PATH and scope.get("method") == "POST"
+        limit = IMPORT_MAX_BODY_BYTES if importing else self.max_bytes
+        if declared is not None and declared.isdigit() and int(declared) > limit:
             await self._reject(scope, receive, send)
+            return
+        if importing:
+            await self._stream_import(scope, receive, send)
             return
 
         buffered: list[Message] = []
@@ -97,6 +105,37 @@ class BodySizeLimitMiddleware:
             return await receive()
 
         await self.app(scope, replay, send)
+
+    async def _stream_import(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Authenticate upload routes before allocating a large request body.
+
+        The route reads only after its identity dependencies succeed. Guard chunked
+        input here as well as in the route; ordinary JSON requests keep the small cap.
+        """
+        total = 0
+        started = False
+
+        async def limited_receive() -> Message:
+            nonlocal total
+            message = await receive()
+            if message["type"] == "http.request":
+                total += len(message.get("body", b""))
+                if total > IMPORT_MAX_BODY_BYTES:
+                    raise PayloadTooLarge()
+            return message
+
+        async def tracked_send(message: Message) -> None:
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self.app(scope, limited_receive, tracked_send)
+        except PayloadTooLarge:
+            if started:
+                raise
+            await self._reject(scope, receive, send)
 
     async def _reject(self, scope: Scope, receive: Receive, send: Send) -> None:
         response = await handle_app_error(Request(scope), PayloadTooLarge())

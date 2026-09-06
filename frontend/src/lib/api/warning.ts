@@ -31,7 +31,8 @@ export type Indicator = z.infer<typeof indicatorSchema>;
 export const alertSchema = z.object({
   team_id: z.uuid().nullable(),
   id: z.string(),
-  indicator_id: z.string(),
+  indicator_id: z.string().nullable(),
+  schedule_id: z.string().nullable(),
   fired_at: z.string(),
   title: z.string(),
   summary: z.string(),

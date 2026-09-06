@@ -11,13 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import CollectionPlanRow, ReportRow, ScheduleRow
+from ase.adapters.persistence.schedule_changes import record_change
 from ase.application.access import AccessContext, AccessPolicy
 from ase.domain.access import Visibility
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_changes import change_from_dict, change_to_dict
 from ase.domain.schedules import Schedule
 
 
 def _from_row(row: ScheduleRow) -> Schedule:
+    options = row.research_options or {}
     return Schedule(
         id=row.id,
         name=row.name,
@@ -36,6 +40,13 @@ def _from_row(row: ScheduleRow) -> Schedule:
         last_report_id=row.last_report_id,
         last_error=row.last_error,
         team_id=row.team_id,
+        notify_on_change=row.notify_on_change,
+        last_change=change_from_dict(row.last_change),
+        question=row.question,
+        research_mode=ResearchMode(options["mode"]) if options.get("mode") else None,
+        research_languages=tuple(options.get("languages") or ["en"]),
+        research_focus=ResearchFocus(options.get("focus", "general")),
+        research_subject=options.get("subject"),
     )
 
 
@@ -56,6 +67,15 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
     row.last_report_id = schedule.last_report_id
     row.last_error = schedule.last_error
     row.team_id = schedule.team_id
+    row.notify_on_change = schedule.notify_on_change
+    row.last_change = change_to_dict(schedule.last_change)
+    row.question = schedule.question
+    row.research_options = {
+        "mode": schedule.research_mode.value if schedule.research_mode else None,
+        "languages": list(schedule.research_languages),
+        "focus": schedule.research_focus.value,
+        "subject": schedule.research_subject,
+    }
 
 
 class SqlScheduleRepository:
@@ -170,6 +190,7 @@ class SqlScheduleStore:
                     )
                 except (Forbidden, InvalidRequest, NotFound):
                     return
+                await record_change(session, row, report, access, ran_at)
             row.last_run_at = ran_at
             row.next_run_at = next_run_at
             row.last_error = error

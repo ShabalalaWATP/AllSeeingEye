@@ -9,6 +9,7 @@ from uuid import UUID
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     Integer,
@@ -150,6 +151,13 @@ class IndicatorRow(Base):
 
 class AlertRow(Base):
     __tablename__ = "alerts"
+    __table_args__ = (
+        CheckConstraint(
+            "(indicator_id IS NOT NULL AND schedule_id IS NULL) OR "
+            "(indicator_id IS NULL AND schedule_id IS NOT NULL)",
+            name="ck_alerts_one_origin",
+        ),
+    )
 
     team_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("teams.id", name="fk_alerts_team_id_teams"), nullable=True, index=True
@@ -157,7 +165,8 @@ class AlertRow(Base):
     created_by: Mapped[UUID | None] = mapped_column(Uuid, nullable=True, index=True)
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
-    indicator_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    indicator_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True, index=True)
+    schedule_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True, index=True)
     fired_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
     title: Mapped[str] = mapped_column(String(200))
     summary: Mapped[str] = mapped_column(String(1000), default="")
@@ -180,6 +189,10 @@ class ScheduleRow(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     template_id: Mapped[str] = mapped_column(String(40))
+    question: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    notify_on_change: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    last_change: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    research_options: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     country_iso: Mapped[str | None] = mapped_column(String(2), nullable=True)
     plan_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     hour_utc: Mapped[int] = mapped_column(Integer)

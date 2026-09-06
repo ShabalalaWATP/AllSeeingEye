@@ -3,6 +3,14 @@ import type { Schedule } from '@/lib/api/schedules';
 
 export const schedule: Schedule = {
   team_id: null,
+  question: null,
+  notify_on_change: false,
+  last_change: null,
+  last_change_summary: null,
+  research_mode: null,
+  research_languages: ['en'],
+  research_focus: 'general',
+  research_subject: null,
   id: 'e1e1e1e1-e1e1-4e1e-8e1e-e1e1e1e1e1e1',
   name: 'Morning INTSUM',
   template_id: 'intsum',

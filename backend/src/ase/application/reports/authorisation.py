@@ -5,6 +5,7 @@ from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.research_inputs import ParentReference, require_parent
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.report_records import ReportRecord
@@ -64,11 +65,14 @@ class ReportAuthorisation:
         request: ReportRequest,
         record: ReportRecord | None,
         plan: CollectionPlan | None,
+        parent: ParentReference | None = None,
     ) -> None:
         # No writes have started. End any read snapshot left by profile lookups before
         # acquiring the shared membership/account guard for the final atomic write.
         await self._uow.rollback()
         latest_plan = await self.prepare(actor, request, record, for_update=True)
+        if parent is not None:
+            await require_parent(self._access, self._reports, actor, request, parent)
         if plan is not None and (latest_plan is None or latest_plan.updated_at != plan.updated_at):
             raise InvalidRequest("The collection plan changed during generation. Try again.")
         if record is not None:

@@ -2,7 +2,16 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr
+
+from ase.api.schemas_source_ratings import SourceRatingOut
+
+
+class EvidenceAttributeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    key: str
+    value: StrictStr | StrictInt | StrictFloat | StrictBool | None
 
 
 class ReportEvidenceOut(BaseModel):
@@ -35,3 +44,5 @@ class ReportEvidenceOut(BaseModel):
     geo_confidence: str | None = None
     observed_at: datetime | None = None
     story_id: str | None = None
+    source_rating: SourceRatingOut | None = None
+    attributes: list[EvidenceAttributeOut] = Field(default_factory=list)

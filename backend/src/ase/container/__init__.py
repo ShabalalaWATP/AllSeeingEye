@@ -86,6 +86,8 @@ from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.features import FeatureWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
+from ase.container.research import research_service
+from ase.container.research_inputs import ResearchInputWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -94,7 +96,7 @@ from ase.infrastructure.settings import Environment, Settings
 log = structlog.get_logger(__name__)
 
 
-class Container(FeatureWiring):
+class Container(FeatureWiring, ResearchInputWiring):
     def __init__(
         self,
         settings: Settings,
@@ -118,6 +120,7 @@ class Container(FeatureWiring):
         self.generator = SecretsTokenGenerator()
         self.links = PublicLinkBuilder(settings.public_base_url)
         self.limits = settings.rate_limits
+        self.initialise_research_inputs(settings)
         self.refresh_ttl = timedelta(days=settings.refresh_token_days)
         # Verified against on unknown emails so login timing does not reveal existence.
         self._dummy_hash = self.hasher.hash(secrets.token_urlsafe(16))
@@ -143,6 +146,21 @@ class Container(FeatureWiring):
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
         self.http = FeedHttpClient(settings.feeds_user_agent)
+        self.research = research_service(
+            self.http,
+            self.clock,
+            tuple(settings.disabled_feed_ids),
+            companies_house_key=(
+                settings.companies_house_key.get_secret_value()
+                if settings.companies_house_key
+                else None
+            ),
+            certificate_transparency_key=(
+                settings.certificate_transparency_key.get_secret_value()
+                if settings.certificate_transparency_key
+                else None
+            ),
+        )
         self.connectors: list[FeedConnector] = (
             list(connectors)
             if connectors is not None
@@ -153,7 +171,9 @@ class Container(FeatureWiring):
         )
         if connectors is None and watchlists.spec.id not in settings.disabled_feed_ids:
             self.connectors.append(watchlists)
-        self.source_profiles = profiles_from_specs([c.spec for c in self.connectors])
+        self.source_profiles = profiles_from_specs(
+            [*(c.spec for c in self.connectors), *self.research_sources]
+        )
         self.grader = GradingService(self.store, self.source_profiles, self.clock)
         self.scheduler = FeedScheduler(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,

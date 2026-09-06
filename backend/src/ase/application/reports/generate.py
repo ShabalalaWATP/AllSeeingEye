@@ -26,10 +26,14 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.reports import ReportRepository
+from ase.application.ports.research import ResearchCollection
+from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.production import Job, Producer
+from ase.application.reports.progress import Progress
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.research_inputs import ReportResearchInputs
 from ase.application.reports.scope import (
     conflict_background,
     report_scope,
@@ -78,6 +82,9 @@ class GenerateReportUseCase:
         access: AccessPolicy,
         backgrounds: Mapping[str, Callable[[], Awaitable[str]]] | None = None,
         url_resolver: EvidenceUrlResolver | None = None,
+        research: ResearchCollection | None = None,
+        private_store_factory: Callable[[], EventStore] | None = None,
+        research_inputs: ResearchInputStore | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -87,6 +94,8 @@ class GenerateReportUseCase:
             gateway=gateway,
             usage=usage,
             url_resolver=url_resolver,
+            research=research,
+            private_store_factory=private_store_factory,
         )
         self._countries = countries
         self._conflicts = conflicts
@@ -101,21 +110,29 @@ class GenerateReportUseCase:
         self._auditor = auditor
         self._uow = uow
         self._authorisation = ReportAuthorisation(access, reports, plans, aois, uow)
+        self._research_inputs = ReportResearchInputs(access, reports, research_inputs)
 
     async def execute(
-        self, actor: User, request: ReportRequest, context: RequestContext
+        self,
+        actor: User,
+        request: ReportRequest,
+        context: RequestContext,
+        *,
+        progress: Progress | None = None,
     ) -> tuple[ReportRecord, ReportVersion]:
         """A new report from the live evidence: version 1 of a new record."""
         template = self._template(request)
         plan = await self._authorisation.prepare(actor, request)
+        inputs = await self._research_inputs.prepare(actor, request)
         profile = await self._prepare(actor, request.profile_id, template)
         now = self._clock.now()
-        job = await self._job(actor, template, request, profile, now, plan=plan)
+        job = inputs.apply(await self._job(actor, template, request, profile, now, plan=plan))
         await self._uow.rollback()
         version = await self._producer.produce(
             job,
             self._profile_for,
-            lambda: self._authorisation.finish(actor, request, None, plan),
+            lambda: self._authorisation.finish(actor, request, None, plan, inputs.parent),
+            progress=progress,
         )
         record = ReportRecord(
             id=version.report_id,
@@ -124,7 +141,7 @@ class GenerateReportUseCase:
             scope=dict(job.scope),
             period_from=now - job.window,
             period_to=now,
-            data_cutoff=now,
+            data_cutoff=version.data_cutoff or now,
             status=version.status,
             created_by=actor.id,
             created_at=now,
@@ -136,7 +153,12 @@ class GenerateReportUseCase:
         return record, version
 
     async def regenerate(
-        self, actor: User, report_id: UUID, context: RequestContext
+        self,
+        actor: User,
+        report_id: UUID,
+        context: RequestContext,
+        *,
+        progress: Progress | None = None,
     ) -> tuple[ReportRecord, ReportVersion]:
         """A further version of an existing report, judged against its previous judgements."""
         record = await self._reports.get(report_id)
@@ -149,6 +171,9 @@ class GenerateReportUseCase:
         previous = await self._reports.get_version(report_id, record.latest_version)
         if previous is None:
             raise NotFound()
+        inputs = await self._research_inputs.prepare(
+            actor, request, previous, owner_id=record.created_by
+        )
         template = self._template(request)
         profile = await self._prepare(actor, None, template)
         now = self._clock.now()
@@ -162,17 +187,19 @@ class GenerateReportUseCase:
             report_id=record.id,
             plan=plan,
         )
+        job = inputs.apply(job)
         await self._uow.rollback()
         version = await self._producer.produce(
             job,
             self._profile_for,
-            lambda: self._authorisation.finish(actor, request, record, plan),
+            lambda: self._authorisation.finish(actor, request, record, plan, inputs.parent),
+            progress=progress,
         )
         record.status = version.status
         record.latest_version = version.number
         record.period_from = now - job.window
         record.period_to = now
-        record.data_cutoff = now
+        record.data_cutoff = version.data_cutoff or now
         await self._reports.add_version(record, version)
         await self._finish(actor, record, version, context)
         return record, version

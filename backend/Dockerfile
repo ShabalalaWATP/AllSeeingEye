@@ -9,6 +9,11 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.26 /uv /uvx /bin/
 
 WORKDIR /app
 
+# Local media analysis uses system decoders inside a bounded worker process.
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends ffmpeg tesseract-ocr tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies first so the layer is cached independently of the source.
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev --no-install-project

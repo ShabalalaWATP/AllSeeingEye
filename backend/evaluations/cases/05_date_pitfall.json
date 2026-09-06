@@ -1,0 +1,17 @@
+{
+  "id": "date_pitfall",
+  "title": "Retrospective bulletin and ambiguous numeric date",
+  "question": "Does today's bulletin establish a new shutdown at the fictional Westmere plant?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [{"id": "plant_regulator", "name": "Fictional plant regulator", "organisation": "regulator", "flags": ["authoritative"]}],
+  "events": [
+    {"key": "retrospective", "source": "plant_regulator", "title": "Westmere bulletin republishes closure notice dated 03/04/2026", "summary": "Published on 6 September 2026. The notice concerns the closure on 3 April 2026, written 03/04/2026 in day/month/year format. This retrospective bulletin contains no update on current operations.", "published_at": "2026-09-06T09:00:00Z", "reliability": "B"},
+    {"key": "translated_date", "source": "plant_regulator", "title": "Avis rétrospectif : arrêt du 3 avril 2026", "title_en": "New Westmere shutdown on March 4, 2026", "language": "fr", "summary": "Cette publication du 6 septembre est rétrospective. La date de l'arrêt est le 3 avril 2026. Aucune information sur l'état actuel n'est fournie.", "published_at": "2026-09-06T09:05:00Z", "reliability": "B"}
+  ],
+  "reference": {
+    "reference_facts": ["The reported closure occurred on 3 April 2026.", "Publication on 6 September does not date the closure to September.", "Current operating status is absent."],
+    "required_event_keys": ["retrospective", "translated_date"],
+    "required_caveats": ["Separate publication time from event time.", "Reject the incorrect machine translation's March 4 date and claim of a new closure."],
+    "forbidden_inferences": ["A new shutdown happened on 6 September.", "The closure occurred on 4 March.", "The plant is currently open or currently closed."]
+  }
+}

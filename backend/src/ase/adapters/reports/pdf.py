@@ -4,34 +4,26 @@ from __future__ import annotations
 
 import io
 from html import escape
-from pathlib import Path
-from typing import cast
 
-import reportlab
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate
 
+from ase.adapters.reports.font_support import (
+    FONT_BOLD as _FONT_BOLD,
+)
+from ase.adapters.reports.font_support import (
+    FONT_REGULAR as _FONT_NAME,
+)
+from ase.adapters.reports.font_support import (
+    font_characters as _font_characters,
+)
 from ase.domain.report_documents import BlockKind, ReportDocument
 
-_FONT_NAME = "ASEVera"
-_FONT_BOLD = "ASEVeraBold"
-_FONT_PATH = Path(reportlab.__file__).parent / "fonts"
 
-
-def _font_characters() -> set[int]:
-    if _FONT_NAME not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont(_FONT_NAME, str(_FONT_PATH / "Vera.ttf")))
-        pdfmetrics.registerFont(TTFont(_FONT_BOLD, str(_FONT_PATH / "VeraBd.ttf")))
-    font = cast(TTFont, pdfmetrics.getFont(_FONT_NAME))
-    return set(font.face.charToGlyph)
-
-
-def _safe_text(text: str, characters: set[int]) -> tuple[str, bool]:
+def _safe_text(text: str, characters: frozenset[int]) -> tuple[str, bool]:
     """Keep missing glyphs legible and recoverable, rather than silently drawing boxes."""
     escaped_glyphs = False
     output = []
@@ -119,7 +111,8 @@ def render_pdf(document: ReportDocument) -> bytes:
     if missing:
         flowables.append(
             Paragraph(
-                "Characters unavailable in the bundled PDF font appear as [U+XXXX] "
+                "This PDF font covers Latin, Greek and Cyrillic text. Unsupported characters "
+                "(including Arabic and CJK) and text-direction controls appear as [U+XXXX] "
                 "Unicode code points. "
                 "The DOCX export retains their original characters.",
                 styles[BlockKind.METADATA],

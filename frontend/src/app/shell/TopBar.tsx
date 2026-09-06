@@ -12,6 +12,8 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/reports')) return 'Reports';
+  if (pathname.startsWith('/research')) return 'Research';
+  if (pathname.startsWith('/sources')) return 'Sources';
   if (pathname.startsWith('/trackers')) return 'Trackers';
   if (pathname.startsWith('/direction')) return 'Direction';
   if (pathname.startsWith('/warning')) return 'Warning';
@@ -55,7 +57,7 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
             </svg>
           </Button>
         )}
-        <p className="truncate font-mono text-xs uppercase tracking-[0.1em] text-muted sm:tracking-[0.2em]">
+        <p className="truncate font-mono text-xs uppercase tracking-normal text-muted sm:tracking-[0.2em]">
           {viewTitle(pathname, mode)}
         </p>
       </div>

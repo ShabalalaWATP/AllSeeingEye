@@ -93,6 +93,7 @@ describe('tracker products', () => {
       expect(body).toEqual({
         template: 'conflict_assessment',
         conflict: 'ukraine',
+        research_focus: 'general',
         devils_advocacy: false,
       });
     });

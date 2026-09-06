@@ -9,12 +9,24 @@ from typing import Any
 from uuid import UUID
 
 from ase.domain.advocacy import DevilsAdvocacy, advocacy_from_dict, advocacy_to_dict
+from ase.domain.challenge import ReportChallenge
+from ase.domain.challenge_records import challenge_to_dict
+from ase.domain.citation_check_records import citation_checks_to_dict
+from ase.domain.citation_checks import ReportCitationChecks
 from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_attributes import (
+    evidence_attributes_from_list,
+    evidence_attributes_to_list,
+)
 from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
+from ase.domain.research_context import ResearchContext
+from ase.domain.research_context_records import context_to_dict
+from ase.domain.research_records import ResearchReceipt, research_to_dict
+from ase.domain.source_rating_records import source_rating_from_dict, source_rating_to_dict
 from ase.domain.validation import Finding, Severity
 
 
@@ -69,6 +81,10 @@ class ReportVersion:
     period_to: datetime | None = None
     data_cutoff: datetime | None = None
     assessment: ReportAssessment | None = None
+    research: ResearchReceipt | None = None
+    citation_checks: ReportCitationChecks | None = None
+    research_context: ResearchContext | None = None
+    challenge: ReportChallenge | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
@@ -78,12 +94,28 @@ def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
         and version.advocacy is None
         and version.period_from is None
         and version.assessment is None
+        and version.research is None
+        and version.citation_checks is None
+        and version.research_context is None
+        and version.challenge is None
     ):
         return None
     return {
+        **({"challenge": challenge_to_dict(version.challenge)} if version.challenge else {}),
         "direction": direction_to_dict(version.direction) if version.direction else None,
         "devils_advocacy": advocacy_to_dict(version.advocacy) if version.advocacy else None,
         **({"assessment": assessment_to_dict(version.assessment)} if version.assessment else {}),
+        **({"research": research_to_dict(version.research)} if version.research else {}),
+        **(
+            {"research_context": context_to_dict(version.research_context)}
+            if version.research_context is not None
+            else {}
+        ),
+        **(
+            {"citation_checks": citation_checks_to_dict(version.citation_checks)}
+            if version.citation_checks
+            else {}
+        ),
         "period": {
             "from": version.period_from.isoformat() if version.period_from else None,
             "to": version.period_to.isoformat() if version.period_to else None,
@@ -162,6 +194,8 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
         data["captured_at"] = item.captured_at.isoformat()
         data["observed_at"] = item.observed_at.isoformat() if item.observed_at else None
         data["flags"] = list(item.flags)
+        data["source_rating"] = source_rating_to_dict(item.source_rating)
+        data["attributes"] = evidence_attributes_to_list(item.attributes)
         rows.append(data)
     return rows
 
@@ -198,6 +232,8 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
                 datetime.fromisoformat(str(row["observed_at"])) if row.get("observed_at") else None
             ),
             story_id=row.get("story_id"),
+            source_rating=source_rating_from_dict(row.get("source_rating")),
+            attributes=evidence_attributes_from_list(row.get("attributes")),
         )
         for row in rows
     )

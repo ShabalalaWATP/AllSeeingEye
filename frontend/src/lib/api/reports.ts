@@ -6,6 +6,14 @@ import type { components } from './types.gen';
 
 import { apiCall, apiSend, apiText } from './client';
 import { reportAssessmentSchema } from './reportAssessment';
+import {
+  citationChecksSchema,
+  evidenceAttributeSchema,
+  researchReceiptSchema,
+} from './reportResearch';
+import { sourceRatingSchema } from './sourceContext';
+import { researchContextSchema } from './researchContext';
+import { reportChallengeSchema } from './reportChallenge';
 
 export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
@@ -73,6 +81,8 @@ export const reportBodySchema = z.object({
 export type ReportBody = z.infer<typeof reportBodySchema>;
 
 export const evidenceItemSchema = z.object({
+  source_rating: sourceRatingSchema.nullable().optional(),
+  attributes: z.array(evidenceAttributeSchema).optional(),
   independence_key: z.string().optional(),
   captured_at: z.string().optional(),
   observed_at: z.string().nullable().optional(),
@@ -132,6 +142,10 @@ export const findingSchema = z.object({
 export type Finding = z.infer<typeof findingSchema>;
 
 export const reportVersionSchema = z.object({
+  research_context: researchContextSchema.nullable().optional(),
+  challenge: reportChallengeSchema.nullable().optional(),
+  research: researchReceiptSchema.nullable().optional(),
+  citation_checks: citationChecksSchema.nullable().optional(),
   assessment: reportAssessmentSchema.nullable().optional(),
   period_from: z.string().nullable().optional(),
   period_to: z.string().nullable().optional(),
@@ -173,9 +187,18 @@ export async function fetchReports(): Promise<ReportSummary[]> {
   return page.items;
 }
 
-export function generateReport(request: ReportRequest): Promise<Report> {
+export function generateReport(
+  request: ReportRequest,
+  options: { runId?: string; signal?: AbortSignal } = {},
+): Promise<Report> {
   return scopedMutation(() =>
-    apiCall('/api/reports', { method: 'POST', body: request, schema: reportSchema }),
+    apiCall('/api/reports', {
+      method: 'POST',
+      body: request,
+      schema: reportSchema,
+      ...(options.runId ? { headers: { 'X-Research-Run-ID': options.runId } } : {}),
+      ...(options.signal ? { signal: options.signal } : {}),
+    }),
   );
 }
 
