@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal
 
 from ase.domain.languages import valid_language_code
 
@@ -24,6 +25,16 @@ class QueryVariant:
             or sum(map(len, self.terms)) > 1000
         ):
             raise ValueError("Query variants require bounded explicit terms")
+
+
+@dataclass(frozen=True, slots=True)
+class QueryTransformation:
+    original_terms: tuple[str, ...]
+    languages: tuple[str, ...]
+    model: str
+    status: Literal["completed", "failed", "unavailable"]
+    variants: tuple[QueryVariant, ...] = ()
+    policy_version: str = "ase-query-translation-v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,3 +68,4 @@ class ResearchPlan:
     mode: str = "quick"
     subject: str | None = None
     country_iso: str | None = None
+    translation: QueryTransformation | None = None

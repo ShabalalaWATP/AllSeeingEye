@@ -10100,6 +10100,58 @@
         "type": "object",
         "title": "ProfileUpdateIn"
       },
+      "QueryTransformationOut": {
+        "properties": {
+          "original_terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Original Terms"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "failed",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/QueryVariantIn"
+            },
+            "type": "array",
+            "title": "Variants"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "original_terms",
+          "languages",
+          "model",
+          "status",
+          "variants",
+          "policy_version"
+        ],
+        "title": "QueryTransformationOut"
+      },
       "QueryVariantIn": {
         "properties": {
           "language": {
@@ -12052,6 +12104,16 @@
               }
             ],
             "title": "Country Iso"
+          },
+          "translation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QueryTransformationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

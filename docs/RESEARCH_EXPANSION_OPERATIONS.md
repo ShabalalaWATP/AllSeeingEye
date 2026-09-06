@@ -9,7 +9,12 @@ migration, live account change, deployment or configured-model evaluation is imp
 The collection-plan preview makes no model or source calls. It enumerates the
 actual registered provider inventory, supported scope and collection ceilings.
 An operator can supply bounded original terms and language-specific variants.
-Those variants are operator-authored, not automatically translated. Explicit
+Explicit variants are operator-authored and take precedence. At run time, missing
+non-English variants can be generated in one bounded translation call using the
+report's frozen team/global AI routing. The deterministic preview itself stays free
+of model calls. Original terms, transformed terms, model and outcome are saved;
+syntactic validation does not prove translation quality. Private document/media
+inputs and empty source selections do not trigger this translation stage. Explicit
 source selections govern collection; unknown identifiers fail before requests.
 Changes invalidate the preview. The reporting window resolves when a run starts.
 

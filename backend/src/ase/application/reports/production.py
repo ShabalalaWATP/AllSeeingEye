@@ -84,6 +84,9 @@ class Producer:
             self._private_store_factory,
             self._store,
             progress,
+            gateway=self._gateway,
+            cipher=self._cipher,
+            profile_for=profile_for,
         )
 
         def select(extra_terms: tuple[str, ...] = ()) -> Selection:

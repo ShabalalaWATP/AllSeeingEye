@@ -4,19 +4,20 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Sequence
-from dataclasses import dataclass, replace
-from math import isfinite
+from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
+from ase.application.research.budget import CollectionBudget, CollectionRunBudget
 from ase.application.research.planning import build_plan
 from ase.domain.events import Event
 from ase.domain.research import (
     CollectionAttempt,
     CollectionStatus,
     ResearchBatch,
-    ResearchMode,
     ResearchQuery,
 )
+
+__all__ = ["CollectionBudget", "CollectionRunBudget", "ResearchCollector"]
 
 Progress = Callable[[CollectionAttempt], Awaitable[None]]
 CURRENT_RECORDS = frozenset(
@@ -27,33 +28,6 @@ CURRENT_RECORDS = frozenset(
         "current_certificate_snapshot",
     }
 )
-
-
-@dataclass(frozen=True, slots=True)
-class CollectionBudget:
-    requests: int
-    seconds: float
-    per_request_seconds: float
-    items: int
-
-    def __post_init__(self) -> None:
-        if not 1 <= self.requests <= 32 or not 1 <= self.items <= 1000:
-            raise ValueError("Invalid collection request or item budget")
-        if (
-            any(
-                not isfinite(value) or value <= 0
-                for value in (self.seconds, self.per_request_seconds)
-            )
-            or self.seconds > 300
-            or self.per_request_seconds > 60
-        ):
-            raise ValueError("Invalid collection deadline")
-
-    @classmethod
-    def for_mode(cls, mode: ResearchMode) -> CollectionBudget:
-        if mode == ResearchMode.DETAILED:
-            return cls(requests=24, seconds=180, per_request_seconds=20, items=800)
-        return cls(requests=6, seconds=45, per_request_seconds=12, items=200)
 
 
 class ResearchCollector:
@@ -75,8 +49,31 @@ class ResearchCollector:
         *,
         budget: CollectionBudget | None = None,
         progress: Progress | None = None,
+        run_budget: CollectionRunBudget | None = None,
+        request_allowance: int | None = None,
     ) -> ResearchBatch:
-        limits = budget or CollectionBudget.for_mode(query.mode)
+        """Return this pass's new items; a shared run budget prevents double admission."""
+        if budget is not None and run_budget is not None:
+            raise ValueError("Specify either a budget or an existing run budget")
+        state = run_budget or CollectionRunBudget(budget or CollectionBudget.for_mode(query.mode))
+        allowance = state.limits.requests if request_allowance is None else request_allowance
+        if (
+            isinstance(allowance, bool)
+            or not isinstance(allowance, int)
+            or not 0 <= allowance <= 32
+        ):
+            raise ValueError("A pass request allowance must be an integer from zero to 32")
+        with state.pass_scope():
+            return await self._collect(query, state, allowance, progress)
+
+    async def _collect(
+        self,
+        query: ResearchQuery,
+        state: CollectionRunBudget,
+        allowance: int,
+        progress: Progress | None,
+    ) -> ResearchBatch:
+        limits = state.limits
         plan = build_plan(
             query,
             self._providers,
@@ -84,7 +81,6 @@ class ResearchCollector:
             seconds=limits.seconds,
             items=limits.items,
         )
-        deadline = asyncio.get_running_loop().time() + limits.seconds
         requests = 0
         items: dict[str, Event] = {}
         attempts: list[CollectionAttempt] = []
@@ -92,29 +88,26 @@ class ResearchCollector:
             if not task.selected:
                 continue
             routed = replace(query, terms=task.terms)
-            remaining = deadline - asyncio.get_running_loop().time()
             if not task.supported:
                 attempt = self._receipt(
                     provider,
                     CollectionStatus.UNSUPPORTED,
                     "This source does not support the requested scope.",
                 )
-            elif requests >= limits.requests or remaining <= 0 or len(items) >= limits.items:
+            elif requests >= allowance or (seconds := state.admit()) is None:
                 attempt = self._receipt(
                     provider,
                     CollectionStatus.BUDGET_EXHAUSTED,
-                    "The collection budget was reached before this request.",
+                    "The collection run or pass budget was reached before this request.",
                 )
             else:
                 requests += 1
-                batch = await self._fetch(
-                    provider, routed, min(remaining, limits.per_request_seconds)
-                )
+                batch = await self._fetch(provider, routed, seconds)
                 eligible = not batch.attempts or batch.attempts[0].status in (
                     CollectionStatus.COMPLETED,
                     CollectionStatus.EMPTY,
                 )
-                retained = self._retain(batch.items if eligible else (), query, items, limits.items)
+                retained = self._retain(batch.items if eligible else (), query, items, state)
                 attempt = self._summarise(provider, batch, retained)
             attempts.append(attempt)
             if progress is not None:
@@ -140,18 +133,21 @@ class ResearchCollector:
 
     @staticmethod
     def _retain(
-        incoming: tuple[Event, ...], query: ResearchQuery, items: dict[str, Event], limit: int
+        incoming: tuple[Event, ...],
+        query: ResearchQuery,
+        items: dict[str, Event],
+        state: CollectionRunBudget,
     ) -> int:
         added = 0
         for item in incoming:
-            if len(items) >= limit:
+            if state.remaining_items <= 0:
                 break
             if item.published_at.utcoffset() is None or (
                 item.attributes.get("record_kind") not in CURRENT_RECORDS
                 and not query.since <= item.published_at < query.until
             ):
                 continue
-            if item.id not in items:
+            if state.retain(item.id):
                 items[item.id] = item
                 added += 1
         return added

@@ -1,7 +1,7 @@
 """Editable deterministic plans use source IDs, never client-supplied fetch URLs."""
 
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -10,6 +10,7 @@ from ase.domain.research_plan import QueryVariant
 
 
 class QueryVariantIn(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     language: str = Field(min_length=2, max_length=16)
     terms: list[str] = Field(min_length=1, max_length=12)
 
@@ -71,6 +72,16 @@ class ResearchTaskOut(BaseModel):
     query_language: str | None = None
 
 
+class QueryTransformationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    original_terms: list[str]
+    languages: list[str]
+    model: str
+    status: Literal["completed", "failed", "unavailable"]
+    variants: list[QueryVariantIn]
+    policy_version: str
+
+
 class ResearchPlanOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     question: str
@@ -89,3 +100,4 @@ class ResearchPlanOut(BaseModel):
     mode: str
     subject: str | None
     country_iso: str | None
+    translation: QueryTransformationOut | None = None

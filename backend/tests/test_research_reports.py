@@ -7,6 +7,7 @@ from httpx import AsyncClient
 
 from ase.container import Container
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch, ResearchQuery
+from ase.domain.research_plan import ResearchPlan
 from ase.domain.users import User
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
@@ -15,6 +16,11 @@ from report_helpers import PROFILE, ScriptedGateway, good_body
 
 
 class CollectedResearch:
+    def plan(self, query: ResearchQuery) -> ResearchPlan:
+        return ResearchPlan(
+            query.question, query.since, query.until, query.languages, (), 6, 45, 200
+        )
+
     def __init__(self) -> None:
         self.queries: list[ResearchQuery] = []
 

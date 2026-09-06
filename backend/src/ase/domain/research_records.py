@@ -10,7 +10,7 @@ from ase.domain.research import (
     CollectionStatus,
     ResearchQuery,
 )
-from ase.domain.research_plan import ResearchPlan, ResearchTask
+from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan, ResearchTask
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,4 +115,18 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
     values["tasks"] = tuple(
         ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]
     )
+    translation = values.get("translation")
+    if translation is not None:
+        if translation.get("policy_version") != "ase-query-translation-v1":
+            raise ValueError("Unsupported query transformation")
+        values["translation"] = QueryTransformation(
+            original_terms=tuple(translation["original_terms"]),
+            languages=tuple(translation["languages"]),
+            model=translation["model"],
+            status=translation["status"],
+            variants=tuple(
+                QueryVariant(row["language"], tuple(row["terms"]))
+                for row in translation["variants"]
+            ),
+        )
     return ResearchPlan(**values)

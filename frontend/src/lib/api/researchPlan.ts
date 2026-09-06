@@ -22,6 +22,7 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
       selected: z.boolean(),
       supported: z.boolean(),
       language: z.string().nullable(),
+      query_language: z.string().nullable().default(null),
       terms: z.array(z.string()),
       provenance: z.string(),
       temporal_scope: z.string(),
@@ -34,6 +35,17 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   model_calls: z.number(),
   translation_calls: z.number(),
   replans: z.number(),
+  translation: z
+    .object({
+      policy_version: z.string(),
+      original_terms: z.array(z.string()),
+      languages: z.array(z.string()),
+      model: z.string(),
+      status: z.enum(['completed', 'failed', 'unavailable']),
+      variants: z.array(z.object({ language: z.string(), terms: z.array(z.string()) })),
+    })
+    .nullable()
+    .default(null),
 });
 export function previewResearchPlan(body: ResearchPlanInput, signal: AbortSignal) {
   return apiCall('/api/research/runs/plan', { method: 'POST', body, schema: planSchema, signal });

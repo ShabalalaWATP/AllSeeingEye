@@ -41,7 +41,7 @@ export function ResearchPlanEditor({
             <TextAreaField
               label="Original search terms"
               dir="auto"
-              hint="One phrase per line, up to 12. These exact terms will be sent to the selected sources unless a language-specific override is supplied."
+              hint="One phrase per line, up to 12. Original phrases are retained. Supply language-specific overrides to control translated source queries."
               value={plan.termsText}
               maxLength={1012}
               rows={3}
@@ -57,7 +57,9 @@ export function ResearchPlanEditor({
             <summary className="cursor-pointer text-sm">Language-specific search terms</summary>
             <p className="text-xs text-muted">
               Enter your own terms in each language. These are operator-supplied text, not automatic
-              translations. Blank fields use the original terms.
+              translations. For blank non-English fields, the run can make one translation call
+              using your configured AI connection (up to 30 seconds). If unavailable or invalid,
+              original terms are used. Translations and their status are saved for review.
             </p>
             {languages.map((language) => (
               <TextAreaField

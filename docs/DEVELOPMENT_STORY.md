@@ -709,3 +709,24 @@ transformation provenance and account for calls in report totals. Replanning mus
 share one collection deadline/request/item allowance across both passes; calling
 collection twice with fresh limits would violate the plan. No model-quality or
 end-to-end multilingual research completion is claimed by these unit tests.
+
+## 6 September 2026: query translation integrated into research
+
+Wired the translation stage into production collection through frozen model routing,
+with in-memory usage accounting until final authorisation. Explicit operator variants
+win, private document/media inputs are excluded, and empty source selections make
+no translation call. Receipts now preserve original/translated terms, model, outcome
+and task provenance; old plans retain compatible defaults. The preview explains the
+additional run-time call and saved plans show unverified translation meaning.
+
+Validation: 42 focused translation/collection/regression tests passed; a broader
+55-test production/routing/progress group passed. After avoiding unnecessary plan
+calls for ineligible queries, 22 production/provider tests passed. Frontend typecheck,
+scoped lint and 16 focused metadata/planning tests passed. Real-model linguistic
+quality, operator configuration and shared-budget replanning remain outstanding.
+
+The collection layer now also accepts a run-local shared budget for serial passes.
+It retains one deadline, consumes requests before outbound work and counts unique
+retained IDs across passes. Thirty-five focused budget/collection/plan/challenge
+tests passed; focused coverage was 96.59%. This is the budget foundation, not an
+enabled automatic replan: service lifecycle and bounded receipt merging remain.

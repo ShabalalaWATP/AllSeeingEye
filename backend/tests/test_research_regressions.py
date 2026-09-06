@@ -19,6 +19,7 @@ from ase.domain.research import (
     ResearchBatch,
     ResearchQuery,
 )
+from ase.domain.research_plan import ResearchPlan
 from ase.domain.teams import MembershipRole
 from ase.domain.users import User
 from feeds_helpers import make_event
@@ -41,6 +42,11 @@ SOCIAL_IDS = tuple(seed.spec.id for seed in SOCIAL_SEEDS)
 
 
 class CollectionProbe:
+    def plan(self, query: ResearchQuery) -> ResearchPlan:
+        return ResearchPlan(
+            query.question, query.since, query.until, query.languages, (), 6, 45, 200
+        )
+
     def __init__(self, callback: Callable[[], Awaitable[None]] | None = None) -> None:
         self.queries: list[ResearchQuery] = []
         self.callback = callback

@@ -1,11 +1,18 @@
 """Prepare the private collection pool and its initial coverage receipt."""
 
 from collections.abc import Callable
+from dataclasses import replace
 
 from ase.application.ports.feeds import EventStore
+from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.research import ResearchCollection
-from ase.application.reports.production_types import Job, Totals
+from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.application.reports.progress import Progress, reached
+from ase.application.reports.query_preparation import (
+    prepare_query_languages,
+    record_query_translation,
+    translation_languages,
+)
 from ase.application.reports.research import collect_report_evidence
 from ase.domain.direction import Direction
 from ase.domain.research import ResearchQuery
@@ -22,6 +29,10 @@ async def prepare_collection(
     store_factory: Callable[[], EventStore] | None,
     live_store: EventStore,
     progress: Progress | None,
+    *,
+    gateway: LlmGateway | None = None,
+    cipher: SecretCipher | None = None,
+    profile_for: ProfileLookup | None = None,
 ) -> tuple[EventStore, ResearchReceipt | None, ResearchQuery | None]:
     store = live_store
     receipt: ResearchReceipt | None = None
@@ -53,6 +64,25 @@ async def prepare_collection(
                     "collection receipts identify the sources actually attempted.",
                 )
             )
+        transformation = None
+        if (
+            collection is not None
+            and gateway is not None
+            and cipher is not None
+            and profile_for
+            and translation_languages(query)
+        ):
+            # Validate the actual inventory before spending translation tokens.
+            preview = collection.plan(query)
+            query, transformation = await prepare_query_languages(
+                job,
+                query,
+                preview,
+                totals,
+                gateway,
+                cipher,
+                profile_for,
+            )
         await reached(progress, ResearchStage.COLLECTING)
         store, receipt = await collect_report_evidence(
             query,
@@ -63,4 +93,6 @@ async def prepare_collection(
             seed_events=job.seed_events,
             seed_attempts=job.seed_attempts,
         )
+        if transformation is not None and receipt.plan is not None:
+            receipt = replace(receipt, plan=record_query_translation(receipt.plan, transformation))
     return store, receipt, query

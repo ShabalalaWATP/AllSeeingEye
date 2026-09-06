@@ -3426,6 +3426,24 @@ export interface components {
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
         };
+        /** QueryTransformationOut */
+        QueryTransformationOut: {
+            /** Original Terms */
+            original_terms: string[];
+            /** Languages */
+            languages: string[];
+            /** Model */
+            model: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "failed" | "unavailable";
+            /** Variants */
+            variants: components["schemas"]["QueryVariantIn"][];
+            /** Policy Version */
+            policy_version: string;
+        };
         /** QueryVariantIn */
         QueryVariantIn: {
             /** Language */
@@ -4064,6 +4082,7 @@ export interface components {
             subject: string | null;
             /** Country Iso */
             country_iso: string | null;
+            translation?: components["schemas"]["QueryTransformationOut"] | null;
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
