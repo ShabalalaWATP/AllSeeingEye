@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     llm_bindings,
+    map_view_models,
     mfa_models,
     models,
     profile,

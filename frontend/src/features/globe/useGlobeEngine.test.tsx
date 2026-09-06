@@ -24,6 +24,10 @@ function fakeEngine() {
     spin: vi.fn(),
     flyTo: vi.fn(),
     getZoom: vi.fn(() => 2),
+    getCamera: vi.fn(() => null),
+    restoreCamera: vi.fn(),
+    getViewportBounds: vi.fn(() => null),
+    fitBounds: vi.fn(),
   } satisfies MapEngine;
 }
 

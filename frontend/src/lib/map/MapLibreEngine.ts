@@ -15,6 +15,9 @@ import type {
   DataLayer,
   EngineOptions,
   FlyToTarget,
+  FitBoundsOptions,
+  MapBounds,
+  MapCamera,
   MapEngine,
   MapEngineEvent,
   MapEngineHandler,
@@ -30,6 +33,14 @@ import {
   vectorStyleFor,
 } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
+import {
+  CAMERA_MAX_PITCH,
+  CAMERA_MAX_ZOOM,
+  normaliseCamera,
+  normaliseViewport,
+  validateBounds,
+  validateFitOptions,
+} from './camera';
 
 export { DARK_STYLE_URL };
 export const INITIAL_CENTER: [number, number] = [10, 30];
@@ -96,6 +107,10 @@ export class MapLibreEngine implements MapEngine {
       style: this.styleUrl,
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
+      minZoom: 0,
+      maxZoom: CAMERA_MAX_ZOOM,
+      minPitch: 0,
+      maxPitch: CAMERA_MAX_PITCH,
       transformRequest: (url) => this.transformRequest(url),
     });
     // deck.gl draws the data layers in its own canvas above the base map.
@@ -182,6 +197,52 @@ export class MapLibreEngine implements MapEngine {
 
   getZoom(): number {
     return this.map?.getZoom() ?? 0;
+  }
+
+  getCamera(): MapCamera | null {
+    const map = this.map;
+    if (map === null) return null;
+    const center = map.getCenter();
+    return normaliseCamera({
+      center: [center.lng, center.lat],
+      zoom: map.getZoom(),
+      bearing: map.getBearing(),
+      pitch: map.getPitch(),
+    });
+  }
+
+  restoreCamera(camera: MapCamera): void {
+    const snapshot = normaliseCamera(camera);
+    this.spin(false);
+    this.map?.jumpTo(snapshot);
+  }
+
+  getViewportBounds(): MapBounds | null {
+    const bounds = this.map?.getBounds();
+    if (bounds === undefined) return null;
+    return normaliseViewport({
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+    });
+  }
+
+  fitBounds(bounds: MapBounds, options: FitBoundsOptions = {}): void {
+    const { west, south, east, north } = validateBounds(bounds);
+    const fitOptions = validateFitOptions(options);
+    this.spin(false);
+    // Use the contiguous world copy so wrapped boxes do not fit almost the whole planet.
+    this.map?.fitBounds(
+      [
+        [west, south],
+        [east < west ? east + 360 : east, north],
+      ],
+      {
+        ...fitOptions,
+        duration: 0,
+      },
+    );
   }
 
   onCursor(handler: CursorHandler): () => void {

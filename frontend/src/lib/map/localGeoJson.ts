@@ -1,5 +1,5 @@
 import type { LocalCollection, LocalFeature, LocalGeometry, Position } from './geoJsonTypes';
-import { splitLine, validatePolygon } from './geoJsonTopology';
+import { splitLine, topologyBudget, validatePolygon } from './geoJsonTopology';
 export const MAX_GEOJSON_BYTES = 5 * 1024 * 1024;
 export const MAX_GEOJSON_FEATURES = 2000;
 export const MAX_GEOJSON_VERTICES = 100000;
@@ -31,6 +31,7 @@ export function parseLocalGeoJson(text: string): {
   if (features.length > MAX_GEOJSON_FEATURES)
     throw new Error('GeoJSON is limited to 2,000 features.');
   let vertices = 0;
+  const chargeTopology = topologyBudget();
   const point = (raw: unknown): Position => {
     const pos = list(raw, 2);
     if (
@@ -52,7 +53,7 @@ export function parseLocalGeoJson(text: string): {
   const line = (raw: unknown) => list(raw, 2).map(point);
   const polygon = (raw: unknown) => {
     const rings = list(raw).map(line);
-    validatePolygon(rings);
+    validatePolygon(rings, chargeTopology);
     return rings;
   };
   const geometry = (raw: unknown): LocalGeometry => {
@@ -88,12 +89,14 @@ export function parseLocalGeoJson(text: string): {
           ? props.name
           : typeof props.title === 'string'
             ? props.title
-            : `Feature ${id + 1}`;
+            : typeof props.label === 'string'
+              ? props.label
+              : `Feature ${id + 1}`;
       return {
         type: 'Feature',
         id,
         geometry: geometry(item.geometry),
-        properties: { label: label.slice(0, 300) },
+        properties: { label: Array.from(label).slice(0, 300).join('') },
       };
     }),
   };

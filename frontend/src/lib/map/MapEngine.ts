@@ -6,7 +6,7 @@ import type { BaseLayer } from './baseLayers';
 
 export type Projection = 'globe' | 'mercator';
 
-export type MapEngineEvent = 'load' | 'move' | 'click' | 'error';
+export type MapEngineEvent = 'load' | 'move' | 'moveend' | 'click' | 'error';
 
 export type MapEngineHandler = (payload: unknown) => void;
 
@@ -21,6 +21,27 @@ export interface FlyToTarget {
   /** [longitude, latitude] */
   center: [number, number];
   zoom: number;
+}
+
+/** Engine limits: zoom 0..22, pitch 0..60. Longitude and bearing are wrapped to [-180, 180). */
+export interface MapCamera extends FlyToTarget {
+  bearing: number;
+  pitch: number;
+}
+
+/** WGS84 bounds. West > east denotes a box crossing the antimeridian. */
+export interface MapBounds {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
+export interface FitBoundsOptions {
+  /** Padding in CSS pixels, 0..4096, defaults to 24. */
+  padding?: number;
+  /** Maximum fitted zoom, defaults to 16. */
+  maxZoom?: number;
 }
 
 /** Data layers are opaque to the engine interface; the registry decides their shape. */
@@ -44,6 +65,14 @@ export interface MapEngine {
   spin(enabled: boolean): void;
   /** The camera's current zoom level, 0 when nothing is mounted. */
   getZoom(): number;
+  /** Null before mount or after destruction; returns an independent camera snapshot. */
+  getCamera(): MapCamera | null;
+  /** Immediate, stops idle spin; invalid values throw RangeError, unmounted calls do nothing. */
+  restoreCamera(camera: MapCamera): void;
+  /** Geographic viewport envelope, not an AOI or exact visible footprint. Null when unmounted. */
+  getViewportBounds(): MapBounds | null;
+  /** Immediate fit; renderer projection constraints may limit polar views. Does not edit geometry. */
+  fitBounds(bounds: MapBounds, options?: FitBoundsOptions): void;
   /** Replaces the data layers drawn over the base map. */
   setLayers(layers: readonly DataLayer[]): void;
   /** Subscribes to an engine event and returns the unsubscribe function. */

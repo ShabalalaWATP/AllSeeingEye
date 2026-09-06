@@ -11,6 +11,7 @@ This is the next expansion plan. Earlier delivered work remains in
 Companion specifications:
 - [Russia, China, Iran and shared source matrix](REGIONAL_SOURCE_EXPANSION.md)
 - [Globe and flat-map implementation](GEOSPATIAL_RESEARCH_PLAN.md)
+- [Saved map-view persistence and acceptance contract](SAVED_MAP_VIEW_IMPLEMENTATION.md)
 - [Current product direction](OSINT_PRODUCT_DIRECTION.md)
 
 ## 1. Outcome and boundaries

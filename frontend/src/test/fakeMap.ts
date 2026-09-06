@@ -44,6 +44,15 @@ export class FakeMap {
   readonly setPaintProperty = vi.fn();
   readonly flyTo = vi.fn();
   readonly jumpTo = vi.fn();
+  readonly fitBounds = vi.fn();
+  readonly getBearing = vi.fn(() => 0);
+  readonly getPitch = vi.fn(() => 0);
+  readonly getBounds = vi.fn(() => ({
+    getWest: (): number => -180,
+    getEast: (): number => 180,
+    getSouth: (): number => -85,
+    getNorth: (): number => 85,
+  }));
   readonly easeTo = vi.fn();
   readonly stop = vi.fn();
   getCenter(): { lng: number; lat: number } {

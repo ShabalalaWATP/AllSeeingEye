@@ -1,4 +1,14 @@
 import type { Position } from './geoJsonTypes';
+
+export const MAX_TOPOLOGY_CHECKS = 1_000_000;
+/** Shared per import. Charge each ring edge, segment-pair test and containment edge. */
+export function topologyBudget(): () => void {
+  let checks = 0;
+  return () => {
+    if (++checks > MAX_TOPOLOGY_CHECKS)
+      throw new Error('Geometry topology exceeds its processing limit. Simplify the geometry.');
+  };
+}
 function at<T>(items: T[], index: number): T {
   const value = items[index];
   if (value === undefined) throw new Error('Incomplete geometry.');
@@ -26,9 +36,10 @@ function crosses(a: Position, b: Position, c: Position, d: Position) {
     onSegment(c, d, b)
   );
 }
-function inside(point: Position, ring: Position[]) {
+function inside(point: Position, ring: Position[], charge: () => void) {
   let result = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    charge();
     const a = at(ring, i),
       b = at(ring, j);
     if (
@@ -40,7 +51,7 @@ function inside(point: Position, ring: Position[]) {
   return result;
 }
 /** Reject ambiguous topology; bounded rings avoid quadratic work on large uploads. */
-export function validatePolygon(rings: Position[][]): void {
+export function validatePolygon(rings: Position[][], charge = topologyBudget()): void {
   if (rings.reduce((sum, ring) => sum + ring.length, 0) > 256)
     throw new Error('Each polygon is limited to 256 vertices. Simplify it before import.');
   for (const ring of rings) {
@@ -52,6 +63,7 @@ export function validatePolygon(rings: Position[][]): void {
       throw new Error('Polygon rings must contain at least four positions and be closed.');
     let area = 0;
     for (let i = 0; i < ring.length - 1; i++) {
+      charge();
       const a = at(ring, i),
         b = at(ring, i + 1);
       if (Math.abs(a[0] - b[0]) > 180)
@@ -61,6 +73,7 @@ export function validatePolygon(rings: Position[][]): void {
       area += a[0] * b[1] - b[0] * a[1];
       for (let j = i + 2; j < ring.length - 1; j++) {
         if (i === 0 && j === ring.length - 2) continue;
+        charge();
         if (crosses(a, b, at(ring, j), at(ring, j + 1)))
           throw new Error('Polygon ring intersects itself.');
       }
@@ -69,14 +82,15 @@ export function validatePolygon(rings: Position[][]): void {
   }
   for (let i = 1; i < rings.length; i++) {
     const hole = at(rings, i);
-    if (!inside(at(hole, 0), at(rings, 0)))
+    if (!inside(at(hole, 0), at(rings, 0), charge))
       throw new Error('Polygon hole lies outside its outer ring.');
     for (let j = 0; j < i; j++) {
       const other = at(rings, j);
-      if (j > 0 && (inside(at(hole, 0), other) || inside(at(other, 0), hole)))
+      if (j > 0 && (inside(at(hole, 0), other, charge) || inside(at(other, 0), hole, charge)))
         throw new Error('Nested or overlapping polygon holes are unsupported.');
       for (let k = 0; k < hole.length - 1; k++)
         for (let l = 0; l < other.length - 1; l++) {
+          charge();
           if (crosses(at(hole, k), at(hole, k + 1), at(other, l), at(other, l + 1)))
             throw new Error('Polygon rings touch or intersect.');
         }

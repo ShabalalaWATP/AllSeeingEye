@@ -6,6 +6,26 @@ const collection = (geometry: unknown, properties: unknown = {}) =>
     features: [{ type: 'Feature', geometry, properties }],
   });
 
+it('round trips canonical overlay labels and seam geometry without retaining extra properties', () => {
+  const imported = parseLocalGeoJson(
+    collection(
+      {
+        type: 'LineString',
+        coordinates: [
+          [170, 10],
+          [-170, 20],
+        ],
+      },
+      { name: 'Reported project boundary', url: 'https://invalid.test/private' },
+    ),
+  );
+  const restored = parseLocalGeoJson(JSON.stringify(imported.canonical));
+  expect(restored).toEqual(imported);
+  expect(restored.canonical.features[0]!.properties).toEqual({
+    label: 'Reported project boundary',
+  });
+});
+
 it('splits dateline lines for display without changing canonical evidence coordinates', () => {
   const parsed = parseLocalGeoJson(
     collection({
@@ -203,4 +223,32 @@ it('retains only a bounded plain label and ignores remote resources in propertie
     ),
   );
   expect(parsed.canonical.features[0]!.properties).toEqual({ label: '<script>literal</script>' });
+});
+
+it('bounds topology work across all polygons in one upload', () => {
+  const ring = Array.from({ length: 255 }, (_, index) => {
+    const angle = (index * 2 * Math.PI) / 255;
+    return [Math.cos(angle), Math.sin(angle)];
+  });
+  ring.push(ring[0]!);
+  const feature = {
+    type: 'Feature',
+    geometry: { type: 'Polygon', coordinates: [ring] },
+  };
+  expect(() =>
+    parseLocalGeoJson(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: Array.from({ length: 40 }, () => feature),
+      }),
+    ),
+  ).toThrow(/topology.*Simplify/);
+});
+
+it('truncates multilingual labels without splitting Unicode characters', () => {
+  const parsed = parseLocalGeoJson(
+    collection({ type: 'Point', coordinates: [0, 0] }, { name: '中'.repeat(299) + '🌍' + 'extra' }),
+  );
+  expect(parsed.canonical.features[0]!.properties.label).toBe('中'.repeat(299) + '🌍');
+  expect(parseLocalGeoJson(JSON.stringify(parsed.canonical))).toEqual(parsed);
 });

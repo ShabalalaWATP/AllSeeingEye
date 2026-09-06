@@ -783,3 +783,18 @@ topology budget across all overlays and the AOI. The combined state/geometry run
 passed 105 tests; four additional constructor-invariant tests brought the focused
 state group to 42 passing cases. Repository storage and access integration are in
 progress, with no operator database migration.
+
+The saved-map foundation now has repository storage and migration `0024`, with
+exact report-version anchoring, conditional revision appends, archive-inclusive
+usage accounting and parent/view SQL visibility. A reproduced deletion regression
+confirmed retained orphan map geometry; explicit parent-report cleanup fixed it.
+List/count SQL excludes canonical state payloads. Ten repository/cleanup/migration
+tests passed on disposable SQLite, and 111 geometry/state tests passed with 96.51%
+scoped coverage. A preliminary coverage command accidentally retained the global
+`--cov=ase` scope and failed at 42.05%; the corrected explicitly scoped run above
+does not establish full backend coverage. Mypy (473 files), import boundaries,
+Bandit and file-length checks passed. Application/API/UI and quota enforcement
+remain unfinished; no operator migration or PostgreSQL acceptance is implied.
+The parent report/library/team-scope regression group passed 26 cases after
+cleanup wiring. Pre-commit Ruff/format, secret scan, file length, frontend lint
+and typecheck all passed before committing this foundation.
