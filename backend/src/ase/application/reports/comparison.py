@@ -52,6 +52,7 @@ def compare_versions(
     for section, old, new in (
         ("Direction", before.direction, after.direction),
         ("Devil's advocacy", before.advocacy, after.advocacy),
+        ("Automated evidence assessment", before.assessment, after.assessment),
     ):
         changes.extend(
             _changes(

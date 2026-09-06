@@ -19,6 +19,7 @@ from ase.api.routers import (
     health,
     me,
     report_documents,
+    report_methodology,
     report_search,
     reports,
     schedules,
@@ -44,6 +45,7 @@ api_router.include_router(capabilities.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
 api_router.include_router(report_documents.router)
+api_router.include_router(report_methodology.router)
 api_router.include_router(report_search.router)
 api_router.include_router(social.router)
 api_router.include_router(stream.router)

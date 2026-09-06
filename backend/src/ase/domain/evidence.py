@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from ase.domain.doctrine import Confidence
-from ase.domain.events import Credibility, Event
+from ase.domain.events import Event
+from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.source_provenance import ProvenanceItem, organisation_groups
 
 # Phrases that read as instructions to the model rather than as reporting.
@@ -141,7 +142,7 @@ class QualityOfInformation:
             f"{round(self.instrument_share * 100)}% instrument data; "
             "contradictions not automatically assessed; "
             f"{self.flagged} item(s) flagged for "
-            f"instruction-like text; confidence ceiling {self.confidence_ceiling.value}."
+            "instruction-like text. Confidence limits are assessed per judgement."
         )
 
 
@@ -153,26 +154,20 @@ def quality_of_information(items: Sequence[EvidenceItem], flagged: int = 0) -> Q
         by_grade[item.grade] = by_grade.get(item.grade, 0) + 1
     provenance = organisation_groups(
         [
-            ProvenanceItem(item.label, item.independence_key or None, item.title, item.content_hash)
+            ProvenanceItem(
+                item.label,
+                item.independence_key or None,
+                item.title_en or item.title,
+                item.content_hash,
+            )
             for item in items
         ]
     )
     organisations = provenance.known_groups
     instruments = sum(1 for item in items if item.instrument)
-    # This is a safety ceiling, not a computed analytical confidence rating.
-    # Declared organisations and headline similarity do not prove independent sourcing.
-    distinct_items = {item.content_hash or item.event_id for item in items}
-    credible = [item for item in items if item.credibility <= int(Credibility.PROBABLY_TRUE)]
-    ceiling = Confidence.LOW
-    if len(distinct_items) >= 2 and credible:
-        ceiling = Confidence.MODERATE
-    if (
-        len(organisations) >= 2
-        and len(distinct_items) >= 2
-        and all(item.credibility == int(Credibility.CONFIRMED) for item in items)
-        and not any(item.flags for item in items)
-    ):
-        ceiling = Confidence.HIGH
+    # Retained for saved/legacy consumers. A selected pool is descriptive and cannot
+    # impose a ceiling on every judgement: each judgement has its own cited support.
+    ceiling = evidence_confidence_ceiling(items)
     published = [item.published_at for item in items]
     return QualityOfInformation(
         items=len(items),

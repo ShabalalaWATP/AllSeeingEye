@@ -55,6 +55,7 @@ does not persist a separate raw feed per team.
 | Method and path | Request | Result |
 |---|---|---|
 | `GET /api/reports/templates` | None | Available report templates |
+| `GET /api/report-methodology` | None | Current versioned contribution matrix, rules, grade labels, PHIA bands and doctrine references |
 | `GET /api/reports` | `limit=1..200`, default 50 | `{items}` filtered by current scope before the limit |
 | `POST /api/reports` | Template, optional `team_id`, `plan`, country/question and supported template options | 201 report and saved version |
 | `POST /api/reports/{id}/versions` | None | 201 regenerated version in the original report scope |
@@ -78,6 +79,20 @@ current report's dates must not be presented as a known historical period.
 Frozen evidence and mechanical validation are provenance, not proof of truth or
 human review. The exact document rendering limitations and live-model evaluation
 gates remain in the current implementation plan and operations guide.
+
+New versions also expose nullable `assessment`. This typed, engine-authored object
+records `method_version`, frozen item contributions, per-judgement supporting and
+opposing groups, confidence limits/final confidence, explanations, improvement
+suggestions, tallies and validation counts. It is not part of the model's response
+schema. Legacy absence returns null and does not invoke current scoring. Saved
+assessment JSON is decoded strictly; malformed scores are not silently coerced.
+
+Assessment generation occurs after optional advocacy. PDF/DOCX/Markdown and
+archiving use the saved assessment; structural comparisons include it. The
+methodology endpoint describes current policy without changing historical values.
+Its PHIA bands include `range_description`, preserving approximate wording and
+the exclusive 0/50/100 boundaries. Numerical bounds remain descriptive vocabulary,
+not calculated report probabilities. See [the policy](../REPORT_EVIDENCE_SCORING.md).
 
 ## Semantic search
 

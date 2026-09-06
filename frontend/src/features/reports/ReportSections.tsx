@@ -2,8 +2,10 @@ import type { ReactNode } from 'react';
 
 import type { DevilsAdvocacy, Direction, ReportBody } from '@/lib/api/reports';
 import { probabilityTerm } from '@/lib/doctrine';
+import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
 import { Labels } from './EvidenceLinks';
+import { JudgementEvidence } from './JudgementEvidence';
 export { EvidenceAnnex } from './EvidenceAnnex';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -64,40 +66,52 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
 }
 
 /** The body of a report, judgements first, every claim with its evidence labels. */
-export function ReportBodyView({ body }: { body: ReportBody }) {
+export function ReportBodyView({
+  body,
+  assessment,
+}: {
+  body: ReportBody;
+  assessment?: ReportAssessment | null | undefined;
+}) {
   return (
     <div className="flex flex-col gap-6 text-sm text-text">
       {body.key_judgements.length > 0 && (
         <Section title="Key judgements">
           <ol className="flex flex-col gap-3">
-            {body.key_judgements.map((judgement) => (
-              <li key={judgement.id} className="rounded-card border border-line bg-surface p-3">
-                <p className="font-medium">
-                  <span className="mr-2 font-mono text-xs text-muted">{judgement.id}</span>
-                  {judgement.statement}
-                  <Labels labels={judgement.supporting_evidence} />
-                </p>
-                <p className="mt-1 text-xs text-muted">
-                  <span className="rounded bg-ember/15 px-1.5 py-0.5 font-mono text-ember">
-                    {probabilityTerm(judgement.probability)}
-                  </span>{' '}
-                  <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono">
-                    {judgement.confidence} confidence
-                  </span>{' '}
-                  {judgement.confidence_statement}
-                </p>
-                {judgement.contradicting_evidence.length > 0 && (
-                  <p className="mt-1 text-xs text-muted">
-                    Contradicting: <Labels labels={judgement.contradicting_evidence} />
+            {body.key_judgements.map((judgement) => {
+              const rating = assessment?.judgements.find(
+                (item) => item.judgement_id === judgement.id,
+              );
+              return (
+                <li key={judgement.id} className="rounded-card border border-line bg-surface p-3">
+                  <p className="font-medium">
+                    <span className="mr-2 font-mono text-xs text-muted">{judgement.id}</span>
+                    {judgement.statement}
+                    <Labels labels={judgement.supporting_evidence} />
                   </p>
-                )}
-                {judgement.indicators.length > 0 && (
                   <p className="mt-1 text-xs text-muted">
-                    Indicators: {judgement.indicators.join('; ')}
+                    <span className="rounded bg-ember/15 px-1.5 py-0.5 font-mono text-ember">
+                      {probabilityTerm(judgement.probability)}
+                    </span>{' '}
+                    <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono">
+                      {judgement.confidence} confidence
+                    </span>{' '}
+                    {judgement.confidence_statement}
                   </p>
-                )}
-              </li>
-            ))}
+                  {judgement.contradicting_evidence.length > 0 && (
+                    <p className="mt-1 text-xs text-muted">
+                      Contradicting: <Labels labels={judgement.contradicting_evidence} />
+                    </p>
+                  )}
+                  {judgement.indicators.length > 0 && (
+                    <p className="mt-1 text-xs text-muted">
+                      Indicators: {judgement.indicators.join('; ')}
+                    </p>
+                  )}
+                  {rating && <JudgementEvidence assessment={rating} />}
+                </li>
+              );
+            })}
           </ol>
         </Section>
       )}

@@ -14,6 +14,7 @@ from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.access import Visibility
 from ase.domain.errors import NotFound
+from ase.domain.report_assessment_records import assessment_from_dict
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
@@ -54,6 +55,7 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     return ReportVersion(
         direction=direction,
         advocacy=advocacy,
+        assessment=assessment_from_dict((row.analysis or {}).get("assessment")),
         id=row.id,
         report_id=row.report_id,
         number=row.number,

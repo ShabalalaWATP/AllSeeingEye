@@ -102,15 +102,34 @@ Separating confidence and likelihood in prose is an application writing rule inf
 
 ## 6. Analytical confidence
 
-The model supplies a rating and rationale. The engine constrains each judgement using its actual supporting evidence, so unrelated selected items cannot justify higher confidence. The result cannot exceed the whole-bundle ceiling. Cited opposing evidence prevents a High ceiling.
+The model supplies a rating and rationale. The engine constrains each judgement
+using only its cited supporting and opposing evidence. The selected pool's quality
+summary does not impose a whole-report confidence limit. Unrelated weak material
+cannot suppress an otherwise better-supported judgement.
 
-Current safety ceilings in `domain/evidence.py` are:
+The versioned [evidence policy](REPORT_EVIDENCE_SCORING.md) combines the two grade
+axes into Strong, Moderate, Limited or Unassessed contributions. It counts the
+strongest eligible contribution per declared organisation/possible-copy group.
+Unknown provenance cannot provide corroboration. A single strong contribution
+can permit Moderate; weak or duplicate padding cannot improve the ceiling.
 
-- Low when support lacks the required distinct content or stronger-grade information.
-- Moderate with at least two distinct content identifiers and at least one credibility 1 or 2 item.
-- High only with at least two declared organisation groups and two distinct content identifiers, every supporting item graded 1, and no flags. These checks still do not establish independent verification; the automatic grader does not produce grade 1.
+High requires at least two known groups with strong credibility-1 support and no
+flagged support or model-cited opposition. Equally strong or stronger opposition
+constrains confidence to Low; weaker opposition prevents High. These are product
+limits, not statistical probabilities or the official PHIA evaluation tool. The
+engine never raises a model's rating and does not change its likelihood term.
 
-These are conservative product rules, not statistical confidence or a validated scoring model. The engine states the support counts/ceiling, labels model rationale unverified and never promotes the model rating. Reporting displays the exact distinct grades of cited frozen evidence without inventing an aggregate.
+The model cannot author the evidence assessment. The engine freezes the method,
+groups, per-judgement explanations, final confidence after advocacy, improvement
+suggestions and validation counts with each new report version. Legacy versions
+without the assessment remain explicitly unassessed under this policy. The reader
+and Markdown/PDF/DOCX exports use the saved record. `GET /api/report-methodology`
+provides the current matrix, rules, PHIA vocabulary and official references.
+
+Supporting/opposing relationships remain model-assigned and source independence
+is not verified. Separate devil's advocacy citations are not automatically
+classified as opposing a particular judgement. Reporting displays the actual
+distinct grades of cited frozen evidence without inventing an aggregate.
 
 | Confidence factor | Available implementation |
 |---|---|

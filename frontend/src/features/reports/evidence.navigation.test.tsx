@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -12,6 +12,22 @@ import { EvidenceNavigation, Labels } from './EvidenceLinks';
 import { ReportReviewStatus } from './ReportReviewStatus';
 
 describe('report evidence navigation and review meaning', () => {
+  it('prevents native fragment navigation from overriding disclosure focus, preserving modified links', () => {
+    render(
+      <EvidenceNavigation evidence={report.version.evidence}>
+        <Labels labels={['E1']} />
+        <EvidenceAnnex evidence={report.version.evidence} findings={[]} status="ready" />
+      </EvidenceNavigation>,
+    );
+    const link = screen.getByRole('link', { name: 'View evidence E1' });
+    const summary = screen.getByText('Shelling in Kharkiv').closest('summary');
+    expect(fireEvent.click(link, { ctrlKey: true })).toBe(true);
+    expect(summary?.parentElement).not.toHaveAttribute('open');
+    expect(fireEvent.click(link)).toBe(false);
+    expect(summary).toHaveFocus();
+    expect(summary?.parentElement).toHaveAttribute('open');
+  });
+
   it('opens and focuses cited evidence using an anchored keyboard link', async () => {
     const user = userEvent.setup();
     render(

@@ -1550,6 +1550,32 @@
         }
       }
     },
+    "/api/report-methodology": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Report Methodology",
+        "operationId": "report_methodology_api_report_methodology_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportMethodologyOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/report-search": {
       "get": {
         "tags": [
@@ -3953,6 +3979,102 @@
         ],
         "title": "AreaActivityOut"
       },
+      "AssessmentDimensionOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "engine_assessed": {
+            "type": "boolean",
+            "title": "Engine Assessed"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "engine_assessed",
+          "description"
+        ],
+        "title": "AssessmentDimensionOut"
+      },
+      "AssessmentTalliesOut": {
+        "properties": {
+          "evidence_items": {
+            "type": "integer",
+            "title": "Evidence Items"
+          },
+          "declared_groups": {
+            "type": "integer",
+            "title": "Declared Groups"
+          },
+          "unknown_provenance_items": {
+            "type": "integer",
+            "title": "Unknown Provenance Items"
+          },
+          "possible_copy_groups": {
+            "type": "integer",
+            "title": "Possible Copy Groups"
+          },
+          "judgements": {
+            "type": "integer",
+            "title": "Judgements"
+          },
+          "strong": {
+            "type": "integer",
+            "title": "Strong"
+          },
+          "moderate": {
+            "type": "integer",
+            "title": "Moderate"
+          },
+          "limited": {
+            "type": "integer",
+            "title": "Limited"
+          },
+          "unassessed": {
+            "type": "integer",
+            "title": "Unassessed"
+          },
+          "supported_judgements": {
+            "type": "integer",
+            "title": "Supported Judgements"
+          },
+          "limited_judgements": {
+            "type": "integer",
+            "title": "Limited Judgements"
+          },
+          "contested_judgements": {
+            "type": "integer",
+            "title": "Contested Judgements"
+          },
+          "unsupported_judgements": {
+            "type": "integer",
+            "title": "Unsupported Judgements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_items",
+          "declared_groups",
+          "unknown_provenance_items",
+          "possible_copy_groups",
+          "judgements",
+          "strong",
+          "moderate",
+          "limited",
+          "unassessed",
+          "supported_judgements",
+          "limited_judgements",
+          "contested_judgements",
+          "unsupported_judgements"
+        ],
+        "title": "AssessmentTalliesOut"
+      },
       "AuditEntryOut": {
         "properties": {
           "id": {
@@ -4249,6 +4371,15 @@
         ],
         "title": "ChangePasswordIn"
       },
+      "Confidence": {
+        "type": "string",
+        "enum": [
+          "high",
+          "moderate",
+          "low"
+        ],
+        "title": "Confidence"
+      },
       "ConflictBoardOut": {
         "properties": {
           "items": {
@@ -4413,6 +4544,60 @@
         ],
         "title": "ConflictOut"
       },
+      "Contribution": {
+        "type": "string",
+        "enum": [
+          "strong",
+          "moderate",
+          "limited",
+          "unassessed"
+        ],
+        "title": "Contribution"
+      },
+      "ContributionGroupOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "known_organisation": {
+            "type": "boolean",
+            "title": "Known Organisation"
+          },
+          "contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "corroborating_contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "possible_copy": {
+            "type": "boolean",
+            "title": "Possible Copy"
+          },
+          "confirmed_strong": {
+            "type": "boolean",
+            "title": "Confirmed Strong"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "labels",
+          "known_organisation",
+          "contribution",
+          "corroborating_contribution",
+          "possible_copy",
+          "confirmed_strong"
+        ],
+        "title": "ContributionGroupOut"
+      },
       "CountriesOut": {
         "properties": {
           "items": {
@@ -4530,6 +4715,24 @@
         ],
         "title": "CountryOut"
       },
+      "CredibilityLabelOut": {
+        "properties": {
+          "grade": {
+            "type": "integer",
+            "title": "Grade"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grade",
+          "label"
+        ],
+        "title": "CredibilityLabelOut"
+      },
       "CyberBoardOut": {
         "properties": {
           "outages_24h": {
@@ -4631,6 +4834,24 @@
           "max_severity"
         ],
         "title": "DayBucketOut"
+      },
+      "DoctrineReferenceOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "url"
+        ],
+        "title": "DoctrineReferenceOut"
       },
       "EventOut": {
         "properties": {
@@ -4839,6 +5060,71 @@
           "count"
         ],
         "title": "EventsOut"
+      },
+      "EvidenceAssessmentOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "event_id",
+          "source_id",
+          "reliability",
+          "credibility",
+          "contribution",
+          "organisation",
+          "flags",
+          "reasons"
+        ],
+        "title": "EvidenceAssessmentOut"
       },
       "ExportFormat": {
         "type": "string",
@@ -5405,6 +5691,121 @@
         ],
         "title": "JamMapOut"
       },
+      "JudgementAssessmentOut": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "supporting_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supporting Labels"
+          },
+          "contradicting_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contradicting Labels"
+          },
+          "invalid_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Invalid Labels"
+          },
+          "support_groups": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionGroupOut"
+            },
+            "type": "array",
+            "title": "Support Groups"
+          },
+          "opposition_groups": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionGroupOut"
+            },
+            "type": "array",
+            "title": "Opposition Groups"
+          },
+          "support_tier": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "opposition_tier": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "balance": {
+            "type": "string",
+            "enum": [
+              "no_support",
+              "support_only",
+              "support_stronger",
+              "opposition_at_least_as_strong"
+            ],
+            "title": "Balance"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "limited",
+              "contested",
+              "unsupported"
+            ],
+            "title": "Status"
+          },
+          "confidence_ceiling": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "final_confidence": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Explanation"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "improvements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Improvements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "supporting_labels",
+          "contradicting_labels",
+          "invalid_labels",
+          "support_groups",
+          "opposition_groups",
+          "support_tier",
+          "opposition_tier",
+          "balance",
+          "status",
+          "confidence_ceiling",
+          "final_confidence",
+          "explanation",
+          "limitations",
+          "improvements"
+        ],
+        "title": "JudgementAssessmentOut"
+      },
       "LlmProfileIn": {
         "properties": {
           "name": {
@@ -5813,6 +6214,28 @@
         ],
         "title": "MaritimeBoardOut"
       },
+      "MatrixCellOut": {
+        "properties": {
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reliability",
+          "credibility",
+          "contribution"
+        ],
+        "title": "MatrixCellOut"
+      },
       "MemberIn": {
         "properties": {
           "email": {
@@ -6203,6 +6626,19 @@
         ],
         "title": "PointOut"
       },
+      "Probability": {
+        "type": "string",
+        "enum": [
+          "remote_chance",
+          "highly_unlikely",
+          "unlikely",
+          "realistic_possibility",
+          "likely",
+          "highly_likely",
+          "almost_certain"
+        ],
+        "title": "Probability"
+      },
       "ReadyOut": {
         "properties": {
           "status": {
@@ -6246,6 +6682,75 @@
         ],
         "title": "Reliability",
         "description": "NATO source reliability (AJP-2.1 Table 3.1)."
+      },
+      "ReliabilityLabelOut": {
+        "properties": {
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grade",
+          "label"
+        ],
+        "title": "ReliabilityLabelOut"
+      },
+      "ReportAssessmentOut": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAssessmentOut"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "judgements": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementAssessmentOut"
+            },
+            "type": "array",
+            "title": "Judgements"
+          },
+          "tallies": {
+            "$ref": "#/components/schemas/AssessmentTalliesOut"
+          },
+          "validation_errors": {
+            "type": "integer",
+            "title": "Validation Errors"
+          },
+          "validation_warnings": {
+            "type": "integer",
+            "title": "Validation Warnings"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "evidence",
+          "judgements",
+          "tallies",
+          "validation_errors",
+          "validation_warnings",
+          "limitations"
+        ],
+        "title": "ReportAssessmentOut"
       },
       "ReportChangeOut": {
         "properties": {
@@ -6666,6 +7171,88 @@
         ],
         "title": "ReportEvidenceOut"
       },
+      "ReportMethodologyOut": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "contribution_matrix": {
+            "items": {
+              "$ref": "#/components/schemas/MatrixCellOut"
+            },
+            "type": "array",
+            "title": "Contribution Matrix"
+          },
+          "reliability_scale": {
+            "items": {
+              "$ref": "#/components/schemas/ReliabilityLabelOut"
+            },
+            "type": "array",
+            "title": "Reliability Scale"
+          },
+          "credibility_scale": {
+            "items": {
+              "$ref": "#/components/schemas/CredibilityLabelOut"
+            },
+            "type": "array",
+            "title": "Credibility Scale"
+          },
+          "assessment_dimensions": {
+            "items": {
+              "$ref": "#/components/schemas/AssessmentDimensionOut"
+            },
+            "type": "array",
+            "title": "Assessment Dimensions"
+          },
+          "confidence_rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Confidence Rules"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "doctrine_references": {
+            "items": {
+              "$ref": "#/components/schemas/DoctrineReferenceOut"
+            },
+            "type": "array",
+            "title": "Doctrine References"
+          },
+          "probability_yardstick": {
+            "items": {
+              "$ref": "#/components/schemas/YardstickBandOut"
+            },
+            "type": "array",
+            "title": "Probability Yardstick"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "title",
+          "contribution_matrix",
+          "reliability_scale",
+          "credibility_scale",
+          "assessment_dimensions",
+          "confidence_rules",
+          "limitations",
+          "doctrine_references",
+          "probability_yardstick"
+        ],
+        "title": "ReportMethodologyOut"
+      },
       "ReportOut": {
         "properties": {
           "report": {
@@ -6868,6 +7455,16 @@
       },
       "ReportVersionOut": {
         "properties": {
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportAssessmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "period_from": {
             "anyOf": [
               {
@@ -8433,6 +9030,38 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "YardstickBandOut": {
+        "properties": {
+          "probability": {
+            "$ref": "#/components/schemas/Probability"
+          },
+          "term": {
+            "type": "string",
+            "title": "Term"
+          },
+          "low_percent": {
+            "type": "integer",
+            "title": "Low Percent"
+          },
+          "high_percent": {
+            "type": "integer",
+            "title": "High Percent"
+          },
+          "range_description": {
+            "type": "string",
+            "title": "Range Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "probability",
+          "term",
+          "low_percent",
+          "high_percent",
+          "range_description"
+        ],
+        "title": "YardstickBandOut"
       }
     },
     "securitySchemes": {

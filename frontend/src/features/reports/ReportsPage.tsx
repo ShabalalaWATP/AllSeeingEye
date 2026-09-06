@@ -106,42 +106,44 @@ export default function ReportsPage() {
       ) : reports.data.length === 0 ? (
         <p className="text-sm text-muted">No reports yet. Generate one from the live evidence.</p>
       ) : (
-        <Table caption="Reports">
-          <thead>
-            <tr>
-              <Th>Report</Th>
-              <Th>Period</Th>
-              <Th>Status</Th>
-              <Th>Created</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.data.map((report) => (
-              <tr key={report.id}>
-                <Td>
-                  <Link
-                    to={`/reports/${report.id}`}
-                    className="font-medium text-text hover:underline"
-                  >
-                    {report.title}
-                  </Link>
-                  <div className="font-mono text-xs text-muted">
-                    {report.template} · {workspaces.label(report.team_id)}
-                  </div>
-                </Td>
-                <Td className="whitespace-nowrap text-xs text-muted">
-                  {formatUtc(report.period_from)} to {formatUtc(report.period_to)}
-                </Td>
-                <Td>
-                  <StatusBadge status={report.status} />
-                </Td>
-                <Td className="whitespace-nowrap text-xs text-muted">
-                  {formatUtc(report.created_at)}
-                </Td>
+        <div className="shrink-0">
+          <Table caption="Reports">
+            <thead>
+              <tr>
+                <Th>Report</Th>
+                <Th>Period</Th>
+                <Th>Status</Th>
+                <Th>Created</Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {reports.data.map((report) => (
+                <tr key={report.id}>
+                  <Td>
+                    <Link
+                      to={`/reports/${report.id}`}
+                      className="font-medium text-text hover:underline"
+                    >
+                      {report.title}
+                    </Link>
+                    <div className="font-mono text-xs text-muted">
+                      {report.template} · {workspaces.label(report.team_id)}
+                    </div>
+                  </Td>
+                  <Td className="whitespace-nowrap text-xs text-muted">
+                    {formatUtc(report.period_from)} to {formatUtc(report.period_to)}
+                  </Td>
+                  <Td>
+                    <StatusBadge status={report.status} />
+                  </Td>
+                  <Td className="whitespace-nowrap text-xs text-muted">
+                    {formatUtc(report.created_at)}
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
       )}
       <SchedulesSection
         workspaces={workspaces}

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
@@ -120,6 +121,7 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    assessment: ReportAssessmentOut | None = None
     period_from: datetime | None
     period_to: datetime | None
     data_cutoff: datetime | None
@@ -142,6 +144,11 @@ class ReportVersionOut(BaseModel):
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            assessment=(
+                ReportAssessmentOut.model_validate(version.assessment)
+                if version.assessment
+                else None
+            ),
             period_from=version.period_from,
             period_to=version.period_to,
             data_cutoff=version.data_cutoff,

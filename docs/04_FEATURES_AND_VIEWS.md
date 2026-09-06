@@ -158,6 +158,8 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 |---|---|
 | Doctrine and provenance | Conservative reliability/credibility grading, topic clustering, frozen selected evidence with hashes and translated-title provenance, strict new-response validation, per-judgement support ceilings and optional Wayback archiving. Automated checks do not verify claims or replace analyst review |
 | Report production | INTSUM, INTREP, Country Brief, Ask the Eye, Disaster SITREP, Conflict Assessment, Aviation Activity, Maritime Activity and Cyber Summary; direction and optional devil's advocacy passes |
+| Evidence weighting | Versioned A-F × 1-6 contribution matrix, strongest eligible contribution per declared organisation/copy group, per-judgement support/opposition explanations and confidence limits. Frozen with each new version; no invented accuracy percentage or legacy rescoring |
+| Scoring guide | Authenticated `/api/report-methodology`, lazily displayed from the report reader with the current matrix, PHIA vocabulary, limits and official references |
 | Tracker analysis | Hazard and curated conflict boards/details; aviation, maritime, space, cyber and social boards computed from retained events |
 | Baselines | Tiny durable hourly aviation and configured social-keyword aggregates; GNSS observations remain in memory |
 | Direction and warning | Saved areas/plans, on-demand evidence per SIR, plan-scoped reports, threshold indicators, alerts, acknowledgement and scheduled products |
@@ -172,5 +174,11 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 | Security assessment | [Phase 6 ASVS review](security/PHASE6_ASVS_REVIEW.md) records findings, verification and remaining deployment checks; it is not an ASVS level 2 certification or approval for public exposure |
 
 The broader [improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md) records the current security, team, analytical and visual changes. Remaining work is tracked in the master plan: PIR pipeline tags and globe filtering, richer collection-plan editing, baseline-relative indicators, email transport, deferred feed parsers and keys, sanctions/context enrichment, contradiction handling, and further globe overlays. Warning Report, Competing Hypotheses and Source Evaluation templates are not in the implemented template set above.
+
+Alex's current priority is [automated research for an operator](OSINT_PRODUCT_DIRECTION.md),
+with basic team sharing. Ask the Eye currently researches retained feed material;
+general on-demand discovery, passage-level verification and source-rating histories
+remain follow-ups. The [evidence policy](REPORT_EVIDENCE_SCORING.md) explains what
+the implemented matrix can and cannot establish.
 
 Operational validation is incomplete where it needs the operator's environment: no real LLM/embeddings endpoint has been configured and exercised, modern Google News link resolution is unavailable without a permitted API, DOCX visual rendering requires a suitable office renderer, and an operator recovery drill is still required. A synthetic PostgreSQL recovery drill passed before this team-scope milestone; the newer schema also needs recovery verification before operational use. The [operations guide](PHASE5_PHASE6_OPERATIONS.md) separates those limitations from the implemented behaviour.

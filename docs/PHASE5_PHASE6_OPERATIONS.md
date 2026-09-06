@@ -67,6 +67,18 @@ The PDF uses bundled Bitstream Vera fonts. Unsupported characters are printed as
 
 Select two saved versions of the same report to compare structured changes. The comparison includes report content, direction, advocacy, validation and frozen evidence. Evidence is matched by event ID so replacing a citation cannot be hidden by reusing its label. Added, removed and changed fields are shown without a model call. Downloads and comparisons use the report reader's access rules; personal reports are visible to their owner and administrators, while team reports are visible to current members and administrators. The same policy controls exports, comparisons and search. Binary exports recheck access after rendering; private API responses use no-store cache headers.
 
+## Report evidence assessments
+
+The report reader now includes an evidence-strength summary and per-judgement
+explanations, with an on-demand "How evidence is weighed" guide. The versioned
+[policy](REPORT_EVIDENCE_SCORING.md) uses source/item grades and declared groups,
+while keeping likelihood separate from confidence. It does not calculate an
+accuracy percentage or verify model-assigned supporting/opposing relationships.
+Assessments are saved in the existing version analysis JSON, after advocacy, with
+no additional migration or environment setting. Legacy versions are not regraded.
+Exports and archival updates preserve the saved assessment. Opening the guide
+fetches `/api/report-methodology` but makes no model or external source call.
+
 ## Semantic search of saved reports
 
 Under Admin, Models, enable a profile with the `embeddings` role and an endpoint implementing `/embeddings`. On Reports, "Find related reports" shows availability and index coverage. Choose "Index next 8 reports" explicitly until the wanted current reports are indexed. Opening the page does not send report text to the model.

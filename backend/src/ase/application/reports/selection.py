@@ -28,7 +28,7 @@ RELIABILITY_WEIGHT = {
     Reliability.C: 0.7,
     Reliability.D: 0.5,
     Reliability.E: 0.3,
-    Reliability.F: 0.3,
+    Reliability.F: 0.5,  # Unknown track record is not a finding of unreliability.
 }
 MAX_POOL = 4_000
 
@@ -41,6 +41,7 @@ class Selection:
 
 
 def score(event: Event, now: datetime, window: timedelta) -> float:
+    """A retrieval priority, never a probability or a report confidence score."""
     age_hours = max(0.0, (now - event.published_at).total_seconds() / 3600)
     recency = math.exp(-age_hours / max(1.0, window.total_seconds() / 3600))
     severity = 1.0 + (event.severity or 0.0) * 0.5
@@ -85,6 +86,50 @@ def _pool(
     return list(seen.values())
 
 
+def _organisation(event: Event, profiles: Mapping[str, SourceProfile]) -> tuple[str, str]:
+    profile = profiles.get(event.source_id)
+    if profile is not None and profile.independence_key:
+        return ("organisation", profile.independence_key)
+    return ("connector", event.source_id)
+
+
+def _diversify(
+    ranked: Sequence[Event], profiles: Mapping[str, SourceProfile], terms: Sequence[str]
+) -> list[Event]:
+    """Prefer varied reporting, then backfill without discarding possible counterevidence.
+
+    Matching evidence stays ahead of unmatched context. Within either tier, the first
+    pass takes one item per declared organisation and defers equal titles or hashes.
+    This is a bounded retrieval heuristic, not proof of independent sourcing. Deferred
+    items remain available when the pool is thin, including similar opposing reports.
+    """
+    result: list[Event] = []
+    for matching in (True, False):
+        organisations: set[tuple[str, str]] = set()
+        titles: set[str] = set()
+        hashes: set[str] = set()
+        deferred: list[Event] = []
+        for event in ranked:
+            if bool(term_matches(event, terms)) != matching:
+                continue
+            organisation = _organisation(event, profiles)
+            title = " ".join((event.title_en or event.title).casefold().split())
+            copied = (bool(title) and title in titles) or (
+                bool(event.content_hash) and event.content_hash in hashes
+            )
+            if organisation in organisations or copied:
+                deferred.append(event)
+                continue
+            organisations.add(organisation)
+            if title:
+                titles.add(title)
+            if event.content_hash:
+                hashes.add(event.content_hash)
+            result.append(event)
+        result.extend(deferred)
+    return result
+
+
 def select_evidence(
     store: EventStore,
     profiles: Mapping[str, SourceProfile],
@@ -112,24 +157,24 @@ def select_evidence(
         pool = [event for event in pool if hazard_of(event) is hazard]
     lowered = tuple(term.lower().strip() for term in terms if term.strip())
 
-    def rank(event: Event) -> tuple[int, float]:
+    def rank(event: Event) -> tuple[int, float, str]:
         matches = term_matches(event, lowered)
-        return (1 if matches else 0, score(event, now, window) * (1 + 0.25 * matches))
+        return (-bool(matches), -score(event, now, window) * (1 + 0.25 * matches), event.id)
 
-    ranked = sorted(pool, key=rank, reverse=True)
-    per_source: dict[str, int] = {}
+    safe = [
+        event for event in pool if not injection_flags(event.title, event.title_en, event.summary)
+    ]
+    ranked = _diversify(sorted(safe, key=rank), profiles, lowered)
+    per_organisation: dict[tuple[str, str], int] = {}
     chosen: list[EvidenceItem] = []
-    flagged = 0
     for event in ranked:
         if len(chosen) >= strategy.max_items:
             break
-        if per_source.get(event.source_id, 0) >= strategy.per_source_cap:
-            continue
-        if injection_flags(event.title, event.title_en, event.summary):
-            flagged += 1
+        organisation = _organisation(event, profiles)
+        if per_organisation.get(organisation, 0) >= strategy.per_source_cap:
             continue
         profile = profiles.get(event.source_id)
-        per_source[event.source_id] = per_source.get(event.source_id, 0) + 1
+        per_organisation[organisation] = per_organisation.get(organisation, 0) + 1
         chosen.append(
             EvidenceItem.from_event(
                 f"E{len(chosen) + 1}",
@@ -144,4 +189,4 @@ def select_evidence(
                 ),
             )
         )
-    return Selection(items=tuple(chosen), flagged=flagged, considered=len(pool))
+    return Selection(items=tuple(chosen), flagged=len(pool) - len(safe), considered=len(pool))

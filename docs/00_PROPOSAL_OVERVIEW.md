@@ -1,5 +1,12 @@
 # The All Seeing Eye: Proposal Overview
 
+Current direction, 6 September 2026: Alex prioritises automated OSINT research
+for an individual operator, with teams providing basic sharing. The original
+proposal below remains a design record. Current capabilities and future priorities
+are separated in [the product direction](OSINT_PRODUCT_DIRECTION.md),
+[feature inventory](04_FEATURES_AND_VIEWS.md) and
+[report evidence policy](REPORT_EVIDENCE_SCORING.md).
+
 Status: approved by Alex on 3 September 2026 with two amendments: the 3D globe is the default view (not merely the primary one), and the logo is specifically the React Bits Evil Eye component at https://reactbits.dev/backgrounds/evil-eye. All recommendations in section 2 and in `06_OPEN_QUESTIONS.md` are now decisions of record; the ADRs are Accepted. Building starts with Phase 0. Read this first; the detail lives in the numbered documents alongside it.
 
 | Document | Contents |

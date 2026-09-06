@@ -15,6 +15,7 @@ from ase.domain.doctrine import (
     sentences,
 )
 from ase.domain.evidence import EvidenceItem, quality_of_information
+from ase.domain.judgement_assessment import assess_judgement
 from ase.domain.report_support import (
     check_judgement_support,
     check_structure,
@@ -186,12 +187,9 @@ def validate_body(
         checked = _check_judgement(judgement, assumption_ids, findings)
         ceiling = confidence_ceiling
         if frozen is not None:
-            support = [frozen[label] for label in dict.fromkeys(checked.supporting_evidence)]
-            support_quality = quality_of_information(support)
-            cited_ceiling = support_quality.confidence_ceiling
+            support_assessment = assess_judgement(checked, tuple(frozen.values()))
+            cited_ceiling = support_assessment.confidence_ceiling
             ceiling = min(ceiling, cited_ceiling, key=CONFIDENCE_ORDER.__getitem__)
-            if checked.contradicting_evidence:
-                ceiling = min(ceiling, Confidence.MODERATE, key=CONFIDENCE_ORDER.__getitem__)
         if CONFIDENCE_ORDER[checked.confidence] > CONFIDENCE_ORDER[ceiling]:
             findings.append(
                 Finding(
@@ -211,13 +209,17 @@ def validate_body(
                 ),
             )
         if frozen is not None:
+            groups = sum(group.known_organisation for group in support_assessment.support_groups)
             checked = replace(
                 checked,
                 confidence_statement=(
                     f"Engine confidence ceiling: {ceiling.value}. Cited support: "
-                    f"{support_quality.items} item(s), "
-                    f"{support_quality.independent_organisations} declared organisation group(s); "
-                    "independent sourcing not verified. "
+                    f"{len(support_assessment.supporting_labels)} item(s), "
+                    f"{groups} "
+                    "declared organisation group(s); independent sourcing not verified. "
+                    f"Support {support_assessment.support_tier.value}; "
+                    f"opposition {support_assessment.opposition_tier.value}. "
+                    "Relationships are model-assigned. "
                     f"Model rationale (unverified): {judgement.confidence_statement}"
                 ),
             )

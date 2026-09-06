@@ -173,7 +173,7 @@ def test_declared_groups_and_multiple_copies_do_not_create_high_confidence() -> 
     copies = [replace(item, label=f"E{i}", independence_key=f"publisher{i}") for i in range(4)]
     quality = quality_of_information(copies)
     assert quality.independent_organisations == 1
-    assert quality.confidence_ceiling is Confidence.LOW
+    assert quality.confidence_ceiling is Confidence.MODERATE
     assert "independent sourcing not verified" in quality.describe()
 
 
@@ -182,7 +182,8 @@ def test_high_ceiling_requires_confirmed_distinct_support_and_no_contradictions(
         replace(
             evidence()[0],
             credibility=1,
-            grade="C1",
+            grade="B1",
+            reliability="B",
             title="Observed troop departures",
             content_hash="one",
         ),
@@ -204,7 +205,7 @@ def test_high_ceiling_requires_confirmed_distinct_support_and_no_contradictions(
     result = validate_body(
         parse_body(data), frozenset(), {}, evidence_items=(*items, evidence()[2])
     )
-    assert result.body.key_judgements[0].confidence is Confidence.MODERATE
+    assert result.body.key_judgements[0].confidence is Confidence.LOW
 
 
 def test_ambiguous_support_and_compound_judgements_require_review() -> None:

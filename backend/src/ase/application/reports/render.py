@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from ase.application.reports.assessment_export import assessment_sections
 from ase.application.reports.export_text import markdown_fields, plain_markdown, review_notice
 from ase.application.reports.markdown_annex import annex_lines
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.doctrine import term_for
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
 from ase.domain.validation import Finding
 
@@ -144,6 +146,7 @@ def render_markdown(
     advocacy: DevilsAdvocacy | None = None,
     status: ReportStatus | None = None,
     period_line: str | None = None,
+    assessment: ReportAssessment | None = None,
 ) -> str:
     header, body = markdown_fields(header), markdown_fields(body)
     direction, advocacy = markdown_fields(direction), markdown_fields(advocacy)
@@ -156,6 +159,16 @@ def render_markdown(
         *_analysis_lines(body),
         *_advocacy_lines(advocacy),
         *_closing_lines(body),
+        *[
+            line
+            for title, paragraphs in assessment_sections(assessment)
+            for line in (
+                f"## {plain_markdown(title)}",
+                "",
+                *[plain_markdown(paragraph) for paragraph in paragraphs],
+                "",
+            )
+        ],
         *annex_lines(evidence, quality, findings),
     ]
     return "\n".join(lines)

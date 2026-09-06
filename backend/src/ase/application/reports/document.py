@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 
+from ase.application.reports.assessment_export import assessment_sections
 from ase.application.reports.export_text import evidence_metadata, review_notice, safe_url
 from ase.application.reports.frozen_header import frozen_period_line
 from ase.domain.doctrine import term_for
@@ -183,6 +184,10 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
             f"Confidence before: {advocacy.confidence_before or 'unchanged'}; "
             f"after: {advocacy.confidence_after or 'unchanged'}."
         )
+    for heading, paragraphs in assessment_sections(version.assessment):
+        doc.heading(heading)
+        for paragraph in paragraphs:
+            doc.add(paragraph)
     doc.heading("Quality of information")
     doc.add(version.quality.describe())
     if version.findings:

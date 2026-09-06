@@ -28,6 +28,7 @@ from ase.domain.direction import Direction
 from ase.domain.events import BoundingBox
 from ase.domain.evidence import EvidenceItem, quality_of_information
 from ase.domain.grading import SourceProfile
+from ase.domain.judgement_assessment import build_report_assessment
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
@@ -170,9 +171,10 @@ class Producer:
         if self._url_resolver is not None:
             cited = body.cited_labels() | frozenset(advocacy.evidence if advocacy else ())
             evidence = await resolve_cited_links(self._url_resolver, evidence, cited)
+        assessment = build_report_assessment(body, evidence, totals.findings)
         markdown = render_markdown(
             header, body, evidence, quality, totals.findings,
-            direction=direction, advocacy=advocacy, status=status,
+            direction=direction, advocacy=advocacy, status=status, assessment=assessment,
         )  # fmt: skip
         # Usage adapters flush writes. Keep all outbound model and resolution work
         # ahead of them so SQLite's writer lock is held only for persistence. The
@@ -190,6 +192,7 @@ class Producer:
             findings=tuple(totals.findings),
             evidence=evidence,
             quality=quality,
+            assessment=assessment,
             markdown=markdown,
             profile_id=job.profile.id,
             model=draft.model or job.profile.model,

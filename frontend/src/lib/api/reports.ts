@@ -5,6 +5,7 @@ import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
 
 import { apiCall, apiSend, apiText } from './client';
+import { reportAssessmentSchema } from './reportAssessment';
 
 export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
@@ -131,6 +132,7 @@ export const findingSchema = z.object({
 export type Finding = z.infer<typeof findingSchema>;
 
 export const reportVersionSchema = z.object({
+  assessment: reportAssessmentSchema.nullable().optional(),
   period_from: z.string().nullable().optional(),
   period_to: z.string().nullable().optional(),
   data_cutoff: z.string().nullable().optional(),

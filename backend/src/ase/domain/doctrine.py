@@ -36,6 +36,17 @@ class YardstickBand:
     low_percent: int
     high_percent: int
 
+    @property
+    def range_description(self) -> str:
+        """PHIA's approximate, discontinuous bands exclude certainty and the 50% boundary."""
+        lower = "above 0" if self.low_percent == 0 else f"about {self.low_percent}"
+        upper = (
+            f"under {self.high_percent}"
+            if self.high_percent in (50, 100)
+            else f"about {self.high_percent}"
+        )
+        return f"{lower} to {upper} percent"
+
 
 YARDSTICK: tuple[YardstickBand, ...] = (
     YardstickBand(Probability.REMOTE_CHANCE, "remote chance", 0, 5),

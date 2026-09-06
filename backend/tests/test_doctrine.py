@@ -212,7 +212,7 @@ def test_evidence_bundle_statistics_and_injection_flags() -> None:
     assert quality.by_grade == {"A2": 1, "C3": 1}
     assert quality.newest == NOW and quality.oldest == NOW - timedelta(hours=5)
     assert quality.confidence_ceiling is Confidence.MODERATE
-    assert "2 evidence items" in quality.describe() and "ceiling moderate" in quality.describe()
+    assert "2 evidence items" in quality.describe() and "per judgement" in quality.describe()
     only_weak = quality_of_information([items[1]])
     assert only_weak.confidence_ceiling is Confidence.LOW
     same_org = quality_of_information(
@@ -227,7 +227,7 @@ def test_evidence_bundle_statistics_and_injection_flags() -> None:
             ),
         ]
     )
-    assert same_org.confidence_ceiling is Confidence.LOW
+    assert same_org.confidence_ceiling is Confidence.MODERATE
     trio = quality_of_information([*items, items[0]])
     assert trio.confidence_ceiling is Confidence.MODERATE
     assert quality_of_information([]).confidence_ceiling is Confidence.LOW

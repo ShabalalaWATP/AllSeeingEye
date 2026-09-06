@@ -97,7 +97,6 @@ async def draft_body(
             parsed,
             labels,
             urls,
-            confidence_ceiling=quality.confidence_ceiling,
             previous_exists=bool(previous),
             evidence_items=evidence,
         )

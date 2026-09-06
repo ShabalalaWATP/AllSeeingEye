@@ -235,3 +235,49 @@ A concise, chronological record of how The All Seeing Eye is being built. Mainta
   ADRs and the master improvement/security records. The milestone is committed
   locally on `codex/app-improvement`. There is no Git remote or hosted CI result;
   no operator database migration or deployment was performed.
+
+## 6 September 2026: automated research and report evidence weighting
+
+- Alex redirected the product towards quick automated OSINT research and sourced
+  reports for an operator, with teams providing basic sharing. The product
+  direction now prioritises bounded on-demand collection, clear coverage,
+  follow-up questions and evidence inspection. Cases, assignments and reviewer
+  queues are outside that direction; broader collection is a subsequent milestone.
+- Reviewed the public PHIA 2025 uncertainty/analytical standards and UK JDP 2-00
+  fourth edition. The app retains the PHIA likelihood vocabulary and NATO-style
+  source/item grading. The new `ase-evidence-v1` matrix is explicitly application
+  policy, not calibrated truth or full doctrinal certification.
+- The matrix fixes weak-padding and whole-pool confidence defects. Judgements use
+  only their own cited support/opposition, strongest eligible contributions per
+  declared organisation/copy group, and explicit limits on unknown provenance.
+  Frozen engine assessments record explanations, confidence ceilings and final
+  confidence after advocacy. Legacy reports are not rescored.
+- Added typed assessment/methodology responses, a report summary, expandable
+  evidence explanations and the 36-cell guide with all seven PHIA bands.
+  Markdown/PDF/DOCX share the saved result; archive updates preserve it. Retrieval
+  now favours diverse relevant reporting, shares parent-organisation caps and
+  defers copied titles/content without discarding backfill or counterevidence.
+- Independent scoring review found no remaining actionable defect. Focused core
+  matrix tests measured 100 percent statement/branch coverage. PostgreSQL report
+  assessment/export/production tests passed all 53 cases on a disposable 17.10
+  instance; the container was removed and absence verified. Six representative
+  PDF pages were visually checked; DOCX content checks passed, but an office
+  renderer remains unavailable.
+- Final full frontend coverage passed 359 tests with four workers: 98.04 percent
+  lines, 91.70 percent branches. The initial default-concurrency run had three lazy-page
+  timeouts while other checks competed for CPU; the recorded full pass used
+  reduced concurrency without changing thresholds or repository runner defaults.
+  Browser QA also exposed report-table clipping and citation focus/default-link
+  behaviour. Both were fixed, with pointer/keyboard checks at 1440, 390 and 320
+  pixels, no page overflow and preserved modified-click behaviour. The final full
+  run includes the new regression and consistent synthetic fixtures.
+- The full SQLite suite passed 719 tests with two PostgreSQL-only skips and 96.16
+  percent combined statement/branch coverage in 422 seconds. Ruff, mypy over 284
+  source files, both import contracts, Bandit and file-length checks passed.
+  No source dependency, operator migration or deployment was added. Real model
+  research quality remains unmeasured until a model is configured and a suitable
+  evaluation set is exercised. All pre-commit gates passed, including Gitleaks;
+  its prose false positive was resolved by clearer wording, without exclusions.
+  The verified milestone is committed on `codex/report-evidence-scoring`, with no
+  remote or push. Scoring, product direction, API, operations, ADR and scoped
+  security-review documents were updated together.

@@ -4,9 +4,41 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
-The expanded app-quality, teams, map and design goal is now tracked in
-[MASTER_FIX_IMPROVEMENT_PLAN.md](MASTER_FIX_IMPROVEMENT_PLAN.md). That plan is
-active; the completed phases below are its starting point, not its completion.
+The expanded app-quality, teams, map and design milestone is completed in
+[MASTER_FIX_IMPROVEMENT_PLAN.md](MASTER_FIX_IMPROVEMENT_PLAN.md), commit `cd8e498`.
+Alex has since set an operator-first automated research direction with basic team
+sharing, documented in [OSINT_PRODUCT_DIRECTION.md](OSINT_PRODUCT_DIRECTION.md).
+
+Current milestone on `codex/report-evidence-scoring`:
+
+- [x] Verify UK PHIA yardstick/confidence distinctions and the JDP 2-00 NATO grading reference.
+- [x] Replace weak-padding/global-pool confidence behaviour with a per-judgement contribution matrix.
+- [x] Freeze engine assessments with report versions and preserve legacy absence.
+- [x] Add typed methodology/assessment responses and consistent report/export explanations.
+- [x] Improve bounded selection diversity, parent caps and deterministic ordering.
+- [x] Complete integrated tests, coverage, UI/document checks and final review.
+- [x] Commit the verified milestone and record its actual verification below.
+
+The matrix is application policy, not calibrated truth or full doctrinal
+certification. Broader on-demand research collection remains the next product
+milestone, rather than being implied by this scoring change.
+
+Verification for this milestone: full SQLite `uv run pytest` passed 719 tests
+with two PostgreSQL-only skips and 96.16 percent combined statement/branch
+coverage. The focused report persistence/API/export/period/production selection
+passed 53 tests on disposable PostgreSQL 17.10. Full frontend coverage passed
+359 tests across 76 files using `pnpm test --maxWorkers=4`, with 98.04 percent
+lines and 91.70 percent branches. The initial default-concurrency run had three
+lazy-page loading timeouts during concurrent work; thresholds/defaults were not
+changed. The final full frontend run includes the citation regression and aligned
+fixtures; UI corrections also received real-browser checks. New core policy
+modules reached 100 percent statement/branch coverage.
+Ruff, mypy, import contracts, Bandit, frontend lint/types/format/build and file
+limits passed. PDF pages were visually checked; DOCX content passed with office
+renderer verification still outstanding. No real model or production deployment
+is included in these results. All pre-commit gates, including Gitleaks, passed.
+The milestone is committed on `codex/report-evidence-scoring`; no remote or push
+is configured. [The review](security/REPORT_ASSESSMENT_REVIEW.md) records the scope.
 
 Phases 0 to 4 are built. The 6 September 2026 continuation adds the remaining Phase 5 features and the Phase 6 hardening work: translation, social listening and watchlists; optional administrator TOTP, report documents and comparison, semantic search, bounded-memory performance fixes, keyboard and motion improvements, and backup/restore tooling. Live events remain in memory. The current operating instructions are in [PHASE5_PHASE6_OPERATIONS.md](PHASE5_PHASE6_OPERATIONS.md).
 

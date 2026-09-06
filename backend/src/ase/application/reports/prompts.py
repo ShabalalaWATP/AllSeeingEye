@@ -9,6 +9,7 @@ from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_matrix import contribution_for
 from ase.domain.llm import LlmMessage
 from ase.domain.reports import KeyJudgement
 from ase.domain.validation import Finding
@@ -17,13 +18,13 @@ MAX_SUMMARY_CHARS = 600
 
 
 def doctrine_preamble() -> str:
-    bands = "; ".join(
-        f"'{band.term}' ({band.low_percent} to {band.high_percent} percent)" for band in YARDSTICK
-    )
+    bands = "; ".join(f"'{band.term}' ({band.range_description})" for band in YARDSTICK)
     return (
         "You are an intelligence analyst writing for The All Seeing Eye. You follow the UK "
-        "Professional Head of Intelligence Assessment standards and NATO intelligence doctrine.\n"
-        "Rules that the validator enforces:\n"
+        "Professional Head of Intelligence Assessment conventions and distinguish source "
+        "reliability from information credibility. Automated checks are not doctrine "
+        "certification.\n"
+        "Writing requirements and automated checks:\n"
         f"1. Likelihood uses only the PHIA yardstick: {bands}. 'Probable' means the same as "
         "'likely'. Never use 'very likely', 'roughly even chance', 'probably not' or "
         "percentages.\n"
@@ -32,7 +33,9 @@ def doctrine_preamble() -> str:
         "'possibly'.\n"
         "3. Confidence (high, moderate, low) is separate from likelihood. Give every judgement "
         "a confidence rating and a confidence statement covering the information base, the "
-        "analytical rigour applied, and the volatility of the subject. Never put a confidence "
+        "analytical rigour applied, and complexity and volatility. State where these cannot "
+        "be assessed; the engine's evidence limit is not a full confidence assessment. "
+        "Never put a confidence "
         "word in the same sentence as a yardstick term.\n"
         "4. Reporting describes what the evidence says and contains no yardstick terms. Every "
         "reporting item cites at least one evidence label (E1, E2, ...) and states its grade.\n"
@@ -69,6 +72,13 @@ def evidence_block(item: EvidenceItem) -> str:
     provenance = f" Original language: {item.language or 'not recorded'}."
     if item.geo_confidence:
         provenance += f" Location precision: {item.geo_confidence}."
+    provenance += (
+        " Application evidence contribution: "
+        f"{contribution_for(item.reliability, item.credibility).value}."
+        f" Grade rationale: {item.grade_rationale[:300] or 'not recorded'}."
+        f" Declared organisation: {item.independence_key or 'unknown'}; "
+        "independent sourcing not verified."
+    )
     return (
         f"{item.label} [{item.grade}, {item.source_name}, {item.category}{where}, {when}]"
         f"{flags}: {item.title}.{body}{translation}{provenance}"
@@ -111,10 +121,13 @@ def compose_messages(
         )
         parts.extend(direction.lines())
     parts.append(f"Quality of information check: {quality.describe()}")
-    if quality.confidence_ceiling.value != "high":
-        parts.append(
-            f"Confidence may not exceed {quality.confidence_ceiling.value} for any judgement."
-        )
+    parts.append(
+        "Confidence is limited separately for each judgement using only its cited support and "
+        "opposition. A single strong contribution can support a moderate ceiling. Copies and "
+        "weak repetition cannot raise it. Source grades and contribution tiers are not truth "
+        "probabilities. Supporting and contradicting citations must describe the relationship "
+        "you assess, not a claim that the engine verified it."
+    )
     parts.append("Evidence (label [grade, source, category, country, published]: title. summary):")
     parts.extend(evidence_block(item) for item in evidence)
     if not evidence:

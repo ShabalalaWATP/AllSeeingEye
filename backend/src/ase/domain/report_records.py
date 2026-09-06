@@ -12,6 +12,8 @@ from ase.domain.advocacy import DevilsAdvocacy, advocacy_from_dict, advocacy_to_
 from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
+from ase.domain.evidence_matrix import ReportAssessment
+from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
 from ase.domain.validation import Finding, Severity
 
@@ -66,15 +68,22 @@ class ReportVersion:
     period_from: datetime | None = None
     period_to: datetime | None = None
     data_cutoff: datetime | None = None
+    assessment: ReportAssessment | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
-    """The direction and the devil's advocacy view, or None when the version has neither."""
-    if version.direction is None and version.advocacy is None and version.period_from is None:
+    """Optional frozen version metadata, without inventing an assessment for legacy records."""
+    if (
+        version.direction is None
+        and version.advocacy is None
+        and version.period_from is None
+        and version.assessment is None
+    ):
         return None
     return {
         "direction": direction_to_dict(version.direction) if version.direction else None,
         "devils_advocacy": advocacy_to_dict(version.advocacy) if version.advocacy else None,
+        **({"assessment": assessment_to_dict(version.assessment)} if version.assessment else {}),
         "period": {
             "from": version.period_from.isoformat() if version.period_from else None,
             "to": version.period_to.isoformat() if version.period_to else None,

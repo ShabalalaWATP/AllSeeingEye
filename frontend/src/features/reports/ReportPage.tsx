@@ -24,6 +24,8 @@ import { ReportReviewStatus } from './ReportReviewStatus';
 import { ReportDiff } from './ReportDiff';
 import { ReportExports } from './ReportExports';
 import { StatusBadge } from './ReportsPage';
+import { ReportAssessmentSummary } from './ReportAssessmentSummary';
+import { ReportMethodology } from './ReportMethodology';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -156,12 +158,15 @@ export default function ReportPage() {
           </Alert>
         )}
         <DirectionView direction={version.direction} />
-        <ReportBodyView body={version.body} />
+        <ReportAssessmentSummary assessment={version.assessment} />
+        <ReportMethodology savedMethod={version.assessment?.method_version} />
+        <ReportBodyView body={version.body} assessment={version.assessment} />
         <AdvocacyView advocacy={version.devils_advocacy} />
         <EvidenceAnnex
           evidence={version.evidence}
           findings={version.findings}
           status={version.status}
+          assessment={version.assessment}
         />
       </article>
     </EvidenceNavigation>

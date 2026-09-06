@@ -55,6 +55,7 @@ async def archive_evidence(
         direction=version.direction,
         advocacy=version.advocacy,
         status=version.status,
+        assessment=version.assessment,
         period_line=frozen_period_line(record, version),
     )
     await reports.set_archives(version.id, archives, markdown)

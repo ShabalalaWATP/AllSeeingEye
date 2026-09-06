@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import type { EvidenceItem, Finding } from '@/lib/api/reports';
+import type { EvidenceAssessment, ReportAssessment } from '@/lib/api/reportAssessment';
 import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 
@@ -46,7 +47,13 @@ function SourceLink({ url, children }: { url: string | null; children: ReactNode
   );
 }
 
-function EvidenceDetails({ item }: { item: EvidenceItem }) {
+function EvidenceDetails({
+  item,
+  assessment,
+}: {
+  item: EvidenceItem;
+  assessment: EvidenceAssessment | undefined;
+}) {
   return (
     <details id={evidenceId(item.label)} className="group scroll-mt-6 border-b border-line py-1">
       <summary className="cursor-pointer rounded py-3 text-sm transition-colors hover:bg-surface-2/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember motion-reduce:transition-none">
@@ -75,6 +82,16 @@ function EvidenceDetails({ item }: { item: EvidenceItem }) {
           </div>
         )}
         <dl className="grid min-w-0 gap-x-8 gap-y-4 sm:grid-cols-2">
+          {assessment && (
+            <Metadata label="Automated contribution">
+              <span className="font-mono capitalize">{assessment.contribution}</span>
+              <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-muted">
+                {assessment.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </Metadata>
+          )}
           <Metadata label="Grade rationale">{item.grade_rationale || 'Not provided'}</Metadata>
           <Metadata label="Reliability / credibility">
             {item.reliability ?? 'Unknown'} / {item.credibility ?? 'Unknown'}
@@ -122,10 +139,12 @@ export function EvidenceAnnex({
   evidence,
   findings,
   status,
+  assessment,
 }: {
   evidence: readonly EvidenceItem[];
   findings: readonly Finding[];
   status: string;
+  assessment?: ReportAssessment | null | undefined;
 }) {
   const warnings = findings.filter((finding) => finding.severity === 'warning');
   return (
@@ -151,7 +170,13 @@ export function EvidenceAnnex({
         {evidence.length === 0 ? (
           <p className="text-sm text-muted">No frozen evidence was saved for this version.</p>
         ) : (
-          evidence.map((item) => <EvidenceDetails key={item.label} item={item} />)
+          evidence.map((item) => (
+            <EvidenceDetails
+              key={item.label}
+              item={item}
+              assessment={assessment?.evidence.find((row) => row.label === item.label)}
+            />
+          ))
         )}
       </section>
     </div>

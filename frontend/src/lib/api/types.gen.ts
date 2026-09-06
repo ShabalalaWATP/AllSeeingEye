@@ -535,6 +535,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/report-methodology": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Report Methodology */
+        get: operations["report_methodology_api_report_methodology_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/report-search": {
         parameters: {
             query?: never;
@@ -1343,6 +1360,44 @@ export interface components {
             /** Baseline */
             baseline: number | null;
         };
+        /** AssessmentDimensionOut */
+        AssessmentDimensionOut: {
+            /** Name */
+            name: string;
+            /** Engine Assessed */
+            engine_assessed: boolean;
+            /** Description */
+            description: string;
+        };
+        /** AssessmentTalliesOut */
+        AssessmentTalliesOut: {
+            /** Evidence Items */
+            evidence_items: number;
+            /** Declared Groups */
+            declared_groups: number;
+            /** Unknown Provenance Items */
+            unknown_provenance_items: number;
+            /** Possible Copy Groups */
+            possible_copy_groups: number;
+            /** Judgements */
+            judgements: number;
+            /** Strong */
+            strong: number;
+            /** Moderate */
+            moderate: number;
+            /** Limited */
+            limited: number;
+            /** Unassessed */
+            unassessed: number;
+            /** Supported Judgements */
+            supported_judgements: number;
+            /** Limited Judgements */
+            limited_judgements: number;
+            /** Contested Judgements */
+            contested_judgements: number;
+            /** Unsupported Judgements */
+            unsupported_judgements: number;
+        };
         /** AuditEntryOut */
         AuditEntryOut: {
             /** Id */
@@ -1434,6 +1489,11 @@ export interface components {
             /** Totp Code */
             totp_code?: string | null;
         };
+        /**
+         * Confidence
+         * @enum {string}
+         */
+        Confidence: "high" | "moderate" | "low";
         /** ConflictBoardOut */
         ConflictBoardOut: {
             /** Items */
@@ -1479,6 +1539,26 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /**
+         * Contribution
+         * @enum {string}
+         */
+        Contribution: "strong" | "moderate" | "limited" | "unassessed";
+        /** ContributionGroupOut */
+        ContributionGroupOut: {
+            /** Id */
+            id: string;
+            /** Labels */
+            labels: string[];
+            /** Known Organisation */
+            known_organisation: boolean;
+            contribution: components["schemas"]["Contribution"];
+            corroborating_contribution: components["schemas"]["Contribution"];
+            /** Possible Copy */
+            possible_copy: boolean;
+            /** Confirmed Strong */
+            confirmed_strong: boolean;
+        };
         /** CountriesOut */
         CountriesOut: {
             /** Items */
@@ -1516,6 +1596,13 @@ export interface components {
                 number
             ];
         };
+        /** CredibilityLabelOut */
+        CredibilityLabelOut: {
+            /** Grade */
+            grade: number;
+            /** Label */
+            label: string;
+        };
         /** CyberBoardOut */
         CyberBoardOut: {
             /** Outages 24H */
@@ -1548,6 +1635,13 @@ export interface components {
             count: number;
             /** Max Severity */
             max_severity: number | null;
+        };
+        /** DoctrineReferenceOut */
+        DoctrineReferenceOut: {
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
         };
         /** EventOut */
         EventOut: {
@@ -1606,6 +1700,26 @@ export interface components {
             items: components["schemas"]["EventOut"][];
             /** Count */
             count: number;
+        };
+        /** EvidenceAssessmentOut */
+        EvidenceAssessmentOut: {
+            /** Label */
+            label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Reliability */
+            reliability: string;
+            /** Credibility */
+            credibility: number;
+            contribution: components["schemas"]["Contribution"];
+            /** Organisation */
+            organisation: string | null;
+            /** Flags */
+            flags: string[];
+            /** Reasons */
+            reasons: string[];
         };
         /**
          * ExportFormat
@@ -1804,6 +1918,41 @@ export interface components {
             /** Updated At */
             updated_at: string | null;
         };
+        /** JudgementAssessmentOut */
+        JudgementAssessmentOut: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Supporting Labels */
+            supporting_labels: string[];
+            /** Contradicting Labels */
+            contradicting_labels: string[];
+            /** Invalid Labels */
+            invalid_labels: string[];
+            /** Support Groups */
+            support_groups: components["schemas"]["ContributionGroupOut"][];
+            /** Opposition Groups */
+            opposition_groups: components["schemas"]["ContributionGroupOut"][];
+            support_tier: components["schemas"]["Contribution"];
+            opposition_tier: components["schemas"]["Contribution"];
+            /**
+             * Balance
+             * @enum {string}
+             */
+            balance: "no_support" | "support_only" | "support_stronger" | "opposition_at_least_as_strong";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "supported" | "limited" | "contested" | "unsupported";
+            confidence_ceiling: components["schemas"]["Confidence"];
+            final_confidence: components["schemas"]["Confidence"];
+            /** Explanation */
+            explanation: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Improvements */
+            improvements: string[];
+        };
         /** LlmProfileIn */
         LlmProfileIn: {
             /** Name */
@@ -1950,6 +2099,14 @@ export interface components {
             notable: components["schemas"]["EventOut"][];
             /** Latest */
             latest: components["schemas"]["EventOut"][];
+        };
+        /** MatrixCellOut */
+        MatrixCellOut: {
+            /** Reliability */
+            reliability: string;
+            /** Credibility */
+            credibility: number;
+            contribution: components["schemas"]["Contribution"];
         };
         /** MemberIn */
         MemberIn: {
@@ -2108,6 +2265,11 @@ export interface components {
             /** Lat */
             lat: number;
         };
+        /**
+         * Probability
+         * @enum {string}
+         */
+        Probability: "remote_chance" | "highly_unlikely" | "unlikely" | "realistic_possibility" | "likely" | "highly_likely" | "almost_certain";
         /** ReadyOut */
         ReadyOut: {
             /** Status */
@@ -2124,6 +2286,29 @@ export interface components {
          * @enum {string}
          */
         Reliability: "A" | "B" | "C" | "D" | "E" | "F";
+        /** ReliabilityLabelOut */
+        ReliabilityLabelOut: {
+            /** Grade */
+            grade: string;
+            /** Label */
+            label: string;
+        };
+        /** ReportAssessmentOut */
+        ReportAssessmentOut: {
+            /** Method Version */
+            method_version: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceAssessmentOut"][];
+            /** Judgements */
+            judgements: components["schemas"]["JudgementAssessmentOut"][];
+            tallies: components["schemas"]["AssessmentTalliesOut"];
+            /** Validation Errors */
+            validation_errors: number;
+            /** Validation Warnings */
+            validation_warnings: number;
+            /** Limitations */
+            limitations: string[];
+        };
         /** ReportChangeOut */
         ReportChangeOut: {
             /** Section */
@@ -2236,6 +2421,29 @@ export interface components {
             /** Story Id */
             story_id?: string | null;
         };
+        /** ReportMethodologyOut */
+        ReportMethodologyOut: {
+            /** Method Version */
+            method_version: string;
+            /** Title */
+            title: string;
+            /** Contribution Matrix */
+            contribution_matrix: components["schemas"]["MatrixCellOut"][];
+            /** Reliability Scale */
+            reliability_scale: components["schemas"]["ReliabilityLabelOut"][];
+            /** Credibility Scale */
+            credibility_scale: components["schemas"]["CredibilityLabelOut"][];
+            /** Assessment Dimensions */
+            assessment_dimensions: components["schemas"]["AssessmentDimensionOut"][];
+            /** Confidence Rules */
+            confidence_rules: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Doctrine References */
+            doctrine_references: components["schemas"]["DoctrineReferenceOut"][];
+            /** Probability Yardstick */
+            probability_yardstick: components["schemas"]["YardstickBandOut"][];
+        };
         /** ReportOut */
         ReportOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -2327,6 +2535,7 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            assessment?: components["schemas"]["ReportAssessmentOut"] | null;
             /** Period From */
             period_from: string | null;
             /** Period To */
@@ -2870,6 +3079,18 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** YardstickBandOut */
+        YardstickBandOut: {
+            probability: components["schemas"]["Probability"];
+            /** Term */
+            term: string;
+            /** Low Percent */
+            low_percent: number;
+            /** High Percent */
+            high_percent: number;
+            /** Range Description */
+            range_description: string;
         };
     };
     responses: never;
@@ -3872,6 +4093,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_methodology_api_report_methodology_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportMethodologyOut"];
                 };
             };
         };

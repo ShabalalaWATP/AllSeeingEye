@@ -34,10 +34,22 @@ export function Labels({ labels }: { labels: readonly string[] }) {
             aria-label={`View evidence ${label}`}
             className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ember transition-colors hover:bg-ember/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember motion-reduce:transition-none"
             onClick={(event) => {
+              if (
+                event.button !== 0 ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+              )
+                return;
               const target = event.currentTarget.ownerDocument.getElementById(evidenceId(label));
               if (target instanceof HTMLDetailsElement) {
+                // Native fragment navigation otherwise clears the summary focus in Chromium.
+                event.preventDefault();
                 target.open = true;
-                target.querySelector('summary')?.focus();
+                if (typeof target.scrollIntoView === 'function')
+                  target.scrollIntoView({ block: 'start' });
+                target.querySelector('summary')?.focus({ preventScroll: true });
               }
             }}
           >
