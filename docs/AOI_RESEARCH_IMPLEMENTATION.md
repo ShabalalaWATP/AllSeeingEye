@@ -1,7 +1,7 @@
 # Research from a selected map area
 
-Status: area-selection and spatial-admission foundations implemented locally;
-research launch and native provider integration remain unfinished.
+Status: area selection, spatial admission and authorised exact-map plan previews
+implemented locally; research launch and native provider integration remain unfinished.
 This extends the full research and geospatial plans; it does not replace their
 polygon, regional dataset, imagery or historical comparison requirements.
 
@@ -118,8 +118,9 @@ does not copy the global live store. Term-only translation, replanning and contr
 collection are disabled for this initial spatial contract; evidence review remains
 available and contrary-search limitations are explicit.
 
-This application contract is not yet exposed as a research launch input. The next
-slice must add authorised preview/create fields and form navigation, integrate a
+This application contract is not yet exposed as a research launch input. Authorised
+preview fields now resolve exact saved map references without collection or model
+calls. The next slice must add create fields and form navigation, integrate a
 native spatial provider, and retain catalogue footprint provenance without
 misrepresenting acquisition time as publication time or scene coverage as an event.
 API creation/regeneration/session-revocation tests remain required before claiming
@@ -145,3 +146,28 @@ produced a matching outline; a numeric antimeridian area saved as split polygons
 There was no horizontal overflow at 390 pixels. Access invalidation removed both
 canvases and private controls. Fixture API responses were used, so this does not
 establish real provider collection, full seam/pole acceptance or performance gates.
+
+## Exact-map preview and evidence integration follow-up
+
+The plan endpoint accepts saved map/revision identifiers and the destination team,
+never client-supplied geometry. It checks current access, matching personal/team
+scope and revision integrity, then returns the canonical area and frozen origin
+alongside actual provider capabilities. Ordinary previews remain compatible.
+Preview does not require or record external-disclosure consent because it makes
+no external calls. Collection still requires explicit consent independently.
+The frontend parser preserves this origin for the forthcoming launch form.
+
+The native catalogue integration must introduce typed observation metadata and
+source geometry on events and frozen evidence. Acquisition time, actual publication
+time, retrieval time and report snapshot time must stay separate. Missing publication
+time must remain missing. Collection and selection need an explicit acquisition
+time basis for catalogue observations; retrieval time cannot admit an out-of-window
+scene. Prompts, timelines and exports must label the temporal basis accurately.
+
+Retain original bounded footprint coordinates even if display topology is unsupported.
+Do not truncate to the local annotation polygon limit or create an event centroid.
+Geometry bytes count towards private-store and export quotas. Frozen evidence and
+package JSON should share one canonical serializer. Absent new fields must not change
+legacy evidence digests, because saved-map integrity checks already depend on those
+digests. Regression acceptance must cover old map hashes plus footprint/time
+roundtrips through collection, selection, persistence and evidence-package export.

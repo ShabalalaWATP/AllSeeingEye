@@ -2,9 +2,11 @@
 
 from datetime import datetime
 from typing import Literal, Self
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ase.api.schemas_map_origin import MapResearchOriginOut
 from ase.api.schemas_research_area import ResearchAreaOut
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
@@ -25,6 +27,7 @@ class QueryVariantIn(BaseModel):
 
 
 class ResearchPlanIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2000)
     since: datetime
     until: datetime
@@ -36,9 +39,14 @@ class ResearchPlanIn(BaseModel):
     country_iso: str | None = Field(default=None, min_length=2, max_length=2)
     source_ids: list[str] | None = Field(default=None, max_length=64)
     query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
+    map_view_id: UUID | None = None
+    map_revision_id: UUID | None = None
+    team_id: UUID | None = None
 
     @model_validator(mode="after")
     def bounded(self) -> Self:
+        if (self.map_view_id is None) != (self.map_revision_id is None):
+            raise ValueError("Choose both saved map and revision identifiers")
         self.to_query()
         return self
 
@@ -105,3 +113,7 @@ class ResearchPlanOut(BaseModel):
     country_iso: str | None
     translation: QueryTransformationOut | None = None
     area: ResearchAreaOut | None = None
+
+
+class ResearchPreviewOut(ResearchPlanOut):
+    map_origin: MapResearchOriginOut | None = None

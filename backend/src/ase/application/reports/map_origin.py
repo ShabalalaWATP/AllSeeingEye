@@ -23,7 +23,12 @@ class ReportMapOrigin:
         self.access, self.reports, self.views = access, reports, views
 
     async def resolve(
-        self, actor: User, request: ReportRequest, *, owner_id: UUID | None = None
+        self,
+        actor: User,
+        request: ReportRequest,
+        *,
+        owner_id: UUID | None = None,
+        require_disclosure: bool = True,
     ) -> ReportRequest:
         if request.map_view_id is None and request.map_revision_id is None:
             if request.map_origin is not None:
@@ -44,7 +49,7 @@ class ReportMapOrigin:
             or request.categories
         ):
             raise InvalidRequest("Area research needs a standalone general research question.")
-        if request.disclose_area_to_provider is not True:
+        if require_disclosure and request.disclose_area_to_provider is not True:
             raise InvalidRequest(
                 "Confirm disclosure of this area and interval to selected providers."
             )

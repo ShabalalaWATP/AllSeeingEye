@@ -23,9 +23,11 @@ from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.evidence_package import ExportEvidencePackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_views import SavedMapViews
+from ase.application.research.preview import PreviewResearchPlan
 from ase.container.research import private_research_store
 from ase.domain.report_records import ReportVersion
 
@@ -133,6 +135,13 @@ class ReportWiring:
             uow=r.uow,
             url_resolver=GoogleNewsUrlResolver(),
             access=self.access_policy(session),
+        )
+
+    def preview_research(self, session: AsyncSession) -> PreviewResearchPlan:
+        r = self.repositories(session)
+        return PreviewResearchPlan(
+            self.research,
+            ReportMapOrigin(self.access_policy(session), r.reports, r.map_views),
         )
 
     def report_search(self, session: AsyncSession) -> ReportSearchService:

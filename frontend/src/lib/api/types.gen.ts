@@ -3195,6 +3195,36 @@ export interface components {
              */
             visible: boolean;
         };
+        /** MapResearchOriginOut */
+        MapResearchOriginOut: {
+            /**
+             * View Id
+             * Format: uuid
+             */
+            view_id: string;
+            /**
+             * Revision Id
+             * Format: uuid
+             */
+            revision_id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Report Version Number */
+            report_version_number: number;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            area: components["schemas"]["ResearchAreaOut"];
+        };
         /** MapRevisionOut */
         MapRevisionOut: {
             /**
@@ -4326,6 +4356,12 @@ export interface components {
             source_ids?: string[] | null;
             /** Query Variants */
             query_variants?: components["schemas"]["QueryVariantIn"][];
+            /** Map View Id */
+            map_view_id?: string | null;
+            /** Map Revision Id */
+            map_revision_id?: string | null;
+            /** Team Id */
+            team_id?: string | null;
         };
         /** ResearchPlanOut */
         ResearchPlanOut: {
@@ -4369,6 +4405,50 @@ export interface components {
             country_iso: string | null;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
             area?: components["schemas"]["ResearchAreaOut"] | null;
+        };
+        /** ResearchPreviewOut */
+        ResearchPreviewOut: {
+            /** Question */
+            question: string;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Languages */
+            languages: string[];
+            /** Tasks */
+            tasks: components["schemas"]["ResearchTaskOut"][];
+            /** Request Limit */
+            request_limit: number;
+            /** Seconds Limit */
+            seconds_limit: number;
+            /** Item Limit */
+            item_limit: number;
+            /** Policy Version */
+            policy_version: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Translation Calls */
+            translation_calls: number;
+            /** Replans */
+            replans: number;
+            /** Focus */
+            focus: string;
+            /** Mode */
+            mode: string;
+            /** Subject */
+            subject: string | null;
+            /** Country Iso */
+            country_iso: string | null;
+            translation?: components["schemas"]["QueryTransformationOut"] | null;
+            area?: components["schemas"]["ResearchAreaOut"] | null;
+            map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
@@ -7018,7 +7098,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResearchPlanOut"];
+                    "application/json": components["schemas"]["ResearchPreviewOut"];
                 };
             };
             /** @description Validation Error */

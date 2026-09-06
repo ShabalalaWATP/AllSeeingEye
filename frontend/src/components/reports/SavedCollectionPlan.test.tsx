@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { expect, it } from 'vitest';
 import { researchReceiptSchema } from '@/lib/api/reportResearch';
-import { planSchema } from '@/lib/api/researchPlan';
+import { planSchema, previewSchema } from '@/lib/api/researchPlan';
 import { researchReceipt } from '@/test/fixtures.researchMetadata';
 import { SavedCollectionPlan } from './SavedCollectionPlan';
 
@@ -45,6 +45,29 @@ const translation = {
     { language: 'zh-Hant', terms: ['港口 ABC-123'] },
   ],
 };
+
+it('retains exact map origin in previews while supporting ordinary legacy previews', () => {
+  const id = 'a733f985-4bb6-46e9-ae07-a6160c001327';
+  const area = { geometry: { type: 'FeatureCollection', features: [] }, sha256: 'a'.repeat(64) };
+  const origin = {
+    view_id: id,
+    revision_id: id,
+    report_id: id,
+    report_version_id: id,
+    report_version_number: 1,
+    content_sha256: 'b'.repeat(64),
+    evidence_sha256: 'c'.repeat(64),
+    area,
+  };
+  expect(previewSchema.parse({ ...frozenPlan, area, map_origin: origin }).map_origin).toEqual(
+    origin,
+  );
+  expect(previewSchema.parse(frozenPlan).map_origin).toBeNull();
+  expect(
+    previewSchema.safeParse({ ...frozenPlan, map_origin: { ...origin, revision_id: 'bad' } })
+      .success,
+  ).toBe(false);
+});
 
 it('preserves and renders the frozen plan independently of collection attempt outcomes', () => {
   const receipt = researchReceiptSchema.parse({ ...researchReceipt, plan: frozenPlan });

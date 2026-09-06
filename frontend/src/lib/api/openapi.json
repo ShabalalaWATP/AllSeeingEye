@@ -2791,7 +2791,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResearchPlanOut"
+                  "$ref": "#/components/schemas/ResearchPreviewOut"
                 }
               }
             }
@@ -9550,6 +9550,60 @@
         ],
         "title": "MapOverlayFields"
       },
+      "MapResearchOriginOut": {
+        "properties": {
+          "view_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "View Id"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Revision Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Report Version Number"
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Content Sha256"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Evidence Sha256"
+          },
+          "area": {
+            "$ref": "#/components/schemas/ResearchAreaOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "view_id",
+          "revision_id",
+          "report_id",
+          "report_version_id",
+          "report_version_number",
+          "content_sha256",
+          "evidence_sha256",
+          "area"
+        ],
+        "title": "MapResearchOriginOut"
+      },
       "MapRevisionOut": {
         "properties": {
           "id": {
@@ -12850,8 +12904,45 @@
             "type": "array",
             "maxItems": 8,
             "title": "Query Variants"
+          },
+          "map_view_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map View Id"
+          },
+          "map_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Revision Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
           "question",
@@ -12989,6 +13080,146 @@
           "country_iso"
         ],
         "title": "ResearchPlanOut"
+      },
+      "ResearchPreviewOut": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchTaskOut"
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "request_limit": {
+            "type": "integer",
+            "title": "Request Limit"
+          },
+          "seconds_limit": {
+            "type": "number",
+            "title": "Seconds Limit"
+          },
+          "item_limit": {
+            "type": "integer",
+            "title": "Item Limit"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls"
+          },
+          "translation_calls": {
+            "type": "integer",
+            "title": "Translation Calls"
+          },
+          "replans": {
+            "type": "integer",
+            "title": "Replans"
+          },
+          "focus": {
+            "type": "string",
+            "title": "Focus"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "translation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QueryTransformationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "map_origin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapResearchOriginOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "since",
+          "until",
+          "languages",
+          "tasks",
+          "request_limit",
+          "seconds_limit",
+          "item_limit",
+          "policy_version",
+          "model_calls",
+          "translation_calls",
+          "replans",
+          "focus",
+          "mode",
+          "subject",
+          "country_iso"
+        ],
+        "title": "ResearchPreviewOut"
       },
       "ResearchReceiptOut": {
         "properties": {

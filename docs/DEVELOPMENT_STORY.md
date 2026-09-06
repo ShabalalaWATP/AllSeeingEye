@@ -881,3 +881,28 @@ file-length checks passed. The native-provider and HTTP launch gates remain open
 The production build and all staged pre-commit hooks passed, including secret
 scanning, full frontend lint and typecheck. The build retains its bundle-size
 advisory. No operator database, source connection or deployment was changed.
+
+### 7 September 2026: authorised exact-map research previews
+
+The research-plan endpoint now resolves saved map/revision identifiers and an
+explicit destination team through the existing origin checks. It returns exact
+geometry and report-version provenance without external collection or model calls.
+Preview does not grant disclosure consent; report generation still requires it.
+Ordinary previews remain compatible, and the frontend parser retains map provenance.
+The operator launch form and native spatial provider remain unfinished.
+
+Read-only code/security review found no confirmed defects. Endpoint regressions
+cover old revisions after a newer save, personal/team isolation, membership and
+session revocation, tampered revisions and rejection of client-supplied geometry.
+The 19 preview/planning tests passed with 100% coverage of the two new modules;
+the earlier 31-test preview/planning/origin group also passed. Twelve frontend
+plan tests, mypy (483 source files), import boundaries, scoped lint, typecheck,
+file-length checks and production build passed. An initial targeted coverage
+invocation accidentally retained the whole-backend source scope and failed that
+coverage gate despite nine passing tests; the corrected scoped run retained the
+90% threshold and passed. No new whole-backend coverage result is claimed.
+
+The next evidence integration must preserve original satellite geometry and
+separate acquisition, publication, retrieval and snapshot times. The AOI contract
+now records the existing saved-map hash compatibility requirement and explicit
+collection/selection/export acceptance. No live provider or operator database changed.
