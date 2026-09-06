@@ -12421,6 +12421,27 @@
         ],
         "title": "RequestStatus"
       },
+      "ResearchAreaOut": {
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "geometry",
+          "sha256"
+        ],
+        "title": "ResearchAreaOut"
+      },
       "ResearchChange": {
         "properties": {
           "status": {
@@ -12936,6 +12957,16 @@
                 "type": "null"
               }
             ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -13284,6 +13315,16 @@
               }
             ],
             "title": "Query Language"
+          },
+          "spatial_supported": {
+            "type": "boolean",
+            "title": "Spatial Supported",
+            "default": false
+          },
+          "spatial_scope": {
+            "type": "string",
+            "title": "Spatial Scope",
+            "default": "This source does not establish support for collection within an area."
           }
         },
         "type": "object",

@@ -158,6 +158,12 @@ export function ResearchPlanEditor({
                         the run starts.
                       </p>
                     )}
+                    {plan.snapshot?.area && (
+                      <p className="text-muted">
+                        {task.spatial_supported ? 'Area query supported' : 'Area query unsupported'}
+                        : {task.spatial_scope}
+                      </p>
+                    )}
                   </li>
                 ))}
             </ul>

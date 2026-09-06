@@ -30,6 +30,15 @@ class ControlledResearchProvider:
     def supports(self, query: ResearchQuery) -> bool:
         return self._provider.supports(query)
 
+    def supports_area(self, query: ResearchQuery) -> bool:
+        hook = getattr(self._provider, "supports_area", None)
+        return callable(hook) and hook(query) is True
+
+    @property
+    def spatial_scope(self) -> str:
+        value = getattr(self._provider, "spatial_scope", "No area-based collection support.")
+        return value if isinstance(value, str) else "No area-based collection support."
+
     @property
     def temporal_scope(self) -> str:
         fallback = (

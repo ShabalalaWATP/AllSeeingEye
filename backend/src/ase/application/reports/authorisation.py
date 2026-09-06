@@ -4,6 +4,7 @@ from ase.application.access import AccessPolicy
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
+from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ParentReference, require_parent
 from ase.domain.collection import CollectionPlan
@@ -20,9 +21,11 @@ class ReportAuthorisation:
         plans: PlanRepository,
         aois: AoiRepository,
         uow: UnitOfWork,
+        map_origin: ReportMapOrigin | None = None,
     ) -> None:
         self._access, self._reports, self._plans = access, reports, plans
         self._aois, self._uow = aois, uow
+        self._map_origin = map_origin
 
     async def prepare(
         self,
@@ -71,6 +74,10 @@ class ReportAuthorisation:
         # acquiring the shared membership/account guard for the final atomic write.
         await self._uow.rollback()
         latest_plan = await self.prepare(actor, request, record, for_update=True)
+        if self._map_origin is not None:
+            await self._map_origin.resolve(
+                actor, request, owner_id=record.created_by if record else actor.id
+            )
         if parent is not None:
             await require_parent(self._access, self._reports, actor, request, parent)
         if plan is not None and (latest_plan is None or latest_plan.updated_at != plan.updated_at):

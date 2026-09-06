@@ -39,6 +39,8 @@ function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
       terms: input.query_variants?.[0]?.terms ?? input.terms ?? [],
       provenance: input.query_variants?.length ? 'operator_supplied_variant' : 'original_terms',
       temporal_scope: 'requested_window',
+      spatial_supported: false,
+      spatial_scope: 'No area-based collection support.',
     })),
   };
 }

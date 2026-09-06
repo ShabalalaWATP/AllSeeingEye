@@ -107,6 +107,12 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
                       : `Recorded provenance: ${task.provenance}`}{' '}
               · {task.temporal_scope}
             </p>
+            {plan.area && (
+              <p className="text-muted">
+                {task.spatial_supported ? 'Area query supported' : 'Area query unsupported'}:{' '}
+                {task.spatial_scope}
+              </p>
+            )}
           </li>
         ))}
       </ul>

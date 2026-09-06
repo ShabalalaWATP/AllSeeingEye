@@ -54,6 +54,7 @@ async def prepare_collection(
             focus=job.request.research_focus,
             country_iso=job.request.country_iso,
             subject=job.request.research_subject,
+            area=job.request.map_origin.area if job.request.map_origin else None,
         )
         if not query.terms:
             totals.findings.append(
@@ -86,7 +87,12 @@ async def prepare_collection(
                 profile_for,
             )
         replan = None
-        if gateway is not None and cipher is not None and profile_for is not None:
+        if (
+            query.area is None
+            and gateway is not None
+            and cipher is not None
+            and profile_for is not None
+        ):
             replan = await make_replanner(job, totals, gateway, cipher, profile_for)
         await reached(progress, ResearchStage.COLLECTING)
         store, receipt = await collect_report_evidence(

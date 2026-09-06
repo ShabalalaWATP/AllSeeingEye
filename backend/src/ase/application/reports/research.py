@@ -36,7 +36,7 @@ async def collect_report_evidence(
             else await collection.collect(query)
         )
     private = store_factory()
-    if not private_focus:
+    if not private_focus and query.area is None:
         # Copy public context only for public research. Unrelated high-ranked live items
         # must not crowd supplied document/media passages out of their own report.
         retained = live_store.query(

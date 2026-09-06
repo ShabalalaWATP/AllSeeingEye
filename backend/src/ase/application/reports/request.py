@@ -9,6 +9,7 @@ from uuid import UUID
 
 from ase.domain.events import Category
 from ase.domain.languages import ReportLanguage
+from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_plan import QueryVariant
 
@@ -39,13 +40,22 @@ class ReportRequest:
     parent_version: int | None = None
     report_language: ReportLanguage = "en"
     report_style: Literal["briefing", "assessment"] = "assessment"
+    map_view_id: UUID | None = None
+    map_revision_id: UUID | None = None
+    disclose_area_to_provider: bool = False
+    map_origin: MapResearchOrigin | None = None
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
         categories = tuple(Category(str(c)) for c in scope.get("categories") or [])
         window = scope.get("window_hours")
+        origin = origin_from_dict(scope.get("map_origin"))
         return cls(
             template_id=template_id,
+            map_view_id=origin.view_id if origin else None,
+            map_revision_id=origin.revision_id if origin else None,
+            disclose_area_to_provider=scope.get("disclose_area_to_provider") is True,
+            map_origin=origin,
             report_language=scope.get("report_language", "en"),
             report_style=scope.get("report_style", "assessment"),
             country_iso=scope.get("country") or None,

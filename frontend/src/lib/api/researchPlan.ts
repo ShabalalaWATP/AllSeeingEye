@@ -15,6 +15,13 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
   subject: z.string().nullable(),
   country_iso: z.string().nullable(),
+  area: z
+    .object({
+      geometry: z.record(z.string(), z.unknown()),
+      sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    })
+    .nullable()
+    .default(null),
   tasks: z.array(
     z.object({
       source_id: z.string(),
@@ -26,6 +33,8 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
       terms: z.array(z.string()),
       provenance: z.string(),
       temporal_scope: z.string(),
+      spatial_supported: z.boolean().default(false),
+      spatial_scope: z.string().default('No area-based collection support.'),
     }),
   ),
   request_limit: z.number(),

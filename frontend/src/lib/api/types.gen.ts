@@ -4159,6 +4159,15 @@ export interface components {
          * @enum {string}
          */
         RequestStatus: "pending" | "approved" | "rejected";
+        /** ResearchAreaOut */
+        ResearchAreaOut: {
+            /** Geometry */
+            geometry: {
+                [key: string]: unknown;
+            };
+            /** Sha256 */
+            sha256: string;
+        };
         /** ResearchChange */
         ResearchChange: {
             /**
@@ -4359,6 +4368,7 @@ export interface components {
             /** Country Iso */
             country_iso: string | null;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
+            area?: components["schemas"]["ResearchAreaOut"] | null;
         };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
@@ -4483,6 +4493,16 @@ export interface components {
             temporal_scope: string;
             /** Query Language */
             query_language?: string | null;
+            /**
+             * Spatial Supported
+             * @default false
+             */
+            spatial_supported: boolean;
+            /**
+             * Spatial Scope
+             * @default This source does not establish support for collection within an area.
+             */
+            spatial_scope: string;
         };
         /** ResearchTimelineEntryOut */
         ResearchTimelineEntryOut: {

@@ -125,6 +125,7 @@ class ReportWiring:
             cipher=self.cipher,
             gateway=self.llm,
             reports=r.reports,
+            map_views=r.map_views,
             clock=self.clock,
             limiter=self.limiter,
             limits=self.limits,

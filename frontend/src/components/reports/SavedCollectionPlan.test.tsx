@@ -115,3 +115,58 @@ it('rejects unrecognised translation status instead of rendering an invented suc
       .success,
   ).toBe(false);
 });
+
+it('retains the frozen area and distinguishes source spatial capability from ordinary support', () => {
+  const area = {
+    geometry: {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+                [0, 1],
+                [0, 0],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+    sha256: 'a'.repeat(64),
+  };
+  const plan = planSchema.parse({
+    ...frozenPlan,
+    area,
+    tasks: [
+      {
+        ...frozenPlan.tasks[0],
+        supported: false,
+        spatial_supported: false,
+        spatial_scope: 'Country selection does not establish polygon coverage.',
+      },
+      {
+        ...frozenPlan.tasks[0],
+        source_id: 'spatial',
+        spatial_supported: true,
+        spatial_scope: 'Native bounding-box catalogue query.',
+      },
+    ],
+  });
+  expect(plan.area).toEqual(area);
+  render(<SavedCollectionPlan plan={plan} />);
+  expect(screen.getByText(/Area query unsupported: Country selection/)).toBeVisible();
+  expect(screen.getByText(/Area query supported: Native bounding-box/)).toBeVisible();
+  const legacy = planSchema.parse(frozenPlan);
+  expect(legacy.area).toBeNull();
+  expect(legacy.tasks[0]?.spatial_supported).toBe(false);
+  expect(
+    planSchema.safeParse({ ...frozenPlan, area: { ...area, sha256: 'invalid' } }).success,
+  ).toBe(false);
+});

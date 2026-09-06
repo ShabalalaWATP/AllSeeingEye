@@ -3,11 +3,12 @@ import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { createMapLibreEngine } from '@/lib/map/MapLibreEngine';
-import type { MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
+import type { MapBounds, MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
+import { areaClickPoint } from '@/lib/map/areaGeometry';
 import type { MapState } from '@/lib/api/mapViews';
 import { hasWebGl2 } from '@/lib/map/webgl';
 import { useAuthStore } from '@/stores/auth';
-import type { LocalCollection, LocalOverlay } from '@/lib/map/geoJsonTypes';
+import type { LocalCollection, LocalOverlay, Position } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
 import { hasEvidencePoint } from './evidenceGeometry';
 
@@ -23,6 +24,9 @@ export default function EvidenceMapCanvas({
   projection,
   selected,
   onSelect,
+  areaMode = false,
+  onAreaPoint,
+  onViewportReady,
 }: {
   evidence: readonly EvidenceItem[];
   overlays?: LocalOverlay[];
@@ -35,12 +39,24 @@ export default function EvidenceMapCanvas({
   projection: Projection;
   selected: string | null;
   onSelect: (label: string) => void;
+  areaMode?: boolean;
+  onAreaPoint?: (point: Position) => void;
+  onViewportReady?: (read: (() => MapBounds | null) | null) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const engine = useRef<MapEngine | null>(null);
   const [mapError, setMapError] = useState(false);
   const initial = useRef({ camera, projection, basemap });
   const cameraChanged = useEffectEvent((value: MapCamera) => onCamera(value));
+  const viewportReady = useEffectEvent((read: (() => MapBounds | null) | null) =>
+    onViewportReady?.(read),
+  );
+  const areaClicked = useEffectEvent((event: unknown) => {
+    if (areaMode) {
+      const point = areaClickPoint(event);
+      if (point) onAreaPoint?.(point);
+    }
+  });
   const focusSelection = useEffectEvent(() => {
     const item = evidence.find((entry) => entry.label === focusRequest?.label);
     if (
@@ -60,6 +76,8 @@ export default function EvidenceMapCanvas({
     map.setLite(true);
     const stopErrors = map.on('error', () => setMapError(true));
     engine.current = map;
+    viewportReady(() => map.getViewportBounds());
+    const stopArea = map.on('click', areaClicked);
     const saved = initial.current.camera;
     map.restoreCamera({
       center: [saved.longitude, saved.latitude],
@@ -74,6 +92,8 @@ export default function EvidenceMapCanvas({
     return () => {
       stopErrors();
       stopCamera();
+      stopArea();
+      viewportReady(null);
       map.setLayers([]);
       map.destroy();
       engine.current = null;
@@ -169,13 +189,14 @@ export default function EvidenceMapCanvas({
             getLineColor: (item) =>
               item.label === selected ? [255, 255, 255, 255] : [230, 162, 74, 220],
             onClick: (info: { object?: EvidenceItem }) => {
+              if (areaMode) return true;
               if (info.object) onSelect(info.object.label);
               return true;
             },
           }),
       ),
     ]);
-  }, [evidence, projection, selected, onSelect, overlays, footprints, aoi]);
+  }, [evidence, projection, selected, onSelect, overlays, footprints, aoi, areaMode]);
   useEffect(() => {
     if (focusRequest) focusSelection();
   }, [focusRequest]);

@@ -5,10 +5,12 @@ from datetime import datetime
 from typing import Literal
 
 from ase.domain.languages import valid_language_code
+from ase.domain.research_area import ResearchArea
 
 UNKNOWN_TEMPORAL_SCOPE = (
     "Bounded available records only; complete historical coverage is not established."
 )
+UNKNOWN_SPATIAL_SCOPE = "This source does not establish support for collection within an area."
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,6 +50,8 @@ class ResearchTask:
     provenance: str
     temporal_scope: str = UNKNOWN_TEMPORAL_SCOPE
     query_language: str | None = None
+    spatial_supported: bool = False
+    spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,3 +73,4 @@ class ResearchPlan:
     subject: str | None = None
     country_iso: str | None = None
     translation: QueryTransformation | None = None
+    area: ResearchArea | None = None

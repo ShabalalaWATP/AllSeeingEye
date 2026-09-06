@@ -11,6 +11,7 @@ from ase.domain.research import (
     CollectionStatus,
     ResearchQuery,
 )
+from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan, ResearchTask
 
 
@@ -72,10 +73,12 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     if receipt.plan is not None:
         result["plan"]["since"] = receipt.plan.since.isoformat()
         result["plan"]["until"] = receipt.plan.until.isoformat()
-    for row in result["passes"]:
+        result["plan"]["area"] = area_to_dict(receipt.plan.area)
+    for row, original in zip(result["passes"], receipt.passes, strict=True):
         if row["plan"] is not None:
             row["plan"]["since"] = row["plan"]["since"].isoformat()
             row["plan"]["until"] = row["plan"]["until"].isoformat()
+            row["plan"]["area"] = area_to_dict(original.plan.area) if original.plan else None
     return result
 
 
@@ -121,6 +124,7 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
     values["since"] = datetime.fromisoformat(data["since"])
     values["until"] = datetime.fromisoformat(data["until"])
     values["languages"] = tuple(data["languages"])
+    values["area"] = area_from_dict(data.get("area"))
     values["tasks"] = tuple(
         ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]
     )

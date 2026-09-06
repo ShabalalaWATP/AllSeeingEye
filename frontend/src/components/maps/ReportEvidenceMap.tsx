@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
@@ -15,11 +16,14 @@ import { Button } from '@/components/ui/Button';
 import { MapFilters } from './MapFilters';
 import { MapEvidenceList } from './MapEvidenceList';
 import { MapOverlaySet } from './MapOverlaySet';
+import { MapAreaSelection } from './MapAreaSelection';
+import { useAreaSelection } from './useAreaSelection';
+import { areasEqual } from '@/lib/map/areaGeometry';
 import { SavedMapControls } from './SavedMapControls';
 import { useSavedMapViews } from './useSavedMapViews';
 import { initialMapState, localOverlay, fromCamera, matchesMapFilters } from './savedMapState';
 import type { MapState, SavedMapView } from '@/lib/api/mapViews';
-import type { MapCamera } from '@/lib/map/MapEngine';
+import type { MapBounds, MapCamera } from '@/lib/map/MapEngine';
 import { FootprintSearchPanel } from './FootprintSearchPanel';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar, parseLocalGeoJson } from '@/lib/map/localGeoJson';
@@ -74,6 +78,21 @@ export default function ReportEvidenceMap({
     () => savedView?.revision.state ?? initialMapState(),
   );
   const saved = useSavedMapViews(reportId, version, savedView);
+  const areaChanged = useMemo(
+    () => !areasEqual(state.aoi, saved.active?.revision.state.aoi ?? null),
+    [state.aoi, saved.active?.revision.state.aoi],
+  );
+  const updateArea = useCallback(
+    (aoi: MapState['aoi']) => setState((value) => ({ ...value, aoi })),
+    [],
+  );
+  const areaSelection = useAreaSelection(updateArea);
+  const resetArea = areaSelection.cancel;
+  const viewport = useRef<(() => MapBounds | null) | null>(null);
+  const viewportReady = useCallback((read: (() => MapBounds | null) | null) => {
+    viewport.current = read;
+  }, []);
+  const readViewport = useCallback(() => viewport.current?.() ?? null, []);
   const overlays = useMemo(
     () => state.overlays.filter((item) => item.visible).map(localOverlay),
     [state.overlays],
@@ -93,6 +112,7 @@ export default function ReportEvidenceMap({
     const clear = () => {
       setState(initialMapState());
       setFootprints(null);
+      resetArea();
     };
     const offAccess = subscribeWorkspaceAccess(clear);
     const offAuth = useAuthStore.subscribe((state, previous) => {
@@ -108,7 +128,7 @@ export default function ReportEvidenceMap({
       offAccess();
       offAuth();
     };
-  }, []);
+  }, [resetArea]);
   const [opened, setOpened] = useState(false);
   const projection = state.projection;
   const selected = state.selected_evidence;
@@ -189,12 +209,13 @@ export default function ReportEvidenceMap({
           }))
         }
       />
-      {state.aoi && (
-        <p className="text-xs text-muted">
-          This revision includes a saved research-area polygon, shown as a reference outline. It
-          does not change report evidence or launch collection.
-        </p>
-      )}
+      <MapAreaSelection
+        selection={areaSelection}
+        hasArea={!!state.aoi}
+        opened={opened}
+        readViewport={readViewport}
+        changed={areaChanged}
+      />
       <FootprintSearchPanel onChange={setFootprints} />
       <SavedMapControls
         saved={saved}
@@ -203,9 +224,11 @@ export default function ReportEvidenceMap({
         canCreate={canCreateView}
         canEdit={!!saved.active && canManageView(saved.active.view)}
         blocked={
-          footprints?.features.length
-            ? 'Clear the temporary catalogue footprints before saving. Catalogue source-version receipts are not yet captured in saved views.'
-            : null
+          areaSelection.dirty
+            ? 'Apply or discard the area draft before saving the map.'
+            : footprints?.features.length
+              ? 'Clear the temporary catalogue footprints before saving. Catalogue source-version receipts are not yet captured in saved views.'
+              : null
         }
       />
       {!opened ? (
@@ -257,6 +280,9 @@ export default function ReportEvidenceMap({
               footprints={footprints}
               overlays={overlays}
               aoi={aoi}
+              areaMode={areaSelection.picking}
+              onAreaPoint={areaSelection.pick}
+              onViewportReady={viewportReady}
               camera={state.camera}
               onCamera={captureCamera}
               basemap={state.basemap}

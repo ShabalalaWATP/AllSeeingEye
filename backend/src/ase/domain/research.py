@@ -6,6 +6,7 @@ from enum import StrEnum
 
 from ase.domain.events import Event
 from ase.domain.languages import valid_language_code
+from ase.domain.research_area import ResearchArea
 from ase.domain.research_plan import QueryVariant, ResearchPlan
 
 
@@ -45,8 +46,11 @@ class ResearchQuery:
     subject: str | None = None
     source_ids: tuple[str, ...] | None = None
     query_variants: tuple[QueryVariant, ...] = ()
+    area: ResearchArea | None = None
 
     def __post_init__(self) -> None:
+        if self.area is not None and not isinstance(self.area, ResearchArea):
+            raise ValueError("Research scope requires an immutable area")
         if self.source_ids is not None and (
             len(self.source_ids) > 64
             or len(set(self.source_ids)) != len(self.source_ids)

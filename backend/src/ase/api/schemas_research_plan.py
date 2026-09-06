@@ -5,8 +5,9 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ase.api.schemas_research_area import ResearchAreaOut
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
-from ase.domain.research_plan import QueryVariant
+from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
 
 
 class QueryVariantIn(BaseModel):
@@ -70,6 +71,8 @@ class ResearchTaskOut(BaseModel):
     provenance: str
     temporal_scope: str
     query_language: str | None = None
+    spatial_supported: bool = False
+    spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
 
 
 class QueryTransformationOut(BaseModel):
@@ -101,3 +104,4 @@ class ResearchPlanOut(BaseModel):
     subject: str | None
     country_iso: str | None
     translation: QueryTransformationOut | None = None
+    area: ResearchAreaOut | None = None

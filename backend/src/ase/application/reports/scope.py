@@ -7,6 +7,7 @@ from typing import Any
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template
 from ase.domain.collection import CollectionPlan
+from ase.domain.map_research_origin import origin_to_dict
 from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 
 
@@ -56,6 +57,14 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
         "hazard": request.hazard,
         "conflict": request.conflict_id,
         "plan": str(request.plan_id) if request.plan_id else None,
+        **(
+            {
+                "map_origin": origin_to_dict(request.map_origin),
+                "disclose_area_to_provider": request.disclose_area_to_provider,
+            }
+            if request.map_origin
+            else {}
+        ),
         **(
             {
                 "research_mode": request.research_mode.value,

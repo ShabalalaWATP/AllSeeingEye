@@ -68,12 +68,15 @@ async def run_challenge(
         _account(job, profile, totals, result, "reviews" if review else "plan")
         return result
 
-    if profile is not None and body.key_judgements:
+    area_search = query.area is not None
+    # Current spatial adapters search catalogue coverage, not contrary text. Changing
+    # terms would repeat the same area request without searching for disconfirmation.
+    if profile is not None and body.key_judgements and not area_search:
         plan = await model_call(body)
     targets = tuple(row for row in body.key_judgements if row.id in plan.plans)
     batches: tuple[ResearchBatch, ...] = ()
     private_input = query.focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
-    if targets and collection is not None and not private_input:
+    if targets and collection is not None and not private_input and not area_search:
         queries = tuple(replace(query, terms=plan.plans[row.id]) for row in targets)
         try:
             await reached(progress, ResearchStage.COLLECTING)
@@ -95,6 +98,14 @@ async def run_challenge(
     searches = tuple(_search(row.id, row.statement, plan, found) for row in body.key_judgements)
     searches = tuple(
         replace(
+            row,
+            status="unavailable",
+            explanation="Contrary collection within this area is unavailable. "
+            "Spatial catalogue coverage is not a term-based contrary search. "
+            "Model review uses the collected evidence.",
+        )
+        if area_search
+        else replace(
             row,
             explanation="Public contrary search is disabled for private "
             "document and media inputs. Model review uses supplied evidence.",

@@ -851,3 +851,33 @@ That frontend run passed all 698 tests in 124 files, with 95.79% statements,
 90.11% branches, 94.52% functions and 96.99% lines. Production build and staged
 secret scanning passed; the map export, AOI launch and broader acceptance backlog
 remain open.
+
+## 7 September 2026: area selection and spatial research foundations
+
+Added explicit numeric, viewport-envelope and two-corner area selection to saved
+report maps. Drafts need review before Apply or Save; existing arbitrary polygons
+remain intact. Date-line and wide rectangles preserve their canonical extent.
+Added canonical area/hash fields to research plans and receipts, explicit provider
+spatial admission and legacy defaults. Forwarded the capability through both
+provider wrappers and rendered its limitations in plan views.
+
+Added exact map-origin resolution and final scope/integrity revalidation to report
+generation. Strict area collection excludes unrelated global context. Review
+identified repeated catalogue requests during detailed contrary collection; the
+regression failed before the fix and now verifies explicit unavailable search
+receipts while retaining model evidence review. Full API launch/provider integration
+remains unfinished, as recorded in the AOI implementation contract.
+
+Focused groups passed: 75 spatial/planner/collector, 34 challenge, 16 origin,
+31 area/map UI and 11 plan UI/parser tests (overlapping groups). A synthetic browser
+harness confirmed visible globe and flat-map area outlines, explicit draft review,
+date-line split geometry on save, mobile bounds and private-layer invalidation.
+The integrated backend group passed all 99 tests. An additional composed
+application test passed for creation and regeneration after the map had a newer
+revision, retaining the original area and admitting no global context. The full
+frontend suite passed 715 tests in 126 files: 95.82% statements, 90.14% branches,
+94.70% functions and 97.01% lines. Mypy, import boundaries, configured Bandit and
+file-length checks passed. The native-provider and HTTP launch gates remain open.
+The production build and all staged pre-commit hooks passed, including secret
+scanning, full frontend lint and typecheck. The build retains its bundle-size
+advisory. No operator database, source connection or deployment was changed.

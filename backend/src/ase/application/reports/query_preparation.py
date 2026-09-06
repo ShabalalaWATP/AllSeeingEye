@@ -16,6 +16,7 @@ from ase.domain.validation import Finding, Severity
 def translation_languages(query: ResearchQuery) -> tuple[str, ...]:
     if (
         not query.terms
+        or query.area is not None
         or query.source_ids == ()
         or query.focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
     ):

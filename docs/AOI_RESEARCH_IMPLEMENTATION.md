@@ -1,6 +1,7 @@
 # Research from a selected map area
 
-Status: design for the next E5 implementation slice, not a delivered feature.
+Status: area-selection and spatial-admission foundations implemented locally;
+research launch and native provider integration remain unfinished.
 This extends the full research and geospatial plans; it does not replace their
 polygon, regional dataset, imagery or historical comparison requirements.
 
@@ -93,3 +94,54 @@ without point coordinates. Frontend tests cover keyboard selection, unsaved edit
 preview invalidation, scope disclosure and account-change aborts. Real browser
 checks must demonstrate selection on both projections. Fixture success does not
 establish a provider's operational availability or complete geographic coverage.
+
+## Implementation record, 7 September 2026
+
+Report maps now accept numeric rectangles, a labelled viewport envelope and two
+map-click corners. Clicks populate a draft for review; Apply/Discard is required
+before saving. Existing arbitrary AOIs remain intact until explicitly replaced or
+cleared. Date-line rectangles use canonical split multipolygons, and wider numeric
+rectangles retain their selected span rather than acquiring a provider-specific
+global limit. Selecting or applying an area makes no research request or upload.
+
+The research domain and saved plan receipts retain canonical area geometry and its
+hash. Providers need an explicit synchronous spatial-capability hook; ordinary
+country support does not qualify. Unsupported area tasks make no requests. Both
+admission wrappers forward the capability. Legacy plans default to no area and no
+spatial capability; previews and saved plan views can explain provider limitations.
+
+The report application can resolve an exact saved map reference into frozen origin
+metadata, enforce matching personal/team scope and recheck the origin after model
+work under the final write guard. It rejects automatic parent-evidence seeding,
+ambiguous linked scope and undisclosed area collection. Strict-area collection
+does not copy the global live store. Term-only translation, replanning and contrary
+collection are disabled for this initial spatial contract; evidence review remains
+available and contrary-search limitations are explicit.
+
+This application contract is not yet exposed as a research launch input. The next
+slice must add authorised preview/create fields and form navigation, integrate a
+native spatial provider, and retain catalogue footprint provenance without
+misrepresenting acquisition time as publication time or scene coverage as an event.
+API creation/regeneration/session-revocation tests remain required before claiming
+that operators can run area research. The wider polygon/provider/imagery backlog
+remains unchanged.
+
+Focused checks passed: 75 spatial-contract/planner/collector tests, 34 challenge
+tests, 16 origin/isolation tests, 31 area/map UI tests and 11 plan UI/parser tests.
+These groups overlap and are not an aggregate unique-test count. Mypy, formatting
+and scoped lint checks passed. Broader integration verification is recorded when
+complete in the development story.
+
+The integrated backend group passed all 99 tests. An additional composed
+application test passed for area-derived report creation and regeneration after
+a newer map revision, retaining the original map origin and excluding global
+context. This is an application test with synthetic providers, not HTTP launch
+or live catalogue acceptance. The full frontend suite passed 715 tests in 126
+files: 95.82% statements, 90.14% branches, 94.70% functions and 97.01% lines.
+
+A synthetic Chrome harness exercised actual map rendering: two globe clicks
+created a reviewed draft and a visible outline; a flat-map viewport envelope
+produced a matching outline; a numeric antimeridian area saved as split polygons.
+There was no horizontal overflow at 390 pixels. Access invalidation removed both
+canvases and private controls. Fixture API responses were used, so this does not
+establish real provider collection, full seam/pole acceptance or performance gates.

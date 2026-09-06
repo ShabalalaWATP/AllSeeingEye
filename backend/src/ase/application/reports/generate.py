@@ -27,11 +27,13 @@ from ase.application.ports.llm import (
     LlmUsageRepository,
     SecretCipher,
 )
+from ase.application.ports.map_views import MapViewRepository
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.research import ResearchCollection
 from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
+from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.progress import Progress
 from ase.application.reports.request import ReportRequest
@@ -87,6 +89,7 @@ class GenerateReportUseCase:
         private_store_factory: Callable[[], EventStore] | None = None,
         research_inputs: ResearchInputStore | None = None,
         llm_bindings: LlmBindingRepository | None = None,
+        map_views: MapViewRepository | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -111,7 +114,10 @@ class GenerateReportUseCase:
         self._limits = limits
         self._auditor = auditor
         self._uow = uow
-        self._authorisation = ReportAuthorisation(access, reports, plans, aois, uow)
+        self._map_origin = ReportMapOrigin(access, reports, map_views)
+        self._authorisation = ReportAuthorisation(
+            access, reports, plans, aois, uow, self._map_origin
+        )
         self._research_inputs = ReportResearchInputs(access, reports, research_inputs)
 
     async def execute(
@@ -125,6 +131,7 @@ class GenerateReportUseCase:
         """A new report from the live evidence: version 1 of a new record."""
         template = self._template(request)
         plan = await self._authorisation.prepare(actor, request)
+        request = await self._map_origin.resolve(actor, request)
         inputs = await self._research_inputs.prepare(actor, request)
         routing = await self._prepare(actor, request, template)
         profile = routing.required(template.role)
@@ -172,6 +179,7 @@ class GenerateReportUseCase:
             ReportRequest.from_scope(record.template, record.scope), team_id=record.team_id
         )
         plan = await self._authorisation.prepare(actor, request, record)
+        request = await self._map_origin.resolve(actor, request, owner_id=record.created_by)
         previous = await self._reports.get_version(report_id, record.latest_version)
         if previous is None:
             raise NotFound()

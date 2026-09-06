@@ -94,7 +94,10 @@ class ResearchCollector:
                 attempt = self._receipt(
                     provider,
                     CollectionStatus.UNSUPPORTED,
-                    "This source does not support the requested scope.",
+                    "Area-based collection is unsupported for this request. "
+                    + task.spatial_scope[:900]
+                    if query.area is not None and not task.spatial_supported
+                    else "This source does not support the requested scope.",
                 )
             elif requests >= allowance or (seconds := state.admit()) is None:
                 attempt = self._receipt(

@@ -7,11 +7,31 @@ from ase.application.ports.research import ResearchProvider
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchQuery
 from ase.domain.research_plan import (
+    UNKNOWN_SPATIAL_SCOPE,
     UNKNOWN_TEMPORAL_SCOPE,
     QueryVariant,
     ResearchPlan,
     ResearchTask,
 )
+
+
+def spatial_capability(provider: ResearchProvider, query: ResearchQuery) -> tuple[bool, str]:
+    """Only an explicit synchronous true result admits an area-scoped request.
+
+    The optional supports_area(query) hook is independent of ordinary country or
+    subject support. Legacy providers remain usable without an area, never with one.
+    """
+    supports = getattr(provider, "supports_area", None)
+    supported = False
+    if query.area is not None and callable(supports):
+        try:
+            supported = supports(query) is True
+        except Exception:
+            supported = False
+    explanation = getattr(provider, "spatial_scope", UNKNOWN_SPATIAL_SCOPE)
+    if not isinstance(explanation, str) or not explanation.strip() or len(explanation) > 1000:
+        explanation = UNKNOWN_SPATIAL_SCOPE
+    return supported, explanation
 
 
 def task_variant(
@@ -53,17 +73,20 @@ def build_plan(
         temporal_scope = getattr(provider, "temporal_scope", UNKNOWN_TEMPORAL_SCOPE)
         if not isinstance(temporal_scope, str) or not temporal_scope or len(temporal_scope) > 1000:
             temporal_scope = UNKNOWN_TEMPORAL_SCOPE
+        spatial_supported, spatial_scope = spatial_capability(provider, routed)
         tasks.append(
             ResearchTask(
                 provider.id,
                 provider.name,
                 query.source_ids is None or provider.id in query.source_ids,
-                provider.supports(routed),
+                provider.supports(routed) and (query.area is None or spatial_supported),
                 language,
                 routed.terms,
                 provenance,
                 temporal_scope,
                 query_language=variant.language if variant is not None else None,
+                spatial_supported=spatial_supported,
+                spatial_scope=spatial_scope,
             )
         )
     return ResearchPlan(
@@ -79,4 +102,5 @@ def build_plan(
         mode=query.mode.value,
         subject=query.subject,
         country_iso=query.country_iso,
+        area=query.area,
     )
