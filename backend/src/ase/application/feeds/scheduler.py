@@ -7,12 +7,13 @@ import contextlib
 import random
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.ports import Clock
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
+from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.errors import NotFound
 from ase.domain.events import Event
 
@@ -43,6 +44,7 @@ class FeedScheduler:
         jitter: float = 0.1,
         sleep: SleepFn = asyncio.sleep,
         grader: Grader | None = None,
+        admission: SourceAdmission | None = None,
     ) -> None:
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._pipeline = pipeline
@@ -55,6 +57,7 @@ class FeedScheduler:
         self._jitter = jitter
         self._sleep = sleep
         self._grader = grader
+        self._admission = admission
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._prune_task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
@@ -101,14 +104,29 @@ class FeedScheduler:
         source_id = connector.spec.id
         started = self._clock.now()
         try:
+            if self._admission is not None and not await self._admission.enabled(source_id):
+                return PollOutcome(source_id, ok=False, error="Disabled by administrator.")
             async with asyncio.timeout(self._fetch_timeout.total_seconds()):
                 raw = await connector.fetch()
-            events = self._pipeline.run(raw)
-            result = self._store.upsert(events)
+            guard = self._admission.guard() if self._admission else contextlib.nullcontext()
+            async with guard:
+                if self._admission is not None and not await self._admission.enabled(source_id):
+                    return PollOutcome(
+                        source_id, ok=False, error="Disabled before results were admitted."
+                    )
+                return await self._publish(connector, raw, started)
         except Exception as exc:
             entry = self._health.record_failure(source_id, f"{type(exc).__name__}: {exc}", started)
             await self._bus.publish(BusMessage("source.health", {"health": entry}))
             return PollOutcome(source_id, ok=False, error=entry.last_error)
+
+    async def _publish(
+        self, connector: FeedConnector, raw: list[Event], started: datetime
+    ) -> PollOutcome:
+        """No external requests here; caller retains the shared admission/release guard."""
+        source_id = connector.spec.id
+        events = self._pipeline.run(raw)
+        result = self._store.upsert(events)
         finished = self._clock.now()
         latency_ms = (finished - started).total_seconds() * 1000
         entry = self._health.record_success(

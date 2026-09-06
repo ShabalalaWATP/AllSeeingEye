@@ -31,7 +31,9 @@ from ase.adapters.persistence.session import (
     create_session_factory,
     ensure_sqlite_directory,
 )
+from ase.adapters.persistence.source_controls import SqlSourceAdmission
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
+from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
@@ -47,6 +49,7 @@ from ase.application.feeds.language import LanguageStage
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
+from ase.application.footprints import FootprintSearchUseCase
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.archive import Archiver
 from ase.application.ports.feeds import FeedConnector
@@ -120,10 +123,23 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
         self.http = FeedHttpClient(settings.feeds_user_agent)
+        self.source_admission = SqlSourceAdmission(
+            self.session_factory, tuple(settings.disabled_feed_ids)
+        )
+        self.footprints = FootprintSearchUseCase(
+            CopernicusFootprintProvider(self.http, self.clock),
+            self.limiter,
+            self.clock,
+            admission=self.source_admission,
+        )
         self.research = research_service(
             self.http,
             self.clock,
             tuple(settings.disabled_feed_ids),
+            admission=self.source_admission,
+            ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
+            uksl_snapshot_path=settings.uksl_snapshot_path,
+            ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,
             companies_house_key=(
                 settings.companies_house_key.get_secret_value()
                 if settings.companies_house_key
@@ -152,6 +168,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
         self.scheduler = FeedScheduler(
             self.connectors, self.pipeline, self.store, self.bus, self.health, self.clock,
             grader=self.grader,
+            admission=self.source_admission,
         )  # fmt: skip
         os_key = settings.os_maps_key_value
         self.tiles: TileProvider = (

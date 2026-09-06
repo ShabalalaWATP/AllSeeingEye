@@ -1,11 +1,11 @@
 """Static research capabilities, without asserting live availability or claim reliability."""
 
-from datetime import timedelta
-
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
+from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
 from ase.adapters.research_records.company import (
@@ -13,57 +13,12 @@ from ase.adapters.research_records.company import (
     SecSubmissionsProvider,
 )
 from ase.adapters.research_records.domains import DNS_TYPES, RdapResearchProvider
-from ase.domain.events import Category, Reliability
-from ase.domain.source_rating_catalog import ProvenanceRole
-from ase.domain.source_ratings import SOURCE_RATING_POLICY_VERSION, SourceRating
+from ase.adapters.research_records.ooni import LIMITATIONS as OONI_LIMITATIONS
+from ase.adapters.research_records.ooni import OoniAggregateProvider
+from ase.adapters.research_subjects.specs import subject_specs
+from ase.container.research_spec import research_spec as _spec
+from ase.domain.events import Category
 from ase.domain.sources import SourceKind, SourceSpec
-
-COMMON_LIMITATIONS = (
-    "Reliability remains unassessed (F); collection does not verify individual claims, "
-    "publishers, accounts or uploaders. No measured accuracy or review date is recorded.",
-    "This catalogue describes supported capabilities, not current availability, credentials "
-    "or successful collection. Report collection receipts record actual coverage.",
-)
-
-
-def _spec(
-    id_: str,
-    name: str,
-    category: Category,
-    basis: str,
-    scope: str,
-    *limitations: str,
-    organisation: str = "",
-    role: ProvenanceRole = "unassessed",
-    language: str = "en",
-    kind: SourceKind = SourceKind.API,
-    requires_key: bool = False,
-) -> SourceSpec:
-    # Empty organisations share unknown provenance and establish no independent origin.
-    # Named collector organisations group endpoints, not the underlying claims.
-    return SourceSpec(
-        id=id_,
-        name=name,
-        organisation=organisation,
-        category=category,
-        kind=kind,
-        url="",
-        reliability=Reliability.F,
-        poll_interval=timedelta(days=1),
-        language=language,
-        requires_key=requires_key,
-        flags=frozenset({"on_demand", "unassessed"}),
-        rating=SourceRating(
-            policy_version=SOURCE_RATING_POLICY_VERSION,
-            status="unassessed",
-            assessed_grade=None,
-            basis=basis,
-            scope=scope,
-            limitations=(*COMMON_LIMITATIONS, *limitations),
-            provenance_role=role,
-            publisher_reliability_assessed=False,
-        ),
-    )
 
 
 def _record_specs() -> tuple[SourceSpec, ...]:
@@ -221,5 +176,113 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
         if seed.spec.id not in disabled
     )
     specs.extend(_record_specs())
+    specs.extend(subject_specs())
+    specs.append(
+        _spec(
+            "research-copernicus-footprints",
+            "Copernicus satellite footprints",
+            Category.SPACE,
+            "Catalogue acquisition metadata, not an interpretation or authentication of imagery.",
+            "Explicit bounded area and dates, up to 20 Sentinel-2 L2A catalogue footprints.",
+            "No imagery or assets fetched; dates and cloud coverage are provider metadata. "
+            "Area and dates are disclosed to the catalogue only after operator selection.",
+            organisation="Copernicus Data Space Ecosystem",
+            role="originator",
+        )
+    )
+    specs.append(
+        _spec(
+            "research-contracts-finder",
+            "Contracts Finder publication notices",
+            Category.ECONOMIC,
+            "Official publication records contain submitted claims, not verified fulfilment.",
+            "One publication-date page of at most 20 OCDS releases, locally phrase-matched.",
+            "No complete procurement history, company identity resolution or additional pages. "
+            "Publication is not proof of award performance or misconduct.",
+            organisation="UK Contracts Finder",
+            role="originator",
+        )
+    )
+    specs.extend(
+        _spec(
+            f"research-designations-{authority}",
+            name,
+            Category.ECONOMIC,
+            "Operator-imported designation snapshot; source authenticity not verified.",
+            "Exact authority ID or full-name candidate matching, up to 20 results.",
+            "Requires a validated local snapshot. Date, source hash and reuse terms retained. "
+            "A name match is not verified identity or guilt; absence is not clearance.",
+            organisation=organisation,
+            role="originator",
+        )
+        for authority, name, organisation in (
+            ("uksl", "UK Sanctions List imported snapshot", "UK FCDO"),
+            ("ofac_sdn", "OFAC SDN imported snapshot", "US Treasury OFAC"),
+        )
+    )
+    specs.append(
+        _spec(
+            OoniAggregateProvider.id,
+            OoniAggregateProvider.name,
+            Category.CYBER,
+            "OONI country aggregates are observations, not verified causes or attribution.",
+            "Country/day web-connectivity counters over an explicit interval of at most 14 days.",
+            OONI_LIMITATIONS,
+            "Requires operator acknowledgement of appropriate CC BY-NC-SA 4.0 use. "
+            "Disabled by default; no individual probe records are collected.",
+            organisation="Open Observatory of Network Interference",
+            role="originator",
+        )
+    )
+    specs.extend(
+        _spec(
+            f"research-companies-house-{kind}",
+            f"Companies House {label}",
+            Category.ECONOMIC,
+            "Registry-reported assertions; identity and control are not independently verified.",
+            "Current first-page registry context for an explicit UK company identifier.",
+            "At most 20 records per request. Names remain candidates; no cross-source person "
+            "merging, complete historical register or absence-of-control inference.",
+            organisation="Companies House",
+            role="originator",
+            requires_key=True,
+        )
+        for kind, label in (("officers", "officers"), ("psc", "persons with significant control"))
+    )
+    specs.extend(
+        _spec(
+            f"research-gleif-{kind}",
+            f"GLEIF {label}",
+            Category.ECONOMIC,
+            "GLEIF registry assertions remain unassessed; registration does not verify claims.",
+            "Current exact-LEI profile or reported accounting consolidation parent.",
+            "One record per request. Accounting parents are not a complete beneficial ownership "
+            "graph. Missing relationships do not establish absence of a parent.",
+            organisation="GLEIF",
+            role="originator",
+        )
+        for kind, label in (
+            ("profile", "legal entity profile"),
+            ("direct-parent", "direct parent"),
+            ("ultimate-parent", "ultimate parent"),
+        )
+    )
+    specs.extend(
+        _spec(
+            f"research_regional_{seed.spec.id}",
+            seed.spec.name,
+            seed.spec.category,
+            "Publisher-supplied regional headlines; source and claim remain unassessed.",
+            "Local phrase matching in a bounded recent public RSS snapshot.",
+            REGIONAL_LIMITATIONS,
+            seed.spec.licence_note,
+            organisation=seed.spec.organisation,
+            language=seed.spec.language,
+            kind=SourceKind.RSS,
+            role="aggregator" if seed.spec.id == "cdt_zh" else "unassessed",
+        )
+        for seed in REGIONAL_SEEDS
+        if seed.spec.id not in disabled
+    )
     specs.extend(_private_specs())
     return tuple(spec for spec in specs if spec.id not in disabled)

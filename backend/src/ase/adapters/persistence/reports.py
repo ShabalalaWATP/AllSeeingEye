@@ -10,6 +10,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.library_models import ResearchLibraryRow, ResearchLibraryTagRow
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.access import Visibility
@@ -191,6 +192,9 @@ class SqlReportRepository:
         return [_record_from_row(row) for row in rows]
 
     async def delete(self, report_id: UUID) -> None:
+        # Explicit cleanup also supports SQLite connections without FK enforcement.
+        for model in (ResearchLibraryTagRow, ResearchLibraryRow):
+            await self._session.execute(delete(model).where(model.report_id == report_id))
         await self._session.execute(
             delete(ReportEmbeddingRow).where(ReportEmbeddingRow.report_id == report_id)
         )

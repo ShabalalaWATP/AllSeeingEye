@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     os_maps_key: SecretStr | None = None
     companies_house_key: SecretStr | None = None
     certificate_transparency_key: SecretStr | None = None
+    ooni_noncommercial_use_acknowledged: bool = False
+    uksl_snapshot_path: str | None = None
+    ofac_sdn_snapshot_path: str | None = None
     research_tesseract_path: str | None = None
     research_ffmpeg_path: str | None = None
     research_ffprobe_path: str | None = None

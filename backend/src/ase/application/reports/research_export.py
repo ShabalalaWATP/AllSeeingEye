@@ -24,6 +24,21 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
         )
     if not receipt.attempts:
         lines.append("No sources were attempted.")
+    if receipt.plan is not None:
+        plan = receipt.plan
+        lines.append(
+            f"Frozen source plan ({plan.policy_version}): at most {plan.request_limit} requests, "
+            f"{plan.seconds_limit:g} seconds and {plan.item_limit} collected items. "
+            "Deterministic routing does not translate search terms or establish complete history."
+        )
+        for task in plan.tasks:
+            if task.selected:
+                lines.append(
+                    f"Selected task {task.source_name} ({task.source_id}): "
+                    f"{task.provenance}; language {task.language or 'not specified'}; "
+                    f"query language {task.query_language or 'original terms'}; "
+                    f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
+                )
     for attempt in receipt.attempts:
         count_kind = (
             "retained items"

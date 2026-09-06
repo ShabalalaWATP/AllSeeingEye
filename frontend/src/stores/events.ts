@@ -11,6 +11,7 @@ import { describeError } from '@/lib/api/errors';
 import type { SseMessage, StreamStatus } from '@/lib/sse';
 
 export const MAX_CLIENT_EVENTS = 5_000;
+export const SNAPSHOT_LIMIT = 2_000;
 
 export interface EventsState {
   byId: Record<string, LiveEvent>;
@@ -23,9 +24,14 @@ export interface EventsState {
   stats: StoreStats | null;
   status: StreamStatus;
   loaded: boolean;
+  loading: boolean;
+  snapshotCount: number | null;
+  snapshotLimited: boolean;
+  mirrorCapped: boolean;
   error: string | null;
   selectedId: string | null;
   load: () => Promise<void>;
+  cancelLoad: () => void;
   applyUpsert: (events: LiveEvent[]) => void;
   applyExpire: (ids: string[]) => void;
   handleStreamMessage: (message: SseMessage) => void;
@@ -46,6 +52,10 @@ export const initialEventsState = {
   stats: null as StoreStats | null,
   status: 'offline' as StreamStatus,
   loaded: false,
+  loading: false,
+  snapshotCount: null as number | null,
+  snapshotLimited: false,
+  mirrorCapped: false,
   error: null as string | null,
   selectedId: null as string | null,
 };
@@ -73,88 +83,163 @@ function without(
   return Object.fromEntries(Object.entries(byId).filter(([id]) => !gone.has(id)));
 }
 
-export const useEventsStore = create<EventsState>()((set, get) => ({
-  ...initialEventsState,
-
-  load: async () => {
-    try {
-      const [events, stats] = await Promise.all([fetchEvents({ limit: 2000 }), fetchStats()]);
-      const byId: Record<string, LiveEvent> = {};
-      for (const event of events) byId[event.id] = event;
-      set({ byId, list: toList(byId), stats, loaded: true, error: null });
-    } catch (caught) {
-      set({ error: describeError(caught), loaded: true });
-    }
-  },
-
-  applyUpsert: (events) => {
-    if (events.length === 0) return;
-    const merged = { ...get().byId };
-    for (const event of events) merged[event.id] = event;
-    const byId = bounded(merged);
-    const selectedId = get().selectedId;
-    set({
-      byId,
-      list: toList(byId),
-      selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
-    });
-  },
-
-  applyExpire: (ids) => {
-    if (ids.length === 0) return;
-    const byId = without(get().byId, ids);
-    const selectedId = get().selectedId;
-    set({
-      byId,
-      list: toList(byId),
-      selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
-    });
-  },
-
-  handleStreamMessage: (message) => {
-    let payload: unknown = null;
-    try {
-      payload = JSON.parse(message.data) as unknown;
-    } catch {
+export const useEventsStore = create<EventsState>()((set, get) => {
+  let pending: {
+    controller: AbortController;
+    changes: Map<string, LiveEvent | null>;
+    overflow: boolean;
+  } | null = null;
+  const record = (id: string, event: LiveEvent | null) => {
+    if (!pending || pending.overflow) return;
+    if (!pending.changes.has(id) && pending.changes.size >= MAX_CLIENT_EVENTS) {
+      // Never drop tombstones or overwrite fresh events with an unsafe snapshot.
+      pending.overflow = true;
+      pending.changes.clear();
       return;
     }
-    if (message.event === 'event.upsert') {
-      const parsed = streamUpsertSchema.safeParse(payload);
-      if (parsed.success) get().applyUpsert(parsed.data.events);
-    } else if (message.event === 'event.expire') {
-      const parsed = streamExpireSchema.safeParse(payload);
-      if (parsed.success) get().applyExpire(parsed.data.ids);
-    }
-  },
+    pending.changes.set(id, event);
+  };
+  return {
+    ...initialEventsState,
 
-  setStatus: (status) => {
-    set({ status });
-  },
+    load: async () => {
+      pending?.controller.abort();
+      const request = {
+        controller: new AbortController(),
+        changes: new Map<string, LiveEvent | null>(),
+        overflow: false,
+      };
+      pending = request;
+      set({ loading: true, error: null });
+      try {
+        const [events, stats] = await Promise.all([
+          fetchEvents({ limit: SNAPSHOT_LIMIT }, request.controller.signal),
+          fetchStats(request.controller.signal),
+        ]);
+        if (pending !== request || request.controller.signal.aborted) return;
+        if (request.overflow) {
+          set({
+            error:
+              'Live updates exceeded the snapshot reconciliation limit. Displaying received updates; reload to resynchronise.',
+            loaded: true,
+          });
+          return;
+        }
+        const merged = new Map(events.map((event) => [event.id, event]));
+        for (const [id, event] of request.changes) {
+          if (event === null) merged.delete(id);
+          else merged.set(id, event);
+        }
+        const byId = Object.fromEntries(merged);
+        const capped = bounded(byId);
+        const selectedId = get().selectedId;
+        set({
+          byId: capped,
+          list: toList(capped),
+          stats,
+          loaded: true,
+          error: null,
+          snapshotCount: events.length,
+          snapshotLimited: events.length >= SNAPSHOT_LIMIT || stats.total > events.length,
+          mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
+          selectedId: selectedId !== null && !(selectedId in capped) ? null : selectedId,
+        });
+      } catch (caught) {
+        if (pending === request && !request.controller.signal.aborted) {
+          set({ error: describeError(caught), loaded: true });
+        }
+      } finally {
+        // Cancel a sibling request if Promise.all failed before it completed.
+        request.controller.abort();
+        if (pending === request) {
+          pending = null;
+          set({ loading: false });
+        }
+      }
+    },
 
-  toggleCategory: (category) => {
-    const hidden = get().hidden;
-    set({
-      hidden: hidden.includes(category)
-        ? hidden.filter((item) => item !== category)
-        : [...hidden, category],
-    });
-  },
+    cancelLoad: () => {
+      pending?.controller.abort();
+      pending = null;
+      set({ loading: false });
+    },
 
-  setCountry: (iso) => {
-    set({ country: iso });
-  },
-  setWindow: (hours) => {
-    set({ windowHours: hours });
-  },
+    applyUpsert: (events) => {
+      if (events.length === 0) return;
+      const merged = { ...get().byId };
+      for (const event of events) {
+        merged[event.id] = event;
+        record(event.id, event);
+      }
+      const byId = bounded(merged);
+      const selectedId = get().selectedId;
+      set({
+        byId,
+        list: toList(byId),
+        mirrorCapped: get().mirrorCapped || Object.keys(merged).length > MAX_CLIENT_EVENTS,
+        selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
+      });
+    },
 
-  select: (id) => {
-    set({ selectedId: id });
-  },
+    applyExpire: (ids) => {
+      if (ids.length === 0) return;
+      for (const id of ids) record(id, null);
+      const byId = without(get().byId, ids);
+      const selectedId = get().selectedId;
+      set({
+        byId,
+        list: toList(byId),
+        selectedId: selectedId !== null && !(selectedId in byId) ? null : selectedId,
+      });
+    },
 
-  reset: () => {
-    set({ ...initialEventsState });
-  },
-}));
+    handleStreamMessage: (message) => {
+      let payload: unknown = null;
+      try {
+        payload = JSON.parse(message.data) as unknown;
+      } catch {
+        return;
+      }
+      if (message.event === 'event.upsert') {
+        const parsed = streamUpsertSchema.safeParse(payload);
+        if (parsed.success) get().applyUpsert(parsed.data.events);
+      } else if (message.event === 'event.expire') {
+        const parsed = streamExpireSchema.safeParse(payload);
+        if (parsed.success) get().applyExpire(parsed.data.ids);
+      }
+    },
+
+    setStatus: (status) => {
+      set({ status });
+    },
+
+    toggleCategory: (category) => {
+      const hidden = get().hidden;
+      set({
+        hidden: hidden.includes(category)
+          ? hidden.filter((item) => item !== category)
+          : [...hidden, category],
+      });
+    },
+
+    setCountry: (iso) => {
+      set({ country: iso });
+    },
+    setWindow: (hours) => {
+      set({ windowHours: hours });
+    },
+
+    select: (id) => {
+      set({ selectedId: id });
+    },
+
+    reset: () => {
+      pending?.controller.abort();
+      pending = null;
+      set({ ...initialEventsState });
+    },
+  };
+});
 
 /** Events inside the nation filter, before category switches apply. */
 export function filterByCountry(events: LiveEvent[], country: string | null): LiveEvent[] {

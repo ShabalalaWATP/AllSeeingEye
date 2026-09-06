@@ -3,6 +3,7 @@
 from typing import Protocol
 
 from ase.domain.research import ResearchBatch, ResearchQuery
+from ase.domain.research_plan import ResearchPlan
 
 
 class ResearchProvider(Protocol):
@@ -24,6 +25,10 @@ class ResearchProvider(Protocol):
 
 
 class ResearchCollection(Protocol):
+    def plan(self, query: ResearchQuery) -> ResearchPlan:
+        """Preview concrete tasks without collection or model calls."""
+        ...
+
     async def collect(self, query: ResearchQuery) -> ResearchBatch: ...
 
     async def challenge_many(self, queries: tuple[ResearchQuery, ...]) -> tuple[ResearchBatch, ...]:

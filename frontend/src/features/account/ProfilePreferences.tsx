@@ -109,7 +109,7 @@ function PreferencesForm({
       section === 'research' &&
       (codes.length > 8 || codes.some((code) => !/^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(code)))
     ) {
-      setValidation('Enter between one and eight valid language codes, separated by commas.');
+      setValidation('Choose between one and eight source languages.');
       return;
     }
     inFlight.current = true;

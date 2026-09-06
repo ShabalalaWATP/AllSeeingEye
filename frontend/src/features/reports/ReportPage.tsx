@@ -4,6 +4,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
+import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
+import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
 import { describeError } from '@/lib/api/errors';
 import { deleteReport, fetchReport, regenerateReport } from '@/lib/api/reports';
 import { useProfile } from '@/stores/profile';
@@ -39,7 +42,8 @@ export default function ReportPage() {
   const requested = versionFromQuery(params.get('version'));
   const navigate = useNavigate();
   const loader = useCallback(() => fetchReport(id, requested), [id, requested]);
-  const { data, error, loading, reload } = useScopedResource(loader);
+  const resource = useScopedResource(loader);
+  const { data, error, loading, reload } = resource;
   const remove = useAsyncAction(async () => {
     await deleteReport(id);
     await navigate('/reports');
@@ -133,6 +137,13 @@ export default function ReportPage() {
           assessment={version.assessment}
           citationChecks={version.citation_checks}
         />
+        <ClaimLedgerView ledger={version.claim_ledger} />
+        <ReportEvidenceMap
+          key={`${resource.key}:${id}:${String(version.number)}`}
+          reportId={id}
+          version={version.number}
+          evidence={version.evidence}
+        />
         {version.challenge ? (
           <ReportChallengeView challenge={version.challenge} />
         ) : (
@@ -169,6 +180,12 @@ export default function ReportPage() {
                 : undefined
             }
             preferred={preferences.profile?.export_format ?? 'pdf'}
+            id={id}
+            version={version.number}
+            title={report.title}
+          />
+          <EvidencePackageDownload
+            key={`${id}:${String(version.number)}`}
             id={id}
             version={version.number}
             title={report.title}

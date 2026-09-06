@@ -22,3 +22,22 @@ it('invalidates scoped resources when stream membership authority changes', () =
   expect(FakeEventStreamClient.instances[0]!.stop).toHaveBeenCalled();
   load.mockRestore();
 });
+
+it('resnapshots after initial subscription, reconnect and token renewal and cancels on unmount', () => {
+  FakeEventStreamClient.reset();
+  const load = vi.spyOn(useEventsStore.getState(), 'load').mockResolvedValue();
+  const cancel = vi.spyOn(useEventsStore.getState(), 'cancelLoad');
+  const { unmount } = renderHook(() => useLiveEvents());
+  const client = FakeEventStreamClient.instances[0]!;
+  expect(load).toHaveBeenCalledTimes(1);
+  act(() => {
+    client.setStatus('live');
+    client.setStatus('reconnecting');
+    client.setStatus('live');
+    client.setStatus('connecting');
+    client.setStatus('live');
+  });
+  expect(load).toHaveBeenCalledTimes(4);
+  unmount();
+  expect(cancel).toHaveBeenCalledOnce();
+});

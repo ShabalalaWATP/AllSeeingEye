@@ -1,5 +1,6 @@
 import type { ResearchReceipt } from '@/lib/api/reportResearch';
 import { formatUtc } from '@/lib/format';
+import { SavedCollectionPlan } from '@/components/reports/SavedCollectionPlan';
 
 export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null | undefined }) {
   if (!receipt)
@@ -47,6 +48,7 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
             <dd>{receipt.policy_version}</dd>
           </div>
         </dl>
+        {receipt.plan && <SavedCollectionPlan plan={receipt.plan} />}
         {receipt.attempts.length === 0 ? (
           <p className="text-muted">No collection attempts recorded.</p>
         ) : (

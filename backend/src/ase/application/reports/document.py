@@ -207,4 +207,6 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
                 f"{finding.severity.value}: {finding.rule}, {finding.location}: {finding.message}"
             )
     _evidence(doc, version.evidence)
-    return ReportDocument(record.title, reference, tuple(doc.blocks))
+    return ReportDocument(
+        record.title, reference, tuple(doc.blocks), str(record.scope.get("report_language", "en"))
+    )

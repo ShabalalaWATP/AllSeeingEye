@@ -91,7 +91,7 @@ describe('report documents', () => {
     expect(screen.getByRole('button', { name: 'Download DOCX' })).toBeVisible();
   });
 
-  it.each(['ar', 'zh'])(
+  it.each(['ar', 'fa'])(
     'warns before downloading unsupported PDF text for %s without hiding alternatives',
     (language) => {
       render(

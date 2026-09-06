@@ -1,0 +1,78 @@
+{
+  "id": "ru_official_claim",
+  "title": "Russia: synthetic official claim",
+  "question": "Does the fictional ministry statement establish delivery?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {
+      "id": "fixture_origin",
+      "name": "Fictional original publisher",
+      "organisation": "fixture_origin"
+    },
+    {
+      "id": "fixture_context",
+      "name": "Fictional context publisher",
+      "organisation": "fixture_context"
+    }
+  ],
+  "events": [
+    {
+      "key": "original",
+      "source": "fixture_origin",
+      "title": "A fictional ministry says Project Juniper delivered 12 sensors.",
+      "summary": "A fictional ministry says Project Juniper delivered 12 sensors.",
+      "language": "en",
+      "published_at": "2026-09-05T10:00:00Z",
+      "reliability": "F"
+    },
+    {
+      "key": "context",
+      "source": "fixture_context",
+      "title": "An independent fictional inventory records 12 sensors ordered, none received.",
+      "summary": "An independent fictional inventory records 12 sensors ordered, none received.",
+      "language": "en",
+      "published_at": "2026-09-05T10:00:00Z",
+      "reliability": "F"
+    }
+  ],
+  "reference": {
+    "label_origin": "Assistant-authored synthetic development seed, 2026-09-06",
+    "human_review_status": "pending",
+    "reference_facts": [
+      "The sources disagree about delivery; an order is not a receipt."
+    ],
+    "required_event_keys": [
+      "original",
+      "context"
+    ],
+    "counterevidence_event_keys": [
+      "context"
+    ],
+    "required_caveats": [
+      "Fictional fixture, no real-world allegation.",
+      "Source and information uncertainty must remain explicit."
+    ],
+    "forbidden_inferences": [
+      "The delivery was independently confirmed or political affiliation proves truth."
+    ],
+    "expected_declared_organisation_groups": 2
+  },
+  "replay": {
+    "initial": [
+      {
+        "id": "seed",
+        "event_keys": [
+          "original"
+        ]
+      }
+    ],
+    "challenge": [
+      {
+        "id": "context",
+        "event_keys": [
+          "context"
+        ]
+      }
+    ]
+  }
+}

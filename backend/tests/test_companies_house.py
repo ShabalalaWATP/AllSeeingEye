@@ -49,7 +49,7 @@ async def test_profile_request_uses_basic_key_username_and_preserves_current_sna
     assert event.attributes["identity_match"] == "requested_company_number"
     assert event.country_iso is None and event.point is None
     assert "not a historical view" in batch.attempts[0].explanation
-    assert KEY not in repr(batch) and KEY not in repr(provider._credential)
+    assert KEY not in repr(batch) and KEY not in repr(provider._client._credential)
     await service.http.aclose()
 
 

@@ -1,23 +1,42 @@
 """Concrete research provider selection and private store factories."""
 
 from dataclasses import replace
+from pathlib import Path
+from typing import Literal
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import GoogleNewsResearchProvider
+from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.social import SocialFeedResearchProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
+from ase.adapters.research_records.companies_house_client import CompaniesHouseClient
+from ase.adapters.research_records.companies_house_people import (
+    CompaniesHouseOfficersProvider,
+    CompaniesHousePscProvider,
+)
 from ase.adapters.research_records.company import (
     SecCompanyDirectoryProvider,
     SecSubmissionsProvider,
 )
+from ase.adapters.research_records.contracts_finder import ContractsFinderProvider
+from ase.adapters.research_records.designation_import import load_designation_snapshot
+from ase.adapters.research_records.designations import DesignationProvider
 from ase.adapters.research_records.domains import DnsResearchProvider, RdapResearchProvider
+from ase.adapters.research_records.gleif import GleifParentProvider, GleifProfileProvider
+from ase.adapters.research_records.ooni import OoniAggregateProvider
+from ase.adapters.research_subjects.parliament import ParliamentQuestionsProvider
+from ase.adapters.research_subjects.scholarly import CrossrefProvider, OpenAlexProvider
+from ase.adapters.research_subjects.world_bank import WorldBankProvider
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.ports.research import ResearchProvider
 from ase.application.ports.services import Clock
+from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.service import ResearchCollectionService
+from ase.application.research.source_admission import ControlledResearchProvider
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 
 
@@ -26,12 +45,30 @@ def research_service(
     clock: Clock,
     disabled: tuple[str, ...] = (),
     *,
+    admission: SourceAdmission | None = None,
+    ooni_noncommercial_use_acknowledged: bool = False,
+    uksl_snapshot_path: str | None = None,
+    ofac_sdn_snapshot_path: str | None = None,
     companies_house_key: str | None = None,
     certificate_transparency_key: str | None = None,
 ) -> ResearchCollectionService:
     # Preserve the credential-specific rolling request allowance across research runs.
-    companies_house = CompaniesHouseProvider(http, clock, companies_house_key)
+    registry_client = CompaniesHouseClient(http, clock, companies_house_key)
+    companies_house = CompaniesHouseProvider(
+        http, clock, companies_house_key, client=registry_client
+    )
     certificates = CertificateTransparencyProvider(http, clock, certificate_transparency_key)
+    procurement = ContractsFinderProvider(http, clock)
+    snapshots: tuple[tuple[Literal["uksl", "ofac_sdn"], str | None], ...] = (
+        ("uksl", uksl_snapshot_path),
+        ("ofac_sdn", ofac_sdn_snapshot_path),
+    )
+    designations = tuple(
+        DesignationProvider(
+            load_designation_snapshot(Path(path)) if path else None, clock, authority
+        )
+        for authority, path in snapshots
+    )
 
     def providers(query: ResearchQuery) -> list[ResearchProvider]:
         if query.focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA):
@@ -44,6 +81,11 @@ def research_service(
                     SecSubmissionsProvider(http, clock),
                     SecCompanyDirectoryProvider(http, clock),
                     companies_house,
+                    CompaniesHouseOfficersProvider(registry_client, clock),
+                    CompaniesHousePscProvider(registry_client, clock),
+                    GleifProfileProvider(http, clock),
+                    GleifParentProvider(http, clock, "direct"),
+                    GleifParentProvider(http, clock, "ultimate"),
                 )
             )
         elif query.focus == ResearchFocus.DOMAIN:
@@ -56,11 +98,33 @@ def research_service(
                 for language in dict.fromkeys(query.languages)
             )
         selected.extend(
+            (
+                procurement,
+                *designations,
+                OpenAlexProvider(http, clock),
+                CrossrefProvider(http, clock),
+                WorldBankProvider(http, clock),
+                ParliamentQuestionsProvider(http, clock),
+                OoniAggregateProvider(
+                    http, clock, allow_noncommercial_data=ooni_noncommercial_use_acknowledged
+                ),
+            )
+        )
+        selected.extend(
+            RegionalFeedResearchProvider(http, clock, seed)
+            for seed in REGIONAL_SEEDS
+            if seed.spec.id not in disabled
+        )
+        selected.extend(
             SocialFeedResearchProvider(http, clock, seed)
             for seed in SOCIAL_SEEDS
             if seed.spec.id not in disabled
         )
-        return [provider for provider in selected if provider.id not in disabled]
+        return [
+            ControlledResearchProvider(provider, admission) if admission is not None else provider
+            for provider in selected
+            if provider.id not in disabled
+        ]
 
     def challenge_providers(query: ResearchQuery) -> list[ResearchProvider]:
         if query.focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA):

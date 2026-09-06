@@ -85,6 +85,9 @@ export const sourceHealthSchema = z.object({
 export type SourceHealth = z.infer<typeof sourceHealthSchema>;
 
 export const sourceSchema = z.object({
+  enabled: z.boolean().optional(),
+  test_available: z.boolean().optional(),
+  environment_disabled: z.boolean().optional(),
   id: z.string(),
   name: z.string(),
   organisation: z.string(),

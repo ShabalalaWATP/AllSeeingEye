@@ -14,23 +14,14 @@ from ase.adapters.feeds.rss_seeds import RssSeed
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
 from ase.application.ports import Clock
 from ase.domain.events import Reliability
+from ase.domain.languages import LANGUAGES
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
 # Each instance represents one admitted request and one edition, not a hidden fan-out.
 EDITIONS: dict[str, tuple[str, str, str]] = {
-    "en": ("en-GB", "GB", "GB:en"),
-    "fr": ("fr", "FR", "FR:fr"),
-    "de": ("de", "DE", "DE:de"),
-    "es": ("es", "ES", "ES:es"),
-    "pt": ("pt-PT", "PT", "PT:pt-150"),
-    "uk": ("uk", "UA", "UA:uk"),
-    "ru": ("ru", "RU", "RU:ru"),
-    "ar": ("ar", "SA", "SA:ar"),
-    "zh-cn": ("zh-CN", "CN", "CN:zh-Hans"),
-    "zh-tw": ("zh-TW", "TW", "TW:zh-Hant"),
-    "ja": ("ja", "JP", "JP:ja"),
-    "ko": ("ko", "KR", "KR:ko"),
-    "hi": ("hi", "IN", "IN:hi"),
+    language.code.lower(): (edition.hl, edition.gl, edition.ceid)
+    for language in LANGUAGES
+    if (edition := language.google_news_edition) is not None
 }
 LIMITATIONS = (
     "Undocumented Google News RSS search; availability and completeness are not guaranteed. "
@@ -42,6 +33,11 @@ LIMITATIONS = (
 
 
 class GoogleNewsResearchProvider:
+    temporal_scope = (
+        "Bounded RSS search results filtered by publication date; date operators do not "
+        "establish a complete historical archive or event-time coverage."
+    )
+
     def __init__(self, http: FeedHttpClient, clock: Clock, language: str = "en") -> None:
         if (
             not language

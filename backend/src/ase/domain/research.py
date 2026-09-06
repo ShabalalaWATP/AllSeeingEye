@@ -1,11 +1,12 @@
 """Bounded question and collection records, independent of providers and storage."""
 
-import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
 from ase.domain.events import Event
+from ase.domain.languages import valid_language_code
+from ase.domain.research_plan import QueryVariant, ResearchPlan
 
 
 class ResearchMode(StrEnum):
@@ -42,11 +43,22 @@ class ResearchQuery:
     focus: ResearchFocus = ResearchFocus.GENERAL
     country_iso: str | None = None
     subject: str | None = None
+    source_ids: tuple[str, ...] | None = None
+    query_variants: tuple[QueryVariant, ...] = ()
 
     def __post_init__(self) -> None:
-        if any(
-            not re.fullmatch(r"[a-z]{2,3}(?:-[A-Za-z]{2,4})?", value) for value in self.languages
+        if self.source_ids is not None and (
+            len(self.source_ids) > 64
+            or len(set(self.source_ids)) != len(self.source_ids)
+            or any(not value or len(value) > 120 for value in self.source_ids)
         ):
+            raise ValueError("Select at most 64 unique collection sources")
+        variant_languages = [variant.language.lower() for variant in self.query_variants]
+        if len(variant_languages) > 8 or len(set(variant_languages)) != len(variant_languages):
+            raise ValueError("Provide at most one query variant per language")
+        if not set(variant_languages).issubset(value.lower() for value in self.languages):
+            raise ValueError("Query variants must use selected research languages")
+        if any(not valid_language_code(value) for value in self.languages):
             raise ValueError("Invalid research language code")
         object.__setattr__(
             self, "languages", tuple(dict.fromkeys(value.lower() for value in self.languages))
@@ -87,6 +99,7 @@ class CollectionAttempt:
 class ResearchBatch:
     items: tuple[Event, ...] = ()
     attempts: tuple[CollectionAttempt, ...] = ()
+    plan: ResearchPlan | None = None
 
     def __post_init__(self) -> None:
         if len(self.items) > 1000 or len(self.attempts) > 64:

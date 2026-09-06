@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
 from ase.application.research.collection import CollectionBudget, ResearchCollector
@@ -56,7 +57,7 @@ async def collect_challenges(
                 continue
             requests += 1
             batch = await ResearchCollector([provider]).collect(
-                query,
+                replace(query, source_ids=None),
                 budget=CollectionBudget(
                     requests=1,
                     seconds=remaining,

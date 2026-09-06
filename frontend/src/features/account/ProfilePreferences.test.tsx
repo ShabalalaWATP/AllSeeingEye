@@ -74,14 +74,14 @@ describe('personal preferences', () => {
       }),
     );
     const { user } = renderApp('/account?section=research', 'user');
-    const input = await screen.findByLabelText('Source languages');
-    await user.clear(input);
-    await user.type(input, 'not a code');
+    const input = await screen.findByRole('checkbox', { name: 'English' });
+    await waitFor(() => expect(input).toBeEnabled());
+    await user.click(input);
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('valid language codes');
+    expect(screen.getByRole('alert')).toHaveTextContent('source languages');
     expect(body).toBeUndefined();
-    await user.clear(input);
-    await user.type(input, 'en, fr, en');
+    await user.click(input);
+    await user.click(screen.getByRole('checkbox', { name: 'French' }));
     await user.selectOptions(screen.getByLabelText('Research depth'), 'detailed');
     await user.selectOptions(screen.getByLabelText('Default date window'), '7');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
@@ -103,6 +103,7 @@ describe('personal preferences', () => {
       }),
     );
     const { user } = renderApp('/account?section=reports', 'user');
+    await screen.findByRole('option', { name: 'French' });
     await user.selectOptions(await screen.findByLabelText('Narrative language'), 'fr');
     await user.selectOptions(screen.getByLabelText('Report style'), 'briefing');
     await user.selectOptions(screen.getByLabelText('Preferred export format'), 'docx');
@@ -162,11 +163,12 @@ describe('personal preferences', () => {
     await waitFor(() => expect(screen.getByLabelText('Display name')).toHaveValue('New identity'));
     expect(useAuthStore.getState().user?.display_name).toBe('New identity');
   });
-  it.each(['ar', 'zh'])(
+  it.each(['ar', 'fa'])(
     'warns about PDF text support for %s and clears the warning for Word',
     async (language) => {
       const { user } = renderApp('/account?section=reports', 'user');
-      await user.selectOptions(await screen.findByLabelText('Narrative language'), language);
+      await waitFor(() => expect(screen.getByLabelText('Narrative language')).toBeEnabled());
+      await user.selectOptions(screen.getByLabelText('Narrative language'), language);
       expect(screen.getByText(/PDF downloads cannot currently display/)).toBeVisible();
       await user.selectOptions(screen.getByLabelText('Preferred export format'), 'docx');
       expect(screen.queryByText(/PDF downloads cannot currently display/)).not.toBeInTheDocument();

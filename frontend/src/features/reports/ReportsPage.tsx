@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/Button';
 import { useProfile } from '@/stores/profile';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ResearchLibrary } from '@/components/library/ResearchLibrary';
+import { LibraryButton } from '@/components/library/LibraryButton';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
@@ -42,6 +44,8 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 export default function ReportsPage() {
+  const [libraryRevision, setLibraryRevision] = useState(0);
+  const libraryChanged = () => setLibraryRevision((revision) => revision + 1);
   const navigate = useNavigate();
   const preferences = useProfile();
   const [params] = useSearchParams();
@@ -76,6 +80,7 @@ export default function ReportsPage() {
     <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Reports</h1>
       <ReportSearch />
+      <ResearchLibrary revision={libraryRevision} onChanged={libraryChanged} />
       {!preferences.profile && preferences.error && (
         <Alert tone="error">
           Report preferences could not be loaded.{' '}
@@ -141,6 +146,7 @@ export default function ReportsPage() {
                     <div className="font-mono text-xs text-muted">
                       {report.template} · {workspaces.label(report.team_id)}
                     </div>
+                    <LibraryButton reportId={report.id} onChanged={libraryChanged} />
                   </Td>
                   <Td className="whitespace-nowrap text-xs text-muted">
                     {formatUtc(report.period_from)} to {formatUtc(report.period_to)}

@@ -1,7 +1,10 @@
 # Research expansion implementation plan
 
 Prepared 6 September 2026 against `60f57e4` on `main`.
-Status: proposed implementation backlog, not implemented features or activated sources.
+Status: partially implemented. The bounded delivery milestone and outstanding
+acceptance are recorded in [research expansion operations](RESEARCH_EXPANSION_OPERATIONS.md).
+The workstreams below retain the full target scope; a delivered subset does not
+mark an entire workstream complete.
 This is the next expansion plan. Earlier delivered work remains in
 [the automated research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md).
 

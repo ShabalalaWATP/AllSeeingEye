@@ -5,11 +5,34 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.api.deps import ContainerDep, CurrentUser, SessionDep
+from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_report_documents import ReportComparisonOut
+from ase.api.session_guard import validate_request_session
 from ase.domain.report_documents import ExportFormat
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.get("/{report_id}/evidence-package", response_class=Response)
+async def export_evidence_package(
+    report_id: UUID,
+    user: CurrentUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+    version: Annotated[int | None, Query(ge=1)] = None,
+) -> Response:
+    result = await container.export_evidence_package(session).execute(user, report_id, version)
+    await validate_request_session(container, claims)
+    return Response(
+        result.content,
+        media_type=result.media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{result.filename}"',
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get(

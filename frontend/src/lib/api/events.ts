@@ -28,15 +28,19 @@ export function eventsQueryString(query: EventsQuery): string {
   return text ? `?${text}` : '';
 }
 
-export async function fetchEvents(query: EventsQuery = {}): Promise<LiveEvent[]> {
+export async function fetchEvents(
+  query: EventsQuery = {},
+  signal?: AbortSignal,
+): Promise<LiveEvent[]> {
   const page = await apiCall(`/api/events${eventsQueryString(query)}`, {
     schema: eventsResponseSchema,
+    ...(signal ? { signal } : {}),
   });
   return page.items;
 }
 
-export function fetchStats(): Promise<StoreStats> {
-  return apiCall('/api/events/stats', { schema: storeStatsSchema });
+export function fetchStats(signal?: AbortSignal): Promise<StoreStats> {
+  return apiCall('/api/events/stats', { schema: storeStatsSchema, ...(signal ? { signal } : {}) });
 }
 
 export async function fetchSources(): Promise<Source[]> {
@@ -44,9 +48,10 @@ export async function fetchSources(): Promise<Source[]> {
   return page.items;
 }
 
-export function resetSource(sourceId: string): Promise<SourceHealth> {
+export function resetSource(sourceId: string, signal?: AbortSignal): Promise<SourceHealth> {
   return apiCall(`/api/admin/sources/${encodeURIComponent(sourceId)}/reset`, {
     method: 'POST',
     schema: sourceHealthSchema,
+    ...(signal ? { signal } : {}),
   });
 }

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from ase.api.schemas_research_plan import ResearchPlanOut
 from ase.domain.research import CollectionStatus
 
 
@@ -31,3 +32,4 @@ class ResearchReceiptOut(BaseModel):
     attempts: list[CollectionAttemptOut]
     collected_items: int
     policy_version: str
+    plan: ResearchPlanOut | None = None

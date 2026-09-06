@@ -6,6 +6,7 @@ import type { components } from './types.gen';
 
 import { apiCall, apiSend, apiText } from './client';
 import { reportAssessmentSchema } from './reportAssessment';
+import { claimLedgerSchema } from './claimLedger';
 import {
   citationChecksSchema,
   evidenceAttributeSchema,
@@ -142,6 +143,7 @@ export const findingSchema = z.object({
 export type Finding = z.infer<typeof findingSchema>;
 
 export const reportVersionSchema = z.object({
+  claim_ledger: claimLedgerSchema.nullable().optional(),
   research_context: researchContextSchema.nullable().optional(),
   challenge: reportChallengeSchema.nullable().optional(),
   research: researchReceiptSchema.nullable().optional(),

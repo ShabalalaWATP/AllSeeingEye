@@ -7,6 +7,9 @@ import type { Layer } from '@deck.gl/core';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import { CATEGORY_STYLES } from '@/lib/categories';
 
+import { isMappedEvent } from '../geographicPrecision';
+import { buildApproximateLayer } from './approximate';
+
 import { CLUSTER_ZOOM, buildClusterLayers, cellSizeFor, clusterEvents } from './clusters';
 import type { Cluster } from './clusters';
 import { buildIconLayer, iconFor } from './icons';
@@ -81,12 +84,18 @@ export function buildEventLayers(
   view?: LayerView,
 ): Layer[] {
   const visible = events.filter(
-    (event) => event.point !== null && !hidden.includes(event.category),
+    (event) => isMappedEvent(event) && !hidden.includes(event.category),
   );
-  let loose: LiveEvent[] = visible;
-  const layers: Layer[] = [];
+  const exact = visible.filter((event) => event.geo_confidence === 'exact');
+  const approximate = buildApproximateLayer(
+    visible.filter((event) => event.geo_confidence !== 'exact'),
+    onPick,
+    selectedId,
+  );
+  let loose: LiveEvent[] = exact;
+  const layers: Layer[] = approximate ? [approximate] : [];
   if (view !== undefined && view.zoom < CLUSTER_ZOOM) {
-    const clustered = clusterEvents(visible, cellSizeFor(view.zoom));
+    const clustered = clusterEvents(exact, cellSizeFor(view.zoom));
     layers.push(...buildClusterLayers(clustered.clusters, view.onCluster));
     loose = clustered.loose;
   }

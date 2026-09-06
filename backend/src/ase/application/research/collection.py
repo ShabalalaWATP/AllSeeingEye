@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from math import isfinite
 
 from ase.application.ports.research import ResearchProvider
+from ase.application.research.planning import build_plan
 from ase.domain.events import Event
 from ase.domain.research import (
     CollectionAttempt,
@@ -76,13 +77,23 @@ class ResearchCollector:
         progress: Progress | None = None,
     ) -> ResearchBatch:
         limits = budget or CollectionBudget.for_mode(query.mode)
+        plan = build_plan(
+            query,
+            self._providers,
+            requests=limits.requests,
+            seconds=limits.seconds,
+            items=limits.items,
+        )
         deadline = asyncio.get_running_loop().time() + limits.seconds
         requests = 0
         items: dict[str, Event] = {}
         attempts: list[CollectionAttempt] = []
-        for provider in self._providers:
+        for provider, task in zip(self._providers, plan.tasks, strict=True):
+            if not task.selected:
+                continue
+            routed = replace(query, terms=task.terms)
             remaining = deadline - asyncio.get_running_loop().time()
-            if not provider.supports(query):
+            if not task.supported:
                 attempt = self._receipt(
                     provider,
                     CollectionStatus.UNSUPPORTED,
@@ -97,7 +108,7 @@ class ResearchCollector:
             else:
                 requests += 1
                 batch = await self._fetch(
-                    provider, query, min(remaining, limits.per_request_seconds)
+                    provider, routed, min(remaining, limits.per_request_seconds)
                 )
                 eligible = not batch.attempts or batch.attempts[0].status in (
                     CollectionStatus.COMPLETED,
@@ -108,7 +119,7 @@ class ResearchCollector:
             attempts.append(attempt)
             if progress is not None:
                 await progress(attempt)
-        return ResearchBatch(items=tuple(items.values()), attempts=tuple(attempts))
+        return ResearchBatch(items=tuple(items.values()), attempts=tuple(attempts), plan=plan)
 
     @staticmethod
     async def _fetch(

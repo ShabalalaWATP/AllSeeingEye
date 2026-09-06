@@ -37,6 +37,17 @@ class SocialFeedResearchProvider:
     def name(self) -> str:
         return self._seed.spec.name
 
+    @property
+    def language(self) -> str:
+        return self._seed.spec.language
+
+    @property
+    def temporal_scope(self) -> str:
+        return (
+            "Recent RSS/Atom snapshot filtered by publication date; "
+            "not a complete historical archive."
+        )
+
     def supports(self, query: ResearchQuery) -> bool:
         return bool(search_terms(query)) and (
             self._seed.spec.language.lower() in {language.lower() for language in query.languages}

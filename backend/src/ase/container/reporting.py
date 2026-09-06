@@ -9,8 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
+from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.reports.documents import ReportDocumentRenderer
+from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
 from ase.application.access import AccessPolicy
 from ase.application.reports.access import (
     DeleteReportUseCase,
@@ -18,9 +20,11 @@ from ase.application.reports.access import (
     ListReportsUseCase,
 )
 from ase.application.reports.archiving import archive_evidence
+from ase.application.reports.evidence_package import ExportEvidencePackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.search import ReportSearchService
+from ase.application.research.library import ResearchLibrary
 from ase.container.research import private_research_store
 from ase.domain.report_records import ReportVersion
 
@@ -146,8 +150,24 @@ class ReportWiring:
             access=self.access_policy(session),
         )
 
+    def research_library(self, session: AsyncSession) -> ResearchLibrary:
+        r = self.repositories(session)
+        return ResearchLibrary(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            SqlResearchLibraryRepository(session),
+            self.access_policy(session),
+            self.clock,
+            self._auditor(r),
+            r.uow,
+        )
+
     def export_report(self, session: AsyncSession) -> ExportReportUseCase:
         return ExportReportUseCase(self.get_report(session), ReportDocumentRenderer())
+
+    def export_evidence_package(self, session: AsyncSession) -> ExportEvidencePackage:
+        return ExportEvidencePackage(self.get_report(session), FrozenEvidencePackageRenderer())
 
     def compare_reports(self, session: AsyncSession) -> CompareReportsUseCase:
         return CompareReportsUseCase(self.get_report(session))

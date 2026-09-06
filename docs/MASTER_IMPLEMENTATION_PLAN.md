@@ -259,3 +259,20 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 - No git remote yet, so CI has not run.
 - No LLM endpoint or `ASE_ENCRYPTION_KEY` on the development host, so every report has been generated with a scripted model only.
 - Keys only Alex can obtain, in order of visible impact: a NASA FIRMS map key (active fires, the most obvious gap on the globe), an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`), an AISStream key and a Global Fishing Watch token (vessels), an alerts.in.ua token (air-raid alerts), a UCDP token and an ACLED account (conflict event history), a ReliefWeb application name (the API answers 410 until it is approved), and optionally OpenSky credentials (only to poll civil traffic more often) and Cloudflare Radar (IODA covers outages without it).
+
+## 6 September 2026: research expansion implementation milestone
+
+- [x] Regional RSS, language catalogue and explicit collection-plan/source controls.
+- [x] Admin source admission, including release-time revocation checks.
+- [x] Shared frozen report maps, geographic precision disclosure, private GeoJSON
+  overlays and bounded Copernicus footprint queries.
+- [x] Company relationships, local designation snapshots, procurement, academic,
+  parliamentary and development-indicator adapters, with explicit coverage limits.
+- [x] Claim inspection, bounded evidence ZIP exports, Chinese PDF fonts and personal
+  report library annotations.
+- [ ] Complete the wider expansion acceptance gates and deferred features listed
+  in RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md. This milestone is partial against
+  that plan, not completion of every E0-E13 workstream.
+
+See RESEARCH_EXPANSION_OPERATIONS.md for behaviour, deployment requirements and
+remaining limits. Migrations 0022/0023 have not been applied to operator data.

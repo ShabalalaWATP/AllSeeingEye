@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
+import { isMappedEvent, precisionLabel } from './geographicPrecision';
 import { eventResearchHref } from '@/lib/researchNavigation';
 
 import type { LiveEvent } from '@/lib/api/eventSchemas';
@@ -108,9 +109,11 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           <dd className="text-text">{sourceLabel(event.source_id)}</dd>
           <dt>Published</dt>
           <dd className="text-text">{formatUtc(event.published_at)}</dd>
-          {event.point !== null && (
+          <dt>Location precision</dt>
+          <dd className="text-text">{precisionLabel(event)}</dd>
+          {event.point !== null && isMappedEvent(event) && (
             <>
-              <dt>Position</dt>
+              <dt>{event.geo_confidence === 'exact' ? 'Position' : 'Reference position'}</dt>
               <dd className="text-text">
                 {event.point.lat.toFixed(3)}, {event.point.lon.toFixed(3)} ({event.geo_confidence})
               </dd>

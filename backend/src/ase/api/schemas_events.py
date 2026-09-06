@@ -135,6 +135,9 @@ class SourceHealthOut(BaseModel):
 
 
 class SourceOut(BaseModel):
+    enabled: bool = True
+    test_available: bool = True
+    environment_disabled: bool = False
     id: str
     name: str
     organisation: str

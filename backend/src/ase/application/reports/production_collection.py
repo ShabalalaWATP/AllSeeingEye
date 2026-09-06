@@ -32,7 +32,11 @@ async def prepare_collection(
             since=job.now - job.window,
             until=job.now,
             languages=job.request.research_languages,
-            terms=tuple(direction.search_terms if direction else job.terms),
+            source_ids=job.request.research_source_ids,
+            query_variants=job.request.research_query_variants,
+            terms=job.request.research_terms
+            if job.request.research_terms is not None
+            else tuple(direction.search_terms if direction else job.terms),
             mode=job.request.research_mode,
             focus=job.request.research_focus,
             country_iso=job.request.country_iso,

@@ -20,8 +20,16 @@ Bundled file SHA-256 digests:
 - `DejaVuLGCSans-Bold.ttf`: `0746f87aafab1227658d304e36dab999bfa95f2a6811a1031ca38ed243540a78`
 - `LICENSE`: `7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93`
 
-The LGC subset does not provide Arabic or CJK glyph coverage. This PDF renderer
-also does not implement Arabic shaping or bidirectional layout. Unsupported
+Chinese report languages use the bundled ASE Research Sans SC/TC fonts. These
+are renamed, static weight-400 derivatives of Noto Sans CJK Sans2.004, distributed
+under the adjacent `OFL-NotoCJK.txt`. The application licence is unchanged.
+`scripts/build_cjk_fonts.py` records pinned upstream source hashes and rebuilds
+the assets using the locked development dependency fonttools. Run it with
+`uv run --project backend python scripts/build_cjk_fonts.py` from the repository root.
+Rendering uses bundled fonts without network downloads. Chinese paragraphs use
+CJK wrapping; simplified and traditional narrative scripts select distinct fonts.
+
+The PDF renderer does not implement Arabic shaping or bidirectional layout. Unsupported
 characters remain explicit `[U+XXXX]` markers and trigger a notice. The DOCX
 export retains the original characters, with display depending on the reader's
 fonts and layout engine. Do not describe this change as full Unicode support.

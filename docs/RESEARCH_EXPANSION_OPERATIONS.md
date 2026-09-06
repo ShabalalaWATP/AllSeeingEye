@@ -1,0 +1,152 @@
+# Research expansion operations
+
+Implementation in progress on `main`, 6 September 2026. This record distinguishes
+working bounded features from the wider expansion backlog. No operator database
+migration, live account change, deployment or configured-model evaluation is implied.
+
+## Research and source selection
+
+The collection-plan preview makes no model or source calls. It enumerates the
+actual registered provider inventory, supported scope and collection ceilings.
+An operator can supply bounded original terms and language-specific variants.
+Those variants are operator-authored, not automatically translated. Explicit
+source selections govern collection; unknown identifiers fail before requests.
+Changes invalidate the preview. The reporting window resolves when a run starts.
+
+Quick collection remains six requests, 45 seconds and 200 retained items; detailed
+collection remains 24 requests, 180 seconds and 800 items. The challenge pass keeps
+its existing separate shared budget. Empty responses do not confirm absence.
+Historical completeness is not inferred from a recent feed or current registry.
+
+Persian, simplified and traditional Chinese narrative preferences are available.
+The catalogue distinguishes narrative scripts from supported search editions.
+Persian does not invent a Google News edition. Original text and zero-width
+characters are retained; Persian character matching uses a separate derived key.
+
+## Regional feeds and public records
+
+Eight additional publisher-discovered RSS feeds cover Russia, China and Iran.
+They retain headlines, attribution, dates and links, with F6/unassessed grading.
+IranWire's oldest-first feed uses bounded newest-item selection. Feed discovery,
+actual smoke checks and restrictions are recorded in
+[source feasibility](SOURCE_FEASIBILITY_2026_09.md).
+
+Company research accepts `GB:01234567` or `companies-house:01234567` for explicit
+UK registry queries, and `LEI:` followed by an exact LEI for GLEIF. Officers and
+PSC queries share the existing Companies House credential allowance. A reported
+accounting-consolidation parent is not a verified beneficial owner. Names remain
+identity candidates; neither shared addresses nor missing records prove control.
+
+Scholarly and parliamentary metadata require explicit source selection or the
+documented subject controls. OpenAlex and Crossref are overlapping aggregators,
+not automatically independent confirmation. Retraction/update flags remain
+attributed metadata requiring review. World Bank queries request one country,
+indicator and bounded annual interval, preserving missing values separately from zero.
+
+OONI is optional and disabled until `ASE_OONI_NONCOMMERCIAL_USE_ACKNOWLEDGED=true`
+is deliberately configured for appropriate CC BY-NC-SA 4.0 use. Country/day
+counters are contributed measurements, not population coverage or proof of cause.
+No individual probe locations are collected. IODA remains deferred pending usable
+documented records and reuse terms.
+
+## Administrator source controls
+
+Administration remains under `/admin` and is available only to administrators.
+Sources supports persisted activation, isolated bounded connection checks and
+polling-circuit reset. A connection check does not publish fetched results.
+Source activation is separate from source grading and model routing.
+
+Activation applies to live and private collection, including source derivatives.
+Operator environment exclusions cannot be overridden in the UI. Research-only
+sources require a research query to demonstrate coverage. Existing keyed providers
+continue to use their configured server-side credentials; this slice does not
+introduce per-team source credentials or a universal key editor.
+
+Migration `0022` adds source activation records. Run normal migrations only against
+the intended backed-up database. Development tests use disposable databases.
+
+## Maps and evidence inspection
+
+Country-only evidence no longer acquires a fictitious incident point. Approximate
+city/administrative locations use hollow markers and remain separate from precise
+point clusters. Findings without supported coordinates remain in a paginated list.
+Live coverage counts disclose loaded records and the snapshot/browser limits.
+
+Report maps consume the selected frozen version, never the shared live event
+mirror. Both projections use the same engine. Opening a basemap discloses the
+viewed area to its tile provider; no private evidence is sent as a tile payload.
+Account and access changes clear the private map and GPU layers.
+
+Local GeoJSON overlays are private, memory-only and unverified. They require
+source/date/attribution/precision metadata and are bounded by file, feature and
+vertex limits. Antimeridian lines are split for display; wrapped polygons must
+be supplied as valid pre-split geometry. Imports do not silently filter research
+or become frozen report evidence. Closing/reloading loses these local overlays.
+
+Claim inspection projects frozen judgements, assessments and citation checks.
+Stable IDs identify a judgement within a version; compound statements are not
+presented as automatically extracted atomic facts. Evidence support, source
+independence, coverage and citation validity remain separate dimensions.
+
+## Evidence packages
+
+The ZIP export resolves one immutable report version and rechecks access after
+rendering. It contains Markdown, structured report/evidence/analysis JSON, supported
+point GeoJSON, a manifest and integrity hashes. It fetches no source URLs and
+includes no original files, images or external map tiles. Null geometry preserves
+unlocated findings. Source rights still apply to captured excerpts.
+
+The package is bounded to 1,000 evidence items and 8 MiB uncompressed content,
+with two admitted render workers. Hashes verify the exported bytes, not the
+authenticity of the source. No signature or trusted timestamp is supplied.
+
+## Additional bounded capabilities
+
+Copernicus Sentinel-2 acquisition footprints can be requested from a report map
+with explicit disclosure of the selected area and dates. The authenticated request
+allows a non-wrapped box of at most 10 degrees per side, a 14-day interval and
+20 metadata records. No imagery is downloaded. Footprints do not prove visibility,
+activity or change, and remain separate from frozen report evidence.
+
+Contracts Finder collects one bounded publication page and matches supplied terms
+locally. It does not claim a complete procurement or company award history.
+UK Sanctions List and OFAC SDN research use explicitly configured local snapshots:
+`ASE_UKSL_SNAPSHOT_PATH` and `ASE_OFAC_SDN_SNAPSHOT_PATH`. Use
+`uv run ase import-designations --help` in `backend` for the bounded CSV import.
+Imports retain source hashes, dates and licence metadata and refuse to overwrite
+an existing snapshot. No operator snapshot has been imported during development.
+Names remain identity candidates; a name match is not a confirmed designation.
+
+The personal research library stores favourites, tags and notes separately from
+report contents. Each user sees only their own annotations and currently accessible
+reports. Migration `0023` adds these records; deleting a report clears annotations.
+Both new migrations refuse a downgrade that would silently discard retained data.
+
+Chinese PDF narratives now embed renamed OFL-licensed Noto-derived SC/TC fonts,
+with script-specific wrapping. Pagination and mixed dates/citations were tested,
+and a generated PDF was visually inspected. Arabic/Persian shaping remains an
+explicit PDF limitation; DOCX preserves original text. No runtime font downloads
+or automatic translation-quality claim is introduced.
+
+## Remaining acceptance
+
+The [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
+full backlog. These features do not establish automated translation quality,
+complete historical datasets, saved immutable map-view revisions, retained original
+assets, human-reviewed identity corrections or unrestricted provider coverage.
+Twelve synthetic regional cases are development seeds, not human-labelled results.
+Configured-model evaluation and the wider 60-case human review remain open.
+Verification: the full backend run completed with 1,946 passing tests, 14 skips
+and five failures. The affected suites were corrected and rerun successfully;
+combined coverage after those reruns is 96.04%. This is a full run plus targeted
+repair verification, not a second full backend run. Additional disposable migration
+checks passed. The final frontend run passed all 654 tests: statements 95.79%,
+branches 90.13%, functions 94.64%, lines 96.97%.
+
+Ruff, mypy (461 source files), import boundaries, configured Bandit, frontend lint,
+type checks, formatting, production build and file-length checks passed. Staged
+Gitleaks checks passed. Python and frontend dependency audits found no known
+vulnerabilities (the local application package is not a PyPI audit target).
+The production build retains a bundle-size advisory. Browser QA verified both
+projections, no horizontal overflow at 390 pixels, and canvas removal on close.
+No operator database, deployment or real-model evaluation was performed.

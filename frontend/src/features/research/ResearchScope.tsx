@@ -1,19 +1,11 @@
+import { SourceLanguagePicker } from '@/components/languages/SourceLanguagePicker';
+import { RegionalPresets } from './RegionalPresets';
+import { GeneralRecordScope } from './GeneralRecordScope';
 import { SelectField, TextField } from '@/components/ui/Field';
 import { WorkspaceField } from '@/components/ui/WorkspaceField';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { ReportRequest } from '@/lib/api/reports';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
-
-export const languages = [
-  ['en', 'English'],
-  ['fr', 'French'],
-  ['de', 'German'],
-  ['es', 'Spanish'],
-  ['ar', 'Arabic'],
-  ['ru', 'Russian'],
-  ['uk', 'Ukrainian'],
-  ['zh', 'Chinese'],
-] as const;
 
 export type ResearchFocus = ReportRequest['research_focus'];
 
@@ -44,6 +36,14 @@ export function ResearchScope(props: ScopeProps) {
         value={props.teamId}
         onChange={props.selectTeam}
       />
+      {props.focus === 'general' && (
+        <RegionalPresets
+          onSelect={(country, languages) => {
+            props.setCountry(country);
+            props.setLanguages(languages);
+          }}
+        />
+      )}
       <div className="grid gap-5 sm:grid-cols-2">
         {props.focus === 'general' && (
           <SelectField
@@ -106,37 +106,21 @@ export function ResearchScope(props: ScopeProps) {
             onChange={(event) => props.setSubject(event.target.value)}
             hint={
               props.focus === 'company'
-                ? 'Use the full name, including its country if needed.'
+                ? 'Use a full name or explicit registry identifier, such as GB:01234567 for Companies House or LEI: followed by a legal entity identifier.'
                 : 'For example, example.org.'
             }
           />
         )}
       </div>
-      <fieldset>
-        <legend className="text-sm font-medium">Search languages</legend>
-        <p className="mt-1 text-xs text-muted">
-          Requested language coverage depends on the available sources.
-        </p>
-        <div className="mt-2 grid grid-cols-2 gap-x-4 sm:grid-cols-4">
-          {languages.map(([code, label]) => (
-            <label key={code} className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-ember"
-                checked={props.selectedLanguages.includes(code)}
-                onChange={(event) =>
-                  props.setLanguages(
-                    event.target.checked
-                      ? [...props.selectedLanguages, code]
-                      : props.selectedLanguages.filter((item) => item !== code),
-                  )
-                }
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {props.focus === 'general' && (
+        <GeneralRecordScope
+          subject={props.subject}
+          setSubject={props.setSubject}
+          country={props.country}
+          countries={props.countries}
+        />
+      )}
+      <SourceLanguagePicker selected={props.selectedLanguages} onChange={props.setLanguages} />
     </div>
   );
 }

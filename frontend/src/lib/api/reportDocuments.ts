@@ -42,3 +42,10 @@ export function fetchReportFile(
     `/api/reports/${encodeURIComponent(id)}/export/${format}?version=${String(version)}`,
   );
 }
+
+export function fetchEvidencePackage(id: string, version: number, signal: AbortSignal) {
+  return apiBlob(
+    `/api/reports/${encodeURIComponent(id)}/evidence-package?version=${String(version)}`,
+    { signal },
+  );
+}

@@ -46,6 +46,7 @@ def _answer_value(value: Any, record_type: str) -> str:
 
 
 class DnsResearchProvider:
+    temporal_scope = "Current DNS observation only; not historical-window evidence."
     """One configured RR type per admitted call; ANY is deliberately unsupported."""
 
     def __init__(self, http: FeedHttpClient, clock: Clock, record_type: str = "A") -> None:
@@ -153,6 +154,7 @@ class DnsResearchProvider:
 
 
 class RdapResearchProvider:
+    temporal_scope = "Current domain-registry snapshot only; not historical-window evidence."
     id = "research-rdap"
     name = "Verisign domain registry RDAP"
 

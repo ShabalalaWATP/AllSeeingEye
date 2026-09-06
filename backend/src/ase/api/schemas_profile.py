@@ -5,9 +5,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from ase.domain.profile import DateFormat, ExportFormat, ReportLanguage, ReportStyle
+from ase.domain.languages import LANGUAGE_CODE_PATTERN, ReportLanguage
+from ase.domain.profile import DateFormat, ExportFormat, ReportStyle
 
-LanguageCode = Annotated[str, Field(pattern=r"^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$")]
+LanguageCode = Annotated[str, Field(pattern=LANGUAGE_CODE_PATTERN)]
 
 
 class ProfileOut(BaseModel):

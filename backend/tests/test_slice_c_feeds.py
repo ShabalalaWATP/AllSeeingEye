@@ -122,7 +122,7 @@ async def test_ransomware_claims_and_outage_alerts() -> None:
     assert _country_of({"type": "region", "code": "2947"}) is None
 
 
-def test_country_stage_places_country_level_events_at_the_centroid() -> None:
+def test_country_stage_preserves_country_only_evidence_without_inventing_coordinates() -> None:
     countries = CountryIndex.from_resource()
     stage = CountryStage(countries, countries)
     country_level = make_event("a", point=None, country_iso="TN").with_changes(
@@ -131,7 +131,10 @@ def test_country_stage_places_country_level_events_at_the_centroid() -> None:
     unknown_confidence = make_event("b", point=None, country_iso="TN")
     located = make_event("c", point=Point(10.0, 36.8), country_iso=None)
     placed, untouched, resolved = stage.process([country_level, unknown_confidence, located])
-    assert placed.point is not None and 7 < placed.point.lon < 12 and 30 < placed.point.lat < 38
+    assert placed.point is None
+    assert placed.country_iso == "TN"
+    assert placed.geo_confidence is GeoConfidence.COUNTRY
+    assert placed is country_level
     assert untouched.point is None
     assert resolved.country_iso == "TN"
     assert CountryStage(countries).process([country_level])[0].point is None

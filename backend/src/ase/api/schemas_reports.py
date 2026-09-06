@@ -10,16 +10,20 @@ from pydantic import BaseModel, Field, model_validator
 
 from ase.api.schemas_challenge import ReportChallengeOut
 from ase.api.schemas_citation_checks import ReportCitationChecksOut
+from ase.api.schemas_claim_ledger import ClaimLedgerOut
 from ase.api.schemas_model_routing import ModelRoutingOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.api.schemas_research import ResearchReceiptOut
 from ase.api.schemas_research_context import ResearchContextOut
+from ase.api.schemas_research_plan import QueryVariantIn
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
+from ase.domain.claim_ledger import build_claim_ledger
 from ase.domain.direction import direction_to_dict
 from ase.domain.events import Category
+from ase.domain.languages import LANGUAGE_CODE_PATTERN, ReportLanguage
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
@@ -43,19 +47,40 @@ class ReportCreateIn(BaseModel):
     conflict: str | None = Field(default=None, max_length=64)
     plan: UUID | None = None
     team_id: UUID | None = None
-    report_language: Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"] = "en"
+    report_language: ReportLanguage = "en"
     report_style: Literal["briefing", "assessment"] = "assessment"
     research_mode: ResearchMode | None = None
-    research_languages: list[Annotated[str, Field(pattern=r"^[a-z]{2,3}(-[A-Za-z]{2,4})?$")]] = (
-        Field(default_factory=lambda: ["en"], min_length=1, max_length=8)
+    research_languages: list[Annotated[str, Field(pattern=LANGUAGE_CODE_PATTERN)]] = Field(
+        default_factory=lambda: ["en"], min_length=1, max_length=8
     )
     research_focus: ResearchFocus = ResearchFocus.GENERAL
+    research_source_ids: list[Annotated[str, Field(min_length=1, max_length=120)]] | None = Field(
+        default=None, max_length=64
+    )
+    research_query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
+    research_terms: list[Annotated[str, Field(min_length=1, max_length=300)]] | None = Field(
+        default=None, max_length=12
+    )
     research_subject: str | None = Field(default=None, max_length=300)
     research_input_id: UUID | None = None
     parent_report_id: UUID | None = None
 
     @model_validator(mode="after")
     def research_requires_question(self) -> Self:
+        if self.research_terms is not None and (
+            any(not term.strip() for term in self.research_terms)
+            or sum(map(len, self.research_terms)) > 1000
+        ):
+            raise ValueError("Provide bounded explicit research terms")
+        variants = [row.language.lower() for row in self.research_query_variants]
+        if len(set(variants)) != len(variants) or not set(variants).issubset(
+            language.lower() for language in self.research_languages
+        ):
+            raise ValueError("Query variants must uniquely match selected research languages")
+        if self.research_source_ids is not None and len(set(self.research_source_ids)) != len(
+            self.research_source_ids
+        ):
+            raise ValueError("Selected research sources must be unique")
         if self.research_mode and (not self.question or not self.question.strip()):
             raise ValueError("On-demand research requires a question")
         if self.research_mode and self.country and self.research_focus is not ResearchFocus.GENERAL:
@@ -80,6 +105,11 @@ class ReportCreateIn(BaseModel):
             research_mode=self.research_mode,
             research_languages=tuple(dict.fromkeys(self.research_languages)),
             research_focus=self.research_focus,
+            research_source_ids=tuple(self.research_source_ids)
+            if self.research_source_ids is not None
+            else None,
+            research_query_variants=tuple(row.to_domain() for row in self.research_query_variants),
+            research_terms=tuple(self.research_terms) if self.research_terms is not None else None,
             research_subject=self.research_subject,
             research_input_id=self.research_input_id,
             parent_report_id=self.parent_report_id,
@@ -153,6 +183,7 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    claim_ledger: ClaimLedgerOut | None = None
     model_routing: ModelRoutingOut | None = None
     research_context: ResearchContextOut | None = None
     challenge: ReportChallengeOut | None = None
@@ -181,6 +212,7 @@ class ReportVersionOut(BaseModel):
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            claim_ledger=ClaimLedgerOut.model_validate(build_claim_ledger(version)),
             model_routing=ModelRoutingOut.model_validate(version.model_routing)
             if version.model_routing
             else None,

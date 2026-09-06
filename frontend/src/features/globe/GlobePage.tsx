@@ -25,6 +25,8 @@ import {
 import { useGlobeStore } from '@/stores/globe';
 
 import { BaseLayerToolbar } from './BaseLayerToolbar';
+import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
+import { isMappedEvent } from './geographicPrecision';
 import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
@@ -201,7 +203,7 @@ export default function GlobePage() {
   const focus = useCallback(
     (event: LiveEvent) => {
       select(event.id);
-      if (event.point !== null) {
+      if (event.point !== null && isMappedEvent(event)) {
         engine.flyTo({ center: [event.point.lon, event.point.lat], zoom: FOCUS_ZOOM });
       }
     },
@@ -272,6 +274,7 @@ export default function GlobePage() {
             interference={interference}
             onToggleInterference={toggleInterference}
           />
+          <GeographicPrecisionPanel events={scoped} hidden={hidden} onSelect={focus} />
           {nation !== null && (
             <CountryPanel
               country={nation}

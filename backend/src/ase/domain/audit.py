@@ -9,6 +9,9 @@ from uuid import UUID
 
 
 class AuditAction(StrEnum):
+    SOURCE_ACTIVATION_CHANGED = "source_activation_changed"
+    SOURCE_TESTED = "source_tested"
+    SOURCE_RESET = "source_reset"
     LOGIN_SUCCEEDED = "login_succeeded"
     LOGIN_FAILED = "login_failed"
     TOTP_ENROLMENT_STARTED = "totp_enrolment_started"
@@ -42,6 +45,8 @@ class AuditAction(StrEnum):
     LLM_CONNECTION_RESET = "llm_connection_reset"
     REPORT_GENERATED = "report_generated"
     REPORT_DELETED = "report_deleted"
+    LIBRARY_UPDATED = "library_updated"
+    LIBRARY_REMOVED = "library_removed"
     AOI_CREATED = "aoi_created"
     AOI_DELETED = "aoi_deleted"
     PLAN_CREATED = "plan_created"

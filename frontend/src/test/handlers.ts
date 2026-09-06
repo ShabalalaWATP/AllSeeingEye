@@ -1,4 +1,5 @@
 import { profileHandlers } from './handlers.profile';
+import { libraryHandlers } from './handlers.library';
 /** Default MSW handlers implementing docs/api/AUTH_API.md against the fixtures. */
 import { http, HttpResponse } from 'msw';
 
@@ -319,6 +320,7 @@ export const handlers = [
   ),
 
   ...directionHandlers,
+  ...libraryHandlers,
   ...warningHandlers,
   ...scheduleHandlers,
 

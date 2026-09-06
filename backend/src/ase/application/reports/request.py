@@ -8,7 +8,9 @@ from typing import Any, Literal
 from uuid import UUID
 
 from ase.domain.events import Category
+from ase.domain.languages import ReportLanguage
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_plan import QueryVariant
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,12 +29,15 @@ class ReportRequest:
     automation: bool = False
     research_mode: ResearchMode | None = None
     research_languages: tuple[str, ...] = ("en",)
+    research_source_ids: tuple[str, ...] | None = None
+    research_terms: tuple[str, ...] | None = None
+    research_query_variants: tuple[QueryVariant, ...] = ()
     research_focus: ResearchFocus = ResearchFocus.GENERAL
     research_subject: str | None = None
     research_input_id: UUID | None = None
     parent_report_id: UUID | None = None
     parent_version: int | None = None
-    report_language: Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"] = "en"
+    report_language: ReportLanguage = "en"
     report_style: Literal["briefing", "assessment"] = "assessment"
 
     @classmethod
@@ -55,6 +60,16 @@ class ReportRequest:
             if scope.get("research_mode")
             else None,
             research_languages=tuple(scope.get("research_languages") or ("en",)),
+            research_source_ids=tuple(scope["research_source_ids"])
+            if scope.get("research_source_ids") is not None
+            else None,
+            research_terms=tuple(scope["research_terms"])
+            if scope.get("research_terms") is not None
+            else None,
+            research_query_variants=tuple(
+                QueryVariant(row["language"], tuple(row["terms"]))
+                for row in scope.get("research_query_variants", [])
+            ),
             research_focus=ResearchFocus(scope.get("research_focus", "general")),
             research_subject=scope.get("research_subject") or None,
             parent_report_id=UUID(str(scope["parent_report_id"]))

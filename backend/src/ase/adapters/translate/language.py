@@ -12,10 +12,13 @@ from pathlib import Path
 
 from py3langid.langid import MODEL_DIR, MODEL_FILE, LanguageIdentifier
 
-DEFAULT_LANGUAGES: tuple[str, ...] = (
-    "en", "fr", "de", "es", "pt", "it", "nl", "pl", "uk", "ru", "tr", "ar", "fa", "he",
-    "hi", "ur", "zh", "ja", "ko", "id", "vi", "th", "sv", "el",
-)  # fmt: skip
+from ase.domain.languages import LANGUAGES
+
+DEFAULT_LANGUAGES = tuple(
+    dict.fromkeys(
+        language.detector_code for language in LANGUAGES if language.detector_code is not None
+    )
+)
 MIN_CHARS = 12
 MIN_CONFIDENCE = 0.7
 

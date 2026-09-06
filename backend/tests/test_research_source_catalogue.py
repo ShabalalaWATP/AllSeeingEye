@@ -7,6 +7,7 @@ from datetime import timedelta
 from httpx import AsyncClient
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.application.feeds.grading import profiles_from_specs
@@ -26,9 +27,24 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
     expected = {
         *(f"research_google_news_{language}" for language in EDITIONS),
         *(f"research_social_{seed.spec.id}" for seed in SOCIAL_SEEDS),
+        *(f"research_regional_{seed.spec.id}" for seed in REGIONAL_SEEDS),
         "research-sec-submissions",
         "research-sec-company-directory",
         "research-companies-house",
+        "research-companies-house-officers",
+        "research-companies-house-psc",
+        "research-gleif-profile",
+        "research-gleif-direct-parent",
+        "research-gleif-ultimate-parent",
+        "research-openalex",
+        "research-crossref",
+        "research-world-bank",
+        "research-uk-parliament",
+        "research-ooni-aggregate",
+        "research-copernicus-footprints",
+        "research-contracts-finder",
+        "research-designations-uksl",
+        "research-designations-ofac_sdn",
         "research-rdap",
         "research-certificate-transparency",
         "research_import",
@@ -50,6 +66,8 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         assert not spec.url and not spec.homepage
     assert {spec.id for spec in specs if spec.requires_key} == {
         "research-companies-house",
+        "research-companies-house-officers",
+        "research-companies-house-psc",
         "research-certificate-transparency",
     }
 

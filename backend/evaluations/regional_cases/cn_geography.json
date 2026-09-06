@@ -1,0 +1,78 @@
+{
+  "id": "cn_geography",
+  "title": "China: synthetic geography",
+  "question": "Where can the fictional service interruption be located?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {
+      "id": "fixture_origin",
+      "name": "Fictional original publisher",
+      "organisation": "fixture_origin"
+    },
+    {
+      "id": "fixture_context",
+      "name": "Fictional context publisher",
+      "organisation": "fixture_context"
+    }
+  ],
+  "events": [
+    {
+      "key": "original",
+      "source": "fixture_origin",
+      "title": "A fictional bulletin mentions an interruption somewhere in China; no location is supplied.",
+      "summary": "A fictional bulletin mentions an interruption somewhere in China; no location is supplied.",
+      "language": "en",
+      "published_at": "2026-09-05T10:00:00Z",
+      "reliability": "F"
+    },
+    {
+      "key": "context",
+      "source": "fixture_context",
+      "title": "The publisher's contact page lists a capital-city office, not an incident location.",
+      "summary": "The publisher's contact page lists a capital-city office, not an incident location.",
+      "language": "en",
+      "published_at": "2026-09-05T10:00:00Z",
+      "reliability": "F"
+    }
+  ],
+  "reference": {
+    "label_origin": "Assistant-authored synthetic development seed, 2026-09-06",
+    "human_review_status": "pending",
+    "reference_facts": [
+      "The event has country-level context only; publisher location is a different role."
+    ],
+    "required_event_keys": [
+      "original",
+      "context"
+    ],
+    "counterevidence_event_keys": [
+      "context"
+    ],
+    "required_caveats": [
+      "Fictional fixture, no real-world allegation.",
+      "Source and information uncertainty must remain explicit."
+    ],
+    "forbidden_inferences": [
+      "The event is placed at the country centroid, publisher office or zero coordinates."
+    ],
+    "expected_declared_organisation_groups": 2
+  },
+  "replay": {
+    "initial": [
+      {
+        "id": "seed",
+        "event_keys": [
+          "original"
+        ]
+      }
+    ],
+    "challenge": [
+      {
+        "id": "context",
+        "event_keys": [
+          "context"
+        ]
+      }
+    ]
+  }
+}

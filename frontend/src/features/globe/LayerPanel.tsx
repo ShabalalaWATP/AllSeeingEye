@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { LiveCoverage } from './LiveCoverage';
 
 import type { Category, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
@@ -153,8 +154,13 @@ export function LayerPanel({
         <Toggle label="GNSS interference" checked={interference} onToggle={onToggleInterference} />
       </div>
       {stats !== null && (
-        <p className="mt-1 px-1 font-mono text-[11px] text-muted">{formatBudget(stats)}</p>
+        <p className="mt-1 px-1 font-mono text-[11px] text-muted">
+          Server at last snapshot: <span>{formatBudget(stats)}</span>
+        </p>
       )}
+      <LiveCoverage
+        filteredCount={Object.values(counts).reduce((total, count) => total + count, 0)}
+      />
       {error !== null && (
         <p role="alert" className="mt-1 px-1 text-xs text-critical">
           {error}

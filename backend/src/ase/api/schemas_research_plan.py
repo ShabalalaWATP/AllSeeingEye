@@ -1,0 +1,91 @@
+"""Editable deterministic plans use source IDs, never client-supplied fetch URLs."""
+
+from datetime import datetime
+from typing import Self
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
+from ase.domain.research_plan import QueryVariant
+
+
+class QueryVariantIn(BaseModel):
+    language: str = Field(min_length=2, max_length=16)
+    terms: list[str] = Field(min_length=1, max_length=12)
+
+    @model_validator(mode="after")
+    def bounded(self) -> Self:
+        self.to_domain()
+        return self
+
+    def to_domain(self) -> QueryVariant:
+        return QueryVariant(self.language, tuple(self.terms))
+
+
+class ResearchPlanIn(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    since: datetime
+    until: datetime
+    languages: list[str] = Field(default_factory=lambda: ["en"], min_length=1, max_length=8)
+    terms: list[str] = Field(default_factory=list, max_length=12)
+    mode: ResearchMode = ResearchMode.QUICK
+    focus: ResearchFocus = ResearchFocus.GENERAL
+    subject: str | None = Field(default=None, max_length=300)
+    country_iso: str | None = Field(default=None, min_length=2, max_length=2)
+    source_ids: list[str] | None = Field(default=None, max_length=64)
+    query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
+
+    @model_validator(mode="after")
+    def bounded(self) -> Self:
+        self.to_query()
+        return self
+
+    def to_query(self) -> ResearchQuery:
+        if sum(map(len, self.terms)) > 1000:
+            raise ValueError("Provide at most 1000 combined search-term characters")
+        return ResearchQuery(
+            question=self.question,
+            since=self.since,
+            until=self.until,
+            languages=tuple(self.languages),
+            terms=tuple(self.terms),
+            mode=self.mode,
+            focus=self.focus,
+            subject=self.subject,
+            country_iso=self.country_iso.upper() if self.country_iso else None,
+            source_ids=tuple(self.source_ids) if self.source_ids is not None else None,
+            query_variants=tuple(variant.to_domain() for variant in self.query_variants),
+        )
+
+
+class ResearchTaskOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    source_id: str
+    source_name: str
+    selected: bool
+    supported: bool
+    language: str | None
+    terms: list[str]
+    provenance: str
+    temporal_scope: str
+    query_language: str | None = None
+
+
+class ResearchPlanOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    question: str
+    since: datetime
+    until: datetime
+    languages: list[str]
+    tasks: list[ResearchTaskOut]
+    request_limit: int
+    seconds_limit: float
+    item_limit: int
+    policy_version: str
+    model_calls: int
+    translation_calls: int
+    replans: int
+    focus: str
+    mode: str
+    subject: str | None
+    country_iso: str | None

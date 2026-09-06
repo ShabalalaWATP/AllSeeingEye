@@ -465,6 +465,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/profile/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Language Catalogue */
+        get: operations["language_catalogue_api_me_profile_languages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/profile": {
         parameters: {
             query?: never;
@@ -636,6 +653,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research/footprints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search Footprints */
+        post: operations["search_footprints_api_research_footprints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Library */
+        get: operations["list_library_api_me_library_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/library/{report_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Library Preference */
+        get: operations["get_library_preference_api_me_library__report_id__get"];
+        /** Save Library Preference */
+        put: operations["save_library_preference_api_me_library__report_id__put"];
+        post?: never;
+        /** Remove Library Preference */
+        delete: operations["remove_library_preference_api_me_library__report_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/countries": {
         parameters: {
             query?: never;
@@ -791,6 +861,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research/runs/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Plan */
+        post: operations["preview_plan_api_research_runs_plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/research/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -800,6 +887,23 @@ export interface paths {
         };
         /** Get Research Run */
         get: operations["get_research_run_api_research_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/evidence-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Evidence Package */
+        get: operations["export_evidence_package_api_reports__report_id__evidence_package_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1428,6 +1532,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/sources/{source_id}/activation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Activate Source */
+        patch: operations["activate_source_api_admin_sources__source_id__activation_patch"];
+        trace?: never;
+    };
+    "/api/admin/sources/{source_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Source */
+        post: operations["test_source_api_admin_sources__source_id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/sources/{source_id}/reset": {
         parameters: {
             query?: never;
@@ -1988,6 +2126,49 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** ClaimDimensionOut */
+        ClaimDimensionOut: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "evidence_support" | "source_independence" | "coverage" | "citation_validity";
+            /** Status */
+            status: string;
+            /** Explanation */
+            explanation: string;
+        };
+        /** ClaimLedgerOut */
+        ClaimLedgerOut: {
+            /** Derivation Version */
+            derivation_version: string;
+            /** Report Version */
+            report_version: number;
+            /** Claims */
+            claims: components["schemas"]["LedgerClaimOut"][];
+            /** Recorded Gaps */
+            recorded_gaps: string[];
+            /** Limitations */
+            limitations: string[];
+        };
+        /** ClaimSourceOut */
+        ClaimSourceOut: {
+            /** Label */
+            label: string;
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "supporting" | "contradicting";
+            /** Evidence Id */
+            evidence_id: string | null;
+            /** Source Name */
+            source_name: string | null;
+            /** Organisation */
+            organisation: string | null;
+            /** Content Hash */
+            content_hash: string | null;
+        };
         /** CollectionAttemptOut */
         CollectionAttemptOut: {
             /** Source Id */
@@ -2251,6 +2432,101 @@ export interface components {
          * @enum {string}
          */
         ExportFormat: "pdf" | "docx";
+        /** FootprintCollectionOut */
+        FootprintCollectionOut: {
+            /**
+             * Type
+             * @default FeatureCollection
+             * @constant
+             */
+            type: "FeatureCollection";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "empty" | "unavailable";
+            /** Features */
+            features: components["schemas"]["FootprintFeatureOut"][];
+            /** Truncated */
+            truncated: boolean;
+            /** Limitations */
+            limitations: string;
+            /**
+             * Queried At
+             * Format: date-time
+             */
+            queried_at: string;
+        };
+        /** FootprintFeatureOut */
+        FootprintFeatureOut: {
+            /**
+             * Type
+             * @default Feature
+             * @constant
+             */
+            type: "Feature";
+            /** Id */
+            id: string;
+            geometry: components["schemas"]["FootprintGeometryOut"];
+            properties: components["schemas"]["FootprintPropertiesOut"];
+        };
+        /** FootprintGeometryOut */
+        FootprintGeometryOut: {
+            /**
+             * Type
+             * @default MultiPolygon
+             * @constant
+             */
+            type: "MultiPolygon";
+            /** Coordinates */
+            coordinates: [
+                number,
+                number
+            ][][][];
+        };
+        /** FootprintPropertiesOut */
+        FootprintPropertiesOut: {
+            /** Collection */
+            collection: string;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Cloud Cover */
+            cloud_cover: number | null;
+            /** Source Url */
+            source_url: string;
+            /** Licence */
+            licence: string;
+            /** Licence Url */
+            licence_url: string;
+        };
+        /** FootprintSearchIn */
+        FootprintSearchIn: {
+            /** Bbox */
+            bbox: [
+                number,
+                number,
+                number,
+                number
+            ];
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /**
+             * Disclose To Provider
+             * @constant
+             */
+            disclose_to_provider: true;
+        };
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
             /**
@@ -2503,6 +2779,101 @@ export interface components {
             citations: components["schemas"]["CitationCheckOut"][];
             /** Reasons */
             reasons: string[];
+        };
+        /** LanguageCapabilityOut */
+        LanguageCapabilityOut: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+            /** Native Label */
+            native_label: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "ltr" | "rtl";
+            /** Report Supported */
+            report_supported: boolean;
+            /** Pdf Supported */
+            pdf_supported: boolean;
+            /** Detector Code */
+            detector_code: string | null;
+            google_news_edition: components["schemas"]["SearchEditionOut"] | null;
+        };
+        /** LanguageCatalogueOut */
+        LanguageCatalogueOut: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: "1";
+            /** Languages */
+            languages: components["schemas"]["LanguageCapabilityOut"][];
+        };
+        /** LedgerClaimOut */
+        LedgerClaimOut: {
+            /** Id */
+            id: string;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Statement */
+            statement: string;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "analytical_inference";
+            /** Confidence Statement */
+            confidence_statement: string;
+            /** Assumptions */
+            assumptions: string[];
+            /** Sources */
+            sources: components["schemas"]["ClaimSourceOut"][];
+            assessment: components["schemas"]["JudgementAssessmentOut"] | null;
+            citation_checks: components["schemas"]["JudgementCitationCheckOut"] | null;
+            /** Dimensions */
+            dimensions: components["schemas"]["ClaimDimensionOut"][];
+        };
+        /** LibraryItemOut */
+        LibraryItemOut: {
+            report: components["schemas"]["ReportSummaryOut"];
+            preference: components["schemas"]["LibraryPreferenceOut"];
+        };
+        /** LibraryPageOut */
+        LibraryPageOut: {
+            /** Items */
+            items: components["schemas"]["LibraryItemOut"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /** LibraryPreferenceIn */
+        LibraryPreferenceIn: {
+            /**
+             * Favourite
+             * @default false
+             */
+            favourite: boolean;
+            /** Tags */
+            tags?: string[];
+            /** Note */
+            note?: string | null;
+        };
+        /** LibraryPreferenceOut */
+        LibraryPreferenceOut: {
+            /** Favourite */
+            favourite: boolean;
+            /** Tags */
+            tags: string[];
+            /** Note */
+            note: string | null;
+            /** Updated At */
+            updated_at: string | null;
         };
         /** LlmConnectionIn */
         LlmConnectionIn: {
@@ -3020,7 +3391,7 @@ export interface components {
              * Report Language
              * @enum {string}
              */
-            report_language: "en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh";
+            report_language: "en" | "fr" | "de" | "es" | "ar" | "fa" | "ru" | "uk" | "zh" | "zh-Hans" | "zh-Hant";
             /**
              * Report Style
              * @enum {string}
@@ -3049,11 +3420,18 @@ export interface components {
             /** Research Country */
             research_country?: string | null;
             /** Report Language */
-            report_language?: ("en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh") | null;
+            report_language?: ("en" | "fr" | "de" | "es" | "ar" | "fa" | "ru" | "uk" | "zh" | "zh-Hans" | "zh-Hant") | null;
             /** Report Style */
             report_style?: ("briefing" | "assessment") | null;
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
+        };
+        /** QueryVariantIn */
+        QueryVariantIn: {
+            /** Language */
+            language: string;
+            /** Terms */
+            terms: string[];
         };
         /** ReadyOut */
         ReadyOut: {
@@ -3204,7 +3582,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            report_language: "en" | "fr" | "de" | "es" | "ar" | "ru" | "uk" | "zh";
+            report_language: "en" | "fr" | "de" | "es" | "ar" | "fa" | "ru" | "uk" | "zh" | "zh-Hans" | "zh-Hant";
             /**
              * Report Style
              * @default assessment
@@ -3216,6 +3594,12 @@ export interface components {
             research_languages?: string[];
             /** @default general */
             research_focus: components["schemas"]["ResearchFocus"];
+            /** Research Source Ids */
+            research_source_ids?: string[] | null;
+            /** Research Query Variants */
+            research_query_variants?: components["schemas"]["QueryVariantIn"][];
+            /** Research Terms */
+            research_terms?: string[] | null;
             /** Research Subject */
             research_subject?: string | null;
             /** Research Input Id */
@@ -3403,6 +3787,7 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            claim_ledger?: components["schemas"]["ClaimLedgerOut"] | null;
             model_routing?: components["schemas"]["ModelRoutingOut"] | null;
             research_context?: components["schemas"]["ResearchContextOut"] | null;
             challenge?: components["schemas"]["ReportChallengeOut"] | null;
@@ -3608,6 +3993,78 @@ export interface components {
          * @enum {string}
          */
         ResearchMode: "quick" | "detailed";
+        /** ResearchPlanIn */
+        ResearchPlanIn: {
+            /** Question */
+            question: string;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Languages */
+            languages?: string[];
+            /** Terms */
+            terms?: string[];
+            /** @default quick */
+            mode: components["schemas"]["ResearchMode"];
+            /** @default general */
+            focus: components["schemas"]["ResearchFocus"];
+            /** Subject */
+            subject?: string | null;
+            /** Country Iso */
+            country_iso?: string | null;
+            /** Source Ids */
+            source_ids?: string[] | null;
+            /** Query Variants */
+            query_variants?: components["schemas"]["QueryVariantIn"][];
+        };
+        /** ResearchPlanOut */
+        ResearchPlanOut: {
+            /** Question */
+            question: string;
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Languages */
+            languages: string[];
+            /** Tasks */
+            tasks: components["schemas"]["ResearchTaskOut"][];
+            /** Request Limit */
+            request_limit: number;
+            /** Seconds Limit */
+            seconds_limit: number;
+            /** Item Limit */
+            item_limit: number;
+            /** Policy Version */
+            policy_version: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Translation Calls */
+            translation_calls: number;
+            /** Replans */
+            replans: number;
+            /** Focus */
+            focus: string;
+            /** Mode */
+            mode: string;
+            /** Subject */
+            subject: string | null;
+            /** Country Iso */
+            country_iso: string | null;
+        };
         /** ResearchReceiptOut */
         ResearchReceiptOut: {
             /** Question */
@@ -3636,6 +4093,7 @@ export interface components {
             collected_items: number;
             /** Policy Version */
             policy_version: string;
+            plan?: components["schemas"]["ResearchPlanOut"] | null;
         };
         /** ResearchRunOut */
         ResearchRunOut: {
@@ -3708,6 +4166,27 @@ export interface components {
          * @enum {string}
          */
         ResearchStage: "planning" | "collecting" | "drafting" | "challenging" | "validating" | "saving" | "completed" | "cancelled" | "failed" | "timed_out";
+        /** ResearchTaskOut */
+        ResearchTaskOut: {
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Selected */
+            selected: boolean;
+            /** Supported */
+            supported: boolean;
+            /** Language */
+            language: string | null;
+            /** Terms */
+            terms: string[];
+            /** Provenance */
+            provenance: string;
+            /** Temporal Scope */
+            temporal_scope: string;
+            /** Query Language */
+            query_language?: string | null;
+        };
         /** ResearchTimelineEntryOut */
         ResearchTimelineEntryOut: {
             /** Evidence Label */
@@ -3894,6 +4373,15 @@ export interface components {
             /** Items */
             items: components["schemas"]["ScheduleOut"][];
         };
+        /** SearchEditionOut */
+        SearchEditionOut: {
+            /** Hl */
+            hl: string;
+            /** Gl */
+            gl: string;
+            /** Ceid */
+            ceid: string;
+        };
         /** SetPasswordIn */
         SetPasswordIn: {
             /** Token */
@@ -3993,6 +4481,11 @@ export interface components {
             /** Located */
             located: number;
         };
+        /** SourceActivationIn */
+        SourceActivationIn: {
+            /** Enabled */
+            enabled: boolean;
+        };
         /** SourceHealthOut */
         SourceHealthOut: {
             /** Source Id */
@@ -4022,6 +4515,21 @@ export interface components {
         SourceKind: "api" | "rss" | "geojson" | "websocket";
         /** SourceOut */
         SourceOut: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Test Available
+             * @default true
+             */
+            test_available: boolean;
+            /**
+             * Environment Disabled
+             * @default false
+             */
+            environment_disabled: boolean;
             /** Id */
             id: string;
             /** Name */
@@ -4095,6 +4603,17 @@ export interface components {
             language: string;
             reliability: components["schemas"]["Reliability"];
             rating: components["schemas"]["SourceRatingOut"];
+        };
+        /** SourceTestOut */
+        SourceTestOut: {
+            /** Ok */
+            ok: boolean;
+            /** Fetched */
+            fetched: number;
+            /** Capped */
+            capped: boolean;
+            /** Message */
+            message: string;
         };
         /** SpaceBoardOut */
         SpaceBoardOut: {
@@ -5169,6 +5688,26 @@ export interface operations {
             };
         };
     };
+    language_catalogue_api_me_profile_languages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageCatalogueOut"];
+                };
+            };
+        };
+    };
     get_profile_api_me_profile_get: {
         parameters: {
             query?: never;
@@ -5450,6 +5989,168 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EventOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_footprints_api_research_footprints_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FootprintSearchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FootprintCollectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_library_api_me_library_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                favourite_only?: boolean;
+                tag?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_library_preference_api_me_library__report_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryPreferenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_library_preference_api_me_library__report_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LibraryPreferenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryPreferenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_library_preference_api_me_library__report_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -5783,6 +6484,39 @@ export interface operations {
             };
         };
     };
+    preview_plan_api_research_runs_plan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResearchPlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchPlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_research_run_api_research_runs__run_id__get: {
         parameters: {
             query?: never;
@@ -5802,6 +6536,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ResearchRunOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_evidence_package_api_reports__report_id__evidence_package_get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -7009,6 +7774,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ase__api__schemas_events__SourcesOut"];
+                };
+            };
+        };
+    };
+    activate_source_api_admin_sources__source_id__activation_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceActivationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_source_api_admin_sources__source_id__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

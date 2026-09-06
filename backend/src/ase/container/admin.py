@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.llm.router import RoutingLlmGateway
+from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.llm import (
@@ -25,16 +26,22 @@ from ase.application.admin.requests import (
     ListRequestsUseCase,
     RejectRequestUseCase,
 )
+from ase.application.admin.source_controls import AdminSourceControls
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
 
 if TYPE_CHECKING:
     from ase.application.access import AccessPolicy
     from ase.application.auditing import Auditor
+    from ase.application.feeds.health import HealthRegistry
+    from ase.application.feeds.scheduler import FeedScheduler
     from ase.application.ports import Clock, EmailSender
     from ase.application.ports.embeddings import EmbeddingGateway
     from ase.application.ports.llm import LlmGateway, LlmModelDiscovery, SecretCipher
-    from ase.application.ports.services import LinkBuilder, TokenGenerator
+    from ase.application.ports.services import LinkBuilder, RateLimiter, TokenGenerator
+    from ase.application.ports.source_controls import SourceAdmission
     from ase.container.repositories import Repositories
+    from ase.domain.sources import SourceSpec
+    from ase.infrastructure.settings import Settings
 
 
 class AdminWiring:
@@ -47,6 +54,12 @@ class AdminWiring:
         generator: TokenGenerator
         links: LinkBuilder
         email_sender: EmailSender
+        limiter: RateLimiter
+        source_admission: SourceAdmission
+        scheduler: FeedScheduler
+        health: HealthRegistry
+        research_sources: tuple[SourceSpec, ...]
+        settings: Settings
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def _auditor(self, repos: Repositories) -> Auditor: ...
@@ -60,6 +73,24 @@ class AdminWiring:
 
     def list_requests(self, session: AsyncSession) -> ListRequestsUseCase:
         return ListRequestsUseCase(self.repositories(session).requests)
+
+    def admin_source_controls(self, session: AsyncSession) -> AdminSourceControls:
+        r = self.repositories(session)
+        return AdminSourceControls(
+            r.users,
+            r.refresh_tokens,
+            SqlSourceControlRepository(session),
+            self.source_admission,
+            self.scheduler.connectors,
+            self.research_sources,
+            self.health,
+            self.scheduler.resume,
+            self.clock,
+            self.limiter,
+            self._auditor(r),
+            r.uow,
+            tuple(self.settings.disabled_feed_ids),
+        )
 
     def approve_request(self, session: AsyncSession) -> ApproveRequestUseCase:
         r = self.repositories(session)

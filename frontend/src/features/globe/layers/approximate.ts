@@ -1,0 +1,34 @@
+import { ScatterplotLayer } from '@deck.gl/layers';
+import type { Layer } from '@deck.gl/core';
+import type { LiveEvent } from '@/lib/api/eventSchemas';
+import { CATEGORY_STYLES } from '@/lib/categories';
+
+/** Hollow screen-sized rings denote approximation, never a claimed ground radius. */
+export function buildApproximateLayer(
+  events: readonly LiveEvent[],
+  onPick: (event: LiveEvent | null) => void,
+  selectedId: string | null,
+): Layer | null {
+  if (!events.length) return null;
+  return new ScatterplotLayer<LiveEvent>({
+    id: 'approximate-events',
+    data: events,
+    pickable: true,
+    filled: false,
+    stroked: true,
+    radiusUnits: 'pixels',
+    lineWidthUnits: 'pixels',
+    lineWidthMinPixels: 2,
+    getPosition: (event) => [event.point?.lon ?? NaN, event.point?.lat ?? NaN],
+    getRadius: (event) => (event.id === selectedId ? 14 : 10),
+    getLineColor: (event) =>
+      event.id === selectedId
+        ? [255, 255, 255, 255]
+        : [...CATEGORY_STYLES[event.category].colour, 220],
+    updateTriggers: { getRadius: [selectedId], getLineColor: [selectedId] },
+    onClick: (info: { object?: LiveEvent }) => {
+      onPick(info.object ?? null);
+      return true;
+    },
+  });
+}

@@ -1,0 +1,337 @@
+{
+  "version": "1",
+  "languages": [
+    {
+      "code": "en",
+      "label": "English",
+      "native_label": "English",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "en",
+      "google_news_edition": {
+        "hl": "en-GB",
+        "gl": "GB",
+        "ceid": "GB:en"
+      }
+    },
+    {
+      "code": "fr",
+      "label": "French",
+      "native_label": "Français",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "fr",
+      "google_news_edition": {
+        "hl": "fr",
+        "gl": "FR",
+        "ceid": "FR:fr"
+      }
+    },
+    {
+      "code": "de",
+      "label": "German",
+      "native_label": "Deutsch",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "de",
+      "google_news_edition": {
+        "hl": "de",
+        "gl": "DE",
+        "ceid": "DE:de"
+      }
+    },
+    {
+      "code": "es",
+      "label": "Spanish",
+      "native_label": "Español",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "es",
+      "google_news_edition": {
+        "hl": "es",
+        "gl": "ES",
+        "ceid": "ES:es"
+      }
+    },
+    {
+      "code": "ar",
+      "label": "Arabic",
+      "native_label": "العربية",
+      "direction": "rtl",
+      "report_supported": true,
+      "pdf_supported": false,
+      "detector_code": "ar",
+      "google_news_edition": {
+        "hl": "ar",
+        "gl": "SA",
+        "ceid": "SA:ar"
+      }
+    },
+    {
+      "code": "fa",
+      "label": "Persian",
+      "native_label": "فارسی",
+      "direction": "rtl",
+      "report_supported": true,
+      "pdf_supported": false,
+      "detector_code": "fa",
+      "google_news_edition": null
+    },
+    {
+      "code": "ru",
+      "label": "Russian",
+      "native_label": "Русский",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "ru",
+      "google_news_edition": {
+        "hl": "ru",
+        "gl": "RU",
+        "ceid": "RU:ru"
+      }
+    },
+    {
+      "code": "uk",
+      "label": "Ukrainian",
+      "native_label": "Українська",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "uk",
+      "google_news_edition": {
+        "hl": "uk",
+        "gl": "UA",
+        "ceid": "UA:uk"
+      }
+    },
+    {
+      "code": "zh",
+      "label": "Chinese (unspecified script)",
+      "native_label": "中文",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "zh",
+      "google_news_edition": null
+    },
+    {
+      "code": "zh-Hans",
+      "label": "Chinese (Simplified)",
+      "native_label": "简体中文",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "zh",
+      "google_news_edition": null
+    },
+    {
+      "code": "zh-Hant",
+      "label": "Chinese (Traditional)",
+      "native_label": "繁體中文",
+      "direction": "ltr",
+      "report_supported": true,
+      "pdf_supported": true,
+      "detector_code": "zh",
+      "google_news_edition": null
+    },
+    {
+      "code": "zh-CN",
+      "label": "Chinese, mainland China search edition",
+      "native_label": "中国大陆版",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "zh",
+      "google_news_edition": {
+        "hl": "zh-CN",
+        "gl": "CN",
+        "ceid": "CN:zh-Hans"
+      }
+    },
+    {
+      "code": "zh-TW",
+      "label": "Chinese, Taiwan search edition",
+      "native_label": "台灣版",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "zh",
+      "google_news_edition": {
+        "hl": "zh-TW",
+        "gl": "TW",
+        "ceid": "TW:zh-Hant"
+      }
+    },
+    {
+      "code": "pt",
+      "label": "Portuguese",
+      "native_label": "Português",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "pt",
+      "google_news_edition": {
+        "hl": "pt-PT",
+        "gl": "PT",
+        "ceid": "PT:pt-150"
+      }
+    },
+    {
+      "code": "ja",
+      "label": "Japanese",
+      "native_label": "日本語",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "ja",
+      "google_news_edition": {
+        "hl": "ja",
+        "gl": "JP",
+        "ceid": "JP:ja"
+      }
+    },
+    {
+      "code": "ko",
+      "label": "Korean",
+      "native_label": "한국어",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "ko",
+      "google_news_edition": {
+        "hl": "ko",
+        "gl": "KR",
+        "ceid": "KR:ko"
+      }
+    },
+    {
+      "code": "hi",
+      "label": "Hindi",
+      "native_label": "हिन्दी",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "hi",
+      "google_news_edition": {
+        "hl": "hi",
+        "gl": "IN",
+        "ceid": "IN:hi"
+      }
+    },
+    {
+      "code": "it",
+      "label": "Italian",
+      "native_label": "Italiano",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "it",
+      "google_news_edition": null
+    },
+    {
+      "code": "nl",
+      "label": "Dutch",
+      "native_label": "Nederlands",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "nl",
+      "google_news_edition": null
+    },
+    {
+      "code": "pl",
+      "label": "Polish",
+      "native_label": "Polski",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "pl",
+      "google_news_edition": null
+    },
+    {
+      "code": "tr",
+      "label": "Turkish",
+      "native_label": "Türkçe",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "tr",
+      "google_news_edition": null
+    },
+    {
+      "code": "he",
+      "label": "Hebrew",
+      "native_label": "עברית",
+      "direction": "rtl",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "he",
+      "google_news_edition": null
+    },
+    {
+      "code": "ur",
+      "label": "Urdu",
+      "native_label": "اردو",
+      "direction": "rtl",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "ur",
+      "google_news_edition": null
+    },
+    {
+      "code": "id",
+      "label": "Indonesian",
+      "native_label": "Bahasa Indonesia",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "id",
+      "google_news_edition": null
+    },
+    {
+      "code": "vi",
+      "label": "Vietnamese",
+      "native_label": "Tiếng Việt",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "vi",
+      "google_news_edition": null
+    },
+    {
+      "code": "th",
+      "label": "Thai",
+      "native_label": "ไทย",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": false,
+      "detector_code": "th",
+      "google_news_edition": null
+    },
+    {
+      "code": "sv",
+      "label": "Swedish",
+      "native_label": "Svenska",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "sv",
+      "google_news_edition": null
+    },
+    {
+      "code": "el",
+      "label": "Greek",
+      "native_label": "Ελληνικά",
+      "direction": "ltr",
+      "report_supported": false,
+      "pdf_supported": true,
+      "detector_code": "el",
+      "google_news_edition": null
+    }
+  ]
+}

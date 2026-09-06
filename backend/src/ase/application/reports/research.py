@@ -46,5 +46,5 @@ async def collect_report_evidence(
     private.upsert(batch.items)
     private.upsert(seed_events)
     return private, ResearchReceipt.build(
-        query, (*seed_attempts, *batch.attempts), len(batch.items)
+        query, (*seed_attempts, *batch.attempts), len(batch.items), batch.plan
     )

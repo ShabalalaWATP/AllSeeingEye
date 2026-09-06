@@ -30,6 +30,7 @@ class ReportDocument:
     title: str
     reference: str
     blocks: tuple[DocumentBlock, ...]
+    language: str = "en"
 
 
 @dataclass(frozen=True, slots=True)

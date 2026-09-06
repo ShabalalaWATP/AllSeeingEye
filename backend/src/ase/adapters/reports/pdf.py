@@ -17,6 +17,7 @@ from ase.adapters.reports.font_support import (
 from ase.adapters.reports.font_support import (
     FONT_REGULAR as _FONT_NAME,
 )
+from ase.adapters.reports.font_support import cjk_font
 from ase.adapters.reports.font_support import (
     font_characters as _font_characters,
 )
@@ -102,6 +103,12 @@ def render_pdf(document: ReportDocument) -> bytes:
     stream = io.BytesIO()
     characters = _font_characters()
     styles = _styles()
+    selected_font = _FONT_NAME
+    if document.language in {"zh", "zh-Hans", "zh-Hant"}:
+        selected_font, characters = cjk_font(document.language)
+        for style in styles.values():
+            style.fontName = selected_font
+            style.wordWrap = "CJK"
     flowables: list[Flowable] = []
     missing = False
     for block in document.blocks:
@@ -111,8 +118,7 @@ def render_pdf(document: ReportDocument) -> bytes:
     if missing:
         flowables.append(
             Paragraph(
-                "This PDF font covers Latin, Greek and Cyrillic text. Unsupported characters "
-                "(including Arabic and CJK) and text-direction controls appear as [U+XXXX] "
+                "Unsupported characters and text-direction controls appear as [U+XXXX] "
                 "Unicode code points. "
                 "The DOCX export retains their original characters.",
                 styles[BlockKind.METADATA],
@@ -121,7 +127,7 @@ def render_pdf(document: ReportDocument) -> bytes:
 
     def footer(canvas: Canvas, doc: SimpleDocTemplate) -> None:
         canvas.saveState()
-        canvas.setFont(_FONT_NAME, 7)
+        canvas.setFont(selected_font, 7)
         canvas.setFillColor(colors.HexColor("#424b57"))
         canvas.drawString(48, 27, document.reference)
         canvas.drawRightString(A4[0] - 48, 27, f"Page {doc.page}")

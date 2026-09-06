@@ -6,7 +6,7 @@ import { fetchSources } from '@/lib/api/events';
 import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
 import { describeError } from '@/lib/api/errors';
 import { useNow } from '@/lib/hooks/useNow';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
 import { SourceRow } from './SourceRow';
 
@@ -22,7 +22,7 @@ export function summarise(sources: readonly Source[]): string {
 }
 
 export default function AdminSourcesPage() {
-  const { data, error, loading, setData } = useResource(fetchSources);
+  const { data, error, loading, setData, key } = useScopedResource(fetchSources);
   const now = useNow();
 
   const replaceHealth = useCallback(
@@ -42,6 +42,11 @@ export default function AdminSourcesPage() {
         <h1 className="text-xl font-semibold">Sources</h1>
         {data !== null && <p className="text-sm text-muted">{summarise(data)}</p>}
       </div>
+      <p className="text-sm text-muted">
+        Control collection across live feeds and on-demand research. Connection tests fetch a
+        bounded sample without publishing or saving records. API keys remain configured by the
+        operator.
+      </p>
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       {data === null ? (
         loading ? (
@@ -63,7 +68,20 @@ export default function AdminSourcesPage() {
           </thead>
           <tbody>
             {data.map((item) => (
-              <SourceRow key={item.id} source={item} now={now} onReset={replaceHealth} />
+              <SourceRow
+                key={`${key}:${item.id}`}
+                source={item}
+                now={now}
+                onReset={replaceHealth}
+                onActivation={(id, enabled) =>
+                  setData(
+                    (current) =>
+                      current?.map((source) =>
+                        source.id === id ? { ...source, enabled } : source,
+                      ) ?? null,
+                  )
+                }
+              />
             ))}
           </tbody>
         </Table>

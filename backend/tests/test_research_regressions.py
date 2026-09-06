@@ -12,6 +12,7 @@ from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.api.schemas_reports import ReportCreateIn
 from ase.container import Container
 from ase.container.research import research_service
+from ase.domain.errors import InvalidRequest
 from ase.domain.research import (
     CollectionAttempt,
     CollectionStatus,
@@ -87,6 +88,7 @@ async def test_language_case_variants_make_one_guarded_edition_request(
         CLOCK.now(),
         languages=body.to_request().research_languages,
         terms=("research",),
+        source_ids=("research_google_news_zh-cn",),
     )
     response = httpx.Response(200, text="<rss><channel></channel></rss>")
     service = RecordService(monkeypatch, response=response)
@@ -111,14 +113,18 @@ async def test_disabling_base_or_research_google_source_prevents_http(
 ) -> None:
     service = RecordService(monkeypatch, response=httpx.Response(500))
     query = ResearchQuery(
-        "Private question", CLOCK.now() - timedelta(days=1), CLOCK.now(), terms=("research",)
+        "Private question",
+        CLOCK.now() - timedelta(days=1),
+        CLOCK.now(),
+        terms=("research",),
+        source_ids=("research_google_news_en",),
     )
     try:
-        batch = await research_service(service.http, CLOCK, (*SOCIAL_IDS, disabled_google)).collect(
-            query
-        )
+        with pytest.raises(InvalidRequest, match="Selected sources are unavailable"):
+            await research_service(service.http, CLOCK, (*SOCIAL_IDS, disabled_google)).collect(
+                query
+            )
         assert service.requests == service.guarded == []
-        assert batch.items == batch.attempts == ()
     finally:
         await service.http.aclose()
 

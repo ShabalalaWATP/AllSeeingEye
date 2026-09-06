@@ -2,10 +2,20 @@
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, SessionDep
+from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.schemas_languages import LanguageCapabilityOut, LanguageCatalogueOut
 from ase.api.schemas_profile import ProfileOut, ProfileUpdateIn
+from ase.domain.languages import LANGUAGES
 
 router = APIRouter(prefix="/me/profile", tags=["me"])
+
+
+@router.get("/languages", response_model=LanguageCatalogueOut)
+async def language_catalogue(actor: CurrentUser, response: Response) -> LanguageCatalogueOut:
+    response.headers["Cache-Control"] = "no-store"
+    return LanguageCatalogueOut(
+        languages=[LanguageCapabilityOut.model_validate(language) for language in LANGUAGES]
+    )
 
 
 @router.get("", response_model=ProfileOut)

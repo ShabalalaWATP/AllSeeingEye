@@ -10,6 +10,7 @@ from ase.domain.research import (
     CollectionStatus,
     ResearchQuery,
 )
+from ase.domain.research_plan import ResearchPlan, ResearchTask
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,10 +25,15 @@ class ResearchReceipt:
     attempts: tuple[CollectionAttempt, ...]
     collected_items: int
     policy_version: str = "ase-research-v1"
+    plan: ResearchPlan | None = None
 
     @classmethod
     def build(
-        cls, query: ResearchQuery, attempts: tuple[CollectionAttempt, ...], count: int
+        cls,
+        query: ResearchQuery,
+        attempts: tuple[CollectionAttempt, ...],
+        count: int,
+        plan: ResearchPlan | None = None,
     ) -> "ResearchReceipt":
         return cls(
             query.question,
@@ -39,6 +45,7 @@ class ResearchReceipt:
             query.until,
             attempts,
             count,
+            plan=plan,
         )
 
     def describe(self) -> str:
@@ -58,6 +65,9 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     result = asdict(receipt)
     result["since"] = receipt.since.isoformat()
     result["until"] = receipt.until.isoformat()
+    if receipt.plan is not None:
+        result["plan"]["since"] = receipt.plan.since.isoformat()
+        result["plan"]["until"] = receipt.plan.until.isoformat()
     return result
 
 
@@ -89,4 +99,20 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
             for item in attempts
         ),
         collected_items=int(data["collected_items"]),
+        plan=plan_from_dict(data.get("plan")),
     )
+
+
+def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
+    if data is None:
+        return None
+    if data.get("policy_version") != "ase-deterministic-plan-v1" or len(data["tasks"]) > 64:
+        raise ValueError("Invalid frozen research plan")
+    values = dict(data)
+    values["since"] = datetime.fromisoformat(data["since"])
+    values["until"] = datetime.fromisoformat(data["until"])
+    values["languages"] = tuple(data["languages"])
+    values["tasks"] = tuple(
+        ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]
+    )
+    return ResearchPlan(**values)

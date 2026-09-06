@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel><title>Synthetic regional fixture, not publisher content</title>
+<item><guid>ru-original</guid><title>Проверка источника</title><link>https://publisher.test/ru/record</link><pubDate>Sun, 06 Sep 2026 12:00:00 +0300</pubDate><description>Excluded description</description><content:encoded>Excluded full article</content:encoded></item>
+<item><guid>zh-original</guid><title>来源核实</title><link>https://publisher.test/zh/record</link><pubDate>Sun, 06 Sep 2026 12:00:00 +0800</pubDate><description>Excluded description</description></item>
+<item><guid>fa-original</guid><title>بررسی منبع در ایران</title><link>https://publisher.test/fa/record</link><pubDate>Sun, 06 Sep 2026 12:00:00 +0330</pubDate><description>Excluded description</description></item>
+</channel></rss>

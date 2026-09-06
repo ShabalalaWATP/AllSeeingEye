@@ -165,9 +165,10 @@ async def test_admin_sources_list_and_reset(client: AsyncClient, admin: User, us
     listed = await client.get("/api/admin/sources", headers=bearer(token))
     assert listed.status_code == 200
     items = listed.json()["items"]
-    assert [item["id"] for item in items] == ["fake_feed"]
-    assert items[0]["health"]["status"] == "idle"
-    assert items[0]["poll_interval_seconds"] == 60
+    feed = next(item for item in items if item["id"] == "fake_feed")
+    assert feed["health"]["status"] == "idle"
+    assert feed["poll_interval_seconds"] == 60
+    assert any(not item["test_available"] for item in items)
     reset = await client.post("/api/admin/sources/fake_feed/reset", headers=bearer(token))
     assert reset.status_code == 200
     assert reset.json()["status"] == "idle"

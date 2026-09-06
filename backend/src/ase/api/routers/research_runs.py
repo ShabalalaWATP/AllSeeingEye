@@ -7,9 +7,17 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.schemas_research_plan import ResearchPlanIn, ResearchPlanOut
 from ase.domain.research_runs import ResearchStage
 
 router = APIRouter(prefix="/research/runs", tags=["research"])
+
+
+@router.post("/plan")
+async def preview_plan(
+    body: ResearchPlanIn, user: CurrentUser, container: ContainerDep
+) -> ResearchPlanOut:
+    return ResearchPlanOut.model_validate(container.research.plan(body.to_query()))
 
 
 class ResearchRunOut(BaseModel):

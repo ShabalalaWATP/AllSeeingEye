@@ -1,5 +1,6 @@
 """Pure report display metadata and period helpers."""
 
+from dataclasses import asdict
 from datetime import timedelta
 from typing import Any
 
@@ -59,6 +60,13 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
             {
                 "research_mode": request.research_mode.value,
                 "research_languages": list(request.research_languages),
+                "research_source_ids": list(request.research_source_ids)
+                if request.research_source_ids is not None
+                else None,
+                "research_query_variants": [asdict(row) for row in request.research_query_variants],
+                "research_terms": list(request.research_terms)
+                if request.research_terms is not None
+                else None,
                 "research_focus": request.research_focus.value,
                 "research_subject": request.research_subject,
             }

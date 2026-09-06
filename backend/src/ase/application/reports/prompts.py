@@ -10,6 +10,7 @@ from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.evidence_matrix import contribution_for
+from ase.domain.languages import language_capability
 from ase.domain.llm import LlmMessage
 from ase.domain.reports import KeyJudgement
 from ase.domain.validation import Finding
@@ -154,17 +155,12 @@ def compose_messages(
 
 def output_guidance(language: str, style: str) -> str:
     """Only bounded presentation choices enter system instructions, never arbitrary text."""
-    names = {
-        "en": "British English",
-        "fr": "French",
-        "de": "German",
-        "es": "Spanish",
-        "ar": "Arabic",
-        "ru": "Russian",
-        "uk": "Ukrainian",
-        "zh": "Chinese",
-    }
-    selected = names.get(language, "British English")
+    capability = language_capability(language)
+    selected = (
+        capability.label
+        if capability and capability.report_supported and capability.code != "en"
+        else "British English"
+    )
     length = (
         "Write a concise briefing: shorten narrative and avoid repetition."
         if style == "briefing"

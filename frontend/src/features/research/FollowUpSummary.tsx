@@ -25,6 +25,21 @@ export function FollowUpSummary({
         The original workspace, focus and collection scope are fixed. The server binds the latest
         parent version when this run starts and saves that version reference with the new report.
       </p>
+      {(request.research_source_ids !== undefined ||
+        request.research_terms !== undefined ||
+        Boolean(request.research_query_variants?.length)) && (
+        <p>
+          Saved collection settings are retained:{' '}
+          {request.research_source_ids === null || request.research_source_ids === undefined
+            ? 'default sources'
+            : `${request.research_source_ids.length} selected sources`}
+          ,{' '}
+          {request.research_terms === null || request.research_terms === undefined
+            ? 'run-time query planning'
+            : 'exact original terms'}
+          , and {request.research_query_variants?.length ?? 0} language-specific term sets.
+        </p>
+      )}
       {(request.research_focus === 'document' || request.research_focus === 'media') && (
         <p>
           Uses the parent report’s saved private evidence. No public search is started from that

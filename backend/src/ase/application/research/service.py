@@ -2,13 +2,16 @@
 
 import asyncio
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
 from ase.application.research.challenge_collection import collect_challenges
-from ase.application.research.collection import ResearchCollector
+from ase.application.research.collection import CollectionBudget, ResearchCollector
 from ase.application.research.pacing import PacedProvider, RequestPacer
+from ase.application.research.planning import build_plan
 from ase.domain.errors import RateLimited
 from ase.domain.research import ResearchBatch, ResearchQuery
+from ase.domain.research_plan import ResearchPlan
 
 
 class ResearchCollectionService:
@@ -27,7 +30,19 @@ class ResearchCollectionService:
         self, query: ResearchQuery, *, challenge: bool = False
     ) -> tuple[ResearchProvider, ...]:
         factory = self._challenge_providers if challenge else self._providers
-        return tuple(PacedProvider(provider, self._pacer) for provider in factory(query))
+        return tuple(
+            PacedProvider(provider, self._pacer)
+            for provider in factory(query)
+            if not challenge or query.source_ids is None or provider.id in query.source_ids
+        )
+
+    def plan(self, query: ResearchQuery) -> ResearchPlan:
+        providers = tuple(self._providers(query))
+        ResearchCollector(providers)
+        limits = CollectionBudget.for_mode(query.mode)
+        return build_plan(
+            query, providers, requests=limits.requests, seconds=limits.seconds, items=limits.items
+        )
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:
         if self._admission.locked():
@@ -40,5 +55,6 @@ class ResearchCollectionService:
             raise RateLimited(5)
         async with self._admission:
             return await collect_challenges(
-                queries, lambda query: self._paced(query, challenge=True)
+                tuple(replace(query, query_variants=()) for query in queries),
+                lambda query: self._paced(query, challenge=True),
             )

@@ -35,6 +35,10 @@ def cik(value: Any) -> str | None:
 
 
 class SecSubmissionsProvider:
+    temporal_scope = (
+        "Recent submission metadata filtered by filing date, at most 20 records; "
+        "older archive files and filing contents are not retrieved."
+    )
     id = "research-sec-submissions"
     name = "SEC EDGAR submissions"
 
@@ -128,6 +132,9 @@ class SecSubmissionsProvider:
 
 
 class SecCompanyDirectoryProvider:
+    temporal_scope = (
+        "Current ticker-directory identity candidates; not a historical company directory."
+    )
     id = "research-sec-company-directory"
     name = "SEC company identity candidates"
 
@@ -201,6 +208,7 @@ class SecCompanyDirectoryProvider:
 
 
 class CompaniesHouseUnavailableProvider:
+    temporal_scope = "No collection capability configured; historical coverage is unavailable."
     """A receipt makes the missing credential integration explicit, without sending a key."""
 
     id = "research-companies-house"

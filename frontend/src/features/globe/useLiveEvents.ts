@@ -30,11 +30,17 @@ export function useLiveEvents(enabled = true): void {
       },
       onStatus: (status) => {
         useEventsStore.getState().setStatus(status);
+        if (status === 'live') {
+          // The stream does not replay missed changes. Take a snapshot after the
+          // subscription opens, including reconnects and normal token renewal.
+          void useEventsStore.getState().load();
+        }
       },
     });
     client.start();
     return () => {
       client.stop();
+      useEventsStore.getState().cancelLoad();
     };
   }, [enabled]);
 }

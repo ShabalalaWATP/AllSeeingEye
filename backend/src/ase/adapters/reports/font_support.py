@@ -28,6 +28,19 @@ def font_characters() -> frozenset[int]:
         return _registered_characters()
 
 
+def cjk_font(language: str) -> tuple[str, frozenset[int]]:
+    with _REGISTRATION:
+        return _registered_cjk("TC" if language == "zh-Hant" else "SC")
+
+
+@cache
+def _registered_cjk(region: str) -> tuple[str, frozenset[int]]:
+    alias = f"ASEResearchSans{region}"
+    pdfmetrics.registerFont(TTFont(alias, str(FONT_DIRECTORY / f"{alias}-Regular.ttf")))
+    font = cast(TTFont, pdfmetrics.getFont(alias))
+    return alias, frozenset(font.face.charToGlyph) - _BIDI_CONTROLS
+
+
 @cache
 def _registered_characters() -> frozenset[int]:
     coverages = []

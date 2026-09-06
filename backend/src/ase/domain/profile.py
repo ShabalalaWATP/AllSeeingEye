@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from ase.domain.languages import ReportLanguage, language_capability, valid_language_code
+
 DateFormat = Literal["day_first", "month_first", "iso"]
 ReportStyle = Literal["briefing", "assessment"]
 ExportFormat = Literal["pdf", "docx", "md"]
-ReportLanguage = Literal["en", "fr", "de", "es", "ar", "ru", "uk", "zh"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,9 +52,10 @@ class PersonalProfile:
         if not 1 <= len(self.research_languages) <= 8:
             raise ValueError("Choose between one and eight source languages")
         for language in (*self.research_languages, self.report_language):
-            if not re.fullmatch(r"[a-z]{2,3}(?:-[A-Za-z]{2,4})?", language):
+            if not valid_language_code(language):
                 raise ValueError("Invalid language code")
-        if self.report_language not in ("en", "fr", "de", "es", "ar", "ru", "uk", "zh"):
+        capability = language_capability(self.report_language)
+        if capability is None or not capability.report_supported:
             raise ValueError("Unsupported report language")
         object.__setattr__(
             self, "research_languages", tuple(dict.fromkeys(self.research_languages))

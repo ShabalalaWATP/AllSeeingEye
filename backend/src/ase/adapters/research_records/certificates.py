@@ -57,6 +57,10 @@ def _date(value: Any) -> datetime | None:
 
 
 class CertificateTransparencyProvider:
+    temporal_scope = (
+        "First page of currently unexpired certificate issuances; no complete issuance history "
+        "or latest-record guarantee. Certificate validity dates are not observation times."
+    )
     id = "research-certificate-transparency"
     name = "SSLMate certificate-transparency records"
 

@@ -1,3 +1,5 @@
+import { NarrativeLanguageField } from '@/components/languages/NarrativeLanguageField';
+import { SourceLanguagePicker } from '@/components/languages/SourceLanguagePicker';
 import { useEffect, useState } from 'react';
 
 import { PdfLanguageNotice } from '@/components/reports/PdfLanguageNotice';
@@ -6,16 +8,6 @@ import type { Profile } from '@/lib/api/profile';
 import { useCountriesStore } from '@/stores/countries';
 
 export type EditableSection = 'profile' | 'research' | 'reports';
-export const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'fr', label: 'French' },
-  { value: 'de', label: 'German' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'ar', label: 'Arabic' },
-  { value: 'ru', label: 'Russian' },
-  { value: 'uk', label: 'Ukrainian' },
-  { value: 'zh', label: 'Chinese' },
-];
 interface Props {
   section: EditableSection;
   draft: Profile;
@@ -113,26 +105,22 @@ export function PreferenceFields({
             ...countries.map((country) => ({ value: country.iso2, label: country.name })),
           ]}
         />
-        <TextField
+        <SourceLanguagePicker
           label="Source languages"
-          hint="Up to eight language codes, separated by commas. For example: en, fr, ar."
-          required
-          maxLength={100}
-          value={sourceLanguages}
-          onChange={(event) => onLanguagesChange(event.target.value)}
+          selected={sourceLanguages
+            .split(',')
+            .map((code) => code.trim())
+            .filter(Boolean)}
+          onChange={(values) => onLanguagesChange(values.join(', '))}
         />
       </>
     );
   return (
     <>
-      <SelectField
-        label="Narrative language"
+      <NarrativeLanguageField
         hint="Mechanically checked judgement statements remain in English."
         value={draft.report_language}
-        onChange={(event) =>
-          onChange('report_language', event.target.value as Profile['report_language'])
-        }
-        options={languages}
+        onChange={(value) => onChange('report_language', value as Profile['report_language'])}
       />
       <SelectField
         label="Report style"

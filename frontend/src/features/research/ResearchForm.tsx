@@ -15,6 +15,9 @@ import { useResearchRun } from './useResearchRun';
 import { ResearchInput } from './ResearchInput';
 import { FollowUpSummary } from './FollowUpSummary';
 import { ResearchProgress } from './ResearchProgress';
+import { ResearchPlanEditor } from './ResearchPlanEditor';
+import { useResearchPlan } from './useResearchPlan';
+import { recordScopeError } from './recordScope';
 
 export function ResearchForm({
   preferences,
@@ -58,6 +61,15 @@ export function ResearchForm({
   );
   const [focus, setFocus] = useState<ResearchFocus>(parent?.request.research_focus ?? 'general');
   const [subject, setSubject] = useState(parent?.request.research_subject ?? '');
+  const collectionPlan = useResearchPlan({
+    question,
+    windowHours,
+    languages: selectedLanguages,
+    mode,
+    focus,
+    subject,
+    country: focus === 'general' ? country : '',
+  });
   const [validation, setValidation] = useState<string | null>(null);
   const [inputId, setInputId] = useState<string | null>(null);
   const [inputBusy, setInputBusy] = useState(false);
@@ -79,6 +91,7 @@ export function ResearchForm({
     event.preventDefault();
     if (
       action.busy ||
+      collectionPlan.busy ||
       inputBusy ||
       !template ||
       !ready ||
@@ -100,9 +113,14 @@ export function ResearchForm({
               ? `Enter a ${focus === 'company' ? 'company name' : 'domain name'}.`
               : privateFocus && !inputId && !parent?.report.version.evidence.length
                 ? 'Attach a document or media file before starting this research.'
-                : null;
-    setValidation(message);
-    if (message) {
+                : !parent && !privateFocus && collectionPlan.customised && !collectionPlan.current
+                  ? 'Preview your edited collection plan before starting research.'
+                  : null;
+    const scopeError =
+      message ??
+      (!parent && focus === 'general' ? recordScopeError(subject.trim(), country) : null);
+    setValidation(scopeError);
+    if (scopeError) {
       if (question.trim() && question.trim().length <= 1000 && advanced.current)
         advanced.current.open = true;
       return;
@@ -115,11 +133,12 @@ export function ResearchForm({
       report_style: reportStyle,
       research_languages: selectedLanguages,
       research_focus: focus,
-      research_subject: focus === 'company' || focus === 'domain' ? subject.trim() : null,
+      research_subject: !privateFocus && subject.trim() ? subject.trim() : null,
       window_hours: Number(windowHours),
       devils_advocacy: mode === 'detailed',
       ...(focus === 'general' && country ? { country } : {}),
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
+      ...(!parent && !privateFocus ? collectionPlan.request : {}),
       ...parent?.request,
       ...(privateFocus && inputId ? { research_input_id: inputId } : {}),
     };
@@ -222,6 +241,9 @@ export function ResearchForm({
             />
           </details>
         )}
+        {!parent && !privateFocus && (
+          <ResearchPlanEditor plan={collectionPlan} languages={selectedLanguages} />
+        )}
         <ReportOptions
           language={reportLanguage}
           style={reportStyle}
@@ -251,7 +273,11 @@ export function ResearchForm({
           className="min-h-12 px-6"
           busy={action.busy}
           disabled={
-            !template || !ready || inputBusy || (!parent && country !== '' && countriesLoading)
+            !template ||
+            !ready ||
+            collectionPlan.busy ||
+            inputBusy ||
+            (!parent && country !== '' && countriesLoading)
           }
         >
           Start research

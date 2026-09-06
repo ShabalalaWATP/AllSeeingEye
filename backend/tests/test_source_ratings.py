@@ -7,6 +7,7 @@ from datetime import timedelta
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.mastodon import spec_for
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.application.feeds.grading import profiles_from_specs
 from ase.domain.events import Category, Reliability
 from ase.domain.grading import SourceProfile, grade_events
@@ -32,7 +33,9 @@ def test_every_registered_source_has_explicit_versioned_rating_context():
         assert rating.basis and rating.scope and rating.limitations
         assert rating.reviewed_at is None
         assert "measured accuracy percentage" in " ".join(rating.limitations)
-        if rating.provenance_role == "platform":
+        if rating.provenance_role == "platform" or spec.id in {
+            seed.spec.id for seed in REGIONAL_SEEDS
+        }:
             assert rating.status == "unassessed" and rating.assessed_grade is None
         else:
             assert rating.status == "editorial", spec.id

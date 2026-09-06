@@ -1,3 +1,4 @@
+import { NarrativeLanguageField } from '@/components/languages/NarrativeLanguageField';
 import { SelectField } from '@/components/ui/Field';
 import type { ReportRequest } from '@/lib/api/reports';
 import { PdfLanguageNotice } from './PdfLanguageNotice';
@@ -21,20 +22,9 @@ export function ReportOptions({
     <fieldset disabled={disabled} className="space-y-3 border-b border-line pb-5">
       <legend className="mb-3 text-sm font-medium">Report presentation</legend>
       <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField
-          label="Narrative language"
+        <NarrativeLanguageField
           value={language}
-          onChange={(event) => onLanguage(event.target.value as Language)}
-          options={[
-            { value: 'en', label: 'English' },
-            { value: 'fr', label: 'French' },
-            { value: 'de', label: 'German' },
-            { value: 'es', label: 'Spanish' },
-            { value: 'ar', label: 'Arabic' },
-            { value: 'ru', label: 'Russian' },
-            { value: 'uk', label: 'Ukrainian' },
-            { value: 'zh', label: 'Chinese' },
-          ]}
+          onChange={(value) => onLanguage(value as Language)}
         />
         <SelectField
           label="Report style"

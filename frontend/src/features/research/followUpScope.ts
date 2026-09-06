@@ -3,7 +3,9 @@ import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 
 const savedScope = z.object({
-  report_language: z.enum(['en', 'fr', 'de', 'es', 'ar', 'ru', 'uk', 'zh']).optional(),
+  report_language: z
+    .enum(['en', 'fr', 'de', 'es', 'ar', 'ru', 'uk', 'zh', 'fa', 'zh-Hans', 'zh-Hant'])
+    .optional(),
   report_style: z.enum(['briefing', 'assessment']).optional(),
   country: z.string().nullable().optional(),
   categories: z.array(categorySchema).optional(),
@@ -14,6 +16,11 @@ const savedScope = z.object({
   plan: z.string().nullable().optional(),
   research_mode: z.enum(['quick', 'detailed']).optional(),
   research_languages: z.array(z.string()).min(1).max(8).optional(),
+  research_source_ids: z.array(z.string()).nullable().optional(),
+  research_terms: z.array(z.string()).nullable().optional(),
+  research_query_variants: z
+    .array(z.object({ language: z.string(), terms: z.array(z.string()) }))
+    .optional(),
   research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']).optional(),
   research_subject: z.string().nullable().optional(),
 });
@@ -45,6 +52,13 @@ export function followUpRequest(parent: Report): ReportRequest {
     research_focus: scope.research_focus ?? 'general',
     research_mode: scope.research_mode ?? 'quick',
     research_languages: scope.research_languages ?? ['en'],
+    ...(scope.research_source_ids === undefined
+      ? {}
+      : { research_source_ids: scope.research_source_ids }),
+    ...(scope.research_terms === undefined ? {} : { research_terms: scope.research_terms }),
+    ...(scope.research_query_variants === undefined
+      ? {}
+      : { research_query_variants: scope.research_query_variants }),
     devils_advocacy: scope.devils_advocacy ?? false,
   };
 }

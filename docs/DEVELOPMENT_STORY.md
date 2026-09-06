@@ -678,3 +678,18 @@ preserving those earlier test results as historical evidence.
   reconciliation and existing live-layer truncation disclosure, and clarified the
   language/source/map dependency sequence. Local links, encoding, file-length and
   diff checks were performed; application tests are unchanged by these documents.
+
+## 6 September 2026: bounded research expansion
+
+Implemented regional source collection, editable collection previews, persistent
+admin admission controls, shared private report mapping and source-aware records.
+Added frozen claim inspection and evidence packages, personal library annotations,
+and Chinese PDF fonts. Country-level findings no longer acquire invented points.
+Source-release and export cancellation reviews produced race-condition fixes;
+report deletion explicitly removes personal annotations on SQLite as well.
+
+Synthetic browser QA rendered globe and flat projections. The 390-pixel layout
+had no horizontal overflow, and closing the map removed its canvases. This is a
+functional browser check, not completion of the plan's full GPU benchmark matrix.
+The regional evaluation cases remain synthetic and await human/model evaluation.
+Detailed feature limits are in RESEARCH_EXPANSION_OPERATIONS.md.

@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from heapq import nlargest
+from itertools import islice
 
 # Types only: parsing goes through defusedxml below.
 # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
@@ -42,6 +44,8 @@ class RssOptions:
     rationale: str = "Single-outlet report, not yet corroborated"
     # RSS <category domain="..."> whose text is an ISO 3166-1 alpha-2 country code.
     country_category_domain: str | None = None
+    headlines_only: bool = False
+    newest_first: bool = False
 
 
 def _local(tag: str) -> str:
@@ -118,6 +122,24 @@ def _categories(item: Element) -> list[str]:
     return names[:10]
 
 
+def select_feed_items(root: Element, *, newest_first: bool) -> tuple[list[Element], int]:
+    """Select at most MAX_ITEMS within the HTTP byte cap, without an archive-sized list."""
+    count = sum(_local(element.tag) in ITEM_TAGS for element in root.iter())
+    items = (element for element in root.iter() if _local(element.tag) in ITEM_TAGS)
+    selected = (
+        nlargest(
+            MAX_ITEMS,
+            items,
+            key=lambda item: (
+                parse_feed_date(_child_text(item, *DATE_TAGS)) or datetime.min.replace(tzinfo=UTC)
+            ),
+        )
+        if newest_first
+        else list(islice(items, MAX_ITEMS))
+    )
+    return selected, count
+
+
 class RssConnector:
     def __init__(
         self,
@@ -137,12 +159,28 @@ class RssConnector:
         except NotModified:
             return []
         try:
-            root: Element = safe_fromstring(text.lstrip("﻿").encode("utf-8"))
+            root: Element = safe_fromstring(text.lstrip("\ufeff").encode("utf-8"))
         except ParseError as exc:
             raise FeedFetchError(f"{self.spec.id}: feed is not well-formed XML") from exc
+        if _local(root.tag) not in {"rss", "RDF", "feed"}:
+            raise FeedFetchError(f"{self.spec.id}: response is not an RSS or Atom feed")
         now = self._clock.now()
-        items = [element for element in root.iter() if _local(element.tag) in ITEM_TAGS]
-        events = [event for item in items[:MAX_ITEMS] if (event := self._to_event(item, now))]
+        selected, count = select_feed_items(root, newest_first=self._options.newest_first)
+        events = [event for item in selected if (event := self._to_event(item, now))]
+        if count > MAX_ITEMS:
+            events = [
+                event.with_changes(
+                    attributes=freeze_attributes(
+                        {
+                            **event.attributes,
+                            "feed_items_available": count,
+                            "feed_items_limit": MAX_ITEMS,
+                            "feed_items_truncated": True,
+                        }
+                    )
+                )
+                for event in events
+            ]
         return events
 
     def _to_event(self, item: Element, now: datetime) -> Event | None:
@@ -151,7 +189,9 @@ class RssConnector:
         title = _child_text(item, "title")
         if not key or not title:
             return None
-        summary = strip_html(_child_text(item, *BODY_TAGS))
+        summary = (
+            None if self._options.headlines_only else strip_html(_child_text(item, *BODY_TAGS))
+        )
         published = parse_feed_date(_child_text(item, *DATE_TAGS)) or now
         point = _point(item)
         country = _country(item, self._options.country_category_domain)
