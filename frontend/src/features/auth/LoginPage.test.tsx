@@ -2,7 +2,7 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { USER_PASSWORD, plainUser, tokenFor } from '@/test/fixtures';
+import { ADMIN_PASSWORD, adminUser, USER_PASSWORD, plainUser, tokenFor } from '@/test/fixtures';
 import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -44,6 +44,23 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('group', { name: 'View mode' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
     expect(useAuthStore.getState().status).toBe('authenticated');
+  });
+
+  it('lands an administrator in the dedicated administration area', async () => {
+    const { user, router } = renderApp('/login', 'anonymous');
+    await user.type(screen.getByLabelText('Email'), adminUser.email);
+    await user.type(screen.getByLabelText('Password'), ADMIN_PASSWORD);
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Administration', level: 1 }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/admin');
+  });
+
+  it('sends an authenticated administrator to their workspace', async () => {
+    const { router } = renderApp('/login', 'admin');
+    await screen.findByRole('heading', { name: 'Administration', level: 1 });
+    expect(router.state.location.pathname).toBe('/admin');
   });
 
   it('reopens the code disclosure when a hidden incomplete code fails validation', async () => {

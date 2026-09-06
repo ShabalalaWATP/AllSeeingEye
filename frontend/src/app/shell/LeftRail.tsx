@@ -120,31 +120,13 @@ export function LeftRail({
         <RailLink to="/teams" onNavigate={onNavigate}>
           Teams
         </RailLink>
-        {isAdmin ? (
-          <div className="mt-4 flex flex-col gap-1">
-            <div className="px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
-              Admin
-            </div>
-            <RailLink to="/admin/requests" onNavigate={onNavigate}>
-              Account requests
-            </RailLink>
-            <RailLink to="/admin/users" onNavigate={onNavigate}>
-              Users
-            </RailLink>
-            <RailLink to="/admin/audit" onNavigate={onNavigate}>
-              Audit log
-            </RailLink>
-            <RailLink to="/admin/sources" onNavigate={onNavigate}>
-              Sources
-            </RailLink>
-            <RailLink to="/admin/llm" onNavigate={onNavigate}>
-              Models
-            </RailLink>
-            <RailLink to="/admin/security" onNavigate={onNavigate}>
-              Security
+        {isAdmin && (
+          <div className="mt-4 border-t border-line pt-4">
+            <RailLink to="/admin" onNavigate={onNavigate}>
+              Administration
             </RailLink>
           </div>
-        ) : null}
+        )}
       </nav>
     </aside>
   );

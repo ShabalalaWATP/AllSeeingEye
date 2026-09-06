@@ -96,4 +96,5 @@ bindSession({
   },
 });
 
-export const selectIsAdmin = (state: AuthState): boolean => state.user?.role === 'admin';
+export const selectIsAdmin = (state: AuthState): boolean =>
+  state.status === 'authenticated' && state.user?.is_active === true && state.user.role === 'admin';

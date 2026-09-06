@@ -64,3 +64,13 @@ export function setPassword(token: string, newPassword: string): Promise<void> {
 export function fetchMe(): Promise<User> {
   return apiCall('/api/me', { schema: userSchema });
 }
+
+/** Verify exactly this session. A stale response must not refresh or clear a newer login. */
+export function verifySession(accessToken: string, signal: AbortSignal): Promise<User> {
+  return apiCall('/api/me', {
+    auth: false,
+    headers: { Authorization: `Bearer ${accessToken}` },
+    signal,
+    schema: userSchema,
+  });
+}

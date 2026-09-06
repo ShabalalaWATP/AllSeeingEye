@@ -5,6 +5,8 @@ import { redirectTarget } from './redirect';
 
 describe('redirectTarget', () => {
   it('honours same-origin absolute paths only', () => {
+    expect(redirectTarget({ from: '/' }, '/admin')).toBe('/');
+    expect(redirectTarget(undefined, '/admin')).toBe('/admin');
     expect(redirectTarget({ from: '/admin/users?tab=1' })).toBe('/admin/users?tab=1');
     expect(redirectTarget({ from: '//evil.example.com' })).toBe('/');
     expect(redirectTarget({ from: 'https://evil.example.com' })).toBe('/');

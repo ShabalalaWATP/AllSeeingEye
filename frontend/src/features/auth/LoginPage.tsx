@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { useAuthStore } from '@/stores/auth';
+import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 
 import { redirectTarget } from './redirect';
 
@@ -21,7 +21,8 @@ export function LoginPage() {
   const [capsLock, setCapsLock] = useState(false);
   const { run, busy, error } = useAsyncAction(() => login(email, password, totpCode));
 
-  const destination = redirectTarget(location.state);
+  const isAdmin = useAuthStore(selectIsAdmin);
+  const destination = redirectTarget(location.state, isAdmin ? '/admin' : '/');
   const state: unknown = location.state;
   const passwordChanged =
     typeof state === 'object' &&

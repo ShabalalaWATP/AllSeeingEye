@@ -38,21 +38,14 @@ describe('AppShell', () => {
     expect(screen.getByText('Globe', { selector: 'p' })).toBeInTheDocument();
   });
 
-  it('shows the admin links only to admins', async () => {
+  it('shows a single administration entry only to admins', async () => {
     renderApp('/', 'admin');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(within(nav).getByRole('link', { name: 'Account requests' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Administration' })).toHaveAttribute(
       'href',
-      '/admin/requests',
+      '/admin',
     );
-    expect(within(nav).getByRole('link', { name: 'Users' })).toHaveAttribute(
-      'href',
-      '/admin/users',
-    );
-    expect(within(nav).getByRole('link', { name: 'Audit log' })).toHaveAttribute(
-      'href',
-      '/admin/audit',
-    );
+    expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
   });
 
   it('switches between globe and map with the rail and the G and M keys', async () => {
@@ -77,25 +70,19 @@ describe('AppShell', () => {
   });
 
   it('ignores shortcuts with modifiers or inside form fields', async () => {
-    const { user } = renderApp('/admin/requests', 'admin');
-    await screen.findByRole('heading', { name: 'Account requests' });
-    const row = (await screen.findByText('Nia Newcomer')).closest('tr')!;
-    await user.click(within(row).getByRole('button', { name: 'Reject' }));
-    const input = within(row).getByLabelText('Reason (optional)');
+    const { user } = renderApp('/research', 'user');
+    const input = await screen.findByRole('textbox', { name: 'Your question' });
     await user.type(input, 'm');
     expect(useGlobeStore.getState().mode).toBe('globe');
     expect(input).toHaveValue('m');
-
     fireEvent.keyDown(window, { key: 'm', ctrlKey: true });
-    expect(useGlobeStore.getState().mode).toBe('globe');
-    fireEvent.keyDown(within(row).getByLabelText('Role'), { key: 'm' });
     expect(useGlobeStore.getState().mode).toBe('globe');
   });
 
   it('navigates home when a rail mode button is used from another page', async () => {
-    const { user, router } = renderApp('/admin/users', 'admin');
+    const { user, router } = renderApp('/reports', 'admin');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(screen.getByText('Admin', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText('Reports', { selector: 'p' })).toBeInTheDocument();
     await user.click(within(nav).getByRole('button', { name: /^Map/ }));
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/');

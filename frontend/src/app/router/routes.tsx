@@ -6,6 +6,7 @@
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router';
 
+import { AdminShell } from '@/app/shell/AdminShell';
 import { AppShell } from '@/app/shell/AppShell';
 import { AuthLayout } from '@/features/auth/AuthLayout';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
@@ -13,10 +14,12 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { RequestAccountPage } from '@/features/auth/RequestAccountPage';
 import { SetPasswordPage } from '@/features/auth/SetPasswordPage';
 
+import AdminSessionGate from './AdminSessionGate';
 import { NotFoundPage } from '../NotFoundPage';
 import { RedirectWithQuery, RequireAdmin, RequireAuth } from './guards';
 
 const GlobePage = lazy(() => import('@/features/globe/GlobePage'));
+const AdminOverviewPage = lazy(() => import('@/features/admin/AdminOverviewPage'));
 const AdminRequestsPage = lazy(() => import('@/features/admin/AdminRequestsPage'));
 const AdminUsersPage = lazy(() => import('@/features/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('@/features/admin/AdminAuditPage'));
@@ -88,16 +91,28 @@ export const routes: RouteObject[] = [
           { path: 'warning', element: <WarningPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
+        ],
+      },
+      {
+        path: 'admin',
+        element: <RequireAdmin />,
+        children: [
           {
-            path: 'admin',
-            element: <RequireAdmin />,
+            element: <AdminSessionGate />,
             children: [
-              { path: 'requests', element: <AdminRequestsPage /> },
-              { path: 'users', element: <AdminUsersPage /> },
-              { path: 'audit', element: <AdminAuditPage /> },
-              { path: 'sources', element: <AdminSourcesPage /> },
-              { path: 'llm', element: <AdminLlmPage /> },
-              { path: 'security', element: <TotpSettingsPage /> },
+              {
+                element: <AdminShell />,
+                children: [
+                  { index: true, element: <AdminOverviewPage /> },
+                  { path: 'requests', element: <AdminRequestsPage /> },
+                  { path: 'users', element: <AdminUsersPage /> },
+                  { path: 'teams', element: <TeamsPage /> },
+                  { path: 'audit', element: <AdminAuditPage /> },
+                  { path: 'sources', element: <AdminSourcesPage /> },
+                  { path: 'llm', element: <AdminLlmPage /> },
+                  { path: 'security', element: <TotpSettingsPage /> },
+                ],
+              },
             ],
           },
         ],

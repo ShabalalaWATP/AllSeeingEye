@@ -5,7 +5,7 @@ still requires entering its key and testing it through the app.
 
 ## OpenAI GPT-5.6 Luna
 
-Sign in as an administrator and open **Models** in the administrator navigation.
+Sign in as an administrator and open **Administration → AI connections**.
 Create an OpenAI connection using:
 
 | Setting | Value |

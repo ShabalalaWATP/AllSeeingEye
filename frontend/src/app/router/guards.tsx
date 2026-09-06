@@ -4,7 +4,7 @@
  * RequireAdmin adds the role check. Authorisation is also enforced server-side;
  * these guards only shape navigation.
  */
-import { Navigate, Outlet, useLocation } from 'react-router';
+import { Link, Navigate, Outlet, useLocation } from 'react-router';
 
 import { Alert } from '@/components/ui/Alert';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
@@ -32,6 +32,12 @@ export function RequireAdmin() {
         <Alert tone="warning" title="Admin access required">
           Your account does not have permission to view this page.
         </Alert>
+        <Link
+          to="/"
+          className="mt-4 inline-flex min-h-11 items-center text-sm text-ember underline"
+        >
+          Return to research
+        </Link>
       </div>
     );
   }

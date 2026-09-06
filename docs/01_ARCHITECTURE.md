@@ -368,6 +368,21 @@ recovery of the operator's current database or the newer scope migrations.
 hooks; shared UI, API clients, URL guards, formatting and stores live under
 `components/`, `lib/` and `stores/`. Features do not import each other.
 
+Administration lives under `/admin` in a dedicated, administrator-only shell.
+Its overview and navigation cover account requests, users, teams, AI connections,
+source controls, audit history and administrator security. The research shell
+exposes one Administration entry only to administrators; ordinary users and team
+managers do not receive that navigation. The administrator guard wraps the entire
+administration shell, so denied routes do not mount its pages or data requests.
+API authorisation remains the security boundary and rechecks current authority.
+
+The globe remains the research root. An explicit requested route survives sign-in;
+otherwise administrators start at the administration overview and other accounts
+start in research. Administration has its own responsive navigation and a clear
+return to research, without research view shortcuts or alert controls. Team
+management reuses the existing scoped team feature under `/admin/teams`; `/teams`
+remains available in research with its existing role permissions.
+
 The question-first `/research` entry point and authenticated `/sources` catalogue
 are implemented. Report metadata disclosures use frozen version data; the current
 source catalogue never fills gaps in old reports. Upload/follow-up/context/challenge

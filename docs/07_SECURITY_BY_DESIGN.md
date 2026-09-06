@@ -64,6 +64,13 @@ exposure or multi-worker topology needs a new review.
   the current administrator role. Manager authority additionally requires a
   `manager` membership designation in the specific team. It never grants global
   account, credential, reset-link or directory access.
+- The dedicated administration shell is guarded before its pages mount; research
+  navigation exposes its entry only to authenticated, active administrators. This
+  visual separation complements server permission checks, rather than replacing
+  them. Activation and reset-link responses revalidate the original session and
+  current administrator role after the authorised transaction and any email
+  delivery, before releasing a secret-bearing result. Revocation blocks the
+  response without undoing an already committed approval.
 - Personal roots (`team_id = null`) are readable by their creator and
   administrators. Team roots are readable by current members and administrators.
   This policy covers reports and historical versions, exports, comparisons,

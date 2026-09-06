@@ -88,6 +88,43 @@ describe('mobile navigation', () => {
     expect(useGlobeStore.getState().mode).toBe('map');
   });
 
+  it('provides a separate admin menu and returns focus before returning to research', async () => {
+    const { user, router } = renderApp('/admin', 'admin');
+    await screen.findByRole('heading', { name: 'Administration', level: 1 });
+    const trigger = screen.getByRole('button', { name: 'Open administration navigation' });
+    await user.click(trigger);
+    const dialog = screen.getByRole('dialog', { name: 'Administration navigation' });
+    expect(within(dialog).getByRole('navigation', { name: 'Administration' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Close navigation' }));
+    await waitFor(() => {
+      expect(trigger).toHaveFocus();
+    });
+    await user.click(trigger);
+    await user.click(within(screen.getByRole('dialog')).getByRole('link', { name: 'Users' }));
+    expect(router.state.location.pathname).toBe('/admin/users');
+    await screen.findByRole('heading', { name: 'Users', level: 1 });
+    await screen.findByText('Uma User');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Open administration navigation' }));
+    act(() => {
+      narrow = false;
+      change?.();
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    act(() => {
+      narrow = true;
+      change?.();
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Open administration navigation' }));
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('link', { name: 'Return to research' }),
+    );
+    expect(router.state.location.pathname).toBe('/');
+    expect(screen.getByRole('button', { name: 'Open navigation' })).toBeInTheDocument();
+  });
+
   it('switches to a single desktop rail on resize', async () => {
     const { user } = renderApp('/', 'admin');
     await user.click(await screen.findByRole('button', { name: 'Open navigation' }));
@@ -98,7 +135,7 @@ describe('mobile navigation', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open navigation' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('navigation', { name: 'Primary' })).toHaveLength(1);
-    expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Administration' })).toBeInTheDocument();
     act(() => {
       narrow = true;
       change?.();

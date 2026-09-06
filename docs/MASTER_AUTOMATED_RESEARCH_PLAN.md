@@ -167,6 +167,16 @@ component results are a historical delivery log, not additional unique test coun
 
 ## Remaining work and release gates
 
+Administrator workspace follow-up, 6 September 2026: administration now has a
+dedicated guarded shell and `/admin` overview, including team management and AI
+connections. Only active administrators see its entry; the shell verifies current
+authority before mounting pages and periodically while visible. Research stays
+separate, with explicit navigation between the two areas. See
+[administrator operations](ADMINISTRATION.md) and the
+[scoped access review](security/ADMIN_WORKSPACE_REVIEW.md). A validated
+post-revocation activation/reset-link response issue was fixed with eight
+regressions; this does not change the research-quality release gates below.
+
 Evaluation follow-up, 6 September 2026: the harness now supports explicit synthetic
 provider replay through the production collection service, request budgets and
 detailed challenge/redraft path. Two separate scenarios cover later correction

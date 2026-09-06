@@ -86,7 +86,7 @@ describe('display preferences', () => {
 
   it('holds the brand mark still in lite mode', async () => {
     useGlobeStore.setState({ lite: true });
-    renderApp('/admin/users', 'admin');
+    renderApp('/reports', 'admin');
     const marks = await screen.findAllByTestId('evil-eye');
     expect(marks[0]).toHaveAttribute('data-flame-speed', '0');
     expect(marks[0]).toHaveAttribute('data-max-fps', '1');

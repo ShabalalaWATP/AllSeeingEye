@@ -478,3 +478,31 @@ preserving those earlier test results as historical evidence.
   profile. No real provider call, operator migration, deployment or remote push
   occurred. The administrator must enter the key through the app and test actual
   account access; representative research-quality evaluation remains outstanding.
+
+### 6 September 2026: a dedicated administrator workspace
+
+- Moved administration into a separate guarded shell with its own overview,
+  navigation and mobile menu. Account requests, users, teams, AI connections,
+  source controls, audit history and administrator security are grouped by purpose.
+  The research interface exposes one administrator-only entry and retains its
+  normal globe root. Administrators default to `/admin` after sign-in; explicit
+  deep links are preserved.
+- Added current-account verification before the shell mounts, on window focus
+  and every 30 seconds while visible. Checks use the captured token without
+  automatically refreshing it; stale responses cannot alter a newer login.
+  Failed verification hides protected content and provides retry/research actions.
+  This is bounded periodic observation, not immediate pushed revocation.
+- A scoped access review passed 115 administrator endpoint denial checks. It
+  reproduced an activation-link response reaching an administrator revoked during
+  email delivery. Approval and reset-link routes now check the original session
+  and current role before releasing results. All eight failing regressions now
+  pass while preserving the already authorised account/token/audit transaction.
+- The independent 48-test identity/administration selection and seven existing
+  report-session regressions passed. Ruff, formatting, strict mypy, Bandit and
+  architecture boundaries passed; OpenAPI export is unchanged. Browser checks
+  exercised desktop/narrow layouts, keyboard navigation and administration-only
+  loading with synthetic services. Final frontend results are recorded in the
+  [access review](security/ADMIN_WORKSPACE_REVIEW.md).
+- Updated architecture, security guidance, operator instructions and the active
+  plan. No schema migration, new dependency, real email, operator data change,
+  deployment or remote push was involved.
