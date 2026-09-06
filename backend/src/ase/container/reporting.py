@@ -25,6 +25,7 @@ from ase.application.reports.exports import CompareReportsUseCase, ExportReportU
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
+from ase.application.research.map_views import SavedMapViews
 from ase.container.research import private_research_store
 from ase.domain.report_records import ReportVersion
 
@@ -157,6 +158,19 @@ class ReportWiring:
             r.refresh_tokens,
             r.reports,
             SqlResearchLibraryRepository(session),
+            self.access_policy(session),
+            self.clock,
+            self._auditor(r),
+            r.uow,
+        )
+
+    def saved_map_views(self, session: AsyncSession) -> SavedMapViews:
+        r = self.repositories(session)
+        return SavedMapViews(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            r.map_views,
             self.access_policy(session),
             self.clock,
             self._auditor(r),

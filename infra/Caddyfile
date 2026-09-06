@@ -5,13 +5,18 @@
 {$ASE_SITE_ADDRESS:localhost} {
 	encode gzip
 	header -Server
-	@ordinary not path /api/research/inputs
+	@ordinary not path /api/research/inputs /api/map/views /api/map/views/*
 	request_body @ordinary {
 		max_size 64KB
 	}
 	@research_upload path /api/research/inputs
 	request_body @research_upload {
 		max_size 8MiB
+	}
+	@map_views path /api/map/views /api/map/views/*
+	request_body @map_views {
+		# API enforces the tighter state/envelope cap on save routes only.
+		max_size 7MiB
 	}
 
 	handle /api/* {

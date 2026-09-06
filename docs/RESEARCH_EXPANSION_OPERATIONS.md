@@ -90,11 +90,16 @@ mirror. Both projections use the same engine. Opening a basemap discloses the
 viewed area to its tile provider; no private evidence is sent as a tile payload.
 Account and access changes clear the private map and GPU layers.
 
-Local GeoJSON overlays are private, memory-only and unverified. They require
+Local GeoJSON imports are private and unverified. Before an explicit save they are
+memory-only. They require
 source/date/attribution/precision metadata and are bounded by file, feature and
 vertex limits. Antimeridian lines are split for display; wrapped polygons must
 be supplied as valid pre-split geometry. Imports do not silently filter research
-or become frozen report evidence. Closing/reloading loses these local overlays.
+or become frozen report evidence. Reloading loses unsaved local overlays. The
+saved-view implementation now uploads canonical overlays only on explicit Save,
+with personal/team scope disclosure. It preserves camera, filters, selection and
+immutable revision links; its final integration acceptance is tracked in
+[saved map views](SAVED_MAP_VIEW_IMPLEMENTATION.md).
 Polygon validation also shares a one-million-operation ceiling across an import;
 overly complex files require simplification. Canonical labels survive re-parsing
 and are truncated at Unicode character boundaries.
@@ -146,6 +151,14 @@ or automatic translation-quality claim is introduced.
 
 ## Remaining acceptance
 
+Saved-map API/UI integration subsequently passed all 698 frontend tests, with
+95.79% statements, 90.11% branches, 94.52% functions and 96.99% lines. The full
+backend run had 2,197 passes, 14 skips and six outdated-fixture failures at 96.19%
+coverage; the 18 affected PDF/font/catalogue cases passed after fixture repairs.
+This is a full backend run plus targeted repair verification. The saved-map
+contract records disposable PostgreSQL and real Intel GPU browser checks, along
+with the remaining map reproduction/export acceptance limits.
+
 The query-replan and shared-map-foundation frontend run passed all 683 tests:
 95.84% statements, 90.21% branches, 94.69% functions and 97.01% lines. Frontend lint,
 type checks and production build passed. The focused final replan backend group
@@ -154,7 +167,7 @@ backend verification below predates these additions and is not a new full run.
 
 The [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
 full backlog. These features do not establish automated translation quality,
-complete historical datasets, saved immutable map-view revisions, retained original
+complete historical datasets, fully accepted reproducible map exports, retained original
 assets, human-reviewed identity corrections or unrestricted provider coverage.
 Twelve synthetic regional cases are development seeds, not human-labelled results.
 Configured-model evaluation and the wider 60-case human review remain open.

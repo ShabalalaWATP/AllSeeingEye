@@ -25,6 +25,7 @@ STATUS_BY_CODE: dict[str, int] = {
     "validation_error": 422,
     "rate_limited": 429,
     "not_found": 404,
+    "conflict": 409,
     "already_decided": 409,
     "email_taken": 409,
     "self_modification": 409,

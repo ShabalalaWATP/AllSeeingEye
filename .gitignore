@@ -22,6 +22,7 @@ frontend/coverage/
 
 # Data and caches
 .playwright-cli/
+output/playwright/
 data/
 *.db
 *.sqlite

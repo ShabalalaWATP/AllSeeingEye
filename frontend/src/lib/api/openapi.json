@@ -1665,6 +1665,323 @@
         ]
       }
     },
+    "/api/map/views": {
+      "get": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "List Views",
+        "operationId": "list_views_api_map_views_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapViewPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Create View",
+        "operationId": "create_view_api_map_views_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapViewCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedMapViewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/map/views/{view_id}": {
+      "get": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Get View",
+        "operationId": "get_view_api_map_views__view_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "view_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "View Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedMapViewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Update View",
+        "operationId": "update_view_api_map_views__view_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "view_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "View Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapViewUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedMapViewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Archive View",
+        "operationId": "archive_view_api_map_views__view_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "view_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "View Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/map/views/{view_id}/revisions/{revision_id}": {
+      "get": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Get Revision",
+        "operationId": "get_revision_api_map_views__view_id__revisions__revision_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "view_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "View Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedMapViewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/library": {
       "get": {
         "tags": [
@@ -9139,6 +9456,477 @@
         ],
         "title": "LoginIn"
       },
+      "MapCameraFields": {
+        "properties": {
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "zoom": {
+            "type": "number",
+            "maximum": 22.0,
+            "minimum": 0.0,
+            "title": "Zoom"
+          },
+          "bearing": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Bearing",
+            "default": 0
+          },
+          "pitch": {
+            "type": "number",
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Pitch",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "longitude",
+          "latitude",
+          "zoom"
+        ],
+        "title": "MapCameraFields"
+      },
+      "MapOverlayFields": {
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source"
+          },
+          "dataset_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Dataset Date"
+          },
+          "attribution": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Attribution"
+          },
+          "precision": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "approximate",
+              "unknown"
+            ],
+            "title": "Precision"
+          },
+          "visible": {
+            "type": "boolean",
+            "title": "Visible",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "geometry",
+          "source",
+          "dataset_date",
+          "attribution",
+          "precision"
+        ],
+        "title": "MapOverlayFields"
+      },
+      "MapRevisionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "view_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "View Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "title": "Report Version Number"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MapStateFields"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "title": "Evidence Sha256"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "view_id",
+          "number",
+          "title",
+          "report_version_id",
+          "report_version_number",
+          "state",
+          "evidence_sha256",
+          "content_sha256",
+          "created_by",
+          "created_at"
+        ],
+        "title": "MapRevisionOut"
+      },
+      "MapStateFields": {
+        "properties": {
+          "camera": {
+            "$ref": "#/components/schemas/MapCameraFields"
+          },
+          "projection": {
+            "type": "string",
+            "enum": [
+              "globe",
+              "mercator"
+            ],
+            "title": "Projection",
+            "default": "globe"
+          },
+          "basemap": {
+            "type": "string",
+            "enum": [
+              "dark",
+              "streets",
+              "light",
+              "satellite",
+              "hybrid",
+              "os_road",
+              "os_outdoor",
+              "os_light"
+            ],
+            "title": "Basemap",
+            "default": "dark"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 64,
+            "title": "Source Ids"
+          },
+          "published_since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Since"
+          },
+          "published_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Until"
+          },
+          "include_unknown_dates": {
+            "type": "boolean",
+            "title": "Include Unknown Dates",
+            "default": true
+          },
+          "selected_evidence": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Evidence"
+          },
+          "overlays": {
+            "items": {
+              "$ref": "#/components/schemas/MapOverlayFields"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Overlays"
+          },
+          "aoi": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aoi"
+          },
+          "schema_version": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 1.0,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "display_transform": {
+            "type": "string",
+            "const": "ase-geojson-display-v1",
+            "title": "Display Transform",
+            "default": "ase-geojson-display-v1"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "camera"
+        ],
+        "title": "MapStateFields"
+      },
+      "MapViewCreateIn": {
+        "properties": {
+          "version_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version Number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MapStateFields"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_number",
+          "title",
+          "state",
+          "report_id"
+        ],
+        "title": "MapViewCreateIn"
+      },
+      "MapViewOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "latest_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Latest Revision Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "created_by",
+          "team_id",
+          "latest_revision_id",
+          "created_at",
+          "archived"
+        ],
+        "title": "MapViewOut"
+      },
+      "MapViewPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MapViewSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "MapViewPageOut"
+      },
+      "MapViewSummaryOut": {
+        "properties": {
+          "view": {
+            "$ref": "#/components/schemas/MapViewOut"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "revision_number": {
+            "type": "integer",
+            "title": "Revision Number"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "title": "Report Version Number"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "view",
+          "title",
+          "revision_number",
+          "report_version_number",
+          "updated_at"
+        ],
+        "title": "MapViewSummaryOut"
+      },
+      "MapViewUpdateIn": {
+        "properties": {
+          "version_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version Number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MapStateFields"
+          },
+          "base_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_number",
+          "title",
+          "state",
+          "base_revision_id"
+        ],
+        "title": "MapViewUpdateIn"
+      },
       "MaritimeBoardOut": {
         "properties": {
           "warnings_total": {
@@ -12705,6 +13493,23 @@
           "profile_updated_at"
         ],
         "title": "RoutedModelOut"
+      },
+      "SavedMapViewOut": {
+        "properties": {
+          "view": {
+            "$ref": "#/components/schemas/MapViewOut"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/MapRevisionOut"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "view",
+          "revision"
+        ],
+        "title": "SavedMapViewOut"
       },
       "ScheduleIn": {
         "properties": {

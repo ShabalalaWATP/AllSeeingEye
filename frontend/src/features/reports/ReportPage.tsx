@@ -7,9 +7,14 @@ import { CopyButton } from '@/components/ui/CopyButton';
 import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
 import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
 import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
-import { describeError } from '@/lib/api/errors';
+import { useMapRequest } from '@/components/maps/useMapRequest';
+import { localOverlay } from '@/components/maps/savedMapState';
+import { parseLocalGeoJson } from '@/lib/map/localGeoJson';
+import { fetchMapView } from '@/lib/api/mapViews';
+import { ApiError, describeError } from '@/lib/api/errors';
 import { deleteReport, fetchReport, regenerateReport } from '@/lib/api/reports';
 import { useProfile } from '@/stores/profile';
+import { useAuthStore } from '@/stores/auth';
 import { formatPersonalDate, formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
@@ -37,11 +42,40 @@ function versionFromQuery(value: string | null): number | undefined {
 export default function ReportPage() {
   const workspaces = useWorkspaces();
   const preferences = useProfile();
+  const actor = useAuthStore((state) => state.user);
   const { id = '' } = useParams();
   const [params] = useSearchParams();
   const requested = versionFromQuery(params.get('version'));
+  const mapId = params.get('map_view');
+  const mapRevision = params.get('map_revision');
+  const mapRequest = useMapRequest();
   const navigate = useNavigate();
-  const loader = useCallback(() => fetchReport(id, requested), [id, requested]);
+  const loader = useCallback(async () => {
+    const signal = mapRequest();
+    const savedMap =
+      mapId && mapRevision ? await fetchMapView(mapId, mapRevision, signal) : undefined;
+    if (
+      (mapId || mapRevision) &&
+      (!savedMap ||
+        !requested ||
+        savedMap.view.report_id !== id ||
+        savedMap.revision.report_version_number !== requested)
+    )
+      throw new ApiError(
+        422,
+        'invalid_map_link',
+        'This map link must identify its exact report version and immutable revision.',
+      );
+    if (savedMap) {
+      savedMap.revision.state.overlays.forEach(localOverlay);
+      if (savedMap.revision.state.aoi)
+        parseLocalGeoJson(JSON.stringify(savedMap.revision.state.aoi));
+    }
+    signal.throwIfAborted();
+    const report = await fetchReport(id, requested, signal);
+    signal.throwIfAborted();
+    return { ...report, savedMap };
+  }, [id, requested, mapId, mapRevision, mapRequest]);
   const resource = useScopedResource(loader);
   const { data, error, loading, reload } = resource;
   const remove = useAsyncAction(async () => {
@@ -64,6 +98,10 @@ export default function ReportPage() {
   }
   const { report, version } = data;
   const canEdit = workspaces.canManage(report);
+  const mapWritable =
+    actor?.role === 'admin' ||
+    !report.team_id ||
+    workspaces.teams.some((entry) => entry.team.id === report.team_id && entry.team.is_active);
   const versions = Array.from({ length: report.latest_version }, (_, index) => index + 1);
   const actionError = remove.error ?? regenerate.error;
   return (
@@ -139,10 +177,14 @@ export default function ReportPage() {
         />
         <ClaimLedgerView ledger={version.claim_ledger} />
         <ReportEvidenceMap
-          key={`${resource.key}:${id}:${String(version.number)}`}
+          key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
           reportId={id}
           version={version.number}
           evidence={version.evidence}
+          savedView={data.savedMap}
+          scopeLabel={workspaces.label(report.team_id)}
+          canCreateView={mapWritable && workspaces.canAcknowledge(report.team_id)}
+          canManageView={(view) => mapWritable && workspaces.canManage(view)}
         />
         {version.challenge ? (
           <ReportChallengeView challenge={version.challenge} />

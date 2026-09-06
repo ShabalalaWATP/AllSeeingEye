@@ -798,3 +798,56 @@ remain unfinished; no operator migration or PostgreSQL acceptance is implied.
 The parent report/library/team-scope regression group passed 26 cases after
 cleanup wiring. Pre-commit Ruff/format, secret scan, file length, frontend lint
 and typecheck all passed before committing this foundation.
+
+## 6 September 2026: saved-map access and API integration
+
+Added current-session and parent-scope checks, locked quota enforcement, immutable
+revision conflicts, audit events and evidence/content integrity checks. Archive
+link updates are deliberately excluded from the frozen evidence digest. Seventeen
+service cases passed with 90.96% scoped coverage; 18 API cases and 16 body/header
+cases passed. Map endpoints now support bounded overlay bodies above the ordinary
+64 KiB request cap, while authentication precedes expensive geometry validation.
+All map error responses carry no-store. Caddy configuration validation passed in
+a disposable network-isolated container. Mypy and import boundaries passed.
+PostgreSQL migration to head and all 45 API/service/repository/cleanup cases passed
+on an owned disposable database, which was removed after testing. A separate
+file-backed SQLite quota race test passed. Frontend saved-view controls remain in
+progress; no operator database or deployed proxy was changed.
+The concurrent last-slot quota check also passed against disposable PostgreSQL.
+Frontend review identified lost first-overlay imports, stale authority after
+rejected mutations, replayed selection on map reopening, date-filter semantics
+and team write-control mismatches. The UI owner is fixing these before combined
+frontend acceptance; no saved-map UI completion claim is made.
+
+## 6 September 2026: saved-map controls and browser verification
+
+Completed the save/revise/browse/archive controls and exact report/map revision
+links. State includes the camera, projection, basemap, date/source filters,
+selection, multiple overlays and retained AOI. Fixed the review findings above,
+plus delayed file reads overwriting newer overlay edits and lower-bound-only date
+filters displaying All dates. All 23 focused frontend cases passed, along with
+TypeScript, scoped ESLint, Prettier, the production build and configured Bandit.
+The build retains its existing bundle-size advisory. Full suites remain pending.
+
+A synthetic Chrome harness used real Intel Iris Xe WebGL rendering. Globe and
+flat maps rendered, saving/reloading restored the flat projection, manual camera
+coordinates survived close/reopen, the 390-pixel layout had no horizontal overflow,
+and simulated access invalidation removed private content and both canvases. API
+responses were fixtures; no operator account/database was used. This is not full
+seam/pole/performance acceptance. Temporary harness/cache files were preserved in
+ignored data storage after automated review rejected their deletion.
+
+Documented the next AOI research boundary: source-specific spatial support,
+immutable origin references, destination scope, observation dates and exclusion
+of unrelated global context. Existing country filters do not establish polygon
+support. The new contract preserves the wider regional/map implementation scope.
+
+The full backend run finished with 2,197 passes, 14 skips and six failures at
+96.19% coverage. Updated stale PDF-warning assertions and a catalogue collection
+fixture to the current planning/replan protocol. All 18 affected PDF/font/catalogue
+cases then passed; Ruff checks passed. Production behaviour and coverage thresholds
+were unchanged. Full frontend coverage was started after the backend run ended.
+That frontend run passed all 698 tests in 124 files, with 95.79% statements,
+90.11% branches, 94.52% functions and 96.99% lines. Production build and staged
+secret scanning passed; the map export, AOI launch and broader acceptance backlog
+remain open.

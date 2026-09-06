@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
+import type { Layer } from '@deck.gl/core';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { createMapLibreEngine } from '@/lib/map/MapLibreEngine';
-import type { MapEngine, Projection } from '@/lib/map/MapEngine';
+import type { MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
+import type { MapState } from '@/lib/api/mapViews';
 import { hasWebGl2 } from '@/lib/map/webgl';
 import { useAuthStore } from '@/stores/auth';
 import type { LocalCollection, LocalOverlay } from '@/lib/map/geoJsonTypes';
@@ -11,14 +13,24 @@ import { hasEvidencePoint } from './evidenceGeometry';
 
 export default function EvidenceMapCanvas({
   evidence,
-  overlay = null,
+  overlays = [],
+  aoi = null,
+  camera,
+  onCamera,
+  basemap,
+  focusRequest,
   footprints = null,
   projection,
   selected,
   onSelect,
 }: {
   evidence: readonly EvidenceItem[];
-  overlay?: LocalOverlay | null;
+  overlays?: LocalOverlay[];
+  aoi?: LocalCollection | null;
+  camera: MapState['camera'];
+  onCamera: (camera: MapCamera) => void;
+  basemap: MapState['basemap'];
+  focusRequest: { label: string; sequence: number } | null;
   footprints?: LocalCollection | null;
   projection: Projection;
   selected: string | null;
@@ -27,16 +39,41 @@ export default function EvidenceMapCanvas({
   const container = useRef<HTMLDivElement>(null);
   const engine = useRef<MapEngine | null>(null);
   const [mapError, setMapError] = useState(false);
+  const initial = useRef({ camera, projection, basemap });
+  const cameraChanged = useEffectEvent((value: MapCamera) => onCamera(value));
+  const focusSelection = useEffectEvent(() => {
+    const item = evidence.find((entry) => entry.label === focusRequest?.label);
+    if (
+      item &&
+      hasEvidencePoint(item) &&
+      (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878)
+    )
+      engine.current?.flyTo({ center: [item.lon ?? 0, item.lat ?? 0], zoom: 4 });
+  });
   const supported = useMemo(() => hasWebGl2(), []);
   useEffect(() => {
     if (!container.current || !supported) return;
     const map = createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken });
+    map.setProjection(initial.current.projection);
+    map.setBaseLayer(initial.current.basemap);
     map.mount(container.current);
     map.setLite(true);
     const stopErrors = map.on('error', () => setMapError(true));
     engine.current = map;
+    const saved = initial.current.camera;
+    map.restoreCamera({
+      center: [saved.longitude, saved.latitude],
+      zoom: saved.zoom,
+      bearing: saved.bearing,
+      pitch: saved.pitch,
+    });
+    const stopCamera = map.on('moveend', () => {
+      const value = map.getCamera();
+      if (value) cameraChanged(value);
+    });
     return () => {
       stopErrors();
+      stopCamera();
       map.setLayers([]);
       map.destroy();
       engine.current = null;
@@ -46,33 +83,53 @@ export default function EvidenceMapCanvas({
     engine.current?.setProjection(projection);
   }, [projection]);
   useEffect(() => {
+    engine.current?.setBaseLayer(basemap);
+  }, [basemap]);
+  useEffect(() => {
     const located = evidence.filter(
       (item) =>
         hasEvidencePoint(item) &&
         (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878),
     );
-    const imported = overlay
-      ? [
-          new GeoJsonLayer({
-            id: 'private-local-geometry',
-            data: {
-              type: 'FeatureCollection' as const,
-              features: overlay.display.features.filter(
-                (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-              ),
-            },
-            pickable: false,
-            stroked: true,
-            filled: overlay.precision === 'exact',
-            getFillColor: [80, 200, 195, 40],
-            getLineColor: [80, 200, 195, 220],
-            lineWidthUnits: 'pixels',
-            getLineWidth: 2,
-            pointRadiusUnits: 'pixels',
-            getPointRadius: 7,
-          }),
-        ]
-      : [];
+    const imported: Layer[] = overlays.map(
+      (overlay, index) =>
+        new GeoJsonLayer({
+          id: index === 0 ? 'private-local-geometry' : `private-local-geometry-${index}`,
+          data: {
+            type: 'FeatureCollection' as const,
+            features: overlay.display.features.filter(
+              (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
+            ),
+          },
+          pickable: false,
+          stroked: true,
+          filled: overlay.precision === 'exact',
+          getFillColor: [80, 200, 195, 40],
+          getLineColor: [80, 200, 195, 220],
+          lineWidthUnits: 'pixels',
+          getLineWidth: 2,
+          pointRadiusUnits: 'pixels',
+          getPointRadius: 7,
+        }),
+    );
+    if (aoi)
+      imported.push(
+        new GeoJsonLayer({
+          id: 'saved-research-area',
+          data: {
+            ...aoi,
+            features: aoi.features.filter(
+              (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
+            ),
+          },
+          pickable: false,
+          stroked: true,
+          filled: false,
+          getLineColor: [255, 255, 255, 220],
+          lineWidthUnits: 'pixels',
+          getLineWidth: 2,
+        }),
+      );
     const catalogue = footprints
       ? [
           new GeoJsonLayer({
@@ -118,17 +175,10 @@ export default function EvidenceMapCanvas({
           }),
       ),
     ]);
-  }, [evidence, projection, selected, onSelect, overlay, footprints]);
+  }, [evidence, projection, selected, onSelect, overlays, footprints, aoi]);
   useEffect(() => {
-    const item = evidence.find((entry) => entry.label === selected);
-    if (
-      item &&
-      hasEvidencePoint(item) &&
-      (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878)
-    ) {
-      engine.current?.flyTo({ center: [item.lon ?? 0, item.lat ?? 0], zoom: 4 });
-    }
-  }, [selected, evidence, projection]);
+    if (focusRequest) focusSelection();
+  }, [focusRequest]);
   if (!supported)
     return (
       <p role="status" className="p-4 text-sm text-muted">

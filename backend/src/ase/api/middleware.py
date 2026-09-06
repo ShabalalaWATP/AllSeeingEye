@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from fastapi import Request
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -11,6 +13,7 @@ from ase.api.errors import PayloadTooLarge, handle_app_error
 NO_STORE_PREFIXES = (
     "/api/auth",
     "/api/me",
+    "/api/map",
     "/api/admin",
     "/api/events",
     "/api/stream",
@@ -28,6 +31,10 @@ API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
 IMPORT_MAX_BODY_BYTES = 8 * 1024 * 1024
 IMPORT_PATH = "/api/research/inputs"
+MAP_VIEW_MAX_BODY_BYTES = 6 * 1024 * 1024 + 16 * 1024
+MAP_VIEW_REVISION_PATH = re.compile(
+    r"/api/map/views/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
+)
 
 
 class SecurityHeadersMiddleware:
@@ -62,9 +69,9 @@ class SecurityHeadersMiddleware:
 class BodySizeLimitMiddleware:
     """Reject oversized bodies with 413 before the application sees them.
 
-    The body is buffered up to the cap (a few tens of kilobytes) and replayed to the app,
-    so streamed bodies without a Content-Length are covered too. Caddy enforces the same
-    cap at the edge; this protects direct access to the API.
+    Ordinary JSON is capped at 64 KiB; saved map state has a bounded larger allowance.
+    Buffered bodies without Content-Length receive the same checks. Binary research
+    imports stream through a separate guard. The proxy applies outer limits as well.
     """
 
     def __init__(self, app: ASGIApp, max_bytes: int = DEFAULT_MAX_BODY_BYTES) -> None:
@@ -77,7 +84,17 @@ class BodySizeLimitMiddleware:
             return
         declared = Headers(scope=scope).get("content-length")
         importing = scope.get("path") == IMPORT_PATH and scope.get("method") == "POST"
-        limit = IMPORT_MAX_BODY_BYTES if importing else self.max_bytes
+        saving_map = (scope.get("path") == "/api/map/views" and scope.get("method") == "POST") or (
+            scope.get("method") == "PATCH"
+            and MAP_VIEW_REVISION_PATH.fullmatch(scope.get("path", "")) is not None
+        )
+        limit = (
+            IMPORT_MAX_BODY_BYTES
+            if importing
+            else MAP_VIEW_MAX_BODY_BYTES
+            if saving_map
+            else self.max_bytes
+        )
         if declared is not None and declared.isdigit() and int(declared) > limit:
             await self._reject(scope, receive, send)
             return
@@ -93,7 +110,7 @@ class BodySizeLimitMiddleware:
             if message["type"] != "http.request":
                 break
             total += len(message.get("body", b""))
-            if total > self.max_bytes:
+            if total > limit:
                 await self._reject(scope, receive, send)
                 return
             if not message.get("more_body", False):

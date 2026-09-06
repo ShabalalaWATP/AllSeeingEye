@@ -19,6 +19,7 @@ from ase.api.routers import (
     events,
     footprints,
     health,
+    map_views,
     me,
     mfa,
     profile,
@@ -54,6 +55,7 @@ api_router.include_router(account_sessions.router)
 api_router.include_router(recovery.router)
 api_router.include_router(events.router)
 api_router.include_router(footprints.router)
+api_router.include_router(map_views.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)

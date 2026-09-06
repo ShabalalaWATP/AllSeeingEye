@@ -12,12 +12,18 @@ import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { SelectField } from '@/components/ui/Field';
+import { MapFilters } from './MapFilters';
+import { MapEvidenceList } from './MapEvidenceList';
+import { MapOverlaySet } from './MapOverlaySet';
+import { SavedMapControls } from './SavedMapControls';
+import { useSavedMapViews } from './useSavedMapViews';
+import { initialMapState, localOverlay, fromCamera, matchesMapFilters } from './savedMapState';
+import type { MapState, SavedMapView } from '@/lib/api/mapViews';
+import type { MapCamera } from '@/lib/map/MapEngine';
 import { FootprintSearchPanel } from './FootprintSearchPanel';
-import { LocalGeoJsonOverlay } from './LocalGeoJsonOverlay';
-import type { LocalCollection, LocalOverlay } from '@/lib/map/geoJsonTypes';
-import { geometryIsPolar } from '@/lib/map/localGeoJson';
-import { evidencePrecision, hasEvidencePoint, publicationDay } from './evidenceGeometry';
+import type { LocalCollection } from '@/lib/map/geoJsonTypes';
+import { geometryIsPolar, parseLocalGeoJson } from '@/lib/map/localGeoJson';
+import { hasEvidencePoint, publicationDay } from './evidenceGeometry';
 
 const Canvas = lazy(() =>
   import('./EvidenceMapCanvas').catch(() => ({
@@ -34,6 +40,10 @@ export interface ReportEvidenceMapProps {
   version: number;
   evidence: readonly EvidenceItem[];
   onSelectEvidence?: (label: string) => void;
+  savedView?: SavedMapView | undefined;
+  scopeLabel?: string;
+  canCreateView?: boolean;
+  canManageView?: (view: { created_by: string; team_id: string | null }) => boolean;
 }
 /** Authorised frozen evidence only: no shared event store or live stream. */
 export default function ReportEvidenceMap({
@@ -41,6 +51,10 @@ export default function ReportEvidenceMap({
   version,
   evidence,
   onSelectEvidence,
+  savedView,
+  scopeLabel = 'this personal view',
+  canCreateView = false,
+  canManageView = () => false,
 }: ReportEvidenceMapProps) {
   const actor = useAuthStore(
     (state) =>
@@ -56,11 +70,28 @@ export default function ReportEvidenceMap({
     actor.startsWith('authenticated:') &&
     actor.endsWith(':true');
   const [footprints, setFootprints] = useState<LocalCollection | null>(null);
-  const [overlay, setOverlay] = useState<LocalOverlay | null>(null);
-  const [overlayVisible, setOverlayVisible] = useState(true);
+  const [state, setState] = useState<MapState>(
+    () => savedView?.revision.state ?? initialMapState(),
+  );
+  const saved = useSavedMapViews(reportId, version, savedView);
+  const overlays = useMemo(
+    () => state.overlays.filter((item) => item.visible).map(localOverlay),
+    [state.overlays],
+  );
+  const aoi = useMemo(
+    () => (state.aoi ? parseLocalGeoJson(JSON.stringify(state.aoi)).display : null),
+    [state.aoi],
+  );
+  const [focusRequest, setFocusRequest] = useState<{ label: string; sequence: number } | null>(
+    null,
+  );
+  const captureCamera = useCallback(
+    (camera: MapCamera) => setState((value) => ({ ...value, camera: fromCamera(camera) })),
+    [],
+  );
   useEffect(() => {
     const clear = () => {
-      setOverlay(null);
+      setState(initialMapState());
       setFootprints(null);
     };
     const offAccess = subscribeWorkspaceAccess(clear);
@@ -79,10 +110,10 @@ export default function ReportEvidenceMap({
     };
   }, []);
   const [opened, setOpened] = useState(false);
-  const [projection, setProjection] = useState<'globe' | 'mercator'>('globe');
-  const [source, setSource] = useState('');
-  const [day, setDay] = useState('');
-  const [selected, setSelected] = useState<string | null>(null);
+  const projection = state.projection;
+  const selected = state.selected_evidence;
+  const setProjection = (projection: MapState['projection']) =>
+    setState((value) => ({ ...value, projection }));
   const [page, setPage] = useState(0);
   const days = useMemo(
     () =>
@@ -96,18 +127,14 @@ export default function ReportEvidenceMap({
     [evidence],
   );
   const filtered = useMemo(
-    () =>
-      evidence.filter(
-        (item) =>
-          (!source || item.source_id === source) &&
-          (!day || (publicationDay(item) !== null && (publicationDay(item) ?? '') <= day)),
-      ),
-    [evidence, source, day],
+    () => evidence.filter((item) => matchesMapFilters(item, state)),
+    [evidence, state],
   );
   const current = Math.min(page, Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1));
   const chosen = filtered.find((item) => item.label === selected);
   const select = useCallback((label: string) => {
-    setSelected(label);
+    setState((value) => ({ ...value, selected_evidence: label }));
+    setFocusRequest((value) => ({ label, sequence: (value?.sequence ?? 0) + 1 }));
   }, []);
   if (!valid)
     return (
@@ -118,10 +145,13 @@ export default function ReportEvidenceMap({
   const polar =
     filtered.filter((item) => hasEvidencePoint(item) && Math.abs(item.lat ?? 0) > 85.05112878)
       .length +
-    (overlayVisible
-      ? (overlay?.display.features.filter((feature) => geometryIsPolar(feature.geometry)).length ??
-        0)
-      : 0) +
+    overlays.reduce(
+      (sum, overlay) =>
+        sum +
+        overlay.display.features.filter((feature) => geometryIsPolar(feature.geometry)).length,
+      0,
+    ) +
+    (aoi?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ?? 0) +
     (footprints?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ?? 0);
   return (
     <section
@@ -136,50 +166,48 @@ export default function ReportEvidenceMap({
           from saved evidence.
         </p>
       </header>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <SelectField
-          label="Publication timeline (UTC)"
-          value={day}
-          onChange={(event) => {
-            setDay(event.target.value);
-            setPage(0);
-          }}
-          options={[
-            { value: '', label: 'All publication dates' },
-            ...days.map((value) => ({ value, label: `Published through ${value}` })),
-          ]}
-        />
-        <SelectField
-          label="Evidence source"
-          value={source}
-          onChange={(event) => {
-            setSource(event.target.value);
-            setPage(0);
-          }}
-          options={[
-            { value: '', label: 'All sources' },
-            ...sources.map(([value, label]) => ({ value, label })),
-          ]}
-        />
-      </div>
+      <MapFilters
+        state={state}
+        onChange={(value) => {
+          setState(value);
+          setPage(0);
+        }}
+        days={days}
+        sources={sources}
+      />
       <p className="text-xs text-muted">
         {filtered.length} records · {filtered.filter(hasEvidencePoint).length} supported positions.
         Hollow rings are approximate locations, not measured uncertainty areas. Country-only and
         unknown locations remain in the list.
       </p>
-      {day && (
+      <MapOverlaySet
+        overlays={state.overlays}
+        onChange={(overlays) =>
+          setState((value) => ({
+            ...value,
+            overlays: typeof overlays === 'function' ? overlays(value.overlays) : overlays,
+          }))
+        }
+      />
+      {state.aoi && (
         <p className="text-xs text-muted">
-          Records without a valid publication date are excluded from this date filter. Choose All
-          publication dates to inspect them.
+          This revision includes a saved research-area polygon, shown as a reference outline. It
+          does not change report evidence or launch collection.
         </p>
       )}
-      <LocalGeoJsonOverlay
-        overlay={overlay}
-        visible={overlayVisible}
-        onChange={setOverlay}
-        onVisible={setOverlayVisible}
-      />
       <FootprintSearchPanel onChange={setFootprints} />
+      <SavedMapControls
+        saved={saved}
+        state={state}
+        scopeLabel={scopeLabel}
+        canCreate={canCreateView}
+        canEdit={!!saved.active && canManageView(saved.active.view)}
+        blocked={
+          footprints?.features.length
+            ? 'Clear the temporary catalogue footprints before saving. Catalogue source-version receipts are not yet captured in saved views.'
+            : null
+        }
+      />
       {!opened ? (
         <div className="space-y-2">
           <p className="text-xs text-muted">
@@ -208,7 +236,13 @@ export default function ReportEvidenceMap({
             >
               Flat map
             </Button>
-            <Button variant="ghost" onClick={() => setOpened(false)}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setOpened(false);
+                setFocusRequest(null);
+              }}
+            >
               Close evidence map
             </Button>
           </div>
@@ -221,7 +255,12 @@ export default function ReportEvidenceMap({
           <Suspense fallback={<LoadingNote label="Loading saved evidence map" />}>
             <Canvas
               footprints={footprints}
-              overlay={overlayVisible ? overlay : null}
+              overlays={overlays}
+              aoi={aoi}
+              camera={state.camera}
+              onCamera={captureCamera}
+              basemap={state.basemap}
+              focusRequest={focusRequest}
               evidence={filtered}
               projection={projection}
               selected={chosen?.label ?? null}
@@ -230,62 +269,14 @@ export default function ReportEvidenceMap({
           </Suspense>
         </>
       )}
-      {filtered.length === 0 ? (
-        <p>No saved evidence matches these filters.</p>
-      ) : (
-        <ul aria-label="Map evidence" className="grid gap-2 sm:grid-cols-2">
-          {filtered.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map((item) => (
-            <li key={item.label}>
-              <button
-                type="button"
-                aria-pressed={chosen?.label === item.label}
-                onClick={() => select(item.label)}
-                className="min-h-11 w-full rounded border border-line p-3 text-left text-sm hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember"
-              >
-                <span className="font-medium">
-                  {item.label}: {item.title}
-                </span>
-                <span className="mt-1 block text-xs text-muted">
-                  {publicationDay(item) ?? 'Publication date unknown'} · {evidencePrecision(item)}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {filtered.length > PAGE_SIZE && (
-        <nav aria-label="Map evidence pages" className="flex items-center gap-3">
-          <Button variant="secondary" disabled={current === 0} onClick={() => setPage(current - 1)}>
-            Previous
-          </Button>
-          <span>
-            {current + 1} / {Math.ceil(filtered.length / PAGE_SIZE)}
-          </span>
-          <Button
-            variant="secondary"
-            disabled={(current + 1) * PAGE_SIZE >= filtered.length}
-            onClick={() => setPage(current + 1)}
-          >
-            Next
-          </Button>
-        </nav>
-      )}
-      {chosen && (
-        <aside aria-label="Selected map evidence" className="space-y-2 border-t border-line pt-3">
-          <h3 className="font-medium">
-            {chosen.label}: {chosen.title}
-          </h3>
-          <p className="text-sm">{chosen.summary ?? 'No saved excerpt available.'}</p>
-          <p className="text-xs text-muted">
-            {chosen.source_name} · Grade {chosen.grade} · {evidencePrecision(chosen)}
-          </p>
-          {onSelectEvidence && (
-            <Button variant="secondary" onClick={() => onSelectEvidence(chosen.label)}>
-              Inspect citation {chosen.label}
-            </Button>
-          )}
-        </aside>
-      )}
+      <MapEvidenceList
+        filtered={filtered}
+        current={current}
+        setPage={setPage}
+        chosen={chosen}
+        select={select}
+        onSelectEvidence={onSelectEvidence}
+      />
     </section>
   );
 }

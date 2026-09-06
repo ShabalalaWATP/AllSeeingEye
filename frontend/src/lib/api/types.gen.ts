@@ -670,6 +670,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/map/views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Views */
+        get: operations["list_views_api_map_views_get"];
+        put?: never;
+        /** Create View */
+        post: operations["create_view_api_map_views_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/map/views/{view_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get View */
+        get: operations["get_view_api_map_views__view_id__get"];
+        put?: never;
+        post?: never;
+        /** Archive View */
+        delete: operations["archive_view_api_map_views__view_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update View */
+        patch: operations["update_view_api_map_views__view_id__patch"];
+        trace?: never;
+    };
+    "/api/map/views/{view_id}/revisions/{revision_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Revision */
+        get: operations["get_revision_api_map_views__view_id__revisions__revision_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/library": {
         parameters: {
             query?: never;
@@ -3096,6 +3150,220 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MapCameraFields */
+        MapCameraFields: {
+            /** Longitude */
+            longitude: number;
+            /** Latitude */
+            latitude: number;
+            /** Zoom */
+            zoom: number;
+            /**
+             * Bearing
+             * @default 0
+             */
+            bearing: number;
+            /**
+             * Pitch
+             * @default 0
+             */
+            pitch: number;
+        };
+        /** MapOverlayFields */
+        MapOverlayFields: {
+            /** Geometry */
+            geometry: {
+                [key: string]: unknown;
+            };
+            /** Source */
+            source: string;
+            /**
+             * Dataset Date
+             * Format: date
+             */
+            dataset_date: string;
+            /** Attribution */
+            attribution: string;
+            /**
+             * Precision
+             * @enum {string}
+             */
+            precision: "exact" | "approximate" | "unknown";
+            /**
+             * Visible
+             * @default true
+             */
+            visible: boolean;
+        };
+        /** MapRevisionOut */
+        MapRevisionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * View Id
+             * Format: uuid
+             */
+            view_id: string;
+            /** Number */
+            number: number;
+            /** Title */
+            title: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Report Version Number */
+            report_version_number: number;
+            state: components["schemas"]["MapStateFields"];
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** MapStateFields */
+        MapStateFields: {
+            camera: components["schemas"]["MapCameraFields"];
+            /**
+             * Projection
+             * @default globe
+             * @enum {string}
+             */
+            projection: "globe" | "mercator";
+            /**
+             * Basemap
+             * @default dark
+             * @enum {string}
+             */
+            basemap: "dark" | "streets" | "light" | "satellite" | "hybrid" | "os_road" | "os_outdoor" | "os_light";
+            /** Source Ids */
+            source_ids?: string[];
+            /** Published Since */
+            published_since?: string | null;
+            /** Published Until */
+            published_until?: string | null;
+            /**
+             * Include Unknown Dates
+             * @default true
+             */
+            include_unknown_dates: boolean;
+            /** Selected Evidence */
+            selected_evidence?: string | null;
+            /** Overlays */
+            overlays?: components["schemas"]["MapOverlayFields"][];
+            /** Aoi */
+            aoi?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /**
+             * Display Transform
+             * @default ase-geojson-display-v1
+             * @constant
+             */
+            display_transform: "ase-geojson-display-v1";
+        };
+        /** MapViewCreateIn */
+        MapViewCreateIn: {
+            /** Version Number */
+            version_number: number;
+            /** Title */
+            title: string;
+            state: components["schemas"]["MapStateFields"];
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+        };
+        /** MapViewOut */
+        MapViewOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Latest Revision Id
+             * Format: uuid
+             */
+            latest_revision_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Archived */
+            archived: boolean;
+        };
+        /** MapViewPageOut */
+        MapViewPageOut: {
+            /** Items */
+            items: components["schemas"]["MapViewSummaryOut"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /** MapViewSummaryOut */
+        MapViewSummaryOut: {
+            view: components["schemas"]["MapViewOut"];
+            /** Title */
+            title: string;
+            /** Revision Number */
+            revision_number: number;
+            /** Report Version Number */
+            report_version_number: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** MapViewUpdateIn */
+        MapViewUpdateIn: {
+            /** Version Number */
+            version_number: number;
+            /** Title */
+            title: string;
+            state: components["schemas"]["MapStateFields"];
+            /**
+             * Base Revision Id
+             * Format: uuid
+             */
+            base_revision_id: string;
+        };
         /** MaritimeBoardOut */
         MaritimeBoardOut: {
             /** Warnings Total */
@@ -4285,6 +4553,11 @@ export interface components {
              * Format: date-time
              */
             profile_updated_at: string;
+        };
+        /** SavedMapViewOut */
+        SavedMapViewOut: {
+            view: components["schemas"]["MapViewOut"];
+            revision: components["schemas"]["MapRevisionOut"];
         };
         /** ScheduleIn */
         ScheduleIn: {
@@ -6050,6 +6323,199 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FootprintCollectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_views_api_map_views_get: {
+        parameters: {
+            query: {
+                report_id: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapViewPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_view_api_map_views_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapViewCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedMapViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_view_api_map_views__view_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedMapViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_view_api_map_views__view_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_view_api_map_views__view_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapViewUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedMapViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_revision_api_map_views__view_id__revisions__revision_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+                revision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedMapViewOut"];
                 };
             };
             /** @description Validation Error */

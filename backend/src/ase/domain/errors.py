@@ -77,6 +77,11 @@ class NotFound(AppError):
     default_message = "The requested item does not exist."
 
 
+class Conflict(AppError):
+    code = "conflict"
+    default_message = "This item changed. Reload it before saving again."
+
+
 class AlreadyDecided(AppError):
     code = "already_decided"
     default_message = "This account request has already been decided."

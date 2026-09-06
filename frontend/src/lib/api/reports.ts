@@ -204,9 +204,12 @@ export function generateReport(
   );
 }
 
-export function fetchReport(id: string, version?: number): Promise<Report> {
+export function fetchReport(id: string, version?: number, signal?: AbortSignal): Promise<Report> {
   const suffix = version === undefined ? '' : `?version=${String(version)}`;
-  return apiCall(`/api/reports/${encodeURIComponent(id)}${suffix}`, { schema: reportSchema });
+  return apiCall(`/api/reports/${encodeURIComponent(id)}${suffix}`, {
+    schema: reportSchema,
+    ...(signal ? { signal } : {}),
+  });
 }
 
 export function regenerateReport(id: string): Promise<Report> {

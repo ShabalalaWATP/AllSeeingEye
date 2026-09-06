@@ -101,8 +101,9 @@ export function LocalGeoJsonOverlay({
         Private local GeoJSON overlay
       </summary>
       <p className="my-3 text-xs text-muted">
-        A temporary visual reference, not saved report evidence. Nothing is uploaded or added to
-        live feeds. Source and precision below are your declarations, not verified facts. This
+        A temporary visual reference, not saved report evidence. Selecting a file stays local.
+        Saving a map view uploads its overlays to that view’s personal/team scope. Nothing is added
+        to live feeds. Source and precision below are your declarations, not verified facts. This
         overlay does not filter research collection.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
