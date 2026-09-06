@@ -3,7 +3,7 @@
 from collections.abc import Callable
 
 from ase.application.ports.feeds import EventQuery, EventStore
-from ase.application.ports.research import ResearchCollection
+from ase.application.ports.research import ReplanCallback, ResearchCollection
 from ase.application.reports.request import ReportRequest
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Event
@@ -19,6 +19,7 @@ async def collect_report_evidence(
     live_store: EventStore,
     seed_events: tuple[Event, ...] = (),
     seed_attempts: tuple[CollectionAttempt, ...] = (),
+    replan: ReplanCallback | None = None,
 ) -> tuple[EventStore, ResearchReceipt]:
     if store_factory is None:
         raise InvalidRequest("On-demand research collection is unavailable")
@@ -29,7 +30,11 @@ async def collect_report_evidence(
     elif collection is None:
         raise InvalidRequest("On-demand research collection is unavailable")
     else:
-        batch = await collection.collect(query)
+        batch = (
+            await collection.collect(query, replan=replan)
+            if replan
+            else await collection.collect(query)
+        )
     private = store_factory()
     if not private_focus:
         # Copy public context only for public research. Unrelated high-ranked live items
@@ -46,5 +51,5 @@ async def collect_report_evidence(
     private.upsert(batch.items)
     private.upsert(seed_events)
     return private, ResearchReceipt.build(
-        query, (*seed_attempts, *batch.attempts), len(batch.items), batch.plan
+        query, (*seed_attempts, *batch.attempts), len(batch.items), batch.plan, batch.passes
     )

@@ -7,6 +7,7 @@ from typing import Any
 
 from ase.domain.research import (
     CollectionAttempt,
+    CollectionPass,
     CollectionStatus,
     ResearchQuery,
 )
@@ -26,6 +27,7 @@ class ResearchReceipt:
     collected_items: int
     policy_version: str = "ase-research-v1"
     plan: ResearchPlan | None = None
+    passes: tuple[CollectionPass, ...] = ()
 
     @classmethod
     def build(
@@ -34,6 +36,7 @@ class ResearchReceipt:
         attempts: tuple[CollectionAttempt, ...],
         count: int,
         plan: ResearchPlan | None = None,
+        passes: tuple[CollectionPass, ...] = (),
     ) -> "ResearchReceipt":
         return cls(
             query.question,
@@ -46,6 +49,7 @@ class ResearchReceipt:
             attempts,
             count,
             plan=plan,
+            passes=passes,
         )
 
     def describe(self) -> str:
@@ -68,6 +72,10 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     if receipt.plan is not None:
         result["plan"]["since"] = receipt.plan.since.isoformat()
         result["plan"]["until"] = receipt.plan.until.isoformat()
+    for row in result["passes"]:
+        if row["plan"] is not None:
+            row["plan"]["since"] = row["plan"]["since"].isoformat()
+            row["plan"]["until"] = row["plan"]["until"].isoformat()
     return result
 
 
@@ -100,6 +108,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
         ),
         collected_items=int(data["collected_items"]),
         plan=plan_from_dict(data.get("plan")),
+        passes=passes_from_dict(data.get("passes", ())),
     )
 
 
@@ -130,3 +139,19 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
             ),
         )
     return ResearchPlan(**values)
+
+
+def passes_from_dict(data: Any) -> tuple[CollectionPass, ...]:
+    if not isinstance(data, list | tuple) or len(data) > 2:
+        raise ValueError("Invalid collection passes")
+    return tuple(
+        CollectionPass(
+            tuple(row["terms"]),
+            tuple(
+                CollectionAttempt(**{**attempt, "status": CollectionStatus(attempt["status"])})
+                for attempt in row["attempts"]
+            ),
+            plan_from_dict(row.get("plan")),
+        )
+        for row in data
+    )

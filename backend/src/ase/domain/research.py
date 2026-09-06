@@ -96,11 +96,25 @@ class CollectionAttempt:
 
 
 @dataclass(frozen=True, slots=True)
+class CollectionPass:
+    terms: tuple[str, ...]
+    attempts: tuple[CollectionAttempt, ...]
+    plan: ResearchPlan | None = None
+
+    def __post_init__(self) -> None:
+        if len(self.attempts) > 64 or len(self.terms) > 12:
+            raise ValueError("Collection pass exceeds its bounds")
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchBatch:
     items: tuple[Event, ...] = ()
     attempts: tuple[CollectionAttempt, ...] = ()
     plan: ResearchPlan | None = None
+    passes: tuple[CollectionPass, ...] = ()
 
     def __post_init__(self) -> None:
+        if len(self.passes) > 2:
+            raise ValueError("At most two collection passes are supported")
         if len(self.items) > 1000 or len(self.attempts) > 64:
             raise ValueError("Research batch exceeds its bounds")

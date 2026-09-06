@@ -7,7 +7,8 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
     <section className="space-y-3 border-y border-line py-4" aria-label="Saved collection plan">
       <h3 className="text-sm font-medium">Saved collection plan</h3>
       <p className="text-xs text-muted">
-        The plan recorded when this version was collected. Attempt results below show what happened.
+        The plan recorded when this version was collected. Recorded collection outcomes show what
+        happened.
       </p>
       {translation && (
         <section
@@ -97,11 +98,13 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
             <p className="text-muted">
               {task.provenance === 'operator_supplied_variant'
                 ? 'Operator-supplied language terms'
-                : task.provenance === 'machine_translated_variant'
-                  ? 'Machine-translated search terms, meaning unverified'
-                  : task.provenance === 'original_terms'
-                    ? 'Original terms'
-                    : `Recorded provenance: ${task.provenance}`}{' '}
+                : task.provenance === 'model_replanned_variant'
+                  ? 'Model-replanned search terms'
+                  : task.provenance === 'machine_translated_variant'
+                    ? 'Machine-translated search terms, meaning unverified'
+                    : task.provenance === 'original_terms'
+                      ? 'Original terms'
+                      : `Recorded provenance: ${task.provenance}`}{' '}
               · {task.temporal_scope}
             </p>
           </li>

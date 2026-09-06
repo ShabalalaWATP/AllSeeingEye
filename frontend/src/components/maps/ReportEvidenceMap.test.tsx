@@ -43,6 +43,10 @@ it('loads maps on demand, preserves selection across projections and clears priv
   expect(FakeMap.instances).toHaveLength(0);
   const user = userEvent.setup();
   await user.click(screen.getByRole('button', { name: 'Open evidence map' }));
+  // Await the instrumented lazy module, not a hardware-dependent import duration.
+  await act(async () => {
+    await vi.dynamicImportSettled();
+  });
   await screen.findByRole('region', { name: 'Saved evidence globe' });
   await waitFor(() => expect(FakeMap.instances).toHaveLength(1));
   act(() => FakeMap.instances[0]!.fire('style.load'));

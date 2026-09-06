@@ -10,9 +10,11 @@ from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.application.reports.progress import Progress, reached
 from ase.application.reports.query_preparation import (
     prepare_query_languages,
+    record_pass_provenance,
     record_query_translation,
     translation_languages,
 )
+from ase.application.reports.replan_queries import make_replanner
 from ase.application.reports.research import collect_report_evidence
 from ase.domain.direction import Direction
 from ase.domain.research import ResearchQuery
@@ -83,6 +85,9 @@ async def prepare_collection(
                 cipher,
                 profile_for,
             )
+        replan = None
+        if gateway is not None and cipher is not None and profile_for is not None:
+            replan = await make_replanner(job, totals, gateway, cipher, profile_for)
         await reached(progress, ResearchStage.COLLECTING)
         store, receipt = await collect_report_evidence(
             query,
@@ -92,7 +97,14 @@ async def prepare_collection(
             live_store,
             seed_events=job.seed_events,
             seed_attempts=job.seed_attempts,
+            replan=replan,
         )
         if transformation is not None and receipt.plan is not None:
             receipt = replace(receipt, plan=record_query_translation(receipt.plan, transformation))
+        receipt = record_pass_provenance(
+            receipt,
+            query,
+            transformation,
+            job.request.research_query_variants,
+        )
     return store, receipt, query

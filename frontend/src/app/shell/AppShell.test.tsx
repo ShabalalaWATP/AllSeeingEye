@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
@@ -71,6 +71,10 @@ describe('AppShell', () => {
 
   it('ignores shortcuts with modifiers or inside form fields', async () => {
     const { user } = renderApp('/research', 'user');
+    // Shortcut behaviour starts after the lazy route module has loaded.
+    await act(async () => {
+      await vi.dynamicImportSettled();
+    });
     const input = await screen.findByRole('textbox', { name: 'Your question' });
     await user.type(input, 'm');
     expect(useGlobeStore.getState().mode).toBe('globe');

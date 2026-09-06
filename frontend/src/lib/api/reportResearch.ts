@@ -2,6 +2,23 @@ import { z } from 'zod';
 import type { components } from './types.gen';
 import { planSchema } from './researchPlan';
 
+const collectionAttemptSchema = z.object({
+  source_id: z.string(),
+  source_name: z.string(),
+  status: z.enum([
+    'completed',
+    'empty',
+    'unavailable',
+    'unsupported',
+    'failed',
+    'timed_out',
+    'budget_exhausted',
+  ]),
+  result_count: z.number().int(),
+  explanation: z.string(),
+  language: z.string().nullable(),
+});
+
 export const researchReceiptSchema = z.object({
   question: z.string(),
   mode: z.string(),
@@ -13,24 +30,17 @@ export const researchReceiptSchema = z.object({
   collected_items: z.number().int(),
   policy_version: z.string(),
   plan: planSchema.nullable().default(null),
-  attempts: z.array(
-    z.object({
-      source_id: z.string(),
-      source_name: z.string(),
-      status: z.enum([
-        'completed',
-        'empty',
-        'unavailable',
-        'unsupported',
-        'failed',
-        'timed_out',
-        'budget_exhausted',
-      ]),
-      result_count: z.number().int(),
-      explanation: z.string(),
-      language: z.string().nullable(),
-    }),
-  ),
+  attempts: z.array(collectionAttemptSchema),
+  passes: z
+    .array(
+      z.object({
+        terms: z.array(z.string()),
+        attempts: z.array(collectionAttemptSchema),
+        plan: planSchema.nullable(),
+      }),
+    )
+    .max(2)
+    .default([]),
 }) satisfies z.ZodType<components['schemas']['ResearchReceiptOut']>;
 export type ResearchReceipt = components['schemas']['ResearchReceiptOut'];
 

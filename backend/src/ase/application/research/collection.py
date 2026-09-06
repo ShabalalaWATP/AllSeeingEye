@@ -51,6 +51,7 @@ class ResearchCollector:
         progress: Progress | None = None,
         run_budget: CollectionRunBudget | None = None,
         request_allowance: int | None = None,
+        skip_source_ids: frozenset[str] = frozenset(),
     ) -> ResearchBatch:
         """Return this pass's new items; a shared run budget prevents double admission."""
         if budget is not None and run_budget is not None:
@@ -64,7 +65,7 @@ class ResearchCollector:
         ):
             raise ValueError("A pass request allowance must be an integer from zero to 32")
         with state.pass_scope():
-            return await self._collect(query, state, allowance, progress)
+            return await self._collect(query, state, allowance, progress, skip_source_ids)
 
     async def _collect(
         self,
@@ -72,6 +73,7 @@ class ResearchCollector:
         state: CollectionRunBudget,
         allowance: int,
         progress: Progress | None,
+        skip_source_ids: frozenset[str],
     ) -> ResearchBatch:
         limits = state.limits
         plan = build_plan(
@@ -85,7 +87,7 @@ class ResearchCollector:
         items: dict[str, Event] = {}
         attempts: list[CollectionAttempt] = []
         for provider, task in zip(self._providers, plan.tasks, strict=True):
-            if not task.selected:
+            if not task.selected or provider.id in skip_source_ids:
                 continue
             routed = replace(query, terms=task.terms)
             if not task.supported:

@@ -8,7 +8,8 @@ from ase.application.research.query_translation import translate_queries
 from ase.domain.languages import language_capability
 from ase.domain.llm import LlmRole
 from ase.domain.research import ResearchFocus, ResearchQuery
-from ase.domain.research_plan import QueryTransformation, ResearchPlan
+from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan
+from ase.domain.research_records import ResearchReceipt
 from ase.domain.validation import Finding, Severity
 
 
@@ -90,3 +91,31 @@ def record_query_translation(
             for task in plan.tasks
         ),
     )
+
+
+def record_pass_provenance(
+    receipt: ResearchReceipt,
+    query: ResearchQuery,
+    transformation: QueryTransformation | None,
+    fixed_variants: tuple[QueryVariant, ...],
+) -> ResearchReceipt:
+    """Keep pass task labels honest after automatic translation or replanning."""
+    fixed = {variant.language.lower() for variant in fixed_variants}
+    passes = []
+    for item in receipt.passes:
+        plan = item.plan
+        if plan is not None:
+            if plan.replans == 0 and item.terms == query.terms and transformation is not None:
+                plan = record_query_translation(plan, transformation)
+            elif plan.replans > 0 or item.terms != query.terms:
+                plan = replace(
+                    plan,
+                    tasks=tuple(
+                        replace(task, provenance="model_replanned_variant")
+                        if not task.query_language or task.query_language.lower() not in fixed
+                        else task
+                        for task in plan.tasks
+                    ),
+                )
+        passes.append(replace(item, plan=plan))
+    return replace(receipt, passes=tuple(passes))

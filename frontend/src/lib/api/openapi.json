@@ -6446,6 +6446,40 @@
         ],
         "title": "CollectionAttemptOut"
       },
+      "CollectionPassOut": {
+        "properties": {
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionAttemptOut"
+            },
+            "type": "array",
+            "title": "Attempts"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchPlanOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "terms",
+          "attempts"
+        ],
+        "title": "CollectionPassOut"
+      },
       "CollectionStatus": {
         "type": "string",
         "enum": [
@@ -12199,6 +12233,14 @@
                 "type": "null"
               }
             ]
+          },
+          "passes": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionPassOut"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Passes"
           }
         },
         "type": "object",

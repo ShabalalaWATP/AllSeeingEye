@@ -19,7 +19,15 @@ source selections govern collection; unknown identifiers fail before requests.
 Changes invalidate the preview. The reporting window resolves when a run starts.
 
 Quick collection remains six requests, 45 seconds and 200 retained items; detailed
-collection remains 24 requests, 180 seconds and 800 items. The challenge pass keeps
+collection remains 24 requests, 180 seconds and 800 items. General research with a configured direction model can revise an empty successful
+search once. The initial pass reserves half the request allowance, and both passes
+share the same deadline and unique-item cap. Nonempty initial results use remaining
+requests on unattempted sources without invoking the model. A revision can change
+terms and generated language variants only; source selection, dates, country and
+subject remain fixed. Operator language variants are preserved. The model revision
+has a maximum 20-second deadline within the remaining collection time. Both passes
+and their exact tasks survive in receipts and exports. Private document/media and
+non-general record research do not use this replan. The challenge pass keeps
 its existing separate shared budget. Empty responses do not confirm absence.
 Historical completeness is not inferred from a recent feed or current registry.
 
@@ -87,6 +95,9 @@ source/date/attribution/precision metadata and are bounded by file, feature and
 vertex limits. Antimeridian lines are split for display; wrapped polygons must
 be supplied as valid pre-split geometry. Imports do not silently filter research
 or become frozen report evidence. Closing/reloading loses these local overlays.
+Polygon validation also shares a one-million-operation ceiling across an import;
+overly complex files require simplification. Canonical labels survive re-parsing
+and are truncated at Unicode character boundaries.
 
 Claim inspection projects frozen judgements, assessments and citation checks.
 Stable IDs identify a judgement within a version; compound statements are not
@@ -134,6 +145,12 @@ explicit PDF limitation; DOCX preserves original text. No runtime font downloads
 or automatic translation-quality claim is introduced.
 
 ## Remaining acceptance
+
+The query-replan and shared-map-foundation frontend run passed all 683 tests:
+95.84% statements, 90.21% branches, 94.69% functions and 97.01% lines. Frontend lint,
+type checks and production build passed. The focused final replan backend group
+passed 54 cases; Ruff, mypy, import boundaries and Bandit passed. The earlier full
+backend verification below predates these additions and is not a new full run.
 
 The [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
 full backlog. These features do not establish automated translation quality,

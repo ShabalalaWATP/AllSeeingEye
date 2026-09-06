@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from ase.api.schemas_research_plan import ResearchPlanOut
 from ase.domain.research import CollectionStatus
@@ -19,6 +19,13 @@ class CollectionAttemptOut(BaseModel):
     language: str | None
 
 
+class CollectionPassOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    terms: list[str]
+    attempts: list[CollectionAttemptOut]
+    plan: ResearchPlanOut | None = None
+
+
 class ResearchReceiptOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,3 +40,5 @@ class ResearchReceiptOut(BaseModel):
     collected_items: int
     policy_version: str
     plan: ResearchPlanOut | None = None
+
+    passes: list[CollectionPassOut] = Field(default_factory=list, max_length=2)

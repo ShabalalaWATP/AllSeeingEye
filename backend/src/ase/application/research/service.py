@@ -4,11 +4,12 @@ import asyncio
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 
-from ase.application.ports.research import ResearchProvider
+from ase.application.ports.research import ReplanCallback, ResearchProvider
 from ase.application.research.challenge_collection import collect_challenges
 from ase.application.research.collection import CollectionBudget, ResearchCollector
 from ase.application.research.pacing import PacedProvider, RequestPacer
 from ase.application.research.planning import build_plan
+from ase.application.research.replanning import collect_with_replan
 from ase.domain.errors import RateLimited
 from ase.domain.research import ResearchBatch, ResearchQuery
 from ase.domain.research_plan import ResearchPlan
@@ -44,11 +45,16 @@ class ResearchCollectionService:
             query, providers, requests=limits.requests, seconds=limits.seconds, items=limits.items
         )
 
-    async def collect(self, query: ResearchQuery) -> ResearchBatch:
+    async def collect(
+        self, query: ResearchQuery, *, replan: ReplanCallback | None = None
+    ) -> ResearchBatch:
         if self._admission.locked():
             raise RateLimited(5)
         async with self._admission:
-            return await ResearchCollector(self._paced(query)).collect(query)
+            providers = self._paced(query)
+            if replan is not None:
+                return await collect_with_replan(providers, query, replan)
+            return await ResearchCollector(providers).collect(query)
 
     async def challenge_many(self, queries: tuple[ResearchQuery, ...]) -> tuple[ResearchBatch, ...]:
         if self._admission.locked():

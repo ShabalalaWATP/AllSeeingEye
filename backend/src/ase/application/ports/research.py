@@ -1,9 +1,12 @@
 """An on-demand provider performs a single bounded public collection request."""
 
+from collections.abc import Awaitable, Callable
 from typing import Protocol
 
 from ase.domain.research import ResearchBatch, ResearchQuery
 from ase.domain.research_plan import ResearchPlan
+
+ReplanCallback = Callable[[ResearchQuery, ResearchBatch, float], Awaitable[ResearchQuery | None]]
 
 
 class ResearchProvider(Protocol):
@@ -29,7 +32,9 @@ class ResearchCollection(Protocol):
         """Preview concrete tasks without collection or model calls."""
         ...
 
-    async def collect(self, query: ResearchQuery) -> ResearchBatch: ...
+    async def collect(
+        self, query: ResearchQuery, *, replan: ReplanCallback | None = None
+    ) -> ResearchBatch: ...
 
     async def challenge_many(self, queries: tuple[ResearchQuery, ...]) -> tuple[ResearchBatch, ...]:
         """One shared six-request/45-second/200-item budget, results in input order."""

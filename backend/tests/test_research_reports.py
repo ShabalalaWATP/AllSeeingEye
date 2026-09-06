@@ -24,7 +24,7 @@ class CollectedResearch:
     def __init__(self) -> None:
         self.queries: list[ResearchQuery] = []
 
-    async def collect(self, query: ResearchQuery) -> ResearchBatch:
+    async def collect(self, query: ResearchQuery, *, replan=None) -> ResearchBatch:
         self.queries.append(query)
         return ResearchBatch(
             items=tuple(

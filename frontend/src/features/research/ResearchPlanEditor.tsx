@@ -26,6 +26,9 @@ export function ResearchPlanEditor({
         <p className="text-xs leading-relaxed text-muted">
           Choose public sources and exact search terms before collection. This preview makes no
           model calls or source requests. The reporting window advances to the time the run starts.
+          General research may revise an empty search once using the configured AI connection,
+          within the same collection budget. Source selection and research scope stay fixed; both
+          passes are saved for review.
         </p>
         <fieldset disabled={plan.busy} className="space-y-5">
           <label className="flex min-h-11 items-center gap-2 text-sm">

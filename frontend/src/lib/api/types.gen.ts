@@ -2183,6 +2183,14 @@ export interface components {
             /** Language */
             language: string | null;
         };
+        /** CollectionPassOut */
+        CollectionPassOut: {
+            /** Terms */
+            terms: string[];
+            /** Attempts */
+            attempts: components["schemas"]["CollectionAttemptOut"][];
+            plan?: components["schemas"]["ResearchPlanOut"] | null;
+        };
         /**
          * CollectionStatus
          * @enum {string}
@@ -4113,6 +4121,8 @@ export interface components {
             /** Policy Version */
             policy_version: string;
             plan?: components["schemas"]["ResearchPlanOut"] | null;
+            /** Passes */
+            passes?: components["schemas"]["CollectionPassOut"][];
         };
         /** ResearchRunOut */
         ResearchRunOut: {

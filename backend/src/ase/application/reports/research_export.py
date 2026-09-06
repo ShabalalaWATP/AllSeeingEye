@@ -29,7 +29,8 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
         lines.append(
             f"Frozen source plan ({plan.policy_version}): at most {plan.request_limit} requests, "
             f"{plan.seconds_limit:g} seconds and {plan.item_limit} collected items. "
-            "Deterministic routing does not translate search terms or establish complete history."
+            "The preview is deterministic; run-time transformations are recorded separately. "
+            "The plan does not establish complete historical coverage."
         )
         for task in plan.tasks:
             if task.selected:
@@ -39,6 +40,7 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
                 )
+    lines.extend(transformation_lines(receipt))
     for attempt in receipt.attempts:
         count_kind = (
             "retained items"
@@ -51,3 +53,36 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
             f"language {attempt.language or 'not recorded'}. {attempt.explanation}"
         )
     return (("Collection coverage", tuple(lines)),)
+
+
+def transformation_lines(receipt: ResearchReceipt) -> list[str]:
+    lines: list[str] = []
+    if receipt.plan is not None and receipt.plan.translation is not None:
+        transformation = receipt.plan.translation
+        lines.append(
+            f"Query translation: {transformation.status}; "
+            f"model {transformation.model or 'not used'}. "
+            "Translated meaning is unverified."
+        )
+        lines.append("Original terms: " + ", ".join(transformation.original_terms))
+        for variant in transformation.variants:
+            lines.append(f"Translated terms ({variant.language}): {', '.join(variant.terms)}")
+    for index, collection_pass in enumerate(receipt.passes, 1):
+        lines.append(
+            f"Collection pass {index}, sharing the run budget: " + ", ".join(collection_pass.terms)
+        )
+        for attempt in collection_pass.attempts:
+            lines.append(
+                f"Pass {index}: {attempt.source_name} ({attempt.source_id}), "
+                f"{attempt.status.value}, {attempt.result_count} additional items. "
+                + attempt.explanation
+            )
+        if collection_pass.plan is not None:
+            for task in collection_pass.plan.tasks:
+                if task.selected:
+                    lines.append(
+                        f"Pass {index} terms for {task.source_id}: "
+                        + ", ".join(task.terms)
+                        + f" ({task.provenance})."
+                    )
+    return lines

@@ -730,3 +730,56 @@ It retains one deadline, consumes requests before outbound work and counts uniqu
 retained IDs across passes. Thirty-five focused budget/collection/plan/challenge
 tests passed; focused coverage was 96.59%. This is the budget foundation, not an
 enabled automatic replan: service lifecycle and bounded receipt merging remain.
+
+## 6 September 2026: one bounded empty-search revision
+
+Connected the shared-budget collector to one model-proposed revision for empty
+successful general research. The service holds one admission slot, freezes the
+provider inventory and rejects scope changes. Nonempty or declined revisions use
+remaining requests on unattempted original sources. Exact operator variants and
+protected identifiers/quotes survive. Cancelled callbacks retain attempted-call
+accounting without swallowing cancellation. Empty results are not evidence of absence.
+
+Added two-pass frozen receipts, legacy-compatible parsing, API types, UI and document
+export details. Source summaries are labelled outcomes, not HTTP request totals.
+The service/budget suites passed 54 focused tests (98.39% scoped coverage); subsequent
+model/lifecycle/plan tests passed 41 cases, and production regressions passed 31.
+Frontend pass-receipt tests passed 15 cases. Full-plan acceptance and actual-model
+semantic quality remain open; these tests do not establish field research accuracy.
+
+Follow-up review reproduced a provenance bug: a revision changing only translated
+terms was labelled as the initial translation. Added a failing regression and fixed
+classification using the revised-pass marker. Review also identified repeated fixed
+operator queries consuming the reserved pass; effective routed-task comparison and
+per-source continuation passed review. The final focused backend group passed 54
+tests, including a SQL/admin disable-during-replan acceptance case. Ruff and mypy
+passed. The initial frontend run reported 15 timing/element-readiness failures;
+the two-worker control narrowed these to two lazy-module readiness tests. Explicit
+module-loading waits fixed both (16 focused tests passed). The subsequent full
+run passed 662 tests but encountered two new map regression tests while their
+fixes were still being edited. Those now pass in the focused map suite; a clean
+full run against frozen frontend files is still required.
+
+## 6 September 2026: saved-map foundations
+
+Recorded the persistence/access and exact-revision acceptance contract in
+`SAVED_MAP_VIEW_IMPLEMENTATION.md`. Shared camera/viewport support is in progress.
+Reproduced and fixed canonical GeoJSON label loss on reload, and added a shared
+one-million-operation topology ceiling across each import. Existing file/feature/
+vertex limits alone allowed many individually small polygons to accumulate costly
+intersection checks. The browser map parser passed 13 focused cases after these
+fixes. Server canonical validation and Unicode label parity are being implemented.
+The final browser parser group passed 14 cases including Unicode round trips;
+the camera group passed 28 cases with typecheck and scoped lint. A new full
+frontend coverage run passed all 683 tests with 90.21% branch coverage (95.84%
+statements, 94.69% functions, 97.01% lines). Frontend lint and production build
+passed; the existing map bundle-size advisory remains. Saved-view persistence,
+API/UI integration and real WebGL acceptance remain open.
+
+The server geometry parser passed 67 cases with 99.44% scoped coverage. Added
+immutable map-state values, versioned serialisation, hashes bound to report version
+and evidence, and charged revision storage sizes. State validation shares the
+topology budget across all overlays and the AOI. The combined state/geometry run
+passed 105 tests; four additional constructor-invariant tests brought the focused
+state group to 42 passing cases. Repository storage and access integration are in
+progress, with no operator database migration.

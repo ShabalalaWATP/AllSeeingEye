@@ -52,7 +52,7 @@ class CollectionProbe:
         self.callback = callback
         self.items = ()
 
-    async def collect(self, query: ResearchQuery) -> ResearchBatch:
+    async def collect(self, query: ResearchQuery, *, replan=None) -> ResearchBatch:
         self.queries.append(query)
         if self.callback is not None:
             await self.callback()

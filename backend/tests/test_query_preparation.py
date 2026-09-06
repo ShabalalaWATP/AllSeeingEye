@@ -8,15 +8,16 @@ import pytest
 from ase.api.schemas_research_plan import ResearchPlanOut
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_types import Totals
+from ase.application.reports.query_preparation import record_pass_provenance
 from ase.application.research.service import ResearchCollectionService
 from ase.container.research import private_research_store
 from ase.domain.llm import LlmRole
-from ase.domain.research import ResearchFocus, ResearchMode
-from ase.domain.research_plan import QueryVariant
-from ase.domain.research_records import research_from_dict, research_to_dict
+from ase.domain.research import CollectionPass, ResearchFocus, ResearchMode
+from ase.domain.research_plan import QueryTransformation, QueryVariant
+from ase.domain.research_records import ResearchReceipt, research_from_dict, research_to_dict
 from production_integration_helpers import production_job
 from test_query_translation import Gateway
-from test_research_plan import Provider
+from test_research_plan import QUERY, Provider
 
 
 @pytest.mark.parametrize("outcome", ["completed", "failed", "unavailable"])
@@ -43,7 +44,7 @@ async def test_production_routes_and_freezes_translation(container, user, outcom
 
     async def lookup(role):
         roles.append(role)
-        return None if outcome == "unavailable" else job.profile
+        return None if outcome == "unavailable" or role is LlmRole.DIRECTION else job.profile
 
     totals = Totals()
     _, receipt, query = await prepare_collection(
@@ -59,7 +60,7 @@ async def test_production_routes_and_freezes_translation(container, user, outcom
         profile_for=lookup,
     )
     assert query is not None and receipt is not None and receipt.plan is not None
-    assert roles == [LlmRole.TRANSLATION]
+    assert roles == [LlmRole.TRANSLATION, LlmRole.DIRECTION]
     assert receipt.plan.translation.status == outcome
     assert receipt.plan.translation.original_terms == ("oil",)
     assert receipt.plan.translation_calls == int(outcome != "unavailable")
@@ -96,7 +97,7 @@ async def test_no_unsolicited_translation(container, user, skip):
     job = replace(job, request=request)
 
     async def lookup(role):
-        raise AssertionError("No profile lookup expected")
+        assert role is LlmRole.DIRECTION
 
     gateway = Gateway()
     await prepare_collection(
@@ -114,3 +115,26 @@ async def test_no_unsolicited_translation(container, user, skip):
     assert gateway.calls == 0
     if skip == "operator":
         assert provider.queries[0].terms == ("provided",)
+
+
+def test_replan_of_only_translated_terms_is_not_labelled_as_initial_translation():
+
+    original = replace(
+        QUERY, languages=("fa",), query_variants=(QueryVariant("fa", ("initial translation",)),)
+    )
+    revised = replace(original, query_variants=(QueryVariant("fa", ("revised translation",)),))
+    collection = ResearchCollectionService(lambda query: [Provider("persian", "fa")])
+    revised_plan = replace(collection.plan(revised), replans=1)
+    receipt = ResearchReceipt.build(
+        original,
+        (),
+        0,
+        collection.plan(original),
+        (CollectionPass(original.terms, (), revised_plan),),
+    )
+    transformation = QueryTransformation(
+        original.terms, ("fa",), "first-model", "completed", original.query_variants
+    )
+    result = record_pass_provenance(receipt, original, transformation, ())
+    assert result.passes[0].plan.tasks[0].provenance == "model_replanned_variant"
+    assert result.passes[0].plan.translation is None
