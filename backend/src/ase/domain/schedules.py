@@ -27,6 +27,7 @@ class Schedule:
     last_run_at: datetime | None = None
     last_report_id: UUID | None = None
     last_error: str | None = None
+    team_id: UUID | None = None
 
 
 def next_run_after(now: datetime, hour_utc: int, cadence: str, weekday: int = 0) -> datetime:

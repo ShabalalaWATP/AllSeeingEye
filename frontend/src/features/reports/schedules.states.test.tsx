@@ -82,6 +82,7 @@ describe('schedule states', () => {
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'World morning',
+        enabled: true,
         template_id: 'intsum',
         country_iso: null,
         hour_utc: 6,

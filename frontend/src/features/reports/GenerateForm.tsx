@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
+import { WorkspaceField } from '@/components/ui/WorkspaceField';
+import type { CollectionPlan } from '@/lib/api/direction';
+import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
+import type { Workspaces } from '@/lib/hooks/useWorkspaces';
+
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
@@ -14,6 +19,8 @@ export interface Choice {
 
 export interface GenerateFormProps {
   templates: readonly ReportTemplate[];
+  plans: readonly CollectionPlan[];
+  workspaces: Workspaces;
   countries: readonly Country[];
   conflicts: readonly Choice[];
   hazards: readonly Choice[];
@@ -26,6 +33,8 @@ export interface GenerateFormProps {
 /** Choose a product and its scope: a nation, a question, a curated conflict or a hazard. */
 export function GenerateForm({
   templates,
+  plans,
+  workspaces,
   countries,
   conflicts,
   hazards,
@@ -34,6 +43,13 @@ export function GenerateForm({
   error,
   onSubmit,
 }: GenerateFormProps) {
+  const scope = useWorkspaceSelection(workspaces);
+  const [planId, setPlanId] = useState(initial.plan ?? '');
+  const matchingPlans = plans.filter(
+    (plan) => plan.enabled && (plan.team_id ?? '') === scope.teamId,
+  );
+  const selectedPlan = matchingPlans.find((plan) => plan.id === planId);
+  const invalidPlan = planId !== '' && selectedPlan === undefined;
   const [templateId, setTemplateId] = useState(initial.template ?? templates[0]?.id ?? 'intsum');
   const [country, setCountry] = useState(initial.country ?? '');
   const [conflict, setConflict] = useState(initial.conflict ?? '');
@@ -45,14 +61,19 @@ export function GenerateForm({
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const request: ReportRequest = { template: templateId };
+    if (!scope.ready || invalidPlan) return;
+    const request: ReportRequest = {
+      template: templateId,
+      devils_advocacy: advocacy,
+      ...(scope.teamId ? { team_id: scope.teamId } : {}),
+    };
     if (country !== '') request.country = country;
     if (template?.needs_conflict && conflict !== '') request.conflict = conflict;
     if (template?.needs_hazard && hazard !== '') request.hazard = hazard;
     if (question.trim() !== '') request.question = question.trim();
     if (windowHours.trim() !== '') request.window_hours = Number(windowHours);
     if (advocacy) request.devils_advocacy = true;
-    if (initial.plan !== undefined) request.plan = initial.plan;
+    if (selectedPlan) request.plan = selectedPlan.id;
     onSubmit(request);
   };
 
@@ -62,6 +83,30 @@ export function GenerateForm({
       aria-label="Generate a report"
       className="flex flex-col gap-4 rounded-card border border-line bg-surface p-4"
     >
+      <WorkspaceField
+        workspaces={workspaces}
+        value={scope.teamId}
+        onChange={(value) => {
+          scope.select(value);
+          setPlanId('');
+        }}
+      />
+      <SelectField
+        label="Collection plan"
+        value={selectedPlan?.id ?? ''}
+        onChange={(event) => setPlanId(event.target.value)}
+        hint="Optional. A report and its linked plan must use the same workspace."
+        options={[
+          { value: '', label: 'No plan' },
+          ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
+        ]}
+      />
+      {invalidPlan && (
+        <Alert tone="error">
+          The requested plan is unavailable in this workspace. Choose its team and plan, or select
+          No plan.
+        </Alert>
+      )}
       <div className="grid gap-4 md:grid-cols-3">
         <SelectField
           label="Product"
@@ -122,7 +167,7 @@ export function GenerateForm({
           }}
         />
       </div>
-      {initial.plan !== undefined && (
+      {selectedPlan !== undefined && (
         <p className="text-sm text-muted">
           Scoped by a collection plan: its area, nations, requirements and background steer the
           evidence, and its first requirement is the question unless you ask another.
@@ -136,7 +181,7 @@ export function GenerateForm({
           onChange={(event) => {
             setQuestion(event.target.value);
           }}
-          required={initial.plan === undefined}
+          required={selectedPlan === undefined}
           maxLength={1000}
         />
       )}
@@ -155,7 +200,11 @@ export function GenerateForm({
       {template && <p className="text-sm text-muted">{template.purpose}</p>}
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>
-        <Button type="submit" busy={busy} disabled={templates.length === 0}>
+        <Button
+          type="submit"
+          busy={busy}
+          disabled={templates.length === 0 || !scope.ready || invalidPlan}
+        >
           Generate
         </Button>
       </div>

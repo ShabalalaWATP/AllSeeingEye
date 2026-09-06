@@ -22,6 +22,8 @@ class AccessClaims:
     role: Role
     jti: str
     expires_at: datetime
+    family_id: UUID
+    security_version: int
 
 
 @dataclass(frozen=True, slots=True)

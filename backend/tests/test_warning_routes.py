@@ -53,9 +53,13 @@ async def test_evaluator_fires_routes_and_cools_down(
     container.llm = ScriptedGateway(json.dumps(good_body()))
     notifier = RecordingNotifier()
     evaluator = IndicatorEvaluator(
-        container.store, SqlWarningStore(container.session_factory), container.bus, notifier,
-        container.clock, reporter=container.alert_report,
-    )  # fmt: skip
+        container.store,
+        SqlWarningStore(container.session_factory, container.access_policy),
+        container.bus,
+        notifier,
+        container.clock,
+        reporter=container.alert_report,
+    )
     subscription = container.bus.subscribe()
     fired = await evaluator.run_once()
     assert [alert.count for alert in fired] == [1]

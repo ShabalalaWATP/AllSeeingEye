@@ -89,7 +89,9 @@ export function TextField({
 }
 
 export interface TextAreaFieldProps
-  extends FieldFrameProps, Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id' | 'aria-describedby'> {}
+  extends
+    FieldFrameProps,
+    Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id' | 'aria-describedby'> {}
 
 export function TextAreaField({
   label,
@@ -119,7 +121,9 @@ export interface SelectOption {
 }
 
 export interface SelectFieldProps
-  extends FieldFrameProps, Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id' | 'aria-describedby'> {
+  extends
+    FieldFrameProps,
+    Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id' | 'aria-describedby'> {
   options: readonly SelectOption[];
 }
 

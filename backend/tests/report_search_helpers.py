@@ -93,4 +93,5 @@ def service(
         limiter=container.limiter,
         lock=lock or asyncio.Lock(),
         uow=repos.uow,
+        access=container.access_policy(session),
     )

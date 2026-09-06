@@ -24,6 +24,8 @@ const AdminSourcesPage = lazy(() => import('@/features/admin/AdminSourcesPage'))
 const AdminLlmPage = lazy(() => import('@/features/admin/AdminLlmPage'));
 const TotpSettingsPage = lazy(() => import('@/features/auth/TotpSettingsPage'));
 const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
+const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
+const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
@@ -80,6 +82,8 @@ export const routes: RouteObject[] = [
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
           { path: 'warning', element: <WarningPage /> },
+          { path: 'teams', element: <TeamsPage /> },
+          { path: 'account', element: <AccountPage /> },
           {
             path: 'admin',
             element: <RequireAdmin />,

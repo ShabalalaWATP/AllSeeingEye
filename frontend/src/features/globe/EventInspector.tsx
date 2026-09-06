@@ -1,6 +1,5 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 
-import { Button } from '@/components/ui/Button';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
@@ -20,10 +19,33 @@ export function sourceLabel(sourceId: string): string {
   return sourceId.replace(/_/g, ' ');
 }
 
-const dl = 'grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-xs';
+const dl =
+  'grid grid-cols-[minmax(0,auto)_minmax(0,1fr)] gap-x-3 gap-y-1 break-words font-mono text-xs';
 
 /** The detail drawer for the selected event: grade, provenance, summary and attributes. */
 export function EventInspector({ event, storySize = 1, onClose }: EventInspectorProps) {
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement;
+    closeButton.current?.focus();
+    return () => {
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
+    };
+  }, []);
+  useEffect(() => {
+    const onKeyDown = (key: KeyboardEvent) => {
+      if (key.key !== 'Escape' || key.defaultPrevented) return;
+      if (
+        key.target instanceof Element &&
+        key.target.closest('dialog[open], input, textarea, select')
+      )
+        return;
+      key.preventDefault();
+      onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
   const style = CATEGORY_STYLES[event.category];
   const attributes = Object.entries(event.attributes).filter(
     ([, value]) => value !== null && value !== '',
@@ -32,7 +54,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
     <aside
       aria-label="Event details"
       // Stops above the map attribution, which must stay visible (OpenFreeMap licence).
-      className="absolute top-16 right-3 bottom-14 z-10 flex w-80 flex-col rounded-md border border-line bg-surface/95 backdrop-blur"
+      className="absolute top-32 right-3 bottom-32 z-10 flex w-[calc(100%-1.5rem)] flex-col rounded-md border border-line bg-surface/95 backdrop-blur sm:w-80 lg:top-16 lg:bottom-14"
     >
       <div className="flex items-start justify-between gap-2 border-b border-line p-3">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -57,11 +79,17 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
             {event.subtype}
           </span>
         </div>
-        <Button variant="ghost" aria-label="Close" onClick={onClose} className="px-2 py-1">
+        <button
+          ref={closeButton}
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="min-h-11 min-w-11 rounded-md px-2 py-1 text-muted hover:bg-surface-2 hover:text-text focus-visible:outline-2 focus-visible:outline-ember lg:min-h-0 lg:min-w-0"
+        >
           ×
-        </Button>
+        </button>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 text-sm">
+      <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
         {event.title_en !== null && event.title_en !== event.title && (
           <p className="mt-1 text-muted">{event.title_en}</p>

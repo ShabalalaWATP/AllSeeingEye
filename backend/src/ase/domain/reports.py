@@ -17,6 +17,8 @@ from ase.domain.doctrine import Confidence, Probability
 
 MAX_JUDGEMENT_CHARS = 400
 MAX_ITEM_CHARS = 1_200
+# Model rationale plus an engine-authored, bounded evidence metadata preface.
+MAX_CONFIDENCE_CHARS = 1_600
 MAX_SECTION_CHARS = 4_000
 MAX_LIST = 20
 
@@ -207,7 +209,7 @@ def _judgement(item: Mapping[str, Any], index: int) -> KeyJudgement:
         probability=_enum(item.get("probability"), Probability, "key_judgements.probability"),
         confidence=_enum(item.get("confidence"), Confidence, "key_judgements.confidence"),
         confidence_statement=_str(
-            item.get("confidence_statement", ""), "confidence_statement", MAX_ITEM_CHARS
+            item.get("confidence_statement", ""), "confidence_statement", MAX_CONFIDENCE_CHARS
         ),
         supporting_evidence=_labels(item.get("supporting_evidence"), "supporting_evidence"),
         contradicting_evidence=_labels(
@@ -236,7 +238,7 @@ def parse_body(data: Any) -> ReportBody:
                 ReportingItem(
                     text=_str(item.get("text", ""), "reporting.items.text", MAX_ITEM_CHARS),
                     evidence=_labels(item.get("evidence"), "reporting.items.evidence"),
-                    grade=_str(item.get("grade", ""), "reporting.items.grade", 4),
+                    grade=_str(item.get("grade", ""), "reporting.items.grade", 160),
                 )
                 for item in _objects(theme.get("items"), "reporting.items")
             ),

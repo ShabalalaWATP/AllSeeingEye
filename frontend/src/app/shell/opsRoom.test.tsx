@@ -5,6 +5,13 @@ import { useGlobeStore } from '@/stores/globe';
 import { renderApp } from '@/test/render';
 
 describe('ops room', () => {
+  it('can exit with a pointer or touch without a hardware keyboard', async () => {
+    const { user } = renderApp('/', 'user');
+    await user.keyboard('o');
+    await user.click(await screen.findByRole('button', { name: 'Exit ops room' }));
+    expect(useGlobeStore.getState().opsRoom).toBe(false);
+    expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+  });
   it('drops the chrome, shows the live alerts and leaves on Escape', async () => {
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument();

@@ -6,13 +6,14 @@ import asyncio
 import time
 from collections.abc import Sequence
 
+from ase.application.access import AccessPolicy
 from ase.application.ports.embeddings import EmbeddingGateway, ReportEmbeddingRepository
 from ase.application.ports.llm import LlmProfileRepository, LlmUsageRepository, SecretCipher
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.reports.access import GetReportUseCase
-from ase.domain.errors import Forbidden, InvalidRequest, NoModelAvailable, NotFound, RateLimited
+from ase.domain.errors import InvalidRequest, NoModelAvailable, NotFound, RateLimited
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
 from ase.domain.report_records import ReportRecord
 from ase.domain.report_search import (
@@ -48,6 +49,7 @@ class ReportSearchService:
         limiter: RateLimiter,
         lock: asyncio.Lock,
         uow: UnitOfWork,
+        access: AccessPolicy,
     ) -> None:
         self._reports = reports
         self._embeddings = embeddings
@@ -59,6 +61,7 @@ class ReportSearchService:
         self._limiter = limiter
         self._lock = lock
         self._uow = uow
+        self._access = access
 
     async def _profile(self) -> LlmProfile | None:
         profiles = await self._profiles.list_all()
@@ -72,10 +75,8 @@ class ReportSearchService:
         )
 
     async def _records(self, actor: User) -> list[ReportRecord]:
-        if not actor.is_active:
-            raise Forbidden()
-        # Matches the saved report library: every active signed-in user can read reports.
-        return await self._reports.list_recent(MAX_REPORTS)
+        access = await self._access.context(actor)
+        return await self._reports.list_visible(access.visibility, MAX_REPORTS)
 
     async def status(self, actor: User) -> SearchStatus:
         records = await self._records(actor)
@@ -144,17 +145,26 @@ class ReportSearchService:
             if profile is None:
                 raise NoModelAvailable(UNAVAILABLE)
             fingerprint = profile_fingerprint(profile)
+            await self._embeddings.prune_obsolete()
+            await self._uow.commit()
             existing = await self._embeddings.current([r.id for r in records], fingerprint)
             current_ids = {entry.report_id for entry in existing}
+            candidates = [r.id for r in records if r.id not in current_ids]
+            eligible = await self._embeddings.capacity_for(candidates, MAX_REPORTS)
+            if candidates and not eligible:
+                raise InvalidRequest(
+                    "The shared semantic index has reached its storage limit. "
+                    "Existing indexed reports remain searchable. Contact an administrator."
+                )
             selected = []
             texts = []
             for record in records:
-                if record.id in current_ids:
+                if record.id not in eligible:
                     continue
                 try:
-                    current, version = await GetReportUseCase(self._reports).execute(
-                        actor, record.id
-                    )
+                    current, version = await GetReportUseCase(
+                        self._reports, self._access, self._uow
+                    ).execute(actor, record.id)
                 except NotFound:
                     continue
                 selected.append((current.id, version.number))
@@ -162,13 +172,20 @@ class ReportSearchService:
                 if len(selected) == INDEX_BATCH:
                     break
             if selected:
+                await self._uow.rollback()
                 result = await self._embed(actor, profile, texts)
+                # Finish usage accounting and end the read snapshot before revalidation.
+                await self._uow.commit()
+                access = await self._access.context(actor, for_update=True)
                 for (report_id, number), vector in zip(selected, result.vectors, strict=True):
+                    latest = await self._reports.get(report_id)
+                    if latest is None or latest.latest_version != number:
+                        continue
+                    access.require_read(latest.created_by, latest.team_id)
                     await self._embeddings.save(
                         IndexedReport(report_id, number, fingerprint, vector)
                     )
-            # Retain only current library ids, even when a report vanished during the call.
-            await self._embeddings.retain([r.id for r in await self._records(actor)])
+            await self._embeddings.prune_obsolete()
             await self._uow.commit()
             return await self.status(actor)
 
@@ -187,6 +204,7 @@ class ReportSearchService:
             entries = await self._embeddings.current([r.id for r in records], fingerprint)
             if not entries:
                 return SearchResult((), 0, len(records))
+            await self._uow.rollback()
             result = await self._embed(actor, profile, [text])
             await self._uow.commit()
             # Re-read after the outbound call: deleted or superseded reports cannot leak.

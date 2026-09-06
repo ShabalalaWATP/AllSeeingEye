@@ -191,7 +191,9 @@ async def test_sql_terms_read_enabled_plans(container: Container, user: User) ->
     async with container.session_factory() as session:
         await container.repositories(session).plans.add(social_plan(user.id, ["Secret"]))
         await session.commit()
-    terms = await SqlSocialTerms(container.session_factory, ["ukraine"]).configured()
+    terms = await SqlSocialTerms(
+        container.session_factory, ["ukraine"], container.access_policy
+    ).configured()
     assert len(terms) == 2 and terms[1].owners == frozenset({user.id})
 
 

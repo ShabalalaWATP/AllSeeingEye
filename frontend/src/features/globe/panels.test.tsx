@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -9,6 +9,39 @@ import { LayerPanel, formatBudget } from './LayerPanel';
 import { Ticker } from './Ticker';
 
 const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
+
+describe('EventInspector keyboard dismissal', () => {
+  it('focuses its close action, dismisses on Escape and restores the opening control', async () => {
+    const user = userEvent.setup();
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
+    const onClose = vi.fn();
+    const { unmount } = render(<EventInspector event={liveEvent()} onClose={onClose} />);
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledOnce();
+    unmount();
+    expect(opener).toHaveFocus();
+    opener.remove();
+  });
+
+  it('leaves Escape inside a modal or an editable field to that control', () => {
+    const onClose = vi.fn();
+    render(<EventInspector event={liveEvent()} onClose={onClose} />);
+    const dialog = document.createElement('dialog');
+    dialog.open = true;
+    const button = document.createElement('button');
+    dialog.append(button);
+    const field = document.createElement('input');
+    document.body.append(dialog, field);
+    fireEvent.keyDown(button, { key: 'Escape' });
+    fireEvent.keyDown(field, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+    dialog.remove();
+    field.remove();
+  });
+});
 
 describe('LayerPanel', () => {
   it('lists every category with its count, reports the budget and toggles', async () => {

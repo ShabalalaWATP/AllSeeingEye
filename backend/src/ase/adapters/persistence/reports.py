@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
+from ase.domain.access import Visibility
 from ase.domain.errors import NotFound
 from ase.domain.report_records import (
     ReportRecord,
@@ -41,11 +44,13 @@ def _record_from_row(row: ReportRow) -> ReportRecord:
         created_by=row.created_by,
         created_at=row.created_at,
         latest_version=row.latest_version,
+        team_id=row.team_id,
     )
 
 
 def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     direction, advocacy = analysis_from_dict(row.analysis)
+    period = (row.analysis or {}).get("period") or {}
     return ReportVersion(
         direction=direction,
         advocacy=advocacy,
@@ -65,6 +70,9 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
         latency_ms=row.latency_ms,
         attempts=row.attempts,
         created_at=row.created_at,
+        period_from=datetime.fromisoformat(period["from"]) if period.get("from") else None,
+        period_to=datetime.fromisoformat(period["to"]) if period.get("to") else None,
+        data_cutoff=datetime.fromisoformat(period["cutoff"]) if period.get("cutoff") else None,
     )
 
 
@@ -108,6 +116,7 @@ class SqlReportRepository:
                 created_by=record.created_by,
                 created_at=record.created_at,
                 latest_version=record.latest_version,
+                team_id=record.team_id,
             )
         )
         self._session.add(_version_row(version))
@@ -119,11 +128,14 @@ class SqlReportRepository:
             raise NotFound()
         row.status = record.status.value
         row.latest_version = record.latest_version
+        row.period_from = record.period_from
+        row.period_to = record.period_to
+        row.data_cutoff = record.data_cutoff
         self._session.add(_version_row(version))
         await self._session.flush()
 
     async def get(self, report_id: UUID) -> ReportRecord | None:
-        row = await self._session.get(ReportRow, report_id)
+        row = await self._session.get(ReportRow, report_id, populate_existing=True)
         return _record_from_row(row) if row else None
 
     async def get_version(self, report_id: UUID, number: int) -> ReportVersion | None:
@@ -153,6 +165,16 @@ class SqlReportRepository:
     async def list_recent(self, limit: int) -> list[ReportRecord]:
         rows = await self._session.scalars(
             select(ReportRow).order_by(ReportRow.created_at.desc()).limit(limit)
+        )
+        return [_record_from_row(row) for row in rows]
+
+    async def list_visible(self, visibility: Visibility, limit: int) -> list[ReportRecord]:
+        rows = await self._session.scalars(
+            select(ReportRow)
+            .where(visibility_predicate(ReportRow.created_by, ReportRow.team_id, visibility))
+            .order_by(ReportRow.created_at.desc(), ReportRow.id)
+            .limit(limit)
+            .execution_options(populate_existing=True)
         )
         return [_record_from_row(row) for row in rows]
 

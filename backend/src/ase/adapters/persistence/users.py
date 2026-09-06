@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.persistence.models import AccountRequestRow, UserRow
+from ase.adapters.persistence.models import AccountRequestRow, AdministrationLockRow, UserRow
 from ase.domain.errors import NotFound
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
@@ -25,6 +27,7 @@ def _user_from_row(row: UserRow) -> User:
         locked_until=row.locked_until,
         created_at=row.created_at,
         last_login_at=row.last_login_at,
+        security_version=row.security_version,
     )
 
 
@@ -39,14 +42,44 @@ def _apply_user(row: UserRow, user: User) -> None:
     row.locked_until = user.locked_until
     row.created_at = user.created_at
     row.last_login_at = user.last_login_at
+    row.security_version = user.security_version
 
 
 class SqlUserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def lock_administration(self) -> None:
+        insert = (
+            pg_insert if self._session.get_bind().dialect.name == "postgresql" else sqlite_insert
+        )
+        await self._session.execute(
+            insert(AdministrationLockRow).values(id=1).on_conflict_do_nothing(index_elements=["id"])
+        )
+        await self._session.execute(
+            update(AdministrationLockRow).where(AdministrationLockRow.id == 1).values(id=1)
+        )
+
+    async def lock_by_id(self, user_id: UUID) -> User | None:
+        # A no-op UPDATE takes a row lock on PostgreSQL and the writer lock on
+        # SQLite. SELECT FOR UPDATE alone would silently do nothing on SQLite.
+        await self._session.execute(
+            update(UserRow).where(UserRow.id == user_id).values(id=UserRow.id)
+        )
+        row = await self._session.get(UserRow, user_id, populate_existing=True)
+        return _user_from_row(row) if row else None
+
+    async def lock_by_email(self, email: str) -> User | None:
+        await self._session.execute(
+            update(UserRow).where(UserRow.email == email).values(id=UserRow.id)
+        )
+        row = await self._session.scalar(
+            select(UserRow).where(UserRow.email == email).execution_options(populate_existing=True)
+        )
+        return _user_from_row(row) if row else None
+
     async def get_by_id(self, user_id: UUID) -> User | None:
-        row = await self._session.get(UserRow, user_id)
+        row = await self._session.get(UserRow, user_id, populate_existing=True)
         return _user_from_row(row) if row else None
 
     async def get_by_email(self, email: str) -> User | None:
@@ -99,7 +132,7 @@ class SqlAccountRequestRepository:
         self._session = session
 
     async def get(self, request_id: UUID) -> AccountRequest | None:
-        row = await self._session.get(AccountRequestRow, request_id)
+        row = await self._session.get(AccountRequestRow, request_id, populate_existing=True)
         return _request_from_row(row) if row else None
 
     async def add(self, request: AccountRequest) -> None:

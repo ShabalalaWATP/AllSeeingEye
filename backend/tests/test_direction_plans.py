@@ -168,12 +168,12 @@ async def test_a_second_user_cannot_change_someone_elses_plan(
     second = await login_token(client, "second@example.com", "another-long-passphrase")
     assert (
         await client.put(f"/api/direction/plans/{plan_id}", json=PLAN, headers=bearer(second))
-    ).status_code == 403
+    ).status_code == 404
     assert (
         await client.delete(f"/api/direction/plans/{plan_id}", headers=bearer(second))
-    ).status_code == 403
+    ).status_code == 404
     readable = await client.get(f"/api/direction/plans/{plan_id}", headers=bearer(second))
-    assert readable.status_code == 200
+    assert readable.status_code == 404
 
 
 async def test_a_report_scoped_by_a_plan_skips_the_direction_call(
@@ -209,4 +209,4 @@ async def test_a_report_scoped_by_a_plan_skips_the_direction_call(
     missing = await client.post(
         "/api/reports", json={"template": "ask", "plan": str(uuid4())}, headers=bearer(token)
     )
-    assert missing.status_code == 422
+    assert missing.status_code == 404

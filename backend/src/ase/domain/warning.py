@@ -41,6 +41,7 @@ class Indicator:
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    team_id: UUID | None = None
 
     @property
     def window(self) -> timedelta:
@@ -91,6 +92,8 @@ class Alert:
     acknowledged_at: datetime | None = None
     acknowledged_by: UUID | None = None
     report_id: UUID | None = None
+    created_by: UUID | None = None
+    team_id: UUID | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,4 +149,6 @@ def alert_from(indicator: Indicator, firing: Firing, alert_id: UUID, now: dateti
         threshold=indicator.threshold,
         event_ids=tuple(e.id for e in firing.evidence),
         countries=firing.countries,
+        created_by=indicator.created_by,
+        team_id=indicator.team_id,
     )

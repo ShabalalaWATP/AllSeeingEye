@@ -41,7 +41,8 @@ export interface GlobeEngineOptions {
 /**
  * Mounts a map engine into the container for the life of the component, keeps its
  * projection, base layer and lite setting in step with the view state, and hands
- * back stable callbacks for the data layers, the camera and the cursor.
+ * back stable callbacks for the data layers, the camera and the cursor. Engine replacement
+ * replays the current scene; synchronisation effects also depend on the mount inputs.
  */
 export function useGlobeEngine(
   containerRef: RefObject<HTMLDivElement | null>,
@@ -50,6 +51,8 @@ export function useGlobeEngine(
   const engineRef = useRef<MapEngine | null>(null);
   const cursorHandlers = useRef(new Set<CursorHandler>());
   const viewHandlers = useRef(new Set<ViewHandler>());
+  const latestLayers = useRef<readonly DataLayer[]>([]);
+  const spinning = useRef(false);
   const factory = createEngine ?? createMapLibreEngine;
 
   useEffect(() => {
@@ -57,6 +60,8 @@ export function useGlobeEngine(
     if (!enabled || container === null) return;
     const engine = factory();
     engine.mount(container);
+    engine.setLayers(latestLayers.current);
+    engine.spin(spinning.current);
     const offCursor = engine.onCursor((position) => {
       for (const handler of cursorHandlers.current) handler(position);
     });
@@ -75,17 +80,18 @@ export function useGlobeEngine(
 
   useEffect(() => {
     engineRef.current?.setProjection(projectionFor(mode));
-  }, [mode, enabled]);
+  }, [mode, enabled, factory, containerRef]);
 
   useEffect(() => {
     engineRef.current?.setBaseLayer(baseLayer);
-  }, [baseLayer, enabled]);
+  }, [baseLayer, enabled, factory, containerRef]);
 
   useEffect(() => {
     engineRef.current?.setLite(lite);
-  }, [lite, enabled]);
+  }, [lite, enabled, factory, containerRef]);
 
   const setLayers = useCallback((layers: readonly DataLayer[]) => {
+    latestLayers.current = layers;
     engineRef.current?.setLayers(layers);
   }, []);
 
@@ -96,6 +102,7 @@ export function useGlobeEngine(
   const getZoom = useCallback(() => engineRef.current?.getZoom() ?? 0, []);
 
   const spin = useCallback((enabled: boolean) => {
+    spinning.current = enabled;
     engineRef.current?.spin(enabled);
   }, []);
 

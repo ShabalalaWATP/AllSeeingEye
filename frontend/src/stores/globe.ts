@@ -8,8 +8,9 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type ViewMode = 'globe' | 'map';
 
-/** What is drawn under the data: the dark vector style, imagery, or OS raster tiles. */
-export type BaseLayer = 'dark' | 'satellite' | 'hybrid' | 'os_road' | 'os_outdoor' | 'os_light';
+/** What is drawn under the data: keyless vector styles, imagery, or OS raster tiles. */
+export type BaseLayer =
+  'dark' | 'streets' | 'light' | 'satellite' | 'hybrid' | 'os_road' | 'os_outdoor' | 'os_light';
 
 export const GLOBE_PREFS_KEY = 'ase-globe-prefs';
 

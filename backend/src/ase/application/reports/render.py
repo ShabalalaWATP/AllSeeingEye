@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from ase.application.reports.export_text import markdown_fields, plain_markdown, review_notice
+from ase.application.reports.markdown_annex import annex_lines
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.doctrine import term_for
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
-from ase.domain.reports import ReportBody, ReportHeader
+from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
 from ase.domain.validation import Finding
 
 
@@ -45,12 +47,16 @@ def _advocacy_lines(advocacy: DevilsAdvocacy | None) -> list[str]:
     return lines
 
 
-def _header_lines(header: ReportHeader) -> list[str]:
+def _header_lines(header: ReportHeader, period_line: str | None = None) -> list[str]:
     lines = [f"# {header.title}", ""]
     lines.append(
-        f"Template: {header.template}. Period {header.period_from:%Y-%m-%d %H:%M} to "
-        f"{header.period_to:%Y-%m-%d %H:%M} UTC. "
-        f"Data cut-off {header.data_cutoff:%Y-%m-%d %H:%M} UTC."
+        plain_markdown(period_line)
+        if period_line
+        else (
+            f"Template: {header.template}. Period {header.period_from:%Y-%m-%d %H:%M} to "
+            f"{header.period_to:%Y-%m-%d %H:%M} UTC. "
+            f"Data cut-off {header.data_cutoff:%Y-%m-%d %H:%M} UTC."
+        )
     )
     if header.requirements:
         lines.append(f"Requirements: {', '.join(header.requirements)}.")
@@ -127,29 +133,6 @@ def _closing_lines(body: ReportBody) -> list[str]:
     return lines
 
 
-def _annex_lines(
-    evidence: Sequence[EvidenceItem], quality: QualityOfInformation, findings: Sequence[Finding]
-) -> list[str]:
-    lines = ["## Quality of information", "", quality.describe(), ""]
-    if findings:
-        lines += ["## Validator findings", ""]
-        lines.extend(f"- {f.severity.value}: {f.location}: {f.message}" for f in findings)
-        lines.append("")
-    lines += ["## Evidence annex", ""]
-    lines.append("| Label | Grade | Source | Published | Title | Link | Archive |")
-    lines.append("|---|---|---|---|---|---|---|")
-    for item in evidence:
-        title = item.title.replace("|", "\\|")
-        link = f"[link]({item.url})" if item.url else ""
-        archive = f"[archive]({item.archive_url})" if item.archive_url else ""
-        lines.append(
-            f"| {item.label} | {item.grade} | {item.source_name} | "
-            f"{item.published_at:%Y-%m-%d %H:%M} | {title} | {link} | {archive} |"
-        )
-    lines.append("")
-    return lines
-
-
 def render_markdown(
     header: ReportHeader,
     body: ReportBody,
@@ -159,14 +142,20 @@ def render_markdown(
     *,
     direction: Direction | None = None,
     advocacy: DevilsAdvocacy | None = None,
+    status: ReportStatus | None = None,
+    period_line: str | None = None,
 ) -> str:
-    lines = (
-        _header_lines(header)
-        + _direction_lines(direction)
-        + _judgement_lines(body)
-        + _analysis_lines(body)
-        + _advocacy_lines(advocacy)
-        + _closing_lines(body)
-        + _annex_lines(evidence, quality, findings)
-    )
+    header, body = markdown_fields(header), markdown_fields(body)
+    direction, advocacy = markdown_fields(direction), markdown_fields(advocacy)
+    lines = [
+        *_header_lines(header, period_line),
+        review_notice(status),
+        "",
+        *_direction_lines(direction),
+        *_judgement_lines(body),
+        *_analysis_lines(body),
+        *_advocacy_lines(advocacy),
+        *_closing_lines(body),
+        *annex_lines(evidence, quality, findings),
+    ]
     return "\n".join(lines)

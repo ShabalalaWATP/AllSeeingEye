@@ -147,7 +147,8 @@ async def test_disable_requires_password_and_unused_code(
         },
     )
     assert removed.status_code == 204
-    assert (await login(client, ADMIN_EMAIL, ADMIN_PASSWORD)).status_code == 200
+    assert (await client.get("/api/auth/totp", headers=headers)).status_code == 401
+    headers = bearer(await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD))
     assert (await client.get("/api/auth/totp", headers=headers)).json()["enabled"] is False
 
 
@@ -224,6 +225,8 @@ async def test_disabled_and_demoted_users_cannot_manage_totp(
     headers, _ = await enable_totp(client, clock)
     async with container.session_factory() as session:
         repos = container.repositories(session)
+        admin = await repos.users.get_by_id(admin.id)
+        assert admin
         admin.is_active = False
         await repos.users.save(admin)
         await repos.uow.commit()

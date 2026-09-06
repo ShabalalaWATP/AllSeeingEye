@@ -109,6 +109,9 @@ async def test_application_permissions_and_local_recovery(
             await use_case.confirm(admin, "123456", CONTEXT)
         enrolment = await use_case.begin(admin, ADMIN_PASSWORD, CONTEXT)
         await use_case.confirm(admin, pyotp.TOTP(enrolment.secret).at(clock.now()), CONTEXT)
+        current_admin = await container.repositories(session).users.get_by_id(admin.id)
+        assert current_admin
+        admin = current_admin
         assert await use_case.status(admin) == (True, True)
         clock.advance(timedelta(minutes=1))
         with pytest.raises(InvalidRequest):

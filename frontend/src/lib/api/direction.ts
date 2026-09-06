@@ -1,10 +1,14 @@
 /** Direction: areas of interest and collection plans with the evidence gathered against them. */
 import { z } from 'zod';
 
-import { categorySchema, liveEventSchema } from './eventSchemas';
+import { scopedMutation } from '@/lib/workspaceAccess';
+import type { components } from './types.gen';
+
+import { liveEventSchema } from './eventSchemas';
 import { apiCall, apiSend } from './client';
 
 export const aoiSchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -32,6 +36,7 @@ export const pirSchema = z.object({
 export type Pir = z.infer<typeof pirSchema>;
 
 export const planSchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -49,34 +54,15 @@ export const planEvidenceSchema = z.object({
   plan: planSchema,
   aoi: aoiSchema.nullable(),
   considered: z.number().int(),
-  sirs: z.array(
-    z.object({ code: z.string(), text: z.string(), events: z.array(liveEventSchema) }),
-  ),
+  sirs: z.array(z.object({ code: z.string(), text: z.string(), events: z.array(liveEventSchema) })),
 });
 export type PlanEvidence = z.infer<typeof planEvidenceSchema>;
 
-export interface AoiRequest {
-  name: string;
-  description?: string;
-  kind: 'bbox' | 'countries';
-  bbox?: [number, number, number, number];
-  countries?: string[];
-}
+export type AoiRequest = components['schemas']['AoiIn'];
 
-export interface SirRequest {
-  text: string;
-  keywords?: string[];
-  categories?: z.infer<typeof categorySchema>[];
-}
+export type SirRequest = components['schemas']['SirIn'];
 
-export interface PlanRequest {
-  name: string;
-  description?: string;
-  aoi_id?: string | null;
-  countries?: string[];
-  pirs: { text: string; sirs: SirRequest[] }[];
-  enabled?: boolean;
-}
+export type PlanRequest = components['schemas']['PlanIn'];
 
 export async function fetchAois(): Promise<AreaOfInterest[]> {
   const page = await apiCall('/api/direction/aois', {
@@ -86,11 +72,15 @@ export async function fetchAois(): Promise<AreaOfInterest[]> {
 }
 
 export function createAoi(request: AoiRequest): Promise<AreaOfInterest> {
-  return apiCall('/api/direction/aois', { method: 'POST', body: request, schema: aoiSchema });
+  return scopedMutation(() =>
+    apiCall('/api/direction/aois', { method: 'POST', body: request, schema: aoiSchema }),
+  );
 }
 
 export function deleteAoi(id: string): Promise<void> {
-  return apiSend(`/api/direction/aois/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return scopedMutation(() =>
+    apiSend(`/api/direction/aois/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  );
 }
 
 export async function fetchPlans(): Promise<CollectionPlan[]> {
@@ -101,7 +91,9 @@ export async function fetchPlans(): Promise<CollectionPlan[]> {
 }
 
 export function createPlan(request: PlanRequest): Promise<CollectionPlan> {
-  return apiCall('/api/direction/plans', { method: 'POST', body: request, schema: planSchema });
+  return scopedMutation(() =>
+    apiCall('/api/direction/plans', { method: 'POST', body: request, schema: planSchema }),
+  );
 }
 
 export function fetchPlanEvidence(id: string): Promise<PlanEvidence> {
@@ -109,5 +101,7 @@ export function fetchPlanEvidence(id: string): Promise<PlanEvidence> {
 }
 
 export function deletePlan(id: string): Promise<void> {
-  return apiSend(`/api/direction/plans/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return scopedMutation(() =>
+    apiSend(`/api/direction/plans/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  );
 }

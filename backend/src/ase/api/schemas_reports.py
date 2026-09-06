@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
@@ -17,7 +18,6 @@ from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
     body_to_dict,
-    evidence_to_list,
     findings_to_list,
     quality_to_dict,
 )
@@ -35,6 +35,7 @@ class ReportCreateIn(BaseModel):
     hazard: str | None = Field(default=None, max_length=32)
     conflict: str | None = Field(default=None, max_length=64)
     plan: UUID | None = None
+    team_id: UUID | None = None
 
     def to_request(self) -> ReportRequest:
         return ReportRequest(
@@ -48,6 +49,7 @@ class ReportCreateIn(BaseModel):
             hazard=self.hazard.strip().lower() if self.hazard else None,
             conflict_id=self.conflict.strip().lower() if self.conflict else None,
             plan_id=self.plan,
+            team_id=self.team_id,
         )
 
 
@@ -94,6 +96,7 @@ class ReportSummaryOut(BaseModel):
     created_by: UUID
     created_at: datetime
     latest_version: int
+    team_id: UUID | None
 
     @classmethod
     def from_record(cls, record: ReportRecord) -> Self:
@@ -108,6 +111,7 @@ class ReportSummaryOut(BaseModel):
             created_by=record.created_by,
             created_at=record.created_at,
             latest_version=record.latest_version,
+            team_id=record.team_id,
         )
 
 
@@ -116,11 +120,14 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    period_from: datetime | None
+    period_to: datetime | None
+    data_cutoff: datetime | None
     number: int
     status: ReportStatus
     body: dict[str, Any]
     findings: list[dict[str, str]]
-    evidence: list[dict[str, Any]]
+    evidence: list[ReportEvidenceOut]
     quality: dict[str, Any]
     markdown: str
     model: str
@@ -135,13 +142,16 @@ class ReportVersionOut(BaseModel):
     @classmethod
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
+            period_from=version.period_from,
+            period_to=version.period_to,
+            data_cutoff=version.data_cutoff,
             direction=direction_to_dict(version.direction) if version.direction else None,
             devils_advocacy=advocacy_to_dict(version.advocacy) if version.advocacy else None,
             number=version.number,
             status=version.status,
             body=body_to_dict(version.body),
             findings=findings_to_list(version.findings),
-            evidence=evidence_to_list(version.evidence),
+            evidence=[ReportEvidenceOut.model_validate(item) for item in version.evidence],
             quality=quality_to_dict(version.quality),
             markdown=version.markdown,
             model=version.model,

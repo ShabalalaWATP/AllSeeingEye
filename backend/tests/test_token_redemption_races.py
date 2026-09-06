@@ -73,6 +73,9 @@ async def test_refresh_race_issues_one_child_then_revokes_family(
         assert all(row.revoked_at is not None for row in rows)
         entries = await container.repositories(session).audit.list_before(None, 100)
         assert any(entry.action is AuditAction.REFRESH_REUSE_DETECTED for entry in entries)
+        assert all(
+            str(row.family_id) not in str(entry.details) for row in rows for entry in entries
+        )
         assert all(row.user_id == user.id for row in rows)
         with pytest.raises(InvalidRefreshToken):
             await container.refresh(session).execute(successes[0].refresh_secret, CONTEXT)

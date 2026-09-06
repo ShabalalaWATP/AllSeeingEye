@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
-from datetime import timedelta
 
+from ase.application.reports.export_text import evidence_metadata, review_notice, safe_url
+from ase.application.reports.frozen_header import frozen_period_line
 from ase.domain.doctrine import term_for
 from ase.domain.errors import InvalidRequest
 from ase.domain.evidence import EvidenceItem
@@ -123,25 +124,17 @@ def _evidence(doc: DocumentBuilder, items: Sequence[EvidenceItem]) -> None:
         doc.add("No frozen evidence.")
     for item in items:
         doc.add(f"{item.label} | {item.grade} | {item.source_name}", BlockKind.SUBHEADING)
-        doc.add(item.title)
+        doc.add(f"Original title: {item.title}")
+        if item.title_en:
+            doc.add(f"Translation (unverified): {item.title_en}")
         if item.summary:
-            doc.add(item.summary)
-        doc.add(
-            f"Published: {item.published_at.isoformat()}\n"
-            f"Captured: {item.captured_at.isoformat()}\n"
-            f"Source: {item.source_id}; independence group: {item.independence_key}\n"
-            f"Reliability: {item.reliability}; credibility: {item.credibility}\n"
-            f"Grade rationale: {item.grade_rationale or 'Not provided.'}\n"
-            f"Category: {item.category}; country: {item.country_iso or 'Not located'}; "
-            f"coordinates: {item.lon}, {item.lat}; "
-            f"instrument: {'yes' if item.instrument else 'no'}",
-            BlockKind.METADATA,
-        )
-        doc.add(f"Event ID: {item.event_id}\nContent hash: {item.content_hash}", BlockKind.METADATA)
-        if item.url:
-            doc.add(f"Source URL: {item.url}", BlockKind.METADATA)
-        if item.archive_url:
-            doc.add(f"Archive URL: {item.archive_url}", BlockKind.METADATA)
+            doc.add(f"Source snippet: {item.summary}")
+        doc.add("\n".join(evidence_metadata(item)), BlockKind.METADATA)
+        for name, value in (("Source URL", item.url), ("Archive URL", item.archive_url)):
+            if value:
+                doc.add(
+                    f"{name}: {safe_url(value) or 'Unavailable (unsafe URL)'}", BlockKind.METADATA
+                )
         if item.flags:
             doc.add(f"Flags: {'; '.join(item.flags)}", BlockKind.WARNING)
 
@@ -153,19 +146,7 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
     reference = f"Report {record.id} | version {version.number}"
     doc.add(record.title, BlockKind.TITLE)
     doc.add(reference, BlockKind.METADATA)
-    # The mutable record contains the latest period. The frozen Markdown carries the
-    # original engine-written header for older versions; never substitute today's dates.
-    header = next(
-        (line for line in version.markdown.splitlines() if line.startswith("Template: ")), None
-    )
-    if header is None:
-        window = record.period_to - record.period_from
-        start = version.created_at - max(window, timedelta())
-        header = (
-            f"Template: {record.template}. Period {start.isoformat()} to "
-            f"{version.created_at.isoformat()}. Data cut-off {version.created_at.isoformat()}."
-        )
-    doc.add(header, BlockKind.METADATA)
+    doc.add(frozen_period_line(record, version), BlockKind.METADATA)
     if record.scope:
         doc.add(f"Scope: {json.dumps(dict(record.scope), sort_keys=True)}", BlockKind.METADATA)
     doc.add(
@@ -174,13 +155,14 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
         f"Model: {version.model}. Attempts: {version.attempts}.",
         BlockKind.METADATA,
     )
-    if version.status is not ReportStatus.READY:
-        doc.add(
-            "FAILED GENERATION: this version is not an assessment."
-            if version.status is ReportStatus.FAILED
-            else "NEEDS REVIEW: this version did not pass doctrine validation.",
-            BlockKind.WARNING,
-        )
+    doc.add(
+        review_notice(version.status),
+        BlockKind.METADATA if version.status is ReportStatus.READY else BlockKind.WARNING,
+    )
+    doc.add(
+        "Frozen feed metadata and snippets. Source content and translations "
+        "have not been independently verified."
+    )
     if version.direction is not None:
         doc.heading("Direction")
         for line in version.direction.lines():

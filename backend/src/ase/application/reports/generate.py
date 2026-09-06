@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import datetime
 from uuid import UUID
 
+from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
@@ -27,14 +27,20 @@ from ase.application.ports.llm import (
 )
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.trackers import ConflictDirectory
+from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.scope import (
+    conflict_background,
+    report_scope,
+    report_title,
+    report_window,
+)
 from ase.application.reports.templates import Template, template_for
 from ase.domain.audit import AuditAction
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import (
     EncryptionUnavailable,
-    Forbidden,
     InvalidRequest,
     NoModelAvailable,
     NotFound,
@@ -43,7 +49,7 @@ from ase.domain.errors import (
 from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.report_records import ReportRecord, ReportVersion
-from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
+from ase.domain.trackers import Conflict, Hazard
 from ase.domain.users import User
 
 __all__ = ["GenerateReportUseCase", "ReportRequest"]
@@ -69,6 +75,7 @@ class GenerateReportUseCase:
         limits: RateLimits,
         auditor: Auditor,
         uow: UnitOfWork,
+        access: AccessPolicy,
         backgrounds: Mapping[str, Callable[[], Awaitable[str]]] | None = None,
         url_resolver: EvidenceUrlResolver | None = None,
     ) -> None:
@@ -93,17 +100,23 @@ class GenerateReportUseCase:
         self._limits = limits
         self._auditor = auditor
         self._uow = uow
+        self._authorisation = ReportAuthorisation(access, reports, plans, aois, uow)
 
     async def execute(
         self, actor: User, request: ReportRequest, context: RequestContext
     ) -> tuple[ReportRecord, ReportVersion]:
         """A new report from the live evidence: version 1 of a new record."""
         template = self._template(request)
-        plan = await self._plan(request)
+        plan = await self._authorisation.prepare(actor, request)
         profile = await self._prepare(actor, request.profile_id, template)
         now = self._clock.now()
         job = await self._job(actor, template, request, profile, now, plan=plan)
-        version = await self._producer.produce(job, self._profile_for)
+        await self._uow.rollback()
+        version = await self._producer.produce(
+            job,
+            self._profile_for,
+            lambda: self._authorisation.finish(actor, request, None, plan),
+        )
         record = ReportRecord(
             id=version.report_id,
             template=template.id,
@@ -116,6 +129,7 @@ class GenerateReportUseCase:
             created_by=actor.id,
             created_at=now,
             latest_version=1,
+            team_id=request.team_id,
         )
         await self._reports.add(record, version)
         await self._finish(actor, record, version, context)
@@ -128,14 +142,14 @@ class GenerateReportUseCase:
         record = await self._reports.get(report_id)
         if record is None:
             raise NotFound()
-        if record.created_by != actor.id and not actor.is_admin:
-            raise Forbidden()
+        request = replace(
+            ReportRequest.from_scope(record.template, record.scope), team_id=record.team_id
+        )
+        plan = await self._authorisation.prepare(actor, request, record)
         previous = await self._reports.get_version(report_id, record.latest_version)
         if previous is None:
             raise NotFound()
-        request = ReportRequest.from_scope(record.template, record.scope)
         template = self._template(request)
-        plan = await self._plan(request)
         profile = await self._prepare(actor, None, template)
         now = self._clock.now()
         job = await self._job(
@@ -148,7 +162,12 @@ class GenerateReportUseCase:
             report_id=record.id,
             plan=plan,
         )
-        version = await self._producer.produce(job, self._profile_for)
+        await self._uow.rollback()
+        version = await self._producer.produce(
+            job,
+            self._profile_for,
+            lambda: self._authorisation.finish(actor, request, record, plan),
+        )
         record.status = version.status
         record.latest_version = version.number
         record.period_from = now - job.window
@@ -187,7 +206,7 @@ class GenerateReportUseCase:
         conflict = self._conflict(request)
         hazard = self._hazard(request)
         provider = self._backgrounds.get(template.id)
-        background = await provider() if provider is not None else self._background(conflict)
+        background = await provider() if provider is not None else conflict_background(conflict)
         aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
         if plan is not None:
             background = plan.description or None
@@ -198,9 +217,9 @@ class GenerateReportUseCase:
             request=request,
             profile=profile,
             now=now,
-            window=self._window(request, template),
-            title=self._title(template, request, country, conflict, hazard, plan),
-            scope=self._scope(request, template),
+            window=report_window(request, template),
+            title=report_title(template, request, country, conflict, hazard, plan),
+            scope=report_scope(request, template),
             country_name=country.name if country else None,
             previous=previous,
             report_id=report_id,
@@ -246,14 +265,6 @@ class GenerateReportUseCase:
             raise InvalidRequest("This template needs a hazard from the disaster tracker.")
         return template
 
-    async def _plan(self, request: ReportRequest) -> CollectionPlan | None:
-        if request.plan_id is None:
-            return None
-        plan = await self._plans.get(request.plan_id)
-        if plan is None or not plan.pirs:
-            raise InvalidRequest("Unknown collection plan.")
-        return plan
-
     def _conflict(self, request: ReportRequest) -> Conflict | None:
         return self._conflicts.get(request.conflict_id) if request.conflict_id else None
 
@@ -263,10 +274,6 @@ class GenerateReportUseCase:
             return Hazard(request.hazard) if request.hazard else None
         except ValueError:
             return None
-
-    @staticmethod
-    def _window(request: ReportRequest, template: Template) -> timedelta:
-        return timedelta(hours=request.window_hours or template.strategy.window_hours)
 
     async def _profile_for(self, role: LlmRole) -> LlmProfile | None:
         """The first enabled profile that plays the role, or None."""
@@ -285,45 +292,3 @@ class GenerateReportUseCase:
         if profile is None:
             raise NoModelAvailable()
         return profile
-
-    @staticmethod
-    def _title(
-        template: Template,
-        request: ReportRequest,
-        country: Any,
-        conflict: Conflict | None,
-        hazard: Hazard | None,
-        plan: CollectionPlan | None = None,
-    ) -> str:
-        if plan is not None:
-            return f"{template.title}: {plan.name}"
-        if conflict is not None:
-            return f"{template.title}: {conflict.name}"
-        place = country.name if country else request.country_iso
-        if hazard is not None:
-            where = f" in {place}" if place else ""
-            return f"{template.title}: {HAZARD_TITLES[hazard].lower()}{where}"
-        if request.question:
-            return f"{template.title}: {request.question.strip()[:120]}"
-        if place:
-            return f"{template.title}: {place}"
-        return f"{template.title}: global"
-
-    @staticmethod
-    def _background(conflict: Conflict | None) -> str | None:
-        if conflict is None:
-            return None
-        sides = ", ".join(conflict.belligerents) or "not listed"
-        return f"{conflict.name} ({conflict.status}). {conflict.summary} Belligerents: {sides}."
-
-    def _scope(self, request: ReportRequest, template: Template) -> dict[str, Any]:
-        return {
-            "country": request.country_iso,
-            "categories": [category.value for category in request.categories],
-            "question": request.question,
-            "window_hours": int(self._window(request, template).total_seconds() // 3600),
-            "devils_advocacy": request.devils_advocacy,
-            "hazard": request.hazard,
-            "conflict": request.conflict_id,
-            "plan": str(request.plan_id) if request.plan_id else None,
-        }

@@ -25,6 +25,8 @@ class AuditAction(StrEnum):
     ACCOUNT_REQUEST_REJECTED = "account_request_rejected"
     PASSWORD_RESET_REQUESTED = "password_reset_requested"
     PASSWORD_SET = "password_set"
+    PASSWORD_CHANGED = "password_changed"
+    PASSWORD_CHANGE_FAILED = "password_change_failed"
     USER_UPDATED = "user_updated"
     RESET_LINK_ISSUED = "reset_link_issued"
     LLM_PROFILE_CREATED = "llm_profile_created"
@@ -45,6 +47,11 @@ class AuditAction(StrEnum):
     SCHEDULE_CREATED = "schedule_created"
     SCHEDULE_UPDATED = "schedule_updated"
     SCHEDULE_DELETED = "schedule_deleted"
+    LEGACY_SCOPE_CONFLICT = "legacy_scope_conflict"
+    TEAM_CREATED = "team_created"
+    TEAM_UPDATED = "team_updated"
+    TEAM_MEMBER_SET = "team_member_set"
+    TEAM_MEMBER_REMOVED = "team_member_removed"
 
 
 @dataclass(slots=True)

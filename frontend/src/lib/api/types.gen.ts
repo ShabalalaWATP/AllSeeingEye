@@ -208,6 +208,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Teams */
+        get: operations["list_teams_api_teams_get"];
+        put?: never;
+        /** Create Team */
+        post: operations["create_team_api_teams_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Team */
+        get: operations["get_team_api_teams__team_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Team */
+        patch: operations["update_team_api_teams__team_id__patch"];
+        trace?: never;
+    };
+    "/api/teams/{team_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Member */
+        put: operations["set_member_api_teams__team_id__members_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Member */
+        delete: operations["remove_member_api_teams__team_id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -219,6 +289,23 @@ export interface paths {
         get: operations["me_api_me_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Password */
+        post: operations["change_password_api_me_password_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1162,6 +1249,10 @@ export interface components {
             acknowledged_by: string | null;
             /** Report Id */
             report_id: string | null;
+            /** Created By */
+            created_by: string | null;
+            /** Team Id */
+            team_id: string | null;
         };
         /** AlertsOut */
         AlertsOut: {
@@ -1172,6 +1263,8 @@ export interface components {
         };
         /** AoiIn */
         AoiIn: {
+            /** Team Id */
+            team_id?: string | null;
             /** Name */
             name: string;
             /**
@@ -1188,6 +1281,8 @@ export interface components {
         };
         /** AoiOut */
         AoiOut: {
+            /** Team Id */
+            team_id: string | null;
             /**
              * Id
              * Format: uuid
@@ -1330,6 +1425,15 @@ export interface components {
          * @enum {string}
          */
         ChangeKind: "added" | "removed" | "changed";
+        /** ChangePasswordIn */
+        ChangePasswordIn: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+            /** Totp Code */
+            totp_code?: string | null;
+        };
         /** ConflictBoardOut */
         ConflictBoardOut: {
             /** Items */
@@ -1617,6 +1721,8 @@ export interface components {
              * @default true
              */
             enabled: boolean;
+            /** Team Id */
+            team_id?: string | null;
         };
         /** IndicatorOut */
         IndicatorOut: {
@@ -1666,6 +1772,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Team Id */
+            team_id: string | null;
         };
         /** IndicatorsOut */
         IndicatorsOut: {
@@ -1843,6 +1951,61 @@ export interface components {
             /** Latest */
             latest: components["schemas"]["EventOut"][];
         };
+        /** MemberIn */
+        MemberIn: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** @default member */
+            role: components["schemas"]["MembershipRole"];
+        };
+        /** MemberOut */
+        MemberOut: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Email */
+            email: string;
+            /** Display Name */
+            display_name: string;
+            account_role: components["schemas"]["Role"];
+            /** Is Active */
+            is_active: boolean;
+            role: components["schemas"]["MembershipRole"];
+            /**
+             * Joined At
+             * Format: date-time
+             */
+            joined_at: string;
+        };
+        /** MembershipOut */
+        MembershipOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            role: components["schemas"]["MembershipRole"];
+            /**
+             * Joined At
+             * Format: date-time
+             */
+            joined_at: string;
+        };
+        /**
+         * MembershipRole
+         * @enum {string}
+         */
+        MembershipRole: "member" | "manager";
         /** MessageOut */
         MessageOut: {
             /** Message */
@@ -1875,6 +2038,8 @@ export interface components {
         };
         /** PlanIn */
         PlanIn: {
+            /** Team Id */
+            team_id?: string | null;
             /** Name */
             name: string;
             /**
@@ -1896,6 +2061,8 @@ export interface components {
         };
         /** PlanOut */
         PlanOut: {
+            /** Team Id */
+            team_id: string | null;
             /**
              * Id
              * Format: uuid
@@ -2003,6 +2170,71 @@ export interface components {
             conflict?: string | null;
             /** Plan */
             plan?: string | null;
+            /** Team Id */
+            team_id?: string | null;
+        };
+        /** ReportEvidenceOut */
+        ReportEvidenceOut: {
+            /** Label */
+            label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Independence Key */
+            independence_key: string;
+            /** Category */
+            category: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string | null;
+            /** Url */
+            url: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Grade */
+            grade: string;
+            /** Reliability */
+            reliability: string;
+            /** Credibility */
+            credibility: number;
+            /** Grade Rationale */
+            grade_rationale: string;
+            /** Lon */
+            lon: number | null;
+            /** Lat */
+            lat: number | null;
+            /** Country Iso */
+            country_iso: string | null;
+            /** Content Hash */
+            content_hash: string;
+            /** Instrument */
+            instrument: boolean;
+            /** Flags */
+            flags: string[];
+            /** Archive Url */
+            archive_url: string | null;
+            /** Title En */
+            title_en?: string | null;
+            /** Language */
+            language?: string | null;
+            /** Geo Confidence */
+            geo_confidence?: string | null;
+            /** Observed At */
+            observed_at?: string | null;
+            /** Story Id */
+            story_id?: string | null;
         };
         /** ReportOut */
         ReportOut: {
@@ -2090,9 +2322,17 @@ export interface components {
             created_at: string;
             /** Latest Version */
             latest_version: number;
+            /** Team Id */
+            team_id: string | null;
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            /** Period From */
+            period_from: string | null;
+            /** Period To */
+            period_to: string | null;
+            /** Data Cutoff */
+            data_cutoff: string | null;
             /** Number */
             number: number;
             status: components["schemas"]["ReportStatus"];
@@ -2105,9 +2345,7 @@ export interface components {
                 [key: string]: string;
             }[];
             /** Evidence */
-            evidence: {
-                [key: string]: unknown;
-            }[];
+            evidence: components["schemas"]["ReportEvidenceOut"][];
             /** Quality */
             quality: {
                 [key: string]: unknown;
@@ -2174,7 +2412,7 @@ export interface components {
          * Role
          * @enum {string}
          */
-        Role: "user" | "admin";
+        Role: "user" | "manager" | "admin";
         /** ScheduleIn */
         ScheduleIn: {
             /** Name */
@@ -2207,6 +2445,8 @@ export interface components {
              * @default true
              */
             enabled: boolean;
+            /** Team Id */
+            team_id?: string | null;
         };
         /** ScheduleOut */
         ScheduleOut: {
@@ -2254,6 +2494,8 @@ export interface components {
             last_report_id: string | null;
             /** Last Error */
             last_error: string | null;
+            /** Team Id */
+            team_id: string | null;
         };
         /** SchedulesOut */
         SchedulesOut: {
@@ -2459,6 +2701,56 @@ export interface components {
             count: number;
             /** Max Severity */
             max_severity: number | null;
+        };
+        /** TeamDetailOut */
+        TeamDetailOut: {
+            team: components["schemas"]["TeamOut"];
+            /** Members */
+            members: components["schemas"]["MemberOut"][];
+        };
+        /** TeamIn */
+        TeamIn: {
+            /** Name */
+            name: string;
+        };
+        /** TeamOut */
+        TeamOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Is Active */
+            is_active: boolean;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** TeamUpdateIn */
+        TeamUpdateIn: {
+            /** Name */
+            name?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** TeamsOut */
+        TeamsOut: {
+            /** Items */
+            items: components["schemas"]["TeamOut"][];
         };
         /** TemplateOut */
         TemplateOut: {
@@ -2911,6 +3203,190 @@ export interface operations {
             };
         };
     };
+    list_teams_api_teams_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamsOut"];
+                };
+            };
+        };
+    };
+    create_team_api_teams_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_team_api_teams__team_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_team_api_teams__team_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_member_api_teams__team_id__members_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MembershipOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_member_api_teams__team_id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     me_api_me_get: {
         parameters: {
             query?: never;
@@ -2927,6 +3403,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+        };
+    };
+    change_password_api_me_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

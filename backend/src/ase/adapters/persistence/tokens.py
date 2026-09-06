@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import exists, select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,6 +42,21 @@ class SqlRefreshTokenRepository:
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def family_is_active(self, user_id: UUID, family_id: UUID, now: datetime) -> bool:
+        return bool(
+            await self._session.scalar(
+                select(
+                    exists().where(
+                        RefreshTokenRow.user_id == user_id,
+                        RefreshTokenRow.family_id == family_id,
+                        RefreshTokenRow.revoked_at.is_(None),
+                        RefreshTokenRow.expires_at > now,
+                        ~family_is_revoked(),
+                    )
+                )
+            )
+        )
 
     async def add(self, token: RefreshToken) -> None:
         self._session.add(

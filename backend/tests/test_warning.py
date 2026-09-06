@@ -88,7 +88,7 @@ async def test_indicators_are_owned_and_validated(
     forbidden = await client.put(
         f"/api/warning/indicators/{indicator_id}", json=body, headers=bearer(second)
     )
-    assert forbidden.status_code == 403
+    assert forbidden.status_code == 404
     edited = await client.put(
         f"/api/warning/indicators/{indicator_id}",
         json={**body, "enabled": False, "threshold": 3},
@@ -97,7 +97,7 @@ async def test_indicators_are_owned_and_validated(
     assert edited.status_code == 200 and edited.json()["threshold"] == 3
     assert edited.json()["created_by"] == created.json()["created_by"]
     listed = await client.get("/api/warning/indicators", headers=bearer(second))
-    assert [item["enabled"] for item in listed.json()["items"]] == [False]
+    assert listed.json()["items"] == []
     missing = await client.delete(f"/api/warning/indicators/{uuid4()}", headers=bearer(token))
     assert missing.status_code == 404
     deleted = await client.delete(f"/api/warning/indicators/{indicator_id}", headers=bearer(token))

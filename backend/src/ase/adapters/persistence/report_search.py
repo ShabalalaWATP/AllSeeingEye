@@ -66,7 +66,20 @@ class SqlReportEmbeddingRepository:
         await self._session.flush()
         return True
 
-    async def retain(self, report_ids: Sequence[UUID]) -> None:
+    async def prune_obsolete(self) -> None:
+        valid = select(ReportRow.id).where(ReportRow.latest_version == ReportEmbeddingRow.version)
         await self._session.execute(
-            delete(ReportEmbeddingRow).where(ReportEmbeddingRow.report_id.not_in(report_ids))
+            delete(ReportEmbeddingRow).where(ReportEmbeddingRow.report_id.not_in(valid))
         )
+
+    async def capacity_for(self, report_ids: Sequence[UUID], limit: int) -> frozenset[UUID]:
+        stored = set(await self._session.scalars(select(ReportEmbeddingRow.report_id)))
+        slots = max(0, limit - len(stored))
+        selected: set[UUID] = set()
+        for report_id in report_ids:
+            if report_id in stored:
+                selected.add(report_id)
+            elif slots:
+                selected.add(report_id)
+                slots -= 1
+        return frozenset(selected)

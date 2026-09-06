@@ -7,27 +7,36 @@ import {
 } from '@/lib/api/reportSearch';
 import type { ReportSearchResult } from '@/lib/api/reportSearch';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { scopedMutation } from '@/lib/workspaceAccess';
 
 export function useReportSearch() {
-  const status = useResource(fetchReportSearchStatus);
+  const status = useScopedResource(fetchReportSearchStatus);
   const reload = status.reload;
-  const [query, setQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [results, setResults] = useState<ReportSearchResult | null>(null);
+  const [draft, setDraft] = useState({ key: status.key, query: '' });
+  const [found, setFound] = useState<{
+    key: string;
+    query: string;
+    value: ReportSearchResult;
+  } | null>(null);
+  const query = draft.key === status.key ? draft.query : '';
+  const setQuery = (value: string) => setDraft({ key: status.key, query: value });
+  const results = found?.key === status.key ? found.value : null;
+  const submittedQuery = found?.key === status.key ? found.query : '';
   const search = useAsyncAction(
     useCallback(async () => {
-      setResults(null);
-      const found = await searchSavedReports({ query: query.trim(), limit: 10 });
-      setSubmittedQuery(query.trim());
-      setResults(found);
+      setFound(null);
+      const value = await scopedMutation(() =>
+        searchSavedReports({ query: query.trim(), limit: 10 }),
+      );
+      setFound({ key: status.key, query: query.trim(), value });
       await reload();
-    }, [query, reload]),
+    }, [query, reload, status.key]),
   );
   const index = useAsyncAction(
     useCallback(async () => {
-      await indexSavedReports();
-      setResults(null);
+      await scopedMutation(indexSavedReports);
+      setFound(null);
       await reload();
     }, [reload]),
   );

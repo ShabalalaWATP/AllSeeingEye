@@ -29,6 +29,7 @@ class ReportRecord:
     created_by: UUID
     created_at: datetime
     latest_version: int
+    team_id: UUID | None = None
 
     @property
     def header(self) -> ReportHeader:
@@ -62,15 +63,23 @@ class ReportVersion:
     created_at: datetime
     direction: Direction | None = None
     advocacy: DevilsAdvocacy | None = None
+    period_from: datetime | None = None
+    period_to: datetime | None = None
+    data_cutoff: datetime | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
     """The direction and the devil's advocacy view, or None when the version has neither."""
-    if version.direction is None and version.advocacy is None:
+    if version.direction is None and version.advocacy is None and version.period_from is None:
         return None
     return {
         "direction": direction_to_dict(version.direction) if version.direction else None,
         "devils_advocacy": advocacy_to_dict(version.advocacy) if version.advocacy else None,
+        "period": {
+            "from": version.period_from.isoformat() if version.period_from else None,
+            "to": version.period_to.isoformat() if version.period_to else None,
+            "cutoff": version.data_cutoff.isoformat() if version.data_cutoff else None,
+        },
     }
 
 
@@ -88,7 +97,7 @@ def analysis_from_dict(
 
 
 def body_to_dict(body: ReportBody) -> dict[str, Any]:
-    """JSON-safe dictionary; the reverse is parse_body, which the model output also uses."""
+    """JSON-safe dictionary; historic records use the tolerant inverse ``parse_body``."""
     return asdict(body)
 
 
@@ -128,7 +137,9 @@ def quality_from_dict(data: Mapping[str, Any]) -> QualityOfInformation:
         instrument_share=float(data.get("instrument_share", 0.0)),
         newest=datetime.fromisoformat(data["newest"]) if data.get("newest") else None,
         oldest=datetime.fromisoformat(data["oldest"]) if data.get("oldest") else None,
-        contradictions=int(data.get("contradictions", 0)),
+        contradictions=(
+            int(data["contradictions"]) if data.get("contradictions") is not None else None
+        ),
         flagged=int(data.get("flagged", 0)),
         confidence_ceiling=Confidence(str(data.get("confidence_ceiling", "low"))),
     )
@@ -140,6 +151,7 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
         data = asdict(item)
         data["published_at"] = item.published_at.isoformat()
         data["captured_at"] = item.captured_at.isoformat()
+        data["observed_at"] = item.observed_at.isoformat() if item.observed_at else None
         data["flags"] = list(item.flags)
         rows.append(data)
     return rows
@@ -170,6 +182,13 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             instrument=bool(row.get("instrument", False)),
             flags=tuple(str(flag) for flag in row.get("flags", [])),
             archive_url=row.get("archive_url"),
+            title_en=row.get("title_en"),
+            language=row.get("language"),
+            geo_confidence=row.get("geo_confidence"),
+            observed_at=(
+                datetime.fromisoformat(str(row["observed_at"])) if row.get("observed_at") else None
+            ),
+            story_id=row.get("story_id"),
         )
         for row in rows
     )

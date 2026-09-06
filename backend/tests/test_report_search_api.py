@@ -4,7 +4,7 @@ from httpx import AsyncClient
 
 from ase.container import Container
 from ase.domain.users import User
-from helpers import bearer
+from helpers import USER_PASSWORD, bearer, login_token
 from report_search_helpers import FakeEmbeddings, add_profile, add_report
 
 
@@ -14,7 +14,7 @@ async def test_search_api_auth_validation_index_query_and_usage(
     assert (await client.get("/api/report-search")).status_code == 401
     assert (await client.post("/api/report-search/index")).status_code == 401
     assert (await client.post("/api/report-search/query", json={"query": "x"})).status_code == 401
-    headers = bearer(container.issuer.issue(user).token)
+    headers = bearer(await login_token(client, user.email, USER_PASSWORD))
     status = await client.get("/api/report-search", headers=headers)
     assert status.status_code == 200 and not status.json()["available"]
     unavailable = await client.post("/api/report-search/index", headers=headers)

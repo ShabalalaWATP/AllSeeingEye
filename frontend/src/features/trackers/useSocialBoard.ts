@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router';
 
 import { fetchSocialBoard } from '@/lib/api/social';
 import type { SocialKeyword } from '@/lib/api/social';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { useEventsStore } from '@/stores/events';
 
 export function describeSocialActivity(row: SocialKeyword): string {
@@ -14,7 +15,8 @@ export function describeSocialActivity(row: SocialKeyword): string {
 }
 
 export function useSocialBoard() {
-  const resource = useResource(fetchSocialBoard);
+  useWorkspaces();
+  const resource = useScopedResource(fetchSocialBoard);
   const navigate = useNavigate();
   const showOnGlobe = () => {
     const state = useEventsStore.getState();

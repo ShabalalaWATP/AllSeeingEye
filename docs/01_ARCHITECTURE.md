@@ -1,9 +1,9 @@
 # The All Seeing Eye: Architecture
 
-Status: implemented architecture through the Phase 5 and Phase 6
+Status: current implementation, including the identity and team isolation
 changes, 6 September 2026. This replaces the initial proposal's descriptions of
 components that were not built. Acceptance evidence and remaining work live in
-[the implementation plan](MASTER_IMPLEMENTATION_PLAN.md); deployment gates live
+[the improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md); deployment gates live
 in [the Phase 6 security review](security/PHASE6_ASVS_REVIEW.md).
 
 ## 1. Design principles
@@ -130,7 +130,12 @@ seconds, handles up to twenty titles per batch and sixty model calls per hour,
 and keeps a bounded cache. It merges only a still-current title translation, so a
 slow reply cannot restore a removed event or overwrite newer grading.
 
-Enabled collection plans supply Google News watchlist terms. Google article
+Enabled collection plans supply Google News watchlist terms only while their
+owner is active and, for team work, remains a member of an active team. The same
+eligibility rule governs social keyword sampling. Private terms are visible to
+the personal owner or current team members and administrators. Public feed
+results remain shared; events do not carry private plan or PIR identifiers.
+Google article
 links are resolved lazily for cited report evidence through guarded requests.
 The social board computes platform/instance counts, hashtags and bursts from
 the live store and small hourly baselines. It does not persist a post archive.
@@ -162,7 +167,8 @@ holds small hourly aviation/social counts, not event payloads.
 
 | Durable records | Purpose |
 |---|---|
-| Users, account requests, password/refresh tokens and administrator TOTP | Identity, sessions and optional second factor |
+| Users, account requests, password/refresh tokens and administrator TOTP | Identity, session security versions and optional second factor |
+| Teams and memberships | Named active/archived teams and explicit member/manager designations |
 | LLM profiles and usage | Encrypted credentials, profile roles and model-call outcomes |
 | AOIs, collection plans, indicators, alerts and schedules | Standing collection and warning configuration |
 | Reports and report versions | Assessment body, findings, frozen evidence JSON, quality, analysis, Markdown and model usage metadata |
@@ -180,31 +186,65 @@ Reports support Markdown, local PDF/DOCX export and structural comparison betwee
 two versions of the same report. The browser presents structured React text and
 validated links. It does not parse report Markdown into HTML or use DOMPurify.
 
-Semantic search uses normalised JSON vectors for at most the latest 1,000 saved
-reports and at most 4,096 dimensions. Indexing is explicit, in batches of eight,
-and requires an `embeddings` profile. Vector validity depends on both report
-version and model/profile fingerprint. Cosine comparison runs in the application;
-there is no pgvector extension or raw-event index. See
+Semantic search uses normalised JSON vectors with a shared storage cap of 1,000
+reports and at most 4,096 dimensions. Each caller searches up to their latest
+1,000 visible reports; counts and results are scoped before limits. Explicit
+indexing embeds at most eight reports per call and requires an `embeddings`
+profile. Capacity is checked before model calls. A full index refuses new slots
+without evicting another team's vectors; global maintenance removes orphaned or
+superseded versions independently of the caller's visible set. Vector validity
+also requires the current model/profile fingerprint. Cosine comparison runs in
+the application; there is no pgvector extension or raw-event index. See
 [ADR 0008](adr/0008-bounded-report-search.md) for limits and trade-offs.
 
 ### 4.6 Authentication and access
 
 The SPA holds access tokens in memory and refreshes through protected cookies.
-`CurrentUser` verifies the access token and reloads the user's active state and
-current role from the database on every protected request. Administrator-only
-actions and owner/admin mutation checks remain enforced by the use cases.
+Each JWT identifies its refresh family and the account's security version.
+`CurrentUser` verifies expiry, active account, security version and live family
+against the database. Logout revokes its family; password, TOTP, role and active
+status changes invalidate affected sessions. Legacy access JWTs without these
+claims are refused; an existing valid refresh cookie can obtain the new format.
 
-Authenticated users share read access to reports and collection plans, including
-report exports, comparisons and search. Reports and plans are not owner-private
-libraries. Their mutations require the owner or an administrator. Optional
-administrator TOTP is implemented with enrolment confirmation, encrypted secrets,
-code replay protection and host-only recovery. Concurrent token lifecycle checks
-and remaining authentication gates are recorded in the security review.
+Global roles are `user`, `manager` and `admin`. A manager can lead only teams in
+which they also have the `manager` membership designation. Administrators manage
+accounts, create/archive teams and assign leadership. Team managers can add or
+remove ordinary members of their managed teams, without a global user directory,
+account reset powers or authority over manager/administrator memberships.
 
-SSE authenticates when a stream opens and ends it no later than token expiry.
-Connection admission is bounded per user and globally. An already-open stream
-does not reload user state after every event; account state is checked again on
-the next connection or request.
+Operational roots carry nullable `team_id`: null means personal creator access;
+a team id means current membership access. Administrators have explicit access
+to all scopes. This covers AOIs, plans, reports and historical versions, exports,
+comparisons, semantic search, indicators, schedules and alerts. Ordinary team
+members manage their own contributions; designated managers can manage others'
+work in that team. Linked records must share the same team or personal owner,
+including administrator-authored operations. Unauthorised direct ids return 404.
+Any current member of an active team may acknowledge its alerts; ownership is
+not required for this shared triage action.
+
+`AccessPolicy` constructs fresh contexts; repositories apply a shared SQL
+visibility predicate before counts and limits. Mutations acquire the shared
+administration guard before account locks and authority checks. No-op updates
+provide a real writer/row lock on SQLite/PostgreSQL. Report generation and
+embedding work release database snapshots before outbound calls and recheck
+current authority before persistence. Document downloads recheck after rendering.
+Private operational responses prohibit caching. Background work requires an active owner
+and current membership of an active team, including administrator-owned jobs.
+
+Archived teams retain ordinary read access. Ordinary writes stop; administrators
+retain a deliberate manual operational override. Roster edits require team
+reactivation, including for administrators. Migration `0014` keeps existing roots
+personal, preserves links and evidence, records `legacy_scope_conflict` audit
+entries, and leaves orphan alerts administrator-only. See
+[ADR 0010](adr/0010-teams-and-access.md) and the [scope API](api/SCOPED_WORK_API.md).
+
+SSE revalidates the session and membership before each delivery and on a quiet
+stream at intervals of at most 15 seconds, subject to service scheduling. It
+filters alerts by scope, sends `access.changed` when membership/team state
+changes, and closes revoked sessions or expired tokens. The frontend invalidates
+scoped data and selections on access changes. Connection admission remains
+bounded per user and globally. Optional administrator TOTP has encrypted secrets,
+confirmed enrolment, replay protection and host-only recovery.
 
 ### 4.7 External model boundary
 
@@ -221,13 +261,18 @@ never include response excerpts, credentials or request payloads.
 Settings use the `ASE_` prefix and optional working-directory `.env`. Profiles
 encrypt keys under `ASE_ENCRYPTION_KEY`; the key must be preserved for recovery.
 Compose uses a root `.env`; development started in `backend/` uses `backend/.env`.
+Development databases need an explicit `uv run ase migrate` from the intended
+working directory before running new code. No operator database or real `.env`
+was migrated during implementation verification; backup and apply migrations
+deliberately when updating that deployment.
 
 [Backup and restore](BACKUP_RESTORE.md) provides online SQLite snapshots and
 Compose PostgreSQL dumps, separately copied configuration, strict hash manifests
 and fresh-target-only restores. Real `.env` inclusion requires explicit opt-in.
-No backup schedule or automatic retention deletion is installed. SQLite drills
-are local and deterministic; an actual PostgreSQL restore remains a deployment
-verification gate.
+No backup schedule or automatic retention deletion is installed. A synthetic
+SQLite/PostgreSQL 17 recovery drill through migration `0011` verified all 19
+then-existing tables and encrypted values. That evidence does not establish
+recovery of the operator's current database or the newer scope migrations.
 
 ## 5. Frontend architecture
 
@@ -254,10 +299,12 @@ low-zoom grid clustering and time/nation filters. Aircraft icons can rotate by
 track; GNSS interference is a separate computed layer. The ops-room view removes
 the shell and rotates the globe when motion preferences allow it.
 
-Current base layers are OpenFreeMap dark vectors, EOX satellite/hybrid and
-server-proxied OS Maps when a key is configured. Coordinates display WGS84.
-Additional imagery, grids and source-dependent layers remain checklist items;
-their presence in an earlier proposal does not mean they are implemented.
+Current base layers include OpenFreeMap dark, light and streets, EOX satellite
+and hybrid, plus server-proxied OS Road, Outdoor and Light when a key is
+configured. Unavailable OS choices remain visible with their configuration and
+coverage limits. Satellite imagery is a historical mosaic, not a live feed.
+Coordinates display WGS84. Grids and other source-dependent overlays remain
+separate capabilities; their appearance in a proposal does not prove delivery.
 
 ### 5.4 Performance and accessibility
 
@@ -293,7 +340,7 @@ model adapters keep tests offline. CI definitions include a PostgreSQL test job
 and supply-chain/security checks, but no remote CI execution has been observed.
 
 Follow the current plan and security review for outstanding real-model testing,
-live PostgreSQL recovery, deployment headers, staging security scanning and
+operator-backup recovery, deployment headers, staging security scanning and
 representative load/accessibility evidence. Source files and workflow definitions
 describe behaviour and intended checks; they do not prove those operational
 checks have run.

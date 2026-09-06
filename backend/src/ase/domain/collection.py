@@ -32,6 +32,7 @@ class AreaOfInterest:
     created_by: UUID
     created_at: datetime
     description: str = ""
+    team_id: UUID | None = None
 
     def contains(self, event: Event) -> bool:
         if self.kind == "bbox":
@@ -70,6 +71,7 @@ class CollectionPlan:
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    team_id: UUID | None = None
 
     @property
     def sirs(self) -> tuple[Sir, ...]:

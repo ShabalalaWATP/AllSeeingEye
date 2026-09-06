@@ -13,6 +13,7 @@ from datetime import datetime
 
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Credibility, Event
+from ase.domain.source_provenance import ProvenanceItem, organisation_groups
 
 # Phrases that read as instructions to the model rather than as reporting.
 INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
@@ -69,6 +70,11 @@ class EvidenceItem:
     instrument: bool = False
     flags: tuple[str, ...] = ()
     archive_url: str | None = None
+    title_en: str | None = None
+    language: str | None = None
+    geo_confidence: str | None = None
+    observed_at: datetime | None = None
+    story_id: str | None = None
 
     @classmethod
     def from_event(
@@ -104,6 +110,11 @@ class EvidenceItem:
             content_hash=event.content_hash,
             instrument=instrument,
             flags=tuple(flags),
+            title_en=event.title_en,
+            language=event.language,
+            geo_confidence=event.geo_confidence.value,
+            observed_at=event.observed_at,
+            story_id=event.story_id,
         )
 
 
@@ -117,7 +128,7 @@ class QualityOfInformation:
     instrument_share: float = 0.0
     newest: datetime | None = None
     oldest: datetime | None = None
-    contradictions: int = 0
+    contradictions: int | None = None
     flagged: int = 0
     confidence_ceiling: Confidence = Confidence.HIGH
 
@@ -125,9 +136,11 @@ class QualityOfInformation:
         grades = ", ".join(f"{count} {grade}" for grade, count in sorted(self.by_grade.items()))
         return (
             f"{self.items} evidence items ({grades or 'none'}) from "
-            f"{self.independent_organisations} independent organisation(s); "
+            f"{self.independent_organisations} declared organisation group(s), "
+            "independent sourcing not verified; "
             f"{round(self.instrument_share * 100)}% instrument data; "
-            f"{self.contradictions} contradiction(s); {self.flagged} item(s) flagged for "
+            "contradictions not automatically assessed; "
+            f"{self.flagged} item(s) flagged for "
             f"instruction-like text; confidence ceiling {self.confidence_ceiling.value}."
         )
 
@@ -138,12 +151,28 @@ def quality_of_information(items: Sequence[EvidenceItem], flagged: int = 0) -> Q
     by_grade: dict[str, int] = {}
     for item in items:
         by_grade[item.grade] = by_grade.get(item.grade, 0) + 1
-    organisations = {item.independence_key for item in items}
+    provenance = organisation_groups(
+        [
+            ProvenanceItem(item.label, item.independence_key or None, item.title, item.content_hash)
+            for item in items
+        ]
+    )
+    organisations = provenance.known_groups
     instruments = sum(1 for item in items if item.instrument)
-    weak = all(item.credibility >= int(Credibility.POSSIBLY_TRUE) for item in items)
-    ceiling = Confidence.MODERATE if weak or len(organisations) < 2 else Confidence.HIGH
-    if len(items) < 3 and ceiling is Confidence.MODERATE:
-        ceiling = Confidence.LOW
+    # This is a safety ceiling, not a computed analytical confidence rating.
+    # Declared organisations and headline similarity do not prove independent sourcing.
+    distinct_items = {item.content_hash or item.event_id for item in items}
+    credible = [item for item in items if item.credibility <= int(Credibility.PROBABLY_TRUE)]
+    ceiling = Confidence.LOW
+    if len(distinct_items) >= 2 and credible:
+        ceiling = Confidence.MODERATE
+    if (
+        len(organisations) >= 2
+        and len(distinct_items) >= 2
+        and all(item.credibility == int(Credibility.CONFIRMED) for item in items)
+        and not any(item.flags for item in items)
+    ):
+        ceiling = Confidence.HIGH
     published = [item.published_at for item in items]
     return QualityOfInformation(
         items=len(items),
@@ -152,7 +181,7 @@ def quality_of_information(items: Sequence[EvidenceItem], flagged: int = 0) -> Q
         instrument_share=instruments / len(items),
         newest=max(published),
         oldest=min(published),
-        contradictions=0,
+        contradictions=None,
         flagged=flagged,
         confidence_ceiling=ceiling,
     )

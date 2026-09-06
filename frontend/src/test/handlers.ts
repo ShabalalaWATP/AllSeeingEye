@@ -80,6 +80,7 @@ interface SetPasswordBody {
 }
 
 export const handlers = [
+  http.get('/api/teams', () => HttpResponse.json({ items: [] })),
   http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginBody;
     if (body.email === adminUser.email && body.password === ADMIN_PASSWORD) {

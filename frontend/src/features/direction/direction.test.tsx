@@ -31,7 +31,12 @@ describe('direction', () => {
     await user.type(within(form).getByLabelText('West, south, east, north'), '35, 48, 38, 51');
     await user.click(within(form).getByRole('button', { name: 'Add area' }));
     await waitFor(() => {
-      expect(captured).toEqual({ name: 'Kharkiv box', kind: 'bbox', bbox: [35, 48, 38, 51] });
+      expect(captured).toEqual({
+        name: 'Kharkiv box',
+        description: '',
+        kind: 'bbox',
+        bbox: [35, 48, 38, 51],
+      });
     });
   });
 
@@ -59,6 +64,7 @@ describe('direction', () => {
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'Sumy watch',
+        enabled: true,
         description: '',
         aoi_id: null,
         countries: ['UA'],
@@ -109,7 +115,7 @@ describe('direction', () => {
     expect(within(form).getByLabelText('Question')).not.toBeRequired();
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
-      expect(captured).toEqual({ template: 'ask', plan: plan.id });
+      expect(captured).toEqual({ template: 'ask', plan: plan.id, devils_advocacy: false });
     });
   });
 });

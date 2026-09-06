@@ -21,6 +21,7 @@ frontend/coverage/
 *.tsbuildinfo
 
 # Data and caches
+.playwright-cli/
 data/
 *.db
 *.sqlite

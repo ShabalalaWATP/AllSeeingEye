@@ -11,19 +11,25 @@ import { createSchedule, deleteSchedule, fetchSchedules } from '@/lib/api/schedu
 import type { ScheduleRequest } from '@/lib/api/schedules';
 import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import type { CollectionPlan } from '@/lib/api/direction';
+import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { ScheduleForm, describeCadence } from './ScheduleForm';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
 export function SchedulesSection({
   templates,
+  workspaces,
+  plans,
   countries,
 }: {
   templates: readonly ReportTemplate[];
+  plans: readonly CollectionPlan[];
+  workspaces: Workspaces;
   countries: readonly Country[];
 }) {
-  const schedules = useResource(fetchSchedules);
+  const schedules = useScopedResource(fetchSchedules);
   const reload = schedules.reload;
   const create = useAsyncAction(
     useCallback(
@@ -71,7 +77,10 @@ export function SchedulesSection({
           <tbody>
             {schedules.data.map((item) => (
               <tr key={item.id} className={item.enabled ? '' : 'opacity-60'}>
-                <Td className="font-medium">{item.name}</Td>
+                <Td className="font-medium">
+                  {item.name}
+                  <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
+                </Td>
                 <Td className="font-mono text-xs text-muted">
                   {item.template_id}
                   {item.country_iso === null ? '' : ` · ${item.country_iso}`}
@@ -91,6 +100,7 @@ export function SchedulesSection({
                 </Td>
                 <Td>
                   <Button
+                    disabled={!workspaces.canManage(item)}
                     variant="danger"
                     busy={remove.busy}
                     onClick={() => void remove.run(item.id)}
@@ -104,6 +114,9 @@ export function SchedulesSection({
         </Table>
       )}
       <ScheduleForm
+        key={workspaces.key}
+        workspaces={workspaces}
+        plans={plans}
         templates={templates}
         countries={countries}
         busy={create.busy}

@@ -47,7 +47,9 @@ describe('api client', () => {
         apiError(429, 'rate_limited', 'Slow down.', { email: 'bad' }, { 'Retry-After': '30' }),
       ),
     );
-    const error: unknown = await apiCall('/api/thing', { schema }).catch((caught: unknown) => caught);
+    const error: unknown = await apiCall('/api/thing', { schema }).catch(
+      (caught: unknown) => caught,
+    );
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({
       status: 429,
@@ -60,7 +62,9 @@ describe('api client', () => {
 
   it('falls back to unknown_error for bodies that are not an envelope', async () => {
     server.use(
-      http.get('/api/thing', () => HttpResponse.text('nope', { status: 500, headers: { 'Retry-After': 'x' } })),
+      http.get('/api/thing', () =>
+        HttpResponse.text('nope', { status: 500, headers: { 'Retry-After': 'x' } }),
+      ),
     );
     await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({
       status: 500,
@@ -71,7 +75,9 @@ describe('api client', () => {
 
   it('rejects bodies that fail schema validation', async () => {
     server.use(http.get('/api/thing', () => HttpResponse.json({ ok: 'yes' })));
-    await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({ code: 'invalid_response' });
+    await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({
+      code: 'invalid_response',
+    });
   });
 
   it('reports network failures as network_error', async () => {
@@ -95,7 +101,11 @@ describe('api client', () => {
     );
     const refresh = vi.fn(() => Promise.resolve('fresh'));
     const lost = vi.fn();
-    bindSession({ getAccessToken: () => 'stale', refreshAccessToken: refresh, onSessionLost: lost });
+    bindSession({
+      getAccessToken: () => 'stale',
+      refreshAccessToken: refresh,
+      onSessionLost: lost,
+    });
     await expect(apiCall('/api/thing', { schema })).resolves.toEqual({ ok: true });
     expect(calls).toBe(2);
     expect(refresh).toHaveBeenCalledTimes(1);
@@ -110,7 +120,9 @@ describe('api client', () => {
       refreshAccessToken: () => Promise.resolve(null),
       onSessionLost: lost,
     });
-    await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({ code: 'unauthenticated' });
+    await expect(apiCall('/api/thing', { schema })).rejects.toMatchObject({
+      code: 'unauthenticated',
+    });
     expect(lost).toHaveBeenCalledTimes(1);
   });
 
@@ -136,7 +148,11 @@ describe('api client', () => {
   it('never refreshes when auth is disabled for the call', async () => {
     server.use(http.get('/api/thing', () => apiError(401, 'invalid_refresh', 'Expired.')));
     const refresh = vi.fn(() => Promise.resolve('fresh'));
-    bindSession({ getAccessToken: () => 'stale', refreshAccessToken: refresh, onSessionLost: vi.fn() });
+    bindSession({
+      getAccessToken: () => 'stale',
+      refreshAccessToken: refresh,
+      onSessionLost: vi.fn(),
+    });
     await expect(apiCall('/api/thing', { schema, auth: false })).rejects.toMatchObject({
       code: 'invalid_refresh',
     });
@@ -149,6 +165,8 @@ describe('api client', () => {
       http.post('/api/bad', () => apiError(404, 'not_found', 'Missing.')),
     );
     await expect(apiSend('/api/ok', { method: 'POST' })).resolves.toBeUndefined();
-    await expect(apiSend('/api/bad', { method: 'POST' })).rejects.toMatchObject({ code: 'not_found' });
+    await expect(apiSend('/api/bad', { method: 'POST' })).rejects.toMatchObject({
+      code: 'not_found',
+    });
   });
 });

@@ -1,4 +1,4 @@
-"""Indicators: any user creates them, the owner or an admin changes or removes them."""
+"""Personal and team indicators governed by current membership and write authority."""
 
 from __future__ import annotations
 
@@ -7,13 +7,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from ase.application.access import AccessContext, AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import PlanRepository
 from ase.application.ports.warning import IndicatorRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound
+from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import BoundingBox, Category
 from ase.domain.users import User
 from ase.domain.warning import (
@@ -41,6 +42,7 @@ class IndicatorInput:
     severity_floor: float = 0.0
     report_template: str | None = None
     enabled: bool = True
+    team_id: UUID | None = None
 
 
 def build_indicator(
@@ -92,12 +94,8 @@ def build_indicator(
         created_by=owner,
         created_at=created,
         updated_at=now,
+        team_id=data.team_id,
     )
-
-
-def _owner_or_admin(actor: User, indicator: Indicator) -> None:
-    if indicator.created_by != actor.id and not actor.is_admin:
-        raise Forbidden("Only the owner or an admin may change this indicator.")
 
 
 class _IndicatorUseCase:
@@ -109,6 +107,7 @@ class _IndicatorUseCase:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        access: AccessPolicy,
     ) -> None:
         self._indicators = indicators
         self._plans = plans
@@ -116,16 +115,22 @@ class _IndicatorUseCase:
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
+        self._access = access
 
-    async def _check_plan(self, plan_id: UUID | None) -> None:
-        if plan_id is not None and await self._plans.get(plan_id) is None:
+    async def _check_plan(self, data: IndicatorInput, owner: UUID, access: AccessContext) -> None:
+        if data.plan_id is None:
+            return
+        plan = await self._plans.get(data.plan_id)
+        if plan is None:
             raise InvalidRequest("Unknown collection plan.")
+        access.require_same_scope(owner, data.team_id, plan.created_by, plan.team_id)
 
     async def _existing(self, actor: User, indicator_id: UUID) -> Indicator:
+        access = await self._access.context(actor, for_update=True)
         indicator = await self._indicators.get(indicator_id)
         if indicator is None:
             raise NotFound("Indicator not found.")
-        _owner_or_admin(actor, indicator)
+        access.require_write(indicator.created_by, indicator.team_id)
         return indicator
 
 
@@ -133,7 +138,9 @@ class CreateIndicatorUseCase(_IndicatorUseCase):
     async def execute(
         self, actor: User, data: IndicatorInput, context: RequestContext
     ) -> Indicator:
-        await self._check_plan(data.plan_id)
+        access = await self._access.context(actor, for_update=True)
+        access.require_create(data.team_id)
+        await self._check_plan(data, actor.id, access)
         now = self._clock.now()
         indicator = build_indicator(
             data, templates=self._templates, indicator_id=uuid4(), owner=actor.id,
@@ -153,7 +160,10 @@ class UpdateIndicatorUseCase(_IndicatorUseCase):
         self, actor: User, indicator_id: UUID, data: IndicatorInput, context: RequestContext
     ) -> Indicator:
         existing = await self._existing(actor, indicator_id)
-        await self._check_plan(data.plan_id)
+        if data.team_id != existing.team_id:
+            raise InvalidRequest("An indicator's personal or team scope cannot be changed.")
+        access = await self._access.context(actor)
+        await self._check_plan(data, existing.created_by, access)
         indicator = build_indicator(
             data, templates=self._templates, indicator_id=existing.id,
             owner=existing.created_by, created=existing.created_at, now=self._clock.now(),
@@ -179,8 +189,10 @@ class DeleteIndicatorUseCase(_IndicatorUseCase):
 
 
 class ListIndicatorsUseCase:
-    def __init__(self, indicators: IndicatorRepository) -> None:
+    def __init__(self, indicators: IndicatorRepository, access: AccessPolicy) -> None:
         self._indicators = indicators
+        self._access = access
 
     async def execute(self, actor: User) -> list[Indicator]:
-        return await self._indicators.list_all()
+        access = await self._access.context(actor)
+        return await self._indicators.list_all(access.visibility)

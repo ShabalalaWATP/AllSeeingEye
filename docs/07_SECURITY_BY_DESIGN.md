@@ -1,17 +1,18 @@
 # Security by Design
 
-Status: implementation guidance updated for Phase 5 and Phase 6, 6 September
+Status: implementation guidance updated for identity and team isolation, 6 September
 2026. These controls describe the current code, with deployment and verification
 limits called out below. They do not establish OWASP ASVS level 2 conformance or
 public-exposure readiness. The detailed review and remaining gates are in
-[PHASE6_ASVS_REVIEW.md](security/PHASE6_ASVS_REVIEW.md).
+[PHASE6_ASVS_REVIEW.md](security/PHASE6_ASVS_REVIEW.md). The broader current
+delivery audit is tracked in [the improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md).
 
 ## 1. Threat model
 
 Assets are accounts and sessions, administrator TOTP, model/feed credentials,
 saved reports and frozen evidence, configuration, the host machine and its
 outbound network access. Relevant actors include anonymous callers, authenticated
-users exceeding their role, hostile feed publishers, malicious or misconfigured
+users crossing personal/team boundaries or exceeding their role, hostile feed publishers, malicious or misconfigured
 model endpoints and compromised dependencies.
 
 Primary risks are broken authentication and authorisation, prompt injection,
@@ -30,38 +31,79 @@ exposure or multi-worker topology needs a new review.
   opaque, stored as hashes and rotated through an HttpOnly cookie. CSRF checks
   protect cookie-authenticated refresh/logout operations.
 - `CurrentUser` verifies the access token and reloads the user's active state and
-  current role from the database for every protected HTTP request. Deactivation
-  and demotion therefore affect the next request even if its access JWT has not
-  expired. A signed token alone is not the source of current permissions.
+  current role from the database for every protected HTTP request. It also
+  requires a live refresh family and matching account security version. Logout
+  invalidates that family's access tokens; password, TOTP and account role/status
+  changes invalidate the affected sessions even before access JWT expiry.
+  A signed token alone is not the source of current permissions.
+- JWTs require `sid` (family id) and `sv` (security version). Old access JWTs
+  without them are refused after upgrade. Existing valid refresh cookies may
+  rotate into the new token format; expired/revoked cookies require sign-in.
 - Login and account-recovery endpoints have bounded rate limits and account
   lockout. Password activation/reset tokens are hashed, time-limited and single
   use. Responses avoid exposing account existence. Email delivery is not
   configured; administrators can issue activation/reset links locally.
 - Optional administrator TOTP is implemented, including password-authorised
   enrolment, confirmation, encrypted secrets, expiring enrolment state and code
-  replay protection. Enabling/removing TOTP revokes refresh sessions. Host-only
+  replay protection. Enabling/removing TOTP revokes sessions and increments the
+  security version. Host-only
   recovery uses `ase recover-admin-totp`; there is no HTTP recovery bypass.
-- Token rotation, reset consumption and TOTP transitions have deterministic
-  tests. Concurrent refresh-family invalidation and PostgreSQL execution need
-  the separate verification recorded in the Phase 6 review; unit tests alone
-  do not establish every lifecycle race property.
+- Token claims, family revocation, single-use token consumption and account/TOTP
+  transitions have deterministic regressions. A shared administration guard and
+  ordered account locks recheck the acting administrator during role/status
+  changes. Self-modification is forbidden, so two administrators cannot race to
+  remove every active administrator through the supported API. Test evidence
+  remains specific to the recorded database and scenarios; it is not a proof of
+  every possible lifecycle race.
 - Authentication and administrative actions write audit records. This is an
   application audit log, not a tamper-proof external audit service.
 
 ### Authorisation
 
-- `user` and `admin` roles are checked at protected boundaries. Administrator
-  operations require the current administrator role.
-- Reports and collection plans are shared reads for active authenticated users.
-  Report exports, version comparisons and semantic search follow the same read
-  policy. The current product does not promise owner-private report libraries.
-- Report and plan mutations require the owner or an administrator in application
-  use cases. Object identifiers do not grant permission to mutate another user's
-  records. Similar feature-specific checks protect areas, indicators and
-  schedules; do not infer a different read policy from ownership alone.
-- SSE checks current identity on connection and expires no later than the
-  presented token. It has per-user/global admission bounds. Already-open streams
-  do not re-read account state for each message; reconnects repeat authentication.
+- Global roles are `user`, `manager` and `admin`. Administrator operations require
+  the current administrator role. Manager authority additionally requires a
+  `manager` membership designation in the specific team. It never grants global
+  account, credential, reset-link or directory access.
+- Personal roots (`team_id = null`) are readable by their creator and
+  administrators. Team roots are readable by current members and administrators.
+  This policy covers reports and historical versions, exports, comparisons,
+  semantic search, AOIs, plans, indicators, schedules and alerts. Public source
+  events and source health remain shared. Identifiers outside the caller's read
+  scope return 404, including attempted mutations, to avoid existence disclosure.
+- Current team members may manage their own contributions; designated managers
+  may manage other contributions in that team. Linked records must share the same
+  personal owner or team, even when an administrator makes the request. Ordinary
+  content editing cannot transfer a record to another scope.
+- Alert acknowledgement is shared triage: any current member of an active team
+  may acknowledge its alerts. Personal alerts remain owner/admin-only, and
+  archived teams retain the ordinary read-only rule.
+- Archived teams retain read access, while ordinary operational writes stop.
+  Administrators retain a deliberate manual operational override. Membership
+  edits require reactivation. Background collection/reporting requires an active
+  owner and active team membership even for an administrator-owned job.
+- The shared `AccessPolicy` reloads current identity and memberships. Repositories
+  apply its SQL visibility predicate before limits and counts. Mutations take the
+  administration guard before account locks and rechecks, serialising them with
+  membership, archive and account transitions. No-op updates provide real locking
+  on both SQLite and PostgreSQL; SQLite `FOR UPDATE` alone is not relied upon.
+- Outbound model work does not retain these database locks. Report generation and
+  embedding writes rebuild authority after the call before persisting results.
+  Searches re-read visible reports after embedding the query. Background stores
+  recheck eligibility before saving alerts, run outcomes and report links.
+- PDF/DOCX downloads recheck current access after rendering and before releasing
+  bytes. Private operational routes carry `Cache-Control: no-store`; downloads
+  preserve `private, no-store`. Previously downloaded copies cannot be recalled.
+- SSE revalidates in a fresh transaction before delivery and at least every
+  15 seconds while idle, subject to service scheduling. It filters alert payloads
+  by scope, emits `access.changed` when team access changes and closes revoked or
+  expired sessions. The client invalidates scoped data/selections on access
+  changes. Admission remains bounded per user and globally.
+- Migration `0014` does not invent shared teams or assign old records to one.
+  Existing roots stay personal; alerts inherit surviving indicator ownership and
+  orphan alerts remain administrator-only. `legacy_scope_conflict` audit entries
+  inventory missing/cross-owner links without copying their content. Historical
+  links and evidence remain intact, while incompatible new operations are denied.
+  See [ADR 0010](adr/0010-teams-and-access.md).
 
 ### External feeds and content
 
@@ -75,6 +117,11 @@ exposure or multi-worker topology needs a new review.
 - Dynamic Mastodon instances and watchlist requests use the guarded feed path.
   Google News link resolution is deferred until report citation processing; it
   does not fetch every article in a live feed or create an article archive.
+- Private plan terms used for enabled Google News collection are sent to Google;
+  their resulting public articles remain in the shared live picture. Plan/PIR
+  identifiers are not attached to public events. The social board reveals private
+  terms only to their personal owner, current team members or administrators.
+  Revoked/inactive owners and archived teams stop supplying background terms.
 - The React report reader, social board, evidence annex and version comparison
   render structured text nodes. Links must pass HTTP(S) URL checks. There is no
   browser Markdown-to-HTML or DOMPurify rendering path in the implementation.
@@ -118,9 +165,12 @@ exposure or multi-worker topology needs a new review.
 - Raw live events stay in the bounded in-memory store and are excluded from
   database writes and backups. Saved report evidence is deliberately durable;
   small hourly activity counts support baselines without preserving event rows.
-- Semantic search indexes already saved report assessment text, with one JSON
-  vector per indexed report and a latest-1,000-report bound. No pgvector service
-  or raw-event semantic archive is used. See
+- Semantic search indexes already saved assessment text, with one JSON vector per
+  indexed report and a shared limit of 1,000 stored vectors. Capacity is checked
+  before embedding calls; a full index refuses new slots without evicting other
+  teams' entries. Global maintenance prunes orphaned/superseded versions, not
+  everything outside one caller's scope. Searches/counts use up to the caller's
+  latest 1,000 visible reports. No pgvector service or raw-event archive is used. See
   [ADR 0008](adr/0008-bounded-report-search.md).
 - Model credentials and administrator TOTP secrets use Fernet under
   `ASE_ENCRYPTION_KEY`. Existing keys are never read back through profile APIs;
@@ -150,8 +200,9 @@ exposure or multi-worker topology needs a new review.
   or Compose PostgreSQL dumps, verify a strict hash manifest, refuse unsafe
   paths, and restore only into new destinations. Actual `.env` inclusion is
   explicit. No nightly schedule, automatic pruning or destructive restore is
-  installed. The offline SQLite drill is real; PostgreSQL command tests are
-  mocked and a live recovery drill remains outstanding.
+  installed. A synthetic SQLite/PostgreSQL 17 drill through migration `0011`
+  verified the 19 then-existing tables and recovery of encrypted values. It is
+  separate from recovery of the operator's backups and the new scope migrations.
 
 ### Supply chain
 
@@ -169,10 +220,12 @@ findings, fixes and remaining evidence. The principal operational gates are:
 1. Keep one API process. Rate limits, search coordination and stream/model
    admission are in-process. Keep API/database ports private and narrow
    forwarded-header trust if the Compose network boundary changes.
-2. Retain the verified PostgreSQL session-race regressions and define access-token
-   revocation/recovery expectations. Ordinary requests re-check active state and
-   role, but logout does not add a universal access-JWT deny list, and a running
-   SSE connection lasts until its deadline.
+2. Retain session, account-transition, team revocation and background-work
+   regressions on SQLite and PostgreSQL. Back up the actual database, then apply
+   migrations explicitly before running the new code. No operator database or
+   real `.env` was changed during development verification. Review the migration's
+   legacy conflict audit entries and repair incompatible links before using
+   affected collection workflows.
 3. Account lockout can be used to deny access to a known account. This remains a
    documented LAN trade-off, not an acceptable default for unreviewed public
    exposure. Host access also gives access to `.env`, volumes and recovery tools.

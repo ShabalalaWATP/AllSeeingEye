@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { SocialBoard, SocialKeyword } from '@/lib/api/social';
 import { useEventsStore } from '@/stores/events';
 import { liveEvent } from '@/test/fixtures';
+import { roster, team } from '@/test/fixtures.teams';
 import { applySession } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -47,6 +48,51 @@ function renderBoard() {
 }
 
 describe('social listening', () => {
+  it('hides private collection keywords while a revoked workspace is rechecked', async () => {
+    let revoked = false;
+    let rosterReads = 0;
+    let release!: () => void;
+    const response = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.get('/api/teams', () => HttpResponse.json({ items: revoked ? [] : [team] })),
+      http.get('/api/teams/:id', () => {
+        rosterReads += 1;
+        return HttpResponse.json(roster);
+      }),
+      http.get('/api/trackers/social', async () => {
+        if (revoked) {
+          await response;
+          return HttpResponse.json(empty);
+        }
+        return HttpResponse.json({
+          ...empty,
+          keywords: [{ ...keyword, term: 'private team term' }],
+        });
+      }),
+    );
+    renderBoard();
+    expect(await screen.findByText('private team term')).toBeInTheDocument();
+    await waitFor(() => expect(rosterReads).toBe(1));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    revoked = true;
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    await waitFor(() => expect(screen.queryByText('private team term')).not.toBeInTheDocument());
+    expect(screen.getByRole('status')).toHaveTextContent('Loading social listening');
+    await act(async () => {
+      release();
+      await response;
+    });
+    expect(
+      await screen.findByText('No configured keywords are being sampled.'),
+    ).toBeInTheDocument();
+  });
+
   it('shows loading and empty states', async () => {
     server.use(
       http.get('/api/trackers/social', async () => {

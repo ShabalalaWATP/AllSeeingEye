@@ -49,7 +49,9 @@ describe('events api', () => {
         since: '2026-09-04T00:00:00Z',
         limit: 50,
       }),
-    ).toBe('?categories=disaster%2Ccyber&bbox=-10%2C35%2C5%2C60&country=GB&since=2026-09-04T00%3A00%3A00Z&limit=50');
+    ).toBe(
+      '?categories=disaster%2Ccyber&bbox=-10%2C35%2C5%2C60&country=GB&since=2026-09-04T00%3A00%3A00Z&limit=50',
+    );
     expect(eventsQueryString({ categories: [] })).toBe('');
   });
 

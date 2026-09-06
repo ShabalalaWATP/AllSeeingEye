@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.api.cookies import CSRF_COOKIE, CSRF_HEADER
 from ase.api.errors import CsrfFailed
+from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims, RequestContext
 from ase.application.policy import require_admin
 from ase.container import Container
@@ -39,8 +40,7 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def get_request_context(request: Request) -> RequestContext:
-    # Behind Caddy the client address is the proxy; X-Forwarded-For handling is a later
-    # change made only when the proxy is trusted, never by default.
+    # Uvicorn applies forwarded headers only from its configured trusted proxies.
     ip = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
     if user_agent is not None:
@@ -53,16 +53,17 @@ ContextDep = Annotated[RequestContext, Depends(get_request_context)]
 
 async def get_current_user(
     container: ContainerDep,
-    session: SessionDep,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
 ) -> User:
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise Unauthenticated()
     claims = container.issuer.verify(credentials.credentials)
-    user = await container.repositories(session).users.get_by_id(claims.user_id)
-    if user is None or not user.is_active:
-        raise Unauthenticated()
-    return user
+    # Authentication must release its connection before a streaming response starts.
+    async with container.session_factory() as session:
+        repositories = container.repositories(session)
+        return await validate_current_session(
+            claims, repositories.users, repositories.refresh_tokens, container.clock
+        )
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]

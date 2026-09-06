@@ -5,10 +5,12 @@ from datetime import datetime
 from typing import Protocol
 
 from ase.domain.social import SocialBaseline, WatchedTerm
+from ase.domain.users import User
 
 
 class SocialTermsSource(Protocol):
     async def configured(self) -> tuple[WatchedTerm, ...]: ...
+    async def visible_to(self, actor: User) -> tuple[WatchedTerm, ...]: ...
 
 
 class SocialActivityStore(Protocol):

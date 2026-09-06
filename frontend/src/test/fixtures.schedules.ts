@@ -2,6 +2,7 @@
 import type { Schedule } from '@/lib/api/schedules';
 
 export const schedule: Schedule = {
+  team_id: null,
   id: 'e1e1e1e1-e1e1-4e1e-8e1e-e1e1e1e1e1e1',
   name: 'Morning INTSUM',
   template_id: 'intsum',

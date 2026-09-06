@@ -21,7 +21,7 @@ export function Ticker({ events, selectedId, now, onSelect, limit = TICKER_LIMIT
   return (
     <nav
       aria-label="Latest events"
-      className="absolute top-3 right-3 left-32 z-10 h-9 overflow-hidden rounded-md border border-line bg-surface/90 backdrop-blur"
+      className="absolute top-16 right-3 left-3 z-10 h-11 overflow-hidden rounded-md border border-line bg-surface/90 backdrop-blur lg:top-3 lg:left-32 lg:h-9"
     >
       {latest.length === 0 ? (
         <p className="px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-muted">

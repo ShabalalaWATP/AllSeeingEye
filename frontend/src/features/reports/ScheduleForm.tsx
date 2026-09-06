@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
+import { WorkspaceField } from '@/components/ui/WorkspaceField';
+import type { CollectionPlan } from '@/lib/api/direction';
+import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
+import type { Workspaces } from '@/lib/hooks/useWorkspaces';
+
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
@@ -28,6 +33,8 @@ export function describeCadence(schedule: Schedule): string {
 
 interface ScheduleFormProps {
   templates: readonly ReportTemplate[];
+  plans: readonly CollectionPlan[];
+  workspaces: Workspaces;
   countries: readonly Country[];
   busy: boolean;
   error: string | null;
@@ -35,7 +42,22 @@ interface ScheduleFormProps {
 }
 
 /** A standing order: which product, for which nation, at which UTC hour, how often. */
-export function ScheduleForm({ templates, countries, busy, error, onSubmit }: ScheduleFormProps) {
+export function ScheduleForm({
+  templates,
+  countries,
+  busy,
+  error,
+  onSubmit,
+  plans,
+  workspaces,
+}: ScheduleFormProps) {
+  const scope = useWorkspaceSelection(workspaces);
+  const [planId, setPlanId] = useState('');
+  const matchingPlans = plans.filter(
+    (plan) => plan.enabled && (plan.team_id ?? '') === scope.teamId,
+  );
+  const selectedPlan = matchingPlans.some((plan) => plan.id === planId) ? planId : '';
+  const invalidPlan = planId !== '' && selectedPlan === '';
   const [name, setName] = useState('');
   const [template, setTemplate] = useState('intsum');
   const [country, setCountry] = useState('');
@@ -44,8 +66,12 @@ export function ScheduleForm({ templates, countries, busy, error, onSubmit }: Sc
   const [weekday, setWeekday] = useState('0');
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!scope.ready || invalidPlan) return;
     onSubmit({
+      ...(scope.teamId ? { team_id: scope.teamId } : {}),
+      ...(selectedPlan ? { plan_id: selectedPlan } : {}),
       name: name.trim(),
+      enabled: true,
       template_id: template,
       country_iso: country === '' ? null : country,
       hour_utc: Number(hour),
@@ -59,6 +85,29 @@ export function ScheduleForm({ templates, countries, busy, error, onSubmit }: Sc
       aria-label="New schedule"
       className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
     >
+      {invalidPlan && (
+        <Alert tone="error">
+          The linked plan is no longer available. Choose a plan in this workspace or select No plan.
+        </Alert>
+      )}
+      <WorkspaceField
+        workspaces={workspaces}
+        value={scope.teamId}
+        onChange={(value) => {
+          scope.select(value);
+          setPlanId('');
+        }}
+      />
+      <SelectField
+        label="Collection plan"
+        value={selectedPlan}
+        onChange={(event) => setPlanId(event.target.value)}
+        hint="Optional. Linked plans must use the same workspace."
+        options={[
+          { value: '', label: 'No plan' },
+          ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
+        ]}
+      />
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Schedule name"
@@ -120,7 +169,7 @@ export function ScheduleForm({ templates, countries, busy, error, onSubmit }: Sc
       </div>
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>
-        <Button type="submit" busy={busy}>
+        <Button type="submit" busy={busy} disabled={!scope.ready || invalidPlan}>
           Add schedule
         </Button>
       </div>

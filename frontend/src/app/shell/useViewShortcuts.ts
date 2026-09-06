@@ -25,6 +25,7 @@ export function useViewShortcuts(): void {
     function onKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
       if (isEditableTarget(event.target)) return;
+      if (event.target instanceof Element && event.target.closest('dialog[open]') !== null) return;
       const key = event.key.toLowerCase();
       if (key === 'g') {
         event.preventDefault();

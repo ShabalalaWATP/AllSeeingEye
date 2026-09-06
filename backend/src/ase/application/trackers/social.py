@@ -72,11 +72,7 @@ class SocialService:
         hour = hour_end - timedelta(hours=1)
         since = now - timedelta(hours=24)
         events = social_events(self._store, since, now)
-        terms = tuple(
-            term
-            for term in await self._terms.configured()
-            if term.public or actor.is_admin or actor.id in term.owners
-        )
+        terms = await self._terms.visible_to(actor)
         counts = keyword_counts(
             [event for event in events if hour <= event.published_at < hour_end], terms
         )

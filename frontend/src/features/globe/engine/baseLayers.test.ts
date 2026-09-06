@@ -10,11 +10,12 @@ import {
   isApiRequest,
   isOsLayer,
   rasterSourceFor,
+  vectorStyleFor,
 } from './baseLayers';
 
 describe('base layer specifications', () => {
   it('lists the dark style first and marks the OS styles as keyed', () => {
-    expect(BASE_LAYER_OPTIONS[0]?.id).toBe('dark');
+    expect(BASE_LAYER_OPTIONS[0].id).toBe('dark');
     expect(BASE_LAYER_OPTIONS.filter((option) => option.needsOs).map((o) => o.id)).toEqual([
       'os_road',
       'os_outdoor',
@@ -33,6 +34,25 @@ describe('base layer specifications', () => {
       attribution: EOX_ATTRIBUTION,
     });
     expect(rasterSourceFor('hybrid')).toEqual(satellite);
+  });
+
+  it('uses real keyless vector styles and keeps imagery on the dark label style', () => {
+    expect(vectorStyleFor('streets')).toBe('https://tiles.openfreemap.org/styles/liberty');
+    expect(vectorStyleFor('light')).toBe('https://tiles.openfreemap.org/styles/positron');
+    for (const layer of ['dark', 'satellite', 'hybrid', 'os_road'] as const) {
+      expect(vectorStyleFor(layer)).toBe('https://tiles.openfreemap.org/styles/dark');
+    }
+    expect(rasterSourceFor('streets')).toBeNull();
+    expect(rasterSourceFor('light')).toBeNull();
+  });
+
+  it('links the provider and licence in imagery attribution', () => {
+    const attribution = document.createElement('div');
+    attribution.innerHTML = EOX_ATTRIBUTION;
+    expect(attribution.querySelector('a[href="https://s2maps.eu"]')).not.toBeNull();
+    expect(attribution.querySelector('a[href="https://eox.at"]')).not.toBeNull();
+    expect(attribution.textContent).toContain('Copernicus Sentinel data 2024');
+    expect(attribution.textContent).toContain('CC BY-NC-SA 4.0');
   });
 
   it('points OS styles at the proxy with the Great Britain bounds and free zoom range', () => {

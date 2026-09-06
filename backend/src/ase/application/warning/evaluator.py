@@ -72,6 +72,8 @@ class IndicatorEvaluator:
         now = self._clock.now()
         fired: list[Alert] = []
         for indicator in await self._warnings.enabled_indicators():
+            if not await self._warnings.can_run(indicator):
+                continue
             latest = await self._warnings.latest_alert(indicator.id)
             since = now - indicator.window
             events = candidate_events(self._store, indicator, since)
@@ -80,7 +82,8 @@ class IndicatorEvaluator:
             if firing is None:
                 continue
             alert = alert_from(indicator, firing, uuid4(), now)
-            await self._warnings.add_alert(alert)
+            if not await self._warnings.add_alert(alert, indicator):
+                continue
             log.info("alert_fired", extra={"indicator": indicator.name, "count": alert.count})
             await self._route(alert, indicator)
             fired.append(alert)
@@ -90,14 +93,20 @@ class IndicatorEvaluator:
         return fired
 
     async def _route(self, alert: Alert, indicator: Indicator) -> None:
+        if not await self._warnings.can_run(indicator):
+            return
         await self._bus.publish(BusMessage("alert", {"alert": alert}))
         try:
+            if not await self._warnings.can_run(indicator):
+                return
             await self._notifier.notify(alert, indicator)
         except Exception:
             log.exception("alert_notify_failed", extra={"indicator": indicator.name})
         if self._reporter is None or indicator.report_template is None:
             return
         try:
+            if not await self._warnings.can_run(indicator):
+                return
             report_id = await self._reporter(indicator, alert)
         except Exception:
             log.exception("alert_report_failed", extra={"indicator": indicator.name})

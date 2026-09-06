@@ -16,6 +16,7 @@ from ase.domain.events import Category
 
 
 class AoiIn(BaseModel):
+    team_id: UUID | None = None
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=1000)
     kind: str = Field(pattern="^(bbox|countries)$")
@@ -30,10 +31,12 @@ class AoiIn(BaseModel):
             bbox=box,  # type: ignore[arg-type]
             countries=[code[:2] for code in self.countries],
             description=self.description,
+            team_id=self.team_id,
         )
 
 
 class AoiOut(BaseModel):
+    team_id: UUID | None
     id: UUID
     name: str
     description: str
@@ -55,6 +58,7 @@ class AoiOut(BaseModel):
             countries=list(area.countries),
             created_by=area.created_by,
             created_at=area.created_at,
+            team_id=area.team_id,
         )
 
 
@@ -82,6 +86,7 @@ class PirIn(BaseModel):
 
 
 class PlanIn(BaseModel):
+    team_id: UUID | None = None
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=2000)
     aoi_id: UUID | None = None
@@ -97,6 +102,7 @@ class PlanIn(BaseModel):
             countries=[code[:2] for code in self.countries],
             pirs=[pir.to_input() for pir in self.pirs],
             enabled=self.enabled,
+            team_id=self.team_id,
         )
 
 
@@ -127,6 +133,7 @@ class PirOut(BaseModel):
 
 
 class PlanOut(BaseModel):
+    team_id: UUID | None
     id: UUID
     name: str
     description: str
@@ -151,6 +158,7 @@ class PlanOut(BaseModel):
             created_by=plan.created_by,
             created_at=plan.created_at,
             updated_at=plan.updated_at,
+            team_id=plan.team_id,
         )
 
 

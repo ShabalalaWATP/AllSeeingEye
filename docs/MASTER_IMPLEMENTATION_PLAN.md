@@ -4,6 +4,10 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+The expanded app-quality, teams, map and design goal is now tracked in
+[MASTER_FIX_IMPROVEMENT_PLAN.md](MASTER_FIX_IMPROVEMENT_PLAN.md). That plan is
+active; the completed phases below are its starting point, not its completion.
+
 Phases 0 to 4 are built. The 6 September 2026 continuation adds the remaining Phase 5 features and the Phase 6 hardening work: translation, social listening and watchlists; optional administrator TOTP, report documents and comparison, semantic search, bounded-memory performance fixes, keyboard and motion improvements, and backup/restore tooling. Live events remain in memory. The current operating instructions are in [PHASE5_PHASE6_OPERATIONS.md](PHASE5_PHASE6_OPERATIONS.md).
 
 PIR tagging in the pipeline, plan editing in the app and baseline-relative indicators remain follow-ups. Modern opaque Google News links cannot currently be decoded without obtaining a signature from HTML, which conflicts with the no-scraping requirement. Their original Google URL is preserved. The ASVS review is a documented assessment, not certification or permission for public exposure; its remaining deployment checks are listed in [security/PHASE6_ASVS_REVIEW.md](security/PHASE6_ASVS_REVIEW.md).

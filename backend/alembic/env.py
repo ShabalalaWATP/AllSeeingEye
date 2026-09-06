@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     models,
     report_search,
+    teams,
     token_families,
     totp,
 )

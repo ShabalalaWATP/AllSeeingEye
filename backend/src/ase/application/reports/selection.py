@@ -52,10 +52,10 @@ def score(event: Event, now: datetime, window: timedelta) -> float:
 
 
 def term_matches(event: Event, terms: Sequence[str]) -> int:
-    """How many of the (lower-cased) search terms appear in the title or summary."""
+    """Match original and translated titles without replacing the source material."""
     if not terms:
         return 0
-    text = f"{event.title} {event.summary or ''}".lower()
+    text = f"{event.title} {event.title_en or ''} {event.summary or ''}".lower()
     return sum(1 for term in terms if term in text)
 
 
@@ -125,7 +125,7 @@ def select_evidence(
             break
         if per_source.get(event.source_id, 0) >= strategy.per_source_cap:
             continue
-        if injection_flags(event.title, event.summary):
+        if injection_flags(event.title, event.title_en, event.summary):
             flagged += 1
             continue
         profile = profiles.get(event.source_id)
@@ -136,7 +136,7 @@ def select_evidence(
                 event,
                 now,
                 source_name=profile.name if profile else event.source_id,
-                independence_key=profile.independence_key if profile else event.source_id,
+                independence_key=profile.independence_key if profile else "",
                 instrument=profile.instrument if profile else False,
                 flags=sorted(
                     (profile.flags if profile else frozenset())

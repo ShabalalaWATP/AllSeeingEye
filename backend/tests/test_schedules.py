@@ -62,7 +62,7 @@ async def test_schedules_are_validated_and_owned(
     await create_user(container, email="second@example.com", password="another-long-passphrase")
     second = await login_token(client, "second@example.com", "another-long-passphrase")
     forbidden = await client.put(f"/api/schedules/{schedule_id}", json=body, headers=bearer(second))
-    assert forbidden.status_code == 403
+    assert forbidden.status_code == 404
     edited = await client.put(
         f"/api/schedules/{schedule_id}",
         json={**body, "cadence": "weekly", "weekday": 0, "enabled": False},
@@ -71,7 +71,7 @@ async def test_schedules_are_validated_and_owned(
     assert edited.status_code == 200 and edited.json()["cadence"] == "weekly"
     assert edited.json()["created_by"] == created.json()["created_by"]
     listed = await client.get("/api/schedules", headers=bearer(second))
-    assert [item["enabled"] for item in listed.json()["items"]] == [False]
+    assert listed.json()["items"] == []
     assert (
         await client.delete(f"/api/schedules/{uuid4()}", headers=bearer(token))
     ).status_code == 404
@@ -99,7 +99,7 @@ async def test_runner_produces_due_reports_and_records_failures(
     assert created.status_code == 201, created.text
     container.store.upsert(conflict_events(container.clock.now()))
     container.llm = ScriptedGateway(json.dumps(good_body()))
-    store = SqlScheduleStore(container.session_factory)
+    store = SqlScheduleStore(container.session_factory, container.access_policy)
     runner = ScheduleRunner(store, container.schedule_report, container.clock)
     assert await runner.run_once() == []  # not due yet
 

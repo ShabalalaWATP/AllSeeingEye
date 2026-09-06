@@ -6,16 +6,16 @@ packages installed from npm (whose licences travel with the packages in
 
 ## React Bits: Evil Eye
 
-| Item | Detail |
-|---|---|
-| Component | `EvilEye` (registry item `EvilEye-TS-TW`, TypeScript + Tailwind variant) |
-| Source page | https://reactbits.dev/backgrounds/evil-eye |
-| Registry file | https://reactbits.dev/r/EvilEye-TS-TW.json (`files[0].path`: `EvilEye/EvilEye.tsx`) |
-| Copied to | `frontend/src/components/brand/EvilEye.tsx` |
-| Retrieved | 4 September 2026 |
-| Declared dependency | `ogl@^1.0.11` (installed as `ogl` 1.0.11) |
-| Licence | MIT + Commons Clause License Condition v1.0, Copyright (c) 2026 David Haz |
-| Licence source | https://raw.githubusercontent.com/DavidHDev/react-bits/main/LICENSE.md |
+| Item                | Detail                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| Component           | `EvilEye` (registry item `EvilEye-TS-TW`, TypeScript + Tailwind variant)            |
+| Source page         | https://reactbits.dev/backgrounds/evil-eye                                          |
+| Registry file       | https://reactbits.dev/r/EvilEye-TS-TW.json (`files[0].path`: `EvilEye/EvilEye.tsx`) |
+| Copied to           | `frontend/src/components/brand/EvilEye.tsx`                                         |
+| Retrieved           | 4 September 2026                                                                    |
+| Declared dependency | `ogl@^1.0.11` (installed as `ogl` 1.0.11)                                           |
+| Licence             | MIT + Commons Clause License Condition v1.0, Copyright (c) 2026 David Haz           |
+| Licence source      | https://raw.githubusercontent.com/DavidHDev/react-bits/main/LICENSE.md              |
 
 The Commons Clause permits using the component inside this application. It does not
 permit selling, sublicensing or redistributing the component itself, alone or in a

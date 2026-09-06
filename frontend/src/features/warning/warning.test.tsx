@@ -35,7 +35,9 @@ describe('warning', () => {
     const { user } = renderApp('/warning', 'user');
     const table = await screen.findByRole('table', { name: 'Indicators' });
     expect(within(table).getByText('Kharkiv strikes')).toBeInTheDocument();
-    expect(within(table).getByText('2 or more conflict with Kharkiv, shelling in 6 h')).toBeVisible();
+    expect(
+      within(table).getByText('2 or more conflict with Kharkiv, shelling in 6 h'),
+    ).toBeVisible();
     expect(within(table).getByText('intsum')).toBeInTheDocument();
 
     const form = screen.getByRole('form', { name: 'New indicator' });
@@ -51,6 +53,10 @@ describe('warning', () => {
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'Sumy strikes',
+        description: '',
+        enabled: true,
+        cooldown_minutes: 60,
+        severity_floor: 0,
         countries: ['UA'],
         keywords: ['Sumy', 'strike'],
         categories: ['conflict'],

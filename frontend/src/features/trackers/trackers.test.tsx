@@ -84,12 +84,17 @@ describe('tracker products', () => {
     await user.click(generate);
     const form = await screen.findByRole('form', { name: 'Generate a report' }, { timeout: 5000 });
     expect(within(form).getByLabelText('Product')).toHaveValue('conflict_assessment');
+    expect(within(form).getByLabelText('Workspace')).toHaveValue('');
     await waitFor(() => {
       expect(within(form).getByLabelText('Conflict')).toHaveValue('ukraine');
     });
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
-      expect(body).toEqual({ template: 'conflict_assessment', conflict: 'ukraine' });
+      expect(body).toEqual({
+        template: 'conflict_assessment',
+        conflict: 'ukraine',
+        devils_advocacy: false,
+      });
     });
   });
 

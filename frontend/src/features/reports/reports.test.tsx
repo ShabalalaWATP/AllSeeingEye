@@ -56,6 +56,7 @@ describe('ReportsPage', () => {
     ).toBeInTheDocument();
     expect(body).toEqual({
       template: 'ask',
+      devils_advocacy: false,
       country: 'UA',
       question: 'What next?',
       window_hours: 24,
@@ -99,15 +100,17 @@ describe('ReportPage', () => {
       'elevated',
     );
     expect(screen.getByRole('region', { name: 'Gaps and collection' })).toHaveTextContent('EEI-1');
-    const annex = screen.getByRole('table', { name: 'Evidence annex' });
-    expect(within(annex).getByRole('link', { name: 'Shelling in Kharkiv' })).toHaveAttribute(
+    const annex = screen.getByRole('region', { name: 'Evidence annex' });
+    await user.click(within(annex).getByText('Shelling in Kharkiv'));
+    expect(within(annex).getByRole('link', { name: 'Open source' })).toHaveAttribute(
       'href',
       'https://example.org/e1',
     );
     expect(
       within(annex).queryByRole('link', { name: 'Ministry statement' }),
     ).not.toBeInTheDocument();
-    expect(within(annex).getByText('state controlled')).toBeInTheDocument();
+    await user.click(within(annex).getByText('Ministry statement'));
+    expect(within(annex).getByText('Source flags: state controlled')).toBeVisible();
     expect(screen.getByText('1 validator note(s)')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy Markdown' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Delete' }));

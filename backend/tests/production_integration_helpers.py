@@ -57,8 +57,25 @@ class StageGateway:
                 key_judgements=[
                     {**good_body()["key_judgements"][0], "supporting_evidence": ["E1"]}
                 ],
-                reporting=[],
-                assessment=[],
+                reporting=[
+                    {
+                        "theme": "Observed activity",
+                        "items": [
+                            {
+                                "text": "The source reported activity.",
+                                "evidence": ["E1"],
+                                "grade": "A1",
+                            }
+                        ],
+                    }
+                ],
+                assessment=[
+                    {
+                        "heading": "Trajectory",
+                        "text": "Activity remains a concern.",
+                        "evidence": ["E1"],
+                    }
+                ],
                 alternative_hypotheses=[],
             ),
             "advocacy": {

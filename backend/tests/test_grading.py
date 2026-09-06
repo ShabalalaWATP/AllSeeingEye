@@ -1,4 +1,4 @@
-"""Credibility from corroboration and context: stories, independence, syndication, windows."""
+"""Provisional credibility, related topics, declared provenance and bounded windows."""
 
 from __future__ import annotations
 
@@ -11,9 +11,8 @@ from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.ports.feeds import BusMessage
-from ase.domain.events import Category, Credibility, Event, Point
+from ase.domain.events import Category, Credibility, Point
 from ase.domain.grading import (
-    SourceProfile,
     build_stories,
     distance_km,
     grade_events,
@@ -21,32 +20,7 @@ from ase.domain.grading import (
     title_tokens,
 )
 from feeds_helpers import NOW, FakeClock, FakeConnector, make_event, make_spec
-
-PROFILES = {
-    "bbc": SourceProfile("bbc", "BBC", "BBC News World"),
-    "bbc_arabic": SourceProfile("bbc_arabic", "BBC", "BBC Arabic"),
-    "aljazeera": SourceProfile("aljazeera", "Al Jazeera", "Al Jazeera English"),
-    "reuters_via_guardian": SourceProfile("reuters_via_guardian", "Guardian", "The Guardian"),
-    "tass": SourceProfile("tass", "TASS", "TASS English", flags=frozenset({"state_controlled"})),
-    "usgs": SourceProfile("usgs", "USGS", "USGS earthquakes", instrument=True),
-    "gdacs": SourceProfile("gdacs", "JRC", "GDACS", instrument=True),
-    "kev": SourceProfile("kev", "CISA", "CISA KEV", flags=frozenset({"authoritative"})),
-}
-
-
-def news(
-    key: str, source: str, title: str, *, minutes: int = 0, country: str | None = "SD"
-) -> Event:
-    return make_event(
-        key,
-        source_id=source,
-        category=Category.NEWS,
-        subtype="article",
-        title=title,
-        published_at=NOW + timedelta(minutes=minutes),
-        point=None,
-        country_iso=country,
-    )
+from grading_helpers import PROFILES, news
 
 
 def test_tokens_similarity_and_distance() -> None:
@@ -58,38 +32,42 @@ def test_tokens_similarity_and_distance() -> None:
     assert 340 < distance_km(london, paris) < 345
 
 
-def test_corroboration_across_independent_outlets() -> None:
+def test_related_reporting_across_outlets_is_not_verified_corroboration() -> None:
     first = news("a", "bbc", "RSF forces enter El Fasher after weeks of siege", minutes=0)
     second = news("b", "aljazeera", "Sudan: RSF fighters enter El Fasher as siege ends", minutes=38)
     third = news("c", "reuters_via_guardian", "RSF enters El Fasher, ending the siege", minutes=95)
     unrelated = news("d", "bbc", "Cabinet reshuffle in Khartoum announced", minutes=10)
     graded = {g.event.id: g for g in grade_events([first, second, third, unrelated], PROFILES)}
-    assert graded[first.id].credibility is Credibility.CONFIRMED
-    assert graded[first.id].rationale.startswith("Confirmed by 2 independent sources: Al Jazeera")
+    assert graded[first.id].credibility is Credibility.CANNOT_BE_JUDGED
+    assert "3 declared organisation group(s)" in graded[first.id].rationale
+    assert "independent sourcing and claim agreement not verified" in graded[first.id].rationale
     assert graded[first.id].story_id == graded[second.id].story_id == graded[third.id].story_id
     assert graded[unrelated.id].story_id != graded[first.id].story_id
     # The unrelated item has context (same country, same category) but no corroboration.
-    assert graded[unrelated.id].credibility is Credibility.POSSIBLY_TRUE
-    assert "consistent with 3 other news item(s) in SD" in graded[unrelated.id].rationale
+    assert graded[unrelated.id].credibility is Credibility.CANNOT_BE_JUDGED
+    assert "Area/category context (3 other item(s))" in graded[unrelated.id].rationale
 
 
-def test_one_corroboration_and_syndicated_copies() -> None:
+def test_related_outlet_reporting_and_possible_copies() -> None:
     first = news("a", "bbc", "Heavy fighting reported around Kharkiv overnight", minutes=0)
     copy = news("b", "bbc_arabic", "Heavy fighting reported around Kharkiv overnight", minutes=5)
     other = news(
         "c", "aljazeera", "Overnight fighting reported near Kharkiv, officials say", minutes=50
     )
     graded = {g.event.id: g for g in grade_events([first, copy, other], PROFILES)}
-    assert graded[first.id].credibility is Credibility.PROBABLY_TRUE
-    assert graded[first.id].rationale == "Corroborated by Al Jazeera English (50 min later)"
-    assert graded[other.id].rationale == "Corroborated by BBC News World (50 min earlier)"
+    assert graded[first.id].credibility is Credibility.CANNOT_BE_JUDGED
+    assert "2 declared organisation group(s)" in graded[first.id].rationale
+    assert "claim agreement not verified" in graded[other.id].rationale
     syndicated = news(
         "d", "reuters_via_guardian", "Heavy fighting reported around Kharkiv overnight", minutes=8
     )
     graded = {g.event.id: g for g in grade_events([first, syndicated], PROFILES)}
-    # A near-identical copy in another organisation is syndication, not corroboration.
-    assert graded[first.id].credibility is Credibility.POSSIBLY_TRUE
-    assert graded[first.id].rationale.endswith("; syndicated copies counted once")
+    # A near-identical title could be a copy; it cannot establish independent agreement.
+    assert graded[first.id].credibility is Credibility.CANNOT_BE_JUDGED
+    assert "1 declared organisation group(s)" in graded[first.id].rationale
+    assert graded[first.id].rationale.endswith(
+        "; near-identical headlines or content may be copies, grouped once"
+    )
 
 
 def test_single_source_rules() -> None:
@@ -152,7 +130,8 @@ def test_disasters_link_by_place_and_time_and_windows_apply() -> None:
     )
     graded = {g.event.id: g for g in grade_events([usgs, gdacs, far], PROFILES)}
     assert graded[usgs.id].credibility is Credibility.PROBABLY_TRUE
-    assert graded[usgs.id].rationale == "Corroborated by GDACS (1 h later)"
+    assert "Provisional instrument" in graded[usgs.id].rationale
+    assert "independent sourcing and claim agreement not verified" in graded[usgs.id].rationale
     old = news("x", "bbc", "Flooding closes the coast road near Kalamata", minutes=-60 * 72)
     new = news("y", "aljazeera", "Flooding closes the coast road near Kalamata", minutes=0)
     assert len(build_stories([old, new])) == 2
@@ -202,6 +181,6 @@ async def test_service_and_scheduler_regrade_neighbours() -> None:
     published = {e.id: e for e in upsert.payload["events"]}  # type: ignore[union-attr]
     # Both the new item and its regraded neighbour go out, with their stored grades.
     assert set(published) == {first.id, second.id}
-    assert published[first.id].credibility is Credibility.PROBABLY_TRUE
-    assert published[second.id].credibility is Credibility.PROBABLY_TRUE
+    assert published[first.id].credibility is Credibility.CANNOT_BE_JUDGED
+    assert published[second.id].credibility is Credibility.CANNOT_BE_JUDGED
     assert published[first.id].story_id == published[second.id].story_id

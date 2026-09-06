@@ -8,11 +8,14 @@ import { LeftRail } from './LeftRail';
 import { OpsRoomOverlay } from './OpsRoomOverlay';
 import { TopBar } from './TopBar';
 import { useViewShortcuts } from './useViewShortcuts';
+import { MobileHeader } from './MobileNavigation';
+import { useNarrowShell } from './useNarrowShell';
 
 /** Authenticated frame: left rail, top bar and the routed main area. */
 export function AppShell() {
   useViewShortcuts();
   const { pathname } = useLocation();
+  const narrow = useNarrowShell();
   const opsRoom = useGlobeStore((state) => state.opsRoom) && pathname === '/';
   const mainRef = useRef<HTMLElement>(null);
 
@@ -25,9 +28,9 @@ export function AppShell() {
       >
         Skip to main content
       </a>
-      {!opsRoom && <LeftRail />}
+      {!opsRoom && !narrow && <LeftRail />}
       <div className="flex min-w-0 flex-1 flex-col">
-        {!opsRoom && <TopBar />}
+        {!opsRoom && (narrow ? <MobileHeader /> : <TopBar />)}
         <main id="main-content" ref={mainRef} tabIndex={-1} className="relative min-h-0 flex-1">
           <Suspense fallback={<LoadingScreen />}>
             <Outlet />

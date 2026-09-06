@@ -39,6 +39,7 @@ describe('schedules', () => {
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'Monday roll-up',
+        enabled: true,
         template_id: 'intsum',
         country_iso: 'UA',
         hour_utc: 7,

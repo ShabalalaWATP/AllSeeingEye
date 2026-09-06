@@ -49,7 +49,7 @@ class LoginUseCase:
     ) -> AuthSession:
         email = normalise_email(email)
         self._enforce_limits(email, context)
-        user = await self._users.get_by_email(email)
+        user = await self._users.lock_by_email(email)
         now = self._clock.now()
         if user is None:
             # Burn the same hashing cost as a real check so timing does not reveal existence.

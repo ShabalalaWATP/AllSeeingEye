@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from uuid import uuid4
 
 import jwt
 from httpx import AsyncClient
@@ -48,6 +49,8 @@ async def test_tokens_signed_with_another_key_or_type_fail(
         "iat": now,
         "exp": now + 600,
         "jti": "x",
+        "sid": str(uuid4()),
+        "sv": 0,
     }
     forged = jwt.encode(claims, "another-secret-that-is-long-enough-for-hmac", algorithm="HS256")
     assert (await client.get("/api/me", headers=bearer(forged))).status_code == 401

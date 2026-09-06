@@ -28,6 +28,7 @@ class IndicatorIn(BaseModel):
     severity_floor: float = Field(default=0.0, ge=0.0, le=1.0)
     report_template: str | None = Field(default=None, max_length=40)
     enabled: bool = True
+    team_id: UUID | None = None
 
     def to_input(self) -> IndicatorInput:
         return IndicatorInput(
@@ -44,6 +45,7 @@ class IndicatorIn(BaseModel):
             severity_floor=self.severity_floor,
             report_template=self.report_template,
             enabled=self.enabled,
+            team_id=self.team_id,
         )
 
 
@@ -65,6 +67,7 @@ class IndicatorOut(BaseModel):
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    team_id: UUID | None
 
     @classmethod
     def from_indicator(cls, indicator: Indicator) -> IndicatorOut:
@@ -87,6 +90,7 @@ class IndicatorOut(BaseModel):
             created_by=indicator.created_by,
             created_at=indicator.created_at,
             updated_at=indicator.updated_at,
+            team_id=indicator.team_id,
         )
 
 
@@ -107,6 +111,8 @@ class AlertOut(BaseModel):
     acknowledged_at: datetime | None
     acknowledged_by: UUID | None
     report_id: UUID | None
+    created_by: UUID | None
+    team_id: UUID | None
 
     @classmethod
     def from_alert(cls, alert: Alert) -> AlertOut:
@@ -123,6 +129,8 @@ class AlertOut(BaseModel):
             acknowledged_at=alert.acknowledged_at,
             acknowledged_by=alert.acknowledged_by,
             report_id=alert.report_id,
+            created_by=alert.created_by,
+            team_id=alert.team_id,
         )
 
 

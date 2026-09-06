@@ -8,7 +8,9 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import AoiRow, CollectionPlanRow
+from ase.domain.access import Visibility
 from ase.domain.collection import AreaOfInterest, CollectionPlan, Pir, Sir
 from ase.domain.errors import NotFound
 from ase.domain.events import BoundingBox, Category
@@ -32,6 +34,7 @@ def _aoi_from_row(row: AoiRow) -> AreaOfInterest:
         created_by=row.created_by,
         created_at=row.created_at,
         description=row.description,
+        team_id=row.team_id,
     )
 
 
@@ -86,6 +89,7 @@ def _plan_from_row(row: CollectionPlanRow) -> CollectionPlan:
         created_by=row.created_by,
         created_at=row.created_at,
         updated_at=row.updated_at,
+        team_id=row.team_id,
     )
 
 
@@ -99,6 +103,7 @@ def _apply_plan(row: CollectionPlanRow, plan: CollectionPlan) -> None:
     row.created_by = plan.created_by
     row.created_at = plan.created_at
     row.updated_at = plan.updated_at
+    row.team_id = plan.team_id
 
 
 class SqlAoiRepository:
@@ -119,16 +124,25 @@ class SqlAoiRepository:
                 countries=list(aoi.countries),
                 created_by=aoi.created_by,
                 created_at=aoi.created_at,
+                team_id=aoi.team_id,
             )
         )
         await self._session.flush()
 
     async def get(self, aoi_id: UUID) -> AreaOfInterest | None:
-        row = await self._session.get(AoiRow, aoi_id)
+        row = await self._session.get(AoiRow, aoi_id, populate_existing=True)
         return _aoi_from_row(row) if row else None
 
     async def list_all(self) -> list[AreaOfInterest]:
         rows = await self._session.scalars(select(AoiRow).order_by(AoiRow.name))
+        return [_aoi_from_row(row) for row in rows]
+
+    async def list_visible(self, visibility: Visibility) -> list[AreaOfInterest]:
+        rows = await self._session.scalars(
+            select(AoiRow)
+            .where(visibility_predicate(AoiRow.created_by, AoiRow.team_id, visibility))
+            .order_by(AoiRow.name)
+        )
         return [_aoi_from_row(row) for row in rows]
 
     async def delete(self, aoi_id: UUID) -> None:
@@ -147,12 +161,24 @@ class SqlPlanRepository:
         await self._session.flush()
 
     async def get(self, plan_id: UUID) -> CollectionPlan | None:
-        row = await self._session.get(CollectionPlanRow, plan_id)
+        row = await self._session.get(CollectionPlanRow, plan_id, populate_existing=True)
         return _plan_from_row(row) if row else None
 
     async def list_all(self) -> list[CollectionPlan]:
         rows = await self._session.scalars(
             select(CollectionPlanRow).order_by(CollectionPlanRow.created_at)
+        )
+        return [_plan_from_row(row) for row in rows]
+
+    async def list_visible(self, visibility: Visibility) -> list[CollectionPlan]:
+        rows = await self._session.scalars(
+            select(CollectionPlanRow)
+            .where(
+                visibility_predicate(
+                    CollectionPlanRow.created_by, CollectionPlanRow.team_id, visibility
+                )
+            )
+            .order_by(CollectionPlanRow.created_at)
         )
         return [_plan_from_row(row) for row in rows]
 

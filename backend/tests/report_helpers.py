@@ -33,7 +33,7 @@ GOOD_BODY = {
             "confidence": "low",
             "confidence_statement": "Single reporting line; no instrument data.",
             "supporting_evidence": ["E3"],
-            "contradicting_evidence": ["E9"],
+            "contradicting_evidence": [],
             "assumptions": [],
             "indicators": [],
         },
@@ -78,7 +78,6 @@ GOOD_BODY = {
     ],
     "collection_recommendations": ["Task FIRMS review of the northern approaches."],
     "sourcing_statement": "Three items from two independent organisations; syndicated copies counted once.",  # noqa: E501
-    "unexpected": "dropped",
 }
 
 

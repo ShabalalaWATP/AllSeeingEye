@@ -60,6 +60,7 @@ from ase.application.admin.requests import (
 from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase, UpdateUserUseCase
 from ase.application.auditing import Auditor
 from ase.application.auth.account_requests import ForgotPasswordUseCase, RequestAccountUseCase
+from ase.application.auth.change_password import ChangePasswordUseCase
 from ase.application.auth.login import LoginUseCase
 from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
@@ -222,6 +223,7 @@ class Container(FeatureWiring):
             self.limiter,
             self._auditor(r),
             r.uow,
+            r.users,
         )
 
     def refresh(self, session: AsyncSession) -> RefreshUseCase:
@@ -255,6 +257,13 @@ class Container(FeatureWiring):
             self.limiter, self.limits, self._auditor(r), r.uow,
         )  # fmt: skip
 
+    def change_password(self, session: AsyncSession) -> ChangePasswordUseCase:
+        r = self.repositories(session)
+        return ChangePasswordUseCase(
+            r.users, r.password_tokens, r.refresh_tokens, self.hasher, self.totp(session),
+            self.clock, self.limiter, self._auditor(r), r.uow,
+        )  # fmt: skip
+
     def list_requests(self, session: AsyncSession) -> ListRequestsUseCase:
         return ListRequestsUseCase(self.repositories(session).requests)
 
@@ -267,7 +276,7 @@ class Container(FeatureWiring):
 
     def reject_request(self, session: AsyncSession) -> RejectRequestUseCase:
         r = self.repositories(session)
-        return RejectRequestUseCase(r.requests, self.clock, self._auditor(r), r.uow)
+        return RejectRequestUseCase(r.requests, self.clock, self._auditor(r), r.uow, r.users)
 
     def list_users(self, session: AsyncSession) -> ListUsersUseCase:
         return ListUsersUseCase(self.repositories(session).users)

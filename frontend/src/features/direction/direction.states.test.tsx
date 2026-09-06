@@ -56,7 +56,12 @@ describe('direction states', () => {
     await user.type(within(areaForm).getByLabelText('Nations'), 'ua, gb');
     await user.click(within(areaForm).getByRole('button', { name: 'Add area' }));
     await waitFor(() => {
-      expect(created).toEqual({ name: 'Two nations', kind: 'countries', countries: ['UA', 'GB'] });
+      expect(created).toEqual({
+        name: 'Two nations',
+        description: '',
+        kind: 'countries',
+        countries: ['UA', 'GB'],
+      });
     });
     const table = screen.getByRole('table', { name: 'Areas of interest' });
     await user.click(within(table).getByRole('button', { name: 'Delete' }));

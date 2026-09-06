@@ -22,7 +22,6 @@ export function parseSirLines(text: string): SirRequest[] {
     .filter((sir) => sir.text !== '');
 }
 
-
 /** "west, south, east, north" in degrees; null unless all four numbers are present. */
 export function parseBox(text: string): [number, number, number, number] | null {
   const parts = text.split(',').map((part) => Number(part.trim()));

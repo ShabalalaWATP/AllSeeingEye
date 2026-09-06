@@ -32,7 +32,7 @@ const analysed = {
 describe('direction, advocacy and archives in the reader', () => {
   it('shows the requirements, the contrarian view and archive links', async () => {
     server.use(http.get('/api/reports/:id', () => HttpResponse.json(analysed)));
-    renderApp(`/reports/${reportSummary.id}`, 'user');
+    const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
     const direction = await screen.findByRole('region', { name: 'Direction' });
     expect(within(direction).getByText('PIR-1')).toBeInTheDocument();
     expect(within(direction).getByText('Has the strike rate risen?')).toBeInTheDocument();
@@ -45,8 +45,9 @@ describe('direction, advocacy and archives in the reader', () => {
       within(advocacy).getByText(/Confidence on KJ1 lowered from moderate to low\./),
     ).toBeInTheDocument();
 
-    const annex = screen.getByRole('table', { name: 'Evidence annex' });
-    const archives = within(annex).getAllByRole('link', { name: 'archive' });
+    const annex = screen.getByRole('region', { name: 'Evidence annex' });
+    await user.click(within(annex).getByText('Shelling in Kharkiv'));
+    const archives = within(annex).getAllByRole('link', { name: 'Open archive' });
     expect(archives).toHaveLength(1);
     expect(archives[0]).toHaveAttribute(
       'href',

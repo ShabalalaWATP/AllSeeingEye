@@ -42,6 +42,8 @@ class ScheduleRunner:
         now = self._clock.now()
         ran: list[Schedule] = []
         for schedule in await self._schedules.due(now):
+            if not await self._schedules.can_run(schedule):
+                continue
             report_id: UUID | None = None
             error: str | None = None
             try:
@@ -57,6 +59,7 @@ class ScheduleRunner:
                 ),
                 report_id=report_id,
                 error=error,
+                expected=schedule,
             )
             ran.append(schedule)
         return ran

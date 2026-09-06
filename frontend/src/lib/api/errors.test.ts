@@ -26,7 +26,9 @@ describe('ApiError helpers', () => {
   });
 
   it('hides unknown failures behind a generic message', () => {
-    expect(describeError(new Error('stack details'))).toBe('Something went wrong. Please try again.');
+    expect(describeError(new Error('stack details'))).toBe(
+      'Something went wrong. Please try again.',
+    );
     expect(describeError('oops')).toBe('Something went wrong. Please try again.');
   });
 

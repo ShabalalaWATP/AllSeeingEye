@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 
 import { EventStreamClient } from '@/lib/sse';
+import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { useEventsStore } from '@/stores/events';
 
@@ -24,6 +25,7 @@ export function useLiveEvents(enabled = true): void {
         return auth.accessToken;
       },
       onMessage: (message) => {
+        if (message.event === 'access.changed') invalidateWorkspaceAccess();
         useEventsStore.getState().handleStreamMessage(message);
       },
       onStatus: (status) => {

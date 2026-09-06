@@ -7,7 +7,7 @@ pipeline of docs/03 section 9 for one version and accounts for every model call.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
@@ -104,13 +104,21 @@ class Producer:
         self._usage = usage
         self._url_resolver = url_resolver
 
-    async def produce(self, job: Job, profile_for: ProfileLookup) -> ReportVersion:
+    async def produce(
+        self,
+        job: Job,
+        profile_for: ProfileLookup,
+        before_persist: Callable[[], Awaitable[None]] | None = None,
+    ) -> ReportVersion:
         totals = Totals()
         direction = await self._direct(job, profile_for, totals)
         selection = select_evidence(
             self._store,
             self._source_profiles,
-            job.template.strategy,
+            replace(
+                job.template.strategy,
+                window_hours=int(job.window.total_seconds() // 3600),
+            ),
             now=job.now,
             country_iso=job.request.country_iso,
             categories=job.request.categories,
@@ -164,11 +172,13 @@ class Producer:
             evidence = await resolve_cited_links(self._url_resolver, evidence, cited)
         markdown = render_markdown(
             header, body, evidence, quality, totals.findings,
-            direction=direction, advocacy=advocacy,
+            direction=direction, advocacy=advocacy, status=status,
         )  # fmt: skip
         # Usage adapters flush writes. Keep all outbound model and resolution work
         # ahead of them so SQLite's writer lock is held only for persistence. The
         # caller commits these rows atomically with the resulting report version.
+        if before_persist is not None:
+            await before_persist()
         for usage in totals.usage:
             await self._usage.add(usage)
         return ReportVersion(
@@ -188,6 +198,9 @@ class Producer:
             latency_ms=totals.latency_ms,
             attempts=draft.attempts,
             created_at=job.now,
+            period_from=header.period_from,
+            period_to=header.period_to,
+            data_cutoff=header.data_cutoff,
             direction=direction,
             advocacy=advocacy,
         )

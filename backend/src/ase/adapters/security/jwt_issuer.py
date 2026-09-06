@@ -22,7 +22,7 @@ class JwtAccessTokenIssuer:
         self._ttl = ttl
         self._clock = clock
 
-    def issue(self, user: User) -> IssuedAccessToken:
+    def issue(self, user: User, family_id: UUID) -> IssuedAccessToken:
         now = self._clock.now()
         payload = {
             "sub": str(user.id),
@@ -31,6 +31,8 @@ class JwtAccessTokenIssuer:
             "iat": int(now.timestamp()),
             "exp": int((now + self._ttl).timestamp()),
             "jti": uuid4().hex,
+            "sid": str(family_id),
+            "sv": user.security_version,
         }
         token = jwt.encode(payload, self._secret, algorithm=ALGORITHM)
         return IssuedAccessToken(token=token, expires_in=int(self._ttl.total_seconds()))
@@ -42,7 +44,7 @@ class JwtAccessTokenIssuer:
                 self._secret,
                 algorithms=[ALGORITHM],
                 options={
-                    "require": ["sub", "exp", "iat", "jti", "typ"],
+                    "require": ["sub", "exp", "iat", "jti", "typ", "sid", "sv"],
                     "verify_exp": False,
                     "verify_iat": False,
                 },
@@ -52,14 +54,18 @@ class JwtAccessTokenIssuer:
         if payload.get("typ") != "access":
             raise Unauthenticated()
         try:
+            if type(payload["sv"]) is not int or payload["sv"] < 0:
+                raise ValueError("Invalid security version")
             expires = int(payload["exp"])
             claims = AccessClaims(
                 user_id=UUID(str(payload["sub"])),
                 role=Role(str(payload.get("role"))),
                 jti=str(payload["jti"]),
                 expires_at=datetime.fromtimestamp(expires, tz=UTC),
+                family_id=UUID(str(payload["sid"])),
+                security_version=payload["sv"],
             )
-        except (TypeError, ValueError) as exc:
+        except (TypeError, ValueError, OverflowError, OSError) as exc:
             raise Unauthenticated() from exc
         if expires <= int(self._clock.now().timestamp()):
             raise Unauthenticated("The session has expired.")

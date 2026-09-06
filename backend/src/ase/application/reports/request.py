@@ -22,6 +22,8 @@ class ReportRequest:
     hazard: str | None = None
     conflict_id: str | None = None
     plan_id: UUID | None = None
+    team_id: UUID | None = None
+    automation: bool = False
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:

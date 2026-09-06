@@ -156,6 +156,75 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     expect(plain(own)).toEqual({ url: own });
   });
 
+  it('reloads vector styles without losing projection, overlay or pending selections', () => {
+    const engine = createMapLibreEngine();
+    engine.mount(document.createElement('div'));
+    const map = FakeMap.instances[0]!;
+    const overlay = MapboxOverlay.instances[0]!;
+    map.fire('style.load');
+    engine.setProjection('mercator');
+    engine.setLayers([{ id: 'events' }]);
+    map.setPaintProperty.mockClear();
+    map.setLayoutProperty.mockClear();
+    engine.setBaseLayer('streets');
+    expect(map.setStyle).toHaveBeenLastCalledWith('https://tiles.openfreemap.org/styles/liberty', {
+      diff: false,
+    });
+    // Updates while loading must not touch layers that are not ready yet.
+    engine.setBaseLayer('streets');
+    expect(map.setStyle).toHaveBeenCalledTimes(1);
+    expect(map.setLayoutProperty).not.toHaveBeenCalled();
+    map.fire('style.load');
+    expect(map.setPaintProperty).not.toHaveBeenCalled();
+    expect(map.setProjection).toHaveBeenLastCalledWith({ type: 'mercator' });
+    expect(map.setLayoutProperty).toHaveBeenLastCalledWith('place_city', 'visibility', 'visible');
+    expect(map.addControl).toHaveBeenCalledTimes(1);
+    expect(map.addControl).toHaveBeenCalledWith(overlay);
+    expect(overlay.setProps).toHaveBeenLastCalledWith({ layers: [{ id: 'events' }] });
+
+    engine.setBaseLayer('light');
+    expect(map.setStyle).toHaveBeenLastCalledWith('https://tiles.openfreemap.org/styles/positron', {
+      diff: false,
+    });
+    engine.setBaseLayer('satellite');
+    engine.setBaseLayer('hybrid');
+    expect(map.setStyle).toHaveBeenLastCalledWith(DARK_STYLE_URL, { diff: false });
+    expect(map.addSource).not.toHaveBeenCalled();
+    map.fire('style.load');
+    expect(map.addSource).toHaveBeenCalledWith(
+      RASTER_SOURCE_ID,
+      expect.objectContaining({ tiles: [EOX_TILES] }),
+    );
+    expect(map.setPaintProperty).toHaveBeenCalled();
+    expect(map.setLayoutProperty).toHaveBeenLastCalledWith('place_city', 'visibility', 'visible');
+    expect(map.setProjection).toHaveBeenLastCalledWith({ type: 'mercator' });
+  });
+
+  it('loads a remembered light style directly and hides vector linework on pure imagery', () => {
+    const engine = createMapLibreEngine();
+    engine.setBaseLayer('light');
+    engine.mount(document.createElement('div'));
+    const map = FakeMap.instances[0]!;
+    expect(map.options.style).toBe('https://tiles.openfreemap.org/styles/positron');
+    map.fire('style.load');
+    expect(map.setPaintProperty).not.toHaveBeenCalled();
+    engine.setBaseLayer('satellite');
+    map.fire('style.load');
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      'boundary_country_z0-4',
+      'visibility',
+      'none',
+    );
+    engine.setBaseLayer('hybrid');
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      'boundary_country_z0-4',
+      'visibility',
+      'visible',
+    );
+    engine.setBaseLayer('os_road');
+    expect(map.setLayoutProperty).toHaveBeenLastCalledWith('place_city', 'visibility', 'none');
+  });
+
   it('turns the globe in slow eastward steps while spinning and stops on demand', () => {
     const engine = createMapLibreEngine();
     engine.mount(document.createElement('div'));

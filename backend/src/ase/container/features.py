@@ -12,6 +12,7 @@ from ase.adapters.feeds.mastodon import load_watch
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
+from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
@@ -31,6 +32,7 @@ from ase.application.schedules.manage import (
     UpdateScheduleUseCase,
 )
 from ase.application.schedules.runner import ScheduleRunner
+from ase.application.teams.service import TeamService
 from ase.application.trackers.aviation import (
     AviationService,
     background,
@@ -106,6 +108,12 @@ class FeatureWiring(ReportWiring):
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def _auditor(self, repos: Repositories) -> Auditor: ...
 
+    def teams(self, session: AsyncSession) -> TeamService:
+        repos = self.repositories(session)
+        return TeamService(
+            SqlTeamRepository(session), repos.users, self.clock, self._auditor(repos), repos.uow
+        )
+
     def trackers(self) -> TrackerService:
         return TrackerService(self.store, self.conflicts, self.clock)
 
@@ -114,13 +122,17 @@ class FeatureWiring(ReportWiring):
 
     def social(self) -> SocialService:
         terms = SqlSocialTerms(
-            self.session_factory, [tag for _, tags in load_watch() for tag in tags]
+            self.session_factory,
+            [tag for _, tags in load_watch() for tag in tags],
+            self.access_policy,
         )
         return SocialService(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)
 
     def build_social_monitor(self) -> SocialMonitor:
         terms = SqlSocialTerms(
-            self.session_factory, [tag for _, tags in load_watch() for tag in tags]
+            self.session_factory,
+            [tag for _, tags in load_watch() for tag in tags],
+            self.access_policy,
         )
         return SocialMonitor(self.store, terms, SqlSocialActivity(self.session_factory), self.clock)
 
@@ -139,66 +151,98 @@ class FeatureWiring(ReportWiring):
 
     def create_aoi(self, session: AsyncSession) -> CreateAoiUseCase:
         r = self.repositories(session)
-        return CreateAoiUseCase(r.aois, self.clock, self._auditor(r), r.uow)
+        return CreateAoiUseCase(
+            r.aois, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def list_aois(self, session: AsyncSession) -> ListAoisUseCase:
-        return ListAoisUseCase(self.repositories(session).aois)
+        return ListAoisUseCase(self.repositories(session).aois, self.access_policy(session))
 
     def delete_aoi(self, session: AsyncSession) -> DeleteAoiUseCase:
         r = self.repositories(session)
-        return DeleteAoiUseCase(r.aois, self._auditor(r), r.uow)
+        return DeleteAoiUseCase(r.aois, self._auditor(r), r.uow, self.access_policy(session))
 
     def create_plan(self, session: AsyncSession) -> CreatePlanUseCase:
         r = self.repositories(session)
-        return CreatePlanUseCase(r.plans, r.aois, self.clock, self._auditor(r), r.uow)
+        return CreatePlanUseCase(
+            r.plans, r.aois, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def update_plan(self, session: AsyncSession) -> UpdatePlanUseCase:
         r = self.repositories(session)
-        return UpdatePlanUseCase(r.plans, r.aois, self.clock, self._auditor(r), r.uow)
+        return UpdatePlanUseCase(
+            r.plans, r.aois, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def list_plans(self, session: AsyncSession) -> ListPlansUseCase:
-        return ListPlansUseCase(self.repositories(session).plans)
+        return ListPlansUseCase(self.repositories(session).plans, self.access_policy(session))
 
     def delete_plan(self, session: AsyncSession) -> DeletePlanUseCase:
         r = self.repositories(session)
-        return DeletePlanUseCase(r.plans, self._auditor(r), r.uow)
+        return DeletePlanUseCase(r.plans, self._auditor(r), r.uow, self.access_policy(session))
 
     def plan_evidence(self, session: AsyncSession) -> PlanEvidenceUseCase:
         r = self.repositories(session)
-        return PlanEvidenceUseCase(r.plans, r.aois, self.store, self.clock)
+        return PlanEvidenceUseCase(
+            r.plans, r.aois, self.store, self.clock, self.access_policy(session)
+        )
 
     def create_indicator(self, session: AsyncSession) -> CreateIndicatorUseCase:
         r = self.repositories(session)
         return CreateIndicatorUseCase(
-            r.indicators, r.plans, TEMPLATES, self.clock, self._auditor(r), r.uow
+            r.indicators,
+            r.plans,
+            TEMPLATES,
+            self.clock,
+            self._auditor(r),
+            r.uow,
+            self.access_policy(session),
         )
 
     def update_indicator(self, session: AsyncSession) -> UpdateIndicatorUseCase:
         r = self.repositories(session)
         return UpdateIndicatorUseCase(
-            r.indicators, r.plans, TEMPLATES, self.clock, self._auditor(r), r.uow
+            r.indicators,
+            r.plans,
+            TEMPLATES,
+            self.clock,
+            self._auditor(r),
+            r.uow,
+            self.access_policy(session),
         )
 
     def delete_indicator(self, session: AsyncSession) -> DeleteIndicatorUseCase:
         r = self.repositories(session)
         return DeleteIndicatorUseCase(
-            r.indicators, r.plans, TEMPLATES, self.clock, self._auditor(r), r.uow
+            r.indicators,
+            r.plans,
+            TEMPLATES,
+            self.clock,
+            self._auditor(r),
+            r.uow,
+            self.access_policy(session),
         )
 
     def list_indicators(self, session: AsyncSession) -> ListIndicatorsUseCase:
-        return ListIndicatorsUseCase(self.repositories(session).indicators)
+        return ListIndicatorsUseCase(
+            self.repositories(session).indicators, self.access_policy(session)
+        )
 
     def list_alerts(self, session: AsyncSession) -> ListAlertsUseCase:
-        return ListAlertsUseCase(self.repositories(session).alerts, self.clock)
+        return ListAlertsUseCase(
+            self.repositories(session).alerts, self.clock, self.access_policy(session)
+        )
 
     def acknowledge_alert(self, session: AsyncSession) -> AcknowledgeAlertUseCase:
         r = self.repositories(session)
-        return AcknowledgeAlertUseCase(r.alerts, self.clock, self._auditor(r), r.uow)
+        return AcknowledgeAlertUseCase(
+            r.alerts, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def build_evaluator(self) -> IndicatorEvaluator:
         return IndicatorEvaluator(
             self.store,
-            SqlWarningStore(self.session_factory),
+            SqlWarningStore(self.session_factory, self.access_policy),
             self.bus,
             self.notifier,
             self.clock,
@@ -219,6 +263,8 @@ class FeatureWiring(ReportWiring):
                 country_iso=indicator.countries[0] if len(indicator.countries) == 1 else None,
                 window_hours=max(1, -(-indicator.window_minutes // 60)),
                 plan_id=indicator.plan_id,
+                team_id=indicator.team_id,
+                automation=True,
             )
             record, _version = await self.generate_report(session).execute(
                 owner, request, RequestContext()
@@ -227,22 +273,32 @@ class FeatureWiring(ReportWiring):
 
     def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:
         r = self.repositories(session)
-        return CreateScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+        return CreateScheduleUseCase(
+            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def update_schedule(self, session: AsyncSession) -> UpdateScheduleUseCase:
         r = self.repositories(session)
-        return UpdateScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+        return UpdateScheduleUseCase(
+            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def delete_schedule(self, session: AsyncSession) -> DeleteScheduleUseCase:
         r = self.repositories(session)
-        return DeleteScheduleUseCase(r.schedules, r.plans, self.clock, self._auditor(r), r.uow)
+        return DeleteScheduleUseCase(
+            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session)
+        )
 
     def list_schedules(self, session: AsyncSession) -> ListSchedulesUseCase:
-        return ListSchedulesUseCase(self.repositories(session).schedules)
+        return ListSchedulesUseCase(
+            self.repositories(session).schedules, self.access_policy(session)
+        )
 
     def build_schedule_runner(self) -> ScheduleRunner:
         return ScheduleRunner(
-            SqlScheduleStore(self.session_factory), self.schedule_report, self.clock
+            SqlScheduleStore(self.session_factory, self.access_policy),
+            self.schedule_report,
+            self.clock,
         )
 
     def build_translation_queue(self) -> TranslationQueue:
@@ -273,6 +329,8 @@ class FeatureWiring(ReportWiring):
                 country_iso=schedule.country_iso,
                 window_hours=schedule.window_hours,
                 plan_id=schedule.plan_id,
+                team_id=schedule.team_id,
+                automation=True,
             )
             record, _version = await self.generate_report(session).execute(
                 owner, request, RequestContext()

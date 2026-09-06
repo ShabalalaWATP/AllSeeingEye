@@ -5,11 +5,22 @@ from __future__ import annotations
 from typing import Any
 
 from ase.domain.doctrine import Confidence, Probability
-from ase.domain.reports import ChangeFromPrevious, WatchCondition
+from ase.domain.reports import (
+    MAX_ITEM_CHARS,
+    MAX_JUDGEMENT_CHARS,
+    MAX_LIST,
+    MAX_SECTION_CHARS,
+    ChangeFromPrevious,
+    WatchCondition,
+)
 
 
-def _string_list() -> dict[str, Any]:
-    return {"type": "array", "items": {"type": "string"}}
+def _text(limit: int = MAX_ITEM_CHARS, *, required: bool = True) -> dict[str, Any]:
+    return {"type": "string", "minLength": int(required), "maxLength": limit}
+
+
+def _string_list(limit: int = MAX_ITEM_CHARS) -> dict[str, Any]:
+    return {"type": "array", "maxItems": MAX_LIST, "items": _text(limit)}
 
 
 REPORT_BODY_SCHEMA: dict[str, Any] = {
@@ -28,7 +39,9 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
     ],
     "properties": {
         "key_judgements": {
+            "minItems": 1,
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -44,14 +57,14 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                     "indicators",
                 ],
                 "properties": {
-                    "id": {"type": "string"},
-                    "statement": {"type": "string"},
+                    "id": _text(16),
+                    "statement": _text(MAX_JUDGEMENT_CHARS),
                     "probability": {"type": "string", "enum": [p.value for p in Probability]},
                     "confidence": {"type": "string", "enum": [c.value for c in Confidence]},
-                    "confidence_statement": {"type": "string"},
-                    "supporting_evidence": _string_list(),
-                    "contradicting_evidence": _string_list(),
-                    "assumptions": _string_list(),
+                    "confidence_statement": _text(),
+                    "supporting_evidence": {**_string_list(32), "minItems": 1},
+                    "contradicting_evidence": _string_list(32),
+                    "assumptions": _string_list(32),
                     "change_from_previous": {
                         "type": ["string", "null"],
                         "enum": [*[c.value for c in ChangeFromPrevious], None],
@@ -61,23 +74,27 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
             },
         },
         "reporting": {
+            "minItems": 1,
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["theme", "items"],
                 "properties": {
-                    "theme": {"type": "string"},
+                    "theme": _text(120),
                     "items": {
+                        "minItems": 1,
                         "type": "array",
+                        "maxItems": MAX_LIST,
                         "items": {
                             "type": "object",
                             "additionalProperties": False,
                             "required": ["text", "evidence", "grade"],
                             "properties": {
-                                "text": {"type": "string"},
-                                "evidence": _string_list(),
-                                "grade": {"type": "string"},
+                                "text": _text(),
+                                "evidence": {**_string_list(32), "minItems": 1},
+                                "grade": _text(160, required=False),
                             },
                         },
                     },
@@ -85,41 +102,45 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
             },
         },
         "assessment": {
+            "minItems": 1,
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["heading", "text", "evidence"],
                 "properties": {
-                    "heading": {"type": "string"},
-                    "text": {"type": "string"},
-                    "evidence": _string_list(),
+                    "heading": _text(120),
+                    "text": _text(MAX_SECTION_CHARS),
+                    "evidence": {**_string_list(32), "minItems": 1},
                 },
             },
         },
         "assumptions": {
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["id", "text", "lynchpin"],
                 "properties": {
-                    "id": {"type": "string"},
-                    "text": {"type": "string"},
+                    "id": _text(16),
+                    "text": _text(),
                     "lynchpin": {"type": "boolean"},
                 },
             },
         },
         "alternative_hypotheses": {
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["text", "why_less_likely", "evidence"],
                 "properties": {
-                    "text": {"type": "string"},
-                    "why_less_likely": {"type": "string"},
-                    "evidence": _string_list(),
+                    "text": _text(),
+                    "why_less_likely": _text(),
+                    "evidence": {**_string_list(32), "minItems": 1},
                 },
             },
         },
@@ -134,14 +155,18 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
         },
         "gaps": {
             "type": "array",
+            "maxItems": MAX_LIST,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["text", "eei"],
-                "properties": {"text": {"type": "string"}, "eei": {"type": ["string", "null"]}},
+                "properties": {
+                    "text": _text(),
+                    "eei": {"type": ["string", "null"], "minLength": 1, "maxLength": 32},
+                },
             },
         },
         "collection_recommendations": _string_list(),
-        "sourcing_statement": {"type": "string"},
+        "sourcing_statement": _text(MAX_SECTION_CHARS),
     },
 }

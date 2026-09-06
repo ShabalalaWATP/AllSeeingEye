@@ -89,7 +89,7 @@ def test_render_markdown_has_every_section() -> None:
     ):
         assert heading in text, heading
     assert "Probability: highly likely. Confidence: moderate." in text
-    assert "| E1 | A1 | fake_feed |" in text
+    assert r"| E1 | A1 | fake\_feed |" in text
     assert "- warning: KJ2: Unknown evidence E9 removed" in text
     assert template_for("ask").needs_question
 
@@ -124,7 +124,8 @@ async def test_generate_read_export_and_delete(
     container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     judgements = good_body()["key_judgements"]
     fits = good_body(
-        key_judgements=[judgements[0], {**judgements[1], "supporting_evidence": ["E2"]}]
+        key_judgements=[judgements[0], {**judgements[1], "supporting_evidence": ["E2"]}],
+        alternative_hypotheses=[{**good_body()["alternative_hypotheses"][0], "evidence": ["E2"]}],
     )
     gateway = ScriptedGateway(json.dumps(fits))
     container.llm = gateway
@@ -158,7 +159,7 @@ async def test_generate_read_export_and_delete(
         "high",
     )
     assert version["body"]["key_judgements"][0]["probability"] == "highly_likely"
-    assert any(f["rule"] == "citation" for f in version["findings"])  # E3 and E9 were unknown here
+    assert not any(f["rule"] == "citation" for f in version["findings"])
     assert not any(f["severity"] == "error" for f in version["findings"])
     assert "## Evidence annex" in version["markdown"]
     prompt = gateway.requests[0]
@@ -183,7 +184,7 @@ async def test_generate_read_export_and_delete(
     )
     other_id = other.json()["report"]["id"]
     forbidden = await client.delete(f"/api/reports/{other_id}", headers=bearer(user_token))
-    assert forbidden.status_code == 403
+    assert forbidden.status_code == 404
     assert (
         await client.delete(f"/api/reports/{report_id}", headers=bearer(user_token))
     ).status_code == 204

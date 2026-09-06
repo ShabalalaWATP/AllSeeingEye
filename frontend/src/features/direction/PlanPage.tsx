@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { deletePlan, fetchPlanEvidence } from '@/lib/api/direction';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
 import { EventRow } from '../trackers/TrackerParts';
 import { describeArea } from './DirectionPage';
@@ -15,7 +16,8 @@ export default function PlanPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const loader = useCallback(() => fetchPlanEvidence(id), [id]);
-  const { data, error, loading } = useResource(loader);
+  const workspaces = useWorkspaces();
+  const { data, error, loading } = useScopedResource(loader);
   const remove = useAsyncAction(async () => {
     await deletePlan(id);
     await navigate('/direction');
@@ -36,11 +38,12 @@ export default function PlanPage() {
           Direction
         </Link>
         <h1 className="text-xl font-semibold">{plan.name}</h1>
+        <p className="text-xs text-muted">{workspaces.label(plan.team_id)}</p>
         {plan.description !== '' && <p className="text-sm text-muted">{plan.description}</p>}
         <p className="font-mono text-xs text-muted">
           {aoi !== null ? `${aoi.name} (${describeArea(aoi)})` : 'no area'}
-          {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''} ·{' '}
-          {data.considered} items considered
+          {plan.countries.length > 0 ? ` · ${plan.countries.join(', ')}` : ''} · {data.considered}{' '}
+          items considered
         </p>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -49,7 +52,12 @@ export default function PlanPage() {
           >
             Generate assessment
           </Link>
-          <Button variant="danger" busy={remove.busy} onClick={() => void remove.run()}>
+          <Button
+            disabled={!workspaces.canManage(plan)}
+            variant="danger"
+            busy={remove.busy}
+            onClick={() => void remove.run()}
+          >
             Delete plan
           </Button>
         </div>

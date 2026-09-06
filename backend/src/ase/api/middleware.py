@@ -8,7 +8,20 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from ase.api.errors import PayloadTooLarge, handle_app_error
 
-NO_STORE_PREFIXES = ("/api/auth", "/api/me", "/api/admin", "/api/events", "/api/stream")
+NO_STORE_PREFIXES = (
+    "/api/auth",
+    "/api/me",
+    "/api/admin",
+    "/api/events",
+    "/api/stream",
+    "/api/teams",
+    "/api/direction",
+    "/api/reports",
+    "/api/report-search",
+    "/api/warning",
+    "/api/schedules",
+    "/api/trackers/social",
+)
 DOCS_PREFIXES = ("/api/docs", "/api/openapi.json")
 API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
@@ -34,7 +47,9 @@ class SecurityHeadersMiddleware:
                 headers["X-Frame-Options"] = "DENY"
                 if not path.startswith(DOCS_PREFIXES):
                     headers["Content-Security-Policy"] = API_CSP
-                if path.startswith(NO_STORE_PREFIXES):
+                if path.startswith(NO_STORE_PREFIXES) and "no-store" not in headers.get(
+                    "Cache-Control", ""
+                ):
                     headers["Cache-Control"] = "no-store"
             await send(message)
 

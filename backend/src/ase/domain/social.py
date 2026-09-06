@@ -26,6 +26,7 @@ class WatchedTerm:
     term: str
     public: bool
     owners: frozenset[UUID] = frozenset()
+    team_ids: frozenset[UUID] = frozenset()
 
     @property
     def key(self) -> str:
@@ -87,15 +88,22 @@ def vocabulary(watch: Iterable[str], plans: Sequence[CollectionPlan]) -> tuple[W
     """
     public = {normalise_term(term) for term in watch if normalise_term(term)}
     owners: dict[str, set[UUID]] = {}
+    teams: dict[str, set[UUID]] = {}
     for plan in plans:
         if plan.enabled:
             for value in plan.search_terms():
                 term = normalise_term(value)
                 if term:
-                    owners.setdefault(term, set()).add(plan.created_by)
-    selected = (sorted(public) + sorted(set(owners) - public))[:MAX_TERMS]
+                    if plan.team_id is None:
+                        owners.setdefault(term, set()).add(plan.created_by)
+                    else:
+                        teams.setdefault(term, set()).add(plan.team_id)
+    selected = (sorted(public) + sorted((set(owners) | set(teams)) - public))[:MAX_TERMS]
     return tuple(
-        WatchedTerm(term, term in public, frozenset(owners.get(term, ()))) for term in selected
+        WatchedTerm(
+            term, term in public, frozenset(owners.get(term, ())), frozenset(teams.get(term, ()))
+        )
+        for term in selected
     )
 
 

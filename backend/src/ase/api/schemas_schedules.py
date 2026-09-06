@@ -23,6 +23,7 @@ class ScheduleIn(BaseModel):
     weekday: int = Field(default=0, ge=0, le=6)
     window_hours: int | None = Field(default=None, ge=1, le=336)
     enabled: bool = True
+    team_id: UUID | None = None
 
     def to_input(self) -> ScheduleInput:
         return ScheduleInput(
@@ -35,6 +36,7 @@ class ScheduleIn(BaseModel):
             weekday=self.weekday,
             window_hours=self.window_hours,
             enabled=self.enabled,
+            team_id=self.team_id,
         )
 
 
@@ -55,6 +57,7 @@ class ScheduleOut(BaseModel):
     last_run_at: datetime | None
     last_report_id: UUID | None
     last_error: str | None
+    team_id: UUID | None
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> ScheduleOut:
@@ -75,6 +78,7 @@ class ScheduleOut(BaseModel):
             last_run_at=schedule.last_run_at,
             last_report_id=schedule.last_report_id,
             last_error=schedule.last_error,
+            team_id=schedule.team_id,
         )
 
 

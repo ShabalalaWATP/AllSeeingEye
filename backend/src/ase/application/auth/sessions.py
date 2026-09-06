@@ -50,7 +50,7 @@ class SessionFactory:
         )
         await self._refresh_tokens.add(token)
         return AuthSession(
-            access=self._issuer.issue(user),
+            access=self._issuer.issue(user, token.family_id),
             refresh_secret=secret,
             csrf_token=self._generator.new_secret(),
             user=user,

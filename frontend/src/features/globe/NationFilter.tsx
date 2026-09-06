@@ -68,7 +68,7 @@ export function NationFilter({ countries, value, onChange, error = null }: Natio
           value={shown}
           onChange={handleChange}
           onKeyDown={handleKey}
-          className="min-w-0 flex-1 rounded bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted"
+          className="min-h-11 min-w-0 flex-1 rounded bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted lg:min-h-0"
         />
         <datalist id={listId}>
           {countries.map((country) => (
@@ -80,7 +80,7 @@ export function NationFilter({ countries, value, onChange, error = null }: Natio
             type="button"
             aria-label="Clear nation filter"
             onClick={clear}
-            className="rounded px-1.5 text-muted hover:bg-surface-2 hover:text-text"
+            className="min-h-11 min-w-11 rounded px-1.5 text-muted hover:bg-surface-2 hover:text-text lg:min-h-0 lg:min-w-0"
           >
             ×
           </button>

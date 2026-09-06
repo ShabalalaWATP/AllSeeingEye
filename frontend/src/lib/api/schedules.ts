@@ -1,9 +1,13 @@
 /** Scheduled products: standing orders for reports at a fixed UTC hour. */
 import { z } from 'zod';
 
+import { scopedMutation } from '@/lib/workspaceAccess';
+import type { components } from './types.gen';
+
 import { apiCall, apiSend } from './client';
 
 export const scheduleSchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   name: z.string(),
   template_id: z.string(),
@@ -23,17 +27,7 @@ export const scheduleSchema = z.object({
 });
 export type Schedule = z.infer<typeof scheduleSchema>;
 
-export interface ScheduleRequest {
-  name: string;
-  template_id: string;
-  country_iso?: string | null;
-  plan_id?: string | null;
-  hour_utc?: number;
-  cadence?: 'daily' | 'weekdays' | 'weekly';
-  weekday?: number;
-  window_hours?: number | null;
-  enabled?: boolean;
-}
+export type ScheduleRequest = components['schemas']['ScheduleIn'];
 
 export async function fetchSchedules(): Promise<Schedule[]> {
   const page = await apiCall('/api/schedules', {
@@ -43,9 +37,13 @@ export async function fetchSchedules(): Promise<Schedule[]> {
 }
 
 export function createSchedule(request: ScheduleRequest): Promise<Schedule> {
-  return apiCall('/api/schedules', { method: 'POST', body: request, schema: scheduleSchema });
+  return scopedMutation(() =>
+    apiCall('/api/schedules', { method: 'POST', body: request, schema: scheduleSchema }),
+  );
 }
 
 export function deleteSchedule(id: string): Promise<void> {
-  return apiSend(`/api/schedules/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return scopedMutation(() =>
+    apiSend(`/api/schedules/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  );
 }

@@ -1,8 +1,8 @@
 /**
- * MapLibre GL JS 6 implementation of MapEngine. Uses the OpenFreeMap dark style
+ * MapLibre GL JS 6 implementation of MapEngine. Defaults to the OpenFreeMap dark style
  * (keyless, attribution required), the `globe` projection preset (a sphere that
  * flattens to Mercator only between zoom 10 and 12) and a dark sky so the globe
- * has its atmosphere glow. Covered by a mocked smoke test only: jsdom has no WebGL.
+ * has its atmosphere glow. Unit tests mock the map; rendering needs browser verification.
  */
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
@@ -23,13 +23,15 @@ import type {
 import {
   RASTER_LAYER_ID,
   RASTER_SOURCE_ID,
+  DARK_STYLE_URL,
   hidesVectorLabels,
   isApiRequest,
   rasterSourceFor,
+  vectorStyleFor,
 } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
 
-export const DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
+export { DARK_STYLE_URL };
 export const INITIAL_CENTER: [number, number] = [10, 30];
 export const INITIAL_ZOOM = 1.6;
 export const SPIN_DEGREES = 15;
@@ -78,6 +80,7 @@ export class MapLibreEngine implements MapEngine {
   private overlay: MapboxOverlay | null = null;
   private projection: Projection = 'globe';
   private baseLayer: BaseLayer = 'dark';
+  private styleUrl = DARK_STYLE_URL;
   private lite = false;
   private styleReady = false;
   private spinning = false;
@@ -87,9 +90,10 @@ export class MapLibreEngine implements MapEngine {
 
   mount(container: HTMLElement): void {
     if (this.map !== null) return;
+    this.styleUrl = vectorStyleFor(this.baseLayer);
     const map = new MapLibreMap({
       container,
-      style: DARK_STYLE_URL,
+      style: this.styleUrl,
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
       transformRequest: (url) => this.transformRequest(url),
@@ -100,8 +104,10 @@ export class MapLibreEngine implements MapEngine {
     map.on('style.load', () => {
       this.styleReady = true;
       this.applySky();
-      for (const [layer, property, value] of PAINT_OVERRIDES) {
-        if (map.getLayer(layer) !== undefined) map.setPaintProperty(layer, property, value);
+      if (this.styleUrl === DARK_STYLE_URL) {
+        for (const [layer, property, value] of PAINT_OVERRIDES) {
+          if (map.getLayer(layer) !== undefined) map.setPaintProperty(layer, property, value);
+        }
       }
       this.applyProjection();
       this.applyBaseLayer();
@@ -152,6 +158,15 @@ export class MapLibreEngine implements MapEngine {
 
   setBaseLayer(layer: BaseLayer): void {
     this.baseLayer = layer;
+    const nextStyle = vectorStyleFor(layer);
+    if (this.map !== null && this.styleUrl !== nextStyle) {
+      this.styleUrl = nextStyle;
+      this.styleReady = false;
+      // The style.load handler restores projection, atmosphere and the latest raster choice.
+      // The non-interleaved deck overlay remains mounted above the replacement style.
+      this.map.setStyle(nextStyle, { diff: false });
+      return;
+    }
     this.applyBaseLayer();
   }
 
@@ -234,7 +249,9 @@ export class MapLibreEngine implements MapEngine {
     }
     const visibility = hidesVectorLabels(this.baseLayer) ? 'none' : 'visible';
     for (const layer of layers) {
-      if (layer.type === 'symbol') map.setLayoutProperty(layer.id, 'visibility', visibility);
+      if (layer.type === 'symbol' || layer.type === 'line') {
+        map.setLayoutProperty(layer.id, 'visibility', visibility);
+      }
     }
   }
 }

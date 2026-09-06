@@ -75,12 +75,12 @@ A single panel that answers "what is going on in X right now": flag and key fact
 
 - Built: Mastodon hashtag timelines from the packaged instance watchlist, Reddit subreddit Atom feeds and six outlet YouTube channel feeds. Bluesky remains deferred after repeated 403 responses; Telegram is excluded by decision.
 - `/trackers/social` shows the retained day's posts by platform and instance, top hashtags, the latest 50 posts and counts of located posts. Located events use the existing social globe category; upstream posts without coordinates are not assigned guessed positions.
-- Keyword bursts compare the previous complete UTC hour with sampled history from the preceding 30 days. Up to 32 watchlist/collection terms have durable hourly count aggregates. A burst requires six baseline hours, three posts and at least twice the mean. Private collection terms are restricted to their owner or an administrator.
+- Keyword bursts compare the previous complete UTC hour with sampled history from the preceding 30 days. Up to 32 watchlist/collection terms have durable hourly count aggregates. A burst requires six baseline hours, three posts and at least twice the mean. Personal collection terms are restricted to their owner or an administrator; team terms follow current team membership. Inactive owners, removed members and archived teams stop background collection.
 - Mastodon and Reddit begin at reliability E and credibility 6. Named outlet YouTube channels retain outlet reliability. Translation and activity spikes do not establish truth or increase a grade.
 
 ## 6. Stories and the ticker
-- Near-duplicate detection groups items into stories; the corroboration count of a story and the mix of independent sources drive its credibility grade.
-- "Developing" badge when several independent sources publish within a short window.
+- Built: near-duplicate detection groups related topics. Topic matches and declared publisher groups do not establish independent corroboration. Ambiguous or conflicting headlines remain unconfirmed; instrument metadata supports only provisional grading. See the current doctrine document.
+- Proposed: an analyst-reviewed developing-story workflow. There is no automatic claim-verification system.
 - Ticker shows the newest graded items; click to fly the globe to the location.
 - Built in Phase 5: language detection fills missing languages; a background queue optionally translates foreign-language titles through an enabled `translation` model profile. Original titles remain available and English display titles are streamed to open pages. No real model has been exercised on the development host.
 
@@ -96,7 +96,7 @@ A single panel that answers "what is going on in X right now": flag and key fact
 - "Ask the Eye": a free-form question turned into a structured assessment with evidence selection visible to the user before generation.
 - Built in Phase 6: PDF and DOCX downloads for a selected frozen version, including grades, citations, provenance and review warnings. Rendering is local and fetches no external resources. DOCX retains Unicode; unsupported characters in the bundled PDF font are written as explicit `[U+XXXX]` code points. DOCX structure is tested, but visual validation in LibreOffice remains unavailable on this host.
 - Built in Phase 6: structured comparisons between two versions of the same report, including evidence additions/removals, grade changes, direction, advocacy and validation findings. This is a deterministic field comparison, not a model judgement about change.
-- Built in Phase 6: "Find related reports" uses an explicitly configured `embeddings` profile. Indexing is requested in batches of eight and covers at most the newest 1,000 current saved report versions. Live events are never indexed. Similarity scores are not analytical confidence ratings; stale versions and incompatible model fingerprints are excluded.
+- Built in Phase 6: "Find related reports" uses an explicitly configured `embeddings` profile. Indexing is requested in batches of eight from the caller's newest 1,000 visible saved reports. A shared 1,000-vector capacity is checked before model calls; another team's vectors are not evicted to satisfy the request. Live events are never indexed. Similarity scores are not analytical confidence ratings; stale versions and incompatible model fingerprints are excluded.
 
 ## 9. Admin
 - Users: approve account requests, roles, disable, force reset, sessions.
@@ -117,7 +117,7 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 |---|---|---|
 | Event points per category sized by severity, inspector with grade and provenance, ticker, per-category switches and counts | Every connector: USGS, GDACS, EONET, SWPC, CISA KEV, 21 RSS and Atom feeds, GDELT 2.0 events, adsb.lol military | Built |
 | Nation filter with fly-to, country panel with counts and latest items | Natural Earth polygons | Built |
-| Base layers: OpenFreeMap dark, EOX Sentinel-2 cloudless, hybrid, OS Maps Road, Outdoor and Light | Keyless except OS Maps | Built (OS Maps needs the key) |
+| Base layers: Dark, Streets, Light, Satellite, Hybrid, OS Road, Outdoor and Light | Keyless except OS Maps | Built (OS Maps needs the key) |
 | Day and night terminator, lite mode, WGS84 readout that copies | Local computation | Built |
 | Military aircraft and heading icons | adsb.lol `/v2/mil` | Built; historical trails remain a follow-up |
 | Interesting, LADD and PIA aircraft | adsb.lol `/v2/ladd`, `/v2/pia` and `dbFlags` | Built |
@@ -156,7 +156,7 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 
 | Capability | Implemented scope |
 |---|---|
-| Doctrine and provenance | NATO reliability/credibility grading, story clustering, frozen cited evidence and hashes, PHIA judgements, separate confidence factors, validation findings, version history and optional Wayback archiving |
+| Doctrine and provenance | Conservative reliability/credibility grading, topic clustering, frozen selected evidence with hashes and translated-title provenance, strict new-response validation, per-judgement support ceilings and optional Wayback archiving. Automated checks do not verify claims or replace analyst review |
 | Report production | INTSUM, INTREP, Country Brief, Ask the Eye, Disaster SITREP, Conflict Assessment, Aviation Activity, Maritime Activity and Cyber Summary; direction and optional devil's advocacy passes |
 | Tracker analysis | Hazard and curated conflict boards/details; aviation, maritime, space, cyber and social boards computed from retained events |
 | Baselines | Tiny durable hourly aviation and configured social-keyword aggregates; GNSS observations remain in memory |
@@ -164,12 +164,13 @@ Implementation status through Phases 5 and 6, using the dated feed probes in sec
 | Social and languages | Mastodon/Reddit/YouTube feeds, social board, keyword bursts, language detection and optional title translation |
 | Keyword collection | Enabled plan terms feed bounded Google News RSS queries. Legacy cited URLs can resolve locally; opaque modern URLs remain unchanged |
 | Export and change review | Markdown/PDF/DOCX downloads and deterministic version comparison, including frozen evidence and validation changes |
-| Semantic report search | Explicit batches of eight, at most 1,000 current saved reports, portable bounded JSON vectors and a configured embeddings endpoint |
+| Semantic report search | Explicit batches of eight, personal/team visibility on counts and results, shared 1,000-vector capacity checked before calls, portable JSON vectors and a configured embeddings endpoint |
+| Accounts and teams | User, manager and administrator roles; own account details and password changes at `/account`; explicit team membership, designated managers, personal/team scope on saved operational work, late permission checks, fresh stream authority and scoped client cache invalidation |
 | Administrator security | Optional TOTP, encrypted enrolment secrets, replay checks, password-confirmed management and host-only recovery |
 | Recovery | Verified SQLite/PostgreSQL backup bundles and restore to new destinations; [backup operations](BACKUP_RESTORE.md) describe testing and limits |
-| Performance and accessibility | Separate MapLibre/deck.gl build chunks, bounded export/model concurrency, live-store pruning improvements and a keyboard skip-to-content link; these changes do not establish a complete performance or accessibility certification |
+| Performance and accessibility | Separate MapLibre/deck.gl build chunks, bounded export/model concurrency, live-store pruning, mobile navigation with native modal focus management and a keyboard skip-to-content link; these changes do not establish a complete performance or accessibility certification |
 | Security assessment | [Phase 6 ASVS review](security/PHASE6_ASVS_REVIEW.md) records findings, verification and remaining deployment checks; it is not an ASVS level 2 certification or approval for public exposure |
 
-Remaining work is tracked in the master plan: PIR pipeline tags and globe filtering, richer collection-plan editing, baseline-relative indicators, email transport, deferred feed parsers and keys, sanctions/context enrichment, contradiction handling, and further globe overlays. Warning Report, Competing Hypotheses and Source Evaluation templates are not in the implemented template set above.
+The broader [improvement plan](MASTER_FIX_IMPROVEMENT_PLAN.md) records the current security, team, analytical and visual changes. Remaining work is tracked in the master plan: PIR pipeline tags and globe filtering, richer collection-plan editing, baseline-relative indicators, email transport, deferred feed parsers and keys, sanctions/context enrichment, contradiction handling, and further globe overlays. Warning Report, Competing Hypotheses and Source Evaluation templates are not in the implemented template set above.
 
-Operational validation is incomplete where it needs the operator's environment: no real LLM/embeddings endpoint has been configured and exercised, modern Google News link resolution is unavailable without a permitted API, DOCX visual rendering requires a suitable office renderer, and a real PostgreSQL recovery drill is still required. The [operations guide](PHASE5_PHASE6_OPERATIONS.md) separates those limitations from the implemented behaviour.
+Operational validation is incomplete where it needs the operator's environment: no real LLM/embeddings endpoint has been configured and exercised, modern Google News link resolution is unavailable without a permitted API, DOCX visual rendering requires a suitable office renderer, and an operator recovery drill is still required. A synthetic PostgreSQL recovery drill passed before this team-scope milestone; the newer schema also needs recovery verification before operational use. The [operations guide](PHASE5_PHASE6_OPERATIONS.md) separates those limitations from the implemented behaviour.

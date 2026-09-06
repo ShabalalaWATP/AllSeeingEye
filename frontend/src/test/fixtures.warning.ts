@@ -2,6 +2,7 @@
 import type { Alert, Indicator } from '@/lib/api/warning';
 
 export const indicator: Indicator = {
+  team_id: null,
   id: 'c1c1c1c1-c1c1-4c1c-8c1c-c1c1c1c1c1c1',
   name: 'Kharkiv strikes',
   description: '',
@@ -22,6 +23,7 @@ export const indicator: Indicator = {
 };
 
 export const alert: Alert = {
+  team_id: null,
   id: 'd1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1',
   indicator_id: indicator.id,
   fired_at: '2026-09-05T11:30:00Z',

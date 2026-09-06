@@ -7,6 +7,7 @@ from collections.abc import Callable
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.access import background_predicate
 from ase.adapters.persistence.direction import _plan_from_row
 from ase.adapters.persistence.models import CollectionPlanRow
 from ase.domain.collection import CollectionPlan
@@ -24,6 +25,9 @@ class SqlWatchlistPlanStore:
             rows = await session.scalars(
                 select(CollectionPlanRow)
                 .where(CollectionPlanRow.enabled.is_(True))
+                .where(
+                    background_predicate(CollectionPlanRow.created_by, CollectionPlanRow.team_id)
+                )
                 .order_by(CollectionPlanRow.created_at, CollectionPlanRow.id)
                 .limit(MAX_PLANS)
             )

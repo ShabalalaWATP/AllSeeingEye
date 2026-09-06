@@ -153,7 +153,7 @@ describe('GlobePage', () => {
     expect(client.stop).toHaveBeenCalledTimes(1);
   });
 
-  it('switches base layers and offers OS styles only when the server proxies them', async () => {
+  it('switches base layers and enables OS styles only when the server proxies them', async () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     await waitFor(() => {
@@ -163,18 +163,16 @@ describe('GlobePage', () => {
     act(() => {
       map.fire('style.load');
     });
+    await user.click(screen.getByRole('button', { name: 'Map style: Dark' }));
     const group = screen.getByRole('group', { name: 'Base layer' });
-    expect(within(group).queryByRole('button', { name: 'OS Road' })).not.toBeInTheDocument();
-    await user.click(within(group).getByRole('button', { name: 'Satellite' }));
+    expect(within(group).getByRole('radio', { name: 'OS Road' })).toBeDisabled();
+    await user.click(within(group).getByRole('radio', { name: 'Satellite' }));
     expect(useGlobeStore.getState().baseLayer).toBe('satellite');
     expect(map.addSource).toHaveBeenCalledWith(
       'ase-base-raster',
       expect.objectContaining({ type: 'raster' }),
     );
-    expect(within(group).getByRole('button', { name: 'Satellite' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(within(group).getByRole('radio', { name: 'Satellite' })).toBeChecked();
     // Our tile proxy gets the session token; nothing else does.
     const transform = map.options.transformRequest as (url: string) => {
       headers?: Record<string, string>;
@@ -196,7 +194,9 @@ describe('GlobePage', () => {
       ),
     );
     const { user } = renderApp('/', 'user');
-    const osRoad = await screen.findByRole('button', { name: 'OS Road' });
+    await user.click(await screen.findByRole('button', { name: 'Map style: Dark' }));
+    const osRoad = screen.getByRole('radio', { name: 'OS Road' });
+    await waitFor(() => expect(osRoad).toBeEnabled());
     await waitFor(() => {
       expect(FakeMap.instances).toHaveLength(1);
     });

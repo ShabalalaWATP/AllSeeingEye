@@ -3,6 +3,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
+import { fetchPlans } from '@/lib/api/direction';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+
 import { describeError } from '@/lib/api/errors';
 import { fetchReports, fetchTemplates, generateReport } from '@/lib/api/reports';
 import { fetchConflictBoard, fetchDisasterBoard } from '@/lib/api/trackers';
@@ -38,7 +42,9 @@ export function StatusBadge({ status }: { status: string }) {
 export default function ReportsPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const reports = useResource(fetchReports);
+  const reports = useScopedResource(fetchReports);
+  const plans = useScopedResource(fetchPlans);
+  const workspaces = useWorkspaces();
   const templates = useResource(fetchTemplates);
   const conflicts = useResource(fetchConflictBoard);
   const hazards = useResource(fetchDisasterBoard);
@@ -73,6 +79,9 @@ export default function ReportsPage() {
         ) : null
       ) : (
         <GenerateForm
+          key={`${workspaces.key}:${params.toString()}`}
+          workspaces={workspaces}
+          plans={plans.data ?? []}
           templates={templates.data}
           countries={countries}
           conflicts={(conflicts.data ?? []).map((card) => ({
@@ -116,7 +125,9 @@ export default function ReportsPage() {
                   >
                     {report.title}
                   </Link>
-                  <div className="font-mono text-xs text-muted">{report.template}</div>
+                  <div className="font-mono text-xs text-muted">
+                    {report.template} · {workspaces.label(report.team_id)}
+                  </div>
                 </Td>
                 <Td className="whitespace-nowrap text-xs text-muted">
                   {formatUtc(report.period_from)} to {formatUtc(report.period_to)}
@@ -132,7 +143,12 @@ export default function ReportsPage() {
           </tbody>
         </Table>
       )}
-      <SchedulesSection templates={templates.data ?? []} countries={countries} />
+      <SchedulesSection
+        workspaces={workspaces}
+        plans={plans.data ?? []}
+        templates={templates.data ?? []}
+        countries={countries}
+      />
     </section>
   );
 }

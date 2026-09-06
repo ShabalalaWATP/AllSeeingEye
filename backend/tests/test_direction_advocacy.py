@@ -207,8 +207,13 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert "Discarded: it contained a URL" in messages
     assert dropped.json()["version"]["devils_advocacy"] is None
 
-    # No judgements at all: the advocate is never called.
-    gateway = ScriptedGateway(json.dumps(DIRECTION), json.dumps(good_body(key_judgements=[])))
+    # Two empty drafts fail generation: the advocate is never called.
+    gateway = ScriptedGateway(
+        json.dumps(DIRECTION),
+        json.dumps(good_body(key_judgements=[])),
+        json.dumps(good_body(key_judgements=[])),
+    )
     container.llm = gateway
     empty = await client.post("/api/reports", json=ask, headers=bearer(token))
-    assert empty.status_code == 201 and len(gateway.requests) == 2
+    assert empty.status_code == 201 and len(gateway.requests) == 3
+    assert empty.json()["version"]["status"] == "failed"

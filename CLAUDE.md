@@ -1,12 +1,14 @@
 # The All Seeing Eye (code name `ase`)
 
-Self-hosted OSINT fusion app: free feeds on a 3D globe (the default view), graded before an LLM writes doctrine-compliant assessments. The approved design lives in `docs/`. Read in this order when starting work: `docs/00_PROPOSAL_OVERVIEW.md`, `docs/MASTER_IMPLEMENTATION_PLAN.md`, `docs/01_ARCHITECTURE.md`, `docs/07_SECURITY_BY_DESIGN.md`, `docs/DEVELOPMENT_STORY.md`. API contracts live in `docs/api/`.
+Self-hosted OSINT fusion app: free feeds on a 3D globe (the default view), graded before an LLM writes mechanically validated assessments. The approved design lives in `docs/`. Read in this order when starting work: `docs/MASTER_FIX_IMPROVEMENT_PLAN.md`, `docs/01_ARCHITECTURE.md`, `docs/07_SECURITY_BY_DESIGN.md`, `docs/DEVELOPMENT_STORY.md`. `docs/MASTER_IMPLEMENTATION_PLAN.md` preserves the earlier Phase 0 to 6 delivery history; `docs/00_PROPOSAL_OVERVIEW.md` is the original proposal. API contracts live in `docs/api/`.
 
 Phase 5 and Phase 6 features are implemented. See
 `docs/PHASE5_PHASE6_OPERATIONS.md` for operator flows and
 `docs/security/PHASE6_ASVS_REVIEW.md` for outstanding deployment gates. Do not
-equate local tests with public readiness, a live PostgreSQL restore, a real-model
-integration or an observed GitHub CI run.
+equate local tests with public readiness, recovery of the operator's backups,
+a real-model integration or an observed GitHub CI run. A prior synthetic
+SQLite/PostgreSQL 17 recovery through migration `0011` is recorded separately;
+the broader improvement plan tracks current identity/team and analytical work.
 
 ## Layout
 
@@ -24,6 +26,7 @@ scripts/    Repo-level checks and safe SQLite/Compose PostgreSQL backup and rest
 Backend:   cd backend && uv sync
            uv run pytest                      (coverage gate 90 percent, SQLite in memory)
            uv run ruff check . && uv run ruff format --check . && uv run mypy src
+           uv run ase migrate                 (explicitly target the intended database)
            uv run ase create-admin --email you@example.com --display-name "You"
            uv run ase export-openapi ../frontend/src/lib/api/openapi.json
            uv run uvicorn ase.main:app --reload --port 8001
@@ -46,7 +49,10 @@ Checks:    uvx pre-commit run --all-files ; python scripts/check_file_length.py
 - UK English in docs, comments, commit messages and UI copy. No em dashes. Conventional commits (`feat:`, `fix:`, `docs:`, `chore:`, `test:`).
 - Do not commit build output, `node_modules`, `.venv`, `data/`, coverage output or IDE files.
 - The 3D globe is the default view and the root route. The brand mark is the React Bits Evil Eye component (see `docs/01_ARCHITECTURE.md` section 5.6), never a redrawn imitation.
-- Persist reports, frozen report evidence, configuration and the small operational aggregates only. Raw live events remain in the bounded in-memory store. Semantic search uses JSON vectors for at most the latest 1,000 reports and 4,096 dimensions, with SQLite/PostgreSQL parity; no pgvector or live-event index. See ADR 0008.
-- Authentication reloads the current user's active state and role from the database for each protected request. Reports and collection plans are shared reads for authenticated users; report/plan mutations require the owner or an admin. Optional administrator TOTP is implemented. Do not describe report reads as owner-private or browser rendering as a DOMPurify Markdown path: reports render structured React text.
+- Persist reports, frozen evidence, accounts/teams, configuration and small operational aggregates only. Raw public events remain shared in the bounded in-memory store and never enter the database. Semantic search stores at most 1,000 JSON vectors of at most 4,096 dimensions globally, checks capacity before model calls, and never evicts another team's vectors to index one caller's work. Queries and counts cover up to the caller's latest 1,000 visible reports. No pgvector or live-event index. See ADRs 0008 and 0010.
+- Authentication checks the current active user, security version and live refresh family on every protected request. JWTs require `sid` and `sv`; old-format access JWTs fail, while valid existing refresh cookies may rotate. Optional administrator TOTP is implemented. Streams recheck before delivery and every 15 seconds while idle, filter alerts by scope and emit `access.changed` for client invalidation.
+- Roles are user/manager/admin. Non-admin team leadership needs both global manager capability and that team's manager designation. Personal operational records are creator/admin-visible; team records require current membership or admin. Scope applies to lists, direct reads, historical versions, exports, comparisons, search, alerts and background work. SQL filtering precedes limits/counts. Linked records must share the same personal owner or team, even for admin operations.
+- Use `AccessPolicy` for current authorisation. Mutations take the shared administration guard before account locks and fresh checks; never hold it across model/network work. Recheck after external work before persistence and after document rendering before download. Archived teams remain readable; ordinary writes stop, admins retain manual operational override, and roster writes require reactivation. Background team work requires an active owner, active team and current membership even for admins.
+- Migration `0014` preserves old roots as personal, logs legacy scope conflicts, and leaves orphan alerts admin-only. No operator database or real `.env` was migrated during development. Review the conflict inventory; never guess team assignments or silently widen access. Reports render structured React text, not HTML from Markdown or DOMPurify.
 - Local development uses port 8001 and the frontend proxy defaults there. Backend `.env` and relative SQLite paths resolve from the backend process working directory; Compose reads the root `.env`.
 - Backups are explicit operator commands, documented in `docs/BACKUP_RESTORE.md`. No schedule or automatic deletion is installed. Restore drills target fresh destinations and preserve the encryption key separately unless `.env` inclusion is explicitly selected.

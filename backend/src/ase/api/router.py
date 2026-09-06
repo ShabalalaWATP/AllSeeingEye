@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from ase.api.routers import (
+    account,
     admin_audit,
     admin_llm,
     admin_requests,
@@ -23,6 +24,7 @@ from ase.api.routers import (
     schedules,
     social,
     stream,
+    teams,
     tiles,
     totp,
     trackers,
@@ -33,7 +35,9 @@ api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
 api_router.include_router(totp.router)
+api_router.include_router(teams.router)
 api_router.include_router(me.router)
+api_router.include_router(account.router)
 api_router.include_router(events.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)

@@ -6,13 +6,14 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from ase.domain.access import Visibility
 from ase.domain.schedules import Schedule
 
 
 class ScheduleRepository(Protocol):
     async def add(self, schedule: Schedule) -> None: ...
     async def get(self, schedule_id: UUID) -> Schedule | None: ...
-    async def list_all(self) -> list[Schedule]: ...
+    async def list_all(self, visibility: Visibility) -> list[Schedule]: ...
     async def save(self, schedule: Schedule) -> None: ...
     async def delete(self, schedule_id: UUID) -> None: ...
 
@@ -21,6 +22,7 @@ class ScheduleStore(Protocol):
     """What the background runner needs; each call runs in its own session."""
 
     async def due(self, now: datetime) -> list[Schedule]: ...
+    async def can_run(self, schedule: Schedule) -> bool: ...
     async def mark_run(
         self,
         schedule_id: UUID,
@@ -29,4 +31,5 @@ class ScheduleStore(Protocol):
         next_run_at: datetime,
         report_id: UUID | None,
         error: str | None,
+        expected: Schedule,
     ) -> None: ...

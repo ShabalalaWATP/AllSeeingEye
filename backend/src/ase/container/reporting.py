@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
+from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.reports.documents import ReportDocumentRenderer
+from ase.application.access import AccessPolicy
 from ase.application.reports.access import (
     DeleteReportUseCase,
     GetReportUseCase,
@@ -78,6 +80,9 @@ class ReportWiring:
         async def _cyber_background(self) -> str: ...
         async def aviation_background(self, session: AsyncSession) -> str: ...
 
+    def access_policy(self, session: AsyncSession) -> AccessPolicy:
+        return AccessPolicy(self.repositories(session).users, SqlTeamRepository(session))
+
     async def archive_report_version(self, version: ReportVersion) -> None:
         """Background job after generation: preserve the URLs the version cites."""
         try:
@@ -112,6 +117,7 @@ class ReportWiring:
             auditor=self._auditor(r),
             uow=r.uow,
             url_resolver=GoogleNewsUrlResolver(),
+            access=self.access_policy(session),
         )
 
     def report_search(self, session: AsyncSession) -> ReportSearchService:
@@ -127,6 +133,7 @@ class ReportWiring:
             limiter=self.limiter,
             lock=self.embedding_lock,
             uow=r.uow,
+            access=self.access_policy(session),
         )
 
     def export_report(self, session: AsyncSession) -> ExportReportUseCase:
@@ -136,11 +143,12 @@ class ReportWiring:
         return CompareReportsUseCase(self.get_report(session))
 
     def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
-        return ListReportsUseCase(self.repositories(session).reports)
+        return ListReportsUseCase(self.repositories(session).reports, self.access_policy(session))
 
     def get_report(self, session: AsyncSession) -> GetReportUseCase:
-        return GetReportUseCase(self.repositories(session).reports)
+        r = self.repositories(session)
+        return GetReportUseCase(r.reports, self.access_policy(session), r.uow)
 
     def delete_report(self, session: AsyncSession) -> DeleteReportUseCase:
         r = self.repositories(session)
-        return DeleteReportUseCase(r.reports, self._auditor(r), r.uow)
+        return DeleteReportUseCase(r.reports, self._auditor(r), r.uow, self.access_policy(session))

@@ -10,6 +10,7 @@ from uuid import UUID
 
 class Role(StrEnum):
     USER = "user"
+    MANAGER = "manager"
     ADMIN = "admin"
 
 
@@ -37,6 +38,7 @@ class User:
     locked_until: datetime | None
     created_at: datetime
     last_login_at: datetime | None
+    security_version: int = 0
 
     @property
     def is_admin(self) -> bool:

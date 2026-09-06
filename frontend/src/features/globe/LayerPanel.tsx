@@ -57,7 +57,7 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={onToggle}
-      className={`flex w-full items-center justify-between rounded px-1.5 py-1 text-left text-sm hover:bg-surface-2 ${
+      className={`flex min-h-11 w-full items-center justify-between rounded px-1.5 py-1 text-left text-sm hover:bg-surface-2 lg:min-h-0 ${
         checked ? 'text-text' : 'text-muted'
       }`}
     >
@@ -106,7 +106,7 @@ export function LayerPanel({
                 onClick={() => {
                   onToggle(category);
                 }}
-                className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left text-sm transition-colors hover:bg-surface-2 ${
+                className={`flex min-h-11 w-full items-center gap-2 rounded px-1.5 py-1 text-left text-sm transition-colors hover:bg-surface-2 lg:min-h-0 ${
                   shown ? 'text-text' : 'text-muted'
                 }`}
               >
@@ -141,7 +141,7 @@ export function LayerPanel({
               }}
               className="peer sr-only"
             />
-            <span className="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] text-muted hover:text-text peer-checked:bg-surface-2 peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember">
+            <span className="inline-flex min-h-11 items-center rounded px-2 py-0.5 font-mono text-[11px] text-muted hover:text-text peer-checked:bg-surface-2 peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember lg:min-h-0 lg:px-1.5">
               {option.label}
             </span>
           </label>

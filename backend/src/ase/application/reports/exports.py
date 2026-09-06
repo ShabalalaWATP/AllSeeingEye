@@ -32,6 +32,7 @@ class ExportReportUseCase:
         record, version = await self._reader.execute(actor, report_id, number)
         document = build_document(record, version)
         content = await asyncio.to_thread(self._renderer.render, document, format)
+        await self._reader.recheck(actor, report_id, version.number)
         return ReportFile(
             content, MEDIA_TYPES[format], f"report-{report_id}-v{version.number}.{format.value}"
         )

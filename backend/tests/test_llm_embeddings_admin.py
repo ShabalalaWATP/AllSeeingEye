@@ -10,7 +10,7 @@ from ase.container import Container
 from ase.domain.llm import LlmRole
 from ase.domain.report_search import EmbeddingResult
 from ase.domain.users import User
-from helpers import bearer
+from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, login_token
 from report_search_helpers import FakeEmbeddings, add_profile
 from test_llm import FakeGateway
 
@@ -26,9 +26,11 @@ async def test_embeddings_only_admin_probe_and_safe_failure(
         profile = await add_profile(container, session)
     path = f"/api/admin/llm/profiles/{profile.id}/test"
     assert (
-        await client.post(path, headers=bearer(container.issuer.issue(user).token))
+        await client.post(
+            path, headers=bearer(await login_token(client, user.email, USER_PASSWORD))
+        )
     ).status_code == 403
-    headers = bearer(container.issuer.issue(admin).token)
+    headers = bearer(await login_token(client, admin.email, ADMIN_PASSWORD))
     tested = await client.post(path, headers=headers)
     assert tested.status_code == 200 and tested.json()["ok"]
     assert len(embeddings.calls) == 1 and not chat.calls

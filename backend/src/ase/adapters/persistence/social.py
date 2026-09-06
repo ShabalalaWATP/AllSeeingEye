@@ -9,23 +9,55 @@ from datetime import datetime, timedelta
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.access import background_predicate
 from ase.adapters.persistence.baselines import SqlBaselineRepository
-from ase.adapters.persistence.direction import SqlPlanRepository
-from ase.adapters.persistence.models import ActivitySampleRow
+from ase.adapters.persistence.direction import _plan_from_row
+from ase.adapters.persistence.models import ActivitySampleRow, CollectionPlanRow
+from ase.application.access import AccessPolicy
 from ase.domain.social import MAX_TERMS, SocialBaseline, WatchedTerm, vocabulary
+from ase.domain.users import User
 
 KIND_SOCIAL = "social_keyword"
 BASELINE_DAYS = 30
 
 
 class SqlSocialTerms:
-    def __init__(self, session_factory: Callable[[], AsyncSession], watch: Sequence[str]) -> None:
+    def __init__(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        watch: Sequence[str],
+        access_factory: Callable[[AsyncSession], AccessPolicy],
+    ) -> None:
         self._sessions = session_factory
         self._watch = tuple(watch)
+        self._access = access_factory
 
     async def configured(self) -> tuple[WatchedTerm, ...]:
         async with self._sessions() as session:
-            return vocabulary(self._watch, await SqlPlanRepository(session).list_all())
+            return await self._configured(session)
+
+    async def _configured(self, session: AsyncSession) -> tuple[WatchedTerm, ...]:
+        rows = await session.scalars(
+            select(CollectionPlanRow)
+            .where(
+                CollectionPlanRow.enabled.is_(True),
+                background_predicate(CollectionPlanRow.created_by, CollectionPlanRow.team_id),
+            )
+            .order_by(CollectionPlanRow.created_at, CollectionPlanRow.id)
+        )
+        return vocabulary(self._watch, [_plan_from_row(row) for row in rows])
+
+    async def visible_to(self, actor: User) -> tuple[WatchedTerm, ...]:
+        async with self._sessions() as session:
+            decision = await self._access(session).context(actor)
+            return tuple(
+                term
+                for term in await self._configured(session)
+                if term.public
+                or decision.actor.is_admin
+                or decision.actor.id in term.owners
+                or bool(term.team_ids.intersection(decision.visibility.team_ids))
+            )
 
 
 class SqlSocialActivity:

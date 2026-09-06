@@ -1,7 +1,9 @@
 /** Reports: generate from live evidence, list, read, export. */
 import { z } from 'zod';
 
-import { categorySchema } from './eventSchemas';
+import { scopedMutation } from '@/lib/workspaceAccess';
+import type { components } from './types.gen';
+
 import { apiCall, apiSend, apiText } from './client';
 
 export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
@@ -20,6 +22,7 @@ export const templateSchema = z.object({
 export type ReportTemplate = z.infer<typeof templateSchema>;
 
 export const reportSummarySchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   template: z.string(),
   title: z.string(),
@@ -69,6 +72,19 @@ export const reportBodySchema = z.object({
 export type ReportBody = z.infer<typeof reportBodySchema>;
 
 export const evidenceItemSchema = z.object({
+  independence_key: z.string().optional(),
+  captured_at: z.string().optional(),
+  observed_at: z.string().nullable().optional(),
+  content_hash: z.string().optional(),
+  reliability: z.string().optional(),
+  credibility: z.number().int().optional(),
+  instrument: z.boolean().optional(),
+  title_en: z.string().nullable().optional(),
+  language: z.string().nullable().optional(),
+  geo_confidence: z.string().nullable().optional(),
+  story_id: z.string().nullable().optional(),
+  lon: z.number().nullable().optional(),
+  lat: z.number().nullable().optional(),
   label: z.string(),
   event_id: z.string(),
   source_id: z.string(),
@@ -115,6 +131,9 @@ export const findingSchema = z.object({
 export type Finding = z.infer<typeof findingSchema>;
 
 export const reportVersionSchema = z.object({
+  period_from: z.string().nullable().optional(),
+  period_to: z.string().nullable().optional(),
+  data_cutoff: z.string().nullable().optional(),
   number: z.number().int(),
   status: reportStatusSchema,
   body: reportBodySchema,
@@ -136,17 +155,7 @@ export type ReportVersion = z.infer<typeof reportVersionSchema>;
 export const reportSchema = z.object({ report: reportSummarySchema, version: reportVersionSchema });
 export type Report = z.infer<typeof reportSchema>;
 
-export interface ReportRequest {
-  template: string;
-  country?: string;
-  categories?: z.infer<typeof categorySchema>[];
-  question?: string;
-  window_hours?: number;
-  devils_advocacy?: boolean;
-  hazard?: string;
-  conflict?: string;
-  plan?: string;
-}
+export type ReportRequest = components['schemas']['ReportCreateIn'];
 
 export async function fetchTemplates(): Promise<ReportTemplate[]> {
   const page = await apiCall('/api/reports/templates', {
@@ -163,7 +172,9 @@ export async function fetchReports(): Promise<ReportSummary[]> {
 }
 
 export function generateReport(request: ReportRequest): Promise<Report> {
-  return apiCall('/api/reports', { method: 'POST', body: request, schema: reportSchema });
+  return scopedMutation(() =>
+    apiCall('/api/reports', { method: 'POST', body: request, schema: reportSchema }),
+  );
 }
 
 export function fetchReport(id: string, version?: number): Promise<Report> {
@@ -172,10 +183,12 @@ export function fetchReport(id: string, version?: number): Promise<Report> {
 }
 
 export function regenerateReport(id: string): Promise<Report> {
-  return apiCall(`/api/reports/${encodeURIComponent(id)}/versions`, {
-    method: 'POST',
-    schema: reportSchema,
-  });
+  return scopedMutation(() =>
+    apiCall(`/api/reports/${encodeURIComponent(id)}/versions`, {
+      method: 'POST',
+      schema: reportSchema,
+    }),
+  );
 }
 
 export function fetchReportMarkdown(id: string, version?: number): Promise<string> {
@@ -184,5 +197,7 @@ export function fetchReportMarkdown(id: string, version?: number): Promise<strin
 }
 
 export function deleteReport(id: string): Promise<void> {
-  return apiSend(`/api/reports/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return scopedMutation(() =>
+    apiSend(`/api/reports/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  );
 }

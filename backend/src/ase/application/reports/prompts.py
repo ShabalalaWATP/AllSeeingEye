@@ -63,9 +63,15 @@ def evidence_block(item: EvidenceItem) -> str:
     if len(summary) > MAX_SUMMARY_CHARS:
         summary = summary[: MAX_SUMMARY_CHARS - 1].rstrip() + "…"
     body = f" {summary}" if summary else ""
+    translation = (
+        f" Machine-translated title (unverified): {item.title_en}." if item.title_en else ""
+    )
+    provenance = f" Original language: {item.language or 'not recorded'}."
+    if item.geo_confidence:
+        provenance += f" Location precision: {item.geo_confidence}."
     return (
         f"{item.label} [{item.grade}, {item.source_name}, {item.category}{where}, {when}]"
-        f"{flags}: {item.title}.{body}"
+        f"{flags}: {item.title}.{body}{translation}{provenance}"
     )
 
 

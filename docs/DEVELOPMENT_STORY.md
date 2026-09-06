@@ -175,3 +175,63 @@ A concise, chronological record of how The All Seeing Eye is being built. Mainta
 - Real browser checks found fonts inlined against `font-src 'self'` and a missing production MapLibre module worker. The build now emits fonts and both worker modules as files. Chrome then rendered country tiles, markers and both projections, exercised social/report/admin states, downloaded valid PDF/DOCX files and checked keyboard focus and reduced motion. Caddy served both `.mjs` assets with HTTP 200 and JavaScript MIME types. These checks used an isolated in-memory app, not the operator's data.
 - Real backup/restore CLI drills on fresh SQLite and PostgreSQL 17 preserved all 19 tables, both frozen report versions and decrypted credentials/TOTP with the preserved test key. Disposable databases, browser helpers and servers were removed afterwards. Container vulnerability checks and the final build follow-up are recorded in the security review.
 - Final container scans found unused vulnerable pip vendors in the API base image and vulnerable Alpine/Go dependencies in the official Caddy image. Removing the unused API toolchain and rebuilding the same standard Caddy release with locked patched dependencies cleared the HIGH/CRITICAL gates. The Caddy build retained all 132 modules, configuration and low-port capability; local HTTPS, static assets and read-only API routing checks passed. Build/update instructions and exact scanned image identifiers are recorded for repeatable release checks.
+
+## 6 September 2026: broader quality and team-workspace improvement
+
+- The expanded goal is tracked in `MASTER_FIX_IMPROVEMENT_PLAN.md` on
+  `codex/app-improvement`. A clean baseline audit found substantive analytical
+  validation, corroboration, report-period and session-lifecycle gaps, plus the
+  absence of manager roles and team authorisation. The existing layered monolith
+  and bounded live store remain the foundation.
+- Four report-period regressions now pass after reproducing narrow/wide selection
+  errors and stale saved dates. The producer uses the resolved requested period;
+  adding a version persists its current period and cutoff without rewriting the
+  historical version or original creation date. The API regeneration check
+  verifies that newly out-of-period evidence disappears while history stays frozen.
+- Map, conservative grading, strict model-output validation, session hardening and
+  team management are being integrated as separate responsibilities. Team roster
+  management alone is not described as completed operational-record isolation.
+
+## 6 September 2026: private workspaces and integrated analyst workflow
+
+- User, manager and administrator roles now have explicit team membership and
+  personal/team operational records. SQL filtering precedes limits, related records
+  must share scope, and generation, search, exports and background jobs revalidate
+  authority after slow work. Alert streams release idle database connections,
+  filter each alert and notify clients when access changes. Open private pages
+  also refresh authority on focus and every minute without blanking unchanged data.
+- Account settings provide password changes with current-password and enrolled
+  authenticator proof, atomic session/link revocation and safe failure auditing.
+  Concurrent administrator, reset and credential transitions received SQLite and
+  PostgreSQL regressions. Legacy scope migrations preserve records and frozen
+  evidence, inventory conflicting links and produce readable audit entries.
+- New model responses receive strict structural and citation validation. Topic
+  similarity, copied reporting and translations do not become verified evidence.
+  Frozen evidence retains language, precision, capture times, hashes and declared
+  provenance; version dates describe the selected historical version. PDF, DOCX
+  and Markdown carry the same review limits and provenance, and the browser reader
+  links judgements to expandable evidence.
+- The eight map choices remain alongside the root 3D globe and Evil Eye. Login,
+  account, team, map and report views have browser-tested narrow layouts, compact
+  controls and keyboard/focus behaviour. Keyed OS choices explain unavailability.
+- Integrated frontend verification passed 351 tests across 74 files, with 98.04
+  percent line and 91.95 percent branch coverage. ESLint, both TypeScript projects,
+  Prettier and the production build passed. Large map/deck vendor chunks remain
+  an explicit build warning. The full SQLite backend run passed 673 tests with one
+  PostgreSQL-only skip and 96.10 percent branch-inclusive coverage. Ruff, mypy
+  (278 source files), import contracts, file-length and pre-commit checks passed.
+- The full PostgreSQL 17 run passed 675 tests. Both database migration round-trips
+  preserved legacy data and readable audit entries. Three resource warnings from
+  the SQLite coverage run were traced to unclosed test fixture connections;
+  five affected tests then passed with resource warnings treated as errors.
+- Bandit, Semgrep, source/staged Gitleaks and dependency audits passed in their
+  checked scopes. Both containers built and passed the configured fixable
+  HIGH/CRITICAL gate. The full inventory retains 54 unfixed API package findings
+  (18 CVEs), including three CRITICAL matches, and zero web findings at those
+  severities. `security/API_BASE_IMAGE_TRIAGE.md` records exact image IDs,
+  component/reachability checks and supported-update/release follow-up. No
+  package was forcibly removed, vulnerability ignored or operator risk accepted.
+- Updated architecture, doctrine, feature inventory, API/operations guidance,
+  ADRs and the master improvement/security records. The milestone is committed
+  locally on `codex/app-improvement`. There is no Git remote or hosted CI result;
+  no operator database migration or deployment was performed.

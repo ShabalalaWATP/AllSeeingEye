@@ -1,6 +1,6 @@
 # Phase 6 security review against ASVS 5.0
 
-Review date: 6 September 2026. Target: the current working tree, including
+Historical baseline review: `60dff6b`, 6 September 2026. Target: the Phase 6 working tree, including
 Phase 5 and Phase 6. Deployment assumption: private, single-process, self-hosted
 LAN application. This is a source review and local test record, not certification,
 an assertion that every ASVS requirement passes, or approval for public exposure.
@@ -9,6 +9,10 @@ The reference is [OWASP ASVS 5.0.0](https://owasp.org/www-project-application-se
 using the [versioned English requirements](https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/docs_en/OWASP_Application_Security_Verification_Standard_5.0.0_en.json).
 The coordinating agent verified that version and its chapter names. The security
 reviewers kept source inspection offline.
+
+The later [improvement security review](IMPROVEMENT_SECURITY_REVIEW.md) supersedes
+this baseline's shared-read and access-token-expiry assumptions. Findings below
+retain their historical context.
 
 ## Method and limits
 

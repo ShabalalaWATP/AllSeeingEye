@@ -53,10 +53,11 @@ describe('report versions', () => {
     );
     await user.click(within(versions).getByRole('link', { name: '1' }));
     await waitFor(() => {
-      expect(within(versions).getByRole('link', { name: '1' })).toHaveAttribute(
-        'aria-current',
-        'page',
-      );
+      expect(
+        within(screen.getByRole('navigation', { name: 'Versions' })).getByRole('link', {
+          name: '1',
+        }),
+      ).toHaveAttribute('aria-current', 'page');
     });
   });
 

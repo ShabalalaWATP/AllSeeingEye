@@ -28,6 +28,10 @@ class ReportEmbeddingRepository(Protocol):
         """Save only if this version is still current and its report still exists."""
         ...
 
-    async def retain(self, report_ids: Sequence[UUID]) -> None:
-        """Bound storage to the newest saved reports; remove obsolete rows."""
+    async def prune_obsolete(self) -> None:
+        """Remove deleted or superseded versions without evicting another scope."""
+        ...
+
+    async def capacity_for(self, report_ids: Sequence[UUID], limit: int) -> frozenset[UUID]:
+        """Existing slots plus requested new slots fitting the shared storage limit."""
         ...

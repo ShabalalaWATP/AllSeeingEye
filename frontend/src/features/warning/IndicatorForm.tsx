@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
+import { WorkspaceField } from '@/components/ui/WorkspaceField';
+import type { CollectionPlan } from '@/lib/api/direction';
+import { useWorkspaceSelection } from '@/lib/hooks/useWorkspaces';
+import type { Workspaces } from '@/lib/hooks/useWorkspaces';
+
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
@@ -23,13 +28,29 @@ export function describeWindow(minutes: number): string {
 
 interface IndicatorFormProps {
   templates: readonly ReportTemplate[];
+  plans: readonly CollectionPlan[];
+  workspaces: Workspaces;
   busy: boolean;
   error: string | null;
   onSubmit: (request: IndicatorRequest) => void;
 }
 
 /** A standing rule: what to watch, how many in what window, and what to do when it fires. */
-export function IndicatorForm({ templates, busy, error, onSubmit }: IndicatorFormProps) {
+export function IndicatorForm({
+  templates,
+  busy,
+  error,
+  onSubmit,
+  plans,
+  workspaces,
+}: IndicatorFormProps) {
+  const scope = useWorkspaceSelection(workspaces);
+  const [planId, setPlanId] = useState('');
+  const matchingPlans = plans.filter(
+    (plan) => plan.enabled && (plan.team_id ?? '') === scope.teamId,
+  );
+  const selectedPlan = matchingPlans.some((plan) => plan.id === planId) ? planId : '';
+  const invalidPlan = planId !== '' && selectedPlan === '';
   const [name, setName] = useState('');
   const [countries, setCountries] = useState('');
   const [keywords, setKeywords] = useState('');
@@ -40,8 +61,15 @@ export function IndicatorForm({ templates, busy, error, onSubmit }: IndicatorFor
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!scope.ready || invalidPlan) return;
     onSubmit({
+      ...(scope.teamId ? { team_id: scope.teamId } : {}),
+      ...(selectedPlan ? { plan_id: selectedPlan } : {}),
       name: name.trim(),
+      description: '',
+      enabled: true,
+      cooldown_minutes: 60,
+      severity_floor: 0,
       countries: parseCountries(countries),
       keywords: parseCommaList(keywords),
       categories: parseCategories(categories),
@@ -57,6 +85,29 @@ export function IndicatorForm({ templates, busy, error, onSubmit }: IndicatorFor
       aria-label="New indicator"
       className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
     >
+      {invalidPlan && (
+        <Alert tone="error">
+          The linked plan is no longer available. Choose a plan in this workspace or select No plan.
+        </Alert>
+      )}
+      <WorkspaceField
+        workspaces={workspaces}
+        value={scope.teamId}
+        onChange={(value) => {
+          scope.select(value);
+          setPlanId('');
+        }}
+      />
+      <SelectField
+        label="Collection plan"
+        value={selectedPlan}
+        onChange={(event) => setPlanId(event.target.value)}
+        hint="Optional. Linked plans must use the same workspace."
+        options={[
+          { value: '', label: 'No plan' },
+          ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
+        ]}
+      />
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Indicator name"
@@ -125,7 +176,7 @@ export function IndicatorForm({ templates, busy, error, onSubmit }: IndicatorFor
       </div>
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>
-        <Button type="submit" busy={busy}>
+        <Button type="submit" busy={busy} disabled={!scope.ready || invalidPlan}>
           Add indicator
         </Button>
       </div>

@@ -28,6 +28,7 @@ import { BaseLayerToolbar } from './BaseLayerToolbar';
 import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
+import { GlobeControls } from './GlobeControls';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
@@ -247,7 +248,7 @@ export default function GlobePage() {
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       {!opsRoom && (
-        <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+        <GlobeControls>
           <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
           <NationFilter
             countries={countries}
@@ -280,7 +281,7 @@ export default function GlobePage() {
               onSelect={focus}
             />
           )}
-        </div>
+        </GlobeControls>
       )}
       {supported && !opsRoom && <CoordinateReadout engine={engine} />}
       {selected !== null && !opsRoom && (

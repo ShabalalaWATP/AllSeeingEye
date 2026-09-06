@@ -3,18 +3,22 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
-from enum import StrEnum
+from dataclasses import replace
 
 from ase.domain.doctrine import (
     Confidence,
-    distinct_bands,
     find_hedges,
     find_urls,
     mentions_confidence,
     opens_as_judgement,
     scan_likelihood,
     sentences,
+)
+from ase.domain.evidence import EvidenceItem, quality_of_information
+from ase.domain.report_support import (
+    check_judgement_support,
+    check_structure,
+    derive_reporting_grades,
 )
 from ase.domain.reports import (
     MAX_JUDGEMENT_CHARS,
@@ -25,36 +29,11 @@ from ase.domain.reports import (
     ReportingItem,
     ReportingTheme,
 )
+from ase.domain.validation_types import Finding, Severity, ValidationResult
 
-MAX_REPORT_CHARS = 60_000
+__all__ = ["Finding", "Severity", "ValidationResult", "validate_body"]
+
 CONFIDENCE_ORDER = {Confidence.LOW: 0, Confidence.MODERATE: 1, Confidence.HIGH: 2}
-
-
-class Severity(StrEnum):
-    ERROR = "error"
-    WARNING = "warning"
-
-
-@dataclass(frozen=True, slots=True)
-class Finding:
-    rule: str
-    severity: Severity
-    location: str
-    message: str
-
-
-@dataclass(frozen=True, slots=True)
-class ValidationResult:
-    body: ReportBody
-    findings: tuple[Finding, ...]
-
-    @property
-    def errors(self) -> tuple[Finding, ...]:
-        return tuple(f for f in self.findings if f.severity is Severity.ERROR)
-
-    @property
-    def passed(self) -> bool:
-        return not self.errors
 
 
 def _strip(
@@ -64,7 +43,7 @@ def _strip(
     for label in labels:
         if label not in known:
             out.append(
-                Finding("citation", Severity.WARNING, where, f"Unknown evidence {label} removed")
+                Finding("citation", Severity.ERROR, where, f"Unknown evidence {label} removed")
             )
     return kept
 
@@ -120,7 +99,7 @@ def _check_judgement(
 ) -> KeyJudgement:
     where = judgement.id
     scan = scan_likelihood(judgement.statement)
-    bands = distinct_bands(judgement.statement)
+    bands = scan.bands
     if scan.forbidden:
         out.append(
             Finding(
@@ -181,22 +160,7 @@ def _check_judgement(
         out.append(
             Finding("length", Severity.WARNING, where, "Judgement statement is at the length limit")
         )
-    if not judgement.supporting_evidence and not judgement.assumptions:
-        out.append(
-            Finding(
-                "evidence", Severity.ERROR, where, "A judgement must cite evidence or an assumption"
-            )
-        )
-    unknown = [a for a in judgement.assumptions if a not in assumption_ids]
-    if unknown:
-        out.append(
-            Finding(
-                "assumption",
-                Severity.WARNING,
-                where,
-                f"Unknown assumption id(s): {', '.join(unknown)}",
-            )
-        )
+    check_judgement_support(judgement, assumption_ids, out)
     return judgement
 
 
@@ -207,25 +171,56 @@ def validate_body(
     *,
     confidence_ceiling: Confidence = Confidence.HIGH,
     previous_exists: bool = False,
+    evidence_items: Sequence[EvidenceItem] | None = None,
 ) -> ValidationResult:
     """Apply every rule; return the cleaned body and the findings, errors first."""
     findings: list[Finding] = []
+    frozen = {item.label: item for item in evidence_items} if evidence_items is not None else None
+    if frozen is not None:
+        evidence_labels = frozenset(frozen)
+        evidence_urls = {label: item.url for label, item in frozen.items()}
     body = _strip_unknown_citations(body, evidence_labels, findings)
     assumption_ids = frozenset(a.id for a in body.assumptions)
     judgements: list[KeyJudgement] = []
     for judgement in body.key_judgements:
         checked = _check_judgement(judgement, assumption_ids, findings)
-        if CONFIDENCE_ORDER[checked.confidence] > CONFIDENCE_ORDER[confidence_ceiling]:
+        ceiling = confidence_ceiling
+        if frozen is not None:
+            support = [frozen[label] for label in dict.fromkeys(checked.supporting_evidence)]
+            support_quality = quality_of_information(support)
+            cited_ceiling = support_quality.confidence_ceiling
+            ceiling = min(ceiling, cited_ceiling, key=CONFIDENCE_ORDER.__getitem__)
+            if checked.contradicting_evidence:
+                ceiling = min(ceiling, Confidence.MODERATE, key=CONFIDENCE_ORDER.__getitem__)
+        if CONFIDENCE_ORDER[checked.confidence] > CONFIDENCE_ORDER[ceiling]:
             findings.append(
                 Finding(
                     "confidence_ceiling",
                     Severity.WARNING,
                     checked.id,
-                    f"Confidence lowered to {confidence_ceiling.value}: "
-                    "the information base does not support more",
+                    f"Confidence lowered to {ceiling.value}: "
+                    "the cited supporting evidence does not support more",
                 )
             )
-            checked = replace(checked, confidence=confidence_ceiling)
+            checked = replace(
+                checked,
+                confidence=ceiling,
+                confidence_statement=(
+                    f"Engine confidence ceiling: {ceiling.value}, based on cited support. "
+                    f"Model rationale (unverified): {checked.confidence_statement}"
+                ),
+            )
+        if frozen is not None:
+            checked = replace(
+                checked,
+                confidence_statement=(
+                    f"Engine confidence ceiling: {ceiling.value}. Cited support: "
+                    f"{support_quality.items} item(s), "
+                    f"{support_quality.independent_organisations} declared organisation group(s); "
+                    "independent sourcing not verified. "
+                    f"Model rationale (unverified): {judgement.confidence_statement}"
+                ),
+            )
         if previous_exists and checked.change_from_previous is None:
             findings.append(
                 Finding(
@@ -237,9 +232,21 @@ def validate_body(
             )
         judgements.append(checked)
     body = replace(body, key_judgements=tuple(judgements))
+    if frozen is not None:
+        body = derive_reporting_grades(body, frozen, findings)
+        cited = [frozen[label] for label in body.cited_labels()]
+        body = replace(
+            body,
+            sourcing_statement=(
+                "Cited evidence: "
+                + quality_of_information(cited).describe()
+                + " Frozen feed metadata and snippets; "
+                "full source content has not been independently verified."
+            ),
+        )
     _check_reporting(body, findings)
     _check_prose(body, evidence_urls, findings)
-    _check_structure(body, findings)
+    check_structure(body, findings)
     findings.sort(key=lambda f: (0 if f.severity is Severity.ERROR else 1, f.rule))
     return ValidationResult(body=body, findings=tuple(findings))
 
@@ -286,29 +293,4 @@ def _check_prose(
                 f"{len(hedged)} passage(s) use hedge words; "
                 "check they describe capability, not likelihood",
             )
-        )
-
-
-def _check_structure(body: ReportBody, findings: list[Finding]) -> None:
-    if body.key_judgements and not body.assumptions:
-        findings.append(
-            Finding(
-                "assumption",
-                Severity.ERROR,
-                "assumptions",
-                "Assumptions are required when there are key judgements",
-            )
-        )
-    if len(body.key_judgements) >= 2 and not body.alternative_hypotheses:
-        findings.append(
-            Finding(
-                "alternatives",
-                Severity.ERROR,
-                "alternative_hypotheses",
-                "At least one alternative hypothesis is required with two or more judgements",
-            )
-        )
-    if sum(len(text) for text in body.texts()) > MAX_REPORT_CHARS:
-        findings.append(
-            Finding("length", Severity.ERROR, "report", "The report exceeds the character budget")
         )

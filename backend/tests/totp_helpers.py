@@ -1,5 +1,7 @@
 """Fixture-only TOTP setup shared by authentication regression tests."""
 
+from datetime import timedelta
+
 import pyotp
 from httpx import AsyncClient
 
@@ -26,4 +28,15 @@ async def enable_totp(client: AsyncClient, clock: FakeClock) -> tuple[dict[str, 
         json={"code": pyotp.TOTP(secret).at(clock.now())},
     )
     assert response.status_code == 204, response.text
-    return headers, secret
+    assert (await client.get("/api/me", headers=headers)).status_code == 401
+    clock.advance(timedelta(seconds=30))
+    signed_in = await client.post(
+        "/api/auth/login",
+        json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD,
+            "totp_code": pyotp.TOTP(secret).at(clock.now()),
+        },
+    )
+    assert signed_in.status_code == 200, signed_in.text
+    return bearer(signed_in.json()["access_token"]), secret

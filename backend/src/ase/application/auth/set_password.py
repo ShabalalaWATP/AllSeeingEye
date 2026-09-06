@@ -57,7 +57,8 @@ class SetPasswordUseCase:
         now = self._clock.now()
         if token is None or not token.is_usable(now):
             raise InvalidToken()
-        user = await self._users.get_by_id(token.user_id)
+        user = await self._users.lock_by_id(token.user_id)
+        now = self._clock.now()
         # A reset link must never reactivate an account an administrator switched off;
         # only an activation link (issued at approval) turns an account on.
         if user is None or (token.purpose is TokenPurpose.RESET and not user.is_active):
@@ -67,7 +68,10 @@ class SetPasswordUseCase:
         # with the same stale token cannot overwrite the winning password.
         if not await self._password_tokens.consume(token.id, now):
             raise InvalidToken()
+        # A successful credential change also ends every older outstanding link.
+        await self._password_tokens.revoke_all_for_user(user.id, now)
         user.password_hash = self._hasher.hash(new_password)
+        user.security_version += 1
         if token.purpose is TokenPurpose.ACTIVATION:
             user.is_active = True
         user.failed_login_count = 0

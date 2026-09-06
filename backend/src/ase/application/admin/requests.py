@@ -18,9 +18,23 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.domain.audit import AuditAction
-from ase.domain.errors import AlreadyDecided, EmailTaken, NotFound
+from ase.domain.errors import AlreadyDecided, EmailTaken, Forbidden, NotFound
 from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
+
+
+async def _lock_reviewer(users: UserRepository, actor: User) -> None:
+    """Serialise decisions with account administration before trusting reviewer state."""
+    require_admin(actor)
+    await users.lock_administration()
+    current = await users.lock_by_id(actor.id)
+    if (
+        current is None
+        or not current.is_active
+        or current.security_version != actor.security_version
+    ):
+        raise Forbidden()
+    require_admin(current)
 
 
 class ListRequestsUseCase:
@@ -58,7 +72,7 @@ class ApproveRequestUseCase:
     async def execute(
         self, actor: User, request_id: UUID, role: Role, context: RequestContext
     ) -> ApprovalResult:
-        require_admin(actor)
+        await _lock_reviewer(self._users, actor)
         request = await self._requests.get(request_id)
         if request is None:
             raise NotFound()
@@ -99,15 +113,17 @@ class ApproveRequestUseCase:
             )
         )
         link = self._links.link_for(TokenPurpose.ACTIVATION, secret)
-        delivered = await self._email_sender.send_link(user.email, TokenPurpose.ACTIVATION, link)
         await self._auditor.record(
             AuditAction.ACCOUNT_REQUEST_APPROVED,
             actor=actor.id,
             subject=user.email,
             ip=context.ip,
-            details={"role": role.value, "delivered": delivered},
+            details={"role": role.value},
         )
         await self._uow.commit()
+        # The decision, account, token and audit are atomic. Delivery happens
+        # afterwards so an external sender cannot hold shared administration locks.
+        delivered = await self._email_sender.send_link(user.email, TokenPurpose.ACTIVATION, link)
         return ApprovalResult(
             user=user, activation_link=None if delivered else link, expires_at=expires_at
         )
@@ -120,16 +136,18 @@ class RejectRequestUseCase:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        users: UserRepository,
     ) -> None:
         self._requests = requests
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
+        self._users = users
 
     async def execute(
         self, actor: User, request_id: UUID, reason: str | None, context: RequestContext
     ) -> None:
-        require_admin(actor)
+        await _lock_reviewer(self._users, actor)
         request = await self._requests.get(request_id)
         if request is None:
             raise NotFound()

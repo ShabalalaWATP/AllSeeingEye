@@ -4,6 +4,7 @@ import type { AreaOfInterest, CollectionPlan, PlanEvidence } from '@/lib/api/dir
 import { liveEvent } from './fixtures.events';
 
 export const aoi: AreaOfInterest = {
+  team_id: null,
   id: 'a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1',
   name: 'Eastern Ukraine',
   description: '',
@@ -15,6 +16,7 @@ export const aoi: AreaOfInterest = {
 };
 
 export const plan: CollectionPlan = {
+  team_id: null,
   id: 'b2b2b2b2-b2b2-4b2b-8b2b-b2b2b2b2b2b2',
   name: 'Kharkiv axis',
   description: 'Background from the curated tracker.',

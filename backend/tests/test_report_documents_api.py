@@ -11,10 +11,10 @@ from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bear
 from report_documents_helpers import document_records
 
 
-async def test_exports_and_comparison_authentication_versions_headers_and_shared_read_policy(
+async def test_exports_and_comparison_authentication_versions_headers_and_owner_policy(
     client: AsyncClient, container: Container, user: User, admin: User
 ) -> None:
-    record, version = document_records(admin.id)
+    record, version = document_records(user.id)
     record.latest_version = 2
     async with container.session_factory() as session:
         repos = container.repositories(session)

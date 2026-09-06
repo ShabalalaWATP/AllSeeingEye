@@ -18,6 +18,9 @@ import { formatAgo } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useNow } from '@/lib/hooks/useNow';
 import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+import { fetchPlans } from '@/lib/api/direction';
 
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
@@ -37,12 +40,25 @@ function describeRule(indicator: Indicator): string {
   return `${String(indicator.threshold)} or more ${what} in ${describeWindow(indicator.window_minutes)}`;
 }
 
-function AlertItem({ alert, onAcknowledge }: { alert: Alert; onAcknowledge: () => void }) {
+function AlertItem({
+  alert,
+  onAcknowledge,
+  workspace,
+  canAcknowledge,
+}: {
+  alert: Alert;
+  onAcknowledge: () => void;
+  workspace: string;
+  canAcknowledge: boolean;
+}) {
   const now = useNow();
   return (
     <li className="flex flex-col gap-1 rounded-card border border-line bg-surface p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">{alert.title}</span>
+        <span className="font-medium">
+          {alert.title}
+          <span className="ml-2 text-xs text-muted">{workspace}</span>
+        </span>
         <span className="font-mono text-xs text-muted">{formatAgo(alert.fired_at, now)}</span>
       </div>
       {alert.summary !== '' && <p className="text-xs text-muted">{alert.summary}</p>}
@@ -56,7 +72,7 @@ function AlertItem({ alert, onAcknowledge }: { alert: Alert; onAcknowledge: () =
           </Link>
         )}
         {alert.acknowledged_at === null ? (
-          <Button variant="secondary" onClick={onAcknowledge}>
+          <Button variant="secondary" disabled={!canAcknowledge} onClick={onAcknowledge}>
             Acknowledge
           </Button>
         ) : (
@@ -68,8 +84,10 @@ function AlertItem({ alert, onAcknowledge }: { alert: Alert; onAcknowledge: () =
 }
 
 export default function WarningPage() {
-  const alerts = useResource(fetchAlerts);
-  const indicators = useResource(fetchIndicators);
+  const workspaces = useWorkspaces();
+  const plans = useScopedResource(fetchPlans);
+  const alerts = useScopedResource(fetchAlerts);
+  const indicators = useScopedResource(fetchIndicators);
   const templates = useResource(fetchTemplates);
   const reloadIndicators = indicators.reload;
   const setAlerts = alerts.setData;
@@ -113,8 +131,8 @@ export default function WarningPage() {
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Warning</h1>
       <p className="text-sm text-muted">
-        Indicators are standing rules over the live picture. When one fires, the alert lands
-        here and on the stream, goes to the webhook when one is configured, and can open a report.
+        Indicators are standing rules over the live picture. When one fires, the alert lands here
+        and on the stream, goes to the webhook when one is configured, and can open a report.
       </p>
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Alerts</h2>
@@ -134,6 +152,8 @@ export default function WarningPage() {
               <AlertItem
                 key={item.id}
                 alert={item}
+                workspace={workspaces.label(item.team_id)}
+                canAcknowledge={workspaces.canAcknowledge(item.team_id)}
                 onAcknowledge={() => void acknowledge.run(item.id)}
               />
             ))}
@@ -166,12 +186,16 @@ export default function WarningPage() {
             <tbody>
               {indicators.data.map((item) => (
                 <tr key={item.id} className={item.enabled ? '' : 'opacity-60'}>
-                  <Td className="font-medium">{item.name}</Td>
+                  <Td className="font-medium">
+                    {item.name}
+                    <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
+                  </Td>
                   <Td className="font-mono text-xs text-muted">{describeScope(item)}</Td>
                   <Td className="text-xs">{describeRule(item)}</Td>
                   <Td className="font-mono text-xs text-muted">{item.report_template ?? 'none'}</Td>
                   <Td>
                     <Button
+                      disabled={!workspaces.canManage(item)}
                       variant="danger"
                       busy={remove.busy}
                       onClick={() => void remove.run(item.id)}
@@ -185,6 +209,9 @@ export default function WarningPage() {
           </Table>
         )}
         <IndicatorForm
+          key={workspaces.key}
+          workspaces={workspaces}
+          plans={plans.data ?? []}
           templates={templates.data ?? []}
           busy={create.busy}
           error={create.error === null ? null : describeError(create.error)}

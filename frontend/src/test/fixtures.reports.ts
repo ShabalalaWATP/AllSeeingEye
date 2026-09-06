@@ -45,6 +45,7 @@ export const reportTemplates: ReportTemplate[] = [
 ];
 
 export const reportSummary: ReportSummary = {
+  team_id: null,
   id: '88888888-8888-4888-8888-888888888888',
   template: 'intsum',
   title: 'Intelligence summary: Ukraine',

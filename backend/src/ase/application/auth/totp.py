@@ -11,6 +11,7 @@ from ase.application.ports import (
     RateLimiter,
     RefreshTokenRepository,
     UnitOfWork,
+    UserRepository,
 )
 from ase.application.ports.totp import TotpProvider, TotpRepository
 from ase.domain.audit import AuditAction
@@ -30,6 +31,7 @@ class TotpUseCase:
         limiter: RateLimiter,
         auditor: Auditor,
         uow: UnitOfWork,
+        users: UserRepository,
     ) -> None:
         self._repo = repository
         self._provider = provider
@@ -39,6 +41,7 @@ class TotpUseCase:
         self._limiter = limiter
         self._auditor = auditor
         self._uow = uow
+        self._users = users
 
     async def status(self, actor: User) -> tuple[bool, bool]:
         self._require_active_admin(actor)
@@ -46,7 +49,7 @@ class TotpUseCase:
         return bool(state and state.enabled), self._provider.available
 
     async def begin(self, actor: User, password: str, context: RequestContext) -> TotpEnrolment:
-        await self._authorise(actor, password, context)
+        actor = await self._authorise(actor, password, context)
         enrolment = self._provider.enrol(actor.email)
         if not await self._repo.begin(
             actor.id,
@@ -58,7 +61,7 @@ class TotpUseCase:
         return enrolment
 
     async def confirm(self, actor: User, code: str, context: RequestContext) -> None:
-        self._require_active_admin(actor)
+        actor = await self._lock_actor(actor)
         self._limit(actor, context)
         state = await self._repo.get(actor.id)
         now = self._clock.now()
@@ -76,12 +79,12 @@ class TotpUseCase:
         ):
             await self._failure(actor, context)
         await self._refresh.revoke_all_for_user(actor.id, now)
+        actor.security_version += 1
+        await self._users.save(actor)
         await self._record(AuditAction.TOTP_ENABLED, actor, context)
 
     async def verify_login(self, user: User, code: str | None) -> bool:
         """The caller applies login rate limits and commits code consumption with the session."""
-        if not user.is_admin:
-            return True
         state = await self._repo.get(user.id)
         if state is None or state.secret_encrypted is None:
             return True
@@ -95,7 +98,7 @@ class TotpUseCase:
         code: str,
         context: RequestContext,
     ) -> None:
-        await self._authorise(actor, password, context)
+        actor = await self._authorise(actor, password, context)
         state = await self._repo.get(actor.id)
         if state is None or not state.enabled:
             raise InvalidRequest("TOTP is not enabled.")
@@ -106,22 +109,33 @@ class TotpUseCase:
     async def recover_local(self, actor: User, password: str) -> None:
         """Host-only recovery, deliberately unavailable through any HTTP route."""
         context = RequestContext(ip=None, user_agent="local-cli")
-        await self._authorise(actor, password, context)
+        actor = await self._authorise(actor, password, context)
         await self._remove(actor, context, AuditAction.TOTP_RECOVERED)
 
     async def _remove(self, actor: User, context: RequestContext, action: AuditAction) -> None:
         await self._repo.clear(actor.id)
         await self._refresh.revoke_all_for_user(actor.id, self._clock.now())
+        actor.security_version += 1
+        await self._users.save(actor)
         await self._record(action, actor, context)
 
-    async def _authorise(self, actor: User, password: str, context: RequestContext) -> None:
+    async def _lock_actor(self, actor: User) -> User:
         self._require_active_admin(actor)
+        current = await self._users.lock_by_id(actor.id)
+        if current is None or current.security_version != actor.security_version:
+            raise Forbidden()
+        self._require_active_admin(current)
+        return current
+
+    async def _authorise(self, actor: User, password: str, context: RequestContext) -> User:
+        actor = await self._lock_actor(actor)
         self._limit(actor, context)
         if not actor.can_log_in(self._clock.now()) or not self._hasher.verify(
             actor.password_hash or "",
             password,
         ):
             await self._failure(actor, context)
+        return actor
 
     def _limit(self, actor: User, context: RequestContext) -> None:
         for key in (f"totp:user:{actor.id}", f"totp:ip:{context.ip}"):

@@ -29,7 +29,7 @@ export function ModeToolbar({ mode, onChange }: ModeToolbarProps) {
             onClick={() => {
               onChange(option.value);
             }}
-            className={`px-3 py-1.5 text-sm transition-colors ${
+            className={`min-h-11 px-3 py-1.5 text-sm transition-colors lg:min-h-0 ${
               active ? 'bg-ember text-ground' : 'text-muted hover:bg-surface-2 hover:text-text'
             }`}
           >

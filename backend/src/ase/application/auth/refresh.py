@@ -50,8 +50,11 @@ class RefreshUseCase:
             await self._reject_reuse(token, now, context)
         if not token.is_valid(now):
             raise InvalidRefreshToken()
-        user = await self._users.get_by_id(token.user_id)
+        user = await self._users.lock_by_id(token.user_id)
+        now = self._clock.now()
         if user is None or not user.is_active:
+            raise InvalidRefreshToken()
+        if not token.is_valid(now):
             raise InvalidRefreshToken()
         # A stale read must never issue a second child. The claim and child creation
         # commit together; a competing claim waits and then fails against the DB state.
@@ -75,7 +78,6 @@ class RefreshUseCase:
             AuditAction.REFRESH_REUSE_DETECTED,
             actor=token.user_id,
             ip=context.ip,
-            details={"family_id": str(token.family_id)},
         )
         await self._uow.commit()
         raise InvalidRefreshToken()

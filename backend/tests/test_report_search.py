@@ -13,7 +13,7 @@ from sqlalchemy import select
 from ase.adapters.persistence.models import ReportRow
 from ase.adapters.persistence.report_search import ReportEmbeddingRow, SqlReportEmbeddingRepository
 from ase.container import Container
-from ase.domain.errors import Forbidden, InvalidRequest, NoModelAvailable, RateLimited
+from ase.domain.errors import InvalidRequest, NoModelAvailable, RateLimited, Unauthenticated
 from ase.domain.report_search import IndexedReport, profile_fingerprint
 from ase.domain.users import User
 from report_search_helpers import FakeEmbeddings, add_profile, add_report, service
@@ -33,8 +33,10 @@ async def test_unavailable_empty_and_object_policy(container: Container, user: U
         assert (await search.index(user)).total == 0
         assert not (await search.query(user, "Shipping")).items
         assert not gateway.calls
-        with pytest.raises(Forbidden):
-            await search.status(replace(user, is_active=False))
+        await container.repositories(session).users.save(replace(user, is_active=False))
+        await session.commit()
+        with pytest.raises(Unauthenticated):
+            await search.status(user)
 
 
 async def test_semantic_rank_cache_usage_and_changed_models(
@@ -44,7 +46,7 @@ async def test_semantic_rank_cache_usage_and_changed_models(
     async with container.session_factory() as session:
         profile = await add_profile(container, session)
         shipping, _ = await add_report(container, session, user)
-        space, _ = await add_report(container, session, admin, "Space debris")
+        space, _ = await add_report(container, session, user, "Space debris")
         search = service(container, session, gateway)
         assert (await search.index(user)).indexed == 2
         assert (await search.index(user)).indexed == 2

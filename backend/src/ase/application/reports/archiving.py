@@ -11,17 +11,15 @@ from dataclasses import replace
 from ase.application.ports import UnitOfWork
 from ase.application.ports.archive import Archiver
 from ase.application.ports.reports import ReportRepository
+from ase.application.reports.export_text import safe_url
+from ase.application.reports.frozen_header import frozen_period_line
 from ase.application.reports.render import render_markdown
 from ase.domain.evidence import EvidenceItem
 from ase.domain.report_records import ReportVersion
 
 
 def archivable(item: EvidenceItem) -> bool:
-    return (
-        bool(item.url)
-        and item.archive_url is None
-        and str(item.url).lower().startswith(("http://", "https://"))
-    )
+    return bool(item.url) and item.archive_url is None and safe_url(item.url) is not None
 
 
 async def archive_evidence(
@@ -31,7 +29,9 @@ async def archive_evidence(
     record = await reports.get(version.report_id)
     if record is None:
         return 0
-    cited = version.body.cited_labels()
+    cited = version.body.cited_labels() | frozenset(
+        version.advocacy.evidence if version.advocacy else ()
+    )
     archives: dict[str, str] = {}
     for item in version.evidence:
         if item.label not in cited or not archivable(item) or item.url is None:
@@ -54,6 +54,8 @@ async def archive_evidence(
         version.findings,
         direction=version.direction,
         advocacy=version.advocacy,
+        status=version.status,
+        period_line=frozen_period_line(record, version),
     )
     await reports.set_archives(version.id, archives, markdown)
     await uow.commit()

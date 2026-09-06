@@ -1,4 +1,4 @@
-"""Areas of interest: any user creates them, the owner or an admin removes them."""
+"""Personal/team areas of interest with authoritative read and mutation policy."""
 
 from __future__ import annotations
 
@@ -7,13 +7,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import AoiRepository
 from ase.domain.audit import AuditAction
 from ase.domain.collection import AREA_KINDS, AreaOfInterest
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound
+from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import BoundingBox
 from ase.domain.users import User
 
@@ -25,6 +26,7 @@ class AoiInput:
     bbox: tuple[float, float, float, float] | None = None
     countries: Sequence[str] = ()
     description: str = ""
+    team_id: UUID | None = None
 
 
 def build_area(data: AoiInput, actor: User, aoi_id: UUID, now: datetime) -> AreaOfInterest:
@@ -56,19 +58,28 @@ def build_area(data: AoiInput, actor: User, aoi_id: UUID, now: datetime) -> Area
         created_by=actor.id,
         created_at=now,
         description=" ".join(data.description.split())[:1000],
+        team_id=data.team_id,
     )
 
 
 class CreateAoiUseCase:
     def __init__(
-        self, aois: AoiRepository, clock: Clock, auditor: Auditor, uow: UnitOfWork
+        self,
+        aois: AoiRepository,
+        clock: Clock,
+        auditor: Auditor,
+        uow: UnitOfWork,
+        access: AccessPolicy,
     ) -> None:
         self._aois = aois
         self._clock = clock
         self._auditor = auditor
         self._uow = uow
+        self._access = access
 
     async def execute(self, actor: User, data: AoiInput, context: RequestContext) -> AreaOfInterest:
+        decision = await self._access.context(actor, for_update=True)
+        decision.require_create(data.team_id)
         area = build_area(data, actor, uuid4(), self._clock.now())
         await self._aois.add(area)
         await self._auditor.record(
@@ -80,25 +91,30 @@ class CreateAoiUseCase:
 
 
 class ListAoisUseCase:
-    def __init__(self, aois: AoiRepository) -> None:
+    def __init__(self, aois: AoiRepository, access: AccessPolicy) -> None:
         self._aois = aois
+        self._access = access
 
     async def execute(self, actor: User) -> list[AreaOfInterest]:
-        return await self._aois.list_all()
+        decision = await self._access.context(actor)
+        return await self._aois.list_visible(decision.visibility)
 
 
 class DeleteAoiUseCase:
-    def __init__(self, aois: AoiRepository, auditor: Auditor, uow: UnitOfWork) -> None:
+    def __init__(
+        self, aois: AoiRepository, auditor: Auditor, uow: UnitOfWork, access: AccessPolicy
+    ) -> None:
         self._aois = aois
         self._auditor = auditor
         self._uow = uow
+        self._access = access
 
     async def execute(self, actor: User, aoi_id: UUID, context: RequestContext) -> None:
+        decision = await self._access.context(actor, for_update=True)
         area = await self._aois.get(aoi_id)
         if area is None:
             raise NotFound()
-        if area.created_by != actor.id and not actor.is_admin:
-            raise Forbidden()
+        decision.require_write(area.created_by, area.team_id)
         await self._aois.delete(aoi_id)
         await self._auditor.record(
             AuditAction.AOI_DELETED, actor=actor.id, subject=str(aoi_id), ip=context.ip

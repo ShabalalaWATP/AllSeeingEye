@@ -1,10 +1,13 @@
 /** Warning: indicators over the live picture and the alerts they raise. */
 import { z } from 'zod';
 
-import { categorySchema } from './eventSchemas';
+import { scopedMutation } from '@/lib/workspaceAccess';
+import type { components } from './types.gen';
+
 import { apiCall, apiSend } from './client';
 
 export const indicatorSchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -26,6 +29,7 @@ export const indicatorSchema = z.object({
 export type Indicator = z.infer<typeof indicatorSchema>;
 
 export const alertSchema = z.object({
+  team_id: z.uuid().nullable(),
   id: z.string(),
   indicator_id: z.string(),
   fired_at: z.string(),
@@ -47,21 +51,7 @@ export const alertsPageSchema = z.object({
 });
 export type AlertsPage = z.infer<typeof alertsPageSchema>;
 
-export interface IndicatorRequest {
-  name: string;
-  description?: string;
-  plan_id?: string | null;
-  countries?: string[];
-  bbox?: [number, number, number, number] | null;
-  categories?: z.infer<typeof categorySchema>[];
-  keywords?: string[];
-  threshold?: number;
-  window_minutes?: number;
-  cooldown_minutes?: number;
-  severity_floor?: number;
-  report_template?: string | null;
-  enabled?: boolean;
-}
+export type IndicatorRequest = components['schemas']['IndicatorIn'];
 
 export async function fetchIndicators(): Promise<Indicator[]> {
   const page = await apiCall('/api/warning/indicators', {
@@ -71,23 +61,29 @@ export async function fetchIndicators(): Promise<Indicator[]> {
 }
 
 export function createIndicator(request: IndicatorRequest): Promise<Indicator> {
-  return apiCall('/api/warning/indicators', {
-    method: 'POST',
-    body: request,
-    schema: indicatorSchema,
-  });
+  return scopedMutation(() =>
+    apiCall('/api/warning/indicators', {
+      method: 'POST',
+      body: request,
+      schema: indicatorSchema,
+    }),
+  );
 }
 
 export function updateIndicator(id: string, request: IndicatorRequest): Promise<Indicator> {
-  return apiCall(`/api/warning/indicators/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    body: request,
-    schema: indicatorSchema,
-  });
+  return scopedMutation(() =>
+    apiCall(`/api/warning/indicators/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: request,
+      schema: indicatorSchema,
+    }),
+  );
 }
 
 export function deleteIndicator(id: string): Promise<void> {
-  return apiSend(`/api/warning/indicators/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  return scopedMutation(() =>
+    apiSend(`/api/warning/indicators/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  );
 }
 
 export function fetchAlerts(hours?: number): Promise<AlertsPage> {
@@ -96,8 +92,10 @@ export function fetchAlerts(hours?: number): Promise<AlertsPage> {
 }
 
 export function acknowledgeAlert(id: string): Promise<Alert> {
-  return apiCall(`/api/warning/alerts/${encodeURIComponent(id)}/ack`, {
-    method: 'POST',
-    schema: alertSchema,
-  });
+  return scopedMutation(() =>
+    apiCall(`/api/warning/alerts/${encodeURIComponent(id)}/ack`, {
+      method: 'POST',
+      schema: alertSchema,
+    }),
+  );
 }

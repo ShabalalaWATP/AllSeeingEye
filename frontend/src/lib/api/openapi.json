@@ -389,6 +389,289 @@
         ]
       }
     },
+    "/api/teams": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "List Teams",
+        "operationId": "list_teams_api_teams_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Create Team",
+        "operationId": "create_team_api_teams_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/{team_id}": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Get Team",
+        "operationId": "get_team_api_teams__team_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Update Team",
+        "operationId": "update_team_api_teams__team_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/members": {
+      "put": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Set Member",
+        "operationId": "set_member_api_teams__team_id__members_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembershipOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/members/{user_id}": {
+      "delete": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Remove Member",
+        "operationId": "remove_member_api_teams__team_id__members__user_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me": {
       "get": {
         "tags": [
@@ -403,6 +686,45 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/me/password": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Change Password",
+        "operationId": "change_password_api_me_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3329,6 +3651,30 @@
               }
             ],
             "title": "Report Id"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "type": "object",
@@ -3344,7 +3690,9 @@
           "countries",
           "acknowledged_at",
           "acknowledged_by",
-          "report_id"
+          "report_id",
+          "created_by",
+          "team_id"
         ],
         "title": "AlertOut"
       },
@@ -3371,6 +3719,18 @@
       },
       "AoiIn": {
         "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
           "name": {
             "type": "string",
             "maxLength": 120,
@@ -3422,6 +3782,18 @@
       },
       "AoiOut": {
         "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -3473,6 +3845,7 @@
         },
         "type": "object",
         "required": [
+          "team_id",
           "id",
           "name",
           "description",
@@ -3840,6 +4213,41 @@
           "changed"
         ],
         "title": "ChangeKind"
+      },
+      "ChangePasswordIn": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "New Password"
+          },
+          "totp_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Totp Code"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordIn"
       },
       "ConflictBoardOut": {
         "properties": {
@@ -4744,6 +5152,18 @@
             "type": "boolean",
             "title": "Enabled",
             "default": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "additionalProperties": false,
@@ -4860,6 +5280,18 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "type": "object",
@@ -4880,7 +5312,8 @@
           "enabled",
           "created_by",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "team_id"
         ],
         "title": "IndicatorOut"
       },
@@ -5380,6 +5813,107 @@
         ],
         "title": "MaritimeBoardOut"
       },
+      "MemberIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MembershipRole",
+            "default": "member"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "MemberIn"
+      },
+      "MemberOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "account_role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MembershipRole"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Joined At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "email",
+          "display_name",
+          "account_role",
+          "is_active",
+          "role",
+          "joined_at"
+        ],
+        "title": "MemberOut"
+      },
+      "MembershipOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MembershipRole"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Joined At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "user_id",
+          "role",
+          "joined_at"
+        ],
+        "title": "MembershipOut"
+      },
+      "MembershipRole": {
+        "type": "string",
+        "enum": [
+          "member",
+          "manager"
+        ],
+        "title": "MembershipRole"
+      },
       "MessageOut": {
         "properties": {
           "message": {
@@ -5480,6 +6014,18 @@
       },
       "PlanIn": {
         "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
           "name": {
             "type": "string",
             "maxLength": 120,
@@ -5536,6 +6082,18 @@
       },
       "PlanOut": {
         "properties": {
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -5597,6 +6155,7 @@
         },
         "type": "object",
         "required": [
+          "team_id",
           "id",
           "name",
           "description",
@@ -5866,6 +6425,18 @@
               }
             ],
             "title": "Plan"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "type": "object",
@@ -5873,6 +6444,227 @@
           "template"
         ],
         "title": "ReportCreateIn"
+      },
+      "ReportEvidenceOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "independence_key": {
+            "type": "string",
+            "title": "Independence Key"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Published At"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "grade_rationale": {
+            "type": "string",
+            "title": "Grade Rationale"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "instrument": {
+            "type": "boolean",
+            "title": "Instrument"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "archive_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive Url"
+          },
+          "title_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title En"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "geo_confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geo Confidence"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "story_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Story Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "event_id",
+          "source_id",
+          "source_name",
+          "independence_key",
+          "category",
+          "title",
+          "summary",
+          "url",
+          "published_at",
+          "captured_at",
+          "grade",
+          "reliability",
+          "credibility",
+          "grade_rationale",
+          "lon",
+          "lat",
+          "country_iso",
+          "content_hash",
+          "instrument",
+          "flags",
+          "archive_url"
+        ],
+        "title": "ReportEvidenceOut"
       },
       "ReportOut": {
         "properties": {
@@ -6044,6 +6836,18 @@
           "latest_version": {
             "type": "integer",
             "title": "Latest Version"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "type": "object",
@@ -6057,12 +6861,49 @@
           "status",
           "created_by",
           "created_at",
-          "latest_version"
+          "latest_version",
+          "team_id"
         ],
         "title": "ReportSummaryOut"
       },
       "ReportVersionOut": {
         "properties": {
+          "period_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period From"
+          },
+          "period_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period To"
+          },
+          "data_cutoff": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Cutoff"
+          },
           "number": {
             "type": "integer",
             "title": "Number"
@@ -6087,8 +6928,7 @@
           },
           "evidence": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/ReportEvidenceOut"
             },
             "type": "array",
             "title": "Evidence"
@@ -6168,6 +7008,9 @@
         },
         "type": "object",
         "required": [
+          "period_from",
+          "period_to",
+          "data_cutoff",
           "number",
           "status",
           "body",
@@ -6267,6 +7110,7 @@
         "type": "string",
         "enum": [
           "user",
+          "manager",
           "admin"
         ],
         "title": "Role"
@@ -6346,6 +7190,18 @@
             "type": "boolean",
             "title": "Enabled",
             "default": true
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "additionalProperties": false,
@@ -6470,6 +7326,18 @@
               }
             ],
             "title": "Last Error"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
           }
         },
         "type": "object",
@@ -6489,7 +7357,8 @@
           "next_run_at",
           "last_run_at",
           "last_report_id",
-          "last_error"
+          "last_error",
+          "team_id"
         ],
         "title": "ScheduleOut"
       },
@@ -7122,6 +7991,131 @@
           "max_severity"
         ],
         "title": "TallyOut"
+      },
+      "TeamDetailOut": {
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/TeamOut"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/MemberOut"
+            },
+            "type": "array",
+            "title": "Members"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "members"
+        ],
+        "title": "TeamDetailOut"
+      },
+      "TeamIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "TeamIn"
+      },
+      "TeamOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "is_active",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TeamOut"
+      },
+      "TeamUpdateIn": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TeamUpdateIn"
+      },
+      "TeamsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TeamOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "TeamsOut"
       },
       "TemplateOut": {
         "properties": {

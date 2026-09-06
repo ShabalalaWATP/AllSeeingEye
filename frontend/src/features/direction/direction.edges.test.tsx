@@ -32,7 +32,7 @@ describe('direction form edges', () => {
     await user.type(within(areaForm).getByLabelText('West, south, east, north'), '1, 2');
     await user.click(within(areaForm).getByRole('button', { name: 'Add area' }));
     await waitFor(() => {
-      expect(captured).toEqual({ name: 'Broken box', kind: 'bbox' });
+      expect(captured).toEqual({ name: 'Broken box', description: '', kind: 'bbox' });
     });
     expect(await screen.findByText('Area boom')).toBeInTheDocument();
     const planForm = screen.getByRole('form', { name: 'New collection plan' });

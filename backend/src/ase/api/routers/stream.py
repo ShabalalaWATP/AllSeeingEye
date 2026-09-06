@@ -15,15 +15,41 @@ from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.routers.events import parse_categories
 from ase.api.schemas_events import EventOut, SourceHealthOut
 from ase.api.schemas_warning import AlertOut
+from ase.application.access import AccessContext
+from ase.application.auth.current_session import validate_current_session
+from ase.application.dto import AccessClaims
 from ase.application.feeds.health import SourceHealth
 from ase.application.ports.feeds import BusMessage
-from ase.domain.errors import RateLimited
+from ase.container import Container
+from ase.domain.errors import NotFound, RateLimited, Unauthenticated
 from ase.domain.events import Category, Event
 from ase.domain.warning import Alert
 
 router = APIRouter(tags=["stream"])
 PING_SECONDS = 15
 STREAM_RETRY_SECONDS = 15
+
+
+async def _stream_access(claims: AccessClaims, container: Container) -> AccessContext | None:
+    # A stream cannot reuse the request transaction: each delivery must observe
+    # committed logout, credential changes and account deactivation.
+    async with container.session_factory() as session:
+        repos = container.repositories(session)
+        try:
+            actor = await validate_current_session(
+                claims, repos.users, repos.refresh_tokens, container.clock
+            )
+            return await container.access_policy(session).context(actor)
+        except Unauthenticated:
+            return None
+
+
+def _access_signature(access: AccessContext) -> tuple[Any, ...]:
+    return (
+        access.actor.role,
+        sorted((str(key), role.value) for key, role in access.memberships.items()),
+        sorted((str(key), team.is_active) for key, team in access.teams.items()),
+    )
 
 
 def _serialise_upsert(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any] | None:
@@ -59,6 +85,25 @@ def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any
     return None
 
 
+async def _authorised_payload(
+    message: BusMessage, wanted: frozenset[Category], claims: AccessClaims, container: Container
+) -> dict[str, Any] | None:
+    if message.kind == "alert":
+        alert = message.payload.get("alert")
+        if not isinstance(alert, Alert):
+            return None
+        # An access.changed frame can yield to a slow client before this payload.
+        # Re-read here so a queued alert never borrows authority from before that yield.
+        access = await _stream_access(claims, container)
+        if access is None:
+            return None
+        try:
+            access.require_read(alert.created_by, alert.team_id)
+        except NotFound:
+            return None
+    return serialise(message, wanted)
+
+
 @router.get("/stream")
 async def stream(
     user: CurrentUser,
@@ -77,6 +122,11 @@ async def stream(
     async def generate() -> AsyncIterator[dict[str, str]]:
         subscription = container.bus.subscribe()
         try:
+            access = await _stream_access(claims, container)
+            if access is None:
+                yield {"event": "bye", "data": json.dumps({"reason": "session_revoked"})}
+                return
+            signature = _access_signature(access)
             yield {
                 "event": "hello",
                 "data": json.dumps({"expires_in": int((deadline - now).total_seconds())}),
@@ -91,10 +141,23 @@ async def stream(
                     async with asyncio.timeout(min(remaining, PING_SECONDS)):
                         message = await anext(aiter(subscription))
                 except TimeoutError:
-                    continue
+                    message = None
                 except StopAsyncIteration:
                     return
-                payload = serialise(message, wanted)
+                if container.clock.now() >= deadline:
+                    yield {"event": "bye", "data": json.dumps({"reason": "token_expired"})}
+                    return
+                access = await _stream_access(claims, container)
+                if access is None:
+                    yield {"event": "bye", "data": json.dumps({"reason": "session_revoked"})}
+                    return
+                current_signature = _access_signature(access)
+                if signature != current_signature:
+                    signature = current_signature
+                    yield {"event": "access.changed", "data": "{}"}
+                if message is None:
+                    continue
+                payload = await _authorised_payload(message, wanted, claims, container)
                 if payload is not None:
                     yield {"event": message.kind, "data": json.dumps(payload)}
         finally:

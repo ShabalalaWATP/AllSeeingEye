@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Protocol
 from uuid import UUID
 
+from ase.domain.access import Visibility
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 
@@ -22,4 +23,5 @@ class ReportRepository(Protocol):
         ...
 
     async def list_recent(self, limit: int) -> list[ReportRecord]: ...
+    async def list_visible(self, visibility: Visibility, limit: int) -> list[ReportRecord]: ...
     async def delete(self, report_id: UUID) -> None: ...

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Protocol
+from uuid import UUID
 
 from ase.application.dto import AccessClaims, IssuedAccessToken
 from ase.domain.tokens import TokenPurpose
@@ -16,7 +17,7 @@ class PasswordHasher(Protocol):
 
 
 class AccessTokenIssuer(Protocol):
-    def issue(self, user: User) -> IssuedAccessToken: ...
+    def issue(self, user: User, family_id: UUID) -> IssuedAccessToken: ...
     def verify(self, token: str) -> AccessClaims: ...
 
 

@@ -12,8 +12,9 @@ from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmProfile, LlmRequest
+from ase.domain.report_input import parse_model_body
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
-from ase.domain.reports import KeyJudgement, ReportBody, ReportHeader, ReportParseError, parse_body
+from ase.domain.reports import KeyJudgement, ReportBody, ReportHeader, ReportParseError
 from ase.domain.validation import Finding, Severity, validate_body
 
 MAX_ATTEMPTS = 2
@@ -83,7 +84,7 @@ async def draft_body(
         draft.completion_tokens = (draft.completion_tokens or 0) + (result.completion_tokens or 0)
         draft.latency_ms += result.latency_ms
         try:
-            parsed = parse_body(json.loads(result.content))
+            parsed = parse_model_body(json.loads(result.content))
         except RecursionError:
             draft.findings = [
                 Finding("schema", Severity.ERROR, "output", "Model JSON is nested too deeply.")
@@ -98,6 +99,7 @@ async def draft_body(
             urls,
             confidence_ceiling=quality.confidence_ceiling,
             previous_exists=bool(previous),
+            evidence_items=evidence,
         )
         draft.body = validated.body
         draft.findings = list(validated.findings)

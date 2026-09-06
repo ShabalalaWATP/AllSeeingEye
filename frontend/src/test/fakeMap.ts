@@ -36,6 +36,10 @@ export class FakeMap {
     return this;
   });
   readonly setProjection = vi.fn();
+  readonly setStyle = vi.fn(() => {
+    this.sources.clear();
+    this.layers.splice(0, this.layers.length, ...FAKE_STYLE_LAYERS.map((layer) => ({ ...layer })));
+  });
   readonly setSky = vi.fn();
   readonly setPaintProperty = vi.fn();
   readonly flyTo = vi.fn();

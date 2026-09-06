@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from ase.domain.collection import CollectionPlan, numbered
 from ase.domain.events import Category, Event
 from ase.domain.social import SocialBaseline, WatchedTerm
+from ase.domain.users import User
 from feeds_helpers import NOW, make_event
 
 
@@ -43,6 +44,11 @@ class FixedTerms:
 
     async def configured(self) -> tuple[WatchedTerm, ...]:
         return self.terms
+
+    async def visible_to(self, actor: User) -> tuple[WatchedTerm, ...]:
+        return tuple(
+            term for term in self.terms if term.public or actor.is_admin or actor.id in term.owners
+        )
 
 
 class MemoryActivity:
