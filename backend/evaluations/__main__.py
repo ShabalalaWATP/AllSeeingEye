@@ -66,6 +66,8 @@ async def run_evaluation(args: argparse.Namespace) -> Path:
     if requested - {case.id for case in cases}:
         raise ValueError("An unknown case id was requested.")
     cases = [case for case in cases if not requested or case.id in requested]
+    if configuration.research_mode and any(case.replay is None for case in cases):
+        raise ValueError("Research evaluation requires replay scenarios for every selected case.")
     run_id = str(uuid4())
     output = args.out or Path(__file__).parent / "runs" / run_id
     output.mkdir(parents=True, exist_ok=False)
@@ -77,6 +79,8 @@ async def run_evaluation(args: argparse.Namespace) -> Path:
         "configuration": configuration.model_dump(mode="json"),
         "max_calls": args.max_calls,
         "cases": [],
+        "status": "running",
+        "active_case": None,
         "notice": "Synthetic cases and assistant-authored rubrics, pending human validation. "
         "Structural metrics are not factual accuracy or doctrine certification. Human semantic "
         "metrics remain uncomputed until an attributed review is supplied.",
@@ -86,14 +90,27 @@ async def run_evaluation(args: argparse.Namespace) -> Path:
         # profile, feed collector or archiving path is opened by this harness.
         key = os.environ.get("ASE_EVAL_API_KEY", "")
         for case in cases:
+            results["active_case"] = case.id
             result = await evaluate_case(case, configuration, recording, key)
             results["cases"].append(result)
             (output / f"{case.id}.md").write_bytes(result["report"]["markdown"].encode())
             results["model_calls"] = len(recording.records)
             (output / "results.json").write_bytes(json_bytes(results))
         (output / "review.json").write_bytes(json_bytes(review_template(results)))
+        results["status"] = "completed"
+        results["active_case"] = None
     finally:
-        await gateway.aclose()
+        # Preserve failed-case calls too, without persisting arbitrary exception
+        # messages. An interrupted run must never look like a completed sample.
+        if results["status"] == "running":
+            results["status"] = "interrupted"
+        results["model_calls"] = len(recording.records)
+        results["model_call_records"] = recording.records
+        results["finished_at"] = datetime.now(UTC).isoformat()
+        try:
+            (output / "results.json").write_bytes(json_bytes(results))
+        finally:
+            await gateway.aclose()
     return output
 
 

@@ -1,0 +1,15 @@
+{
+  "name": "Research replay evaluation",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "model": "REPLACE_WITH_YOUR_MODEL_NAME",
+  "max_output_tokens": 4000,
+  "temperature": 0,
+  "direction": true,
+  "advocacy": true,
+  "research_mode": "detailed",
+  "research_languages": [
+    "en",
+    "fr",
+    "de"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "research_unavailable",
+  "title": "No supplied evidence for a fictional hospital supply question",
+  "question": "Do hospitals in fictional Inland Province have enough oxygen for the next seven days?",
+  "as_of": "2026-09-06T12:00:00Z",
+  "sources": [
+    {
+      "id": "coastal_weather",
+      "name": "Fictional coastal weather station",
+      "organisation": "weather",
+      "instrument": true
+    }
+  ],
+  "events": [
+    {
+      "key": "unrelated_weather",
+      "source": "coastal_weather",
+      "title": "Coastal station records 4 millimetres of rain",
+      "summary": "This station measures coastal rainfall. It supplies no data on Inland Province, hospitals, oxygen stocks, delivery routes or demand.",
+      "published_at": "2026-09-06T10:00:00Z",
+      "reliability": "B"
+    }
+  ],
+  "reference": {
+    "reference_facts": [
+      "The supplied packet contains no hospital stock, demand or delivery evidence."
+    ],
+    "required_caveats": [
+      "State that the question cannot be answered from this packet.",
+      "Request stock, consumption and delivery information rather than treating silence as safety."
+    ],
+    "forbidden_inferences": [
+      "Oxygen supplies are adequate because no shortage is reported.",
+      "A shortage is certain.",
+      "Rainfall establishes hospital stock levels."
+    ]
+  },
+  "replay": {
+    "initial": [
+      {
+        "id": "hospital_registry",
+        "status": "unavailable"
+      },
+      {
+        "id": "public_news",
+        "status": "empty"
+      }
+    ],
+    "challenge": [
+      {
+        "id": "hospital_registry",
+        "status": "unavailable"
+      },
+      {
+        "id": "public_news",
+        "status": "empty"
+      }
+    ]
+  }
+}

@@ -4,7 +4,7 @@ import hashlib
 import json
 import secrets
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -24,9 +24,11 @@ from ase.domain.report_records import (
     findings_to_list,
     quality_to_dict,
 )
+from ase.domain.research import ResearchMode, ResearchQuery
 from ase.domain.users import Role, User
 from evaluations.casebook import EvaluationCase
 from evaluations.metrics import deterministic_metrics
+from evaluations.replay import ResearchReplay
 
 
 class EvaluationProfile(BaseModel):
@@ -40,6 +42,15 @@ class EvaluationProfile(BaseModel):
     temperature: float = Field(default=0.0, ge=0, le=2)
     direction: bool = False
     advocacy: bool = False
+    research_mode: ResearchMode | None = None
+    research_languages: tuple[str, ...] = ("en",)
+
+    @field_validator("research_languages")
+    @classmethod
+    def language_codes(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        # Reuse the production language contract without maintaining a second regex.
+        now = datetime.now(UTC)
+        return ResearchQuery("Evaluation", now - timedelta(hours=1), now, values).languages
 
     @field_validator("base_url")
     @classmethod
@@ -100,7 +111,9 @@ async def evaluate_case(
     api_key: str,
 ) -> dict[str, Any]:
     store = InMemoryEventStore()
-    store.upsert(case.graded_events())
+    replay = ResearchReplay(case) if configuration.research_mode else None
+    if replay is None:
+        store.upsert(case.graded_events())
     cipher = FernetCipher(secrets.token_urlsafe(32))
     roles = {LlmRole.ASSESSMENT}
     if configuration.direction:
@@ -141,6 +154,8 @@ async def evaluate_case(
         cipher=cipher,
         gateway=gateway,
         usage=usage,
+        research=replay.collection if replay else None,
+        private_store_factory=InMemoryEventStore if replay else None,
     )
     template = template_for("ask" if configuration.direction else "intrep")
     request = ReportRequest(
@@ -148,6 +163,8 @@ async def evaluate_case(
         question=case.question,
         window_hours=case.window_hours,
         devils_advocacy=configuration.advocacy,
+        research_mode=configuration.research_mode,
+        research_languages=configuration.research_languages,
     )
     job = Job(
         actor,
@@ -181,10 +198,24 @@ async def evaluate_case(
         "latency_ms": version.latency_ms,
         "model_calls": gateway.records[start:],
     }
+    metrics = deterministic_metrics(case, report)
+    if replay:
+        # Labels can identify different events after the challenge redraft. Comparing
+        # every raw answer to the final packet would conceal or invent citation errors.
+        metrics["raw_citation_reference_validity"] = {
+            "numerator": 0,
+            "denominator": 0,
+            "value": None,
+        }
+        metrics["raw_citation_reference_validity_limitation"] = (
+            "Not scored for replay: labels can change between initial and final drafts. "
+            "Review each recorded answer against its own recorded prompt."
+        )
     return {
         "case_id": case.id,
         "case_sha256": case.fingerprint,
         "reference": case.reference.model_dump(mode="json"),
         "report": report,
-        "deterministic": deterministic_metrics(case, report),
+        "deterministic": metrics,
+        "collection_evaluation": replay.result() if replay else {"kind": "fixed_packet"},
     }

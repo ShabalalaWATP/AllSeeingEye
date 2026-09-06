@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.domain.events import Category, Event, Reliability, content_hash, event_id
 from ase.domain.grading import SourceProfile, grade_events
+from evaluations.replay import ReplayScenario
 
 CASE_DIRECTORY = Path(__file__).parent / "cases"
 MAX_CASE_BYTES = 128_000
@@ -56,6 +57,7 @@ class EvaluationCase(BaseModel):
     sources: list[CaseSource] = Field(max_length=30)
     events: list[CaseEvent] = Field(max_length=50)
     reference: ReferenceRubric
+    replay: ReplayScenario | None = None
 
     @model_validator(mode="after")
     def consistent_labels(self) -> "EvaluationCase":
@@ -68,6 +70,11 @@ class EvaluationCase(BaseModel):
         required = self.reference.required_event_keys + self.reference.counterevidence_event_keys
         if not set(required) <= set(keys):
             raise ValueError("Every reference event key must identify a case event.")
+        if self.replay is not None and any(
+            not set(packet.event_keys) <= set(keys)
+            for packet in (*self.replay.initial, *self.replay.challenge)
+        ):
+            raise ValueError("Every replay event key must identify a case event.")
         if self.as_of.tzinfo is None or any(
             event.published_at.tzinfo is None for event in self.events
         ):

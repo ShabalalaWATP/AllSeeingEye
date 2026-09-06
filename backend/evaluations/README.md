@@ -32,6 +32,13 @@ Output directories must be new. Calls are serial and each has a timeout. The glo
 
 Each run writes `results.json`, a Markdown report per case, and `review.json`. Results include case fingerprints, actual prompts, model responses and the app's final validated output so retries or citation removal cannot hide raw-output defects. Keep these artefacts together. Output files are local and `evaluations/runs/` is ignored by git.
 
+On an exception or cancellation, `results.json` retains completed cases and all
+recorded model calls, including the unfinished case. Its status is `interrupted`
+and `active_case` identifies the unfinished case. Arbitrary exception messages
+are not saved. Completed runs have status `completed`; an interrupted run is
+not a complete evaluation sample. A process kill or filesystem failure can still
+prevent the final checkpoint from being written.
+
 ## What the measurements mean
 
 Deterministic metrics check whether citation labels resolve, how many statement fields lack supporting citations, whether specified evidence was selected or referenced, declared organisation grouping and validator findings. A resolving label does not mean the cited item supports the claim. Counterevidence reference recall is measured in any citation role because a correction can become supporting evidence for a revised judgement. It does not establish that the model addressed the contradiction adequately. Null ratios mean there was no applicable denominator, not a perfect score.
@@ -50,6 +57,41 @@ uv run python -m evaluations score --results evaluations/runs/first-check/result
 
 Scoring rejects mismatched run, case or statement fingerprints, duplicate labels and non-boolean semantic values. Its outputs are explicitly attributed to **self-declared human review**. The harness cannot authenticate the reviewer or turn assistant-written references into human labels. Unsupported-statement rates and citation relationship correctness remain separate from structural checks, with no aggregate “accuracy” number.
 
+## Automated research replay
+
+An optional replay mode exercises the production private collector, request
+budgets, direction, initial draft, detailed challenge and possible redraft. Its
+providers return explicit synthetic packets rather than make HTTP requests.
+Initial and challenge packets are defined separately from reference rubrics;
+counterevidence is not silently inserted into the initial evidence store.
+
+Copy `example-research-profile.json`, supply the intended endpoint and model, and
+use the separate research casebook:
+
+```powershell
+uv run python -m evaluations validate --cases-dir evaluations/research_cases
+uv run python -m evaluations run --profile evaluations/local-research-profile.json --cases-dir evaluations/research_cases --max-calls 24 --out evaluations/runs/research-check
+```
+
+The run command makes real model calls. Validation and scripted tests do not.
+The two assistant-authored scenarios cover later-discovered correction evidence
+and unavailable collection. Neither has been human validated. `research_mode`
+accepts `quick` or `detailed`; omit it for the original fixed-packet workflow.
+Enable `direction` and `advocacy` to provide the model roles used for planning
+and detailed challenge. Every selected research case must declare a replay
+scenario, checked before constructing a gateway or creating output.
+
+Outputs retain provider calls, query terms and languages, collection receipts,
+challenge decisions, citation checks and evidence context. Replay packets are
+returned independently of query relevance: this does not measure live retrieval,
+source availability or the effectiveness of generated search terms. Human review
+must still assess the model's reasoning and treatment of new evidence.
+
+Raw citation-reference validity is unscored in replay mode because labels can
+refer to different evidence after redrafting. The recorded prompts and responses
+allow review against each draft's own packet; final citation-reference checks
+remain available. This avoids comparing an earlier answer with the wrong packet.
+
 ## Integration boundary and remaining validation
 
-`evaluations.pipeline.evaluate_case(case, profile, recording_gateway, api_key)` is the reusable integration hook. Tests pass a scripted gateway through the same `Producer`; actual runs use the existing `OpenAiCompatibleGateway`. This evaluates synthesis from a fixed packet. It does not evaluate live retrieval completeness, translation generation, auth, source availability, report persistence or browser behaviour. Real-model results and human semantic labels are still required; unit-test success only verifies the harness and its accounting.
+`evaluations.pipeline.evaluate_case(case, profile, recording_gateway, api_key)` is the reusable integration hook. Tests pass a scripted gateway through the same `Producer`; actual runs use the existing `OpenAiCompatibleGateway`. The default evaluates synthesis from a fixed packet; optional replay additionally exercises automated research stages. Neither evaluates live retrieval completeness, translation generation, auth, source availability, report persistence or browser behaviour. Real-model results and human semantic labels are still required; unit-test success only verifies the harness and its accounting.

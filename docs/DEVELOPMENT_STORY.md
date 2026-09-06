@@ -428,3 +428,25 @@ preserving those earlier test results as historical evidence.
 - No operator data was migrated and no deployment or remote push occurred. The only
   outstanding research-quality acceptance item needs the intended model endpoint/name
   and human review of the included eight synthetic evaluation cases.
+
+### 6 September 2026: evaluate the automated research stages
+
+- Added optional synthetic provider replay through the actual private collection
+  service, preserving production request limits and the detailed all-judgement
+  challenge/redraft workflow. Separate correction and unavailable-coverage cases
+  do not expose reference rubrics or hidden challenge packets to the initial draft.
+- Fixed an evaluation interruption defect: a first-case exception previously lost
+  all recorded calls. A failing regression reproduced it; exception and cancellation
+  tests now verify retained calls and explicit incomplete status without arbitrary
+  exception text. Replay configuration is checked before model gateway creation.
+- Recorded queries, receipts and frozen analysis support review. Cross-draft raw
+  citation scores remain uncomputed because evidence labels can change; reviewers
+  retain each prompt and response. Replay does not measure live search relevance.
+- Verification: 62 combined evaluation/collection/production regressions passed;
+  36 evaluation tests passed with 94.06% branch-inclusive harness coverage. Ruff,
+  formatting, mypy (374 files), Bandit and file-length checks passed. Initial narrow
+  coverage invocation inherited the whole-app coverage target; corrected command
+  scoped measurement to the harness, without changing repository thresholds.
+- Updated evaluation instructions and the active plan. No model endpoint was
+  contacted, real credentials read, operator database changed or deployment made.
+  Actual-model runs and representative human-reviewed labels remain outstanding.

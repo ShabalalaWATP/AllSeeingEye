@@ -167,6 +167,17 @@ component results are a historical delivery log, not additional unique test coun
 
 ## Remaining work and release gates
 
+Evaluation follow-up, 6 September 2026: the harness now supports explicit synthetic
+provider replay through the production collection service, request budgets and
+detailed challenge/redraft path. Two separate scenarios cover later correction
+evidence and unavailable coverage. Interrupted runs preserve model-call records.
+The combined evaluation/collection/production regression selection passed 62 tests;
+the 36-test evaluation selection measured 94.06% branch-inclusive harness coverage.
+Ruff, formatting, mypy over 374 source files, Bandit and file-length checks passed.
+These checks use scripted models and do not close the configured-model or
+representative human-labelled research-quality gate. See
+[evaluation instructions](../backend/evaluations/README.md).
+
 - Obtain the intended model endpoint/name, review the included eight synthetic
   evaluation cases and reference judgements, and run the real pipeline against
   that model. Report quality/citation measures separately from software coverage.
