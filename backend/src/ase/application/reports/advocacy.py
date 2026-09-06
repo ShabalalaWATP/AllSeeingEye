@@ -77,6 +77,7 @@ async def advocate(
         max_output_tokens=profile.token_budget(ADVOCACY_TOKENS),
         temperature=profile.temperature,
         reasoning_effort=profile.reasoning_effort,
+        provider=profile.provider,
         json_schema=ADVOCACY_SCHEMA,
         schema_name="advocacy",
     )

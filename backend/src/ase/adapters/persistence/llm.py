@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.models import LlmProfileRow, LlmUsageRow
 from ase.domain.errors import NotFound
-from ase.domain.llm import LlmProfile, LlmRole, LlmUsage, ReasoningEffort
+from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage, ReasoningEffort
 
 
 def _profile_from_row(row: LlmProfileRow) -> LlmProfile:
@@ -32,6 +32,7 @@ def _profile_from_row(row: LlmProfileRow) -> LlmProfile:
         tested_revision=row.tested_revision,
         tested_config_hash=row.tested_config_hash,
         test_generation=row.test_generation,
+        provider=LlmProvider(row.provider),
     )
 
 
@@ -53,6 +54,7 @@ def _apply_profile(row: LlmProfileRow, profile: LlmProfile) -> None:
     row.tested_revision = profile.tested_revision
     row.tested_config_hash = profile.tested_config_hash
     row.test_generation = profile.test_generation
+    row.provider = profile.provider.value
 
 
 class SqlLlmProfileRepository:

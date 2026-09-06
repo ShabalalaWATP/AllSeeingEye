@@ -506,3 +506,26 @@ preserving those earlier test results as historical evidence.
 - Updated architecture, security guidance, operator instructions and the active
   plan. No schema migration, new dependency, real email, operator data change,
   deployment or remote push was involved.
+
+### 6 September 2026: native Amazon Bedrock connections
+
+- Added an explicit Bedrock provider using native Converse and encrypted bearer
+  API keys. The administrator editor accepts an AWS region and manual model or
+  inference-profile ID, retaining saved-configuration testing and confirmed global
+  or team assignments. No IAM role, automatic renewal or AWS catalogue is implied.
+- Routed direction, assessment, challenge, review and translation through the
+  captured provider. Adapted outbound structured schemas to AWS's subset while
+  preserving application validators; scripted production proves invalid report
+  repair still occurs. Native reasoning blocks are discarded, and incomplete or
+  refused responses fail safely with bounded requests and sanitised errors.
+- Final quality review found that native default reasoning could exhaust smaller
+  legacy stage caps despite a larger tested budget. Bedrock stages now use the
+  configured completion budget; 49 focused adapter and production regressions pass.
+- Migration `0018` preserves legacy OpenAI hashes and assignments, expands encrypted
+  credential and model identifier storage, and records provider in frozen routing.
+  Review identified that rolling back new provider-bearing report metadata would
+  make it unreadable to the prior strict reader; downgrade now refuses that case
+  before DDL instead of rewriting historical reports.
+- Added operator instructions and ADR 0013. The standalone evaluation CLI remains
+  OpenAI-compatible. No live AWS call, operator migration, deployment or remote push
+  occurred. Validation evidence is recorded in the connection plan and scoped review.

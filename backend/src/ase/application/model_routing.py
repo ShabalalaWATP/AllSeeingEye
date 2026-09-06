@@ -100,6 +100,7 @@ class ModelRouting:
                     profile_id=profile.id,
                     profile_revision=profile.revision,
                     model=profile.model,
+                    provider=profile.provider,
                     reasoning_effort=profile.reasoning_effort,
                     max_output_tokens=profile.max_output_tokens,
                     temperature=profile.temperature,

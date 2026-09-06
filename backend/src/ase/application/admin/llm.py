@@ -19,10 +19,14 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.domain.audit import AuditAction
+from ase.domain.bedrock import normalise_bedrock_base_url
 from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound
 from ase.domain.llm import (
+    MAX_API_KEY_LENGTH,
+    MAX_MODEL_ID_LENGTH,
     TEXT_ROLES,
     LlmProfile,
+    LlmProvider,
     LlmRole,
     LlmUsage,
     ReasoningEffort,
@@ -43,22 +47,35 @@ class ProfileInput:
     enabled: bool
     api_key: str | None = field(default=None, repr=False)
     reasoning_effort: ReasoningEffort | None = None
+    provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
 
     def __post_init__(self) -> None:
         if (
             not self.name.strip()
             or len(self.name) > 80
             or not self.model.strip()
-            or len(self.model) > 120
+            or len(self.model)
+            > (MAX_MODEL_ID_LENGTH if self.provider is LlmProvider.BEDROCK else 120)
             or not 64 <= self.max_output_tokens <= 32_000
             or not math.isfinite(self.temperature)
             or not 0 <= self.temperature <= 2
             or any(role not in LlmRole for role in self.roles)
             or (self.reasoning_effort is not None and self.reasoning_effort not in ReasoningEffort)
+            or (self.api_key is not None and len(self.api_key) > MAX_API_KEY_LENGTH)
+            or not isinstance(self.provider, LlmProvider)
         ):
             raise InvalidRequest("The model profile settings are invalid.")
         try:
-            normalise_base_url(self.base_url)
+            if self.provider is LlmProvider.BEDROCK:
+                normalise_bedrock_base_url(self.base_url)
+                if LlmRole.EMBEDDINGS in self.roles or self.reasoning_effort is not None:
+                    raise InvalidRequest(
+                        "Native Bedrock profiles support text roles without a reasoning setting."
+                    )
+                if self.temperature > 1:
+                    raise InvalidRequest("Native Bedrock temperature must be between zero and one.")
+            else:
+                normalise_base_url(self.base_url)
         except ValueError as exc:
             raise InvalidRequest("The model endpoint address is invalid.") from exc
 
@@ -103,6 +120,8 @@ class CreateLlmProfileUseCase:
         require_admin((await self._access.context(actor, for_update=True)).actor)
         if not self._cipher.available:
             raise EncryptionUnavailable()
+        if data.provider is LlmProvider.BEDROCK and not data.api_key:
+            raise InvalidRequest("Native Bedrock requires a bearer API key.")
         api_key = data.api_key or ""
         now = self._clock.now()
         profile = LlmProfile(
@@ -119,6 +138,7 @@ class CreateLlmProfileUseCase:
             created_at=now,
             updated_at=now,
             reasoning_effort=data.reasoning_effort,
+            provider=data.provider,
         )
         if before_save is not None:
             await before_save()
@@ -172,8 +192,13 @@ class UpdateLlmProfileUseCase:
             )
         await _protect_legacy_profile(profile, self._bindings)
         destination = normalise_base_url(data.base_url)
-        if profile.api_key_hint and destination != profile.base_url and not data.api_key:
+        if not data.api_key and (
+            profile.provider != data.provider
+            or (profile.api_key_hint and destination != profile.base_url)
+        ):
             raise InvalidRequest("Supply a new API key when changing the credential destination.")
+        if data.provider is LlmProvider.BEDROCK and not data.api_key and not profile.api_key_hint:
+            raise InvalidRequest("Native Bedrock requires a bearer API key.")
         profile.name = data.name.strip()
         profile.base_url = normalise_base_url(data.base_url)
         profile.model = data.model.strip()
@@ -182,6 +207,7 @@ class UpdateLlmProfileUseCase:
         profile.temperature = data.temperature
         profile.enabled = data.enabled and data.roles == frozenset({LlmRole.EMBEDDINGS})
         profile.reasoning_effort = data.reasoning_effort
+        profile.provider = data.provider
         profile.revision += 1
         profile.tested_at = None
         profile.tested_revision = None

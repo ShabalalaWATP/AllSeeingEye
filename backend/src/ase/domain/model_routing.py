@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from ase.domain.llm import LlmRole, ReasoningEffort
+from ase.domain.llm import LlmProvider, LlmRole, ReasoningEffort
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +18,7 @@ class RoutedModel:
     max_output_tokens: int
     temperature: float
     profile_updated_at: datetime
+    provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
 
 
 @dataclass(frozen=True, slots=True)

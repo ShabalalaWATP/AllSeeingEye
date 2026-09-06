@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
+from ase.adapters.llm.router import RoutingLlmGateway
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.llm import (
@@ -52,7 +54,7 @@ class AdminWiring:
 
     def initialise_models(self, encryption_key: str | None) -> None:
         self.cipher = FernetCipher(encryption_key)
-        self._llm_gateway = OpenAiCompatibleGateway()
+        self._llm_gateway = RoutingLlmGateway(OpenAiCompatibleGateway(), BedrockConverseGateway())
         self.llm = self._llm_gateway
         self.model_discovery = self._llm_gateway
 

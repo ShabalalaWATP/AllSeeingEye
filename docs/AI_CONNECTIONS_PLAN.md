@@ -32,6 +32,56 @@ the earlier free-only model-provider constraint for this connection.
 - [ ] Actual account connection tested after the administrator supplies the key
   through the app. Do not substitute scripted tests for account access evidence.
 
+## Native Bedrock extension
+
+Requested 6 September 2026. Administrators can now select **Amazon Bedrock**,
+choose an AWS region and enter a Bedrock API key plus a model or inference-profile
+ID. This uses native Converse structured outputs through an explicit provider
+adapter. OpenAI and custom compatible profiles retain their existing protocol.
+See [ADR 0013](adr/0013-native-bedrock.md) and the
+[operator flow](AI_CONNECTIONS_OPERATIONS.md#amazon-bedrock).
+
+- [x] Native text provider, encrypted keys, canonical regional destination and
+  manual model selection, with provider-specific inference validation.
+- [x] Existing saved-configuration test, explicit global/team assignment and
+  captured in-flight provider routing retained across every text stage.
+- [x] Migration `0018` preserves legacy tested hashes and assignments, expands
+  credential/model storage, and refuses downgrades that would damage compatibility.
+- [x] Frozen reports record provider; old records remain readable without rewriting.
+- [x] Scripted HTTP production covers direction, invalid report repair, challenge,
+  redraft and review through the actual native adapter.
+- [x] Eighteen migration cases pass across disposable SQLite and PostgreSQL 17,
+  plus two pagination checks. These preserve legacy tested assignments and prove
+  refusal before DDL for incompatible credentials, identifiers and frozen history.
+- [x] Forty-two native adapter/schema/production tests pass. The nearest 68
+  profile/key/administration tests pass with 97.22% focused branch-inclusive
+  coverage; the final raw-provider-type regression also passes separately.
+- [x] Final review repaired a native completion-budget mismatch. All Bedrock text
+  stages now honour the configured budget rather than silently applying legacy
+  stage caps. Forty-nine adapter, production, propagation and budget checks pass
+  after this change; the ordinary OpenAI-compatible stage caps remain unchanged.
+- [x] Frontend validation: 504 tests pass, 98.46% line coverage and 91.86% branch
+  coverage. Lint, types and build pass. Browser checks at 1440, 390 and 320 pixels
+  complete native save/test/apply with no discovery request, overflow or page error.
+- [x] Independent [security review](security/BEDROCK_REVIEW.md) closed the historical
+  routing downgrade issue. Its synthetic selection passed 105 tests, with nine
+  PostgreSQL variants verified separately by the migration worker. No other
+  concrete security vulnerability remained in the reviewed change.
+- [ ] Actual AWS account access and representative research-quality evaluation.
+
+This slice does not add IAM role authentication, automatic key renewal, AWS
+catalogue discovery, embeddings or model-specific reasoning controls. The standalone
+evaluation CLI remains OpenAI-compatible. No live AWS call or operator migration
+is included in development evidence.
+
+The broader backend snapshot passed **1,624 tests with 10 skipped** in 699.18
+seconds, meeting the 90% gate with **96.47% branch-inclusive coverage**. That run
+started before the final token-budget correction and late migration-history tests;
+the final 49-test native/production selection and separate migration/pagination
+runs above cover those changes. Counts overlap and are not additive. Ruff,
+formatting, strict mypy across 380 source files, Bandit, architecture import
+contracts and file-length checks passed. No dependency was added.
+
 ## Interface direction
 
 Use the existing restrained dark application surfaces and one action accent.

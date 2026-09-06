@@ -14,6 +14,8 @@ from uuid import UUID
 
 MAX_OUTPUT_TOKENS = 32_000
 MIN_OUTPUT_TOKENS = 64
+MAX_API_KEY_LENGTH = 16_384
+MAX_MODEL_ID_LENGTH = 2_048
 KEY_HINT_CHARS = 4
 
 
@@ -35,6 +37,11 @@ class ReasoningEffort(StrEnum):
     HIGH = "high"
     XHIGH = "xhigh"
     MAX = "max"
+
+
+class LlmProvider(StrEnum):
+    OPENAI_COMPATIBLE = "openai_compatible"
+    BEDROCK = "bedrock"
 
 
 TEXT_ROLES = frozenset({LlmRole.DIRECTION, LlmRole.ASSESSMENT, LlmRole.DEVIL, LlmRole.TRANSLATION})
@@ -87,14 +94,19 @@ class LlmProfile:
     tested_revision: int | None = None
     tested_config_hash: str | None = None
     test_generation: int = 0
+    provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
 
     def allows(self, role: LlmRole) -> bool:
         return self.enabled and role in self.roles
 
     def token_budget(self, stage_limit: int) -> int:
+        # Native reasoning defaults can consume completion tokens even without an
+        # explicit effort setting. Let the tested administrator budget cover them.
         limit = (
             MAX_OUTPUT_TOKENS
-            if self.reasoning_effort is not None or self.model == "gpt-5.6-luna"
+            if self.provider is LlmProvider.BEDROCK
+            or self.reasoning_effort is not None
+            or self.model == "gpt-5.6-luna"
             else stage_limit
         )
         return min(self.max_output_tokens, limit)
@@ -106,7 +118,7 @@ class LlmProfile:
         Operational enablement is excluded so explicit activation can enable a tested
         draft. Every ordinary edit still advances revision and invalidates its proof.
         """
-        values = (
+        values: tuple[object, ...] = (
             str(self.id),
             self.revision,
             self.name,
@@ -118,6 +130,8 @@ class LlmProfile:
             self.temperature,
             self.reasoning_effort,
         )
+        if self.provider is not LlmProvider.OPENAI_COMPATIBLE:
+            values += (f"provider:{self.provider.value}",)
         return hashlib.sha256(json.dumps(values, separators=(",", ":")).encode()).hexdigest()
 
     @property
@@ -154,6 +168,7 @@ class LlmRequest:
     json_schema: Mapping[str, Any] | None = None
     schema_name: str = "response"
     reasoning_effort: ReasoningEffort | None = None
+    provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
 
 
 @dataclass(frozen=True, slots=True)

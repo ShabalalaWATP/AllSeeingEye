@@ -8,6 +8,7 @@ from uuid import uuid4
 import pytest
 
 from ase.api.schemas_reports import ReportVersionOut
+from ase.domain.llm import LlmProvider
 from ase.domain.model_routing_records import routing_from_dict, routing_to_dict
 from ase.domain.report_records import analysis_to_dict
 from report_documents_helpers import document_records
@@ -101,3 +102,36 @@ async def test_legacy_partial_roles_and_team_scope_roundtrip():
     team_id = uuid4()
     team = replace(value, policy="team", binding_team_id=team_id, destination_team_id=team_id)
     assert routing_from_dict(routing_to_dict(team)) == team
+
+
+async def test_provider_is_frozen_and_legacy_absence_defaults_to_openai_compatible():
+    configured = profile(provider=LlmProvider.BEDROCK)
+    service, _ = routing([configured], {None: binding(configured)})
+    frozen = (await service.snapshot()).provenance
+    assert all(item.provider is LlmProvider.BEDROCK for item in frozen.profiles)
+    data = routing_to_dict(frozen)
+    assert routing_from_dict(json.loads(json.dumps(data))) == frozen
+    assert all(row["provider"] == "bedrock" for row in data["profiles"])
+    for row in data["profiles"]:
+        row.pop("provider")
+    assert all(
+        row.provider is LlmProvider.OPENAI_COMPATIBLE for row in routing_from_dict(data).profiles
+    )
+    data["profiles"][0]["provider"] = "unknown"
+    with pytest.raises(ValueError):
+        routing_from_dict(data)
+
+
+async def test_long_native_model_identifier_roundtrips_frozen_provenance():
+    identifier = "arn:aws:bedrock:eu-west-2:123456789012:inference-profile/" + "a" * 1700
+    configured = profile(model=identifier, provider=LlmProvider.BEDROCK)
+    service, _ = routing([configured], {None: binding(configured)})
+    frozen = (await service.snapshot()).provenance
+    data = routing_to_dict(frozen)
+    assert routing_from_dict(data) == frozen
+    _, version = document_records(uuid4())
+    version.model_routing = frozen
+    assert ReportVersionOut.from_version(version).model_routing.profiles[0].model == identifier
+    data["profiles"][0]["model"] = "x" * 2049
+    with pytest.raises(ValueError):
+        routing_from_dict(data)

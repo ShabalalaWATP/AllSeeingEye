@@ -67,6 +67,7 @@ export function LlmProfileRow({
   });
   const error = test.error ?? discover.error ?? remove.error;
   const busy = disabled || applying || test.busy || discover.busy || remove.busy;
+  const bedrock = profile.provider === 'bedrock';
   const textProfile = !profile.roles.includes('embeddings');
   const tested =
     profile.is_tested &&
@@ -101,7 +102,7 @@ export function LlmProfileRow({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {!profile.is_bound && (
+            {!profile.is_bound && !bedrock && (
               <Button
                 variant="secondary"
                 disabled={busy}
@@ -162,9 +163,11 @@ export function LlmProfileRow({
             </p>
           )}
           <p className="text-xs text-muted">
-            {!profile.is_bound && 'Loading models contacts this saved endpoint. '}Testing sends a
-            short request and may use provider tokens. A listed model is not a compatibility
-            guarantee.
+            {bedrock
+              ? 'Use a model or inference profile ID from the AWS console. '
+              : !profile.is_bound && 'Loading models contacts this saved endpoint. '}
+            Testing sends a short request and may use provider tokens. Compatibility is confirmed
+            only by a successful test.
           </p>
           {models !== null && (
             <p role="status" className="text-sm text-muted">

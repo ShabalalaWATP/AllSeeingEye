@@ -7,9 +7,11 @@ from typing import Any, Literal, cast
 from uuid import UUID
 
 from ase.domain.llm import (
+    MAX_MODEL_ID_LENGTH,
     MAX_OUTPUT_TOKENS,
     MIN_OUTPUT_TOKENS,
     TEXT_ROLES,
+    LlmProvider,
     LlmRole,
     ReasoningEffort,
 )
@@ -31,6 +33,7 @@ def routing_to_dict(value: ModelRoutingRecord | None) -> dict[str, Any] | None:
                 "profile_id": str(profile.profile_id),
                 "profile_revision": profile.profile_revision,
                 "model": profile.model,
+                "provider": profile.provider.value,
                 "reasoning_effort": profile.reasoning_effort.value
                 if profile.reasoning_effort
                 else None,
@@ -50,15 +53,18 @@ def _uuid(value: Any) -> UUID:
 
 
 def _profile(value: Any) -> RoutedModel:
-    if type(value) is not dict or set(value) != {item.name for item in fields(RoutedModel)}:
+    names = {item.name for item in fields(RoutedModel)}
+    if type(value) is not dict or set(value) not in (names, names - {"provider"}):
         raise ValueError("Invalid saved model settings")
     role = LlmRole(value["role"])
+    provider = LlmProvider(value.get("provider", LlmProvider.OPENAI_COMPATIBLE.value))
+    model_limit = MAX_MODEL_ID_LENGTH if provider is LlmProvider.BEDROCK else 200
     model, revision, budget = value["model"], value["profile_revision"], value["max_output_tokens"]
     temperature, timestamp = value["temperature"], value["profile_updated_at"]
     if (
         role not in TEXT_ROLES
         or type(model) is not str
-        or not 1 <= len(model) <= 200
+        or not 1 <= len(model) <= model_limit
         or type(revision) is not int
         or not 1 <= revision <= 2**31 - 1
         or type(budget) is not int
@@ -82,6 +88,7 @@ def _profile(value: Any) -> RoutedModel:
         budget,
         float(temperature),
         datetime.fromisoformat(timestamp),
+        provider,
     )
 
 

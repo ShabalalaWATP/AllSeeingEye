@@ -6749,7 +6749,7 @@
           },
           "model": {
             "type": "string",
-            "maxLength": 120,
+            "maxLength": 2048,
             "minLength": 1,
             "title": "Model"
           },
@@ -6789,11 +6789,15 @@
               }
             ]
           },
+          "provider": {
+            "$ref": "#/components/schemas/LlmProvider",
+            "default": "openai_compatible"
+          },
           "api_key": {
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 512,
+                "maxLength": 16384,
                 "format": "password",
                 "writeOnly": true
               },
@@ -6874,6 +6878,9 @@
               }
             ]
           },
+          "provider": {
+            "$ref": "#/components/schemas/LlmProvider"
+          },
           "revision": {
             "type": "integer",
             "title": "Revision"
@@ -6936,6 +6943,7 @@
           "created_at",
           "updated_at",
           "reasoning_effort",
+          "provider",
           "revision",
           "tested_at",
           "tested_revision",
@@ -6964,6 +6972,14 @@
           "encryption_available"
         ],
         "title": "LlmProfilesOut"
+      },
+      "LlmProvider": {
+        "type": "string",
+        "enum": [
+          "openai_compatible",
+          "bedrock"
+        ],
+        "title": "LlmProvider"
       },
       "LlmRole": {
         "type": "string",
@@ -9756,7 +9772,11 @@
           },
           "model": {
             "type": "string",
+            "maxLength": 2048,
             "title": "Model"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/LlmProvider"
           },
           "reasoning_effort": {
             "anyOf": [
@@ -9788,6 +9808,7 @@
           "profile_id",
           "profile_revision",
           "model",
+          "provider",
           "reasoning_effort",
           "max_output_tokens",
           "temperature",

@@ -12,10 +12,13 @@ from ase.application.admin.llm import ProfileInput
 from ase.application.admin.llm_connections import ConnectionInput
 from ase.application.admin.llm_testing import TestOutcome
 from ase.domain.llm import (
+    MAX_API_KEY_LENGTH,
+    MAX_MODEL_ID_LENGTH,
     MAX_OUTPUT_TOKENS,
     MIN_OUTPUT_TOKENS,
     LlmConnectionBinding,
     LlmProfile,
+    LlmProvider,
     LlmRole,
     LlmUsage,
     ReasoningEffort,
@@ -26,14 +29,15 @@ from ase.domain.llm import (
 class LlmProfileIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     base_url: str = Field(min_length=8, max_length=512)
-    model: str = Field(min_length=1, max_length=120)
+    model: str = Field(min_length=1, max_length=MAX_MODEL_ID_LENGTH)
     roles: list[LlmRole] = Field(default_factory=lambda: [LlmRole.ASSESSMENT])
     max_output_tokens: int = Field(default=4_000, ge=MIN_OUTPUT_TOKENS, le=MAX_OUTPUT_TOKENS)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     enabled: bool = False
     reasoning_effort: ReasoningEffort | None = None
+    provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
     # Blank on update keeps the stored key; on create an empty key means a keyless endpoint.
-    api_key: SecretStr | None = Field(default=None, max_length=512)
+    api_key: SecretStr | None = Field(default=None, max_length=MAX_API_KEY_LENGTH)
 
     @field_validator("base_url")
     @classmethod
@@ -52,6 +56,7 @@ class LlmProfileIn(BaseModel):
             enabled=self.enabled,
             api_key=key or None,
             reasoning_effort=self.reasoning_effort,
+            provider=self.provider,
         )
 
 
@@ -68,6 +73,7 @@ class LlmProfileOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     reasoning_effort: ReasoningEffort | None
+    provider: LlmProvider
     revision: int
     tested_at: datetime | None
     tested_revision: int | None
@@ -90,6 +96,7 @@ class LlmProfileOut(BaseModel):
             created_at=profile.created_at,
             updated_at=profile.updated_at,
             reasoning_effort=profile.reasoning_effort,
+            provider=profile.provider,
             revision=profile.revision,
             tested_at=profile.tested_at,
             tested_revision=profile.tested_revision,

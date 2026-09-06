@@ -112,7 +112,7 @@ class ReportVersionRow(Base):
     analysis: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     markdown: Mapped[str] = mapped_column(Text)
     profile_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
-    model: Mapped[str] = mapped_column(String(120))
+    model: Mapped[str] = mapped_column(String(2048))
     prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     latency_ms: Mapped[float] = mapped_column(Float)

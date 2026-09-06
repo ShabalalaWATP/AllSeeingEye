@@ -72,6 +72,7 @@ async def draft_body(
             max_output_tokens=profile.token_budget(template.token_budget),
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
+            provider=profile.provider,
             json_schema=REPORT_BODY_SCHEMA,
             schema_name="report",
         )

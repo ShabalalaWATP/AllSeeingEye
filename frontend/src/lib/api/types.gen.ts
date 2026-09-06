@@ -2269,6 +2269,8 @@ export interface components {
              */
             enabled: boolean;
             reasoning_effort?: components["schemas"]["ReasoningEffort"] | null;
+            /** @default openai_compatible */
+            provider: components["schemas"]["LlmProvider"];
             /** Api Key */
             api_key?: string | null;
         };
@@ -2306,6 +2308,7 @@ export interface components {
              */
             updated_at: string;
             reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
+            provider: components["schemas"]["LlmProvider"];
             /** Revision */
             revision: number;
             /** Tested At */
@@ -2329,6 +2332,11 @@ export interface components {
             /** Encryption Available */
             encryption_available: boolean;
         };
+        /**
+         * LlmProvider
+         * @enum {string}
+         */
+        LlmProvider: "openai_compatible" | "bedrock";
         /**
          * LlmRole
          * @description What a profile is allowed to do in the generation pipeline.
@@ -3284,6 +3292,7 @@ export interface components {
             profile_revision: number;
             /** Model */
             model: string;
+            provider: components["schemas"]["LlmProvider"];
             reasoning_effort: components["schemas"]["ReasoningEffort"] | null;
             /** Max Output Tokens */
             max_output_tokens: number;

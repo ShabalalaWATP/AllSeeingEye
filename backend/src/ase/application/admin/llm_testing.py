@@ -24,7 +24,7 @@ from ase.application.ports.llm import (
 )
 from ase.domain.audit import AuditAction
 from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound
-from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole, LlmUsage
+from ase.domain.llm import LlmMessage, LlmProfile, LlmProvider, LlmRequest, LlmRole, LlmUsage
 from ase.domain.report_search import checked_vector
 from ase.domain.users import User
 
@@ -96,6 +96,7 @@ class TestLlmProfileUseCase:
             max_output_tokens=profile.max_output_tokens,
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
+            provider=profile.provider,
             json_schema=TEST_SCHEMA,
             schema_name="connection_test",
         )
@@ -255,6 +256,11 @@ class DiscoverLlmModelsUseCase:
         profile = await self._profiles.get(profile_id)
         if profile is None:
             raise NotFound()
+        if profile.provider is LlmProvider.BEDROCK:
+            raise InvalidRequest(
+                "Native Bedrock model discovery is unavailable. "
+                "Enter a model or inference profile ID manually."
+            )
         if not self._cipher.available:
             raise EncryptionUnavailable()
         fingerprint = profile.config_hash

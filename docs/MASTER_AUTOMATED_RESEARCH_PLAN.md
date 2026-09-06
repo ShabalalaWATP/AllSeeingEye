@@ -167,6 +167,15 @@ component results are a historical delivery log, not additional unique test coun
 
 ## Remaining work and release gates
 
+Bedrock follow-up, 6 September 2026: administrators can configure a native Amazon
+Bedrock Converse text connection using a region, Bedrock API key and manual model
+or inference-profile ID. It follows the existing test and confirmed global/team
+assignment flow. All text stages retain the selected provider, and frozen reports
+record it. Migration `0018` preserves existing OpenAI assignments and test hashes.
+See [connection progress](AI_CONNECTIONS_PLAN.md#native-bedrock-extension) and
+[operator instructions](AI_CONNECTIONS_OPERATIONS.md#amazon-bedrock). Scripted
+provider tests do not close the live account or research-quality gates.
+
 Administrator workspace follow-up, 6 September 2026: administration now has a
 dedicated guarded shell and `/admin` overview, including team management and AI
 connections. Only active administrators see its entry; the shell verifies current

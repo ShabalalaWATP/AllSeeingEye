@@ -19,6 +19,7 @@ export const llmProfileSchema = z.object({
   id: z.string(),
   name: z.string(),
   base_url: z.string(),
+  provider: z.enum(['openai_compatible', 'bedrock']),
   model: z.string(),
   api_key_hint: z.string(),
   roles: z.array(llmRoleSchema),

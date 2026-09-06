@@ -195,6 +195,7 @@ export const llmProfiles: LlmProfile[] = [
     id: '55555555-5555-4555-8555-555555555555',
     name: 'Local Llama',
     base_url: 'http://localhost:11434/v1',
+    provider: 'openai_compatible',
     model: 'llama3.1:8b',
     reasoning_effort: null,
     revision: 1,

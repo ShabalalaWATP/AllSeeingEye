@@ -210,6 +210,7 @@ async def challenge_call(
             max_output_tokens=profile.token_budget(8000 if review else 2500),
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
+            provider=profile.provider,
             json_schema=REVIEW_SCHEMA if review else PLAN_SCHEMA,
             schema_name="challenge_reviews" if review else "challenge_plan",
         )
