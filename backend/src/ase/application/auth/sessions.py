@@ -33,6 +33,7 @@ class SessionFactory:
         *,
         family_id: UUID | None = None,
         parent_id: UUID | None = None,
+        mfa_verified: bool = False,
     ) -> AuthSession:
         now = self._clock.now()
         secret = self._generator.new_secret()
@@ -47,6 +48,7 @@ class SessionFactory:
             revoked_at=None,
             ip=context.ip,
             user_agent=context.user_agent,
+            mfa_verified=mfa_verified,
         )
         await self._refresh_tokens.add(token)
         return AuthSession(

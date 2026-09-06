@@ -1,0 +1,16 @@
+"""Durable MFA state and compare-and-swap challenge transitions."""
+
+from typing import Protocol
+from uuid import UUID
+
+from ase.domain.mfa import MfaChallenge
+
+
+class MfaRepository(Protocol):
+    async def email_enabled(self, user_id: UUID) -> bool: ...
+    async def set_email_enabled(self, user_id: UUID, enabled: bool) -> None: ...
+    async def add(self, challenge: MfaChallenge) -> None: ...
+    async def get(self, token_hash: str) -> MfaChallenge | None: ...
+    async def save(self, challenge: MfaChallenge, expected_revision: int) -> bool:
+        """CAS updates the record, incrementing revision; consumed rows never update."""
+        ...

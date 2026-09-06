@@ -20,9 +20,10 @@ from helpers import (
     create_user,
     csrf_headers,
     login_token,
+    password_login,
     token_from_link,
 )
-from totp_helpers import enable_totp
+from totp_helpers import enable_totp, verify_code
 
 
 async def test_logout_ends_only_current_family_including_rotated_access(
@@ -133,14 +134,14 @@ async def test_demoted_account_keeps_enrolled_factor(
     ).status_code == 200
     assert (await client.get("/api/me", headers=old_headers)).status_code == 401
     clock.advance(timedelta(minutes=1))
-    without_factor = {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
-    assert (await client.post("/api/auth/login", json=without_factor)).status_code == 401
-    signed_in = await client.post(
-        "/api/auth/login",
-        json={
-            **without_factor,
-            "totp_code": pyotp.TOTP(secret).at(clock.now()),
-        },
+    pending = await password_login(client, ADMIN_EMAIL, ADMIN_PASSWORD)
+    assert pending.status_code == 200
+    assert pending.json()["mfa_required"]
+    assert pending.json()["methods"] == ["authenticator"]
+    assert not pending.json()["enrollment_required"]
+    assert "access_token" not in pending.json()
+    signed_in = await verify_code(
+        client, pending.json()["challenge_token"], pyotp.TOTP(secret).at(clock.now())
     )
     assert signed_in.status_code == 200
     assert signed_in.json()["user"]["role"] == "user"
@@ -159,3 +160,7 @@ async def test_local_totp_recovery_ends_existing_access(
         await container.totp(session).recover_local(current, ADMIN_PASSWORD)
     assert (await client.get("/api/me", headers=headers)).status_code == 401
     assert (await client.post("/api/auth/refresh", headers=csrf_headers(client))).status_code == 401
+    pending = await password_login(client, ADMIN_EMAIL, ADMIN_PASSWORD)
+    assert pending.status_code == 200
+    assert pending.json()["mfa_required"] and pending.json()["enrollment_required"]
+    assert "access_token" not in pending.json()

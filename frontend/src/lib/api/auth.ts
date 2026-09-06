@@ -1,15 +1,18 @@
 /** Auth endpoints from docs/api/AUTH_API.md. None of these attach a bearer token. */
+import { z } from 'zod';
+
 import { csrfHeaders } from '@/lib/csrf';
 
+import { pendingMfaSchema, type PendingMfa } from './mfa';
 import { apiCall, apiSend } from './client';
 import { messageResponseSchema, tokenResponseSchema, userSchema } from './schemas';
 import type { TokenResponse, User } from './schemas';
 
-export function login(email: string, password: string, totpCode?: string): Promise<TokenResponse> {
+export function login(email: string, password: string): Promise<TokenResponse | PendingMfa> {
   return apiCall('/api/auth/login', {
     method: 'POST',
-    body: { email, password, ...(totpCode ? { totp_code: totpCode } : {}) },
-    schema: tokenResponseSchema,
+    body: { email, password },
+    schema: z.union([tokenResponseSchema, pendingMfaSchema]),
     auth: false,
   });
 }

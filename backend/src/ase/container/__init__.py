@@ -24,7 +24,6 @@ from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
-from ase.adapters.notify.null_email import NullEmailSender
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
 from ase.adapters.persistence.baselines import SqlBaselineSink
 from ase.adapters.persistence.session import (
@@ -32,23 +31,15 @@ from ase.adapters.persistence.session import (
     create_session_factory,
     ensure_sqlite_directory,
 )
-from ase.adapters.persistence.totp import SqlTotpRepository
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
 from ase.adapters.security.tokens import SecretsTokenGenerator
-from ase.adapters.security.totp import EncryptedTotpProvider
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.auditing import Auditor
-from ase.application.auth.account_requests import ForgotPasswordUseCase, RequestAccountUseCase
-from ase.application.auth.change_password import ChangePasswordUseCase
-from ase.application.auth.login import LoginUseCase
-from ase.application.auth.refresh import LogoutUseCase, RefreshUseCase
 from ase.application.auth.sessions import SessionFactory
-from ase.application.auth.set_password import SetPasswordUseCase
-from ase.application.auth.totp import TotpUseCase
 from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
@@ -66,6 +57,8 @@ from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.admin import AdminWiring
+from ase.container.auth import AuthWiring
+from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
@@ -79,7 +72,7 @@ from ase.infrastructure.settings import Environment, Settings
 log = structlog.get_logger(__name__)
 
 
-class Container(FeatureWiring, ResearchInputWiring, AdminWiring):
+class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
     def __init__(
         self,
         settings: Settings,
@@ -92,7 +85,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring):
         self.settings = settings
         self.clock: Clock = clock or SystemClock()
         self.limiter: RateLimiter = limiter or InMemorySlidingWindowLimiter(self.clock)
-        self.email_sender: EmailSender = email_sender or NullEmailSender()
+        self.email_sender: EmailSender = email_sender or build_email_sender(settings)
         ensure_sqlite_directory(settings.database_url)
         self.engine = create_engine(settings.database_url)
         self.session_factory = create_session_factory(self.engine)
@@ -205,62 +198,3 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring):
         return SessionFactory(
             repos.refresh_tokens, self.issuer, self.generator, self.clock, self.refresh_ttl
         )
-
-    def login(self, session: AsyncSession) -> LoginUseCase:
-        r = self.repositories(session)
-        return LoginUseCase(
-            r.users, self.hasher, self._sessions(r), self.clock, self.limiter, self.limits,
-            self._auditor(r), r.uow, self._dummy_hash, totp=self.totp(session),
-        )  # fmt: skip
-
-    def totp(self, session: AsyncSession) -> TotpUseCase:
-        r = self.repositories(session)
-        return TotpUseCase(
-            SqlTotpRepository(session),
-            EncryptedTotpProvider(self.cipher),
-            self.hasher,
-            r.refresh_tokens,
-            self.clock,
-            self.limiter,
-            self._auditor(r),
-            r.uow,
-            r.users,
-        )
-
-    def refresh(self, session: AsyncSession) -> RefreshUseCase:
-        r = self.repositories(session)
-        return RefreshUseCase(
-            r.users, r.refresh_tokens, self.generator, self._sessions(r), self.clock,
-            self._auditor(r), r.uow,
-        )  # fmt: skip
-
-    def logout(self, session: AsyncSession) -> LogoutUseCase:
-        r = self.repositories(session)
-        return LogoutUseCase(r.refresh_tokens, self.generator, self.clock, self._auditor(r), r.uow)
-
-    def request_account(self, session: AsyncSession) -> RequestAccountUseCase:
-        r = self.repositories(session)
-        return RequestAccountUseCase(
-            r.users, r.requests, self.clock, self.limiter, self.limits, self._auditor(r), r.uow
-        )
-
-    def forgot_password(self, session: AsyncSession) -> ForgotPasswordUseCase:
-        r = self.repositories(session)
-        return ForgotPasswordUseCase(
-            r.users, r.password_tokens, self.generator, self.links, self.email_sender, self.clock,
-            self.limiter, self.limits, self._auditor(r), r.uow,
-        )  # fmt: skip
-
-    def set_password(self, session: AsyncSession) -> SetPasswordUseCase:
-        r = self.repositories(session)
-        return SetPasswordUseCase(
-            r.users, r.password_tokens, r.refresh_tokens, self.hasher, self.generator, self.clock,
-            self.limiter, self.limits, self._auditor(r), r.uow,
-        )  # fmt: skip
-
-    def change_password(self, session: AsyncSession) -> ChangePasswordUseCase:
-        r = self.repositories(session)
-        return ChangePasswordUseCase(
-            r.users, r.password_tokens, r.refresh_tokens, self.hasher, self.totp(session),
-            self.clock, self.limiter, self._auditor(r), r.uow,
-        )  # fmt: skip

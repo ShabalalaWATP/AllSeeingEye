@@ -41,6 +41,15 @@ class LinkBuilder(Protocol):
 
 
 class EmailSender(Protocol):
+    @property
+    def available(self) -> bool:
+        """Whether a real delivery transport has been configured."""
+        ...
+
+    async def send_code(self, to_email: str, code: str) -> bool:
+        """Deliver a private MFA code, without logging it or exposing a fallback."""
+        ...
+
     async def send_link(self, to_email: str, purpose: TokenPurpose, link: str) -> bool:
         """Deliver a link. Return True only when a message was actually sent."""
         ...

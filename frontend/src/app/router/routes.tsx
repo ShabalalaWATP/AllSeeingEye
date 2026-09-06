@@ -91,6 +91,7 @@ export const routes: RouteObject[] = [
           { path: 'warning', element: <WarningPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
+          { path: 'account/security', element: <TotpSettingsPage /> },
         ],
       },
       {

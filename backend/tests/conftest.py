@@ -24,6 +24,7 @@ from helpers import (
     FakeClock,
     RecordingEmailSender,
     create_user,
+    register_client,
 )
 
 START = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
@@ -77,6 +78,7 @@ def container(app: FastAPI) -> Container:
 @pytest.fixture
 async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        register_client(client, app.state.container)
         yield client
 
 

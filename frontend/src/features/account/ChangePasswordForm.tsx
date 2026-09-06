@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
 import { changePassword } from '@/lib/api/account';
 import { describeError } from '@/lib/api/errors';
+import { fetchMfaStatus, startPasswordChangeMfa } from '@/lib/api/mfa';
+import { useResource } from '@/lib/hooks/useResource';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import {
   checkPassword,
@@ -18,6 +20,12 @@ import { useAuthStore } from '@/stores/auth';
 
 export function ChangePasswordForm({ actorId }: { actorId: string }) {
   const navigate = useNavigate();
+  const security = useResource(fetchMfaStatus);
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [preferEmail, setPreferEmail] = useState(false);
+  const hasApp = security.data?.methods.includes('authenticator') ?? false;
+  const hasEmail = security.data?.methods.includes('email') ?? false;
+  const emailMethod = hasEmail && (!hasApp || preferEmail);
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -29,10 +37,16 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
     if (inFlight.current) return;
     inFlight.current = true;
     try {
+      if (emailMethod && challenge === null) {
+        const pending = await startPasswordChangeMfa(current);
+        setChallenge(pending.challenge_token);
+        return;
+      }
       await changePassword({
         current_password: current,
         new_password: password,
-        totp_code: code || null,
+        totp_code: !emailMethod && code ? code : null,
+        ...(emailMethod ? { mfa_challenge_token: challenge, mfa_code: code } : {}),
       });
       // A response for an earlier identity must not sign out a newly signed-in account.
       if (useAuthStore.getState().user?.id === actorId) {
@@ -55,13 +69,13 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
       className="flex flex-col gap-5"
       onSubmit={(event) => {
         event.preventDefault();
-        if (action.busy || inFlight.current) return;
+        if (action.busy || inFlight.current || security.data === null) return;
         const problem =
           current === ''
             ? 'Enter your current password.'
             : (checkPassword(password, confirmation) ??
-              (code !== '' && !/^[0-9]{6}$/.test(code)
-                ? 'Enter a six-digit authenticator code, or leave it blank if none is enabled.'
+              (((hasApp && !emailMethod) || challenge !== null) && !/^[0-9]{6}$/.test(code)
+                ? 'Enter a six-digit verification code.'
                 : null));
         setValidation(problem);
         if (problem === null) void action.run();
@@ -73,6 +87,8 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
           Changing your password signs you out on every device. Sign in again with the new password.
         </p>
       </header>
+      {security.loading ? <p role="status">Loading sign-in security...</p> : null}
+      {security.error ? <Alert tone="error">{describeError(security.error)}</Alert> : null}
       {error ? <Alert tone="error">{error}</Alert> : null}
       {action.error &&
       !(action.error.code === 'weak_password' && action.error.fieldError('new_password')) ? (
@@ -88,7 +104,11 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
           required
           value={current}
           className="min-h-11"
-          onChange={(event) => setCurrent(event.target.value)}
+          onChange={(event) => {
+            setCurrent(event.target.value);
+            setChallenge(null);
+            setCode('');
+          }}
         />
         <TextField
           label="New password"
@@ -121,14 +141,34 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
         >
           {visible ? 'Hide passwords' : 'Show passwords'}
         </button>
-        <details>
-          <summary className="min-h-11 w-fit cursor-pointer rounded py-3 text-sm text-muted hover:text-text">
-            Use an authenticator code
-          </summary>
+        {hasApp && hasEmail ? (
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input
+              type="checkbox"
+              checked={preferEmail}
+              onChange={(event) => {
+                setPreferEmail(event.target.checked);
+                setChallenge(null);
+                setCode('');
+              }}
+            />
+            Verify using email instead
+          </label>
+        ) : null}
+        {emailMethod && challenge === null ? (
+          <p className="text-sm text-muted">
+            We will send a verification code to your account email before changing your password.
+          </p>
+        ) : null}
+        {challenge !== null ? (
+          <p role="status" className="text-sm text-muted">
+            Enter the code sent to your account email to confirm this password change.
+          </p>
+        ) : null}
+        {(hasApp && !emailMethod) || challenge !== null ? (
           <TextField
-            label="Authenticator code"
-            name="totp_code"
-            hint="Required if an authenticator is enabled for your account."
+            label={emailMethod ? 'Email verification code' : 'Authenticator code'}
+            required
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
@@ -136,10 +176,19 @@ export function ChangePasswordForm({ actorId }: { actorId: string }) {
             className="min-h-11 font-mono tracking-widest"
             onChange={(event) => setCode(event.target.value)}
           />
-        </details>
+        ) : null}
       </fieldset>
-      <Button type="submit" busy={action.busy} className="min-h-11 self-start">
-        {action.busy ? 'Changing password…' : 'Change password'}
+      <Button
+        type="submit"
+        disabled={security.data === null}
+        busy={action.busy}
+        className="min-h-11 self-start"
+      >
+        {action.busy
+          ? 'Please wait...'
+          : emailMethod && challenge === null
+            ? 'Send verification code'
+            : 'Change password'}
       </Button>
     </form>
   );

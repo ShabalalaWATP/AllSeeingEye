@@ -52,7 +52,7 @@ class RefreshUseCase:
             raise InvalidRefreshToken()
         user = await self._users.lock_by_id(token.user_id)
         now = self._clock.now()
-        if user is None or not user.is_active:
+        if user is None or not user.is_active or (user.is_admin and not token.mfa_verified):
             raise InvalidRefreshToken()
         if not token.is_valid(now):
             raise InvalidRefreshToken()
@@ -61,7 +61,11 @@ class RefreshUseCase:
         if not await self._refresh_tokens.consume(token.id, now):
             await self._reject_reuse(token, now, context)
         session = await self._sessions.start(
-            user, context, family_id=token.family_id, parent_id=token.id
+            user,
+            context,
+            family_id=token.family_id,
+            parent_id=token.id,
+            mfa_verified=token.mfa_verified,
         )
         await self._auditor.record(AuditAction.TOKEN_REFRESHED, actor=user.id, ip=context.ip)
         await self._uow.commit()

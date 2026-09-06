@@ -4,10 +4,12 @@ import { Link, Navigate, useLocation } from 'react-router';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
+import type { PendingMfa } from '@/lib/api/mfa';
 import { describeError } from '@/lib/api/errors';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 
+import { MfaLoginStep } from './MfaLoginStep';
 import { redirectTarget } from './redirect';
 
 export function LoginPage() {
@@ -16,10 +18,15 @@ export function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [totpCode, setTotpCode] = useState('');
+  const [challenge, setChallenge] = useState<PendingMfa | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
-  const { run, busy, error } = useAsyncAction(() => login(email, password, totpCode));
+  const { run, busy, error } = useAsyncAction(async () => {
+    const pending = await login(email, password);
+    setPassword('');
+    setShowPassword(false);
+    setChallenge(pending);
+  });
 
   const isAdmin = useAuthStore(selectIsAdmin);
   const destination = redirectTarget(location.state, isAdmin ? '/admin' : '/');
@@ -33,6 +40,17 @@ export function LoginPage() {
     return <Navigate to={destination} replace />;
   }
 
+  if (challenge !== null) {
+    return (
+      <MfaLoginStep
+        challenge={challenge}
+        onBack={() => {
+          setChallenge(null);
+        }}
+      />
+    );
+  }
+
   return (
     <form
       className="flex flex-col gap-5"
@@ -44,7 +62,7 @@ export function LoginPage() {
     >
       <header className="mb-2">
         <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Your workspace
+          Account access
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Sign in</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted">
@@ -109,34 +127,6 @@ export function LoginPage() {
           </p>
         ) : null}
       </div>
-      <details className="text-sm">
-        <summary className="w-fit cursor-pointer rounded py-2 text-muted transition-colors hover:text-text">
-          Use an authenticator code
-        </summary>
-        <div className="pt-3">
-          <TextField
-            label="Authenticator code"
-            hint="Enter the six-digit code if an authenticator is enabled for your account."
-            name="totp_code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            maxLength={6}
-            disabled={busy}
-            className="min-h-12 font-mono tracking-widest"
-            value={totpCode}
-            onInvalid={(event) => {
-              // A previously entered, incomplete code must remain reachable if
-              // the user closes the disclosure before submitting the form.
-              const disclosure = event.currentTarget.closest('details');
-              if (disclosure !== null) disclosure.open = true;
-            }}
-            onChange={(event) => {
-              setTotpCode(event.target.value);
-            }}
-          />
-        </div>
-      </details>
       <Button type="submit" busy={busy} className="min-h-12">
         {busy ? 'Signing in…' : 'Sign in'}
       </Button>

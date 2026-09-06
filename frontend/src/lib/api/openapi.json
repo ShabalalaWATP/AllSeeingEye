@@ -70,7 +70,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/TokenResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MfaPendingOut"
+                    }
+                  ],
+                  "title": "Response Login Api Auth Login Post"
                 }
               }
             }
@@ -370,6 +378,371 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_auth_mfa_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaStatusOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/verify": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Verify",
+        "operationId": "verify_api_auth_mfa_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa/email": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Email",
+        "operationId": "email_api_auth_mfa_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaChallengeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaPendingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa/enrol-app": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Enrol App",
+        "operationId": "enrol_app_api_auth_mfa_enrol_app_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaChallengeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpEnrolOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa/email/enrol": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Enrol Email",
+        "operationId": "enrol_email_api_auth_mfa_email_enrol_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaPendingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/email/enrol/confirm": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Confirm Email",
+        "operationId": "confirm_email_api_auth_mfa_email_enrol_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/email/disable": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Disable Email",
+        "operationId": "disable_email_api_auth_mfa_email_disable_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaPendingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/email/disable/confirm": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Confirm Disable",
+        "operationId": "confirm_disable_api_auth_mfa_email_disable_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/password-change": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Password Change",
+        "operationId": "password_change_api_auth_mfa_password_change_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaPendingOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -4904,6 +5277,31 @@
               }
             ],
             "title": "Totp Code"
+          },
+          "mfa_challenge_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512,
+                "minLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Challenge Token"
+          },
+          "mfa_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Code"
           }
         },
         "additionalProperties": false,
@@ -7196,18 +7594,6 @@
             "maxLength": 128,
             "minLength": 1,
             "title": "Password"
-          },
-          "totp_code": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^[0-9]{6}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Totp Code"
           }
         },
         "type": "object",
@@ -7402,6 +7788,162 @@
           "message"
         ],
         "title": "MessageOut"
+      },
+      "MfaChallengeIn": {
+        "properties": {
+          "challenge_token": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 16,
+            "title": "Challenge Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_token"
+        ],
+        "title": "MfaChallengeIn"
+      },
+      "MfaConfirmIn": {
+        "properties": {
+          "challenge_token": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 16,
+            "title": "Challenge Token"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_token",
+          "code"
+        ],
+        "title": "MfaConfirmIn"
+      },
+      "MfaMethod": {
+        "type": "string",
+        "enum": [
+          "authenticator",
+          "email"
+        ],
+        "title": "MfaMethod"
+      },
+      "MfaPasswordIn": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "MfaPasswordIn"
+      },
+      "MfaPendingOut": {
+        "properties": {
+          "mfa_required": {
+            "type": "boolean",
+            "const": true,
+            "title": "Mfa Required",
+            "default": true
+          },
+          "challenge_token": {
+            "type": "string",
+            "title": "Challenge Token"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/MfaMethod"
+            },
+            "type": "array",
+            "title": "Methods"
+          },
+          "enrollment_required": {
+            "type": "boolean",
+            "title": "Enrollment Required"
+          },
+          "email_sent": {
+            "type": "boolean",
+            "title": "Email Sent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_token",
+          "expires_at",
+          "methods",
+          "enrollment_required",
+          "email_sent"
+        ],
+        "title": "MfaPendingOut"
+      },
+      "MfaStatusOut": {
+        "properties": {
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/MfaMethod"
+            },
+            "type": "array",
+            "title": "Methods"
+          },
+          "available_methods": {
+            "items": {
+              "$ref": "#/components/schemas/MfaMethod"
+            },
+            "type": "array",
+            "title": "Available Methods"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required"
+          }
+        },
+        "type": "object",
+        "required": [
+          "methods",
+          "available_methods",
+          "required"
+        ],
+        "title": "MfaStatusOut"
+      },
+      "MfaVerifyIn": {
+        "properties": {
+          "challenge_token": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 16,
+            "title": "Challenge Token"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Code"
+          },
+          "method": {
+            "$ref": "#/components/schemas/MfaMethod"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge_token",
+          "code",
+          "method"
+        ],
+        "title": "MfaVerifyIn"
       },
       "MismatchIndicatorOut": {
         "properties": {

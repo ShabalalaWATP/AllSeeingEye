@@ -39,7 +39,9 @@ def configure_logging(settings: Settings) -> None:
         if hasattr(stream, "reconfigure") and (stream.encoding or "").lower() != "utf-8":
             stream.reconfigure(encoding="utf-8", errors="replace")
     exception_processor: structlog.types.Processor = (
-        structlog.processors.dict_tracebacks
+        structlog.processors.ExceptionRenderer(
+            structlog.tracebacks.ExceptionDictTransformer(show_locals=False)
+        )
         if settings.is_prod
         else structlog.processors.format_exc_info
     )

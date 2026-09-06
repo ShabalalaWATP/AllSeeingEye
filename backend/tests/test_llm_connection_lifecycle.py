@@ -162,12 +162,20 @@ async def test_original_session_guard_failure_rolls_back_mutations(
     container.llm = FakeGateway()
     profile = await draft(client, headers)
     receipt = await proof(client, headers, profile)
+    callback_invoked = False
 
     async def expired() -> None:
+        nonlocal callback_invoked
+        callback_invoked = True
         raise Unauthenticated()
 
     context = RequestContext(None, None)
     async with container.session_factory() as session:
+        # First administrator sign-in enrols MFA and changes the credential version.
+        # Use that current actor so only the final session callback rejects this write.
+        current_admin = await container.repositories(session).users.get_by_id(admin.id)
+        assert current_admin is not None
+        admin = current_admin
         with pytest.raises(Unauthenticated):
             if operation == "create":
                 data = LlmProfileIn.model_validate({**DRAFT, "name": "Rejected"}).to_input()
@@ -200,6 +208,7 @@ async def test_original_session_guard_failure_rolls_back_mutations(
                 await container.llm_connections(session).reset_team(
                     admin, team_id, active.revision, context, before_save=expired
                 )
+        assert callback_invoked
         await session.rollback()
     async with container.session_factory() as session:
         r = container.repositories(session)

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import secrets
 from enum import StrEnum
-from typing import Self
+from typing import Literal, Self
 
-from pydantic import Field, PrivateAttr, SecretStr, model_validator
+from pydantic import EmailStr, Field, PrivateAttr, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ase.application.dto import RateLimits
@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     cookie_secure: bool | None = None
     public_base_url: str = "http://localhost:5173"
     log_level: str = "INFO"
+    smtp_host: str | None = Field(default=None, min_length=1, max_length=253)
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_security: Literal["starttls", "tls"] = "starttls"
+    smtp_from_email: EmailStr | None = None
+    smtp_username: str | None = Field(default=None, min_length=1, max_length=320)
+    smtp_password: SecretStr | None = None
+    smtp_timeout_seconds: int = Field(default=10, ge=1, le=30)
     max_request_bytes: int = Field(default=65_536, ge=1_024, le=10_485_760)
     admin_password: SecretStr | None = None
     rate_limit_login_per_ip: int = Field(default=10, ge=1)
@@ -65,6 +72,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _finalise(self) -> Self:
+        if bool(self.smtp_host) != bool(self.smtp_from_email):
+            raise ValueError("Configure ASE_SMTP_HOST and ASE_SMTP_FROM_EMAIL together")
+        smtp_password = self.smtp_password.get_secret_value() if self.smtp_password else ""
+        if bool(self.smtp_username) != bool(smtp_password):
+            raise ValueError("Configure ASE_SMTP_USERNAME and ASE_SMTP_PASSWORD together")
+        if self.smtp_username and not self.smtp_host:
+            raise ValueError("SMTP credentials require ASE_SMTP_HOST")
+        if self.smtp_host and any(char.isspace() for char in self.smtp_host):
+            raise ValueError("ASE_SMTP_HOST must not contain whitespace")
         if self.env is Environment.PROD:
             secret = self.jwt_secret.get_secret_value() if self.jwt_secret else ""
             if len(secret) < MIN_SECRET_LENGTH:

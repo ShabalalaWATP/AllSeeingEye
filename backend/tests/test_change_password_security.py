@@ -20,7 +20,7 @@ from helpers import ADMIN_PASSWORD, USER_PASSWORD, FakeClock, bearer, create_use
 from password_change_helpers import NEW_PASSWORD, outstanding_link
 from token_race_helpers import CONTEXT
 from token_race_helpers import race_container as race_container  # noqa: PLC0414
-from totp_helpers import enable_totp
+from totp_helpers import enable_totp, totp_login
 
 
 async def test_password_change_and_reset_have_exactly_one_winner(
@@ -101,13 +101,8 @@ async def test_demoted_admin_still_needs_stored_factor_to_change_password(
         await users.save(current)
         await session.commit()
     clock.advance(timedelta(minutes=1))
-    response = await client.post(
-        "/api/auth/login",
-        json={
-            "email": admin.email,
-            "password": ADMIN_PASSWORD,
-            "totp_code": pyotp.TOTP(secret).at(clock.now()),
-        },
+    response = await totp_login(
+        client, admin.email, ADMIN_PASSWORD, pyotp.TOTP(secret).at(clock.now())
     )
     assert response.status_code == 200 and response.json()["user"]["role"] == "user"
     headers = bearer(response.json()["access_token"])

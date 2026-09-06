@@ -1,8 +1,8 @@
-"""Authenticated administrator management of their own TOTP second factor."""
+"""Authenticated personal management of their own TOTP second factor."""
 
 from fastapi import APIRouter, Response
 
-from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
+from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.totp_schemas import (
     TotpConfirmIn,
     TotpDisableIn,
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/auth/totp", tags=["auth"])
 
 
 @router.get("")
-async def status(actor: AdminUser, session: SessionDep, container: ContainerDep) -> TotpStatusOut:
+async def status(actor: CurrentUser, session: SessionDep, container: ContainerDep) -> TotpStatusOut:
     enabled, available = await container.totp(session).status(actor)
     return TotpStatusOut(enabled=enabled, available=available)
 
@@ -24,7 +24,7 @@ async def status(actor: AdminUser, session: SessionDep, container: ContainerDep)
 async def enrol(
     body: TotpEnrolIn,
     response: Response,
-    actor: AdminUser,
+    actor: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -37,7 +37,7 @@ async def enrol(
 @router.post("/confirm", status_code=204)
 async def confirm(
     body: TotpConfirmIn,
-    actor: AdminUser,
+    actor: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
@@ -49,7 +49,7 @@ async def confirm(
 @router.post("/disable", status_code=204)
 async def disable(
     body: TotpDisableIn,
-    actor: AdminUser,
+    actor: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,

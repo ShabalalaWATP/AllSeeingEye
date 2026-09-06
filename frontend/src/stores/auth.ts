@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 
 import * as authApi from '@/lib/api/auth';
+import type { PendingMfa } from '@/lib/api/mfa';
 import { bindSession } from '@/lib/api/client';
 import { CSRF_COOKIE, readCookie } from '@/lib/csrf';
 import type { TokenResponse, User } from '@/lib/api/schemas';
@@ -19,7 +20,7 @@ export interface AuthState {
   accessToken: string | null;
   pendingRefresh: Promise<string | null> | null;
   bootstrap: () => Promise<void>;
-  login: (email: string, password: string, totpCode?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<PendingMfa | null>;
   logout: () => Promise<void>;
   refresh: () => Promise<string | null>;
   setSession: (token: TokenResponse) => void;
@@ -73,9 +74,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     await get().refresh();
   },
 
-  login: async (email, password, totpCode) => {
-    const token = await authApi.login(email, password, totpCode);
-    get().setSession(token);
+  login: async (email, password) => {
+    const result = await authApi.login(email, password);
+    if ('mfa_required' in result) return result;
+    get().setSession(result);
+    return null;
   },
 
   logout: async () => {

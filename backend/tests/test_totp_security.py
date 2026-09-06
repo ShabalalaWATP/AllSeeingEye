@@ -13,7 +13,7 @@ from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.domain.errors import EncryptionUnavailable, Forbidden, InvalidRequest
 from ase.domain.users import User
-from helpers import ADMIN_PASSWORD, FakeClock
+from helpers import ADMIN_PASSWORD, USER_PASSWORD, FakeClock
 
 CONTEXT = RequestContext(ip="test", user_agent="test")
 
@@ -93,7 +93,7 @@ async def test_application_permissions_and_local_recovery(
 ) -> None:
     async with container.session_factory() as session:
         use_case = container.totp(session)
-        for actor in (user, replace(admin, is_active=False)):
+        for actor in (replace(user, is_active=False), replace(admin, is_active=False)):
             with pytest.raises(Forbidden):
                 await use_case.status(actor)
             with pytest.raises(Forbidden):
@@ -102,7 +102,13 @@ async def test_application_permissions_and_local_recovery(
                 await use_case.confirm(actor, "123456", CONTEXT)
             with pytest.raises(Forbidden):
                 await use_case.recover_local(actor, ADMIN_PASSWORD)
+        assert await use_case.status(user) == (False, True)
+        with pytest.raises(Forbidden):
+            await use_case.recover_local(user, USER_PASSWORD)
+        personal_enrolment = await use_case.begin(user, USER_PASSWORD, CONTEXT)
+        assert personal_enrolment.secret
         assert await use_case.verify_login(user, None)
+        clock.advance(timedelta(minutes=1))
         with pytest.raises(InvalidRequest):
             await use_case.disable(admin, ADMIN_PASSWORD, "123456", CONTEXT)
         with pytest.raises(InvalidRequest):

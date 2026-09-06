@@ -567,3 +567,51 @@ preserving those earlier test results as historical evidence.
 - All 39 focused account/brand tests passed; lint, types and build passed. No
   authentication, API or approval policy changed. Coverage was not remeasured for
   this small refinement; the previous full-suite results are recorded above.
+
+### 6 September 2026: personal MFA and required administrator verification
+
+- Replaced the public tagline with "AI-assisted OSINT collection and analysis."
+  and removed "Research workspace". Removed the optional code disclosure from
+  password login; the server now opens a separate verification or enrolment step.
+- Added personal email/authenticator setup and removal, support for both methods,
+  and MFA proof during password changes. Administrators must retain at least one
+  factor and cannot receive a session until mandatory enrolment is complete.
+- Added purpose-bound expiring challenges, email-code hashing, atomic consumption,
+  attempt limits, session security-version invalidation and persistent administrator
+  MFA assurance. Migration `0019` preserves existing authenticator state and makes
+  old administrator sessions require fresh sign-in.
+- Added verified TLS SMTP delivery and host-only recovery of both factors. No code
+  is exposed through fallback links. Updated authentication and MFA operations docs.
+- Independent security review found production traceback locals could disclose
+  authentication secrets. A synthetic regression reproduced this, then passed with
+  local-variable rendering disabled. Re-review found no further material issue.
+- Browser verification used synthetic responses at desktop and 390-pixel widths,
+  with no console errors. Backend operator data and real email services were untouched.
+- Broad frontend checking exposed two timing-sensitive tests outside authentication:
+  awaited the upload's parent busy effect and preloaded tracker route modules before
+  rendering. Behaviour assertions remain intact; no product changes were required.
+
+- Final code review identified personal verification errors incorrectly using session
+  expiry responses and abandoned login responses replacing a later identity. Personal
+  proof mistakes now return 422; MFA verification aborts on unmount and checks the
+  current session before installation. Regression tests cover retained sessions,
+  single-attempt accounting, corrected retries and abandoned completions.
+
+- Final frontend verification: 517 tests across 97 files passed, with 98.38% line
+  and 91.98% branch coverage. A further six-case login run verified the explicit
+  request-abort assertion. TypeScript, ESLint and production build pass; existing
+  map/deck chunk-size warnings remain. Ruff, mypy, Bandit, import boundaries,
+  file-length and staged secret scanning pass.
+
+- Full backend run: 1,684 passed, 14 environment-dependent cases skipped, with
+  96.31% combined coverage. Two legacy test assumptions failed: a demoted account's
+  password step was expected to fail instead of returning a challenge, and an LLM
+  lifecycle test used the account snapshot from before mandatory enrolment changed
+  its security version. Both were corrected without production changes and their
+  affected suites passed separately (14 and 32 tests). The lifecycle tests now
+  explicitly assert that their intended final session callback runs.
+
+- Final combined backend rerun passed all 46 cases across access-session revocation,
+  LLM lifecycle, personal MFA and exception hardening, with appended combined coverage
+  of 96.42%. Focused code re-review confirmed both final findings are resolved.
+  No production migration, live mail, deployment or remote push was performed.

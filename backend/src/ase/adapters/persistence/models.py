@@ -101,6 +101,7 @@ class RefreshTokenRow(Base):
     revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    mfa_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
 
 
 class PasswordTokenRow(Base):

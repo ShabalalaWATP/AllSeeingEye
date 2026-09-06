@@ -80,6 +80,13 @@ interface SetPasswordBody {
 }
 
 export const handlers = [
+  http.get('/api/auth/mfa', () =>
+    HttpResponse.json({
+      methods: [],
+      available_methods: ['authenticator', 'email'],
+      required: false,
+    }),
+  ),
   http.get('/api/teams', () => HttpResponse.json({ items: [] })),
   http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as LoginBody;

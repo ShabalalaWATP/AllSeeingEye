@@ -54,7 +54,8 @@ describe('private research attachment', () => {
     choose();
     expect(await screen.findByText('Attached: notes.txt')).toBeVisible();
     expect(changed).toHaveBeenLastCalledWith('10000000-0000-4000-8000-000000000001');
-    expect(busy).toHaveBeenLastCalledWith(false);
+    // The parent notification runs in an effect after the receipt is rendered.
+    await waitFor(() => expect(busy).toHaveBeenLastCalledWith(false));
     fireEvent.click(screen.getByText('Extraction preview and limitations'));
     expect(screen.getByText('<script>claim</script>')).toBeVisible();
     expect(container.querySelector('script')).toBeNull();

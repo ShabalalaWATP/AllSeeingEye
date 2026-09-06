@@ -40,6 +40,15 @@ describe('account settings', () => {
   });
 
   it('rejects mismatches and incomplete authenticator codes without submitting', async () => {
+    server.use(
+      http.get('/api/auth/mfa', () =>
+        HttpResponse.json({
+          methods: ['authenticator'],
+          available_methods: ['authenticator'],
+          required: false,
+        }),
+      ),
+    );
     let requests = 0;
     server.use(
       http.post('/api/me/password', () => {
@@ -53,10 +62,9 @@ describe('account settings', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('The two passwords do not match.');
     await user.clear(screen.getByLabelText('Confirm new password'));
     await user.type(screen.getByLabelText('Confirm new password'), NEW_PASSWORD);
-    await user.click(screen.getByText('Use an authenticator code'));
     await user.type(screen.getByLabelText('Authenticator code'), '123');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Enter a six-digit authenticator code');
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a six-digit verification code');
     expect(requests).toBe(0);
   });
 
@@ -88,6 +96,15 @@ describe('account settings', () => {
   });
 
   it('disables editing while saving and signs out with a success notice', async () => {
+    server.use(
+      http.get('/api/auth/mfa', () =>
+        HttpResponse.json({
+          methods: ['authenticator'],
+          available_methods: ['authenticator'],
+          required: false,
+        }),
+      ),
+    );
     let release: () => void = () => undefined;
     const pending = new Promise<void>((resolve) => {
       release = resolve;
@@ -102,10 +119,9 @@ describe('account settings', () => {
     );
     const { user, router } = renderApp('/account', 'user');
     await fill(user);
-    await user.click(screen.getByText('Use an authenticator code'));
     await user.type(screen.getByLabelText('Authenticator code'), '123456');
     await user.click(screen.getByRole('button', { name: 'Change password' }));
-    expect(await screen.findByRole('button', { name: 'Changing password…' })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Please wait...' })).toBeDisabled();
     expect(screen.getByLabelText('Current password')).toBeDisabled();
     fireEvent.submit(screen.getByRole('form', { name: 'Change password' }));
     await waitFor(() => expect(bodies).toHaveLength(1));
@@ -121,6 +137,90 @@ describe('account settings', () => {
     expect(router.state.location.pathname).toBe('/login');
     expect(useAuthStore.getState().status).toBe('anonymous');
     expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+
+  it('verifies an email code before changing an email-protected password', async () => {
+    let proof: unknown;
+    let passwordBody: unknown;
+    server.use(
+      http.get('/api/auth/mfa', () =>
+        HttpResponse.json({ methods: ['email'], available_methods: ['email'], required: false }),
+      ),
+      http.post('/api/auth/mfa/password-change', async ({ request }) => {
+        proof = await request.json();
+        return HttpResponse.json({
+          mfa_required: true,
+          challenge_token: 'password-challenge',
+          expires_at: '2026-09-06T12:00:00Z',
+          methods: ['email'],
+          enrollment_required: false,
+          email_sent: true,
+        });
+      }),
+      http.post('/api/me/password', async ({ request }) => {
+        passwordBody = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { user } = renderApp('/account', 'user');
+    await fill(user);
+    expect(screen.queryByLabelText('Authenticator code')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Send verification code' }));
+    await user.type(await screen.findByLabelText('Email verification code'), '123456');
+    expect(proof).toEqual({ password: USER_PASSWORD });
+    expect(passwordBody).toBeUndefined();
+    await user.click(screen.getByRole('button', { name: 'Change password' }));
+    await waitFor(() => expect(useAuthStore.getState().status).toBe('anonymous'));
+    expect(passwordBody).toEqual({
+      current_password: USER_PASSWORD,
+      new_password: NEW_PASSWORD,
+      totp_code: null,
+      mfa_challenge_token: 'password-challenge',
+      mfa_code: '123456',
+    });
+  });
+
+  it('allows correcting the password proof for an email challenge without refreshing the session', async () => {
+    let proofs = 0;
+    let refreshes = 0;
+    server.use(
+      http.get('/api/auth/mfa', () =>
+        HttpResponse.json({ methods: ['email'], available_methods: ['email'], required: false }),
+      ),
+      http.post('/api/auth/mfa/password-change', () => {
+        proofs += 1;
+        return proofs === 1
+          ? apiError(422, 'invalid_request', 'The current password is incorrect.')
+          : HttpResponse.json({
+              mfa_required: true,
+              challenge_token: 'password-challenge',
+              expires_at: '2026-09-06T12:00:00Z',
+              methods: ['email'],
+              enrollment_required: false,
+              email_sent: true,
+            });
+      }),
+      http.post('/api/auth/refresh', () => {
+        refreshes += 1;
+        return apiError(401, 'invalid_refresh', 'Session expired.');
+      }),
+    );
+    const { user } = renderApp('/account', 'user');
+    await fill(user);
+    await user.click(screen.getByRole('button', { name: 'Send verification code' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The current password is incorrect.',
+    );
+    expect(proofs).toBe(1);
+    expect(refreshes).toBe(0);
+    expect(useAuthStore.getState().status).toBe('authenticated');
+    await user.clear(screen.getByLabelText('Current password'));
+    await user.type(screen.getByLabelText('Current password'), 'Corrected password');
+    await user.click(screen.getByRole('button', { name: 'Send verification code' }));
+    expect(await screen.findByLabelText('Email verification code')).toBeVisible();
+    expect(proofs).toBe(2);
+    expect(refreshes).toBe(0);
+    expect(useAuthStore.getState().status).toBe('authenticated');
   });
 
   it('can reveal passwords from the keyboard without submitting', async () => {

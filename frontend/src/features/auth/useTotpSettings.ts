@@ -1,18 +1,34 @@
 import { useState } from 'react';
 
-import { confirmTotp, disableTotp, enrolTotp, fetchTotpStatus } from '@/lib/api/totp';
+import { confirmEmailMfa, fetchMfaStatus, startEmailMfa } from '@/lib/api/mfa';
+import { confirmTotp, disableTotp, enrolTotp } from '@/lib/api/totp';
 import type { TotpEnrolment } from '@/lib/api/totp';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useResource } from '@/lib/hooks/useResource';
 import { useAuthStore } from '@/stores/auth';
 
+type Method = 'authenticator' | 'email';
 export function useTotpSettings() {
-  const resource = useResource(fetchTotpStatus);
+  const resource = useResource(fetchMfaStatus);
+  const actorId = useAuthStore((state) => state.user?.id);
+  const [method, setMethod] = useState<Method | null>(null);
   const [enrolment, setEnrolment] = useState<TotpEnrolment | null>(null);
+  const [challenge, setChallenge] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
+  const enabled = method !== null && (resource.data?.methods.includes(method) ?? false);
   const action = useAsyncAction(async () => {
-    if (resource.data?.enabled) {
+    if (method === null) return;
+    if (method === 'email') {
+      const operation = enabled ? 'disable' : 'enrol';
+      if (challenge === null) {
+        const pending = await startEmailMfa(operation, password);
+        setChallenge(pending.challenge_token);
+        setPassword('');
+        return;
+      }
+      await confirmEmailMfa(operation, challenge, code);
+    } else if (enabled) {
       await disableTotp(password, code);
     } else if (enrolment !== null) {
       await confirmTotp(code);
@@ -22,17 +38,35 @@ export function useTotpSettings() {
       setEnrolment(result);
       return;
     }
-    setPassword('');
-    setCode('');
-    setEnrolment(null);
-    // Changes revoke all refresh sessions. Return to login immediately so the next
-    // session reflects the configured factor, including the current browser.
-    useAuthStore.getState().clearSession();
+    reset();
+    // Factor changes revoke every session. Do not clear a replacement identity.
+    if (useAuthStore.getState().user?.id === actorId) {
+      useAuthStore.getState().clearSession();
+    }
   });
-  const restart = () => {
+  function reset() {
+    setMethod(null);
+    setPassword('');
     setEnrolment(null);
+    setChallenge(null);
     setCode('');
+  }
+  const restart = () => {
+    reset();
     action.clearError();
   };
-  return { resource, enrolment, password, setPassword, code, setCode, action, restart };
+  return {
+    resource,
+    method,
+    setMethod,
+    enabled,
+    enrolment,
+    challenge,
+    password,
+    setPassword,
+    code,
+    setCode,
+    action,
+    restart,
+  };
 }

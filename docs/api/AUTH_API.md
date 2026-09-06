@@ -32,14 +32,14 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 
 | Method and path | Auth | Body | Success | Errors |
 |---|---|---|---|---|
-| `POST /api/auth/login` | none | `{email, password, totp_code?}` | 200 `TokenResponse`; sets `ase_refresh` and `ase_csrf` cookies | 401 `invalid_credentials` (unknown email, wrong password, inactive, locked, missing/invalid required TOTP); 429 |
+| `POST /api/auth/login` | none | `{email, password}` | 200 `TokenResponse` and session cookies, or restricted `MfaPendingOut` without a session | 401 `invalid_credentials` (unknown email, wrong password, inactive, locked, invalid credentials); 429 |
 | `POST /api/auth/refresh` | cookie + CSRF header | none | 200 `TokenResponse`; rotates cookies | 401 `invalid_refresh` (missing, expired, revoked or reused); 403 `csrf_failed` |
 | `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
 | `POST /api/auth/request-account` | none | `{email, display_name, reason?}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}` | 422; 429 |
 | `POST /api/auth/forgot-password` | none | `{email}` | 202 `{"message": "If the address is registered, a reset link has been issued."}` | 422; 429 |
 | `POST /api/auth/set-password` | none | `{token, new_password}` | 204 (token purpose may be `activation` or `reset`; single use) | 400 `invalid_token`; 422 `weak_password` with `fields.new_password` reason; 429 |
 | `GET /api/me` | bearer | | 200 `User` | 401 |
-| `POST /api/me/password` | bearer | `{current_password, new_password, totp_code?}`; extra fields forbidden | 204; changes only the authenticated account's password, ends all its sessions and outstanding password links, clears cookies | 401 for an ended/inactive session; 422 `invalid_request` for incorrect current password or required authenticator proof; 422 `weak_password`; 429 |
+| `POST /api/me/password` | bearer | `{current_password, new_password, totp_code?, mfa_challenge_token?, mfa_code?}`; extra fields forbidden | 204; changes only the authenticated account's password, ends all its sessions and outstanding password links, clears cookies | 401 for an ended/inactive session; 422 `invalid_request` for incorrect current password or required authenticator proof; 422 `weak_password`; 429 |
 | `GET /api/admin/account-requests?status=pending` | admin | | 200 `{"items": [AccountRequest]}` | 401, 403 |
 | `POST /api/admin/account-requests/{id}/approve` | admin | `{role: "user" | "manager" | "admin"}` | 200 `{"user": User, "activation_link": string | null, "expires_at": datetime}`; the link is returned when no email transport is configured | 404 `not_found`; 409 `already_decided`; 409 `email_taken` when a user with that address already exists |
 | `POST /api/admin/account-requests/{id}/reject` | admin | `{reason?}` | 204 | 404; 409 |
@@ -56,25 +56,49 @@ Managers cannot call the administrator routes above. Assigning global `manager`
 capability does not enrol the account into a team or grant access to another
 team's work. There is no manager-accessible global user directory.
 
-## Administrator TOTP
+## Multi-factor authentication
 
-All these routes require the current administrator account and a bearer token.
-TOTP is optional and uses six-digit authenticator codes. Existing active TOTP
-secrets are never returned; only newly started enrolment discloses its secret.
+All active accounts can enable an authenticator app, email codes, or both from
+**My account > Multi-factor authentication** (`/account/security`). Administrators
+must keep at least one method enabled. After a valid password, accounts with MFA
+receive a restricted challenge instead of access or refresh tokens. Administrators
+without a factor must complete enrolment through that challenge before signing in.
 
-| Method and path | Body | Result |
+`MfaPendingOut` contains `mfa_required: true`, opaque `challenge_token`, `expires_at`,
+`methods` (`authenticator` and/or `email`), `enrollment_required` and `email_sent`.
+An email-only login automatically sends a code. With both factors, the user can
+choose email instead of the authenticator. Challenges expire after ten minutes;
+email codes expire after five minutes and replacement codes invalidate prior ones.
+Five failed attempts exhaust a challenge and count towards account lockout.
+
+| Method and path | Auth / body | Result |
 |---|---|---|
-| `GET /api/auth/totp` | None | `{enabled, available}`; availability requires encryption configuration |
-| `POST /api/auth/totp/enrol` | `{password}` | `{secret, provisioning_uri, expires_in: 600}` with `Cache-Control: no-store` |
-| `POST /api/auth/totp/confirm` | `{code}` | 204; enables the pending factor and ends existing sessions |
-| `POST /api/auth/totp/disable` | `{password, code}` | 204; removes the factor and ends existing sessions |
+| `POST /api/auth/mfa/verify` | Challenge, `{challenge_token, method, code}` | TokenResponse and session cookies only after successful factor verification |
+| `POST /api/auth/mfa/email` | Challenge, `{challenge_token}` | Sends or replaces login email code; MfaPendingOut |
+| `POST /api/auth/mfa/enrol-app` | Restricted administrator enrolment challenge | `{secret, provisioning_uri, expires_in}`; confirm through `/verify` |
+| `GET /api/auth/mfa` | Bearer | `{methods, available_methods, required}` |
+| `GET /api/auth/totp` | Bearer | `{enabled, available}` |
+| `POST /api/auth/totp/enrol` | Bearer, `{password}` | New secret/provisioning URI; expires in 600 seconds |
+| `POST /api/auth/totp/confirm` | Bearer, `{code}` | 204; enables app and ends all sessions |
+| `POST /api/auth/totp/disable` | Bearer, `{password, code}` | 204; removes app unless it is the administrator's final factor |
+| `POST /api/auth/mfa/email/enrol` | Bearer, `{password}` | Sends purpose-bound enrolment code; MfaPendingOut |
+| `POST /api/auth/mfa/email/enrol/confirm` | Bearer, `{challenge_token, code}` | 204; enables email and ends all sessions |
+| `POST /api/auth/mfa/email/disable` | Bearer, `{password}` | Sends removal code unless administrator's final factor |
+| `POST /api/auth/mfa/email/disable/confirm` | Bearer, `{challenge_token, code}` | 204; removes email and ends all sessions |
+| `POST /api/auth/mfa/password-change` | Bearer, `{password}` | Sends purpose-bound email proof for `/api/me/password` |
 
-Accepted time steps are consumed atomically to prevent code reuse. Password
-reset and role demotion do not delete a stored factor. A stored factor remains
-required on login and authenticated password changes, including after demotion.
-Host recovery uses
-`uv run ase recover-admin-totp --email <account>` and requires password
-confirmation; there is no HTTP recovery bypass.
+Challenges are hashed at rest, purpose-bound, single-use and checked against current
+account activity, lockout and security version. Email delivery releases database
+locks and rechecks authority before accepting the delivery result. Authenticator
+steps are consumed atomically. Existing secrets are never returned. Factor changes
+revoke sessions and increment the account security version. Password resets and
+role demotion retain enrolled factors.
+
+See [MFA operations](../MFA_OPERATIONS.md) for encrypted authenticator storage,
+SMTP configuration, migration and host-only recovery. There is no HTTP recovery bypass.
+Incorrect personal verification passwords/codes return 422 without refreshing or
+ending the caller's valid session. Invalid sessions still return 401. Public MFA
+login failures remain generic 401 responses.
 
 ## Account settings and password changes
 
@@ -83,7 +107,9 @@ User, manager and administrator accounts can change their own password through
 field. It requires an explicit bearer token; refresh/CSRF cookies alone cannot
 authorise the write. Both password fields accept at most 128 characters. A
 supplied `totp_code` must be six ASCII digits and is required whenever the account
-has an enrolled factor. A valid code already used at login cannot be reused.
+uses its enrolled authenticator. Email verification instead requires a matching
+`mfa_challenge_token` and `mfa_code` issued for password change. A code already used
+at login cannot be reused.
 
 The service locks the account and rechecks its active status and security
 version before verifying the current password. The new password uses the policy
@@ -101,7 +127,11 @@ token and returns to sign-in. Failed transactions do not consume a factor code.
 
 ## Session lifecycle and upgrade
 
-Migration `0012` adds account security versions and the administration guard.
+Migration `0019` adds MFA challenges, email factors and refresh-family assurance.
+Existing administrator sessions become unverified and must sign in again. Existing
+authenticator secrets and replay counters remain intact. An unverified administrator
+family cannot access protected routes, streams or refresh. Successful refresh preserves
+MFA assurance. Migration `0012` introduced account security versions and the administration guard.
 Old access JWTs lacking `sid`/`sv` are rejected. Existing valid opaque refresh
 cookies can rotate into a new access JWT; revoked or expired sessions cannot.
 The operator must migrate the intended database before starting the new code.

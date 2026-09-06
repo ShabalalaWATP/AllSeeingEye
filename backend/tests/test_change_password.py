@@ -7,6 +7,7 @@ import pyotp
 import pytest
 from httpx import AsyncClient
 
+from ase.adapters.persistence.totp import SqlTotpRepository
 from ase.api.account_schemas import ChangePasswordIn
 from ase.container import Container
 from ase.domain.audit import AuditAction
@@ -20,10 +21,11 @@ from helpers import (
     create_user,
     login,
     login_token,
+    password_login,
     restore_session,
 )
 from password_change_helpers import NEW_PASSWORD, outstanding_link
-from totp_helpers import enable_totp
+from totp_helpers import enable_totp, totp_login
 
 
 @pytest.mark.parametrize("role", [Role.USER, Role.MANAGER, Role.ADMIN])
@@ -31,17 +33,27 @@ async def test_every_account_role_can_change_own_password(
     client: AsyncClient,
     container: Container,
     role: Role,
+    clock: FakeClock,
 ) -> None:
     actor = await create_user(
         container, email="self-service@example.com", password=USER_PASSWORD, role=role
     )
     token = await login_token(client, actor.email, USER_PASSWORD)
+    code = None
+    if role is Role.ADMIN:
+        async with container.session_factory() as session:
+            state = await SqlTotpRepository(session).get(actor.id)
+            assert state and state.secret_encrypted
+            secret = container.cipher.decrypt(state.secret_encrypted)
+        clock.advance(timedelta(minutes=1))
+        code = pyotp.TOTP(secret).at(clock.now())
     changed = await client.post(
         "/api/me/password",
         headers=bearer(token),
         json={
             "current_password": USER_PASSWORD,
             "new_password": NEW_PASSWORD,
+            "totp_code": code,
         },
     )
     assert changed.status_code == 204 and not changed.content
@@ -221,25 +233,15 @@ async def test_enrolled_factor_is_required_and_preserved(
         "/api/me/password", headers=headers, json={**body, "totp_code": code}
     )
     assert success.status_code == 204
-    assert (await login(client, admin.email, NEW_PASSWORD)).status_code == 401
+    pending = await password_login(client, admin.email, NEW_PASSWORD)
+    assert pending.status_code == 200 and pending.json()["mfa_required"]
+    assert "access_token" not in pending.json()
     # Neither the previous code nor the password change disabled the second factor.
-    reused = await client.post(
-        "/api/auth/login",
-        json={
-            "email": admin.email,
-            "password": NEW_PASSWORD,
-            "totp_code": code,
-        },
-    )
+    reused = await totp_login(client, admin.email, NEW_PASSWORD, code)
     assert reused.status_code == 401
     clock.advance(timedelta(minutes=1))
-    signed_in = await client.post(
-        "/api/auth/login",
-        json={
-            "email": admin.email,
-            "password": NEW_PASSWORD,
-            "totp_code": pyotp.TOTP(secret).at(clock.now()),
-        },
+    signed_in = await totp_login(
+        client, admin.email, NEW_PASSWORD, pyotp.TOTP(secret).at(clock.now())
     )
     assert signed_in.status_code == 200
 

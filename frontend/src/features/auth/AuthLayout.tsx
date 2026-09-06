@@ -30,9 +30,7 @@ export function AuthLayout() {
             The All <br />
             Seeing Eye<span>.</span>
           </p>
-          <p className="auth-brand-description">
-            Public sources. Connected evidence. <br />A clearer picture.
-          </p>
+          <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
         </div>
         <div className="auth-brand-footer" aria-hidden="true">
           <span>ASE / RESEARCH</span>
@@ -48,9 +46,6 @@ export function AuthLayout() {
           <div className="auth-form">
             <Outlet />
           </div>
-          <p className="auth-access-footer">
-            The All Seeing Eye <span>/</span> Research workspace
-          </p>
         </div>
       </main>
     </div>

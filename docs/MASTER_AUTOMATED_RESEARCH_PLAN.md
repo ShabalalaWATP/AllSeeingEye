@@ -208,3 +208,17 @@ representative human-labelled research-quality gate. See
 - Before deployment, triage remaining distribution advisories and assess stronger
   native-decoder isolation. This milestone does not claim production deployment,
   unrestricted source coverage, verified identities or full Unicode PDF support.
+
+## Personal MFA follow-up, 6 September 2026
+
+- [x] Direct AI-assisted OSINT login copy and automatic password-then-MFA flow.
+- [x] Personal authenticator/email configuration for every active account.
+- [x] Mandatory administrator enrolment and persistent MFA session assurance.
+- [x] SMTP delivery, bounded proofs, factor-change revocation and host-only recovery.
+- [x] Security review and regression for exception-log local-variable disclosure.
+- [ ] Operator migration `0019`, persistent encryption/SMTP configuration and real mail check.
+- [ ] Routine pruning of expired MFA challenge rows, which currently remain stored
+  but cannot be used after expiry. No cleanup job is installed by this milestone.
+
+The MFA operations guide and authentication API describe the new contract. Full
+integration verification for this change is recorded in the development story.

@@ -12,7 +12,7 @@ export default function AccountPage() {
     <section className="h-full overflow-y-auto p-4 sm:p-6">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
         <header>
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">Your workspace</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-muted">Your profile</p>
           <h1 className="mt-2 text-2xl font-semibold">Account</h1>
         </header>
         <dl className="grid gap-5 border-y border-line py-5 sm:grid-cols-2">
@@ -37,6 +37,18 @@ export default function AccountPage() {
             </Link>
           </div>
         </dl>
+        <section className="border-b border-line pb-6">
+          <h2 className="text-xl font-semibold">Multi-factor authentication</h2>
+          <p className="mt-2 text-sm text-muted">
+            Protect your account with email verification or an authenticator app.
+          </p>
+          <Link
+            to="/account/security"
+            className="mt-3 inline-flex min-h-11 items-center rounded text-sm text-ember hover:underline"
+          >
+            Manage sign-in security
+          </Link>
+        </section>
         <ChangePasswordForm key={`${user.id}:${user.role}`} actorId={user.id} />
       </div>
     </section>

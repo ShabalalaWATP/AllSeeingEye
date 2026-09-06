@@ -18,6 +18,7 @@ from ase.api.routers import (
     events,
     health,
     me,
+    mfa,
     report_documents,
     report_methodology,
     report_search,
@@ -39,6 +40,7 @@ api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
 api_router.include_router(totp.router)
+api_router.include_router(mfa.router)
 api_router.include_router(teams.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)

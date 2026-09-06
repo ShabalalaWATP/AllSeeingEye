@@ -20,7 +20,13 @@ async def change_password(
     # As with TOTP management, authorisation requires an explicit bearer token;
     # ambient cookies alone never authorise this write.
     await container.change_password(session).execute(
-        actor, body.current_password, body.new_password, context, body.totp_code
+        actor,
+        body.current_password,
+        body.new_password,
+        context,
+        body.totp_code,
+        body.mfa_challenge_token,
+        body.mfa_code,
     )
     response = Response(status_code=204, headers={"Cache-Control": "no-store"})
     clear_session_cookies(response, container.settings)

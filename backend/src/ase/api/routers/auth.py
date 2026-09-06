@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Request, Response, status
 
 from ase.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
 from ase.api.deps import ContainerDep, ContextDep, SessionDep, require_csrf
+from ase.api.mfa_schemas import MfaPendingOut
 from ase.api.schemas import (
     ForgotPasswordIn,
     LoginIn,
@@ -14,6 +15,7 @@ from ase.api.schemas import (
     SetPasswordIn,
     TokenResponse,
 )
+from ase.domain.mfa import PendingMfa
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -28,10 +30,12 @@ async def login(
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
-) -> TokenResponse:
-    auth = await container.login(session).execute(
-        body.email, body.password, context, body.totp_code
-    )
+) -> TokenResponse | MfaPendingOut:
+    auth = await container.login(session).execute(body.email, body.password, context)
+    response.headers["Cache-Control"] = "no-store"
+    if isinstance(auth, PendingMfa):
+        clear_session_cookies(response, container.settings)
+        return MfaPendingOut.from_pending(auth)
     set_session_cookies(response, auth, container.settings)
     return TokenResponse.from_session(auth)
 

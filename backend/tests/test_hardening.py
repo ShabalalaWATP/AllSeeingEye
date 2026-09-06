@@ -48,6 +48,12 @@ def test_prod_logging_renders_tracebacks_as_json(capsys: pytest.CaptureFixture[s
     )
     log = structlog.get_logger("test")
     try:
+        credentials = {
+            "password": "synthetic-password-marker",
+            "code": "synthetic-code-marker",
+            "challenge_token": "synthetic-challenge-marker",
+        }
+        assert credentials
         msg = "boom"
         raise ValueError(msg)
     except ValueError:
@@ -55,7 +61,11 @@ def test_prod_logging_renders_tracebacks_as_json(capsys: pytest.CaptureFixture[s
     record = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
     assert record["event"] == "failed"
     assert record["password"] == "[redacted]"
-    assert "boom" in json.dumps(record["exception"])
+    rendered = json.dumps(record["exception"])
+    assert "boom" in rendered
+    assert "synthetic-password-marker" not in rendered
+    assert "synthetic-code-marker" not in rendered
+    assert "synthetic-challenge-marker" not in rendered
 
 
 def test_dev_logging_survives_tracebacks(capsys: pytest.CaptureFixture[str]) -> None:

@@ -23,9 +23,14 @@ from helpers import (
 
 
 class PausedDelivery:
+    available = False
+
     def __init__(self) -> None:
         self.entered = asyncio.Event()
         self.release = asyncio.Event()
+
+    async def send_code(self, _email: str, _code: str) -> bool:
+        return False
 
     async def send_link(self, _email, _purpose, _link) -> bool:
         self.entered.set()

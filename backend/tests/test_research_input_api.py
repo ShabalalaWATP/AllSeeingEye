@@ -33,7 +33,7 @@ def upload_app(harness: Harness, *, authenticated: bool = True) -> FastAPI:
     async def session() -> AsyncIterator[None]:
         yield None
 
-    async def active_family(*args: Any) -> bool:
+    async def active_family(*args: Any, **kwargs: Any) -> bool:
         return True
 
     application.dependency_overrides[get_access_claims] = lambda: AccessClaims(

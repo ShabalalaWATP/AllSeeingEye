@@ -20,7 +20,9 @@ async def validate_current_session(
         or user is None
         or not user.is_active
         or user.security_version != claims.security_version
-        or not await refresh_tokens.family_is_active(user.id, claims.family_id, now)
+        or not await refresh_tokens.family_is_active(
+            user.id, claims.family_id, now, require_mfa=user.is_admin
+        )
     ):
         raise Unauthenticated("The session has ended. Sign in again.")
     return user

@@ -1,11 +1,16 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { useEventsStore } from '@/stores/events';
 import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+
+// Load route modules before measuring their MSW/render behaviour on a cold worker.
+beforeAll(async () => {
+  await Promise.all([import('./TrackersPage'), import('./ConflictPage'), import('./HazardPage')]);
+});
 
 describe('trackers', () => {
   it('lists conflicts and hazards with their activity', async () => {

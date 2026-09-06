@@ -22,6 +22,33 @@ from ase.main import create_app
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
 
 
+@app.command("recover-admin-mfa")
+def recover_admin_mfa(
+    email: Annotated[str, typer.Option(help="Email of the administrator needing MFA recovery")],
+) -> None:
+    """Clear all admin factors locally, revoke sessions and require fresh MFA enrolment."""
+    password = typer.prompt("Current administrator password", hide_input=True)
+    typer.confirm("Remove all MFA methods and revoke this administrator's sessions?", abort=True)
+    try:
+        asyncio.run(_recover_admin_mfa(Settings(), normalise_email(email), password))
+    except AppError as exc:
+        typer.echo(exc.message)
+        raise typer.Exit(code=1) from exc
+    typer.echo("MFA removed. Sign in and enrol a new MFA method before accessing the app.")
+
+
+async def _recover_admin_mfa(settings: Settings, email: str, password: str) -> None:
+    container = Container(settings)
+    try:
+        async with container.session_factory() as session:
+            user = await container.repositories(session).users.get_by_email(email)
+            if user is None:
+                raise InvalidCredentials()
+            await container.mfa_management(session).recover_local(user, password)
+    finally:
+        await container.dispose()
+
+
 @app.command("recover-admin-totp")
 def recover_admin_totp(
     email: Annotated[

@@ -33,6 +33,7 @@ class RefreshToken:
     revoked_at: datetime | None
     ip: str | None
     user_agent: str | None
+    mfa_verified: bool = False
 
     def is_valid(self, now: datetime) -> bool:
         return self.revoked_at is None and self.expires_at > now

@@ -1,10 +1,9 @@
-"""Optional administrator TOTP enrolment, verification and removal."""
+"""Personal TOTP enrolment, verification and removal."""
 
 from datetime import timedelta
 
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
-from ase.application.policy import require_admin
 from ase.application.ports import (
     Clock,
     PasswordHasher,
@@ -13,11 +12,12 @@ from ase.application.ports import (
     UnitOfWork,
     UserRepository,
 )
+from ase.application.ports.mfa import MfaRepository
 from ase.application.ports.totp import TotpProvider, TotpRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Forbidden, InvalidRequest, RateLimited
 from ase.domain.totp import TotpEnrolment
-from ase.domain.users import User
+from ase.domain.users import Role, User
 
 
 class TotpUseCase:
@@ -32,6 +32,7 @@ class TotpUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
         users: UserRepository,
+        mfa: MfaRepository,
     ) -> None:
         self._repo = repository
         self._provider = provider
@@ -42,9 +43,10 @@ class TotpUseCase:
         self._auditor = auditor
         self._uow = uow
         self._users = users
+        self._mfa = mfa
 
     async def status(self, actor: User) -> tuple[bool, bool]:
-        self._require_active_admin(actor)
+        self._require_active_user(actor)
         state = await self._repo.get(actor.id)
         return bool(state and state.enabled), self._provider.available
 
@@ -102,12 +104,16 @@ class TotpUseCase:
         state = await self._repo.get(actor.id)
         if state is None or not state.enabled:
             raise InvalidRequest("TOTP is not enabled.")
+        if actor.role is Role.ADMIN and not await self._mfa.email_enabled(actor.id):
+            raise InvalidRequest("Administrators must keep at least one MFA method enabled.")
         if not await self.verify_login(actor, code):
             await self._failure(actor, context)
         await self._remove(actor, context, AuditAction.TOTP_DISABLED)
 
     async def recover_local(self, actor: User, password: str) -> None:
         """Host-only recovery, deliberately unavailable through any HTTP route."""
+        if actor.role is not Role.ADMIN:
+            raise Forbidden()
         context = RequestContext(ip=None, user_agent="local-cli")
         actor = await self._authorise(actor, password, context)
         await self._remove(actor, context, AuditAction.TOTP_RECOVERED)
@@ -120,11 +126,11 @@ class TotpUseCase:
         await self._record(action, actor, context)
 
     async def _lock_actor(self, actor: User) -> User:
-        self._require_active_admin(actor)
+        self._require_active_user(actor)
         current = await self._users.lock_by_id(actor.id)
         if current is None or current.security_version != actor.security_version:
             raise Forbidden()
-        self._require_active_admin(current)
+        self._require_active_user(current)
         return current
 
     async def _authorise(self, actor: User, password: str, context: RequestContext) -> User:
@@ -144,8 +150,7 @@ class TotpUseCase:
                 raise RateLimited(retry)
 
     @staticmethod
-    def _require_active_admin(actor: User) -> None:
-        require_admin(actor)
+    def _require_active_user(actor: User) -> None:
         if not actor.is_active:
             raise Forbidden()
 
