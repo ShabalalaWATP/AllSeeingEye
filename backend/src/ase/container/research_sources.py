@@ -179,6 +179,25 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
     specs.extend(subject_specs())
     specs.append(
         _spec(
+            "research-aiddata-projects",
+            "AidData Chinese development projects",
+            Category.ECONOMIC,
+            "Imported historical project assertions; source authenticity and "
+            "outcomes are unverified.",
+            "Local country/term search by commitment year, at most 20 records with "
+            "declared limits.",
+            "Requires a local catalogue and explicit recorded-time selection. No "
+            "automatic download "
+            "or complete-release claim; commitments are not payments. Precise area "
+            "search is pending.",
+            "AidData ODC-By; OSM geometry ODbL. Attribute both; preserve "
+            "source-specific reuse terms.",
+            organisation="AidData",
+            role="originator",
+        )
+    )
+    specs.append(
+        _spec(
             "research-copernicus-footprints",
             "Copernicus satellite footprints",
             Category.SPACE,

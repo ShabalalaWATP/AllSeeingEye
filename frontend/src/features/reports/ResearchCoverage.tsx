@@ -6,6 +6,7 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
   if (!receipt)
     return <p className="text-xs text-muted">Collection receipt not recorded for this version.</p>;
   const passes = receipt.passes ?? [];
+  const recordedTimes = receipt.time_basis === 'recorded_time';
   const observationTimes = receipt.time_basis === 'acquisition_or_publication';
   return (
     <details className="min-w-0 border-t border-line py-3 text-sm">
@@ -17,9 +18,11 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
       <div className="mt-3 space-y-4 [overflow-wrap:anywhere]">
         <p className="text-xs text-muted">
           Saved collection activity, not proof of completeness.{' '}
-          {observationTimes
-            ? 'Dates filter acquisition time for observations and publication time for reporting, not retrieval time.'
-            : 'Dates filter publication time, not necessarily event time.'}{' '}
+          {recordedTimes
+            ? 'Project years may only possibly overlap a narrower interval. Other observations use acquisition and reporting uses publication; retrieval time is never substituted.'
+            : observationTimes
+              ? 'Dates filter acquisition time for observations and publication time for reporting, not retrieval time.'
+              : 'Dates filter publication time, not necessarily event time.'}{' '}
           Empty or unavailable sources do not establish absence of events. Collected items may not
           all appear in the evidence annex.
         </p>
@@ -40,9 +43,11 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
           </div>
           <div>
             <dt className="text-muted">
-              {observationTimes
-                ? 'Acquisition/publication period (UTC)'
-                : 'Publication period (UTC)'}
+              {recordedTimes
+                ? 'Recorded project/acquisition/publication period (UTC)'
+                : observationTimes
+                  ? 'Acquisition/publication period (UTC)'
+                  : 'Publication period (UTC)'}
             </dt>
             <dd>
               {formatUtc(receipt.since)} to {formatUtc(receipt.until)}

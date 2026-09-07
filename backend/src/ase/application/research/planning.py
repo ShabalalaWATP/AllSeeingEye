@@ -103,4 +103,5 @@ def build_plan(
         subject=query.subject,
         country_iso=query.country_iso,
         area=query.area,
+        time_basis=query.effective_time_basis,
     )

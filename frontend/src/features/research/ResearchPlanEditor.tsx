@@ -8,10 +8,12 @@ export function ResearchPlanEditor({
   plan,
   languages,
   area = false,
+  historical = false,
 }: {
   plan: ResearchPlanState;
   languages: string[];
   area?: boolean;
+  historical?: boolean;
 }) {
   const catalogue = useLanguageCatalogue();
   const sources = [
@@ -22,7 +24,7 @@ export function ResearchPlanEditor({
   return (
     <details className="min-w-0 border-b border-line pb-5">
       <summary className="cursor-pointer py-2 text-sm font-medium">
-        Collection plan {area ? '(required)' : '(optional)'}
+        Collection plan {area || historical ? '(required)' : '(optional)'}
       </summary>
       <div className="mt-4 space-y-5">
         <p className="text-xs leading-relaxed text-muted">
@@ -30,7 +32,9 @@ export function ResearchPlanEditor({
           model calls or source requests.{' '}
           {area
             ? 'The chosen area and fixed dates are used for preview and collection.'
-            : 'The reporting window advances to the time the run starts.'}
+            : historical
+              ? 'The chosen commitment years are fixed for preview and collection.'
+              : 'The reporting window advances to the time the run starts.'}
           {area
             ? ' Area collection only uses providers that explicitly support this geometry. Empty results do not prove absence.'
             : ' General research may revise an empty search once using the configured AI connection, within the same collection budget. Source selection and research scope stay fixed; both passes are saved for review.'}

@@ -140,6 +140,8 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
             ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
             uksl_snapshot_path=settings.uksl_snapshot_path,
             ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,
+            aiddata_catalogue_path=settings.aiddata_catalogue_path,
+            countries=self.countries,
             companies_house_key=(
                 settings.companies_house_key.get_secret_value()
                 if settings.companies_house_key

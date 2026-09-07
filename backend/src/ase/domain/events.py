@@ -11,6 +11,7 @@ from types import MappingProxyType
 
 from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.observation import ObservationMetadata
+from ase.domain.project import ProjectMetadata
 
 JsonScalar = str | int | float | bool | None
 
@@ -127,6 +128,7 @@ class Event:
     content_hash: str = ""
     geometry: EvidenceGeometry | None = None
     observation: ObservationMetadata | None = None
+    project: ProjectMetadata | None = None
 
     @property
     def grade(self) -> str:

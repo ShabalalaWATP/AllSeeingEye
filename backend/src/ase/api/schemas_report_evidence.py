@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr
 
 from ase.api.schemas_observations import EvidenceGeometryOut, ObservationOut
+from ase.api.schemas_projects import ProjectOut
 from ase.api.schemas_source_ratings import SourceRatingOut
 
 
@@ -49,3 +50,4 @@ class ReportEvidenceOut(BaseModel):
     attributes: list[EvidenceAttributeOut] = Field(default_factory=list)
     geometry: EvidenceGeometryOut | None = None
     observation: ObservationOut | None = None
+    project: ProjectOut | None = None

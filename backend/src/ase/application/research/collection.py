@@ -10,7 +10,7 @@ from ase.application.ports.research import ResearchProvider
 from ase.application.research.budget import CollectionBudget, CollectionRunBudget
 from ase.application.research.planning import build_plan
 from ase.domain.events import Event
-from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
+from ase.domain.evidence_time import EvidenceTimeBasis, evidence_matches_time, evidence_time
 from ase.domain.research import (
     CollectionAttempt,
     CollectionStatus,
@@ -149,13 +149,14 @@ class ResearchCollector:
         for item in incoming:
             if state.remaining_items <= 0:
                 break
-            basis = EvidenceTimeBasis.RESEARCH if query.area else EvidenceTimeBasis.PUBLICATION
+            basis = query.effective_time_basis
             timestamp = evidence_time(item, basis)
             current_context = (
                 query.area is None and item.attributes.get("record_kind") in CURRENT_RECORDS
             )
-            if timestamp is None or (
-                not current_context and not query.since <= timestamp < query.until
+            if not (
+                (current_context and timestamp is not None)
+                or evidence_matches_time(item, basis, query.since, query.until)
             ):
                 continue
             if state.retain(item.id):
@@ -187,9 +188,20 @@ class ResearchCollector:
         if batch.items and not retained:
             explanation = (
                 "No additional items within the requested "
-                + ("acquisition/publication" if query.area else "publication")
+                + (
+                    "recorded"
+                    if query.effective_time_basis is EvidenceTimeBasis.RECORDED
+                    else "acquisition/publication"
+                    if query.area
+                    else "publication"
+                )
                 + " period. "
                 + explanation
+            )
+        if query.effective_time_basis is EvidenceTimeBasis.RECORDED:
+            explanation = (
+                "Project years may only possibly overlap a narrower interval; "
+                "unknown commitment years are excluded. " + explanation
             )
         if query.area and any(item.observation is not None for item in batch.items):
             explanation = (

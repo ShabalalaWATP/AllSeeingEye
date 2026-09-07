@@ -1,3 +1,4 @@
+import { ProjectHistory, type ProjectHistoryState } from './ProjectHistory';
 import { SourceLanguagePicker } from '@/components/languages/SourceLanguagePicker';
 import { RegionalPresets } from './RegionalPresets';
 import { GeneralRecordScope } from './GeneralRecordScope';
@@ -10,6 +11,8 @@ import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 export type ResearchFocus = ReportRequest['research_focus'];
 
 interface ScopeProps {
+  history?: ProjectHistoryState;
+  setHistory?: (value: ProjectHistoryState) => void;
   workspaces: Workspaces;
   teamId: string;
   selectTeam: (id: string) => void;
@@ -44,6 +47,9 @@ export function ResearchScope(props: ScopeProps) {
           }}
         />
       )}
+      {props.focus === 'general' && props.history && props.setHistory && (
+        <ProjectHistory value={props.history} onChange={props.setHistory} />
+      )}
       <div className="grid gap-5 sm:grid-cols-2">
         {props.focus === 'general' && (
           <SelectField
@@ -60,18 +66,20 @@ export function ResearchScope(props: ScopeProps) {
             ]}
           />
         )}
-        <SelectField
-          label="Reporting window"
-          value={props.windowHours}
-          onChange={(event) => props.setWindowHours(event.target.value)}
-          className="min-h-11"
-          options={[
-            { value: '24', label: 'Past 24 hours' },
-            { value: '72', label: 'Past 3 days' },
-            { value: '168', label: 'Past 7 days' },
-            { value: '336', label: 'Past 14 days' },
-          ]}
-        />
+        {!props.history?.enabled && (
+          <SelectField
+            label="Reporting window"
+            value={props.windowHours}
+            onChange={(event) => props.setWindowHours(event.target.value)}
+            className="min-h-11"
+            options={[
+              { value: '24', label: 'Past 24 hours' },
+              { value: '72', label: 'Past 3 days' },
+              { value: '168', label: 'Past 7 days' },
+              { value: '336', label: 'Past 14 days' },
+            ]}
+          />
+        )}
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <SelectField

@@ -7651,7 +7651,8 @@
         "type": "string",
         "enum": [
           "publication",
-          "acquisition_or_publication"
+          "acquisition_or_publication",
+          "recorded_time"
         ],
         "title": "EvidenceTimeBasis"
       },
@@ -11107,6 +11108,105 @@
         "type": "object",
         "title": "ProfileUpdateIn"
       },
+      "ProjectOut": {
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "release_id": {
+            "type": "string",
+            "title": "Release Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "source_sha256": {
+            "type": "string",
+            "title": "Source Sha256"
+          },
+          "recipient_iso3": {
+            "type": "string",
+            "title": "Recipient Iso3"
+          },
+          "reported_status": {
+            "type": "string",
+            "title": "Reported Status"
+          },
+          "precision": {
+            "type": "string",
+            "title": "Precision"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "data_licence": {
+            "type": "string",
+            "title": "Data Licence"
+          },
+          "geometry_licence": {
+            "type": "string",
+            "title": "Geometry Licence"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          },
+          "commitment_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commitment Year"
+          },
+          "implementation_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implementation Year"
+          },
+          "completion_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "release_id",
+          "project_id",
+          "source_sha256",
+          "recipient_iso3",
+          "reported_status",
+          "precision",
+          "attribution",
+          "data_licence",
+          "geometry_licence",
+          "limitations",
+          "commitment_year",
+          "implementation_year",
+          "completion_year"
+        ],
+        "title": "ProjectOut"
+      },
       "QueryTransformationOut": {
         "properties": {
           "original_terms": {
@@ -11840,6 +11940,16 @@
               }
             ],
             "title": "Research Until"
+          },
+          "research_time_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceTimeBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -12079,6 +12189,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ObservationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectOut"
               },
               {
                 "type": "null"
@@ -13108,6 +13228,16 @@
             ],
             "title": "Source Ids"
           },
+          "time_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceTimeBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "query_variants": {
             "items": {
               "$ref": "#/components/schemas/QueryVariantIn"
@@ -13269,6 +13399,10 @@
                 "type": "null"
               }
             ]
+          },
+          "time_basis": {
+            "$ref": "#/components/schemas/EvidenceTimeBasis",
+            "default": "publication"
           }
         },
         "type": "object",
@@ -13400,6 +13534,10 @@
               }
             ]
           },
+          "time_basis": {
+            "$ref": "#/components/schemas/EvidenceTimeBasis",
+            "default": "publication"
+          },
           "map_origin": {
             "anyOf": [
               {
@@ -13489,7 +13627,8 @@
             "type": "string",
             "enum": [
               "publication",
-              "acquisition_or_publication"
+              "acquisition_or_publication",
+              "recorded_time"
             ],
             "title": "Time Basis",
             "default": "publication"

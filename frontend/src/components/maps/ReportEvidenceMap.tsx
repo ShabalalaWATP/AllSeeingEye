@@ -29,7 +29,7 @@ import type { MapBounds, MapCamera } from '@/lib/map/MapEngine';
 import { FootprintSearchPanel } from './FootprintSearchPanel';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
-import { hasEvidencePoint, hasLegacyEvidencePoint, mapEvidenceDay } from './evidenceGeometry';
+import { hasEvidencePoint, hasLegacyEvidencePoint, mapTimelineDay } from './evidenceGeometry';
 import { MapDisplayVersionNotice } from './MapDisplayVersionNotice';
 import { MapGeometryOmissions } from './MapGeometryOmissions';
 import { prepareEvidenceGeometry } from './frozenEvidenceGeometry';
@@ -139,7 +139,7 @@ export default function ReportEvidenceMap({
       [
         ...new Set(
           evidence
-            .map((item) => mapEvidenceDay(item, state.time_basis))
+            .map((item) => mapTimelineDay(item, state.time_basis))
             .filter((value): value is string => value !== null),
         ),
       ].sort(),

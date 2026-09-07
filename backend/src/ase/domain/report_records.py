@@ -25,6 +25,7 @@ from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.model_routing import ModelRoutingRecord
 from ase.domain.model_routing_records import routing_to_dict
 from ase.domain.observation import observation_from_dict, observation_to_dict
+from ase.domain.project import project_from_dict, project_to_dict
 from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
 from ase.domain.research_context import ResearchContext
@@ -206,6 +207,9 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
         # Omit absent additions: saved map revisions hash the historical wire shape.
         data.pop("geometry")
         data.pop("observation")
+        data.pop("project")
+        if item.project is not None:
+            data["project"] = project_to_dict(item.project)
         if item.geometry is not None:
             data["geometry"] = geometry_to_dict(item.geometry)
         if item.observation is not None:
@@ -252,6 +256,7 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             attributes=evidence_attributes_from_list(row.get("attributes")),
             geometry=geometry_from_dict(row.get("geometry")),
             observation=observation_from_dict(row.get("observation")),
+            project=project_from_dict(row.get("project")),
         )
         for row in rows
     )

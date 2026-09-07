@@ -40,7 +40,9 @@ class ResearchReceiptOut(BaseModel):
     attempts: list[CollectionAttemptOut]
     collected_items: int
     policy_version: str
-    time_basis: Literal["publication", "acquisition_or_publication"] = "publication"
+    time_basis: Literal["publication", "acquisition_or_publication", "recorded_time"] = (
+        "publication"
+    )
     plan: ResearchPlanOut | None = None
 
     passes: list[CollectionPassOut] = Field(default_factory=list, max_length=2)

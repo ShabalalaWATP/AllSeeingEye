@@ -11,6 +11,7 @@ from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.adapters.research_records.aiddata_provider import AidDataProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
 from ase.adapters.research_records.companies_house_client import CompaniesHouseClient
@@ -34,6 +35,7 @@ from ase.adapters.research_subjects.parliament import ParliamentQuestionsProvide
 from ase.adapters.research_subjects.scholarly import CrossrefProvider, OpenAlexProvider
 from ase.adapters.research_subjects.world_bank import WorldBankProvider
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.research import ResearchProvider
 from ase.application.ports.services import Clock
 from ase.application.ports.source_controls import SourceAdmission
@@ -51,6 +53,8 @@ def research_service(
     ooni_noncommercial_use_acknowledged: bool = False,
     uksl_snapshot_path: str | None = None,
     ofac_sdn_snapshot_path: str | None = None,
+    aiddata_catalogue_path: str | None = None,
+    countries: CountryDirectory | None = None,
     companies_house_key: str | None = None,
     certificate_transparency_key: str | None = None,
 ) -> ResearchCollectionService:
@@ -61,6 +65,11 @@ def research_service(
     )
     certificates = CertificateTransparencyProvider(http, clock, certificate_transparency_key)
     procurement = ContractsFinderProvider(http, clock)
+    aiddata = AidDataProvider(
+        Path(aiddata_catalogue_path) if aiddata_catalogue_path else None,
+        clock,
+        {country.iso3: country.iso2 for country in countries.countries()} if countries else {},
+    )
     snapshots: tuple[tuple[Literal["uksl", "ofac_sdn"], str | None], ...] = (
         ("uksl", uksl_snapshot_path),
         ("ofac_sdn", ofac_sdn_snapshot_path),
@@ -102,6 +111,7 @@ def research_service(
         selected.extend(
             (
                 procurement,
+                aiddata,
                 CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
                 *designations,
                 OpenAlexProvider(http, clock),

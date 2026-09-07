@@ -88,8 +88,6 @@ async def test_exact_origin_survives_newer_revision_and_roundtrips_scope(client,
 @pytest.mark.parametrize(
     "change",
     [
-        {"map_revision_id": None},
-        {"map_view_id": None},
         {"disclose_area_to_provider": False},
         {"research_mode": None},
         {"research_focus": ResearchFocus.COMPANY},
@@ -104,6 +102,12 @@ async def test_ambiguous_or_undisclosed_origin_rejected(client, container, user,
     async with container.session_factory() as session:
         with pytest.raises(InvalidRequest):
             await resolver(container, session).resolve(user, replace(request, **change))
+
+
+@pytest.mark.parametrize("field", ["map_view_id", "map_revision_id"])
+def test_incomplete_map_origin_is_rejected_at_request_construction(field):
+    with pytest.raises(ValueError, match="both saved map identifiers"):
+        ReportRequest("ask", **{field: uuid4()})
 
 
 async def test_admin_cannot_copy_other_private_origin_to_own_scope(client, container, user, admin):

@@ -5,7 +5,9 @@ from datetime import datetime
 from enum import StrEnum
 
 from ase.domain.events import Event
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
+from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_plan import QueryVariant, ResearchPlan
 
@@ -47,8 +49,17 @@ class ResearchQuery:
     source_ids: tuple[str, ...] | None = None
     query_variants: tuple[QueryVariant, ...] = ()
     area: ResearchArea | None = None
+    time_basis: EvidenceTimeBasis | None = None
+
+    @property
+    def effective_time_basis(self) -> EvidenceTimeBasis:
+        return self.time_basis or (
+            EvidenceTimeBasis.RESEARCH if self.area else EvidenceTimeBasis.PUBLICATION
+        )
 
     def __post_init__(self) -> None:
+        if self.time_basis is not None and not isinstance(self.time_basis, EvidenceTimeBasis):
+            raise ValueError("Invalid research time basis")
         if self.area is not None and not isinstance(self.area, ResearchArea):
             raise ValueError("Research scope requires an immutable area")
         if self.source_ids is not None and (
@@ -71,8 +82,13 @@ class ResearchQuery:
             raise ValueError("Question must contain between 1 and 2000 characters")
         if any(value.utcoffset() is None for value in (self.since, self.until)):
             raise ValueError("Research dates must include a timezone")
-        if self.since >= self.until:
-            raise ValueError("Research start must precede end")
+        if self.since >= self.until or (
+            self.effective_time_basis is EvidenceTimeBasis.RECORDED
+            and self.until - self.since > MAX_PROJECT_INTERVAL
+        ):
+            raise ValueError(
+                "Invalid interval: project history requires a positive span of at most 30 years"
+            )
         if not 1 <= len(self.languages) <= 8 or any(
             not value or len(value) > 16 for value in self.languages
         ):

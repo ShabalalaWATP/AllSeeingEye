@@ -1,6 +1,7 @@
+import { EvidenceProjectDetails } from '@/components/maps/EvidenceProjectDetails';
 import { Button } from '@/components/ui/Button';
 import type { EvidenceItem } from '@/lib/api/reports';
-import { mapEvidenceDay, evidencePrecision } from './evidenceGeometry';
+import { mapEvidenceDateLabel, evidencePrecision } from './evidenceGeometry';
 import type { MapState } from '@/lib/api/mapViews';
 import { EvidenceObservationDetails } from './EvidenceObservationDetails';
 const PAGE_SIZE = 20;
@@ -39,10 +40,7 @@ export function MapEvidenceList({
                   {item.label}: {item.title}
                 </span>
                 <span className="mt-1 block text-xs text-muted">
-                  {timeBasis === 'acquisition_or_publication' && item.observation
-                    ? 'Acquired '
-                    : 'Published '}
-                  {mapEvidenceDay(item, timeBasis) ?? 'date unknown'} · {evidencePrecision(item)}
+                  {mapEvidenceDateLabel(item, timeBasis)} · {evidencePrecision(item)}
                 </span>
               </button>
             </li>
@@ -72,6 +70,7 @@ export function MapEvidenceList({
             {chosen.label}: {chosen.title}
           </h3>
           <p className="text-sm">{chosen.summary ?? 'No saved excerpt available.'}</p>
+          <EvidenceProjectDetails item={chosen} />
           <EvidenceObservationDetails item={chosen} />
           <p className="text-xs text-muted">
             {chosen.source_name} · Grade {chosen.grade} · {evidencePrecision(chosen)}

@@ -30,10 +30,9 @@ export function mapEvidenceTimestamp(
   item: EvidenceItem,
   basis: MapState['time_basis'],
 ): string | null {
+  if (basis === 'recorded_time' && item.project) return null;
   const value =
-    basis === 'acquisition_or_publication' && item.observation
-      ? item.observation.acquired_at
-      : item.published_at;
+    basis !== 'publication' && item.observation ? item.observation.acquired_at : item.published_at;
   return value && Number.isFinite(Date.parse(value)) ? value : null;
 }
 export function mapEvidenceDay(item: EvidenceItem, basis: MapState['time_basis']): string | null {
@@ -41,4 +40,29 @@ export function mapEvidenceDay(item: EvidenceItem, basis: MapState['time_basis']
   if (timestamp === null) return null;
   const date = new Date(timestamp);
   return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
+}
+
+export function projectYearBounds(item: EvidenceItem): [number, number] | null {
+  const year = item.project?.commitment_year;
+  if (year == null) return null;
+  const start = `${String(year).padStart(4, '0')}-01-01T00:00:00Z`;
+  const end = `${String(year + 1).padStart(4, '0')}-01-01T00:00:00Z`;
+  return [Date.parse(start), Date.parse(end)];
+}
+
+export function mapTimelineDay(item: EvidenceItem, basis: MapState['time_basis']): string | null {
+  if (basis === 'recorded_time' && item.project) {
+    const year = item.project.commitment_year;
+    return year == null ? null : `${String(year).padStart(4, '0')}-12-31`;
+  }
+  return mapEvidenceDay(item, basis);
+}
+
+export function mapEvidenceDateLabel(item: EvidenceItem, basis: MapState['time_basis']): string {
+  if (basis === 'recorded_time' && item.project) {
+    const year = item.project.commitment_year;
+    return year == null ? 'Commitment year unknown' : `Commitment year ${year}, exact date unknown`;
+  }
+  const kind = basis !== 'publication' && item.observation ? 'Acquired' : 'Published';
+  return `${kind} ${mapEvidenceDay(item, basis) ?? 'date unknown'}`;
 }

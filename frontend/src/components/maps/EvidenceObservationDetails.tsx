@@ -4,6 +4,7 @@ import { formatUtc } from '@/lib/format';
 export function EvidenceObservationDetails({ item }: { item: EvidenceItem }) {
   const { observation, geometry } = item;
   if (!observation && !geometry) return null;
+  const title = observation ? 'Source observation' : 'Source geometry';
   const rows = [
     ...(observation
       ? [
@@ -30,8 +31,8 @@ export function EvidenceObservationDetails({ item }: { item: EvidenceItem }) {
       : []),
   ];
   return (
-    <section aria-label="Source observation" className="min-w-0 border-l-2 border-line pl-4">
-      <h3 className="text-sm font-medium">Source observation</h3>
+    <section aria-label={title} className="min-w-0 border-l-2 border-line pl-4">
+      <h3 className="text-sm font-medium">{title}</h3>
       <dl className="mt-3 grid gap-x-8 gap-y-3 sm:grid-cols-2">
         {rows.map(([label, value]) => (
           <div key={label} className="min-w-0">

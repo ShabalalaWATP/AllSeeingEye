@@ -14,6 +14,7 @@ export interface PlanScope {
   focus: NonNullable<ReportRequest['research_focus']>;
   subject: string;
   country: string;
+  history?: { since: string; until: string };
   area?: {
     viewId: string;
     revisionId: string;
@@ -32,7 +33,8 @@ const invalidTerms = (terms: string[]) =>
 
 /** Preview and submission use the same explicit source IDs and operator-entered terms. */
 export function useResearchPlan(scope: PlanScope) {
-  const [sourceIds, setSourceIds] = useState<string[] | null>(null);
+  const [selectedSourceIds, setSourceIds] = useState<string[] | null>(null);
+  const sourceIds = selectedSourceIds ?? (scope.history ? ['research-aiddata-projects'] : null);
   const [customTerms, setCustomTerms] = useState(false);
   const [termsText, setTermsText] = useState('');
   const [variantText, setVariantText] = useState<Record<string, string>>({});
@@ -63,7 +65,14 @@ export function useResearchPlan(scope: PlanScope) {
       );
       return;
     }
-    if (scope.area) {
+    if (scope.history) {
+      const duration = Date.parse(scope.history.until) - Date.parse(scope.history.since);
+      if (!Number.isFinite(duration) || duration <= 0 || duration > 10980 * 86_400_000) {
+        setError('Choose valid project years, spanning at most 30 years.');
+        return;
+      }
+    }
+    if (scope.area && !scope.history) {
       const duration = Date.parse(scope.area.until) - Date.parse(scope.area.since);
       if (!Number.isFinite(duration) || duration <= 0 || duration > 14 * 86_400_000) {
         setError('Choose a positive UTC interval of at most 14 days before previewing.');
@@ -73,9 +82,10 @@ export function useResearchPlan(scope: PlanScope) {
     const signal = beginRequest();
     setBusy(true);
     setError(null);
-    const until = scope.area ? new Date(scope.area.until) : new Date();
-    const since = scope.area
-      ? new Date(scope.area.since)
+    const fixed = scope.area ?? scope.history;
+    const until = fixed ? new Date(fixed.until) : new Date();
+    const since = fixed
+      ? new Date(fixed.since)
       : new Date(until.getTime() - Number(scope.windowHours) * 3_600_000);
     try {
       const data = await previewResearchPlan(
@@ -87,6 +97,7 @@ export function useResearchPlan(scope: PlanScope) {
                 team_id: scope.area.teamId,
               }
             : {}),
+          ...(scope.history ? { time_basis: 'recorded_time' as const } : {}),
           question: scope.question.trim(),
           since: since.toISOString(),
           until: until.toISOString(),
@@ -112,6 +123,17 @@ export function useResearchPlan(scope: PlanScope) {
           422,
           'invalid_request',
           'The preview does not match the selected map revision and interval.',
+        );
+      if (
+        scope.history &&
+        (data.time_basis !== 'recorded_time' ||
+          Date.parse(data.since) !== since.getTime() ||
+          Date.parse(data.until) !== until.getTime())
+      )
+        throw new ApiError(
+          422,
+          'invalid_request',
+          'The preview does not match the historical period.',
         );
       if (!signal.aborted) setSnapshot({ key, data });
     } catch (caught) {

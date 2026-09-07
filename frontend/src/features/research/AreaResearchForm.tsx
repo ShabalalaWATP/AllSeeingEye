@@ -1,3 +1,4 @@
+import { ProjectHistory, projectInterval, type ProjectHistoryState } from './ProjectHistory';
 import { useState, type SyntheticEvent } from 'react';
 import type { SavedMapView } from '@/lib/api/mapViews';
 import type { Profile } from '@/lib/api/profile';
@@ -26,6 +27,15 @@ export function AreaResearchForm({
   const [question, setQuestion] = useState('');
   const [since, setSince] = useState('');
   const [until, setUntil] = useState('');
+  const [history, setHistory] = useState<ProjectHistoryState>({
+    enabled: false,
+    firstYear: '2000',
+    lastYear: '2021',
+  });
+  const historical = history.enabled;
+  const years = historical ? projectInterval(history) : null;
+  const fixedSince = historical ? (years?.since ?? '') : since ? `${since}Z` : '';
+  const fixedUntil = historical ? (years?.until ?? '') : until ? `${until}Z` : '';
   const [mode, setMode] = useState(preferences.research_mode);
   const [language, setLanguage] = useState(preferences.report_language);
   const [style, setStyle] = useState(preferences.report_style);
@@ -35,6 +45,7 @@ export function AreaResearchForm({
   const teamId = saved.view.team_id;
   const plan = useResearchPlan({
     question,
+    ...(historical ? { history: { since: fixedSince, until: fixedUntil } } : {}),
     windowHours: '',
     languages: preferences.research_languages,
     mode,
@@ -45,8 +56,8 @@ export function AreaResearchForm({
       viewId: saved.view.id,
       revisionId: saved.revision.id,
       teamId,
-      since: since ? `${since}Z` : '',
-      until: until ? `${until}Z` : '',
+      since: fixedSince,
+      until: fixedUntil,
     },
   });
   const writable =
@@ -58,15 +69,25 @@ export function AreaResearchForm({
     (teamId !== null || user?.id === saved.view.created_by);
   const eligible =
     plan.current &&
-    plan.snapshot?.tasks.some((task) => task.selected && task.supported && task.spatial_supported);
+    plan.snapshot?.tasks.some(
+      (task) =>
+        task.selected &&
+        task.supported &&
+        task.spatial_supported &&
+        (!historical || task.source_id === 'research-aiddata-projects'),
+    );
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (action.busy || plan.busy || !writable) return;
-    const duration = Date.parse(`${until}Z`) - Date.parse(`${since}Z`);
+    const duration = Date.parse(fixedUntil) - Date.parse(fixedSince);
     const message = !question.trim()
       ? 'Enter a research question.'
-      : !Number.isFinite(duration) || duration <= 0 || duration > 14 * 86_400_000
-        ? 'Choose a positive UTC interval of at most 14 days.'
+      : !Number.isFinite(duration) ||
+          duration <= 0 ||
+          duration > (historical ? 10980 : 14) * 86_400_000
+        ? historical
+          ? 'Choose valid project years spanning at most 30 years.'
+          : 'Choose a positive UTC interval of at most 14 days.'
         : !eligible
           ? 'Preview this area and interval with at least one supported selected source.'
           : !consent
@@ -87,8 +108,9 @@ export function AreaResearchForm({
       team_id: teamId,
       map_view_id: saved.view.id,
       map_revision_id: saved.revision.id,
-      research_since: `${since}Z`,
-      research_until: `${until}Z`,
+      research_since: fixedSince,
+      research_until: fixedUntil,
+      ...(historical ? { research_time_basis: 'recorded_time' as const } : {}),
       disclose_area_to_provider: true,
     });
   };
@@ -114,35 +136,46 @@ export function AreaResearchForm({
           required
           rows={4}
         />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TextField
-            label="Acquisition / publication from (UTC)"
-            type="datetime-local"
-            step="1"
-            value={since}
-            onChange={(e) => {
-              setSince(e.target.value);
-              setConsent(false);
-            }}
-            required
-          />
-          <TextField
-            label="Acquisition / publication until (UTC, exclusive)"
-            type="datetime-local"
-            step="1"
-            value={until}
-            onChange={(e) => {
-              setUntil(e.target.value);
-              setConsent(false);
-            }}
-            required
-          />
-        </div>
-        <p className="text-xs text-muted">
-          At most 14 days. The start is included and the end excluded. Observations use acquisition
-          time; other reporting uses publication time. Map display filters are not copied into this
-          collection interval.
-        </p>
+        <ProjectHistory
+          value={history}
+          onChange={(value) => {
+            setHistory(value);
+            setConsent(false);
+          }}
+        />
+        {!historical && (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Acquisition / publication from (UTC)"
+                type="datetime-local"
+                step="1"
+                value={since}
+                onChange={(e) => {
+                  setSince(e.target.value);
+                  setConsent(false);
+                }}
+                required
+              />
+              <TextField
+                label="Acquisition / publication until (UTC, exclusive)"
+                type="datetime-local"
+                step="1"
+                value={until}
+                onChange={(e) => {
+                  setUntil(e.target.value);
+                  setConsent(false);
+                }}
+                required
+              />
+            </div>
+            <p className="text-xs text-muted">
+              At most 14 days. The start is included and the end excluded. Observations use
+              acquisition time; other reporting uses publication time. Map display filters are not
+              copied into this collection interval.
+            </p>
+          </>
+        )}
         <SelectField
           label="Area research depth"
           value={mode}

@@ -1,3 +1,4 @@
+import { projectInterval, type ProjectHistoryState } from './ProjectHistory';
 import { useCallback, useRef, useState, type SyntheticEvent } from 'react';
 
 import type { Profile } from '@/lib/api/profile';
@@ -61,7 +62,15 @@ export function ResearchForm({
   );
   const [focus, setFocus] = useState<ResearchFocus>(parent?.request.research_focus ?? 'general');
   const [subject, setSubject] = useState(parent?.request.research_subject ?? '');
+  const [history, setHistory] = useState<ProjectHistoryState>({
+    enabled: false,
+    firstYear: '2000',
+    lastYear: '2021',
+  });
+  const historical = !parent && focus === 'general' && history.enabled;
+  const interval = historical ? projectInterval(history) : null;
   const collectionPlan = useResearchPlan({
+    ...(historical ? { history: interval ?? { since: '', until: '' } } : {}),
     question,
     windowHours,
     languages: selectedLanguages,
@@ -118,6 +127,15 @@ export function ResearchForm({
                   : null;
     const scopeError =
       message ??
+      (historical &&
+      (!interval ||
+        !collectionPlan.current ||
+        !collectionPlan.snapshot?.tasks.some(
+          (task) =>
+            task.source_id === 'research-aiddata-projects' && task.selected && task.supported,
+        ))
+        ? 'Choose valid project years and preview a supported selected source.'
+        : null) ??
       (!parent && focus === 'general' ? recordScopeError(subject.trim(), country) : null);
     setValidation(scopeError);
     if (scopeError) {
@@ -135,7 +153,13 @@ export function ResearchForm({
       research_languages: selectedLanguages,
       research_focus: focus,
       research_subject: !privateFocus && subject.trim() ? subject.trim() : null,
-      window_hours: Number(windowHours),
+      ...(historical
+        ? {
+            research_since: interval?.since ?? null,
+            research_until: interval?.until ?? null,
+            research_time_basis: 'recorded_time' as const,
+          }
+        : { window_hours: Number(windowHours) }),
       devils_advocacy: mode === 'detailed',
       ...(focus === 'general' && country ? { country } : {}),
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
@@ -220,6 +244,8 @@ export function ResearchForm({
               {selectedLanguages.length === 1 ? 'language' : 'languages'}
             </p>
             <ResearchScope
+              history={history}
+              setHistory={setHistory}
               workspaces={workspaces}
               teamId={scope.teamId}
               selectTeam={scope.select}
@@ -235,7 +261,10 @@ export function ResearchForm({
                 setFocus(value);
                 setSubject('');
                 setInputId(null);
-                if (value !== 'general') setCountry('');
+                if (value !== 'general') {
+                  setCountry('');
+                  setHistory((previous) => ({ ...previous, enabled: false }));
+                }
               }}
               subject={subject}
               setSubject={setSubject}
@@ -243,7 +272,11 @@ export function ResearchForm({
           </details>
         )}
         {!parent && !privateFocus && (
-          <ResearchPlanEditor plan={collectionPlan} languages={selectedLanguages} />
+          <ResearchPlanEditor
+            plan={collectionPlan}
+            languages={selectedLanguages}
+            historical={historical}
+          />
         )}
         <ReportOptions
           language={reportLanguage}

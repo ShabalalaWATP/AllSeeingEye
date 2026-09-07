@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     ooni_noncommercial_use_acknowledged: bool = False
     uksl_snapshot_path: str | None = None
     ofac_sdn_snapshot_path: str | None = None
+    aiddata_catalogue_path: str | None = None
     research_tesseract_path: str | None = None
     research_ffmpeg_path: str | None = None
     research_ffprobe_path: str | None = None

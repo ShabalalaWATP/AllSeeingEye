@@ -29,7 +29,9 @@ export const researchReceiptSchema = z.object({
   until: z.string(),
   collected_items: z.number().int(),
   policy_version: z.string(),
-  time_basis: z.enum(['publication', 'acquisition_or_publication']).default('publication'),
+  time_basis: z
+    .enum(['publication', 'acquisition_or_publication', 'recorded_time'])
+    .default('publication'),
   plan: planSchema.nullable().default(null),
   attempts: z.array(collectionAttemptSchema),
   passes: z

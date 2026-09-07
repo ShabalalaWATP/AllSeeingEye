@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable, Mapping
-from datetime import UTC, datetime
+from datetime import datetime
 
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
@@ -18,7 +19,8 @@ from ase.application.ports.feeds import (
     UpsertResult,
 )
 from ase.domain.events import Category, Event
-from ase.domain.evidence_time import evidence_time
+from ase.domain.evidence_time import evidence_matches_time, evidence_order
+from ase.domain.project import project_to_dict
 
 MAX_PRUNE_IDS = 10_000
 EVENT_OVERHEAD_BYTES = 240
@@ -55,6 +57,11 @@ def estimate_bytes(event: Event) -> int:
                     observation.limitations,
                 )
             )
+            + 256
+        )
+    if event.project is not None:
+        size += (
+            len(json.dumps(project_to_dict(event.project), ensure_ascii=False).encode("utf-8"))
             + 256
         )
     return size
@@ -114,16 +121,13 @@ class InMemoryEventStore:
             event = self._events[event_id]
             if query.source_ids and event.source_id not in query.source_ids:
                 continue
-            timestamp = evidence_time(event, query.time_basis)
-            if (
-                timestamp is None
-                and (query.since is not None or query.until is not None)
-                and not query.include_unknown_dates
+            if not evidence_matches_time(
+                event,
+                query.time_basis,
+                query.since,
+                query.until,
+                include_unknown=query.include_unknown_dates,
             ):
-                continue
-            if timestamp is not None and query.since is not None and timestamp < query.since:
-                continue
-            if timestamp is not None and query.until is not None and timestamp >= query.until:
                 continue
             if query.bbox is not None and (
                 event.point is None or not query.bbox.contains(event.point)
@@ -131,7 +135,7 @@ class InMemoryEventStore:
                 continue
             matched.append(event)
         matched.sort(
-            key=lambda e: evidence_time(e, query.time_basis) or datetime.min.replace(tzinfo=UTC),
+            key=lambda e: evidence_order(e, query.time_basis),
             reverse=True,
         )
         return matched[: max(1, query.limit)]

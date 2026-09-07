@@ -137,6 +137,11 @@ class ReportResearchInputs:
                 record.id, request.parent_version or record.latest_version, owner_id or actor.id
             )
             version = await require_parent(self._access, self._reports, actor, request, parent)
+            if record.scope.get("research_time_basis") == "recorded_time":
+                raise InvalidRequest(
+                    "Start a new historical request; ordinary follow-ups cannot "
+                    "preserve this time policy"
+                )
             if record.scope.get("map_origin"):
                 raise InvalidRequest(
                     "Start area research from its saved map revision; "

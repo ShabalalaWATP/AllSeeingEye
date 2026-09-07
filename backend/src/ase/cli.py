@@ -11,6 +11,7 @@ from uuid import uuid4
 import typer
 
 from ase.adapters.persistence.session import ensure_sqlite_directory
+from ase.cli_aiddata import import_aiddata
 from ase.cli_designations import import_designations
 from ase.container import Container
 from ase.domain.errors import AppError, InvalidCredentials, WeakPassword
@@ -22,6 +23,7 @@ from ase.main import create_app
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="The All Seeing Eye")
 app.command("import-designations")(import_designations)
+app.command("import-aiddata")(import_aiddata)
 
 
 @app.command("recover-admin-mfa")

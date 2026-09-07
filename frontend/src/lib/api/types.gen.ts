@@ -2505,7 +2505,7 @@ export interface components {
          * EvidenceTimeBasis
          * @enum {string}
          */
-        EvidenceTimeBasis: "publication" | "acquisition_or_publication";
+        EvidenceTimeBasis: "publication" | "acquisition_or_publication" | "recorded_time";
         /**
          * ExportFormat
          * @enum {string}
@@ -3775,6 +3775,37 @@ export interface components {
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
         };
+        /** ProjectOut */
+        ProjectOut: {
+            /** Dataset Id */
+            dataset_id: string;
+            /** Release Id */
+            release_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Source Sha256 */
+            source_sha256: string;
+            /** Recipient Iso3 */
+            recipient_iso3: string;
+            /** Reported Status */
+            reported_status: string;
+            /** Precision */
+            precision: string;
+            /** Attribution */
+            attribution: string;
+            /** Data Licence */
+            data_licence: string;
+            /** Geometry Licence */
+            geometry_licence: string;
+            /** Limitations */
+            limitations: string;
+            /** Commitment Year */
+            commitment_year: number | null;
+            /** Implementation Year */
+            implementation_year: number | null;
+            /** Completion Year */
+            completion_year: number | null;
+        };
         /** QueryTransformationOut */
         QueryTransformationOut: {
             /** Original Terms */
@@ -3986,6 +4017,7 @@ export interface components {
             research_since?: string | null;
             /** Research Until */
             research_until?: string | null;
+            research_time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
         };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {
@@ -4051,6 +4083,7 @@ export interface components {
             attributes?: components["schemas"]["EvidenceAttributeOut"][];
             geometry?: components["schemas"]["EvidenceGeometryOut"] | null;
             observation?: components["schemas"]["ObservationOut"] | null;
+            project?: components["schemas"]["ProjectOut"] | null;
         };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
@@ -4409,6 +4442,7 @@ export interface components {
             country_iso?: string | null;
             /** Source Ids */
             source_ids?: string[] | null;
+            time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
             /** Query Variants */
             query_variants?: components["schemas"]["QueryVariantIn"][];
             /** Map View Id */
@@ -4460,6 +4494,8 @@ export interface components {
             country_iso: string | null;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
             area?: components["schemas"]["ResearchAreaOut"] | null;
+            /** @default publication */
+            time_basis: components["schemas"]["EvidenceTimeBasis"];
         };
         /** ResearchPreviewOut */
         ResearchPreviewOut: {
@@ -4503,6 +4539,8 @@ export interface components {
             country_iso: string | null;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
             area?: components["schemas"]["ResearchAreaOut"] | null;
+            /** @default publication */
+            time_basis: components["schemas"]["EvidenceTimeBasis"];
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
         };
         /** ResearchReceiptOut */
@@ -4538,7 +4576,7 @@ export interface components {
              * @default publication
              * @enum {string}
              */
-            time_basis: "publication" | "acquisition_or_publication";
+            time_basis: "publication" | "acquisition_or_publication" | "recorded_time";
             plan?: components["schemas"]["ResearchPlanOut"] | null;
             /** Passes */
             passes?: components["schemas"]["CollectionPassOut"][];

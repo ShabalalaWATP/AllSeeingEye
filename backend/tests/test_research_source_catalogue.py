@@ -44,6 +44,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-ooni-aggregate",
         "research-copernicus-footprints",
         "research-contracts-finder",
+        "research-aiddata-projects",
         "research-designations-uksl",
         "research-designations-ofac_sdn",
         "research-rdap",

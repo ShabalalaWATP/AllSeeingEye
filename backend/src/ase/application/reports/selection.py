@@ -13,6 +13,7 @@ from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliabi
 from ase.domain.evidence import EvidenceItem, injection_flags
 from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
 from ase.domain.grading import SourceProfile
+from ase.domain.project import project_to_dict
 from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.trackers import Hazard, hazard_of
 
@@ -215,7 +216,16 @@ def select_evidence(
         )
 
     safe = [
-        event for event in pool if not injection_flags(event.title, event.title_en, event.summary)
+        event
+        for event in pool
+        if not injection_flags(
+            event.title,
+            event.title_en,
+            event.summary,
+            *(value for value in project_to_dict(event.project).values() if isinstance(value, str))
+            if event.project is not None
+            else (),
+        )
     ]
     ranked = _diversify(sorted(safe, key=rank), profiles, lowered)
     per_organisation: dict[tuple[str, str], int] = {}

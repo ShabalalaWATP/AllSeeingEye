@@ -23,6 +23,7 @@ from ase.domain.advocacy import advocacy_to_dict
 from ase.domain.claim_ledger import build_claim_ledger
 from ase.domain.direction import direction_to_dict
 from ase.domain.events import Category
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import LANGUAGE_CODE_PATTERN, ReportLanguage
 from ase.domain.report_records import (
     ReportRecord,
@@ -69,6 +70,7 @@ class ReportCreateIn(BaseModel):
     disclose_area_to_provider: StrictBool = False
     research_since: AwareDatetime | None = None
     research_until: AwareDatetime | None = None
+    research_time_basis: EvidenceTimeBasis | None = None
 
     @model_validator(mode="after")
     def research_requires_question(self) -> Self:
@@ -125,6 +127,7 @@ class ReportCreateIn(BaseModel):
             map_revision_id=self.map_revision_id,
             disclose_area_to_provider=self.disclose_area_to_provider,
             research_since=self.research_since,
+            research_time_basis=self.research_time_basis,
             research_until=self.research_until,
         )
 

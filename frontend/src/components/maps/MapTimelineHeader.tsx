@@ -12,9 +12,11 @@ export function MapTimelineHeader({
       <h2 className="text-lg font-semibold">Map and timeline</h2>
       <p className="mt-1 text-sm text-muted">
         Frozen evidence from version {version}.{' '}
-        {timeBasis === 'publication'
-          ? 'Publication dates describe reporting time, not necessarily when an event happened.'
-          : 'Observations use acquisition dates; other reporting uses publication dates. Retrieval time is never substituted.'}{' '}
+        {timeBasis === 'recorded_time'
+          ? 'Project commitment years may only possibly overlap a narrower interval. Other observations use acquisition and reporting uses publication. Retrieval dates are never substituted.'
+          : timeBasis === 'publication'
+            ? 'Publication dates describe reporting time, not necessarily when an event happened.'
+            : 'Observations use acquisition dates; other reporting uses publication dates. Retrieval time is never substituted.'}{' '}
         Optional catalogue and local overlays remain separate from saved evidence.
       </p>
     </header>

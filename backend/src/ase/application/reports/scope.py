@@ -50,6 +50,11 @@ def conflict_background(conflict: Conflict | None) -> str | None:
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
         **(
+            {"research_time_basis": request.research_time_basis.value}
+            if request.research_time_basis is not None
+            else {}
+        ),
+        **(
             {
                 "research_since": request.research_since.astimezone(UTC).isoformat(),
                 "research_until": request.research_until.astimezone(UTC).isoformat(),

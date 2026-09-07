@@ -12,6 +12,7 @@ const areaSchema = z.object({
 });
 export const planSchema: z.ZodType<ResearchPlan> = z.object({
   question: z.string(),
+  time_basis: z.enum(['publication', 'acquisition_or_publication', 'recorded_time']).default('publication'),
   since: z.string(),
   until: z.string(),
   languages: z.array(z.string()),

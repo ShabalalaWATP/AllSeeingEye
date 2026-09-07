@@ -53,11 +53,17 @@ class ResearchReceipt:
             count,
             plan=plan,
             passes=passes,
-            time_basis=EvidenceTimeBasis.RESEARCH if query.area else EvidenceTimeBasis.PUBLICATION,
+            time_basis=query.effective_time_basis,
         )
 
     @property
     def temporal_notice(self) -> str:
+        if self.time_basis is EvidenceTimeBasis.RECORDED:
+            return (
+                "Project commitment years use uncertainty intervals; a partial-year overlap "
+                "is only a possible temporal match. Other observations use acquisition, "
+                "and reporting uses publication. Retrieval dates are never substituted."
+            )
         if self.time_basis is EvidenceTimeBasis.RESEARCH:
             return (
                 "Dates filter acquisition time for observations and publication time "
@@ -140,6 +146,9 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
     values["until"] = datetime.fromisoformat(data["until"])
     values["languages"] = tuple(data["languages"])
     values["area"] = area_from_dict(data.get("area"))
+    values["time_basis"] = EvidenceTimeBasis(
+        data.get("time_basis", "acquisition_or_publication" if values["area"] else "publication")
+    )
     values["tasks"] = tuple(
         ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]
     )

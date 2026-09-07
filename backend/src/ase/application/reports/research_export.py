@@ -8,7 +8,9 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
     if receipt is None:
         return (("Collection coverage", ("No collection receipt was saved for this version.",)),)
     period = (
-        "Acquisition/publication"
+        "Recorded project/acquisition/publication"
+        if receipt.time_basis is EvidenceTimeBasis.RECORDED
+        else "Acquisition/publication"
         if receipt.time_basis is EvidenceTimeBasis.RESEARCH
         else "Publication"
     )

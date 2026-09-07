@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
 from ase.domain.research_area import ResearchArea
 
@@ -74,3 +75,4 @@ class ResearchPlan:
     country_iso: str | None = None
     translation: QueryTransformation | None = None
     area: ResearchArea | None = None
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION

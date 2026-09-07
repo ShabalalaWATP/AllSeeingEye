@@ -16,8 +16,13 @@ export function MapFilters({
   const day = state.published_until?.slice(0, 10) ?? '';
   const sinceOnly = !!state.published_since && !state.published_until;
   const dates = [...new Set([...days, ...(day ? [day] : [])])].sort();
+  const recorded = state.time_basis === 'recorded_time';
   const acquisition = state.time_basis === 'acquisition_or_publication';
-  const dateKind = acquisition ? 'observation/reporting' : 'publication';
+  const dateKind = recorded
+    ? 'project/observation/reporting'
+    : acquisition
+      ? 'observation/reporting'
+      : 'publication';
   return (
     <div className="space-y-3">
       <SelectField
@@ -27,13 +32,16 @@ export function MapFilters({
           onChange({
             ...state,
             time_basis:
-              event.target.value === 'acquisition_or_publication'
-                ? 'acquisition_or_publication'
-                : 'publication',
+              event.target.value === 'recorded_time'
+                ? 'recorded_time'
+                : event.target.value === 'acquisition_or_publication'
+                  ? 'acquisition_or_publication'
+                  : 'publication',
           })
         }
         options={[
           { value: 'publication', label: 'Publication dates' },
+          { value: 'recorded_time', label: 'Project years, acquisition and publication' },
           {
             value: 'acquisition_or_publication',
             label: 'Acquisition dates where recorded, otherwise publication',
@@ -43,7 +51,11 @@ export function MapFilters({
       <div className="grid gap-3 sm:grid-cols-2">
         <SelectField
           label={
-            acquisition ? 'Acquisition / publication timeline (UTC)' : 'Publication timeline (UTC)'
+            recorded
+              ? 'Project / acquisition / publication timeline (UTC)'
+              : acquisition
+                ? 'Acquisition / publication timeline (UTC)'
+                : 'Publication timeline (UTC)'
           }
           value={sinceOnly ? '__since_only__' : day}
           onChange={(event) => {
@@ -61,15 +73,16 @@ export function MapFilters({
               ? [
                   {
                     value: '__since_only__',
-                    label: acquisition
-                      ? 'Custom range: from a start date'
-                      : 'Custom range: published from a start date',
+                    label:
+                      acquisition || recorded
+                        ? 'Custom range: from a start date'
+                        : 'Custom range: published from a start date',
                   },
                 ]
               : []),
             ...dates.map((value) => ({
               value,
-              label: `${acquisition ? 'Acquired / published' : 'Published'} through ${value}`,
+              label: `${recorded ? 'Recorded' : acquisition ? 'Acquired / published' : 'Published'} through ${value}`,
             })),
           ]}
         />
@@ -106,10 +119,10 @@ export function MapFilters({
                 step="1"
                 label={
                   field === 'published_since'
-                    ? acquisition
+                    ? acquisition || recorded
                       ? 'Time from (UTC)'
                       : 'Published from (UTC)'
-                    : acquisition
+                    : acquisition || recorded
                       ? 'Time until (UTC)'
                       : 'Published until (UTC)'
                 }

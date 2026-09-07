@@ -11,6 +11,7 @@ from uuid import UUID
 
 from ase.domain.errors import InvalidRequest
 from ase.domain.observation import observation_to_dict
+from ase.domain.project import project_to_dict
 from ase.domain.report_records import (
     ReportRecord,
     ReportVersion,
@@ -96,6 +97,8 @@ def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
                     "topological validity, an incident or usable sensor coverage.",
                 }
             )
+        if item.project is not None:
+            features[-1]["properties"]["project"] = project_to_dict(item.project)
         if item.observation is not None:
             features[-1]["properties"]["observation"] = observation_to_dict(item.observation)
     return {"type": "FeatureCollection", "features": features}

@@ -1,3 +1,4 @@
+import { EvidenceProjectDetails } from '@/components/maps/EvidenceProjectDetails';
 import type { ReactNode } from 'react';
 
 import type { EvidenceItem, Finding } from '@/lib/api/reports';
@@ -63,6 +64,7 @@ function EvidenceDetails({
             <p className="mt-1 text-sm [overflow-wrap:anywhere]">{item.summary}</p>
           </div>
         )}
+        <EvidenceProjectDetails item={item} />
         <EvidenceObservationDetails item={item} />
         <dl className="grid min-w-0 gap-x-8 gap-y-4 sm:grid-cols-2">
           {assessment && (

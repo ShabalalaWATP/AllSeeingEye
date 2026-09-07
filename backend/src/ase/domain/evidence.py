@@ -17,6 +17,7 @@ from ase.domain.evidence_attributes import EvidenceAttribute, freeze_evidence_at
 from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.observation import ObservationMetadata
+from ase.domain.project import ProjectMetadata
 from ase.domain.source_provenance import ProvenanceItem, organisation_groups
 from ase.domain.source_ratings import SourceRating
 
@@ -84,6 +85,7 @@ class EvidenceItem:
     attributes: tuple[EvidenceAttribute, ...] = ()
     geometry: EvidenceGeometry | None = None
     observation: ObservationMetadata | None = None
+    project: ProjectMetadata | None = None
 
     @classmethod
     def from_event(
@@ -132,6 +134,7 @@ class EvidenceItem:
             attributes=freeze_evidence_attributes(event.attributes),
             geometry=event.geometry,
             observation=event.observation,
+            project=event.project,
         )
 
 

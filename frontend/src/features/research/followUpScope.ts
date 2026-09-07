@@ -27,6 +27,9 @@ const savedScope = z.object({
 
 /** Reuse explicit saved scope only; unknown or incomplete private scope must never widen. */
 export function followUpRequest(parent: Report): ReportRequest {
+  if (parent.report.scope.research_time_basis === 'recorded_time') {
+    throw new Error('Start a new historical request. Ordinary follow-ups cannot preserve this time policy.');
+  }
   if (parent.report.scope.map_origin) {
     throw new Error(
       'Start area research from its saved map revision. Ordinary follow-ups cannot preserve that scope.',

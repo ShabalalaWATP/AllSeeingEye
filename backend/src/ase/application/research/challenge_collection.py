@@ -57,7 +57,7 @@ async def collect_challenges(
                 continue
             requests += 1
             batch = await ResearchCollector([provider]).collect(
-                replace(query, source_ids=None),
+                replace(query, source_ids=(provider.id,)),
                 budget=CollectionBudget(
                     requests=1,
                     seconds=remaining,

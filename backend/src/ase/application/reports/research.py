@@ -7,6 +7,7 @@ from ase.application.ports.research import ReplanCallback, ResearchCollection
 from ase.application.reports.request import ReportRequest
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Event
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import CollectionAttempt, ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.research_records import ResearchReceipt
 
@@ -36,9 +37,13 @@ async def collect_report_evidence(
             else await collection.collect(query)
         )
     private = store_factory()
-    if not private_focus and query.area is None:
+    if (
+        not private_focus
+        and query.area is None
+        and query.effective_time_basis is not EvidenceTimeBasis.RECORDED
+    ):
         # Copy public context only for public research. Unrelated high-ranked live items
-        # must not crowd supplied document/media passages out of their own report.
+        # must not crowd supplied document/media or historical project records out.
         retained = live_store.query(
             EventQuery(
                 since=query.since,

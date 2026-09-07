@@ -13,6 +13,7 @@ import { followUpRequest } from './followUpScope';
 function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
   return {
     question: input.question,
+    time_basis: input.time_basis ?? 'publication',
     since: input.since,
     until: input.until,
     languages: input.languages ?? ['en'],
@@ -27,9 +28,17 @@ function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
     model_calls: 0,
     translation_calls: 0,
     replans: 0,
-    tasks: ['google_news', 'wikipedia'].map((id) => ({
+    tasks: (input.time_basis === 'recorded_time'
+      ? ['research-aiddata-projects', 'google_news', 'wikipedia']
+      : ['google_news', 'wikipedia']
+    ).map((id) => ({
       source_id: id,
-      source_name: id === 'google_news' ? 'Google News' : 'Wikipedia',
+      source_name:
+        id === 'research-aiddata-projects'
+          ? 'AidData projects'
+          : id === 'google_news'
+            ? 'Google News'
+            : 'Wikipedia',
       selected:
         input.source_ids === null ||
         input.source_ids === undefined ||
@@ -61,6 +70,84 @@ async function openPlan() {
 }
 
 describe('editable collection plan', () => {
+  it('does not substitute news sources for a deselected historical project source', async () => {
+    mockPreview([]);
+    let submitted = false;
+    server.use(
+      http.post('/api/reports', () => {
+        submitted = true;
+        return HttpResponse.json(report);
+      }),
+    );
+    const { user } = await openPlan();
+    await user.click(screen.getByText('Scope and sources'));
+    await user.selectOptions(screen.getByLabelText('Research period'), 'history');
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+    await user.click(screen.getByRole('checkbox', { name: 'AidData projects' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Google News' }));
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+    await user.click(screen.getByRole('button', { name: 'Start research' }));
+    expect(submitted).toBe(false);
+    expect(await screen.findByRole('alert')).toHaveTextContent('supported selected source');
+  });
+  it('rejects a historical preview that changes the time policy', async () => {
+    server.use(
+      http.post('/api/research/runs/plan', async ({ request }) => {
+        const input = (await request.json()) as planApi.ResearchPlanInput;
+        return HttpResponse.json({ ...preview(input), time_basis: 'publication' });
+      }),
+    );
+    const { user } = await openPlan();
+    await user.click(screen.getByText('Scope and sources'));
+    await user.selectOptions(screen.getByLabelText('Research period'), 'history');
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The preview does not match the historical period.',
+    );
+    expect(screen.queryByText('Current preview')).not.toBeInTheDocument();
+  });
+  it('keeps historical dates fixed and requires repreview after changing years', async () => {
+    const plans: planApi.ResearchPlanInput[] = [];
+    let body: ReportRequest | undefined;
+    mockPreview(plans);
+    server.use(
+      http.post('/api/reports', async ({ request }) => {
+        body = (await request.json()) as ReportRequest;
+        return HttpResponse.json(report, { status: 201 });
+      }),
+    );
+    const { user } = await openPlan();
+    await user.click(screen.getByText('Scope and sources'));
+    await user.selectOptions(screen.getByLabelText('Research period'), 'history');
+    expect(screen.queryByLabelText('Reporting window')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Start research' }));
+    expect(body).toBeUndefined();
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+    expect(plans[0]).toMatchObject({
+      time_basis: 'recorded_time',
+      source_ids: ['research-aiddata-projects'],
+      since: '2000-01-01T00:00:00.000Z',
+      until: '2022-01-01T00:00:00.000Z',
+    });
+    await user.clear(screen.getByLabelText('Last commitment year'));
+    await user.type(screen.getByLabelText('Last commitment year'), '2020');
+    await user.click(screen.getByRole('button', { name: 'Start research' }));
+    expect(body).toBeUndefined();
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+    await user.click(screen.getByRole('button', { name: 'Start research' }));
+    await waitFor(() =>
+      expect(body).toMatchObject({
+        research_time_basis: 'recorded_time',
+        research_since: plans[1]?.since,
+        research_until: plans[1]?.until,
+      }),
+    );
+    expect(body?.window_hours).toBeUndefined();
+  });
   it('submits the exact previewed terms, variants and sources and requires a fresh preview after edits', async () => {
     const plans: planApi.ResearchPlanInput[] = [];
     let body: ReportRequest | undefined;

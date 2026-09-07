@@ -77,7 +77,9 @@ def evidence_block(item: EvidenceItem) -> str:
     )
     provenance = f" Original language: {item.language or 'not recorded'}."
     provenance += (
-        " " + ". ".join(observation_lines(item)) if item.observation or item.geometry else ""
+        " " + ". ".join(observation_lines(item, for_prompt=True))
+        if item.observation or item.geometry or item.project
+        else ""
     )
     if item.geo_confidence:
         provenance += f" Location precision: {item.geo_confidence}."

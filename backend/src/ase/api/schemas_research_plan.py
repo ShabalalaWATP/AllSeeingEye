@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.api.schemas_map_origin import MapResearchOriginOut
 from ase.api.schemas_research_area import ResearchAreaOut
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
 
@@ -38,6 +39,7 @@ class ResearchPlanIn(BaseModel):
     subject: str | None = Field(default=None, max_length=300)
     country_iso: str | None = Field(default=None, min_length=2, max_length=2)
     source_ids: list[str] | None = Field(default=None, max_length=64)
+    time_basis: EvidenceTimeBasis | None = None
     query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
     map_view_id: UUID | None = None
     map_revision_id: UUID | None = None
@@ -55,6 +57,7 @@ class ResearchPlanIn(BaseModel):
             raise ValueError("Provide at most 1000 combined search-term characters")
         return ResearchQuery(
             question=self.question,
+            time_basis=self.time_basis,
             since=self.since,
             until=self.until,
             languages=tuple(self.languages),
@@ -113,6 +116,7 @@ class ResearchPlanOut(BaseModel):
     country_iso: str | None
     translation: QueryTransformationOut | None = None
     area: ResearchAreaOut | None = None
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
 
 
 class ResearchPreviewOut(ResearchPlanOut):

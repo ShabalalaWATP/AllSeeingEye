@@ -16,6 +16,49 @@ const saved = {
   revision: { ...savedMapFixture.revision, id: revisionId, view_id: viewId },
 };
 const path = `/research?map_view=${viewId}&map_revision=${revisionId}`;
+
+it('launches historical project research from the exact saved area and resets consent on year edits', async () => {
+  let submitted: ReportRequest | undefined;
+  server.use(
+    http.get('/api/map/views/:view/revisions/:revision', () => HttpResponse.json(saved)),
+    http.post('/api/research/runs/plan', async ({ request }) =>
+      HttpResponse.json(preview((await request.json()) as ResearchPlanInput)),
+    ),
+    http.post('/api/reports', async ({ request }) => {
+      submitted = (await request.json()) as ReportRequest;
+      return HttpResponse.json(report, { status: 201 });
+    }),
+  );
+  const { user } = renderApp(path, 'user');
+  await user.type(await screen.findByLabelText('Your area research question'), 'Which projects?');
+  await user.selectOptions(screen.getByLabelText('Research period'), 'history');
+  await user.click(screen.getByText('Collection plan (required)'));
+  await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+  await screen.findByText('Current preview');
+  const consent = screen.getByLabelText(
+    'Allow selected providers to receive this area and interval for collection.',
+  );
+  await user.click(consent);
+  await user.clear(screen.getByLabelText('Last commitment year'));
+  await user.type(screen.getByLabelText('Last commitment year'), '2020');
+  expect(consent).not.toBeChecked();
+  expect(screen.getByRole('button', { name: 'Research saved area' })).toBeDisabled();
+  await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+  await screen.findByText('Current preview');
+  await user.click(consent);
+  await user.click(screen.getByRole('button', { name: 'Research saved area' }));
+  await waitFor(() =>
+    expect(submitted).toMatchObject({
+      map_view_id: viewId,
+      map_revision_id: revisionId,
+      research_source_ids: ['research-aiddata-projects'],
+      research_time_basis: 'recorded_time',
+      research_since: '2000-01-01T00:00:00.000Z',
+      research_until: '2021-01-01T00:00:00.000Z',
+    }),
+  );
+  expect(submitted?.window_hours).toBeUndefined();
+});
 function preview(input: ResearchPlanInput) {
   return {
     ...input,
@@ -42,7 +85,10 @@ function preview(input: ResearchPlanInput) {
     },
     tasks: [
       {
-        source_id: 'research-copernicus-footprints',
+        source_id:
+          input.time_basis === 'recorded_time'
+            ? 'research-aiddata-projects'
+            : 'research-copernicus-footprints',
         source_name: 'Copernicus',
         selected: true,
         supported: true,
