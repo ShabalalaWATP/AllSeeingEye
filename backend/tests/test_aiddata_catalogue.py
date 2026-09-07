@@ -2,6 +2,7 @@
 
 import os
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,7 @@ def test_native_directory_import_is_searchable_versioned_and_never_overwritten(t
     (inputs / "35756.geojson").write_bytes(source())
     cache = tmp_path / "cache"
     target = import_project_directory(inputs, cache)
-    with sqlite3.connect(target) as connection:
+    with closing(sqlite3.connect(target)) as connection:
         metadata = dict(connection.execute("SELECT key,value FROM metadata"))
         assert metadata["project_count"] == "1"
         assert "unverified" in metadata["authenticity"]

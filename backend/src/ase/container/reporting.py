@@ -8,6 +8,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
+from ase.adapters.persistence.comparison_reports import SqlComparisonReportRepository
 from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
 from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
 from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
@@ -25,9 +26,11 @@ from ase.application.reports.access import (
     GetReportUseCase,
     ListReportsUseCase,
 )
+from ase.application.reports.annotation_comparisons import AnnotationComparisons
 from ase.application.reports.archiving import archive_evidence
 from ase.application.reports.claim_export_selection import SelectClaimExport
 from ase.application.reports.claims import ReportClaims
+from ase.application.reports.comparison_reports import ComparisonReports
 from ase.application.reports.evidence_package import ExportEvidencePackage
 from ase.application.reports.export_claim_package import ExportClaimPackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
@@ -291,6 +294,14 @@ class ReportWiring:
 
     def compare_reports(self, session: AsyncSession) -> CompareReportsUseCase:
         return CompareReportsUseCase(self.get_report(session))
+
+    def comparison_reports(self, session: AsyncSession) -> ComparisonReports:
+        return ComparisonReports(
+            SqlComparisonReportRepository(session), self.report_claims(session)
+        )
+
+    def annotation_comparisons(self, session: AsyncSession) -> AnnotationComparisons:
+        return AnnotationComparisons(self.export_claim_package(session).selector, self.clock)
 
     def list_reports(self, session: AsyncSession) -> ListReportsUseCase:
         return ListReportsUseCase(self.repositories(session).reports, self.access_policy(session))

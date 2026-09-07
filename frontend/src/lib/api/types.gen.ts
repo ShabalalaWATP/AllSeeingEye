@@ -917,6 +917,57 @@ export interface paths {
         patch: operations["update_identity_review_api_identity_reviews__decision_id__patch"];
         trace?: never;
     };
+    "/api/annotation-comparisons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Annotation Comparison */
+        post: operations["preview_annotation_comparison_api_annotation_comparisons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/annotation-comparisons/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Annotation Comparison */
+        post: operations["export_annotation_comparison_api_annotation_comparisons_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/annotation-comparisons/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Comparison Reports */
+        get: operations["comparison_reports_api_annotation_comparisons_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/relationship-reviews/assertions": {
         parameters: {
             query?: never;
@@ -2212,6 +2263,134 @@ export interface components {
             /** Unacknowledged */
             unacknowledged: number;
         };
+        /** AnnotationChange */
+        AnnotationChange: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "claim" | "identity" | "relationship";
+            /** Before Revision Id */
+            before_revision_id: string | null;
+            /** After Revision Id */
+            after_revision_id: string | null;
+            /**
+             * Correspondence
+             * @enum {string}
+             */
+            correspondence: "same_root" | "operator_declared" | "unmatched";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "unchanged" | "changed" | "added" | "removed";
+            /** Changed Fields */
+            changed_fields: string[];
+        };
+        /** AnnotationComparison */
+        AnnotationComparison: {
+            /** Method Version */
+            method_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Comparison Sha256 */
+            comparison_sha256: string;
+            /**
+             * Compared By
+             * Format: uuid
+             */
+            compared_by: string;
+            before: components["schemas"]["ComparisonSide"];
+            after: components["schemas"]["ComparisonSide"];
+            /** Correspondences */
+            correspondences: components["schemas"]["AnnotationCorrespondence"][];
+            /** Judgement Correspondences */
+            judgement_correspondences: components["schemas"]["JudgementCorrespondence"][];
+            /** Annotation Changes */
+            annotation_changes: components["schemas"]["AnnotationChange"][];
+            /** Evidence Changes */
+            evidence_changes: components["schemas"]["ComparisonEvidenceChange"][];
+            /** Confidence Changes */
+            confidence_changes: components["schemas"]["ConfidenceChange"][];
+            /**
+             * Limitations
+             * @default [
+             *       "This compares explicitly selected frozen revisions, not a complete annotation inventory.",
+             *       "Different roots remain distinct unless an operator explicitly declares correspondence. Correspondence is not verified claim, identity or ownership equivalence.",
+             *       "Unique identical judgement statements may correspond; reused judgement IDs alone do not. Unmatched judgements have separate assessments, not a directional confidence change.",
+             *       "Reliability, information credibility and confidence are separate recorded dimensions. Observed differences do not establish unique causation or a probability of factual truth.",
+             *       "Frozen assessments are not recomputed. Method-version differences may limit comparability.",
+             *       "Removed evidence may reflect a collection window; it does not establish withdrawal. Publication, observation, capture, review and generated timestamps have distinct meanings.",
+             *       "Generated-at is the server response time, not a trusted source observation timestamp."
+             *     ]
+             */
+            limitations: string[];
+        };
+        /** AnnotationComparisonExportIn */
+        AnnotationComparisonExportIn: {
+            before: components["schemas"]["ComparisonSelectionIn"];
+            after: components["schemas"]["ComparisonSelectionIn"];
+            /** Correspondences */
+            correspondences?: components["schemas"]["AnnotationCorrespondenceIn"][];
+            /** Judgement Correspondences */
+            judgement_correspondences?: components["schemas"]["JudgementCorrespondenceIn"][];
+            /** Expected Comparison Sha256 */
+            expected_comparison_sha256: string;
+        };
+        /** AnnotationComparisonIn */
+        AnnotationComparisonIn: {
+            before: components["schemas"]["ComparisonSelectionIn"];
+            after: components["schemas"]["ComparisonSelectionIn"];
+            /** Correspondences */
+            correspondences?: components["schemas"]["AnnotationCorrespondenceIn"][];
+            /** Judgement Correspondences */
+            judgement_correspondences?: components["schemas"]["JudgementCorrespondenceIn"][];
+        };
+        /** AnnotationComparisonOut */
+        AnnotationComparisonOut: components["schemas"]["AnnotationComparison"];
+        /** AnnotationCorrespondence */
+        AnnotationCorrespondence: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "claim" | "identity" | "relationship";
+            /**
+             * Before Revision Id
+             * Format: uuid
+             */
+            before_revision_id: string;
+            /**
+             * After Revision Id
+             * Format: uuid
+             */
+            after_revision_id: string;
+            /** Rationale */
+            rationale: string;
+        };
+        /** AnnotationCorrespondenceIn */
+        AnnotationCorrespondenceIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "claim" | "identity" | "relationship";
+            /**
+             * Before Revision Id
+             * Format: uuid
+             */
+            before_revision_id: string;
+            /**
+             * After Revision Id
+             * Format: uuid
+             */
+            after_revision_id: string;
+            /** Rationale */
+            rationale: string;
+        };
         /** AoiIn */
         AoiIn: {
             /** Team Id */
@@ -2302,6 +2481,35 @@ export interface components {
             engine_assessed: boolean;
             /** Description */
             description: string;
+        };
+        /** AssessmentTallies */
+        AssessmentTallies: {
+            /** Evidence Items */
+            evidence_items: number;
+            /** Declared Groups */
+            declared_groups: number;
+            /** Unknown Provenance Items */
+            unknown_provenance_items: number;
+            /** Possible Copy Groups */
+            possible_copy_groups: number;
+            /** Judgements */
+            judgements: number;
+            /** Strong */
+            strong: number;
+            /** Moderate */
+            moderate: number;
+            /** Limited */
+            limited: number;
+            /** Unassessed */
+            unassessed: number;
+            /** Supported Judgements */
+            supported_judgements: number;
+            /** Limited Judgements */
+            limited_judgements: number;
+            /** Contested Judgements */
+            contested_judgements: number;
+            /** Unsupported Judgements */
+            unsupported_judgements: number;
         };
         /** AssessmentTalliesOut */
         AssessmentTalliesOut: {
@@ -2475,6 +2683,11 @@ export interface components {
             /** Explanation */
             explanation: string;
         };
+        /**
+         * ChangeFromPrevious
+         * @enum {string}
+         */
+        ChangeFromPrevious: "new" | "unchanged" | "strengthened" | "weakened" | "reversed";
         /**
          * ChangeKind
          * @enum {string}
@@ -2889,11 +3102,120 @@ export interface components {
          * @enum {string}
          */
         CollectionStatus: "completed" | "empty" | "not_collected" | "unavailable" | "unsupported" | "failed" | "timed_out" | "budget_exhausted";
+        /** ComparisonEvidenceChange */
+        ComparisonEvidenceChange: {
+            /** Source Id */
+            source_id: string;
+            /** Event Id */
+            event_id: string;
+            /** Before Label */
+            before_label: string | null;
+            /** After Label */
+            after_label: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "unchanged" | "changed" | "added" | "removed";
+            /** Changed Fields */
+            changed_fields: string[];
+        };
+        /** ComparisonReportsOut */
+        ComparisonReportsOut: {
+            /** Items */
+            items: components["schemas"]["ReportSummaryOut"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /** ComparisonSelectionIn */
+        ComparisonSelectionIn: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Revisions */
+            revisions?: components["schemas"]["ClaimExportReferenceIn"][];
+            /** Identity Revisions */
+            identity_revisions?: components["schemas"]["IdentityExportReferenceIn"][];
+            /** Relationship Revisions */
+            relationship_revisions?: components["schemas"]["RelationshipExportReferenceIn"][];
+        };
+        /** ComparisonSide */
+        ComparisonSide: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Title */
+            title: string;
+            /** Period From */
+            period_from: string | null;
+            /** Period To */
+            period_to: string | null;
+            /**
+             * Version Created At
+             * Format: date-time
+             */
+            version_created_at: string;
+            /** Data Cutoff */
+            data_cutoff: string | null;
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Revisions */
+            revisions: components["schemas"]["ClaimRevision"][];
+            /** Identity Revisions */
+            identity_revisions: components["schemas"]["IdentityDecisionRevision"][];
+            /** Relationship Revisions */
+            relationship_revisions: components["schemas"]["RelationshipReviewRevision"][];
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceItem"][];
+            /** Judgements */
+            judgements: components["schemas"]["KeyJudgement"][];
+            assessment: components["schemas"]["ReportAssessment"] | null;
+        };
         /**
          * Confidence
          * @enum {string}
          */
         Confidence: "high" | "moderate" | "low";
+        /** ConfidenceChange */
+        ConfidenceChange: {
+            /** Before Judgement Id */
+            before_judgement_id: string | null;
+            /** After Judgement Id */
+            after_judgement_id: string | null;
+            /**
+             * Correspondence
+             * @enum {string}
+             */
+            correspondence: "exact_statement" | "operator_declared" | "unmatched";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "unchanged" | "changed" | "added" | "removed";
+            /** Changed Fields */
+            changed_fields: string[];
+            /** Explanations */
+            explanations: string[];
+        };
         /** ConflictBoardOut */
         ConflictBoardOut: {
             /** Items */
@@ -2979,6 +3301,21 @@ export interface components {
          * @enum {string}
          */
         Contribution: "strong" | "moderate" | "limited" | "unassessed";
+        /** ContributionGroup */
+        ContributionGroup: {
+            /** Id */
+            id: string;
+            /** Labels */
+            labels: string[];
+            /** Known Organisation */
+            known_organisation: boolean;
+            contribution: components["schemas"]["Contribution"];
+            corroborating_contribution: components["schemas"]["Contribution"];
+            /** Confirmed Strong */
+            confirmed_strong: boolean;
+            /** Possible Copy */
+            possible_copy: boolean;
+        };
         /** ContributionGroupOut */
         ContributionGroupOut: {
             /** Id */
@@ -3148,6 +3485,26 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** EvidenceAssessment */
+        EvidenceAssessment: {
+            /** Label */
+            label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Reliability */
+            reliability: string;
+            /** Credibility */
+            credibility: number;
+            contribution: components["schemas"]["Contribution"];
+            /** Organisation */
+            organisation: string | null;
+            /** Flags */
+            flags: string[];
+            /** Reasons */
+            reasons: string[];
+        };
         /** EvidenceAssessmentOut */
         EvidenceAssessmentOut: {
             /** Label */
@@ -3198,6 +3555,20 @@ export interface components {
             /** Quote */
             quote: string;
         };
+        /** EvidenceGeometry */
+        EvidenceGeometry: {
+            /** Source Geometry */
+            source_geometry: string;
+            location_role: components["schemas"]["LocationRole"];
+            /** Precision */
+            precision: string;
+            /** Method */
+            method: string;
+            /** Source Id */
+            source_id: string;
+            /** Attribution */
+            attribution: string;
+        };
         /** EvidenceGeometryOut */
         EvidenceGeometryOut: {
             geometry: components["schemas"]["SourceGeometryOut"];
@@ -3212,6 +3583,81 @@ export interface components {
             source_id: string;
             /** Attribution */
             attribution: string;
+        };
+        /** EvidenceItem */
+        EvidenceItem: {
+            /** Label */
+            label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Independence Key */
+            independence_key: string;
+            /** Category */
+            category: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string | null;
+            /** Url */
+            url: string | null;
+            /** Published At */
+            published_at: string | null;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Grade */
+            grade: string;
+            /** Reliability */
+            reliability: string;
+            /** Credibility */
+            credibility: number;
+            /** Grade Rationale */
+            grade_rationale: string;
+            /** Lon */
+            lon: number | null;
+            /** Lat */
+            lat: number | null;
+            /** Country Iso */
+            country_iso: string | null;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Instrument
+             * @default false
+             */
+            instrument: boolean;
+            /**
+             * Flags
+             * @default []
+             */
+            flags: string[];
+            /** Archive Url */
+            archive_url?: string | null;
+            /** Title En */
+            title_en?: string | null;
+            /** Language */
+            language?: string | null;
+            /** Geo Confidence */
+            geo_confidence?: string | null;
+            /** Observed At */
+            observed_at?: string | null;
+            /** Story Id */
+            story_id?: string | null;
+            source_rating?: components["schemas"]["SourceRating"] | null;
+            /**
+             * Attributes
+             * @default []
+             */
+            attributes: components["schemas"]["EvidenceAttribute"][];
+            geometry?: components["schemas"]["EvidenceGeometry"] | null;
+            observation?: components["schemas"]["ObservationMetadata"] | null;
+            project?: components["schemas"]["ProjectMetadata"] | null;
         };
         /**
          * EvidenceTimeBasis
@@ -3715,6 +4161,41 @@ export interface components {
             updated_at: string | null;
         };
         JsonValue: unknown;
+        /** JudgementAssessment */
+        JudgementAssessment: {
+            /** Judgement Id */
+            judgement_id: string;
+            /** Supporting Labels */
+            supporting_labels: string[];
+            /** Contradicting Labels */
+            contradicting_labels: string[];
+            /** Invalid Labels */
+            invalid_labels: string[];
+            /** Support Groups */
+            support_groups: components["schemas"]["ContributionGroup"][];
+            /** Opposition Groups */
+            opposition_groups: components["schemas"]["ContributionGroup"][];
+            support_tier: components["schemas"]["Contribution"];
+            opposition_tier: components["schemas"]["Contribution"];
+            /**
+             * Balance
+             * @enum {string}
+             */
+            balance: "no_support" | "support_only" | "support_stronger" | "opposition_at_least_as_strong";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "supported" | "limited" | "contested" | "unsupported";
+            confidence_ceiling: components["schemas"]["Confidence"];
+            final_confidence: components["schemas"]["Confidence"];
+            /** Explanation */
+            explanation: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Improvements */
+            improvements: string[];
+        };
         /** JudgementAssessmentOut */
         JudgementAssessmentOut: {
             /** Judgement Id */
@@ -3759,6 +4240,56 @@ export interface components {
             citations: components["schemas"]["CitationCheckOut"][];
             /** Reasons */
             reasons: string[];
+        };
+        /** JudgementCorrespondence */
+        JudgementCorrespondence: {
+            /** Before Judgement Id */
+            before_judgement_id: string;
+            /** After Judgement Id */
+            after_judgement_id: string;
+            /** Rationale */
+            rationale: string;
+        };
+        /** JudgementCorrespondenceIn */
+        JudgementCorrespondenceIn: {
+            /** Before Judgement Id */
+            before_judgement_id: string;
+            /** After Judgement Id */
+            after_judgement_id: string;
+            /** Rationale */
+            rationale: string;
+        };
+        /** KeyJudgement */
+        KeyJudgement: {
+            /** Id */
+            id: string;
+            /** Statement */
+            statement: string;
+            probability: components["schemas"]["Probability"];
+            confidence: components["schemas"]["Confidence"];
+            /** Confidence Statement */
+            confidence_statement: string;
+            /**
+             * Supporting Evidence
+             * @default []
+             */
+            supporting_evidence: string[];
+            /**
+             * Contradicting Evidence
+             * @default []
+             */
+            contradicting_evidence: string[];
+            /**
+             * Assumptions
+             * @default []
+             */
+            assumptions: string[];
+            change_from_previous?: components["schemas"]["ChangeFromPrevious"] | null;
+            /**
+             * Indicators
+             * @default []
+             */
+            indicators: string[];
         };
         /** LanguageCapabilityOut */
         LanguageCapabilityOut: {
@@ -4516,6 +5047,24 @@ export interface components {
             /** Profiles */
             profiles: components["schemas"]["RoutedModelOut"][];
         };
+        /** ObservationMetadata */
+        ObservationMetadata: {
+            /**
+             * Acquired At
+             * Format: date-time
+             */
+            acquired_at: string;
+            /** Collection Id */
+            collection_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Limitations */
+            limitations: string;
+            /** Processed At */
+            processed_at?: string | null;
+            /** Scene Cloud Cover */
+            scene_cloud_cover?: number | null;
+        };
         /** ObservationOut */
         ObservationOut: {
             /**
@@ -4862,6 +5411,37 @@ export interface components {
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
         };
+        /** ProjectMetadata */
+        ProjectMetadata: {
+            /** Dataset Id */
+            dataset_id: string;
+            /** Release Id */
+            release_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Source Sha256 */
+            source_sha256: string;
+            /** Recipient Iso3 */
+            recipient_iso3: string;
+            /** Reported Status */
+            reported_status: string;
+            /** Precision */
+            precision: string;
+            /** Attribution */
+            attribution: string;
+            /** Data Licence */
+            data_licence: string;
+            /** Geometry Licence */
+            geometry_licence: string;
+            /** Limitations */
+            limitations: string;
+            /** Commitment Year */
+            commitment_year?: number | null;
+            /** Implementation Year */
+            implementation_year?: number | null;
+            /** Completion Year */
+            completion_year?: number | null;
+        };
         /** ProjectOut */
         ProjectOut: {
             /** Dataset Id */
@@ -5185,6 +5765,22 @@ export interface components {
             grade: string;
             /** Label */
             label: string;
+        };
+        /** ReportAssessment */
+        ReportAssessment: {
+            /** Method Version */
+            method_version: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceAssessment"][];
+            /** Judgements */
+            judgements: components["schemas"]["JudgementAssessment"][];
+            tallies: components["schemas"]["AssessmentTallies"];
+            /** Validation Errors */
+            validation_errors: number;
+            /** Validation Warnings */
+            validation_warnings: number;
+            /** Limitations */
+            limitations: string[];
         };
         /** ReportAssessmentOut */
         ReportAssessmentOut: {
@@ -6438,6 +7034,32 @@ export interface components {
             /** Flags */
             flags: string[];
             health: components["schemas"]["SourceHealthOut"];
+        };
+        /** SourceRating */
+        SourceRating: {
+            /** Policy Version */
+            policy_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "editorial" | "unassessed";
+            assessed_grade: components["schemas"]["Reliability"] | null;
+            /** Basis */
+            basis: string;
+            /** Scope */
+            scope: string;
+            /** Limitations */
+            limitations: string[];
+            /**
+             * Provenance Role
+             * @enum {string}
+             */
+            provenance_role: "originator" | "publisher" | "aggregator" | "platform" | "unassessed";
+            /** Publisher Reliability Assessed */
+            publisher_reliability_assessed: boolean;
+            /** Reviewed At */
+            reviewed_at?: string | null;
         };
         /** SourceRatingOut */
         SourceRatingOut: {
@@ -8682,6 +9304,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IdentityDecisionRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_annotation_comparison_api_annotation_comparisons_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnotationComparisonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationComparisonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_annotation_comparison_api_annotation_comparisons_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnotationComparisonExportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comparison_reports_api_annotation_comparisons_reports_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonReportsOut"];
                 };
             };
             /** @description Validation Error */

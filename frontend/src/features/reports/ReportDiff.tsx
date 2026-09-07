@@ -1,12 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
+import { AnnotationComparisonWorkspace } from './AnnotationComparisonWorkspace';
 import { describeError } from '@/lib/api/errors';
 import { fetchReportComparison } from '@/lib/api/reportDocuments';
 import type { ReportChange } from '@/lib/api/reportDocuments';
-import { useResource } from '@/lib/hooks/useResource';
+import { useScopedResource } from '@/lib/hooks/useScopedResource';
+import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
+import { useAuthStore } from '@/stores/auth';
+import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 
 function Change({ change }: { change: ReportChange }) {
   return (
@@ -33,8 +37,12 @@ function Change({ change }: { change: ReportChange }) {
 }
 
 function ComparisonResult({ id, from, to }: { id: string; from: number; to: number }) {
-  const loader = useCallback(() => fetchReportComparison(id, from, to), [id, from, to]);
-  const { data, error, loading, reload } = useResource(loader);
+  const request = useScopedRequest();
+  const loader = useCallback(
+    () => fetchReportComparison(id, from, to, request()),
+    [id, from, to, request],
+  );
+  const { data, error, loading, reload } = useScopedResource(loader);
   return (
     <section
       aria-label={`Version ${String(from)} to ${String(to)} comparison`}
@@ -74,15 +82,8 @@ function ComparisonResult({ id, from, to }: { id: string; from: number; to: numb
   );
 }
 
-export function ReportDiff({
-  id,
-  current,
-  latest,
-}: {
-  id: string;
-  current: number;
-  latest: number;
-}) {
+function ReportDiffBody({ id, current, latest }: { id: string; current: number; latest: number }) {
+  const [advanced, setAdvanced] = useState(false);
   const [from, setFrom] = useState(Math.max(1, current - 1));
   const [to, setTo] = useState(current);
   const [pair, setPair] = useState<{ from: number; to: number } | null>(null);
@@ -138,6 +139,20 @@ export function ReportDiff({
           )}
         </>
       )}
+      <div className="mt-4 border-t border-line pt-4">
+        <Button variant="secondary" aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}>
+          Compare annotations and confidence
+        </Button>
+        {advanced && <AnnotationComparisonWorkspace id={id} current={current} />}
+      </div>
     </details>
   );
+}
+
+export function ReportDiff(props: { id: string; current: number; latest: number }) {
+  const actor = useAuthStore(
+    (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
+  );
+  const access = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
+  return <ReportDiffBody key={`${actor}:${access}:${props.id}:${props.current}`} {...props} />;
 }

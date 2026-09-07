@@ -166,7 +166,22 @@ def compare_reports(previous: ReportVersion | None, current: ReportVersion) -> R
     new_links, new_confidence = _relationships(current)
     if old_links != new_links:
         reasons.append("evidence_relationships_changed")
-    elif old_confidence != new_confidence:
+    # Retain link-conditioned score changes when correspondence is unchanged. If
+    # links differ, compare only recorded score distributions, never link keys.
+    old_scores = Counter(
+        score[-2:] for score, count in old_confidence.items() for _ in range(count)
+    )
+    new_scores = Counter(
+        score[-2:] for score, count in new_confidence.items() for _ in range(count)
+    )
+    if (
+        previous.assessment is not None
+        and current.assessment is not None
+        and (
+            (old_links == new_links and old_confidence != new_confidence)
+            or old_scores != new_scores
+        )
+    ):
         reasons.append("engine_confidence_changed")
     if Counter((item.rule, item.severity) for item in previous.findings) != Counter(
         (item.rule, item.severity) for item in current.findings
