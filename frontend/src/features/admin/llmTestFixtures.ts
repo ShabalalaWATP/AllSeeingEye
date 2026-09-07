@@ -47,6 +47,10 @@ export function installConnections(initial = [draft()], initialBindings: LlmConn
     applies: [] as LlmConnectionInput[],
   };
   server.use(
+    http.post('/api/admin/llm/models/discover', () => {
+      state.models += 1;
+      return HttpResponse.json({ models: ['gpt-5.6-luna', 'manual-alternative'] });
+    }),
     http.get('/api/teams', () => HttpResponse.json({ items: [team] })),
     http.get('/api/admin/llm/profiles', () =>
       HttpResponse.json({ items: state.profiles, encryption_available: true }),
@@ -111,15 +115,26 @@ export function installConnections(initial = [draft()], initialBindings: LlmConn
         state.profiles.find((profile) => profile.id === body.profile_id),
       );
       Object.assign(current, { enabled: true, is_bound: true });
-      const applied = binding(current, body.team_id ?? null);
+      const applied = {
+        ...binding(current, body.team_id ?? null),
+        ...(body.user_id ? { user_id: body.user_id } : {}),
+      };
       state.bindings = [
-        ...state.bindings.filter((item) => item.team_id !== applied.team_id),
+        ...state.bindings.filter(
+          (item) =>
+            item.team_id !== applied.team_id ||
+            (item.user_id ?? null) !== (applied.user_id ?? null),
+        ),
         applied,
       ];
       return HttpResponse.json(applied);
     }),
     http.delete('/api/admin/llm/profiles/:id', ({ params }) => {
       state.profiles = state.profiles.filter((profile) => profile.id !== params.id);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.delete('/api/admin/llm/connections/user/:id', ({ params }) => {
+      state.bindings = state.bindings.filter((item) => item.user_id !== params.id);
       return new HttpResponse(null, { status: 204 });
     }),
     http.delete('/api/admin/llm/connections/team/:id', ({ params }) => {

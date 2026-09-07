@@ -208,12 +208,13 @@ async def test_discovery_saved_secret_safe_errors_and_non_admin_denial(
 ) -> None:
     class Discovery:
         fail = False
+        malformed = False
 
         async def list_models(self, base_url: str, api_key: str) -> tuple[str, ...]:
             assert api_key == DRAFT["api_key"]
             if self.fail:
                 raise RuntimeError("DO NOT EXPOSE " + api_key)
-            return ("z", "a", "a", "bad\nname")
+            return ("z", "a", "a", "bad\nname") if self.malformed else ("z", "a", "a")
 
     discovery = Discovery()
     container.model_discovery = discovery
@@ -222,6 +223,11 @@ async def test_discovery_saved_secret_safe_errors_and_non_admin_denial(
     path = f"{ROOT}/profiles/{profile['id']}/models"
     result = await client.get(path, headers=headers)
     assert result.json() == {"models": ["a", "z"]}
+    discovery.malformed = True
+    malformed = await client.get(path, headers=headers)
+    assert malformed.status_code == 422
+    assert "bad" not in malformed.text and DRAFT["api_key"] not in malformed.text
+    discovery.malformed = False
     discovery.fail = True
     failed = await client.get(path, headers=headers)
     assert failed.status_code == 422 and "DO NOT EXPOSE" not in failed.text

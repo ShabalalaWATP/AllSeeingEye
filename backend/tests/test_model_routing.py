@@ -43,7 +43,8 @@ def routing(profiles, assignments):
     repository.get.side_effect = lambda key: next((p for p in profiles if p.id == key), None)
     bindings = AsyncMock()
     bindings.list_all.side_effect = lambda: [
-        SimpleNamespace(team_id=scope, **vars(value)) for scope, value in assignments.items()
+        SimpleNamespace(team_id=scope, user_id=None, **vars(value))
+        for scope, value in assignments.items()
     ]
     return ModelRouting(repository, bindings), bindings
 

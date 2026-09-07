@@ -324,3 +324,15 @@ release; it does not attest pixel correspondence or redaction. Request intake is
 Two export slots are retained until workers finish, including cancelled requests.
 No image is durably retained. Details and outstanding GPU acceptance are in
 SAVED_MAP_IMAGE_EXPORT.md. No operator database migration is needed for this path.
+
+
+## Administrator AI connection rollout
+
+Migration 0028 adds personal-workspace AI bindings. Apply the normal migration
+procedure to a backed-up operator database before starting this version. No
+operator migration was performed during implementation. Configure connections in
+Administration > AI connections: enter provider credentials, continue to discover
+models, choose/test a model, then review and confirm the audience. Bedrock model
+IDs remain manual. Personal assignments affect personal research only; team work
+uses its team's assignment or the app default. See ADMIN_AI_CONNECTION_JOURNEY.md
+for exact routing, test evidence and credential-handling boundaries.

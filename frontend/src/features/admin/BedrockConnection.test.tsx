@@ -19,6 +19,7 @@ const bedrock = () =>
 
 describe('native Amazon Bedrock connection', () => {
   it('requires an explicit region, API key and model and saves a text-only native draft', async () => {
+    installConnections();
     const user = userEvent.setup();
     const submit = vi.fn();
     render(<LlmProfileForm busy={false} error={null} onSubmit={submit} onCancel={vi.fn()} />);

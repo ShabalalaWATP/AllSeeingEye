@@ -13,7 +13,7 @@ export interface ConnectionSelection {
 export interface LlmConnectionSummaryProps {
   global: readonly ConnectionSelection[];
   teams: readonly { team: Team; connections: ConnectionSelection[] }[];
-  onReplace: (profile: LlmProfile) => void;
+  onReplace: (profile: LlmProfile, teamId?: string) => void;
   onReuse: (profile: LlmProfile) => void;
   disabled: boolean;
   legacy: boolean;
@@ -27,7 +27,7 @@ function Connection({
   disabled,
 }: {
   selection: ConnectionSelection;
-  onReplace: (profile: LlmProfile) => void;
+  onReplace: (profile: LlmProfile, teamId?: string) => void;
   onReuse: (profile: LlmProfile) => void;
   disabled: boolean;
 }) {
@@ -93,7 +93,7 @@ export function LlmConnectionSummary({
         <p className="mt-1 text-sm text-muted">
           {legacy
             ? 'Existing role selection remains in use until a tested global connection is applied.'
-            : 'Used for personal research and teams without an override.'}
+            : 'Used for personal users and teams without an override. Personal and team overrides are preserved.'}
         </p>
         {global.length === 0 ? (
           <p className="mt-4 text-sm text-muted">
@@ -134,7 +134,7 @@ export function LlmConnectionSummary({
                   <Connection
                     key={selection.profile.id}
                     selection={selection}
-                    onReplace={onReplace}
+                    onReplace={(profile) => onReplace(profile, team.id)}
                     onReuse={onReuse}
                     disabled={disabled}
                   />

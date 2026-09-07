@@ -1,9 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { llmProfiles } from '@/test/fixtures';
 
+import { http, HttpResponse } from 'msw';
+import { server } from '@/test/server';
+beforeEach(() =>
+  server.use(http.post('/api/admin/llm/models/discover', () => HttpResponse.json({ models: [] }))),
+);
 import { LlmProfileForm } from './LlmProfileForm';
 
 describe('connection draft form', () => {

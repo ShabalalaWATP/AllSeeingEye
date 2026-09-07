@@ -4,6 +4,15 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: administrator AI setup is a progressive provider,
+model/test and audience-confirmation journey. Unsaved account model discovery,
+per-person personal-workspace overrides and safe authority-bound mutations are
+implemented. Team destinations ignore personal overrides. Migration 0028 passed
+SQLite/PostgreSQL acceptance; 222 combined frontend tests and production build
+passed. The operator database and live provider settings remain unchanged.
+See [ADMIN_AI_CONNECTION_JOURNEY.md](ADMIN_AI_CONNECTION_JOURNEY.md).
+
+
 7 September continuation: exact saved-map image packaging now has a dedicated
 1,200 by 800 two-canvas preview, default annotation exclusion, source-use review,
 burned-in attribution and bounded authenticated ZIP delivery. Local backend,

@@ -61,6 +61,7 @@ export type LlmConnectionInput = components['schemas']['LlmConnectionIn'];
 
 const connectionSchema = z.object({
   team_id: z.uuid().nullable(),
+  user_id: z.uuid().nullable().default(null),
   profile_id: z.uuid(),
   profile_revision: z.number().int(),
   tested_config_hash: z.string(),
@@ -71,24 +72,42 @@ const connectionSchema = z.object({
 const connectionsSchema = z.object({ items: z.array(connectionSchema) });
 const modelsSchema = z.object({ models: z.array(z.string().max(120)).max(1000) });
 
-export function fetchLlmConnections(): Promise<components['schemas']['LlmConnectionsOut']> {
+export function fetchLlmConnections(): Promise<{ items: LlmConnection[] }> {
   return apiCall('/api/admin/llm/connections', { schema: connectionsSchema });
 }
-export function fetchLlmModels(id: string): Promise<components['schemas']['LlmModelsOut']> {
+export function fetchLlmModels(
+  id: string,
+  signal?: AbortSignal,
+): Promise<components['schemas']['LlmModelsOut']> {
   return scopedMutation(() =>
-    apiCall(`/api/admin/llm/profiles/${encodeURIComponent(id)}/models`, { schema: modelsSchema }),
+    apiCall(`/api/admin/llm/profiles/${encodeURIComponent(id)}/models`, {
+      schema: modelsSchema,
+      ...(signal ? { signal } : {}),
+    }),
   );
 }
-export function applyLlmConnection(body: LlmConnectionInput): Promise<LlmConnection> {
+export function applyLlmConnection(
+  body: LlmConnectionInput,
+  signal?: AbortSignal,
+): Promise<LlmConnection> {
   return scopedMutation(() =>
-    apiCall('/api/admin/llm/connections', { method: 'PUT', body, schema: connectionSchema }),
+    apiCall('/api/admin/llm/connections', {
+      method: 'PUT',
+      body,
+      schema: connectionSchema,
+      ...(signal ? { signal } : {}),
+    }),
   );
 }
-export function resetTeamLlmConnection(teamId: string, revision: number): Promise<void> {
+export function resetTeamLlmConnection(
+  teamId: string,
+  revision: number,
+  signal?: AbortSignal,
+): Promise<void> {
   return scopedMutation(() =>
     apiSend(
       `/api/admin/llm/connections/team/${encodeURIComponent(teamId)}?expected_revision=${revision}`,
-      { method: 'DELETE' },
+      { method: 'DELETE', ...(signal ? { signal } : {}) },
     ),
   );
 }
@@ -97,37 +116,70 @@ export function fetchLlmProfiles(): Promise<LlmProfilesResponse> {
   return apiCall('/api/admin/llm/profiles', { schema: llmProfilesResponseSchema });
 }
 
-export function createLlmProfile(input: LlmProfileInput): Promise<LlmProfile> {
+export function createLlmProfile(
+  input: LlmProfileInput,
+  signal?: AbortSignal,
+): Promise<LlmProfile> {
   return scopedMutation(() =>
     apiCall('/api/admin/llm/profiles', {
       method: 'POST',
       body: input,
       schema: llmProfileSchema,
+      ...(signal ? { signal } : {}),
     }),
   );
 }
 
-export function updateLlmProfile(id: string, input: LlmProfileInput): Promise<LlmProfile> {
+export function updateLlmProfile(
+  id: string,
+  input: LlmProfileInput,
+  signal?: AbortSignal,
+): Promise<LlmProfile> {
   return scopedMutation(() =>
     apiCall(`/api/admin/llm/profiles/${encodeURIComponent(id)}`, {
       method: 'PUT',
       body: input,
       schema: llmProfileSchema,
+      ...(signal ? { signal } : {}),
     }),
   );
 }
 
-export function deleteLlmProfile(id: string): Promise<void> {
+export function deleteLlmProfile(id: string, signal?: AbortSignal): Promise<void> {
   return scopedMutation(() =>
-    apiSend(`/api/admin/llm/profiles/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    apiSend(`/api/admin/llm/profiles/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      ...(signal ? { signal } : {}),
+    }),
   );
 }
 
-export function testLlmProfile(id: string): Promise<LlmTestResult> {
+export function testLlmProfile(id: string, signal?: AbortSignal): Promise<LlmTestResult> {
   return scopedMutation(() =>
     apiCall(`/api/admin/llm/profiles/${encodeURIComponent(id)}/test`, {
       method: 'POST',
       schema: llmTestSchema,
+      ...(signal ? { signal } : {}),
     }),
+  );
+}
+
+export function discoverLlmModels(
+  body: { provider: 'openai_compatible'; base_url: string; api_key?: string; profile_id?: string },
+  signal: AbortSignal,
+) {
+  return apiCall('/api/admin/llm/models/discover', {
+    method: 'POST',
+    body,
+    signal,
+    schema: modelsSchema,
+  });
+}
+export function resetUserLlmConnection(userId: string, revision: number, signal?: AbortSignal) {
+  return scopedMutation(() =>
+    apiSend(
+      `/api/admin/llm/connections/user/${encodeURIComponent(userId)}?expected_revision=${revision}`,
+      { method: 'DELETE', ...(signal ? { signal } : {}) },
+    ),
   );
 }

@@ -55,14 +55,32 @@ class ModelRouting:
         self,
         *,
         team_id: UUID | None = None,
+        personal_owner_id: UUID | None = None,
         profile_id: UUID | None = None,
         role: LlmRole = LlmRole.ASSESSMENT,
     ) -> RoleProfiles:
         # One binding-table read avoids mixing team/global decisions from different reads.
         bindings = await self._bindings.list_all() if self._bindings is not None else []
-        binding = next((item for item in bindings if item.team_id == team_id), None)
-        if binding is None and team_id is not None:
-            binding = next((item for item in bindings if item.team_id is None), None)
+        # Personal routing follows the destination owner, never an administrator who
+        # happens to operate on that owner's report. Team work ignores person bindings.
+        binding = next(
+            (
+                item
+                for item in bindings
+                if (
+                    item.team_id == team_id and item.user_id is None
+                    if team_id is not None
+                    else personal_owner_id is not None
+                    and item.team_id is None
+                    and item.user_id == personal_owner_id
+                )
+            ),
+            None,
+        )
+        if binding is None:
+            binding = next(
+                (item for item in bindings if item.team_id is None and item.user_id is None), None
+            )
         selected: dict[LlmRole, LlmProfile] = {}
         if binding is not None:
             profile = await self._profiles.get(binding.profile_id)
@@ -75,7 +93,9 @@ class ModelRouting:
                 raise NoModelAvailable(UNAVAILABLE)
             selected = dict.fromkeys(TEXT_ROLES, profile)
         elif bindings:
-            raise NoModelAvailable("No global model is assigned and this team has no override.")
+            raise NoModelAvailable(
+                "No global model is assigned and this destination has no override."
+            )
         else:
             for candidate in await self._profiles.list_all():
                 for text_role in TEXT_ROLES:
@@ -91,9 +111,16 @@ class ModelRouting:
         provenance = ModelRoutingRecord(
             policy="legacy"
             if binding is None
-            else ("global" if binding.team_id is None else "team"),
+            else (
+                "personal"
+                if binding.user_id is not None
+                else "global"
+                if binding.team_id is None
+                else "team"
+            ),
             destination_team_id=team_id,
             binding_team_id=binding.team_id if binding else None,
+            binding_user_id=binding.user_id if binding else None,
             profiles=tuple(
                 RoutedModel(
                     role=selected_role,
@@ -120,11 +147,13 @@ class ModelRouting:
     async def embeddings(self) -> LlmProfile | None:
         """Separate global embeddings role; no text binding can redirect shared indexing."""
         bindings = await self._bindings.list_all() if self._bindings is not None else []
-        team_only = {item.profile_id for item in bindings if item.team_id is not None} - {
-            item.profile_id for item in bindings if item.team_id is None
-        }
+        private_only = {
+            item.profile_id
+            for item in bindings
+            if item.team_id is not None or item.user_id is not None
+        } - {item.profile_id for item in bindings if item.team_id is None and item.user_id is None}
         for profile in await self._profiles.list_all():
-            if profile.id not in team_only and profile.allows(LlmRole.EMBEDDINGS):
+            if profile.id not in private_only and profile.allows(LlmRole.EMBEDDINGS):
                 return LlmProfile(
                     **{item.name: getattr(profile, item.name) for item in fields(profile)}
                 )

@@ -3,40 +3,32 @@ import { useCallback, useState, useSyncExternalStore } from 'react';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
-import {
-  applyLlmConnection,
-  createLlmProfile,
-  fetchLlmConnections,
-  fetchLlmProfiles,
-  resetTeamLlmConnection,
-  updateLlmProfile,
-} from '@/lib/api/llm';
-import type { LlmProfile, LlmProfileInput } from '@/lib/api/llm';
-import { listTeams } from '@/lib/api/teams';
+import { applyLlmConnection, resetTeamLlmConnection, resetUserLlmConnection } from '@/lib/api/llm';
+import type { LlmProfile } from '@/lib/api/llm';
 import type { Team } from '@/lib/api/teams';
+import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useResource } from '@/lib/hooks/useResource';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
+import { LlmPersonalConnections } from './LlmPersonalConnections';
 import { LlmConnectionSummary } from './LlmConnectionSummary';
 import type { ConnectionSelection } from './LlmConnectionSummary';
-import { LlmProfileForm } from './LlmProfileForm';
+import { LlmConnectionJourney } from './LlmConnectionJourney';
+import { loadConnections } from './loadLlmWorkspace';
 import { LlmProfileRow } from './LlmProfileRow';
 import { legacyConnections, TEXT_ROLES } from './llmPresentation';
 
 type Editor =
   | { mode: 'closed' }
   | { mode: 'create' }
-  | { mode: 'edit' | 'replace'; profile: LlmProfile; models: readonly string[] };
-async function loadConnections() {
-  const [profiles, connections, teams] = await Promise.all([
-    fetchLlmProfiles(),
-    fetchLlmConnections(),
-    listTeams(),
-  ]);
-  return { profiles, connections, teams };
-}
+  | {
+      mode: 'edit' | 'replace';
+      profile: LlmProfile;
+      models: readonly string[];
+      initialScope?: string;
+    };
 
 /** Changing account or team authority removes drafts, typed keys and prior test receipts. */
 export default function AdminLlmPage() {
@@ -46,6 +38,7 @@ export default function AdminLlmPage() {
 }
 
 function ConnectionWorkspace() {
+  const request = useScopedRequest();
   const { data, error, loading, setData, reload } = useResource(loadConnections);
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' });
   const [notice, setNotice] = useState<string | null>(null);
@@ -84,33 +77,34 @@ function ConnectionWorkspace() {
     },
     [setData],
   );
-  const save = useAsyncAction(async (input: LlmProfileInput) => {
-    const saved =
-      editor.mode === 'edit'
-        ? await updateLlmProfile(editor.profile.id, input)
-        : await createLlmProfile(input);
-    upsert(saved);
-    setEditor({ mode: 'closed' });
-    setNotice(`${saved.name} saved. Open the draft to load models or test the connection.`);
-  });
-  const apply = useAsyncAction(async (profile: LlmProfile, teamId: string | null) => {
-    if (data === null || !profile.is_tested || profile.tested_config_hash === null) return;
-    const existing = data.connections.items.find((item) => item.team_id === teamId);
-    await applyLlmConnection({
-      team_id: teamId,
-      profile_id: profile.id,
-      expected_profile_revision: profile.revision,
-      tested_config_hash: profile.tested_config_hash,
-      expected_binding_revision: existing?.revision ?? null,
-    });
-    await reload();
-    setReuseId(null);
-    setNotice(
-      `${teamId === null ? 'Global connection' : (data.teams.find((team) => team.id === teamId)?.name ?? 'Team connection')} switched to ${profile.model}.`,
-    );
-  });
+  const apply = useAsyncAction(
+    async (profile: LlmProfile, teamId: string | null, userId?: string) => {
+      if (data === null || !profile.is_tested || profile.tested_config_hash === null) return;
+      const existing = data.connections.items.find(
+        (item) => item.team_id === teamId && (item.user_id ?? null) === (userId ?? null),
+      );
+      const signal = request();
+      await applyLlmConnection(
+        {
+          team_id: teamId,
+          ...(userId ? { user_id: userId } : {}),
+          profile_id: profile.id,
+          expected_profile_revision: profile.revision,
+          tested_config_hash: profile.tested_config_hash,
+          expected_binding_revision: existing?.revision ?? null,
+        },
+        signal,
+      );
+      signal.throwIfAborted();
+      await reload();
+      setReuseId(null);
+      setEditor({ mode: 'closed' });
+      setNotice(
+        `${userId ? 'Personal workspace connection' : teamId === null ? 'Global connection' : (data.teams.find((team) => team.id === teamId)?.name ?? 'Team connection')} switched to ${profile.model}.`,
+      );
+    },
+  );
   const openEditor = (value: Editor) => {
-    save.clearError();
     apply.clearError();
     setNotice(null);
     setEditor(value);
@@ -119,15 +113,26 @@ function ConnectionWorkspace() {
   const reset = useAsyncAction(async (team: Team) => {
     const binding = data?.connections.items.find((item) => item.team_id === team.id);
     if (binding === undefined) return;
-    await resetTeamLlmConnection(team.id, binding.revision);
+    const signal = request();
+    await resetTeamLlmConnection(team.id, binding.revision, signal);
+    signal.throwIfAborted();
     await reload();
     setNotice(`${team.name} now uses the global connection.`);
+  });
+  const resetPersonal = useAsyncAction(async (userId: string) => {
+    const binding = data?.connections.items.find((item) => item.user_id === userId);
+    if (!binding) return;
+    const signal = request();
+    await resetUserLlmConnection(userId, binding.revision, signal);
+    signal.throwIfAborted();
+    await reload();
+    setNotice('Personal workspace now uses the global connection.');
   });
   const encryption = data?.profiles.encryption_available ?? false;
   const profiles = data?.profiles.items ?? [];
   const reused = profiles.find((profile) => profile.id === reuseId && profile.is_bound);
   const bindings = data?.connections.items ?? [];
-  const globalBinding = bindings.find((item) => item.team_id === null);
+  const globalBinding = bindings.find((item) => item.team_id === null && !item.user_id);
   const legacySelection = bindings.length === 0 ? legacyConnections(profiles) : [];
   const legacy = legacySelection.length > 0;
   const selected = (profileId: string): ConnectionSelection[] => {
@@ -144,7 +149,7 @@ function ConnectionWorkspace() {
             team,
             connections: selected(binding.profile_id).map((selection) => ({
               ...selection,
-              roles: selection.roles.filter((role) => role !== 'translation'),
+              roles: selection.roles,
             })),
           },
         ];
@@ -193,10 +198,10 @@ function ConnectionWorkspace() {
             {notice}
           </p>
         )}
-        {(apply.error ?? reset.error) !== null && (
+        {(apply.error ?? reset.error ?? resetPersonal.error) !== null && (
           <Alert tone="error">
-            {describeError(apply.error ?? reset.error)} Refresh the connections before trying the
-            switch again.
+            {describeError(apply.error ?? reset.error ?? resetPersonal.error)} Refresh the
+            connections before trying the switch again.
           </Alert>
         )}
         {data !== null && (
@@ -206,12 +211,31 @@ function ConnectionWorkspace() {
             legacy={legacy}
             disabled={!encryption || apply.busy || reset.busy || editor.mode !== 'closed'}
             onReset={(team) => void reset.run(team)}
-            onReplace={(profile) => openEditor({ mode: 'replace', profile, models: [] })}
+            onReplace={(profile, teamId) =>
+              openEditor({
+                mode: 'replace',
+                profile,
+                models: [],
+                ...(teamId ? { initialScope: teamId } : {}),
+              })
+            }
             onReuse={(profile) => {
               apply.clearError();
               setNotice(null);
               setReuseId(profile.id);
             }}
+          />
+        )}
+        {data !== null && (
+          <LlmPersonalConnections
+            bindings={bindings}
+            profiles={profiles}
+            users={data.users}
+            disabled={!encryption || apply.busy || resetPersonal.busy || editor.mode !== 'closed'}
+            onReset={(id) => void resetPersonal.run(id)}
+            onReplace={(profile, userId) =>
+              openEditor({ mode: 'replace', profile, models: [], initialScope: `user:${userId}` })
+            }
           />
         )}
         {data !== null && reused !== undefined && editor.mode === 'closed' && (
@@ -227,6 +251,7 @@ function ConnectionWorkspace() {
                 key={`${reused.id}:${reused.revision}`}
                 profile={reused}
                 teams={data.teams}
+                users={data.users}
                 disabled={!encryption}
                 applying={apply.busy || reset.busy}
                 hasGlobal={globalBinding !== undefined}
@@ -237,25 +262,34 @@ function ConnectionWorkspace() {
                 }
                 onDeleted={removed}
                 onTested={upsert}
-                onApply={(target, teamId) => void apply.run(target, teamId)}
+                onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
               />
             </ul>
           </section>
         )}
-        {editor.mode !== 'closed' && (
-          <LlmProfileForm
+        {data !== null && editor.mode !== 'closed' && (
+          <LlmConnectionJourney
             key={
               editor.mode === 'create'
                 ? 'new'
                 : `${editor.mode}:${editor.profile.id}:${editor.profile.revision}`
             }
-            initial={editor.mode === 'create' ? undefined : editor.profile}
+            {...(editor.mode === 'create' ? {} : { initial: editor.profile })}
             replacement={editor.mode === 'replace'}
+            {...(editor.mode !== 'create' && editor.initialScope
+              ? { initialScope: editor.initialScope }
+              : {})}
             models={editor.mode === 'create' ? [] : editor.models}
-            busy={save.busy}
-            error={save.error === null ? null : describeError(save.error)}
-            onSubmit={(input) => void save.run(input)}
-            onCancel={() => openEditor({ mode: 'closed' })}
+            teams={data.teams}
+            users={data.users}
+            hasGlobal={globalBinding !== undefined}
+            applying={apply.busy}
+            onSaved={(profile) => {
+              upsert(profile);
+              setNotice(`${profile.name} saved. The active connection has not changed.`);
+            }}
+            onApply={(profile, teamId, userId) => void apply.run(profile, teamId, userId)}
+            onCancel={() => setEditor({ mode: 'closed' })}
           />
         )}
         {data !== null && editor.mode === 'closed' && (
@@ -276,6 +310,7 @@ function ConnectionWorkspace() {
                     key={`${profile.id}:${profile.revision}`}
                     profile={profile}
                     teams={data.teams}
+                    users={data.users}
                     disabled={!encryption}
                     applying={apply.busy || reset.busy}
                     hasGlobal={globalBinding !== undefined}
@@ -289,7 +324,7 @@ function ConnectionWorkspace() {
                     }
                     onDeleted={removed}
                     onTested={upsert}
-                    onApply={(target, teamId) => void apply.run(target, teamId)}
+                    onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
                   />
                 ))}
               </ul>

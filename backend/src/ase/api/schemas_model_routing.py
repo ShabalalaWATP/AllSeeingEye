@@ -24,7 +24,8 @@ class RoutedModelOut(BaseModel):
 
 class ModelRoutingOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    policy: Literal["legacy", "global", "team"]
+    policy: Literal["legacy", "global", "team", "personal"]
     destination_team_id: UUID | None
     binding_team_id: UUID | None
+    binding_user_id: UUID | None = None
     profiles: list[RoutedModelOut]

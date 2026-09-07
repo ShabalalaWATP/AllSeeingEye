@@ -9,6 +9,7 @@ from ase.api.routers import (
     account_sessions,
     admin_audit,
     admin_llm,
+    admin_llm_discovery,
     admin_requests,
     admin_sources,
     admin_users,
@@ -86,3 +87,4 @@ api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin_sources.router)
 api_router.include_router(admin_llm.router)
+api_router.include_router(admin_llm_discovery.router)

@@ -20,6 +20,7 @@ from ase.application.admin.llm import (
     UpdateLlmProfileUseCase,
 )
 from ase.application.admin.llm_connections import LlmConnectionsUseCase
+from ase.application.admin.llm_discovery import DiscoverDraftModels
 from ase.application.admin.llm_testing import DiscoverLlmModelsUseCase, TestLlmProfileUseCase
 from ase.application.admin.requests import (
     ApproveRequestUseCase,
@@ -179,10 +180,23 @@ class AdminWiring:
             self.clock,
             self._auditor(r),
             r.uow,
+            users=r.users,
         )
 
     def discover_llm_models(self, session: AsyncSession) -> DiscoverLlmModelsUseCase:
         r = self.repositories(session)
         return DiscoverLlmModelsUseCase(
             r.llm_profiles, self.cipher, self.model_discovery, self.access_policy(session), r.uow
+        )
+
+    def discover_draft_models(self, session: AsyncSession) -> DiscoverDraftModels:
+        r = self.repositories(session)
+        return DiscoverDraftModels(
+            r.users,
+            r.refresh_tokens,
+            r.llm_profiles,
+            self.cipher,
+            self.model_discovery,
+            self.clock,
+            r.uow,
         )

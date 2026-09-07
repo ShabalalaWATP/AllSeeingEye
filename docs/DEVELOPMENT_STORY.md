@@ -2270,3 +2270,20 @@ and bounded PNG/ZIP processing. Fresh access and immutable revision checks run
 before intake and after packaging; cancellation retains worker admission.
 Client pixels are explicitly not server-attested evidence. The local checks and
 remaining browser/GPU gate are recorded in SAVED_MAP_IMAGE_EXPORT.md.
+
+
+## 7 September 2026: guided administrator AI connections
+
+Replaced the flat connection editor with provider, model/test and scope review
+steps. Discovery reads account models before saving a profile. Tested settings
+can be assigned globally, to a team or to a person's personal workspace; team
+research never uses personal overrides. Replacement retains the selected audience.
+Current-session guards, credential origin checks and abort signals protect setup
+and mutations. Review identified and repaired an account-switch retry race.
+
+Migration 0028 passed SQLite/PostgreSQL preservation and guarded-downgrade checks;
+PostgreSQL owner routing, schedules, claims and API checks also passed. The final
+combined frontend pass contains 222 tests. Build, types, lint, configured Bandit,
+architecture contracts and file checks passed. The acceptance record and remaining
+operator migration/live-provider gates are in ADMIN_AI_CONNECTION_JOURNEY.md.
+No operator credentials, model assignments or database were changed.

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 
 from ase.application.admin.llm import ProfileInput
 from ase.application.admin.llm_connections import ConnectionInput
@@ -170,11 +170,18 @@ class LlmModelsOut(BaseModel):
 
 
 class LlmConnectionIn(BaseModel):
+    user_id: UUID | None = None
     team_id: UUID | None = None
     profile_id: UUID
     expected_profile_revision: int = Field(ge=1)
     tested_config_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     expected_binding_revision: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def one_audience(self) -> Self:
+        if self.team_id is not None and self.user_id is not None:
+            raise ValueError("Select either a team or a personal workspace.")
+        return self
 
     def to_input(self) -> ConnectionInput:
         return ConnectionInput(
@@ -183,10 +190,12 @@ class LlmConnectionIn(BaseModel):
             self.expected_profile_revision,
             self.tested_config_hash,
             self.expected_binding_revision,
+            user_id=self.user_id,
         )
 
 
 class LlmConnectionOut(BaseModel):
+    user_id: UUID | None = None
     team_id: UUID | None
     profile_id: UUID
     profile_revision: int
@@ -199,6 +208,7 @@ class LlmConnectionOut(BaseModel):
     def from_binding(cls, binding: LlmConnectionBinding) -> Self:
         return cls(
             team_id=binding.team_id,
+            user_id=binding.user_id,
             profile_id=binding.profile_id,
             profile_revision=binding.profile_revision,
             tested_config_hash=binding.tested_config_hash,

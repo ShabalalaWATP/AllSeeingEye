@@ -1982,6 +1982,106 @@
         }
       }
     },
+    "/api/map/views/{view_id}/revisions/{revision_id}/image-package": {
+      "post": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Export Image Package",
+        "operationId": "export_image_package_api_map_views__view_id__revisions__revision_id__image_package_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "view_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "View Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "png_base64": {
+                    "maxLength": 11184812,
+                    "minLength": 1,
+                    "title": "Png Base64",
+                    "type": "string"
+                  },
+                  "include_annotations": {
+                    "default": false,
+                    "title": "Include Annotations",
+                    "type": "boolean"
+                  },
+                  "use_basis": {
+                    "default": "standard",
+                    "enum": [
+                      "standard",
+                      "noncommercial",
+                      "licensed"
+                    ],
+                    "title": "Use Basis",
+                    "type": "string"
+                  },
+                  "permitted_use": {
+                    "default": "",
+                    "maxLength": 1000,
+                    "title": "Permitted Use",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "png_base64"
+                ],
+                "title": "MapImagePackageIn",
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/original-assets": {
       "get": {
         "tags": [
@@ -6378,6 +6478,103 @@
           }
         }
       }
+    },
+    "/api/admin/llm/connections/user/{user_id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Reset User Connection",
+        "operationId": "reset_user_connection_api_admin_llm_connections_user__user_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/llm/models/discover": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Discover Draft Models",
+        "operationId": "discover_draft_models_api_admin_llm_models_discover_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftModelDiscoveryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmModelsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -9183,6 +9380,54 @@
         ],
         "title": "DoctrineReferenceOut"
       },
+      "DraftModelDiscoveryIn": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "openai_compatible",
+            "title": "Provider",
+            "default": "openai_compatible"
+          },
+          "base_url": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 8,
+            "title": "Base Url"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16384,
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "base_url"
+        ],
+        "title": "DraftModelDiscoveryIn"
+      },
       "EventOut": {
         "properties": {
           "id": {
@@ -11302,6 +11547,18 @@
       },
       "LlmConnectionIn": {
         "properties": {
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
           "team_id": {
             "anyOf": [
               {
@@ -11352,6 +11609,18 @@
       },
       "LlmConnectionOut": {
         "properties": {
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
           "team_id": {
             "anyOf": [
               {
@@ -12901,7 +13170,8 @@
             "enum": [
               "legacy",
               "global",
-              "team"
+              "team",
+              "personal"
             ],
             "title": "Policy"
           },
@@ -12928,6 +13198,18 @@
               }
             ],
             "title": "Binding Team Id"
+          },
+          "binding_user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binding User Id"
           },
           "profiles": {
             "items": {

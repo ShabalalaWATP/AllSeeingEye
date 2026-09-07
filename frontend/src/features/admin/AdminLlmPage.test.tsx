@@ -174,12 +174,14 @@ describe('AI connections', () => {
     await user.click(within(row).getByRole('button', { name: 'Test OpenAI Luna' }));
     expect(await within(row).findByText(/Connection test passed/)).toBeVisible();
     expect(
-      within(row).getByText(/Apply a global connection before adding team overrides/),
+      within(row).getByText(/Apply a global connection before adding team or personal overrides/),
     ).toBeVisible();
     await user.click(within(row).getByRole('button', { name: 'Review and apply' }));
     expect(state.applies).toHaveLength(0);
     expect(screen.getByRole('button', { name: 'Confirm switch' })).toHaveFocus();
-    expect(screen.getByText(/Existing team overrides keep their current connection/)).toBeVisible();
+    expect(
+      screen.getByText(/Existing team and personal overrides keep their current connection/),
+    ).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Confirm switch' }));
     expect(await screen.findByText('Global connection switched to gpt-5.6-luna.')).toBeVisible();
     expect(state.applies).toEqual([
@@ -205,6 +207,7 @@ describe('AI connections', () => {
     await screen.findByText('No saved drafts.');
     await user.click(screen.getByRole('button', { name: 'Configure connection' }));
     await user.type(screen.getByLabelText('API key'), 'synthetic-test-key');
+    await user.click(screen.getByRole('button', { name: 'Continue to model' }));
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
     expect(await screen.findByText(/OpenAI Luna saved/)).toBeVisible();
     expect(state.saves[0]).toMatchObject({
@@ -214,7 +217,7 @@ describe('AI connections', () => {
       api_key: 'synthetic-test-key',
     });
     expect(state.tests).toBe(0);
-    expect(state.models).toBe(0);
+    expect(state.models).toBe(1);
     expect(state.applies).toHaveLength(0);
     expect(screen.queryByLabelText('API key')).not.toBeInTheDocument();
   });
@@ -228,6 +231,7 @@ describe('AI connections', () => {
     await user.click(within(row).getByRole('button', { name: 'Load models for OpenAI Luna' }));
     await within(row).findByText(/2 models returned by this account/);
     await user.click(within(row).getByRole('button', { name: 'Edit OpenAI Luna' }));
+    await user.click(screen.getByRole('button', { name: 'Continue to model' }));
     await user.selectOptions(
       screen.getByLabelText('Models returned by this account'),
       'manual-alternative',
@@ -240,7 +244,7 @@ describe('AI connections', () => {
       within(updated).queryByRole('button', { name: 'Review and apply' }),
     ).not.toBeInTheDocument();
     expect(state.saves[0]).not.toHaveProperty('api_key');
-    expect(state.models).toBe(1);
+    expect(state.models).toBe(2);
   });
 
   it('never offers apply after failed testing and explains unavailable discovery', async () => {

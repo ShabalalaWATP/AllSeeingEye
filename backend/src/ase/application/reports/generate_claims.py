@@ -48,7 +48,9 @@ class GenerateClaims:
             return ClaimGenerationResult("unsupported")
         if not self.cipher.available:
             raise NoModelAvailable()
-        routing = await self.routing.snapshot(team_id=anchor.team_id)
+        routing = await self.routing.snapshot(
+            team_id=anchor.team_id, personal_owner_id=anchor.owner_id
+        )
         profile = routing.required(LlmRole.ASSESSMENT)
         key = self.cipher.decrypt(profile.api_key_encrypted)
         # Routing reads can open another transaction after admission. Release it too.

@@ -22,6 +22,7 @@ def routing_to_dict(value: ModelRoutingRecord | None) -> dict[str, Any] | None:
     if value is None:
         return None
     return {
+        **({"binding_user_id": str(value.binding_user_id)} if value.binding_user_id else {}),
         "policy": value.policy,
         "destination_team_id": str(value.destination_team_id)
         if value.destination_team_id
@@ -95,11 +96,12 @@ def _profile(value: Any) -> RoutedModel:
 def routing_from_dict(value: Any) -> ModelRoutingRecord | None:
     if value is None:
         return None
-    if type(value) is not dict or set(value) != {item.name for item in fields(ModelRoutingRecord)}:
+    names = {item.name for item in fields(ModelRoutingRecord)}
+    if type(value) is not dict or set(value) not in (names, names - {"binding_user_id"}):
         raise ValueError("Invalid saved model routing fields")
     policy = value["policy"]
     profiles = value["profiles"]
-    if type(policy) is not str or policy not in {"legacy", "global", "team"}:
+    if type(policy) is not str or policy not in {"legacy", "global", "team", "personal"}:
         raise ValueError("Invalid saved model routing policy")
     if type(profiles) is not list or not 1 <= len(profiles) <= len(TEXT_ROLES):
         raise ValueError("Invalid saved model routing roles")
@@ -114,8 +116,17 @@ def routing_from_dict(value: Any) -> ModelRoutingRecord | None:
         policy != "team" and binding is not None
     ):
         raise ValueError("Invalid saved model routing scope")
+    user = _uuid(value["binding_user_id"]) if value.get("binding_user_id") is not None else None
+    if (policy == "personal" and (user is None or destination is not None)) or (
+        policy != "personal" and user is not None
+    ):
+        raise ValueError("Invalid saved personal model routing scope")
     if policy != "legacy" and {profile.role for profile in decoded} != TEXT_ROLES:
         raise ValueError("Incomplete saved assigned model roles")
     return ModelRoutingRecord(
-        cast(Literal["legacy", "global", "team"], policy), destination, binding, decoded
+        cast(Literal["legacy", "global", "team", "personal"], policy),
+        destination,
+        binding,
+        decoded,
+        user,
     )

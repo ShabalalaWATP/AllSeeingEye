@@ -152,6 +152,11 @@ class LlmConnectionBinding:
     activated_at: datetime
     activated_by: UUID
     revision: int = 1
+    user_id: UUID | None = None
+
+    def __post_init__(self) -> None:
+        if self.team_id is not None and self.user_id is not None:
+            raise ValueError("An AI connection cannot target both a team and a person.")
 
 
 @dataclass(frozen=True, slots=True)

@@ -9,6 +9,7 @@ from datetime import datetime
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
+from ase.application.admin.model_catalogue import model_catalogue
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
@@ -279,13 +280,4 @@ class DiscoverLlmModelsUseCase:
             await before_return()
         if models is None:
             raise InvalidRequest("Could not list models. Check the saved connection settings.")
-        # The port returns identifiers, never arbitrary provider metadata or response bodies.
-        return tuple(
-            sorted(
-                {
-                    name
-                    for name in models
-                    if name and len(name) <= 120 and all(32 <= ord(char) != 127 for char in name)
-                }
-            )
-        )[:500]
+        return model_catalogue(models)

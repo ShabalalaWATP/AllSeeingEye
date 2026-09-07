@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { LlmProfile, LlmProfileInput } from '@/lib/api/llm';
 
+import { LlmModelSelection } from './LlmModelSelection';
+import { useLlmModelDiscovery } from './useLlmModelDiscovery';
 import { LlmAdvancedSettings } from './LlmAdvancedSettings';
 import { BedrockRegion, bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
 import { LUNA_MODEL, OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
@@ -18,6 +20,8 @@ export interface LlmProfileFormProps {
   error: string | null;
   onSubmit: (input: LlmProfileInput) => void;
   onCancel: () => void;
+  onTest?: (input: LlmProfileInput) => void;
+  onChange?: () => void;
 }
 
 /** Keys exist only in this mounted form and are sent to the server once on save. */
@@ -29,11 +33,20 @@ export function LlmProfileForm({
   error,
   onSubmit,
   onCancel,
+  onTest,
+  onChange,
 }: LlmProfileFormProps) {
+  const [step, setStep] = useState(1);
+  const guided = !!onTest;
+  const [originalCatalogue] = useState({ id: initial?.id, revision: initial?.revision });
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
-    form.current?.querySelector('select')?.focus();
-  }, []);
+    form.current
+      ?.querySelector<HTMLInputElement | HTMLSelectElement>(
+        step === 2 ? 'input[name="model"]' : 'select',
+      )
+      ?.focus();
+  }, [step]);
   const [provider, setProvider] = useState(
     initial?.provider === 'bedrock'
       ? 'bedrock'
@@ -64,6 +77,12 @@ export function LlmProfileForm({
     apiKey === '' &&
     baseUrl.trim().replace(/\/$/, '') === initial.base_url.replace(/\/$/, '');
 
+  const discovery = useLlmModelDiscovery(
+    baseUrl,
+    apiKey,
+    sameCredentials ? initial.id : undefined,
+    provider !== 'bedrock' && (provider === 'custom' || !!apiKey.trim() || sameCredentials),
+  );
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const input: LlmProfileInput = {
@@ -78,7 +97,10 @@ export function LlmProfileForm({
       enabled: provider !== 'bedrock' && embeddings && embeddingEnabled,
     };
     if (apiKey.trim()) input.api_key = apiKey.trim();
-    onSubmit(input);
+    setApiKey('');
+    if ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'test' && onTest)
+      onTest(input);
+    else onSubmit(input);
   };
 
   const selectProvider = (value: string) => {
@@ -111,6 +133,7 @@ export function LlmProfileForm({
     <form
       ref={form}
       onSubmit={submit}
+      onChange={onChange}
       aria-label={
         initial === undefined || replacement ? 'New AI connection' : `Edit ${initial.name}`
       }
@@ -123,152 +146,160 @@ export function LlmProfileForm({
             : 'Edit draft connection'}
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Save a draft, test the model, then choose where to apply it.
+          Connect your provider, test the chosen model, then confirm who will use it.
         </p>
       </div>
       <fieldset disabled={busy} className="space-y-5">
-        <div className="grid gap-4 md:grid-cols-2">
-          <SelectField
-            label="Provider"
-            value={provider}
-            onChange={(event) => selectProvider(event.target.value)}
-            options={[
-              { value: 'openai', label: 'OpenAI' },
-              { value: 'bedrock', label: 'Amazon Bedrock' },
-              { value: 'custom', label: 'Custom OpenAI-compatible' },
-            ]}
-          />
-          <TextField
-            label="Connection name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            required
-            maxLength={80}
-          />
-          {provider === 'bedrock' && (
-            <BedrockRegion
-              value={region}
-              onChange={(value) => {
-                setRegion(value);
-                setBaseUrl(bedrockEndpoint(value));
+        {guided && step === 2 && (
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong>{name}</strong> - {baseUrl}
+            </p>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setStep(1);
+                onChange?.();
+              }}
+            >
+              Back to provider
+            </Button>
+          </div>
+        )}
+        <div hidden={guided && step !== 1}>
+          <h3 className="text-sm font-semibold">1. Connect your provider</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <SelectField
+              label="Provider"
+              value={provider}
+              onChange={(event) => selectProvider(event.target.value)}
+              options={[
+                { value: 'openai', label: 'OpenAI' },
+                { value: 'bedrock', label: 'Amazon Bedrock' },
+                { value: 'custom', label: 'Custom OpenAI-compatible' },
+              ]}
+            />
+            <TextField
+              label="Connection name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+              maxLength={80}
+            />
+            {provider === 'bedrock' && (
+              <BedrockRegion
+                value={region}
+                onChange={(value) => {
+                  setRegion(value);
+                  setBaseUrl(bedrockEndpoint(value));
+                  setApiKey('');
+                }}
+              />
+            )}
+            <TextField
+              label="Base URL"
+              value={baseUrl}
+              onChange={(event) => {
+                setBaseUrl(event.target.value);
                 setApiKey('');
               }}
+              onBlur={() => {
+                if (!guided && provider === 'custom') void discovery.load();
+              }}
+              readOnly={provider !== 'custom'}
+              required
+              maxLength={512}
+              hint={
+                provider === 'openai'
+                  ? 'Official OpenAI API endpoint.'
+                  : provider === 'bedrock'
+                    ? 'AWS Bedrock Converse endpoint for the selected region.'
+                    : 'The endpoint receiving prompts and evidence. For example, http://localhost:11434/v1.'
+              }
             />
-          )}
-          <TextField
-            label="Base URL"
-            value={baseUrl}
-            onChange={(event) => {
-              setBaseUrl(event.target.value);
-              setApiKey('');
-            }}
-            readOnly={provider !== 'custom'}
-            required
-            maxLength={512}
-            hint={
-              provider === 'openai'
-                ? 'Official OpenAI API endpoint.'
-                : provider === 'bedrock'
-                  ? 'AWS Bedrock Converse endpoint for the selected region.'
-                  : 'The endpoint receiving prompts and evidence. For example, http://localhost:11434/v1.'
-            }
-          />
-          <TextField
-            label={provider === 'bedrock' ? 'Bedrock API key' : 'API key'}
-            type="password"
-            autoComplete="new-password"
-            spellCheck={false}
-            value={apiKey}
-            onChange={(event) => setApiKey(event.target.value)}
-            maxLength={16384}
-            required={provider !== 'custom' && !sameCredentials}
-            hint={
-              !sameCredentials
-                ? provider === 'bedrock'
-                  ? 'Use a Bedrock API key, not an IAM access key. Stored encrypted on the server. Short-term keys expire and are not renewed automatically.'
-                  : 'Stored encrypted on the server. Only its ending is shown later.'
-                : `Leave blank to keep the stored key (…${initial.api_key_hint || 'none'}).`
-            }
-          />
+            <TextField
+              label={provider === 'bedrock' ? 'Bedrock API key' : 'API key'}
+              type="password"
+              autoComplete="new-password"
+              spellCheck={false}
+              onBlur={() => {
+                if (!guided) void discovery.load();
+              }}
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              maxLength={16384}
+              required={provider !== 'custom' && !sameCredentials}
+              hint={
+                !sameCredentials
+                  ? provider === 'bedrock'
+                    ? 'Use a Bedrock API key, not an IAM access key. Stored encrypted on the server. Short-term keys expire and are not renewed automatically.'
+                    : 'Stored encrypted on the server. Only its ending is shown later.'
+                  : `Leave blank to keep the stored key (…${initial.api_key_hint || 'none'}).`
+              }
+            />
+          </div>
         </div>
-        {provider !== 'bedrock' && models.length > 0 && sameCredentials && (
-          <SelectField
-            label="Models returned by this account"
-            value={models.includes(model) ? model : ''}
-            onChange={(event) => {
-              if (event.target.value) setModel(event.target.value);
+        {guided && step === 1 && (
+          <Button
+            onClick={() => {
+              if (!form.current?.reportValidity()) return;
+              setStep(2);
+              void discovery.load();
             }}
-            options={[
-              { value: '', label: 'Enter a model ID below' },
-              ...models.map((value) => ({ value, label: value })),
-            ]}
-            hint="Availability and compatibility are checked when you test the saved draft."
-          />
+          >
+            Continue to model
+          </Button>
         )}
-        <div className="grid gap-4 md:grid-cols-2">
-          <TextField
-            label={provider === 'bedrock' ? 'Model or inference profile ID' : 'Model ID'}
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
-            required
-            maxLength={provider === 'bedrock' ? 2048 : 120}
-            placeholder={provider === 'bedrock' ? 'e.g. openai.gpt-oss-120b-1:0' : undefined}
-            hint={
-              provider === 'bedrock'
-                ? 'Copy a Converse-compatible model or inference profile ID from the AWS console for this region. Test connection checks access and structured-output compatibility.'
-                : 'Enter a model ID manually, or load this account’s models after saving the draft.'
-            }
-          />
-          {provider === 'bedrock' ? (
-            <p className="self-end pb-2 text-xs leading-5 text-muted">
-              Reasoning uses the provider default. This connection supports text requests only; IAM
-              roles and model catalogue discovery are not supported.
-            </p>
-          ) : (
-            !embeddings && (
-              <SelectField
-                label="Reasoning effort"
-                value={effort}
-                onChange={(event) => setEffort(event.target.value as typeof effort)}
-                options={[
-                  { value: '', label: 'Provider default' },
-                  { value: 'none', label: 'None' },
-                  { value: 'minimal', label: 'Minimal' },
-                  { value: 'low', label: 'Low' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'high', label: 'High' },
-                  { value: 'xhigh', label: 'Extra high' },
-                  { value: 'max', label: 'Max' },
-                ]}
-                hint={
-                  effort === 'max'
-                    ? 'More reasoning; may take longer and use more tokens.'
-                    : 'Only select an effort supported by the chosen model.'
-                }
-              />
-            )
-          )}
-        </div>
-        <LlmAdvancedSettings
-          bedrock={provider === 'bedrock'}
-          maxTokens={maxTokens}
-          setMaxTokens={setMaxTokens}
-          temperature={temperature}
-          setTemperature={setTemperature}
-          embeddings={embeddings}
-          setEmbeddings={(value) => {
-            setEmbeddings(value);
-            if (value) setEffort('');
-          }}
-          embeddingEnabled={embeddingEnabled}
-          setEmbeddingEnabled={setEmbeddingEnabled}
-        />
+        {(!guided || step === 2) && (
+          <>
+            <LlmModelSelection
+              bedrock={provider === 'bedrock'}
+              models={
+                discovery.loaded
+                  ? discovery.models
+                  : sameCredentials &&
+                      initial.id === originalCatalogue.id &&
+                      initial.revision === originalCatalogue.revision
+                    ? models
+                    : []
+              }
+              model={model}
+              setModel={(value) => {
+                setModel(value);
+                if (value === LUNA_MODEL && effort === 'minimal') setEffort('max');
+              }}
+              effort={effort}
+              setEffort={setEffort}
+              embeddings={embeddings}
+              discovery={discovery}
+              onDiscover={() => void discovery.load()}
+              canDiscover={provider === 'custom' || !!apiKey.trim() || sameCredentials}
+              canTest={!!onTest && !embeddings}
+            />
+            <LlmAdvancedSettings
+              bedrock={provider === 'bedrock'}
+              maxTokens={maxTokens}
+              setMaxTokens={setMaxTokens}
+              temperature={temperature}
+              setTemperature={setTemperature}
+              embeddings={embeddings}
+              setEmbeddings={(value) => {
+                setEmbeddings(value);
+                if (value) setEffort('');
+              }}
+              embeddingEnabled={embeddingEnabled}
+              setEmbeddingEnabled={setEmbeddingEnabled}
+            />
+          </>
+        )}
       </fieldset>
       {error !== null && <Alert tone="error">{error}</Alert>}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" busy={busy}>
-          Save draft
-        </Button>
+        {(!guided || step === 2) && (
+          <Button type="submit" busy={busy}>
+            Save draft
+          </Button>
+        )}
         <Button variant="ghost" disabled={busy} onClick={onCancel}>
           Cancel
         </Button>

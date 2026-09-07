@@ -24,8 +24,9 @@ class LlmConnectionBindingRow(Base):
     __tablename__ = "llm_connection_bindings"
     __table_args__ = (
         CheckConstraint(
-            "(team_id IS NULL AND scope_key = 'global') OR "
-            "(team_id IS NOT NULL AND scope_key <> 'global')",
+            "(team_id IS NULL AND user_id IS NULL AND scope_key = 'global') OR "
+            "(team_id IS NOT NULL AND user_id IS NULL AND scope_key LIKE 'team:%') OR "
+            "(team_id IS NULL AND user_id IS NOT NULL AND scope_key LIKE 'user:%')",
             name="ck_llm_binding_scope",
         ),
     )
@@ -33,6 +34,12 @@ class LlmConnectionBindingRow(Base):
     scope_key: Mapped[str] = mapped_column(String(48), primary_key=True)
     team_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("teams.id", ondelete="CASCADE"), nullable=True, unique=True
+    )
+    user_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE", name="fk_llm_binding_user"),
+        nullable=True,
+        unique=True,
     )
     profile_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("llm_profiles.id", ondelete="RESTRICT"), index=True
@@ -44,7 +51,11 @@ class LlmConnectionBindingRow(Base):
     revision: Mapped[int] = mapped_column(Integer)
 
 
-def _key(team_id: UUID | None) -> str:
+def _key(team_id: UUID | None, user_id: UUID | None = None) -> str:
+    if user_id is not None:
+        if team_id is not None:
+            raise ValueError("An AI connection has exactly one audience.")
+        return f"user:{user_id}"
     return f"team:{team_id}" if team_id is not None else "global"
 
 
@@ -57,6 +68,7 @@ def _domain(row: LlmConnectionBindingRow) -> LlmConnectionBinding:
         row.activated_at,
         row.activated_by,
         row.revision,
+        row.user_id,
     )
 
 
@@ -74,9 +86,11 @@ class SqlLlmBindingRepository:
         await self._session.flush()
         return row.value
 
-    async def get(self, team_id: UUID | None) -> LlmConnectionBinding | None:
+    async def get(
+        self, team_id: UUID | None, *, user_id: UUID | None = None
+    ) -> LlmConnectionBinding | None:
         row = await self._session.get(
-            LlmConnectionBindingRow, _key(team_id), populate_existing=True
+            LlmConnectionBindingRow, _key(team_id, user_id), populate_existing=True
         )
         return _domain(row) if row else None
 
@@ -87,10 +101,13 @@ class SqlLlmBindingRepository:
         return [_domain(row) for row in rows]
 
     async def save(self, binding: LlmConnectionBinding) -> None:
-        row = await self._session.get(LlmConnectionBindingRow, _key(binding.team_id))
+        row = await self._session.get(
+            LlmConnectionBindingRow, _key(binding.team_id, binding.user_id)
+        )
         if row is None:
-            row = LlmConnectionBindingRow(scope_key=_key(binding.team_id))
+            row = LlmConnectionBindingRow(scope_key=_key(binding.team_id, binding.user_id))
             self._session.add(row)
+        row.user_id = binding.user_id
         row.team_id = binding.team_id
         row.profile_id = binding.profile_id
         row.profile_revision = binding.profile_revision
@@ -100,10 +117,10 @@ class SqlLlmBindingRepository:
         row.revision = binding.revision
         await self._session.flush()
 
-    async def delete(self, team_id: UUID | None) -> None:
+    async def delete(self, team_id: UUID | None, *, user_id: UUID | None = None) -> None:
         await self._session.execute(
             delete(LlmConnectionBindingRow).where(
-                LlmConnectionBindingRow.scope_key == _key(team_id)
+                LlmConnectionBindingRow.scope_key == _key(team_id, user_id)
             )
         )
 

@@ -179,3 +179,23 @@ async def reset_team_connection(
         before_save=partial(validate_request_session, container, claims),
     )
     return Response(status_code=204)
+
+
+@router.delete("/connections/user/{user_id}", status_code=204, response_class=Response)
+async def reset_user_connection(
+    user_id: UUID,
+    admin: AdminUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+    expected_revision: Annotated[int, Query(ge=1)],
+) -> Response:
+    await container.llm_connections(session).reset_user(
+        admin,
+        user_id,
+        expected_revision,
+        context,
+        before_save=partial(validate_request_session, container, claims),
+    )
+    return Response(status_code=204)

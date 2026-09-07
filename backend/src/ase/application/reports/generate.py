@@ -139,7 +139,7 @@ class GenerateReportUseCase:
         plan = await self._authorisation.prepare(actor, request)
         request = await self._map_origin.resolve(actor, request)
         inputs = await self._research_inputs.prepare(actor, request)
-        routing = await self._prepare(actor, request, template)
+        routing = await self._prepare(actor, request, template, owner_id=actor.id)
         profile = routing.required(template.role)
         now = self._clock.now()
         job = inputs.apply(await self._job(actor, template, request, profile, now, plan=plan))
@@ -195,7 +195,7 @@ class GenerateReportUseCase:
             actor, request, previous, owner_id=record.created_by
         )
         template = self._template(request)
-        routing = await self._prepare(actor, request, template)
+        routing = await self._prepare(actor, request, template, owner_id=record.created_by)
         profile = routing.required(template.role)
         now = self._clock.now()
         job = await self._job(
@@ -229,7 +229,7 @@ class GenerateReportUseCase:
         return record, version
 
     async def _prepare(
-        self, actor: User, request: ReportRequest, template: Template
+        self, actor: User, request: ReportRequest, template: Template, *, owner_id: UUID
     ) -> RoleProfiles:
         retry_after = self._limiter.hit(
             f"reports:{actor.id}", self._limits.reports_per_user, self._limits.hourly_window_seconds
@@ -237,7 +237,10 @@ class GenerateReportUseCase:
         if retry_after is not None:
             raise RateLimited(retry_after)
         routing = await self._routing.snapshot(
-            team_id=request.team_id, profile_id=request.profile_id, role=template.role
+            team_id=request.team_id,
+            personal_owner_id=owner_id,
+            profile_id=request.profile_id,
+            role=template.role,
         )
         if not self._cipher.available:
             raise EncryptionUnavailable()

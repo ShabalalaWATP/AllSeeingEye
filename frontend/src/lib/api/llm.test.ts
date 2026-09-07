@@ -1,9 +1,17 @@
+import { act, renderHook } from '@testing-library/react';
+import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
 import { adminUser, plainUser, tokenFor } from '@/test/fixtures';
 
-import { applyLlmConnection, fetchLlmModels, fetchLlmProfiles } from './llm';
+import {
+  applyLlmConnection,
+  fetchLlmModels,
+  fetchLlmProfiles,
+  resetTeamLlmConnection,
+  resetUserLlmConnection,
+} from './llm';
 
 afterEach(() => vi.restoreAllMocks());
 describe('AI connection boundary', () => {
@@ -54,3 +62,39 @@ describe('AI connection boundary', () => {
     });
   });
 });
+
+it.each(['apply', 'team reset', 'personal reset'])(
+  'aborts %s before a late 401 can replay under another account',
+  async (operation) => {
+    useAuthStore.getState().setSession(tokenFor(adminUser));
+    const hook = renderHook(() => useScopedRequest());
+    const signal = hook.result.current();
+    let resolve!: (value: Response) => void;
+    const fetch = vi.spyOn(window, 'fetch').mockImplementation(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    const input = {
+      team_id: null,
+      profile_id: '55555555-5555-4555-8555-555555555555',
+      expected_profile_revision: 1,
+      tested_config_hash: 'a'.repeat(64),
+      expected_binding_revision: null,
+    };
+    const pending =
+      operation === 'apply'
+        ? applyLlmConnection(input, signal)
+        : operation === 'team reset'
+          ? resetTeamLlmConnection(plainUser.id, 1, signal)
+          : resetUserLlmConnection(plainUser.id, 1, signal);
+    const rejected = expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    act(() => useAuthStore.getState().setSession(tokenFor(plainUser)));
+    expect(signal.aborted).toBe(true);
+    resolve(new Response(null, { status: 401 }));
+    await rejected;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    hook.unmount();
+  },
+);

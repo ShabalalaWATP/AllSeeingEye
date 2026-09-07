@@ -724,6 +724,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/map/views/{view_id}/revisions/{revision_id}/image-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Image Package */
+        post: operations["export_image_package_api_map_views__view_id__revisions__revision_id__image_package_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/original-assets": {
         parameters: {
             query?: never;
@@ -1969,6 +1986,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/llm/connections/user/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Reset User Connection */
+        delete: operations["reset_user_connection_api_admin_llm_connections_user__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/llm/models/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discover Draft Models */
+        post: operations["discover_draft_models_api_admin_llm_models_discover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2955,6 +3006,21 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** DraftModelDiscoveryIn */
+        DraftModelDiscoveryIn: {
+            /**
+             * Provider
+             * @default openai_compatible
+             * @constant
+             */
+            provider: "openai_compatible";
+            /** Base Url */
+            base_url: string;
+            /** Api Key */
+            api_key?: string | null;
+            /** Profile Id */
+            profile_id?: string | null;
+        };
         /** EventOut */
         EventOut: {
             /** Id */
@@ -3719,6 +3785,8 @@ export interface components {
         };
         /** LlmConnectionIn */
         LlmConnectionIn: {
+            /** User Id */
+            user_id?: string | null;
             /** Team Id */
             team_id?: string | null;
             /**
@@ -3735,6 +3803,8 @@ export interface components {
         };
         /** LlmConnectionOut */
         LlmConnectionOut: {
+            /** User Id */
+            user_id?: string | null;
             /** Team Id */
             team_id: string | null;
             /**
@@ -4364,11 +4434,13 @@ export interface components {
              * Policy
              * @enum {string}
              */
-            policy: "legacy" | "global" | "team";
+            policy: "legacy" | "global" | "team" | "personal";
             /** Destination Team Id */
             destination_team_id: string | null;
             /** Binding Team Id */
             binding_team_id: string | null;
+            /** Binding User Id */
+            binding_user_id?: string | null;
             /** Profiles */
             profiles: components["schemas"]["RoutedModelOut"][];
         };
@@ -7683,6 +7755,61 @@ export interface operations {
             };
         };
     };
+    export_image_package_api_map_views__view_id__revisions__revision_id__image_package_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                view_id: string;
+                revision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Png Base64 */
+                    png_base64: string;
+                    /**
+                     * Include Annotations
+                     * @default false
+                     */
+                    include_annotations?: boolean;
+                    /**
+                     * Use Basis
+                     * @default standard
+                     * @enum {string}
+                     */
+                    use_basis?: "standard" | "noncommercial" | "licensed";
+                    /**
+                     * Permitted Use
+                     * @default
+                     */
+                    permitted_use?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_assets_api_reports__report_id__original_assets_get: {
         parameters: {
             query: {
@@ -10405,6 +10532,70 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_user_connection_api_admin_llm_connections_user__user_id__delete: {
+        parameters: {
+            query: {
+                expected_revision: number;
+            };
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_draft_models_api_admin_llm_models_discover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftModelDiscoveryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmModelsOut"];
+                };
             };
             /** @description Validation Error */
             422: {

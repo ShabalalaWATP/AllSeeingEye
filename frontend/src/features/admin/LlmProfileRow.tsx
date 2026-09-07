@@ -5,7 +5,9 @@ import { Alert } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { deleteLlmProfile, fetchLlmModels, testLlmProfile } from '@/lib/api/llm';
 import type { LlmProfile, LlmTestResult } from '@/lib/api/llm';
+import type { User } from '@/lib/api/schemas';
 import type { Team } from '@/lib/api/teams';
+import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 
 import { LlmApplyConnection } from './LlmApplyConnection';
@@ -13,6 +15,7 @@ import { LlmApplyConnection } from './LlmApplyConnection';
 export interface LlmProfileRowProps {
   profile: LlmProfile;
   teams: readonly Team[];
+  users?: readonly User[];
   disabled: boolean;
   applying: boolean;
   hasGlobal: boolean;
@@ -21,13 +24,14 @@ export interface LlmProfileRowProps {
   onEdit: (profile: LlmProfile, models: readonly string[]) => void;
   onDeleted: (id: string) => void;
   onTested: (profile: LlmProfile) => void;
-  onApply: (profile: LlmProfile, teamId: string | null) => void;
+  onApply: (profile: LlmProfile, teamId: string | null, userId?: string) => void;
 }
 
 /** A saved draft can discover models and test credentials before any routing change. */
 export function LlmProfileRow({
   profile,
   teams,
+  users = [],
   disabled,
   applying,
   hasGlobal,
@@ -38,6 +42,7 @@ export function LlmProfileRow({
   onTested,
   onApply,
 }: LlmProfileRowProps) {
+  const request = useScopedRequest();
   const row = useRef<HTMLLIElement>(null);
   useEffect(() => {
     if (expanded) row.current?.querySelector('button')?.focus();
@@ -48,7 +53,7 @@ export function LlmProfileRow({
   const test = useAsyncAction(async () => {
     setResult(null);
     onTested({ ...profile, is_tested: false });
-    const outcome = await testLlmProfile(profile.id);
+    const outcome = await testLlmProfile(profile.id, request());
     setResult(outcome);
     onTested({
       ...profile,
@@ -59,10 +64,10 @@ export function LlmProfileRow({
     });
   });
   const discover = useAsyncAction(async () => {
-    setModels((await fetchLlmModels(profile.id)).models);
+    setModels((await fetchLlmModels(profile.id, request())).models);
   });
   const remove = useAsyncAction(async () => {
-    await deleteLlmProfile(profile.id);
+    await deleteLlmProfile(profile.id, request());
     onDeleted(profile.id);
   });
   const error = test.error ?? discover.error ?? remove.error;
@@ -188,9 +193,10 @@ export function LlmProfileRow({
             <LlmApplyConnection
               profile={profile}
               teams={teams}
+              users={users}
               busy={busy}
               hasGlobal={hasGlobal}
-              onApply={(teamId) => onApply(profile, teamId)}
+              onApply={(teamId, userId) => onApply(profile, teamId, userId)}
             />
           )}
         </div>
