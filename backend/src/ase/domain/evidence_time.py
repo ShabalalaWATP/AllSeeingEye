@@ -1,6 +1,6 @@
 """Explicit retrieval time bases, never a substitute for evidence timestamps."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from ase.domain.events import Event
@@ -24,3 +24,8 @@ def evidence_time(
     )
     # An unknown/naive date cannot acquire recency from the retrieval timestamp.
     return value if value is not None and value.utcoffset() is not None else None
+
+
+def publication_order(event: Event) -> datetime:
+    """Comparison-only sentinel, never stored or displayed as a publication date."""
+    return evidence_time(event) or datetime.min.replace(tzinfo=UTC)

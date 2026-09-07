@@ -12,7 +12,7 @@ class ResearchTimelineEntryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     evidence_label: str
     title: str
-    published_at: datetime
+    published_at: datetime | None
     captured_at: datetime
     observed_at: datetime | None
     timestamp_basis: str | None

@@ -23,6 +23,7 @@ from ase.domain.collection import (
 )
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import Category, Event
+from ase.domain.evidence_time import publication_order
 from ase.domain.users import User
 
 EVIDENCE_WINDOW = timedelta(days=7)
@@ -278,4 +279,4 @@ class PlanEvidenceUseCase:
         for query in queries:
             for event in self._store.query(query):
                 seen.setdefault(event.id, event)
-        return sorted(seen.values(), key=lambda event: event.published_at, reverse=True)
+        return sorted(seen.values(), key=publication_order, reverse=True)

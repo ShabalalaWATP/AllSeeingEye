@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from ase.domain.events import BoundingBox, Category, Event
+from ase.domain.evidence_time import publication_order
 
 MAX_KEYWORDS = 20
 MAX_THRESHOLD = 10_000
@@ -125,10 +126,14 @@ def evaluate(
     if last_fired is not None and now - last_fired < indicator.cooldown:
         return None
     since = now - indicator.window
-    matched = [e for e in events if e.published_at >= since and indicator.matches(e)]
+    matched = [
+        e
+        for e in events
+        if e.published_at is not None and e.published_at >= since and indicator.matches(e)
+    ]
     if len(matched) < indicator.threshold:
         return None
-    matched.sort(key=lambda e: e.published_at, reverse=True)
+    matched.sort(key=publication_order, reverse=True)
     countries = tuple(dict.fromkeys(e.country_iso for e in matched if e.country_iso))
     return Firing(len(matched), tuple(matched[:MAX_EVIDENCE]), countries)
 

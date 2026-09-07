@@ -8,6 +8,7 @@ import {
   MAX_CLIENT_EVENTS,
   countByCategory,
   filterByCountry,
+  filterByWindow,
   initialEventsState,
   selectCountryEvents,
   selectSelectedEvent,
@@ -18,6 +19,16 @@ import {
 describe('events store', () => {
   beforeEach(() => {
     useEventsStore.setState({ ...initialEventsState });
+  });
+
+  it('keeps unknown publication dates last and out of publication-window filters', () => {
+    const undated = liveEvent({ id: 'undated', published_at: null });
+    const dated = liveEvent({ id: 'dated' });
+    useEventsStore.getState().applyUpsert([undated, dated]);
+    expect(useEventsStore.getState().list.map((event) => event.id)).toEqual(['dated', 'undated']);
+    const now = Date.parse(dated.published_at!);
+    expect(filterByWindow([undated, dated], 24, now)).toEqual([dated]);
+    expect(filterByWindow([undated], null, now)).toEqual([undated]);
   });
 
   it('loads events and stats from the API', async () => {

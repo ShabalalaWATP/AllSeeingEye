@@ -79,6 +79,7 @@ def _pool(
     countries: Sequence[str],
     time_basis: EvidenceTimeBasis,
     until: datetime | None,
+    include_unknown_dates: bool,
 ) -> list[Event]:
     """One query for the box or country, one per extra country, merged by event id."""
     queries = [
@@ -90,6 +91,7 @@ def _pool(
             limit=MAX_POOL,
             time_basis=time_basis,
             until=until,
+            include_unknown_dates=include_unknown_dates,
         )
     ]
     queries.extend(
@@ -100,6 +102,7 @@ def _pool(
             limit=MAX_POOL,
             time_basis=time_basis,
             until=until,
+            include_unknown_dates=include_unknown_dates,
         )
         for iso in countries
         if iso != country_iso
@@ -169,6 +172,7 @@ def select_evidence(
     hazard: Hazard | None = None,
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
     until: datetime | None = None,
+    include_unknown_dates: bool = False,
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
@@ -179,7 +183,17 @@ def select_evidence(
     """
     window = timedelta(hours=strategy.window_hours)
     wanted = frozenset(categories) or strategy.categories
-    pool = _pool(store, wanted, now - window, country_iso, bbox, countries, time_basis, until)
+    pool = _pool(
+        store,
+        wanted,
+        now - window,
+        country_iso,
+        bbox,
+        countries,
+        time_basis,
+        until,
+        include_unknown_dates,
+    )
     if hazard is not None:
         pool = [event for event in pool if hazard_of(event) is hazard]
     lowered = tuple(term.lower().strip() for term in terms if term.strip())

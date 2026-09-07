@@ -2419,11 +2419,8 @@ export interface components {
             summary: string | null;
             /** Url */
             url: string | null;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
+            /** Published At */
+            published_at: string | null;
             /**
              * Observed At
              * Format: date-time
@@ -3951,11 +3948,8 @@ export interface components {
             summary: string | null;
             /** Url */
             url: string | null;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
+            /** Published At */
+            published_at: string | null;
             /**
              * Captured At
              * Format: date-time
@@ -4596,11 +4590,8 @@ export interface components {
             evidence_label: string;
             /** Title */
             title: string;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
+            /** Published At */
+            published_at: string | null;
             /**
              * Captured At
              * Format: date-time

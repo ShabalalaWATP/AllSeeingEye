@@ -13,6 +13,7 @@ from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.social import SocialActivityStore, SocialTermsSource
 from ase.domain.events import Category, Event
+from ase.domain.evidence_time import publication_order
 from ase.domain.social import (
     HashtagActivity,
     KeywordActivity,
@@ -36,7 +37,7 @@ def social_events(store: EventStore, since: datetime, before: datetime) -> list[
         for event in store.query(
             EventQuery(categories=frozenset({Category.SOCIAL}), since=since, limit=SOCIAL_POOL)
         )
-        if since <= event.published_at < before
+        if event.published_at is not None and since <= event.published_at < before
     ]
 
 
@@ -74,7 +75,12 @@ class SocialService:
         events = social_events(self._store, since, now)
         terms = await self._terms.visible_to(actor)
         counts = keyword_counts(
-            [event for event in events if hour <= event.published_at < hour_end], terms
+            [
+                event
+                for event in events
+                if event.published_at is not None and hour <= event.published_at < hour_end
+            ],
+            terms,
         )
         baselines = await self._activity.baselines(
             hour_end - timedelta(days=BASELINE_DAYS), hour, [term.key for term in terms]
@@ -98,7 +104,9 @@ class SocialService:
             hashtags=top_hashtags(events),
             keywords=tuple(keywords),
             posts=tuple(
-                sorted(events, key=lambda event: (event.published_at, event.id), reverse=True)[:50]
+                sorted(
+                    events, key=lambda event: (publication_order(event), event.id), reverse=True
+                )[:50]
             ),
             window_start=since,
             window_end=now,

@@ -4,9 +4,12 @@ import json
 from dataclasses import replace
 from datetime import timedelta
 
+import pytest
+
 from ase.application.ports.feeds import EventQuery
 from ase.application.research.service import ResearchCollectionService
 from ase.domain.events import Point
+from ase.domain.observation import ObservationMetadata
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch
 from ase.domain.research_area import ResearchArea
 from feeds_helpers import make_event
@@ -22,8 +25,9 @@ class SpatialFixture:
     name = "Synthetic area records"
     spatial_scope = "Synthetic point observations in the exact requested rectangle."
 
-    def __init__(self):
+    def __init__(self, unknown_publication=False):
         self.queries = []
+        self.unknown_publication = unknown_publication
 
     def supports(self, query):
         return True
@@ -41,6 +45,21 @@ class SpatialFixture:
                     title=f"Area records {index}",
                     point=Point(0.5, 50.5),
                     published_at=query.until - timedelta(hours=1),
+                ).with_changes(
+                    **(
+                        {
+                            "published_at": None,
+                            "point": None,
+                            "observation": ObservationMetadata(
+                                query.until - timedelta(hours=1),
+                                "fixture",
+                                f"scene-{index}",
+                                "Synthetic scene metadata only",
+                            ),
+                        }
+                        if self.unknown_publication
+                        else {}
+                    )
                 )
                 for index in range(3)
             ),
@@ -56,10 +75,13 @@ class SpatialFixture:
         )
 
 
-async def test_application_create_and_regenerate_keep_exact_map_origin(client, container, user):
+@pytest.mark.parametrize("unknown_publication", [False, True])
+async def test_application_create_and_regenerate_keep_exact_map_origin(
+    client, container, user, unknown_publication
+):
     parent, claims, view, revision, request = await setup(client, container, user)
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
-    provider = SpatialFixture()
+    provider = SpatialFixture(unknown_publication)
     container.research = ResearchCollectionService(lambda query: [provider])
     container.llm = ScriptedGateway("{}", json.dumps(good_body()))
     container.store.upsert(filled_store().query(EventQuery(limit=100)))
@@ -84,3 +106,7 @@ async def test_application_create_and_regenerate_keep_exact_map_origin(client, c
     assert updated.scope["map_origin"] == record.scope["map_origin"]
     assert second.research.plan.area == first.research.plan.area
     assert provider.queries[-1].area.geometry == AREA
+    if unknown_publication:
+        assert all(item.published_at is None for item in second.evidence)
+        assert all(item.observation is not None for item in second.evidence)
+        assert second.quality.newest is second.quality.oldest is None

@@ -63,7 +63,8 @@ export const initialEventsState = {
 /** Newest first, with the id as a tie-break so the order is stable. */
 function toList(byId: Record<string, LiveEvent>): LiveEvent[] {
   return Object.values(byId).sort(
-    (a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id),
+    (a, b) =>
+      (b.published_at ?? '').localeCompare(a.published_at ?? '') || a.id.localeCompare(b.id),
   );
 }
 
@@ -254,7 +255,9 @@ export function filterByWindow(
 ): LiveEvent[] {
   if (hours === null) return events;
   const since = now - hours * 3_600_000;
-  return events.filter((event) => Date.parse(event.published_at) >= since);
+  return events.filter(
+    (event) => event.published_at !== null && Date.parse(event.published_at) >= since,
+  );
 }
 
 export const selectCountryEvents = (state: EventsState): LiveEvent[] =>

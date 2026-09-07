@@ -10,7 +10,7 @@ export const researchContextSchema = z.object({
     z.object({
       evidence_label: z.string(),
       title: z.string(),
-      published_at: z.string(),
+      published_at: z.string().nullable(),
       captured_at: z.string(),
       observed_at: z.string().nullable(),
       timestamp_basis: z.string().nullable(),

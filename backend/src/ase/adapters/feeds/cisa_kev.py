@@ -63,7 +63,11 @@ class CisaKevConnector:
         events = []
         for item in items:
             event = self._to_event(item, now)
-            if event is not None and event.published_at >= cutoff:
+            if (
+                event is not None
+                and event.published_at is not None
+                and event.published_at >= cutoff
+            ):
                 events.append(event)
         return events
 

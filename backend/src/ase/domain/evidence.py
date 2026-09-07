@@ -62,7 +62,7 @@ class EvidenceItem:
     title: str
     summary: str | None
     url: str | None
-    published_at: datetime
+    published_at: datetime | None
     captured_at: datetime
     grade: str
     reliability: str
@@ -184,14 +184,14 @@ def quality_of_information(items: Sequence[EvidenceItem], flagged: int = 0) -> Q
     # Retained for saved/legacy consumers. A selected pool is descriptive and cannot
     # impose a ceiling on every judgement: each judgement has its own cited support.
     ceiling = evidence_confidence_ceiling(items)
-    published = [item.published_at for item in items]
+    published = [item.published_at for item in items if item.published_at is not None]
     return QualityOfInformation(
         items=len(items),
         by_grade=by_grade,
         independent_organisations=len(organisations),
         instrument_share=instruments / len(items),
-        newest=max(published),
-        oldest=min(published),
+        newest=max(published) if published else None,
+        oldest=min(published) if published else None,
         contradictions=None,
         flagged=flagged,
         confidence_ceiling=ceiling,

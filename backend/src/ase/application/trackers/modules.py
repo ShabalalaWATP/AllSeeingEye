@@ -10,6 +10,7 @@ from typing import Any
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.events import Category, Event
+from ase.domain.evidence_time import publication_order
 
 POOL = 5_000
 FORTNIGHT = timedelta(days=14)
@@ -75,7 +76,7 @@ def tally(events: list[Event], key_of: Any, limit: int = 12) -> tuple[Tally, ...
 
 
 def newest(events: list[Event], limit: int = LIST_LIMIT) -> tuple[Event, ...]:
-    return tuple(sorted(events, key=lambda e: e.published_at, reverse=True)[:limit])
+    return tuple(sorted(events, key=publication_order, reverse=True)[:limit])
 
 
 class ModuleService:
@@ -110,13 +111,13 @@ class ModuleService:
         launches = [e for e in events if e.subtype == "launch" and _upcoming(e, now)]
         launches.sort(key=lambda e: _net(e) or now)
         kp_events = [e for e in events if e.subtype == "geomagnetic"]
-        kp_event = max(kp_events, key=lambda e: e.published_at, default=None)
+        kp_event = max(kp_events, key=publication_order, default=None)
         alerts = [
             e
             for e in events
             if e.source_id.startswith("swpc") and e.subtype not in ("geomagnetic",)
         ]
-        recent = [e for e in alerts if e.published_at >= now - DAY]
+        recent = [e for e in alerts if e.published_at is not None and e.published_at >= now - DAY]
         kp_value = kp_event.attributes.get("kp") if kp_event is not None else None
         return SpaceBoard(
             stations=tuple(sorted(stations, key=lambda e: e.title)),
@@ -132,7 +133,11 @@ class ModuleService:
     def cyber_board(self) -> CyberBoard:
         now = self._clock.now()
         events = self._events(Category.CYBER, WEEK)
-        outages = [e for e in events if e.subtype == "outage" and e.published_at >= now - DAY]
+        outages = [
+            e
+            for e in events
+            if e.subtype == "outage" and e.published_at is not None and e.published_at >= now - DAY
+        ]
         claims = [e for e in events if e.subtype == "ransomware"]
         kev = [e for e in events if e.source_id == "cisa_kev"]
         return CyberBoard(

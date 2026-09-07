@@ -19,6 +19,7 @@ export function evidencePrecision(item: EvidenceItem): string {
     : `Approximate ${item.geo_confidence === 'city' ? 'city' : 'administrative area'}`;
 }
 export function publicationDay(item: EvidenceItem): string | null {
+  if (item.published_at === null) return null;
   const date = new Date(item.published_at);
   return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
 }

@@ -108,7 +108,7 @@ class Event:
     category: Category
     subtype: str
     title: str
-    published_at: datetime
+    published_at: datetime | None
     observed_at: datetime
     reliability: Reliability
     summary: str | None = None

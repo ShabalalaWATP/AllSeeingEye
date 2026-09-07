@@ -26,7 +26,7 @@ class EventOut(BaseModel):
     title: str
     summary: str | None
     url: str | None
-    published_at: datetime
+    published_at: datetime | None
     observed_at: datetime
     language: str
     title_en: str | None

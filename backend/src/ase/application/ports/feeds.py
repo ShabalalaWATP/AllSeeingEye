@@ -31,6 +31,7 @@ class EventQuery:
     limit: int = 500
     until: datetime | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    include_unknown_dates: bool = False
 
 
 @dataclass(frozen=True, slots=True)

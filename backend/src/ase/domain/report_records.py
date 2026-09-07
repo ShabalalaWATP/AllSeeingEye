@@ -197,7 +197,7 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
     rows = []
     for item in items:
         data = asdict(item)
-        data["published_at"] = item.published_at.isoformat()
+        data["published_at"] = item.published_at.isoformat() if item.published_at else None
         data["captured_at"] = item.captured_at.isoformat()
         data["observed_at"] = item.observed_at.isoformat() if item.observed_at else None
         data["flags"] = list(item.flags)
@@ -226,7 +226,9 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             title=str(row["title"]),
             summary=row.get("summary"),
             url=row.get("url"),
-            published_at=datetime.fromisoformat(str(row["published_at"])),
+            published_at=datetime.fromisoformat(str(row["published_at"]))
+            if row.get("published_at") is not None
+            else None,
             captured_at=datetime.fromisoformat(str(row["captured_at"])),
             grade=str(row["grade"]),
             reliability=str(row["reliability"]),

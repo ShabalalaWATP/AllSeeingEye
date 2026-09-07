@@ -62,6 +62,8 @@ def _has_context(event: Event, pool: Sequence[Event]) -> int:
     for other in pool:
         if other.id == event.id or other.category is not event.category:
             continue
+        if event.published_at is None or other.published_at is None:
+            continue
         if abs(other.published_at - event.published_at) > TEXT_WINDOW:
             continue
         same_country = event.country_iso is not None and other.country_iso == event.country_iso

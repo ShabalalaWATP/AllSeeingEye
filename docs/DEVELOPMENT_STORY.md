@@ -954,3 +954,25 @@ architecture contracts and scoped Bandit passed. Production build passed with th
 existing bundle-size advisory. No live source, operator database or deployment
 changed. Nullable publication contracts and native provider/API/map launch remain
 required before area collection can be exposed to operators.
+
+### 7 September 2026: preserve unknown publication dates
+
+Publication dates can remain unknown across events, frozen evidence, API responses,
+research timelines and exports. Known-date serialisation is preserved. Undated
+records cannot acquire publication recency from retrieval time, satisfy temporal
+context tests or trigger automatic archival. Explicitly supplied private inputs
+remain selectable with unknown dates; public date-window searches exclude them.
+Frontend schema/sorting/formatting/map-day guards prevent epoch-date fabrication.
+
+The first focused backend run passed 36 cases and failed one new test that called
+the event DTO's generic validator instead of its existing `from_event` converter.
+After correcting the test, its four-case file passed. The passing group includes
+composed area creation/regeneration with null publication and retained acquisition
+metadata. Twenty-four frontend format/store/map tests passed; typecheck, Ruff,
+format, mypy (487 files), architecture contracts and file-length checks passed.
+Read-only code/security review found no confirmed defect. The full backend suite
+passed 2,307 tests with 14 skipped and 96.13% coverage. The production frontend
+build passed with its existing bundle-size advisory. All 720 frontend tests in
+127 files passed: 95.83% statements, 90.17% branches, 94.70% functions and 97.01%
+lines. Full-source Bandit, staged Gitleaks and file-length checks also passed.
+No source was enabled, operator database migrated or deployment performed.

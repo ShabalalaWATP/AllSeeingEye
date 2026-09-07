@@ -16,6 +16,7 @@ from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.research_records.records import receipt, record_event
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event, GeoConfidence, Reliability
+from ase.domain.evidence_time import publication_order
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
 API = "https://api.ooni.io/api/v1/aggregation"
@@ -200,4 +201,4 @@ class OoniAggregateProvider:
                     ),
                 )
             )
-        return sorted(items, key=lambda event: event.published_at)
+        return sorted(items, key=publication_order)

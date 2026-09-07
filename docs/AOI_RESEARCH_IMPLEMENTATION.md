@@ -216,3 +216,60 @@ Nullable actual publication times across all existing event/report consumers,
 evidence geometry/observation API and map presentation, native provider registration
 and the operator launch workflow remain unfinished. These foundations do not mean
 that an operator can yet run a live catalogue-backed area investigation.
+
+### Unknown publication dates
+
+Event, frozen evidence and research timeline publication dates now allow null.
+Serialisation and exports preserve null without substituting acquisition or
+retrieval time. Quality summaries use only known publication dates. Report text
+and frontend date formatters show unknown; map publication-day filters do not
+convert null into an epoch date. Normal feed timestamp construction is unchanged.
+
+Undated records do not count towards publication-window activity, temporal
+clustering/context or automatic archive requests. Unbounded event lists retain
+them. Explicit private document/media selection can include unknown dates without
+admitting unrelated public records; ordinary and area research retain their date
+constraints. Synthetic area report creation/regeneration preserves acquisition
+metadata while keeping publication null.
+
+Focused backend and frontend checks passed after a test conversion-method fix.
+The full backend suite passed 2,307 tests with 14 skipped and 96.13% coverage.
+Full-source Bandit passed. All 720 frontend tests in 127 files passed, with
+95.83% statements, 90.17% branches, 94.70% functions and 97.01% lines.
+The frontend production build passed with the existing large-bundle advisory.
+Native provider registration, observation API/map presentation and research launch
+remain outstanding.
+
+### Catalogue adapter preparation during verification
+
+A draft adapter and eight synthetic contract tests have been prepared under the
+ignored `data/native_area/` directory while the production source tree remains
+frozen for the full backend run. The tests pass with the backend pytest
+configuration. Draft adapter lint and type checks also pass. This is preparation,
+not a registered provider or live-source acceptance.
+
+The draft forwards exact rectangular area and acquisition dates to the existing
+bounded catalogue port. It preserves unknown publication dates and original
+geometry, distinguishes empty from unavailable results, reports truncation, and
+rejects oversized or partly malformed pages without releasing partial evidence.
+Content hashes change with coordinates, acquisition time, cloud metadata or
+licence, while retrieval time alone does not change them.
+
+Integration must first retain typed original geometry in `Footprint` and its
+STAC parser, then register the adapter through the existing source controls.
+Required integration checks include guarded HTTP request parameters, source
+disable races, acquisition interval boundaries and frozen report roundtrips.
+The draft tests use a synthetic catalogue port and do not prove these boundaries.
+
+The subsequent parser, HTTP, admission and collection tests bring this isolated
+group to 22 passing cases. They retain Polygon/MultiPolygon type and original coordinates,
+preserve a 301-vertex footprint through frozen evidence, enforce the inclusive
+start/exclusive end interval and reject unsupported geometry metadata. Mocked
+HTTP composition verifies the fixed catalogue host, exact bounding box and dates,
+one-request limit, redirect refusal and omission of private question/term/language
+text. Domain/parser draft type checks pass. DNS validation itself is replaced by
+a recording stub in these fixtures; no live network or production registration
+is established. Synthetic source-admission tests verify disabling before a call
+and during an in-flight result, with no scene evidence released. Actual planning
+and collection tests verify explicit source selection and acquisition filtering.
+Persisted source-control races and actual container integration remain open.

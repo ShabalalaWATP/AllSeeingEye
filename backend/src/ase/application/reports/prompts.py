@@ -63,7 +63,11 @@ def template_guidance(template: Template) -> str:
 def evidence_block(item: EvidenceItem) -> str:
     flags = f" [{', '.join(item.flags)}]" if item.flags else ""
     where = f", {item.country_iso}" if item.country_iso else ""
-    when = item.published_at.strftime("%Y-%m-%d %H:%M UTC")
+    when = (
+        item.published_at.strftime("%Y-%m-%d %H:%M UTC")
+        if item.published_at
+        else "publication unknown"
+    )
     summary = (item.summary or "").strip()
     if len(summary) > MAX_SUMMARY_CHARS:
         summary = summary[: MAX_SUMMARY_CHARS - 1].rstrip() + "…"

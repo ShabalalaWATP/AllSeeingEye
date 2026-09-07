@@ -26,7 +26,7 @@ class ReportEvidenceOut(BaseModel):
     title: str
     summary: str | None
     url: str | None
-    published_at: datetime
+    published_at: datetime | None
     captured_at: datetime
     grade: str
     reliability: str

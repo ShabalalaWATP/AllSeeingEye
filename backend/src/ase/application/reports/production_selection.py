@@ -26,8 +26,10 @@ def select_for_job(
     if private and job.seed_events:
         # A supplied historic document is relevant because it was explicitly supplied,
         # not because its publication date fits a current news window. Preserve its date.
-        earliest = min(item.published_at for item in job.seed_events)
-        window = max(window, int((job.now - earliest).total_seconds() // 3600) + 1)
+        dates = [item.published_at for item in job.seed_events if item.published_at is not None]
+        if dates:
+            earliest = min(dates)
+            window = max(window, int((job.now - earliest).total_seconds() // 3600) + 1)
     strategy = replace(
         job.template.strategy,
         window_hours=window,
@@ -48,5 +50,6 @@ def select_for_job(
         hazard=None if private else job.hazard,
         time_basis=EvidenceTimeBasis.RESEARCH if area else EvidenceTimeBasis.PUBLICATION,
         until=job.now if area else None,
+        include_unknown_dates=private,
     )
     return with_reused_evidence(selected, job.reused_evidence)

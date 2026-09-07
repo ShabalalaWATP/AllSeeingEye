@@ -36,7 +36,12 @@ async def archive_evidence(
         cited |= version.challenge.cited_labels()
     archives: dict[str, str] = {}
     for item in version.evidence:
-        if item.label not in cited or not archivable(item) or item.url is None:
+        if (
+            item.label not in cited
+            or not archivable(item)
+            or item.url is None
+            or item.published_at is None
+        ):
             continue
         snapshot = await archiver.archive(item.url, item.published_at)
         if snapshot:

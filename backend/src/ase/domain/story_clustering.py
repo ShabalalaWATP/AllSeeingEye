@@ -1,6 +1,7 @@
 """Bounded-window text/place clustering for navigation, never corroboration."""
 
 from collections.abc import Mapping, Sequence
+from datetime import datetime
 
 from ase.domain.event_similarity import (
     GEO_LINKED_CATEGORIES,
@@ -14,6 +15,7 @@ from ase.domain.event_similarity import (
     title_tokens,
 )
 from ase.domain.events import Event
+from ase.domain.evidence_time import publication_order
 from ase.domain.source_provenance import DisjointGroups
 
 
@@ -35,7 +37,10 @@ def _text_pairs(
     for (left, right), count in shared.items():
         if count < MIN_SHARED_TOKENS:
             continue
-        gap = abs(by_id[left].published_at - by_id[right].published_at)
+        left_date, right_date = by_id[left].published_at, by_id[right].published_at
+        if left_date is None or right_date is None:
+            continue
+        gap = abs(left_date - right_date)
         if gap <= TEXT_WINDOW and jaccard(tokens[left], tokens[right]) >= STORY_SIMILARITY:
             pairs.add((left, right))
     return pairs
@@ -47,6 +52,8 @@ def _geo_pairs(events: Sequence[Event]) -> set[tuple[str, str]]:
     for i, left in enumerate(located):
         for right in located[i + 1 :]:
             if left.subtype != right.subtype or left.point is None or right.point is None:
+                continue
+            if left.published_at is None or right.published_at is None:
                 continue
             if abs(left.published_at - right.published_at) > GEO_WINDOW:
                 continue
@@ -64,8 +71,12 @@ def build_stories(events: Sequence[Event]) -> list[list[Event]]:
     members: dict[str, list[Event]] = {}
     for event in events:
         members.setdefault(groups.find(event.id), []).append(event)
-    stories = [sorted(story, key=lambda e: (e.published_at, e.id)) for story in members.values()]
-    stories.sort(key=lambda story: (story[0].published_at, story[0].id))
+
+    def order(event: Event) -> tuple[bool, datetime, str]:
+        return event.published_at is None, publication_order(event), event.id
+
+    stories = [sorted(story, key=order) for story in members.values()]
+    stories.sort(key=lambda story: order(story[0]))
     return stories
 
 

@@ -8,7 +8,8 @@ def context_sections(value: ResearchContext | None) -> tuple[tuple[str, tuple[st
         return ()
     sections = [("Research context", (f"Method: {value.method_version}.", *value.limitations))]
     timeline = tuple(
-        f"{row.evidence_label}: {row.title}. Published: {row.published_at.isoformat()}; "
+        f"{row.evidence_label}: {row.title}. Published: "
+        f"{row.published_at.isoformat() if row.published_at else 'unknown'}; "
         f"observed: {row.observed_at.isoformat() if row.observed_at else 'unknown'}; "
         f"captured: {row.captured_at.isoformat()}. "
         f"Timestamp basis: {row.timestamp_basis or 'unknown'}; "

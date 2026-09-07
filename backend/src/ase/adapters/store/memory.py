@@ -115,9 +115,15 @@ class InMemoryEventStore:
             if query.source_ids and event.source_id not in query.source_ids:
                 continue
             timestamp = evidence_time(event, query.time_basis)
-            if query.since is not None and (timestamp is None or timestamp < query.since):
+            if (
+                timestamp is None
+                and (query.since is not None or query.until is not None)
+                and not query.include_unknown_dates
+            ):
                 continue
-            if query.until is not None and (timestamp is None or timestamp >= query.until):
+            if timestamp is not None and query.since is not None and timestamp < query.since:
+                continue
+            if timestamp is not None and query.until is not None and timestamp >= query.until:
                 continue
             if query.bbox is not None and (
                 event.point is None or not query.bbox.contains(event.point)

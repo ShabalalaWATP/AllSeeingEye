@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from enum import StrEnum
 
 from ase.domain.events import BoundingBox, Category, Event
+from ase.domain.evidence_time import publication_order
 
 DAY = timedelta(days=1)
 WEEK = timedelta(days=7)
@@ -138,6 +139,8 @@ def activity(events: Iterable[Event], now: datetime) -> Activity:
     last_24h = last_7d = previous_7d = 0
     for event in events:
         when = event.published_at
+        if when is None:
+            continue
         if when >= day_ago:
             last_24h += 1
         if when >= week_ago:
@@ -156,6 +159,8 @@ def timeline(
     counts: Counter[date] = Counter()
     worst: dict[date, float] = {}
     for event in events:
+        if event.published_at is None:
+            continue
         day = event.published_at.date()
         if day < first or day > today:
             continue
@@ -171,11 +176,13 @@ def timeline(
 
 def top_event(events: Iterable[Event]) -> Event | None:
     """The most severe event, newest first among equals."""
-    return max(events, key=lambda e: (e.severity or 0.0, e.published_at), default=None)
+    return max(events, key=lambda e: (e.severity or 0.0, publication_order(e)), default=None)
 
 
 def latest_event(events: Iterable[Event]) -> Event | None:
-    return max(events, key=lambda e: e.published_at, default=None)
+    return max(
+        (e for e in events if e.published_at is not None), key=publication_order, default=None
+    )
 
 
 def _countries(events: Iterable[Event]) -> tuple[str, ...]:
@@ -192,7 +199,11 @@ def _max_severity(events: Sequence[Event]) -> float | None:
 
 def hazard_card(hazard: Hazard, events: Sequence[Event], now: datetime) -> HazardCard:
     """Summarise one hazard from its disaster events (already limited to the window)."""
-    week = [event for event in events if event.published_at >= now - WEEK]
+    week = [
+        event
+        for event in events
+        if event.published_at is not None and event.published_at >= now - WEEK
+    ]
     red = sum(
         1 for event in week if "gdacs_red" in event.tags or (event.severity or 0.0) >= RED_SEVERITY
     )
@@ -231,11 +242,17 @@ def _fatalities(events: Iterable[Event]) -> int:
 def conflict_card(conflict: Conflict, events: Sequence[Event], now: datetime) -> ConflictCard:
     """Summarise one conflict from every event in its area (any category, within the window)."""
     fighting = [event for event in events if event.category is Category.CONFLICT]
-    week = [event for event in fighting if event.published_at >= now - WEEK]
+    week = [
+        event
+        for event in fighting
+        if event.published_at is not None and event.published_at >= now - WEEK
+    ]
     reporting = [
         event
         for event in events
-        if event.category is not Category.CONFLICT and event.published_at >= now - WEEK
+        if event.category is not Category.CONFLICT
+        and event.published_at is not None
+        and event.published_at >= now - WEEK
     ]
     return ConflictCard(
         conflict=conflict,

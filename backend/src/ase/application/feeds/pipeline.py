@@ -85,7 +85,7 @@ class Normaliser:
             summary = clean_text(event.summary, MAX_SUMMARY)
             url = safe_url(event.url)
             digest = event.content_hash or content_hash(
-                title, summary, url, event.published_at.isoformat()
+                title, summary, url, event.published_at.isoformat() if event.published_at else None
             )
             result.append(
                 event.with_changes(title=title, summary=summary, url=url, content_hash=digest)

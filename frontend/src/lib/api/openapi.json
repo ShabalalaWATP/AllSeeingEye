@@ -7336,8 +7336,15 @@
             "title": "Url"
           },
           "published_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Published At"
           },
           "observed_at": {
@@ -11717,8 +11724,15 @@
             "title": "Url"
           },
           "published_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Published At"
           },
           "captured_at": {
@@ -13591,8 +13605,15 @@
             "title": "Title"
           },
           "published_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Published At"
           },
           "captured_at": {

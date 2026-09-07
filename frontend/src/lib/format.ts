@@ -5,7 +5,8 @@ const utcFormatter = new Intl.DateTimeFormat('en-GB', {
 });
 
 /** Formats an ISO 8601 timestamp as a UK-style UTC string; returns the input when unparseable. */
-export function formatUtc(iso: string): string {
+export function formatUtc(iso: string | null | undefined): string {
+  if (iso == null) return 'Unknown';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return `${utcFormatter.format(date)} UTC`;
@@ -16,7 +17,8 @@ const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
 /** Coarse relative age ("5m ago"); returns the input when unparseable. */
-export function formatAgo(iso: string, now: number): string {
+export function formatAgo(iso: string | null | undefined, now: number): string {
+  if (iso == null) return 'Unknown';
   const time = new Date(iso).getTime();
   if (Number.isNaN(time)) return iso;
   const delta = Math.max(0, now - time);

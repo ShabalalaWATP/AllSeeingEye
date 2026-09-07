@@ -27,7 +27,7 @@ CONTEXT_LIMITATIONS = (
 class ResearchTimelineEntry:
     evidence_label: str
     title: str
-    published_at: datetime
+    published_at: datetime | None
     captured_at: datetime
     observed_at: datetime | None
     timestamp_basis: str | None
@@ -190,9 +190,13 @@ def _relationships(items: tuple[EvidenceItem, ...]) -> tuple[ResearchSourceRelat
 
 
 def _chronology(item: EvidenceItem) -> tuple[bool, datetime, str]:
-    naive = item.published_at.utcoffset() is None
+    naive = item.published_at is None or item.published_at.utcoffset() is None
     # Undated-zone legacy records sort last; UTC is only a comparison sentinel for those.
-    stamp = datetime.max.replace(tzinfo=UTC) if naive else item.published_at.astimezone(UTC)
+    stamp = (
+        datetime.max.replace(tzinfo=UTC)
+        if item.published_at is None or naive
+        else item.published_at.astimezone(UTC)
+    )
     return naive, stamp, item.label
 
 

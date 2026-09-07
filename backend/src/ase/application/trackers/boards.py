@@ -10,6 +10,7 @@ from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.domain.errors import NotFound
 from ase.domain.events import Category, Event
+from ase.domain.evidence_time import publication_order
 from ase.domain.trackers import (
     Conflict,
     ConflictCard,
@@ -101,4 +102,4 @@ class TrackerService:
         for query in queries:
             for event in self._store.query(query):
                 seen.setdefault(event.id, event)
-        return sorted(seen.values(), key=lambda event: event.published_at, reverse=True)
+        return sorted(seen.values(), key=publication_order, reverse=True)

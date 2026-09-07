@@ -105,7 +105,7 @@ export const evidenceItemSchema = z.object({
   title: z.string(),
   summary: z.string().nullable(),
   url: z.string().nullable(),
-  published_at: z.string(),
+  published_at: z.string().nullable(),
   grade: z.string(),
   grade_rationale: z.string(),
   country_iso: z.string().nullable(),

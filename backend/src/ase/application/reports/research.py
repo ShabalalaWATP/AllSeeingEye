@@ -47,7 +47,11 @@ async def collect_report_evidence(
                 limit=1000,
             )
         )
-        private.upsert(item for item in retained if item.published_at < query.until)
+        private.upsert(
+            item
+            for item in retained
+            if item.published_at is not None and item.published_at < query.until
+        )
     private.upsert(batch.items)
     private.upsert(seed_events)
     return private, ResearchReceipt.build(

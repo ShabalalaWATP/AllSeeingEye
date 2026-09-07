@@ -37,7 +37,7 @@ def annex_lines(
             item.label,
             item.grade,
             item.source_name,
-            item.published_at.strftime("%Y-%m-%d %H:%M"),
+            item.published_at.strftime("%Y-%m-%d %H:%M") if item.published_at else "Unknown",
             item.title,
         ]
         lines.append(

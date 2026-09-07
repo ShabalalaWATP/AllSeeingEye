@@ -32,7 +32,7 @@ export const liveEventSchema = z.object({
   title: z.string(),
   summary: z.string().nullable(),
   url: z.string().nullable(),
-  published_at: z.string(),
+  published_at: z.string().nullable(),
   observed_at: z.string(),
   language: z.string(),
   title_en: z.string().nullable(),

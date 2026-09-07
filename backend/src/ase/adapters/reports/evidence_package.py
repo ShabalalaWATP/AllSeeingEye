@@ -68,7 +68,7 @@ def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
                     "title": item.title,
                     "precision": item.geo_confidence,
                     "country_iso": item.country_iso,
-                    "published_at": item.published_at.isoformat(),
+                    "published_at": item.published_at.isoformat() if item.published_at else None,
                     "captured_at": item.captured_at.isoformat(),
                     "location_role": "unknown",
                     "notice": (
