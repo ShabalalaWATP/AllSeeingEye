@@ -32,8 +32,11 @@ class ResearchCandidate:
     id: str
     label: str
     identifiers: tuple[str, ...] = ()
+    origin: Literal["operator", "model"] = "operator"
 
     def __post_init__(self) -> None:
+        if self.origin not in {"operator", "model"}:
+            raise ValueError("Invalid research task origin")
         if (
             not _id(self.id)
             or not isinstance(self.label, str)
@@ -52,8 +55,11 @@ class PlannedQueryTask:
     purpose: Literal["challenge", "disambiguation"]
     terms: tuple[str, ...]
     candidate_id: str | None = None
+    origin: Literal["operator", "model"] = "operator"
 
     def __post_init__(self) -> None:
+        if self.origin not in {"operator", "model"}:
+            raise ValueError("Invalid research task origin")
         if (
             not _id(self.id)
             or not isinstance(self.source_id, str)
@@ -112,3 +118,7 @@ def validate_task_receipt(task_id: str | None, purpose: str, candidate_id: str |
         raise ValueError("Operator task receipts require task identity")
     if purpose == "disambiguation" and candidate_id is None:
         raise ValueError("Disambiguation receipts require a candidate reference")
+
+
+def task_identity(task: PlannedQueryTask) -> str:
+    return f"{task.origin}:{task.id}"

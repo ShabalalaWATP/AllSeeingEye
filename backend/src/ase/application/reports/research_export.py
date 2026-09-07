@@ -43,11 +43,10 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
         )
         if plan.candidate_hypotheses:
             lines.append(
-                "Operator candidate hypotheses are unverified search context, "
-                "not established matches."
+                "Candidate hypotheses are unverified search context, not established matches."
             )
             lines.extend(
-                f"Candidate {row.id}: {row.label}; "
+                f"Candidate {row.id} ({row.origin}): {row.label}; "
                 f"supplied identifiers: {', '.join(row.identifiers) or 'none'}."
                 for row in plan.candidate_hypotheses
             )
@@ -61,6 +60,25 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
                 )
+    if receipt.plan and receipt.plan.planning:
+        trace = receipt.plan.planning
+        lines.append(
+            f"Automatic planning ({trace.policy_version}): {trace.status}; "
+            f"requested model {trace.requested_model or 'none'}; "
+            f"returned model {trace.returned_model or 'none'}; calls {trace.call_count}. "
+            + trace.reason
+        )
+        lines.append("Accepted for collection is not proof of execution; consult attempt receipts.")
+        lines.extend(
+            f"Model-proposed candidate {row.id}: {row.label}; identifiers: {row.identifiers}."
+            for row in trace.proposed_candidates
+        )
+        lines.extend(
+            f"Model-proposed task model:{row.id}: {row.source_id}; {row.purpose}; "
+            f"terms: {row.terms}; "
+            f"accepted for collection: {'model:' + row.id in trace.accepted_task_ids}."
+            for row in trace.proposed_tasks
+        )
     if receipt.plan and receipt.plan.continuation:
         review = receipt.plan.continuation
         lines.append(

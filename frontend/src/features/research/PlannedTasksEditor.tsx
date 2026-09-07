@@ -20,11 +20,12 @@ export function PlannedTasksEditor({
         Identity candidates and challenge searches
       </summary>
       <p className="text-xs text-muted">
-        Plan searches for competing identities or conflicting evidence before collection. Candidate
-        labels and identifiers are hypotheses, not verified matches. Exact task terms are retained
-        without automatic translation. These tasks share the normal collection budget; an empty or
-        skipped search does not confirm a claim. Task phrases also help rank existing context,
-        including when a source search is skipped.
+        Add your own searches for competing identities or conflicting evidence before collection.
+        Eligible public-source runs can also add separate model-proposed tasks. Candidate labels and
+        identifiers are hypotheses, not verified matches. Exact task terms are retained without
+        automatic translation. These tasks share the normal collection budget; an empty or skipped
+        search does not confirm a claim. Task phrases also help rank existing context, including
+        when a source search is skipped.
       </p>
       {value.candidates.map((candidate, index) => (
         <fieldset key={candidate.id} className="space-y-2 border-t border-line pt-3">

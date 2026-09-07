@@ -63,6 +63,10 @@ class ReportRequest:
         )
 
     def __post_init__(self) -> None:
+        if any(row.origin != "operator" for row in self.research_candidate_hypotheses) or any(
+            row.origin != "operator" for row in self.research_planned_tasks
+        ):
+            raise ValueError("Report requests cannot claim model-generated planning provenance")
         validate_operator_plan(
             self.research_candidate_hypotheses,
             self.research_planned_tasks,

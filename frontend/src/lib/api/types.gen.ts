@@ -4658,6 +4658,57 @@ export interface components {
             /** Candidate Id */
             candidate_id?: string | null;
         };
+        /** PlannedQueryTaskOut */
+        PlannedQueryTaskOut: {
+            /** Id */
+            id: string;
+            /** Source Id */
+            source_id: string;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "challenge" | "disambiguation";
+            /** Terms */
+            terms: string[];
+            /** Candidate Id */
+            candidate_id?: string | null;
+            /**
+             * Origin
+             * @default operator
+             * @enum {string}
+             */
+            origin: "operator" | "model";
+        };
+        /** PlanningTraceOut */
+        PlanningTraceOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "applied" | "empty" | "rejected" | "unavailable" | "skipped";
+            /** Requested Model */
+            requested_model: string;
+            /** Returned Model */
+            returned_model: string;
+            /** Call Count */
+            call_count: number;
+            /** Reason */
+            reason: string;
+            /** Proposed Candidates */
+            proposed_candidates: components["schemas"]["ResearchCandidateOut"][];
+            /** Proposed Tasks */
+            proposed_tasks: components["schemas"]["PlannedQueryTaskOut"][];
+            /** Accepted Candidate Ids */
+            accepted_candidate_ids: string[];
+            /** Accepted Task Ids */
+            accepted_task_ids: string[];
+            /**
+             * Policy Version
+             * @constant
+             */
+            policy_version: "ase-model-plan-v1";
+        };
         /** PlansOut */
         PlansOut: {
             /** Items */
@@ -5264,6 +5315,21 @@ export interface components {
             /** Identifiers */
             identifiers?: string[];
         };
+        /** ResearchCandidateOut */
+        ResearchCandidateOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Identifiers */
+            identifiers?: string[];
+            /**
+             * Origin
+             * @default operator
+             * @enum {string}
+             */
+            origin: "operator" | "model";
+        };
         /** ResearchChange */
         ResearchChange: {
             /**
@@ -5496,8 +5562,9 @@ export interface components {
             /** @default publication */
             time_basis: components["schemas"]["EvidenceTimeBasis"];
             /** Candidate Hypotheses */
-            candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            candidate_hypotheses?: components["schemas"]["ResearchCandidateOut"][];
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
+            planning?: components["schemas"]["PlanningTraceOut"] | null;
         };
         /** ResearchPreviewOut */
         ResearchPreviewOut: {
@@ -5544,8 +5611,9 @@ export interface components {
             /** @default publication */
             time_basis: components["schemas"]["EvidenceTimeBasis"];
             /** Candidate Hypotheses */
-            candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            candidate_hypotheses?: components["schemas"]["ResearchCandidateOut"][];
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
+            planning?: components["schemas"]["PlanningTraceOut"] | null;
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
         };
         /** ResearchReceiptOut */

@@ -72,6 +72,19 @@ async function openPlan() {
 }
 
 describe('editable collection plan', () => {
+  it('explains runtime model additions while keeping preview a deterministic request', async () => {
+    const bodies: planApi.ResearchPlanInput[] = [];
+    mockPreview(bodies);
+    const { user } = await openPlan();
+    expect(screen.getByText(/This preview makes no model calls or source requests/)).toBeVisible();
+    expect(
+      screen.getByText(/These additions share the existing task and collection limits/),
+    ).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).not.toHaveProperty('planning');
+  });
   it('does not substitute news sources for a deselected historical project source', async () => {
     mockPreview([]);
     let submitted = false;

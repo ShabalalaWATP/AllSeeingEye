@@ -106,7 +106,14 @@ class Producer:
         )
 
         def select(extra_terms: tuple[str, ...] = ()) -> Selection:
-            return select_for_job(store, self._source_profiles, job, direction, extra_terms)
+            return select_for_job(
+                store,
+                self._source_profiles,
+                job,
+                direction,
+                extra_terms,
+                runtime_query=query,
+            )
 
         selection = select()
         quality = quality_of_information(selection.items, selection.flagged)

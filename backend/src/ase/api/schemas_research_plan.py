@@ -8,7 +8,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.api.schemas_map_origin import MapResearchOriginOut
 from ase.api.schemas_research_area import ResearchAreaOut
-from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
+from ase.api.schemas_research_tasks import (
+    PlannedQueryTaskIn,
+    PlannedQueryTaskOut,
+    ResearchCandidateIn,
+    ResearchCandidateOut,
+)
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
@@ -135,6 +140,20 @@ class ContinuationTraceOut(BaseModel):
     policy_version: Literal["ase-collection-review-v1"] = "ase-collection-review-v1"
 
 
+class PlanningTraceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    status: Literal["applied", "empty", "rejected", "unavailable", "skipped"]
+    requested_model: str = Field(max_length=2048)
+    returned_model: str = Field(max_length=2048)
+    call_count: int = Field(ge=0, le=1)
+    reason: str = Field(max_length=500)
+    proposed_candidates: list[ResearchCandidateOut] = Field(max_length=8)
+    proposed_tasks: list[PlannedQueryTaskOut] = Field(max_length=8)
+    accepted_candidate_ids: list[str] = Field(max_length=8)
+    accepted_task_ids: list[str] = Field(max_length=8)
+    policy_version: Literal["ase-model-plan-v1"]
+
+
 class ResearchPlanOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     question: str
@@ -156,9 +175,10 @@ class ResearchPlanOut(BaseModel):
     translation: QueryTransformationOut | None = None
     area: ResearchAreaOut | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
-    candidate_hypotheses: list[ResearchCandidateIn] = Field(default_factory=list, max_length=8)
+    candidate_hypotheses: list[ResearchCandidateOut] = Field(default_factory=list, max_length=8)
 
     continuation: ContinuationTraceOut | None = None
+    planning: PlanningTraceOut | None = None
 
 
 class ResearchPreviewOut(ResearchPlanOut):

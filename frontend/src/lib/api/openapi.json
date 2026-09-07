@@ -13791,6 +13791,157 @@
         ],
         "title": "PlannedQueryTaskIn"
       },
+      "PlannedQueryTaskOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Id"
+          },
+          "source_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "disambiguation"
+            ],
+            "title": "Purpose"
+          },
+          "terms": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Terms"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "model"
+            ],
+            "title": "Origin",
+            "default": "operator"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "purpose",
+          "terms"
+        ],
+        "title": "PlannedQueryTaskOut"
+      },
+      "PlanningTraceOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "empty",
+              "rejected",
+              "unavailable",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "requested_model": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Requested Model"
+          },
+          "returned_model": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Returned Model"
+          },
+          "call_count": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Call Count"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason"
+          },
+          "proposed_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCandidateOut"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Proposed Candidates"
+          },
+          "proposed_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedQueryTaskOut"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Proposed Tasks"
+          },
+          "accepted_candidate_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Accepted Candidate Ids"
+          },
+          "accepted_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Accepted Task Ids"
+          },
+          "policy_version": {
+            "type": "string",
+            "const": "ase-model-plan-v1",
+            "title": "Policy Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "requested_model",
+          "returned_model",
+          "call_count",
+          "reason",
+          "proposed_candidates",
+          "proposed_tasks",
+          "accepted_candidate_ids",
+          "accepted_task_ids",
+          "policy_version"
+        ],
+        "title": "PlanningTraceOut"
+      },
       "PlansOut": {
         "properties": {
           "items": {
@@ -15885,6 +16036,47 @@
         ],
         "title": "ResearchCandidateIn"
       },
+      "ResearchCandidateOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "identifiers": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Identifiers"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "model"
+            ],
+            "title": "Origin",
+            "default": "operator"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "ResearchCandidateOut"
+      },
       "ResearchChange": {
         "properties": {
           "status": {
@@ -16527,7 +16719,7 @@
           },
           "candidate_hypotheses": {
             "items": {
-              "$ref": "#/components/schemas/ResearchCandidateIn"
+              "$ref": "#/components/schemas/ResearchCandidateOut"
             },
             "type": "array",
             "maxItems": 8,
@@ -16537,6 +16729,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ContinuationTraceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningTraceOut"
               },
               {
                 "type": "null"
@@ -16679,7 +16881,7 @@
           },
           "candidate_hypotheses": {
             "items": {
-              "$ref": "#/components/schemas/ResearchCandidateIn"
+              "$ref": "#/components/schemas/ResearchCandidateOut"
             },
             "type": "array",
             "maxItems": 8,
@@ -16689,6 +16891,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ContinuationTraceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningTraceOut"
               },
               {
                 "type": "null"

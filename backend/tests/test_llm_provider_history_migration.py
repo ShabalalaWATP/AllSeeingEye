@@ -11,12 +11,12 @@ from alembic import command
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ase.adapters.persistence.llm import SqlLlmProfileRepository
-from ase.adapters.persistence.llm_bindings import SqlLlmBindingRepository
 from ase.adapters.persistence.operational_models import ReportVersionRow
 from ase.application.model_routing import ModelRouting
 from ase.domain.llm import LlmProvider
 from ase.domain.model_routing_records import routing_to_dict
 from ase.infrastructure.migrations import alembic_config
+from legacy_binding_migration_helpers import LegacyBindingReader
 from test_llm_connections_migration import _database
 from test_llm_providers_migration import _assert_preserved, _seed_tested_binding, _snapshot
 
@@ -36,7 +36,7 @@ async def test_provider_history_survives_or_prevents_downgrade(
             await asyncio.to_thread(command.upgrade, config, "0018")
             async with async_sessionmaker(engine)() as session:
                 router = ModelRouting(
-                    SqlLlmProfileRepository(session), SqlLlmBindingRepository(session)
+                    SqlLlmProfileRepository(session), LegacyBindingReader(session)
                 )
                 record = (await router.snapshot()).provenance
                 if history == "bedrock":

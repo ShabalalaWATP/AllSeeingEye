@@ -10,7 +10,7 @@ import {
 } from '@/lib/api/llm';
 import type { Team } from '@/lib/api/teams';
 import type { User } from '@/lib/api/schemas';
-import { describeError } from '@/lib/api/errors';
+import { ApiError, describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { LlmProfileForm } from './LlmProfileForm';
 import { LlmApplyConnection } from './LlmApplyConnection';
@@ -62,7 +62,9 @@ export function LlmConnectionJourney({
         const result = await testLlmProfile(saved.id, signal);
         signal.throwIfAborted();
         if (!result.ok || result.revision !== saved.revision || !result.tested_config_hash)
-          throw new Error(
+          throw new ApiError(
+            422,
+            'connection_test_failed',
             result.error ?? 'This configuration did not pass the compatibility test.',
           );
         const proven = {

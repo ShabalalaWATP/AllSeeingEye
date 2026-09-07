@@ -85,7 +85,8 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
                 **(
                     {
                         "research_candidate_hypotheses": [
-                            asdict(row) for row in request.research_candidate_hypotheses
+                            {key: value for key, value in asdict(row).items() if key != "origin"}
+                            for row in request.research_candidate_hypotheses
                         ]
                     }
                     if request.research_candidate_hypotheses
@@ -94,7 +95,8 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
                 **(
                     {
                         "research_planned_tasks": [
-                            asdict(row) for row in request.research_planned_tasks
+                            {key: value for key, value in asdict(row).items() if key != "origin"}
+                            for row in request.research_planned_tasks
                         ]
                     }
                     if request.research_planned_tasks

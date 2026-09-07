@@ -16,7 +16,8 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
           <ul>
             {plan.candidate_hypotheses.map((candidate) => (
               <li key={candidate.id} className="break-words" dir="auto">
-                {candidate.label} ·{' '}
+                {candidate.label} (
+                {candidate.origin === 'model' ? 'Model-proposed' : 'Operator-supplied'}) ·{' '}
                 {candidate.identifiers?.length
                   ? candidate.identifiers.join(' · ')
                   : 'No distinguishing identifiers supplied'}
@@ -122,15 +123,19 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
               <p className="text-muted">Query language: {task.query_language}</p>
             )}
             <p className="text-muted">
-              {task.provenance === 'operator_supplied_variant'
-                ? 'Operator-supplied language terms'
-                : task.provenance === 'model_replanned_variant'
-                  ? 'Model-replanned search terms'
-                  : task.provenance === 'machine_translated_variant'
-                    ? 'Machine-translated search terms, meaning unverified'
-                    : task.provenance === 'original_terms'
-                      ? 'Original terms'
-                      : `Recorded provenance: ${task.provenance}`}{' '}
+              {task.provenance === 'model_proposed_task'
+                ? 'Model-proposed task terms, not verified evidence'
+                : task.provenance === 'operator_supplied_task'
+                  ? 'Operator-supplied exact task terms'
+                  : task.provenance === 'operator_supplied_variant'
+                    ? 'Operator-supplied language terms'
+                    : task.provenance === 'model_replanned_variant'
+                      ? 'Model-replanned search terms'
+                      : task.provenance === 'machine_translated_variant'
+                        ? 'Machine-translated search terms, meaning unverified'
+                        : task.provenance === 'original_terms'
+                          ? 'Original terms'
+                          : `Recorded provenance: ${task.provenance}`}{' '}
               · {task.temporal_scope}
             </p>
             {plan.area && (

@@ -27,9 +27,10 @@ from ase.domain.report_records import analysis_to_dict
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch, ResearchMode
 from ase.domain.research_context import build_research_context
 from feeds_helpers import make_event
+from planning_integration_helpers import SchemaGateway, synthetic_plan
 from production_integration_helpers import RecordingUsage, production_job
 from report_documents_helpers import document_records
-from report_helpers import ScriptedGateway, filled_store, good_body
+from report_helpers import filled_store, good_body
 
 
 def challenge_records(owner=None):
@@ -185,12 +186,14 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
             for row in initial["key_judgements"]
         ]
     }
-    gateway = ScriptedGateway(
-        json.dumps({"pir": "What changed?", "search_terms": []}),
-        json.dumps(initial),
-        json.dumps(plan),
-        json.dumps(changed),
-        json.dumps(views),
+    gateway = SchemaGateway(
+        {
+            "direction": [{"pir": "What changed?", "search_terms": []}],
+            "research_plan": [{"candidates": [], "tasks": []}],
+            "report": [initial, changed],
+            "challenge_plan": [plan],
+            "challenge_reviews": [views],
+        }
     )
     event = make_event(
         title="New contrary observation",
@@ -199,6 +202,7 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
         published_at=job.now - timedelta(minutes=1),
     )
     collection = AsyncMock()
+    collection.plan = synthetic_plan
     collection.collect.return_value = ResearchBatch()
     collection.challenge_many.return_value = (ResearchBatch(items=(event,)), ResearchBatch())
     usage = RecordingUsage()
@@ -217,11 +221,12 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
         return job.profile
 
     async def authorised():
-        assert not usage.rows and len(gateway.requests) == 5
+        assert not usage.rows and len(gateway.requests) == 6
 
     version = await producer.produce(job, profile_for, authorised)
     assert [request.schema_name for request in gateway.requests] == [
         "direction",
+        "research_plan",
         "report",
         "challenge_plan",
         "report",
@@ -231,7 +236,7 @@ async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews
     assert len(version.challenge.reviews) == len(version.body.key_judgements) == 2
     assert version.advocacy.target == version.challenge.reviews[0].judgement_id
     assert version.research_context == build_research_context(version.evidence)
-    assert "New contrary observation" in gateway.requests[3].messages[1].content
     assert "New contrary observation" in gateway.requests[4].messages[1].content
+    assert "New contrary observation" in gateway.requests[5].messages[1].content
     assert live.get(event.id) is None
-    assert len(usage.rows) == 5
+    assert len(usage.rows) == 6

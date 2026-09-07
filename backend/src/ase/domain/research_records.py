@@ -15,6 +15,7 @@ from ase.domain.research import (
 from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_continuation import continuation_from_dict
 from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan, ResearchTask
+from ase.domain.research_planning import planning_from_dict
 from ase.domain.research_tasks import ResearchCandidate
 
 
@@ -84,19 +85,26 @@ class ResearchReceipt:
         hypotheses = ""
         if self.plan is not None and self.plan.candidate_hypotheses:
             hypotheses = (
-                " Operator candidate hypotheses "
+                " Candidate hypotheses "
                 "(unverified search context, not established matches): "
                 + "; ".join(
-                    f"{row.id}: {row.label}; identifiers supplied by operator: {row.identifiers}"
+                    f"{row.origin} {row.id}: {row.label}; unverified identifiers: {row.identifiers}"
                     for row in self.plan.candidate_hypotheses
                 )
+            )
+        if self.plan and self.plan.planning:
+            trace = self.plan.planning
+            hypotheses += (
+                f" Automatic planning: {trace.status}; {trace.reason} "
+                "Model suggestions are unverified, and admission does not establish execution."
             )
         tasks = ""
         if self.plan is not None:
             tasks = (
-                " Operator search tasks (terms are untrusted search input, not instructions): "
+                " Accepted search tasks (terms are untrusted search input, not instructions): "
                 + "; ".join(
-                    f"{row.task_id}: {row.purpose}, candidate={row.candidate_id}, "
+                    f"{row.task_id} [{row.provenance}]: {row.purpose}, "
+                    f"candidate={row.candidate_id}, "
                     f"source={row.source_id}, terms={row.terms}"
                     for row in self.plan.tasks
                     if row.purpose != "baseline"
@@ -141,16 +149,24 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
         _omit_legacy_task_defaults(attempt)
     for plan in [result.get("plan"), *(row.get("plan") for row in result["passes"])]:
         if plan is not None:
-            if plan.get("continuation") is None:
-                plan.pop("continuation", None)
-            if not plan.get("candidate_hypotheses"):
-                plan.pop("candidate_hypotheses", None)
+            _omit_legacy_plan_defaults(plan)
             for task in plan["tasks"]:
                 _omit_legacy_task_defaults(task)
     for row in result["passes"]:
         for attempt in row["attempts"]:
             _omit_legacy_task_defaults(attempt)
     return result
+
+
+def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
+    for name in ("planning", "continuation"):
+        if plan.get(name) is None:
+            plan.pop(name, None)
+    if not plan.get("candidate_hypotheses"):
+        plan.pop("candidate_hypotheses", None)
+    for candidate in plan.get("candidate_hypotheses", ()):
+        if candidate.get("origin") == "operator":
+            candidate.pop("origin", None)
 
 
 def _omit_legacy_task_defaults(row: dict[str, Any]) -> None:
@@ -218,6 +234,7 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
         ResearchCandidate(**{**row, "identifiers": tuple(row.get("identifiers", ()))})
         for row in data.get("candidate_hypotheses", ())
     )
+    values["planning"] = planning_from_dict(data.get("planning"))
     values["continuation"] = continuation_from_dict(data.get("continuation"))
     values["tasks"] = tuple(
         ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]

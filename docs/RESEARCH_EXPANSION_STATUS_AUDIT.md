@@ -12,6 +12,20 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- Automatic research planning and the admin connection regression repairs passed
+  the full frontend suite: 946 tests in 176 files, 95.12% statements, 90.18%
+  branches, 93.70% functions and 96.43% lines. Final lint/build and repository
+  hooks passed. The clean full backend acceptance rerun passed 3,059 tests with
+  24 skips and 95.39% coverage. The earlier run's 11 fixture failures were
+  repaired and verified with 189 focused passes plus nine separate PostgreSQL
+  migration cases. One non-failing SQLite resource warning is recorded. See
+  `AUTOMATIC_RESEARCH_PLANNING.md` for the exact limits and acceptance record.
+- Relationship assertion review is being implemented on the isolated
+  `codex/relationship-review` branch. Persistence, server projection, review UI
+  and exact revision export are present there but have not completed acceptance
+  or integration into main. The remaining-work rows below therefore continue
+  to identify relationship review as unfinished.
+
 - Saved-map image packaging now has local implementation and targeted acceptance:
   82 distinct backend cases, 30 frontend integration cases and 29 engine/capture
   cases passed, followed by final regression and static checks. See
@@ -39,7 +53,8 @@ gate has been accepted. The full objective remains unfinished.
   `data/identity-postgres-acceptance.log`. The container was removed afterwards.
   Migration 0026 schema parity, report preservation, empty downgrade/re-upgrade
   and retained-history downgrade refusal passed. No operator database was used.
-  Concurrent CAS/quota races and backup recovery remain separate acceptance work.
+  The subsequent seven independent-transaction quota/CAS/revocation races passed
+  (see `IDENTITY_REVIEW_IMPLEMENTATION.md`); backup recovery remains separate.
 - The earlier backend full pass (2,623 tests, 14 skips, 94.46%) predates identity
   review and combined exports. It is historical evidence only.
 - Production build, type checks, scoped lint and file-length checks passed after
@@ -60,8 +75,8 @@ Subsequent map implementation: dashboard distance/perimeter/net-area measurement
 now uses GeographicLib WGS84 with bounded typed/clicked vertices on both
 projections. Saved report maps now reuse the panel and layers, retaining original
 coordinates and a versioned method in immutable revisions. This follows the
-full-suite snapshot above. Map-image export and actual GPU drawing acceptance
-are not claimed.
+full-suite snapshot above. Map-image export was subsequently implemented with
+local checks; actual GPU drawing acceptance remains open.
 See `adr/0015-geodesic-measurement.md` for formula, dependency and rendering limits.
 The resulting full frontend suite passed 863 tests in 158 files, with 90.11%
 branch coverage. Build, scoped lint and the production dependency audit passed.
@@ -75,8 +90,8 @@ branch coverage. Build, scoped lint and the production dependency audit passed.
 | Shared language catalogue | `domain/languages.py`, profile schema, query preparation, `useLanguageCatalogue`; `test_language_capabilities.py` | Arabic/Persian PDF shaping; no inference that narrative support proves PDF support |
 | Original scripts and matching normalisation | Matching preserves original evidence and separates Persian matching substitutions | Explicit transliteration provenance and source-calendar contract; never guess a calendar |
 | Query translation and provenance | `query_translation.py`, `query_preparation.py`, retained transformations and model usage | Semantic preservation of unquoted names/negation requires representative model evaluation |
-| Editable bounded collection plan | Candidate hypotheses and executable predeclared challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Model-proposed candidate/task planning and independent semantic acceptance; subject-only registry candidate routing |
-| Model-proposed plan constraints | Replan proposals are bounded to allowed query changes; initial planning is deterministic | Broader validated entity/challenge planning, without arbitrary fetch URLs |
+| Editable bounded collection plan | Candidate hypotheses and executable operator/model challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Independent semantic acceptance; subject-only registry candidate routing |
+| Model-proposed plan constraints | One bounded precollection proposal call, operator-grounded identifiers, selected term-search adapters, frozen admission/origin and actual task outcomes; deterministic preview remains explicit | Independent model-quality and live acceptance; subject-only registry routing requires a separate contract |
 | Collection/model budgets | Quick 6 requests/45s; detailed 24/180s; shared admission across passes, separate bounded translation/replan calls | Cost/sufficiency evaluation against actual models |
 | Replanning | One shared-budget review can revise an empty search or investigate cited potential conflicts; bounded sufficiency stop requires complete review context and completed explicit tasks; proposed/applied decisions and excerpts are frozen | Independent semantic conflict/query-preservation and stopping-quality evaluation; calibrated sufficiency is not claimed |
 | Historical coverage honesty | Registry/RSS snapshots are disclosed; native historical providers carry capability metadata | Deeper provider-specific historical collection |
@@ -143,7 +158,7 @@ report evidence and source attributes remain the authority for the new display.
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
 | Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression | Claim/identity revision-aware changes, substantive assertion comparison and richer explanations |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Full frontend: 863 passes after measurements; full backend: 2,724 passes, 14 skips; coherent milestones committed | New work still requires appropriate checks; live acceptance remains separate |
+| Current checks | Full frontend: 946 passes, 90.18% branch coverage; full backend: 3,059 passes, 24 skips, 95.39% coverage | Isolated relationship review integration and combined acceptance remain pending; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 
@@ -159,8 +174,9 @@ be relabelled as independent human review.
 2. Complete GPU acceptance for implemented seam/pole clustering and measurements.
 3. Verify rendered map-image exports and extend explicit original retention
    to eligible source-specific capture and retain-at-import workflows.
-4. Extend automated candidate planning and independently evaluate implemented
-   operator tasks, possible-conflict replanning and sufficiency decisions.
+4. Independently evaluate automatic candidate planning, operator tasks,
+   possible-conflict replanning and sufficiency decisions; extend validated
+   candidate routing to subject-only registry sources.
 5. Add relationship review, claim-aware comparison/alerts and evidence-linked
    confidence explanations.
 6. Add timestamped transcription, multilingual OCR and Arabic/Persian PDF shaping.

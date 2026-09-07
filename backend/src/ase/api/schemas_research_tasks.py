@@ -42,3 +42,11 @@ class PlannedQueryTaskIn(BaseModel):
         return PlannedQueryTask(
             self.id, self.source_id, self.purpose, tuple(self.terms), self.candidate_id
         )
+
+
+class ResearchCandidateOut(ResearchCandidateIn):
+    origin: Literal["operator", "model"] = "operator"
+
+
+class PlannedQueryTaskOut(PlannedQueryTaskIn):
+    origin: Literal["operator", "model"] = "operator"

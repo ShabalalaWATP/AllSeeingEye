@@ -1,5 +1,6 @@
 import type { ResearchReceipt } from '@/lib/api/reportResearch';
 import { formatUtc } from '@/lib/format';
+import { CollectionPlanning } from '@/components/reports/CollectionPlanning';
 import { SavedCollectionPlan } from '@/components/reports/SavedCollectionPlan';
 import { CollectionContinuation } from '@/components/reports/CollectionContinuation';
 
@@ -63,6 +64,7 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
             <dd>{receipt.policy_version}</dd>
           </div>
         </dl>
+        {receipt.plan?.planning && <CollectionPlanning value={receipt.plan.planning} />}
         {receipt.plan?.continuation && <CollectionContinuation value={receipt.plan.continuation} />}
         {receipt.plan && !passes.some((pass) => pass.plan) && (
           <SavedCollectionPlan plan={receipt.plan} />
@@ -136,6 +138,11 @@ function CollectionAttempts({ attempts }: { attempts: ResearchReceipt['attempts'
               {attempt.purpose === 'challenge'
                 ? 'Conflicting evidence search'
                 : 'Identity candidate check'}
+              {attempt.task_id?.startsWith('model:')
+                ? ' (Model-proposed task)'
+                : attempt.task_id?.startsWith('operator:')
+                  ? ' (Operator-supplied task)'
+                  : ''}
               {attempt.task_id ? ` · ${attempt.task_id}` : ''}
             </p>
           )}

@@ -7,6 +7,7 @@ from typing import Any
 from ase.application.ports.research import ContinuationProposal
 from ase.domain.research import ResearchBatch, ResearchQuery
 from ase.domain.research_continuation import ContinuationTrace, EvidenceExcerpt
+from ase.domain.research_tasks import task_identity
 
 
 def evidence_context(first: ResearchBatch) -> list[dict[str, str]]:
@@ -115,10 +116,10 @@ def validate_proposal(
     elif trace.decision == "sufficient":
         attempted = {row.task_id: row.status.value for row in first.attempts}
         if any(
-            attempted.get("operator:" + task.id) not in {"completed", "empty"}
+            attempted.get(task_identity(task)) not in {"completed", "empty"}
             for task in query.planned_tasks
         ):
-            reason = "Operator search tasks remain incomplete."
+            reason = "Accepted search tasks remain incomplete."
         elif not first.items or len(context) != len(first.items):
             reason = "The complete first-pass evidence was not available to the review."
         elif (

@@ -9,7 +9,7 @@ from ase.application.reports.reused_evidence import with_reused_evidence
 from ase.application.reports.selection import Selection, select_evidence
 from ase.domain.direction import Direction
 from ase.domain.grading import SourceProfile
-from ase.domain.research import ResearchFocus
+from ase.domain.research import ResearchFocus, ResearchQuery
 
 
 def select_for_job(
@@ -18,6 +18,8 @@ def select_for_job(
     job: Job,
     direction: Direction | None,
     extra_terms: tuple[str, ...] = (),
+    *,
+    runtime_query: ResearchQuery | None = None,
 ) -> Selection:
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
     area = job.request.map_origin is not None
@@ -44,7 +46,15 @@ def select_for_job(
         terms=(
             *(direction.search_terms if direction else job.terms),
             *extra_terms,
-            *(term for task in job.request.research_planned_tasks for term in task.terms),
+            *(
+                term
+                for task in (
+                    runtime_query.planned_tasks
+                    if runtime_query is not None
+                    else job.request.research_planned_tasks
+                )
+                for term in task.terms
+            ),
         ),
         # Area eligibility was admitted by spatial providers. A point-only filter
         # here would silently discard valid footprints without event coordinates.

@@ -40,6 +40,14 @@ export function ResearchPlanEditor({
             ? ' Area collection only uses providers that explicitly support this geometry. Empty results do not prove absence.'
             : ' General research can review its first results using the configured AI connection. It may revise an empty search or investigate a possible conflict, or stop when the question appears covered and required tasks are finished. This uses one bounded review within the same collection budget. Scope and explicit tasks stay fixed; the decision and passes are saved for review.'}
         </p>
+        <p className="text-xs leading-relaxed text-muted">
+          During public-source research, the configured AI connection can propose identity
+          hypotheses and searches for conflicting evidence or distinguishing identifiers, where
+          selected sources support exact task queries. These additions share the existing task and
+          collection limits. Your sources, scope and explicit tasks remain in effect. This preview
+          does not call that model or predict its proposals; the execution receipt records what was
+          proposed, added and actually attempted.
+        </p>
         <fieldset disabled={plan.busy} className="space-y-5">
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input

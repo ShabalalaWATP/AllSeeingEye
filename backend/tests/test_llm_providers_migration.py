@@ -15,12 +15,12 @@ from alembic import command
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ase.adapters.persistence.llm import SqlLlmProfileRepository
-from ase.adapters.persistence.llm_bindings import SqlLlmBindingRepository
 from ase.adapters.persistence.operational_models import ReportVersionRow
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.model_routing import ModelRouting
 from ase.domain.llm import TEXT_ROLES, LlmProvider, LlmRole
 from ase.infrastructure.migrations import alembic_config
+from legacy_binding_migration_helpers import LegacyBindingReader
 from test_llm_connections_migration import _database, _seed
 
 TABLES = (
@@ -143,7 +143,7 @@ async def test_provider_migration_keeps_legacy_test_proof_and_routing(
                 await connection.run_sync(lambda sync: _assert_schema(sync, upgraded=True))
             async with async_sessionmaker(engine)() as session:
                 router = ModelRouting(
-                    SqlLlmProfileRepository(session), SqlLlmBindingRepository(session)
+                    SqlLlmProfileRepository(session), LegacyBindingReader(session)
                 )
                 team = UUID(str(original["reports"][0]["team_id"]))
                 for destination in (None, team):

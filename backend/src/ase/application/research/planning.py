@@ -13,6 +13,7 @@ from ase.domain.research_plan import (
     ResearchPlan,
     ResearchTask,
 )
+from ase.domain.research_tasks import task_identity
 
 
 def spatial_capability(provider: ResearchProvider, query: ResearchQuery) -> tuple[bool, str]:
@@ -109,11 +110,13 @@ def build_plan(
                 supported=baseline[operator.source_id].planned_terms_supported
                 and provider.supports(routed)
                 and (query.area is None or spatial_supported),
-                provenance="operator_supplied_task",
+                provenance="model_proposed_task"
+                if operator.origin == "model"
+                else "operator_supplied_task",
                 query_language=None,
                 spatial_supported=spatial_supported,
                 spatial_scope=spatial_scope,
-                task_id="operator:" + operator.id,
+                task_id=task_identity(operator),
                 purpose=operator.purpose,
                 candidate_id=operator.candidate_id,
             )

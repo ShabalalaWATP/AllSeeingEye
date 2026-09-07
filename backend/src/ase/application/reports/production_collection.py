@@ -6,6 +6,7 @@ from dataclasses import replace
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.research import ResearchCollection
+from ase.application.reports.plan_queries import prepare_model_plan
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.application.reports.progress import Progress, reached
 from ase.application.reports.query_preparation import (
@@ -16,6 +17,7 @@ from ase.application.reports.query_preparation import (
 )
 from ase.application.reports.replan_queries import make_replanner
 from ase.application.reports.research import collect_report_evidence
+from ase.application.research.model_planning import record_planning
 from ase.domain.direction import Direction
 from ase.domain.research import ResearchQuery
 from ase.domain.research_records import ResearchReceipt
@@ -70,6 +72,17 @@ async def prepare_collection(
                     "collection receipts identify the sources actually attempted.",
                 )
             )
+        planning = None
+        if gateway is not None and cipher is not None and profile_for is not None:
+            query, planning = await prepare_model_plan(
+                job,
+                query,
+                collection,
+                totals,
+                gateway,
+                cipher,
+                profile_for,
+            )
         transformation = None
         if (
             collection is not None
@@ -116,4 +129,13 @@ async def prepare_collection(
             transformation,
             job.request.research_query_variants,
         )
+        if planning is not None:
+            receipt = replace(
+                receipt,
+                plan=record_planning(receipt.plan, planning) if receipt.plan else None,
+                passes=tuple(
+                    replace(row, plan=record_planning(row.plan, planning) if row.plan else None)
+                    for row in receipt.passes
+                ),
+            )
     return store, receipt, query

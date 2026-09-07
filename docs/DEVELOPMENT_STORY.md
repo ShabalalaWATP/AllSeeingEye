@@ -2298,3 +2298,21 @@ observed lock contention all passed. Ruff and formatting passed. No production
 change was needed; all disposable databases, container and volumes were removed.
 Updated the identity acceptance record and expansion audit. Human false-merge,
 backup/recovery and wider release gates remain open.
+
+## 7 September 2026: automatic candidate and challenge planning
+
+Added one bounded precollection model call using the run's frozen connection.
+Validated additions preserve operator scope and source capabilities, share the
+existing collection budget and retain distinct proposal, admission and execution
+receipts. Identifiers must come from operator input; earlier model-generated
+direction terms cannot ground them. Generated search terms influence evidence
+selection. Historical receipt encodings remain compatible.
+
+The full frontend passed 946 tests and its unchanged coverage gates. Missing-state
+tests also found and repaired a safe connection-test reason being hidden behind
+generic error copy. Source/type/build/security and repository hooks passed.
+The first full backend run exposed 11 fixture failures; repairs passed 189 focused
+cases plus nine separate PostgreSQL migration cases. The clean full backend rerun
+passed 3,059 tests with 24 skips and 95.39% coverage. Its one non-failing SQLite
+resource warning remains recorded in the acceptance log. Exact evidence and semantic/live limitations are recorded in
+AUTOMATIC_RESEARCH_PLANNING.md. The wider expansion remains incomplete.

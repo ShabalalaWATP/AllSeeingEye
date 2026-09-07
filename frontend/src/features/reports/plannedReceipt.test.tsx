@@ -65,7 +65,7 @@ it('keeps two outcomes for one source and labels retained candidates as hypothes
   });
   render(<ResearchCoverage receipt={receipt} />);
   expect(screen.getByText('Candidate hypotheses, not verified identities')).toBeInTheDocument();
-  expect(screen.getByText(/Acme UK · UK 01234567/)).toBeInTheDocument();
+  expect(screen.getByText(/Acme UK \(Operator-supplied\).*UK 01234567/)).toBeInTheDocument();
   expect(screen.getByText('Baseline result')).toBeInTheDocument();
   expect(screen.getByText('Identity search empty, identity unresolved')).toBeInTheDocument();
   expect(screen.getAllByText(/operator:identity/)).toHaveLength(2);

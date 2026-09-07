@@ -16,6 +16,7 @@ from ase.domain.llm import TEXT_ROLES, LlmProvider
 from ase.domain.reports import MAX_JUDGEMENT_CHARS
 from ase.domain.research import ResearchBatch, ResearchMode
 from feeds_helpers import make_event
+from planning_integration_helpers import synthetic_plan
 from production_integration_helpers import RecordingUsage, production_job
 from report_helpers import filled_store, good_body
 from test_report_challenge import plans, reviews
@@ -47,14 +48,15 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
             }
         ]
     )
-    responses = [
-        {"pir": "What changed?", "sirs": [], "eeis": [], "search_terms": [], "categories": []},
-        invalid,
-        good_body(),
-        plans(),
-        good_body(),
-        reviews(),
-    ]
+    responses = {
+        "direction": [
+            {"pir": "What changed?", "sirs": [], "eeis": [], "search_terms": [], "categories": []}
+        ],
+        "research_plan": [{"candidates": [], "tasks": []}],
+        "report": [invalid, good_body(), good_body()],
+        "challenge_plan": [plans()],
+        "challenge_reviews": [reviews()],
+    }
     requests = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -64,7 +66,8 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         payload = json.loads(request.content)
         requests.append(payload)
         assert "Private" not in request.url.path
-        schema = payload["outputConfig"]["textFormat"]["structure"]["jsonSchema"]["schema"]
+        specification = payload["outputConfig"]["textFormat"]["structure"]["jsonSchema"]
+        schema = specification["schema"]
         assert '"maxLength"' not in schema and '"maxItems"' not in schema
         return httpx.Response(
             200,
@@ -73,7 +76,7 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
                 "output": {
                     "message": {
                         "role": "assistant",
-                        "content": [{"text": json.dumps(responses.pop(0))}],
+                        "content": [{"text": json.dumps(responses[specification["name"]].pop(0))}],
                     }
                 },
                 "usage": {"inputTokens": 10, "outputTokens": 5, "totalTokens": 15},
@@ -81,6 +84,7 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
         )
 
     collection = AsyncMock()
+    collection.plan = synthetic_plan
     collection.collect.return_value = ResearchBatch()
     event = make_event(
         title="New contrary observation",
@@ -113,16 +117,17 @@ async def test_native_bedrock_runs_direction_local_repair_challenge_redraft_and_
     ]
     assert stages == [
         "direction",
+        "research_plan",
         "report",
         "report",
         "challenge_plan",
         "report",
         "challenge_reviews",
     ]
-    assert not responses
+    assert all(not answers for answers in responses.values())
     assert version.challenge.redrafted
     assert len(version.challenge.reviews) == len(version.body.key_judgements) == 2
     assert all(len(row.statement) <= MAX_JUDGEMENT_CHARS for row in version.body.key_judgements)
-    assert "schema" in json.dumps(requests[2]["messages"]).lower()
-    assert version.prompt_tokens == 60 and version.completion_tokens == 30
+    assert "schema" in json.dumps(requests[3]["messages"]).lower()
+    assert version.prompt_tokens == 70 and version.completion_tokens == 35
     assert version.model == profile.model

@@ -80,3 +80,10 @@ operator database and apply the application's normal migration procedure before
 running this version against an existing installation. Live provider acceptance
 remains separate: these tests use synthetic credentials and fake model gateways.
 No live API key or default model assignment has been changed.
+
+Subsequent full frontend acceptance passed 946 tests with 90.18% branch coverage
+(see `AUTOMATIC_RESEARCH_PLANNING.md`). Additional failure/proof/cancellation
+tests found a safe connection-test reason being replaced by generic error copy.
+The journey now preserves that public reason while retaining all successful-test
+and scope-confirmation safeguards. Full lint, types and the production build
+passed again. This does not establish a live provider connection.

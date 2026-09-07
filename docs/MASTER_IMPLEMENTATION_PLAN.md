@@ -4,6 +4,16 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: one bounded model call now supplements public-source
+research with candidate hypotheses and challenge/disambiguation tasks. Admission
+preserves operator scope, selected source capabilities and shared collection
+limits. Frozen receipts distinguish proposals, acceptance and actual execution.
+155 focused backend checks and all 946 frontend tests passed. Frontend branch
+coverage is 90.18%; full backend acceptance passed 3,059 tests with 24 skips
+and 95.39% coverage. See
+[AUTOMATIC_RESEARCH_PLANNING.md](AUTOMATIC_RESEARCH_PLANNING.md). Semantic model
+evaluation and subject-only registry candidate routing remain open.
+
 7 September continuation: seven PostgreSQL identity-review concurrency cases now
 prove personal/team quota contention, service and repository CAS, preserved
 history and denial after membership revocation during lock contention. Separate

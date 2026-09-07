@@ -35,7 +35,8 @@ from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBat
 from ase.domain.research_records import ResearchReceipt
 from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
-from production_integration_helpers import RecordingUsage, StageGateway, production_job
+from planning_integration_helpers import PlanningStageGateway, synthetic_plan
+from production_integration_helpers import RecordingUsage, production_job
 from report_documents_helpers import document_records
 from report_helpers import filled_store
 
@@ -236,6 +237,7 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
         "ase.application.reports.production_selection.select_evidence", lambda *a, **k: selection
     )
     collection = AsyncMock()
+    collection.plan = synthetic_plan
     collection.collect.return_value = ResearchBatch(
         attempts=(
             CollectionAttempt(
@@ -248,7 +250,7 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
         return job.profile
 
     usage = RecordingUsage()
-    gateway = StageGateway()
+    gateway = PlanningStageGateway()
     producer = Producer(
         store=filled_store(),
         source_profiles={},
@@ -264,6 +266,8 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
 
     version = await producer.produce(job, profile_for, before_persist)
     assert gateway.calls[0] == "direction"
+    assert gateway.calls.count("research_plan") == 1
+    assert any(row.purpose == "research:planning" and row.ok for row in usage.rows)
     assert version.citation_checks == check_report_citations(version.body, version.evidence)
     assert version.data_cutoff == captured
     assert (version.period_from, version.period_to) == (job.now - job.window, job.now)

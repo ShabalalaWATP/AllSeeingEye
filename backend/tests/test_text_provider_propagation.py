@@ -1,6 +1,5 @@
 """Every text stage retains the selected native provider, including repair and challenge."""
 
-import json
 from dataclasses import replace
 from datetime import timedelta
 from unittest.mock import AsyncMock
@@ -13,6 +12,7 @@ from ase.application.reports.production import Producer
 from ase.domain.llm import TEXT_ROLES, LlmProvider
 from ase.domain.research import ResearchBatch, ResearchMode
 from feeds_helpers import make_event
+from planning_integration_helpers import SchemaGateway, synthetic_plan
 from production_integration_helpers import RecordingUsage, production_job
 from report_helpers import ScriptedGateway, filled_store, good_body
 from test_direction_advocacy import ADVOCACY
@@ -38,15 +38,30 @@ async def test_bedrock_provider_survives_every_report_stage_and_redraft(containe
             original.request, research_mode=ResearchMode.DETAILED if detailed else None
         ),
     )
-    responses = [{"pir": "What changed?", "search_terms": []}]
+    responses = {"direction": [{"pir": "What changed?", "search_terms": []}]}
     if detailed:
-        responses += [good_body(), plans(), good_body(), reviews()]
-        expected = ["direction", "report", "challenge_plan", "report", "challenge_reviews"]
+        responses.update(
+            {
+                "research_plan": [{"candidates": [], "tasks": []}],
+                "report": [good_body(), good_body()],
+                "challenge_plan": [plans()],
+                "challenge_reviews": [reviews()],
+            }
+        )
+        expected = [
+            "direction",
+            "research_plan",
+            "report",
+            "challenge_plan",
+            "report",
+            "challenge_reviews",
+        ]
     else:
-        responses += [{}, good_body(), ADVOCACY]
+        responses.update({"report": [{}, good_body()], "advocacy": [ADVOCACY]})
         expected = ["direction", "report", "report", "advocacy"]
-    gateway = ScriptedGateway(*(json.dumps(response) for response in responses))
+    gateway = SchemaGateway(responses)
     collection = AsyncMock()
+    collection.plan = synthetic_plan
     collection.collect.return_value = ResearchBatch()
     event = make_event(
         title="New contrary observation",
