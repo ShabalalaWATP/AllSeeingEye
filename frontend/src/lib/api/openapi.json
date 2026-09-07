@@ -8300,6 +8300,7 @@
         "enum": [
           "completed",
           "empty",
+          "not_collected",
           "unavailable",
           "unsupported",
           "failed",
@@ -8480,6 +8481,105 @@
           "summary"
         ],
         "title": "ConflictOut"
+      },
+      "ContinuationTraceOut": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "continue",
+              "replan",
+              "sufficient"
+            ],
+            "title": "Decision"
+          },
+          "requested_decision": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "continue",
+                  "replan",
+                  "sufficient"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Decision"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "empty_results",
+              "potential_conflict",
+              "question_addressed",
+              "insufficient_context",
+              "invalid_or_unavailable"
+            ],
+            "title": "Basis"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceExcerptOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "context_count": {
+            "type": "integer",
+            "title": "Context Count"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "override_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Override Reason"
+          },
+          "policy_version": {
+            "type": "string",
+            "const": "ase-collection-review-v1",
+            "title": "Policy Version",
+            "default": "ase-collection-review-v1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "basis",
+          "rationale",
+          "citations",
+          "gaps",
+          "model",
+          "context_count",
+          "total_count"
+        ],
+        "title": "ContinuationTraceOut"
       },
       "Contribution": {
         "type": "string",
@@ -9137,6 +9237,43 @@
           "value"
         ],
         "title": "EvidenceAttributeOut"
+      },
+      "EvidenceExcerptOut": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "quote": {
+            "type": "string",
+            "title": "Quote"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "source_id",
+          "content_hash",
+          "field",
+          "quote"
+        ],
+        "title": "EvidenceExcerptOut"
       },
       "EvidenceGeometryOut": {
         "properties": {
@@ -15608,6 +15745,16 @@
             "type": "array",
             "maxItems": 8,
             "title": "Candidate Hypotheses"
+          },
+          "continuation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContinuationTraceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -15750,6 +15897,16 @@
             "type": "array",
             "maxItems": 8,
             "title": "Candidate Hypotheses"
+          },
+          "continuation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContinuationTraceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "map_origin": {
             "anyOf": [

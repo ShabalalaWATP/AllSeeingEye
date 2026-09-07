@@ -4,14 +4,16 @@ import asyncio
 from collections.abc import Sequence
 from dataclasses import replace
 
-from ase.application.ports.research import ReplanCallback, ResearchProvider
+from ase.application.ports.research import ContinuationProposal, ReplanCallback, ResearchProvider
 from ase.application.research.collection import (
     CollectionBudget,
     CollectionRunBudget,
     ResearchCollector,
 )
+from ase.application.research.continuation_review import unavailable, validate_proposal
 from ase.application.research.planning import build_plan
 from ase.domain.research import CollectionPass, CollectionStatus, ResearchBatch, ResearchQuery
+from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_plan import ResearchPlan
 
 _PLACEHOLDERS = frozenset({CollectionStatus.BUDGET_EXHAUSTED, CollectionStatus.UNSUPPORTED})
@@ -42,7 +44,24 @@ def _merge(
     invoked: bool,
     second: ResearchBatch | None = None,
     revised: ResearchQuery | None = None,
+    trace: ContinuationTrace | None = None,
 ) -> ResearchBatch:
+    applied = (
+        second is not None
+        and revised is not None
+        and any(
+            row.status not in _PLACEHOLDERS
+            and _effective_terms(second.plan).get(row.task_id or row.source_id)
+            != _effective_terms(first.plan).get(row.task_id or row.source_id)
+            for row in second.attempts
+        )
+    )
+    if trace and trace.decision == "replan" and not applied:
+        trace = replace(
+            trace,
+            decision="continue",
+            override_reason="No revised search was admitted within the shared budget.",
+        )
     attempts = {(row.task_id or row.source_id): row for row in first.attempts}
     passes = [CollectionPass(query.terms, first.attempts, first.plan)]
     if second is not None:
@@ -56,14 +75,17 @@ def _merge(
             ):
                 attempts[row.task_id or row.source_id] = row
         second_plan = second.plan
-        if second_plan is not None and revised is not None and revised != query:
+        if second_plan is not None and applied:
             second_plan = replace(second_plan, replans=1)
         passes.append(CollectionPass((revised or query).terms, second.attempts, second_plan))
     return ResearchBatch(
         items=first.items + (second.items if second else ()),
         attempts=tuple(attempts.values()),
         plan=replace(
-            first.plan, replans=int(invoked), model_calls=first.plan.model_calls + int(invoked)
+            first.plan,
+            replans=int(applied),
+            model_calls=first.plan.model_calls + int(invoked),
+            continuation=trace,
         )
         if first.plan is not None
         else None,
@@ -71,12 +93,12 @@ def _merge(
     )
 
 
-async def collect_with_replan(
+async def collect_with_replan(  # noqa: PLR0912 - one shared-budget state machine
     providers: Sequence[ResearchProvider], query: ResearchQuery, replan: ReplanCallback
 ) -> ResearchBatch:
     """The caller retains shared service admission throughout both passes and the callback.
 
-    Only empty successful searches justify a replan. Invalid, failed or declined
+    Empty searches or cited potential conflicts can justify one replan. Invalid, failed or declined
     suggestions retain the original query and use unattempted sources. A model
     cannot widen the operator's source selection, temporal, language or subject scope.
     """
@@ -90,11 +112,36 @@ async def collect_with_replan(
     invoked = False
     revised: ResearchQuery | None = None
     changed_sources: frozenset[str] = frozenset()
-    if not first.items and any(row.status in _SEARCHED for row in first.attempts):
+    trace: ContinuationTrace | None = None
+    if first.items or any(row.status in _SEARCHED for row in first.attempts):
         invoked = True
         try:
             async with asyncio.timeout(state.remaining_seconds):
                 candidate = await replan(query, first, state.remaining_seconds)
+            if first.items and not isinstance(candidate, ContinuationProposal):
+                candidate = ContinuationProposal(None, unavailable(first, ""))
+            if isinstance(candidate, ContinuationProposal):
+                proposal = validate_proposal(candidate, query, first)
+                trace = proposal.trace
+                candidate = proposal.query if trace.decision == "replan" else None
+                if trace.decision == "sufficient":
+                    first = replace(
+                        first,
+                        attempts=tuple(
+                            replace(
+                                row,
+                                status=CollectionStatus.NOT_COLLECTED,
+                                explanation=(
+                                    "Not collected after the model recommended stopping; "
+                                    "coverage is incomplete."
+                                ),
+                            )
+                            if row.status is CollectionStatus.BUDGET_EXHAUSTED
+                            else row
+                            for row in first.attempts
+                        ),
+                    )
+                    return _merge(first, query, invoked, trace=trace)
             if (
                 isinstance(candidate, ResearchQuery)
                 and replace(candidate, terms=query.terms, query_variants=query.query_variants)
@@ -119,8 +166,22 @@ async def collect_with_replan(
             # Never persist model/provider errors, which can contain private text or keys.
             # CancelledError is a BaseException and must propagate to release admission.
             revised = None
+            if first.items:
+                trace = unavailable(first, "")
+    if trace is not None and trace.decision == "replan" and revised is None:
+        trace = replace(
+            trace,
+            decision="continue",
+            override_reason="The proposed search did not change an eligible task in scope.",
+        )
     if not _remaining(state):
-        return _merge(first, query, invoked)
+        if trace and trace.decision == "replan":
+            trace = replace(
+                trace,
+                decision="continue",
+                override_reason="The shared collection budget expired before another search.",
+            )
+        return _merge(first, query, invoked, trace=trace)
     attempted = frozenset(
         (row.task_id or row.source_id) for row in first.attempts if row.status not in _PLACEHOLDERS
     )
@@ -130,6 +191,6 @@ async def collect_with_replan(
     if first.plan is None or not any(
         task.selected and (task.task_id or task.source_id) not in skip for task in first.plan.tasks
     ):
-        return _merge(first, query, invoked)
+        return _merge(first, query, invoked, trace=trace)
     second = await collector.collect(revised or query, run_budget=state, skip_task_ids=skip)
-    return _merge(first, query, invoked, second, revised)
+    return _merge(first, query, invoked, second, revised, trace)

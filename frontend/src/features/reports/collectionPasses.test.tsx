@@ -87,7 +87,9 @@ it('retains the original empty outcome and later successful outcome under one sh
   });
   render(<ResearchCoverage receipt={receipt} />);
   const user = userEvent.setup();
-  await user.click(screen.getByText('Collection coverage · 1 source outcome · 1 item collected'));
+  await user.click(
+    screen.getByText('Collection coverage · 1 source task outcome · 1 item collected'),
+  );
   expect(screen.getByText(/not the total number of HTTP requests/)).toBeVisible();
   expect(screen.getByText(/one shared collection budget/)).toBeVisible();
   expect(screen.getByText(/An empty search does not establish absence of events/)).toBeVisible();

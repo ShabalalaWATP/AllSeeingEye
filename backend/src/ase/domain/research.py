@@ -34,6 +34,7 @@ class ResearchFocus(StrEnum):
 class CollectionStatus(StrEnum):
     COMPLETED = "completed"
     EMPTY = "empty"
+    NOT_COLLECTED = "not_collected"
     UNAVAILABLE = "unavailable"
     UNSUPPORTED = "unsupported"
     FAILED = "failed"

@@ -33,7 +33,7 @@ describe('saved research metadata', () => {
     );
     const { user, container } = renderApp(`/reports/${report.report.id}`, 'user');
     const answer = await screen.findByRole('heading', { name: 'Key judgements' });
-    const coverage = screen.getByText(/Collection coverage · 4 source outcomes/);
+    const coverage = screen.getByText(/Collection coverage · 4 source task outcomes/);
     expect(
       answer.compareDocumentPosition(coverage) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();

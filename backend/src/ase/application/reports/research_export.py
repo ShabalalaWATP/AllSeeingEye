@@ -61,6 +61,24 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
                 )
+    if receipt.plan and receipt.plan.continuation:
+        review = receipt.plan.continuation
+        lines.append(
+            f"Model collection review ({review.policy_version}): {review.decision}; "
+            f"requested {review.requested_decision or 'unavailable'}; basis {review.basis}; "
+            f"model {review.model or 'unavailable'}. "
+            f"Reviewed {review.context_count} of {review.total_count} first-pass records. "
+            "Unverified model judgement, not a confidence or truth score."
+        )
+        lines.append(review.rationale)
+        if review.override_reason:
+            lines.append("Decision override: " + review.override_reason)
+        lines.extend("Unresolved gap: " + gap for gap in review.gaps)
+        lines.extend(
+            f"Review excerpt: {row.event_id}; {row.source_id}; hash {row.content_hash}; "
+            f"{row.field}: {row.quote}"
+            for row in review.citations
+        )
     lines.extend(transformation_lines(receipt))
     for attempt in receipt.attempts:
         count_kind = (

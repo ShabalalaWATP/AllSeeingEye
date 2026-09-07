@@ -60,7 +60,7 @@ branch coverage. Build, scoped lint and the production dependency audit passed.
 | Editable bounded collection plan | Candidate hypotheses and executable predeclared challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Model-proposed candidate/task planning and independent semantic acceptance; subject-only registry candidate routing |
 | Model-proposed plan constraints | Replan proposals are bounded to allowed query changes; initial planning is deterministic | Broader validated entity/challenge planning, without arbitrary fetch URLs |
 | Collection/model budgets | Quick 6 requests/45s; detailed 24/180s; shared admission across passes, separate bounded translation/replan calls | Cost/sufficiency evaluation against actual models |
-| Replanning | One empty-successful-general-search replan exists | Contradiction-triggered replan and an explicit sufficient-evidence stopping rule |
+| Replanning | One shared-budget review can revise an empty search or investigate cited potential conflicts; bounded sufficiency stop requires complete review context and completed explicit tasks; proposed/applied decisions and excerpts are frozen | Independent semantic conflict/query-preservation and stopping-quality evaluation; calibrated sufficiency is not claimed |
 | Historical coverage honesty | Registry/RSS snapshots are disclosed; native historical providers carry capability metadata | Deeper provider-specific historical collection |
 | Source administration | Persisted activation, isolated tests, derivative control, environment exclusion, session rechecks | Wider provider setup and operational acceptance, not a replacement admin workspace |
 
@@ -140,8 +140,8 @@ evaluation seeds must never be relabelled as independent human review.
 1. Extend PostgreSQL acceptance and preserve its exact scope in the record.
 2. Complete GPU acceptance for implemented seam/pole clustering and measurements.
 3. Implement selected original-asset retention and reproducible map-image export.
-4. Extend planning with candidate disambiguation, challenge tasks and bounded
-   contradiction-driven replanning.
+4. Extend automated candidate planning and independently evaluate implemented
+   operator tasks, possible-conflict replanning and sufficiency decisions.
 5. Add relationship review, claim-aware comparison/alerts and evidence-linked
    confidence explanations.
 6. Add timestamped transcription, multilingual OCR and Arabic/Persian PDF shaping.

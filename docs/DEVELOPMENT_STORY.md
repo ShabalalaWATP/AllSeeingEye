@@ -2187,3 +2187,39 @@ passed. Initial test typing/default fixtures and one incorrect grade expectation
 were corrected. No coverage remeasurement, live provider/model call or browser
 acceptance. Updated operations, status audit and master plan. Automated candidate
 planning, contradiction-triggered replan and sufficiency stopping remain open.
+
+
+## 7 September 2026: bounded evidence continuation review
+
+General research now uses one configured DIRECTION review after nonempty initial
+collection, within the existing 20-second review cap and shared two-pass budget.
+The review can retain the original plan, investigate a possible conflict or propose
+stopping when the question appears covered. Empty-search replanning remains
+compatible. Strict model schema and parsing require exact excerpts from the actual
+bounded context: up to 20 whole records and 24 KiB of evidence JSON. Original
+source IDs/hashes and quoted fields are retained without implying semantic truth.
+
+Stopping requires all explicit tasks completed or empty, complete first-pass
+context, a substantive exact citation and no declared gaps. Nonempty replanning
+requires two distinct cited records and a possible-conflict basis. Scope and exact
+operator task terms remain fixed. Proposed/applied decisions, rationale, gaps,
+model and override reasons are frozen in the plan and exported. Drafting context
+receives overrides and gaps as untrusted information. Unexecuted tasks after an
+applied stop are not_collected. Legacy missing traces remain absent on storage.
+
+Review found an accounting defect when the deadline expired after a proposal but
+before another task was admitted. Applied decisions and replan counts now require
+an admitted changed-task outcome; deterministic deadline tests cover both edges.
+Corrected the operator task ID prefix in stop gating and blocked raw nonempty
+legacy callback queries from bypassing citation checks. Independent re-review
+found the accounting issue resolved and no further blocking findings.
+
+121 broader backend tests passed, including production, Bedrock, collection and
+operator tasks. Final focused 43 tests passed after deadline, drafting-context and
+control-character checks. Frontend 267 tests passed; Ruff, mypy (547 files), import
+contracts, scoped ESLint, TypeScript, production build, formatting, file limits and
+whitespace checks passed. Existing build chunk advisory remains. Test expectations
+were updated for nonempty review calls, and clock fixtures were corrected to
+exercise the actual admission boundary. No coverage remeasurement, live model or
+provider call, GPU check or deployment. Updated operations, status audit and master
+plan. Independent semantic query/conflict/sufficiency evaluation remains open.

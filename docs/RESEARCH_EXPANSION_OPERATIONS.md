@@ -19,13 +19,16 @@ source selections govern collection; unknown identifiers fail before requests.
 Changes invalidate the preview. The reporting window resolves when a run starts.
 
 Quick collection remains six requests, 45 seconds and 200 retained items; detailed
-collection remains 24 requests, 180 seconds and 800 items. General research with a configured direction model can revise an empty successful
-search once. The initial pass reserves half the request allowance, and both passes
-share the same deadline and unique-item cap. Nonempty initial results use remaining
-requests on unattempted sources without invoking the model. A revision can change
-terms and generated language variants only; source selection, dates, country and
-subject remain fixed. Operator language variants are preserved. The model revision
-has a maximum 20-second deadline within the remaining collection time. Both passes
+collection remains 24 requests, 180 seconds and 800 items. General research with a
+configured direction model can review its initial results once. The initial pass
+reserves half the request allowance, and both passes share the same deadline and
+unique-item cap. An empty successful search can still request alternative terms.
+Nonempty results receive a bounded continuation review: keep the original plan,
+investigate a model-identified possible conflict, or stop under the sufficiency
+constraints below. A revision can change terms and generated language variants
+only; source selection, dates, country and subject remain fixed. Operator language
+variants and explicit tasks are preserved. The model review has a maximum
+20-second deadline within the remaining collection time. Both passes
 and their exact tasks survive in receipts and exports. Private document/media and
 non-general record research do not use this replan. The challenge pass keeps
 its existing separate shared budget. Empty responses do not confirm absence.
@@ -62,8 +65,39 @@ The existing post-draft challenge stage clears these predeclared tasks so it can
 replay them accidentally. Private document/media research does not accept public
 source tasks. A candidate's absence from a search does not establish a non-match.
 
-This implements executable operator planning. Model-generated candidate plans,
-contradiction-triggered replanning and evidence-sufficiency stopping remain open.
+This implements executable operator planning. Model-generated candidate plans and
+independent semantic acceptance remain open.
+
+## Bounded continuation review
+
+The review receives at most 20 complete original records within a 24 KiB JSON
+evidence-context allowance. It receives event/source IDs, original content hashes,
+titles and summaries, with the total first-pass count disclosed. Arbitrary source
+attributes and fetch URLs are excluded. The same supplied fields are used to
+validate up to eight exact excerpt citations. Unknown records, changed hashes,
+invented excerpts and citations to records outside that context are rejected.
+
+A nonempty search revision requires at least two distinct cited records and a
+potential-conflict basis. This records a model hypothesis about conflicting text,
+not an independently verified contradiction. A stop requires complete first-pass
+context, a substantive exact citation, no declared gaps and every explicit task
+completed or empty. Unsupported, failed, timed-out or unexecuted explicit tasks
+prevent stopping. No source-count threshold is treated as truth or independence.
+
+The frozen continuation trace separates requested and applied actions, rationale,
+declared gaps, model, context size, exact excerpts and override reasons. Invalid
+reviews retain the original plan. Budget expiry cannot be reported as an executed
+replan. A deliberate stop labels unexecuted baseline tasks as not collected,
+rather than falsely implying a failed request. Model review calls and accepted
+replans are counted separately. Review decisions and excerpts appear in report
+coverage and exports; these collected records need not all be selected for the
+report evidence annex.
+
+Structural checks protect scope and quoted/numeric identifiers. Semantic query
+preservation, conflict detection and answer sufficiency are model assessments
+that still require independently labelled evaluation. Exact excerpt provenance
+does not prove meaning, completeness, accuracy or resistance to all prompt
+injection. No further research request is authorised by text in a source record.
 
 Persian, simplified and traditional Chinese narrative preferences are available.
 The catalogue distinguishes narrative scripts from supported search editions.

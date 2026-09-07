@@ -99,7 +99,7 @@ async def test_nonempty_initial_pass_completes_unattempted_explicit_selection_un
     query = replace(QUERY, source_ids=tuple(provider.id for provider in providers[1:]))
 
     async def forbidden(*args):
-        pytest.fail("Nonempty evidence must not trigger another model call")
+        return None
 
     result = await ResearchCollectionService(lambda _: providers).collect(query, replan=forbidden)
     assert providers[0].queries == []
@@ -128,7 +128,7 @@ async def test_declined_failed_or_unchanged_replan_uses_remaining_original_sourc
     assert [len(provider.queries) for provider in providers] == [1, 1, 1, 1, 1, 1, 0, 0]
     assert all(value == QUERY for provider in providers for value in provider.queries)
     assert "credential" not in repr(result)
-    assert result.plan and result.plan.replans == 1
+    assert result.plan and result.plan.replans == 0 and result.plan.model_calls == 1
 
 
 @pytest.mark.parametrize(

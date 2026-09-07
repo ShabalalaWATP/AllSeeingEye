@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { apiCall } from './client';
 import type { components } from './types.gen';
+import { collectionContinuationSchema } from './collectionContinuation';
 
 export type ResearchPlanInput = components['schemas']['ResearchPlanIn'];
 export type ResearchPlan = components['schemas']['ResearchPlanOut'];
@@ -38,6 +39,7 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   country_iso: z.string().nullable(),
   area: areaSchema.nullable().default(null),
   candidate_hypotheses: z.array(candidateHypothesisSchema).max(8).default([]),
+  continuation: collectionContinuationSchema.nullable().default(null),
   tasks: z.array(
     z.object({
       source_id: z.string(),

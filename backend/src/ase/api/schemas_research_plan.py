@@ -105,6 +105,36 @@ class QueryTransformationOut(BaseModel):
     policy_version: str
 
 
+class EvidenceExcerptOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    event_id: str
+    source_id: str
+    content_hash: str
+    field: Literal["title", "summary"]
+    quote: str
+
+
+class ContinuationTraceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    decision: Literal["continue", "replan", "sufficient"]
+    requested_decision: Literal["continue", "replan", "sufficient"] | None = None
+    basis: Literal[
+        "empty_results",
+        "potential_conflict",
+        "question_addressed",
+        "insufficient_context",
+        "invalid_or_unavailable",
+    ]
+    rationale: str
+    citations: list[EvidenceExcerptOut]
+    gaps: list[str]
+    model: str
+    context_count: int
+    total_count: int
+    override_reason: str | None = None
+    policy_version: Literal["ase-collection-review-v1"] = "ase-collection-review-v1"
+
+
 class ResearchPlanOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     question: str
@@ -127,6 +157,8 @@ class ResearchPlanOut(BaseModel):
     area: ResearchAreaOut | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
     candidate_hypotheses: list[ResearchCandidateIn] = Field(default_factory=list, max_length=8)
+
+    continuation: ContinuationTraceOut | None = None
 
 
 class ResearchPreviewOut(ResearchPlanOut):

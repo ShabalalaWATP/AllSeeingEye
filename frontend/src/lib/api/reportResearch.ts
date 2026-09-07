@@ -16,6 +16,7 @@ const collectionAttemptSchema = z.object({
     'failed',
     'timed_out',
     'budget_exhausted',
+    'not_collected',
   ]),
   result_count: z.number().int(),
   explanation: z.string(),

@@ -1,6 +1,7 @@
 import type { ResearchReceipt } from '@/lib/api/reportResearch';
 import { formatUtc } from '@/lib/format';
 import { SavedCollectionPlan } from '@/components/reports/SavedCollectionPlan';
+import { CollectionContinuation } from '@/components/reports/CollectionContinuation';
 
 export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null | undefined }) {
   if (!receipt)
@@ -11,7 +12,7 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
   return (
     <details className="min-w-0 border-t border-line py-3 text-sm">
       <summary className="cursor-pointer py-1 font-medium focus-visible:outline-2 focus-visible:outline-ember">
-        Collection coverage · {receipt.attempts.length} source outcome
+        Collection coverage · {receipt.attempts.length} source task outcome
         {receipt.attempts.length === 1 ? '' : 's'} · {receipt.collected_items} item
         {receipt.collected_items === 1 ? '' : 's'} collected
       </summary>
@@ -62,14 +63,15 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
             <dd>{receipt.policy_version}</dd>
           </div>
         </dl>
+        {receipt.plan?.continuation && <CollectionContinuation value={receipt.plan.continuation} />}
         {receipt.plan && !passes.some((pass) => pass.plan) && (
           <SavedCollectionPlan plan={receipt.plan} />
         )}
         <section aria-label="Latest source outcomes" className="space-y-2">
           <h3 className="font-medium">Latest source outcomes</h3>
           <p className="text-xs text-muted">
-            The latest recorded outcome for each source. This count is not the total number of HTTP
-            requests.
+            The latest recorded outcome for each source task. This count is not the total number of
+            HTTP requests.
           </p>
           <CollectionAttempts attempts={receipt.attempts} />
         </section>

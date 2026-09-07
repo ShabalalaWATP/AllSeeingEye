@@ -2710,7 +2710,7 @@ export interface components {
          * CollectionStatus
          * @enum {string}
          */
-        CollectionStatus: "completed" | "empty" | "unavailable" | "unsupported" | "failed" | "timed_out" | "budget_exhausted";
+        CollectionStatus: "completed" | "empty" | "not_collected" | "unavailable" | "unsupported" | "failed" | "timed_out" | "budget_exhausted";
         /**
          * Confidence
          * @enum {string}
@@ -2760,6 +2760,41 @@ export interface components {
             keywords: string[];
             /** Summary */
             summary: string;
+        };
+        /** ContinuationTraceOut */
+        ContinuationTraceOut: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "continue" | "replan" | "sufficient";
+            /** Requested Decision */
+            requested_decision?: ("continue" | "replan" | "sufficient") | null;
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "empty_results" | "potential_conflict" | "question_addressed" | "insufficient_context" | "invalid_or_unavailable";
+            /** Rationale */
+            rationale: string;
+            /** Citations */
+            citations: components["schemas"]["EvidenceExcerptOut"][];
+            /** Gaps */
+            gaps: string[];
+            /** Model */
+            model: string;
+            /** Context Count */
+            context_count: number;
+            /** Total Count */
+            total_count: number;
+            /** Override Reason */
+            override_reason?: string | null;
+            /**
+             * Policy Version
+             * @default ase-collection-review-v1
+             * @constant
+             */
+            policy_version: "ase-collection-review-v1";
         };
         /**
          * Contribution
@@ -2953,6 +2988,22 @@ export interface components {
             key: string;
             /** Value */
             value: string | number | boolean | null;
+        };
+        /** EvidenceExcerptOut */
+        EvidenceExcerptOut: {
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Quote */
+            quote: string;
         };
         /** EvidenceGeometryOut */
         EvidenceGeometryOut: {
@@ -5224,6 +5275,7 @@ export interface components {
             time_basis: components["schemas"]["EvidenceTimeBasis"];
             /** Candidate Hypotheses */
             candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            continuation?: components["schemas"]["ContinuationTraceOut"] | null;
         };
         /** ResearchPreviewOut */
         ResearchPreviewOut: {
@@ -5271,6 +5323,7 @@ export interface components {
             time_basis: components["schemas"]["EvidenceTimeBasis"];
             /** Candidate Hypotheses */
             candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            continuation?: components["schemas"]["ContinuationTraceOut"] | null;
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
         };
         /** ResearchReceiptOut */

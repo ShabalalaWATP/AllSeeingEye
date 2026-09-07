@@ -4,6 +4,13 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: one bounded first-pass model review now supports
+possible-conflict replanning and explicit sufficiency stopping, with exact
+source excerpts and proposed/applied decision receipts. Scope, explicit tasks
+and shared limits remain enforced. 121 broader backend tests, 43 final focused
+tests and 267 frontend tests passed; static checks and build passed. Semantic
+quality and real configured-model acceptance remain open.
+
 7 September continuation: executable predeclared challenge and identity searches
 now share the standard collection limits, with candidate hypotheses, exact terms,
 explicit provider capabilities and distinct frozen task outcomes. Follow-ups and

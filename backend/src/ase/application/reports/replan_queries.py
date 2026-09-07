@@ -6,8 +6,15 @@ from collections import Counter
 from dataclasses import replace
 
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
-from ase.application.ports.research import ReplanCallback
+from ase.application.ports.research import ContinuationProposal, ReplanCallback
+from ase.application.reports.continuation_schema import review_schema
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
+from ase.application.research.continuation_review import (
+    REVIEW_INSTRUCTIONS,
+    evidence_context,
+    parse_review,
+    unavailable,
+)
 from ase.application.research.query_translation import (
     PROTECTED,
     QueryTranslation,
@@ -16,6 +23,7 @@ from ase.application.research.query_translation import (
 from ase.domain.llm import LlmMessage, LlmRequest, LlmRole
 from ase.domain.project_lookup import preserve_project_lookup
 from ase.domain.research import ResearchBatch, ResearchFocus, ResearchQuery
+from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_plan import QueryVariant
 from ase.domain.validation import Finding, Severity
 
@@ -67,7 +75,7 @@ async def make_replanner(
 
     async def replan(
         query: ResearchQuery, first: ResearchBatch, seconds: float
-    ) -> ResearchQuery | None:
+    ) -> ResearchQuery | ContinuationProposal | None:
         fixed = job.request.research_query_variants
         fixed_languages = {variant.language.lower() for variant in fixed}
         languages = tuple(
@@ -146,7 +154,37 @@ async def make_replanner(
                 },
             },
         )
-        revised = None
+        if first.items:
+            request = replace(
+                request,
+                messages=(
+                    LlmMessage("system", REVIEW_INSTRUCTIONS),
+                    LlmMessage(
+                        "user",
+                        json.dumps(
+                            {
+                                "question": query.question,
+                                "terms": query.terms,
+                                "languages": languages,
+                                "evidence": evidence_context(first),
+                                "total_count": len(first.items),
+                                "outcomes": [
+                                    {
+                                        "task_id": row.task_id or row.source_id,
+                                        "purpose": row.purpose,
+                                        "status": row.status.value,
+                                    }
+                                    for row in first.attempts
+                                ],
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ),
+                ),
+                schema_name="research_continuation",
+                json_schema=review_schema(dict(request.json_schema or {})),
+            )
+        revised: ResearchQuery | ContinuationProposal | None = None
         try:
             async with asyncio.timeout(min(20, seconds)):
                 response = await gateway.complete(
@@ -160,8 +198,29 @@ async def make_replanner(
                 response.prompt_tokens,
                 response.completion_tokens,
             )
-            revised = revised_query(response.content, query, fixed)
-        except (LlmGatewayError, TimeoutError, ValueError, RecursionError):
+            if first.items:
+                trace, search = parse_review(response.content, first, response.model)
+                revised = ContinuationProposal(
+                    revised_query(json.dumps(search), query, fixed) if search is not None else None,
+                    trace,
+                )
+            else:
+                revised = ContinuationProposal(
+                    revised_query(response.content, query, fixed),
+                    ContinuationTrace(
+                        "replan",
+                        "replan",
+                        "empty_results",
+                        "Alternative terms proposed; empty results do not establish absence.",
+                        (),
+                        (),
+                        response.model,
+                        0,
+                        0,
+                    ),
+                )
+        except (LlmGatewayError, TimeoutError, ValueError, RecursionError, TypeError, KeyError):
+            revised = ContinuationProposal(None, unavailable(first, profile.model))
             call.findings.append(
                 Finding(
                     "research_replan",
@@ -175,7 +234,9 @@ async def make_replanner(
             # accounting if the service returns its partial receipt; user cancellation
             # still propagates and production will not persist the cancelled run.
             totals.usage.append(
-                usage_entry(job, profile, "research:replan", revised is not None, call)
+                usage_entry(
+                    job, profile, "research:replan", revised is not None and not call.findings, call
+                )
             )
             totals.add(call.prompt_tokens, call.completion_tokens, call.latency_ms, call.findings)
         return revised

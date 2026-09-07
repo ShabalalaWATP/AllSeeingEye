@@ -105,6 +105,7 @@ async def test_invalid_model_revision_retains_original_query(container, user):
         return job.profile
 
     callback = await make_replanner(job, totals, Gateway("bad"), container.cipher, lookup)
-    assert await callback(QUERY, ResearchBatch(), 10) is None
+    result = await callback(QUERY, ResearchBatch(), 10)
+    assert result.query is None and result.trace.basis == "invalid_or_unavailable"
     assert len(totals.usage) == 1 and not totals.usage[0].ok
     assert totals.findings[0].rule == "research_replan"

@@ -1,12 +1,23 @@
 """An on-demand provider performs a single bounded public collection request."""
 
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 from typing import Protocol
 
 from ase.domain.research import ResearchBatch, ResearchQuery
+from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_plan import ResearchPlan
 
-ReplanCallback = Callable[[ResearchQuery, ResearchBatch, float], Awaitable[ResearchQuery | None]]
+
+@dataclass(frozen=True, slots=True)
+class ContinuationProposal:
+    query: ResearchQuery | None
+    trace: ContinuationTrace
+
+
+ReplanCallback = Callable[
+    [ResearchQuery, ResearchBatch, float], Awaitable[ResearchQuery | ContinuationProposal | None]
+]
 
 
 class ResearchProvider(Protocol):

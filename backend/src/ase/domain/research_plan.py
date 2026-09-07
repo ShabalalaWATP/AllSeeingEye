@@ -7,6 +7,7 @@ from typing import Literal
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
 from ase.domain.research_area import ResearchArea
+from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_tasks import ResearchCandidate, validate_task_receipt
 
 UNKNOWN_TEMPORAL_SCOPE = (
@@ -87,3 +88,4 @@ class ResearchPlan:
     area: ResearchArea | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
     candidate_hypotheses: tuple[ResearchCandidate, ...] = ()
+    continuation: ContinuationTrace | None = None

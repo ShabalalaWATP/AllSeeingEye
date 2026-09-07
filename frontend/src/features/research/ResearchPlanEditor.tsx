@@ -38,7 +38,7 @@ export function ResearchPlanEditor({
               : 'The reporting window advances to the time the run starts.'}
           {area
             ? ' Area collection only uses providers that explicitly support this geometry. Empty results do not prove absence.'
-            : ' General research may revise an empty search once using the configured AI connection, within the same collection budget. Source selection and research scope stay fixed; both passes are saved for review.'}
+            : ' General research can review its first results using the configured AI connection. It may revise an empty search or investigate a possible conflict, or stop when the question appears covered and required tasks are finished. This uses one bounded review within the same collection budget. Scope and explicit tasks stay fixed; the decision and passes are saved for review.'}
         </p>
         <fieldset disabled={plan.busy} className="space-y-5">
           <label className="flex min-h-11 items-center gap-2 text-sm">
