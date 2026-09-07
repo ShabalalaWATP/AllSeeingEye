@@ -33,6 +33,7 @@ export const savedMapFixture: SavedMapView = {
     report_version_number: 1,
     state: {
       ...initialMapState(),
+      display_transform: 'ase-geojson-display-v1',
       camera: { longitude: 40, latitude: 35, zoom: 6, bearing: 25, pitch: 20 },
       projection: 'mercator',
       basemap: 'light',

@@ -21,13 +21,16 @@ import { useAreaSelection } from './useAreaSelection';
 import { areasEqual } from '@/lib/map/areaGeometry';
 import { SavedMapControls } from './SavedMapControls';
 import { useSavedMapViews } from './useSavedMapViews';
-import { initialMapState, localOverlay, fromCamera, matchesMapFilters } from './savedMapState';
+import { initialMapState, fromCamera, matchesMapFilters } from './savedMapState';
 import type { MapState, SavedMapView } from '@/lib/api/mapViews';
 import type { MapBounds, MapCamera } from '@/lib/map/MapEngine';
 import { FootprintSearchPanel } from './FootprintSearchPanel';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
-import { geometryIsPolar, parseLocalGeoJson } from '@/lib/map/localGeoJson';
-import { hasEvidencePoint, publicationDay } from './evidenceGeometry';
+import { geometryIsPolar } from '@/lib/map/localGeoJson';
+import { hasEvidencePoint, hasLegacyEvidencePoint, publicationDay } from './evidenceGeometry';
+import { MapDisplayVersionNotice } from './MapDisplayVersionNotice';
+import { MapGeometryOmissions } from './MapGeometryOmissions';
+import { prepareEvidenceGeometry } from './frozenEvidenceGeometry';
 
 const Canvas = lazy(() =>
   import('./EvidenceMapCanvas').catch(() => ({
@@ -93,14 +96,6 @@ export default function ReportEvidenceMap({
     viewport.current = read;
   }, []);
   const readViewport = useCallback(() => viewport.current?.() ?? null, []);
-  const overlays = useMemo(
-    () => state.overlays.filter((item) => item.visible).map(localOverlay),
-    [state.overlays],
-  );
-  const aoi = useMemo(
-    () => (state.aoi ? parseLocalGeoJson(JSON.stringify(state.aoi)).display : null),
-    [state.aoi],
-  );
   const [focusRequest, setFocusRequest] = useState<{ label: string; sequence: number } | null>(
     null,
   );
@@ -146,11 +141,31 @@ export default function ReportEvidenceMap({
     () => [...new Map(evidence.map((item) => [item.source_id, item.source_name])).entries()],
     [evidence],
   );
+  const { source_ids, published_since, published_until, include_unknown_dates } = state;
   const filtered = useMemo(
-    () => evidence.filter((item) => matchesMapFilters(item, state)),
-    [evidence, state],
+    () =>
+      evidence.filter((item) =>
+        matchesMapFilters(item, {
+          source_ids,
+          published_since,
+          published_until,
+          include_unknown_dates,
+        }),
+      ),
+    [evidence, source_ids, published_since, published_until, include_unknown_dates],
   );
   const current = Math.min(page, Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1));
+  const prepared = useMemo(
+    () =>
+      prepareEvidenceGeometry(
+        filtered,
+        state.overlays,
+        state.aoi,
+        footprints,
+        state.display_transform,
+      ),
+    [filtered, state.overlays, state.aoi, footprints, state.display_transform],
+  );
   const chosen = filtered.find((item) => item.label === selected);
   const select = useCallback((label: string) => {
     setState((value) => ({ ...value, selected_evidence: label }));
@@ -162,17 +177,22 @@ export default function ReportEvidenceMap({
         Account or access changed. Reload the authorised report before reopening its map.
       </Alert>
     );
+  const supportsPoint =
+    state.display_transform === 'ase-geojson-display-v1'
+      ? hasLegacyEvidencePoint
+      : hasEvidencePoint;
   const polar =
-    filtered.filter((item) => hasEvidencePoint(item) && Math.abs(item.lat ?? 0) > 85.05112878)
-      .length +
-    overlays.reduce(
+    prepared.source.features.filter((feature) => geometryIsPolar(feature.geometry)).length +
+    filtered.filter((item) => supportsPoint(item) && Math.abs(item.lat ?? 0) > 85.05112878).length +
+    prepared.overlays.reduce(
       (sum, overlay) =>
         sum +
         overlay.display.features.filter((feature) => geometryIsPolar(feature.geometry)).length,
       0,
     ) +
-    (aoi?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ?? 0) +
-    (footprints?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ?? 0);
+    (prepared.aoi?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ?? 0) +
+    (prepared.footprints?.features.filter((feature) => geometryIsPolar(feature.geometry)).length ??
+      0);
   return (
     <section
       aria-label="Saved evidence map and timeline"
@@ -186,6 +206,12 @@ export default function ReportEvidenceMap({
           from saved evidence.
         </p>
       </header>
+      <MapDisplayVersionNotice
+        version={state.display_transform}
+        onUpgrade={() =>
+          setState((value) => ({ ...value, display_transform: 'ase-geojson-display-v2' }))
+        }
+      />
       <MapFilters
         state={state}
         onChange={(value) => {
@@ -196,11 +222,14 @@ export default function ReportEvidenceMap({
         sources={sources}
       />
       <p className="text-xs text-muted">
-        {filtered.length} records · {filtered.filter(hasEvidencePoint).length} supported positions.
-        Hollow rings are approximate locations, not measured uncertainty areas. Country-only and
-        unknown locations remain in the list.
+        {filtered.length} records · {filtered.filter(supportsPoint).length} supported positions ·{' '}
+        {prepared.source.features.length} supported source geometries. Hollow rings are approximate
+        locations, not measured uncertainty areas. Country-only and unknown locations remain in the
+        list.
       </p>
+      <MapGeometryOmissions omissions={prepared.omissions} />
       <MapOverlaySet
+        preparedFirst={prepared.firstOverlay}
         overlays={state.overlays}
         onChange={(overlays) =>
           setState((value) => ({
@@ -277,9 +306,11 @@ export default function ReportEvidenceMap({
           )}
           <Suspense fallback={<LoadingNote label="Loading saved evidence map" />}>
             <Canvas
-              footprints={footprints}
-              overlays={overlays}
-              aoi={aoi}
+              sourceGeometry={prepared.source}
+              legacyDisplay={state.display_transform === 'ase-geojson-display-v1'}
+              footprints={prepared.footprints}
+              overlays={prepared.overlays}
+              aoi={prepared.aoi}
               areaMode={areaSelection.picking}
               onAreaPoint={areaSelection.pick}
               onViewportReady={viewportReady}

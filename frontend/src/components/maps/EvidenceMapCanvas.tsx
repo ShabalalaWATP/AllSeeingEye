@@ -10,7 +10,8 @@ import { hasWebGl2 } from '@/lib/map/webgl';
 import { useAuthStore } from '@/stores/auth';
 import type { LocalCollection, LocalOverlay, Position } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
-import { hasEvidencePoint } from './evidenceGeometry';
+import { hasEvidencePoint, hasLegacyEvidencePoint } from './evidenceGeometry';
+import { geometryBounds } from '@/lib/map/geometryBounds';
 
 export default function EvidenceMapCanvas({
   evidence,
@@ -21,6 +22,8 @@ export default function EvidenceMapCanvas({
   basemap,
   focusRequest,
   footprints = null,
+  sourceGeometry,
+  legacyDisplay,
   projection,
   selected,
   onSelect,
@@ -36,6 +39,8 @@ export default function EvidenceMapCanvas({
   basemap: MapState['basemap'];
   focusRequest: { label: string; sequence: number } | null;
   footprints?: LocalCollection | null;
+  sourceGeometry: LocalCollection;
+  legacyDisplay: boolean;
   projection: Projection;
   selected: string | null;
   onSelect: (label: string) => void;
@@ -47,6 +52,7 @@ export default function EvidenceMapCanvas({
   const engine = useRef<MapEngine | null>(null);
   const [mapError, setMapError] = useState(false);
   const initial = useRef({ camera, projection, basemap });
+  const supportsPoint = legacyDisplay ? hasLegacyEvidencePoint : hasEvidencePoint;
   const cameraChanged = useEffectEvent((value: MapCamera) => onCamera(value));
   const viewportReady = useEffectEvent((read: (() => MapBounds | null) | null) =>
     onViewportReady?.(read),
@@ -58,10 +64,18 @@ export default function EvidenceMapCanvas({
     }
   });
   const focusSelection = useEffectEvent(() => {
+    const source = sourceGeometry.features.find(
+      (feature) => feature.properties.label === focusRequest?.label,
+    );
+    if (source) {
+      if (projection === 'globe' || !geometryIsPolar(source.geometry))
+        engine.current?.fitBounds(geometryBounds(source.geometry), { padding: 32, maxZoom: 12 });
+      return;
+    }
     const item = evidence.find((entry) => entry.label === focusRequest?.label);
     if (
       item &&
-      hasEvidencePoint(item) &&
+      supportsPoint(item) &&
       (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878)
     )
       engine.current?.flyTo({ center: [item.lon ?? 0, item.lat ?? 0], zoom: 4 });
@@ -108,12 +122,11 @@ export default function EvidenceMapCanvas({
   useEffect(() => {
     const located = evidence.filter(
       (item) =>
-        hasEvidencePoint(item) &&
-        (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878),
+        supportsPoint(item) && (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878),
     );
     const imported: Layer[] = overlays.map(
       (overlay, index) =>
-        new GeoJsonLayer({
+        new GeoJsonLayer<{ label: string }>({
           id: index === 0 ? 'private-local-geometry' : `private-local-geometry-${index}`,
           data: {
             type: 'FeatureCollection' as const,
@@ -172,6 +185,38 @@ export default function EvidenceMapCanvas({
     engine.current?.setLayers([
       ...imported,
       ...catalogue,
+      ...(sourceGeometry.features.some(
+        (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
+      )
+        ? [
+            new GeoJsonLayer({
+              id: 'frozen-evidence-geometry',
+              data: {
+                ...sourceGeometry,
+                features: sourceGeometry.features.filter(
+                  (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
+                ),
+              },
+              pickable: true,
+              stroked: true,
+              filled: false,
+              getLineColor: [230, 162, 74, 240],
+              lineWidthUnits: 'pixels',
+              getLineWidth: (feature: { properties: { label?: unknown } }) =>
+                feature.properties.label === selected ? 4 : 2,
+              pointRadiusUnits: 'pixels',
+              getPointRadius: 8,
+              onClick: (info: { object?: { properties?: { label?: unknown } } }) => {
+                if (areaMode) return true;
+                const label = info.object?.properties?.label;
+                if (typeof label === 'string' && evidence.some((item) => item.label === label))
+                  onSelect(label);
+                return true;
+              },
+              updateTriggers: { getLineWidth: [selected] },
+            }),
+          ]
+        : []),
       ...[true, false].map(
         (exact) =>
           new ScatterplotLayer<EvidenceItem>({
@@ -196,7 +241,18 @@ export default function EvidenceMapCanvas({
           }),
       ),
     ]);
-  }, [evidence, projection, selected, onSelect, overlays, footprints, aoi, areaMode]);
+  }, [
+    evidence,
+    projection,
+    selected,
+    onSelect,
+    overlays,
+    footprints,
+    aoi,
+    areaMode,
+    sourceGeometry,
+    supportsPoint,
+  ]);
   useEffect(() => {
     if (focusRequest) focusSelection();
   }, [focusRequest]);

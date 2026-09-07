@@ -10,11 +10,14 @@ export function LocalGeoJsonOverlay({
   visible,
   onChange,
   onVisible,
+  retained,
 }: {
   overlay: LocalOverlay | null;
   visible: boolean;
   onChange: (value: LocalOverlay | null) => void;
   onVisible: (value: boolean) => void;
+  retained?:
+    { source: string; dataset_date: string; attribution: string; precision: string } | undefined;
 }) {
   const [source, setSource] = useState('');
   const [datasetDate, setDate] = useState('');
@@ -158,13 +161,19 @@ export function LocalGeoJsonOverlay({
       </p>
       {busy && <p role="status">Reading local geometry</p>}
       {error && <Alert tone="error">{error}</Alert>}
-      {overlay && (
+      {(overlay ?? retained) && (
         <div className="mt-3 space-y-2">
           <p className="text-sm">
-            {overlay.source} · {overlay.datasetDate} · {overlay.precision} precision ·{' '}
-            {overlay.canonical.features.length} features · {overlay.vertices} vertices
+            {overlay?.source ?? retained?.source} · {overlay?.datasetDate ?? retained?.dataset_date}{' '}
+            · {overlay?.precision ?? retained?.precision} precision
+            {overlay && (
+              <>
+                {' '}
+                · {overlay.canonical.features.length} features · {overlay.vertices} vertices
+              </>
+            )}
           </p>
-          <p className="text-xs text-muted">{overlay.attribution}</p>
+          <p className="text-xs text-muted">{overlay?.attribution ?? retained?.attribution}</p>
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -177,7 +186,7 @@ export function LocalGeoJsonOverlay({
             Remove local overlay
           </Button>
           <ul aria-label="Imported geometry" className="space-y-1 text-xs">
-            {overlay.canonical.features
+            {overlay?.canonical.features
               .slice(currentPage * 20, (currentPage + 1) * 20)
               .map((feature) => (
                 <li key={feature.id}>
@@ -185,7 +194,7 @@ export function LocalGeoJsonOverlay({
                 </li>
               ))}
           </ul>
-          {overlay.canonical.features.length > 20 && (
+          {overlay && overlay.canonical.features.length > 20 && (
             <div className="flex gap-3">
               <Button
                 variant="secondary"

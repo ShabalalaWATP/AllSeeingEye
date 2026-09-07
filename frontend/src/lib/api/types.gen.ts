@@ -3324,9 +3324,9 @@ export interface components {
             /**
              * Display Transform
              * @default ase-geojson-display-v1
-             * @constant
+             * @enum {string}
              */
-            display_transform: "ase-geojson-display-v1";
+            display_transform: "ase-geojson-display-v1" | "ase-geojson-display-v2";
         };
         /** MapViewCreateIn */
         MapViewCreateIn: {

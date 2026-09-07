@@ -9844,7 +9844,10 @@
           },
           "display_transform": {
             "type": "string",
-            "const": "ase-geojson-display-v1",
+            "enum": [
+              "ase-geojson-display-v1",
+              "ase-geojson-display-v2"
+            ],
             "title": "Display Transform",
             "default": "ase-geojson-display-v1"
           }

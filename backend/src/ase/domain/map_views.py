@@ -102,7 +102,7 @@ class MapViewState:
             or self.basemap not in BASEMAPS
         ):
             raise ValueError("Unsupported map projection or basemap")
-        if self.display_transform != "ase-geojson-display-v1":
+        if self.display_transform not in ("ase-geojson-display-v1", "ase-geojson-display-v2"):
             raise ValueError("Unsupported map display transform")
         if type(self.source_ids) is not tuple or len(self.source_ids) > 64:
             raise ValueError("Map views allow at most 64 source filters")

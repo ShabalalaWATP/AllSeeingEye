@@ -5,12 +5,17 @@ import { expect, it, vi } from 'vitest';
 import type { MapState } from '@/lib/api/mapViews';
 import { savedMapFixture } from '@/test/fixtures.savedMaps';
 import { MapOverlaySet } from './MapOverlaySet';
+import { prepareEvidenceGeometry } from './frozenEvidenceGeometry';
 
 function Harness() {
   const [overlays, setOverlays] = useState(savedMapFixture.revision.state.overlays);
   return (
     <>
-      <MapOverlaySet overlays={overlays} onChange={setOverlays} />
+      <MapOverlaySet
+        overlays={overlays}
+        onChange={setOverlays}
+        preparedFirst={prepareEvidenceGeometry([], overlays).firstOverlay}
+      />
       <output aria-label="Current overlays">{JSON.stringify(overlays)}</output>
     </>
   );

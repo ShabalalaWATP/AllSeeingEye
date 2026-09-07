@@ -47,7 +47,9 @@ class MapStateFields(MapFields):
     overlays: list[MapOverlayFields] = Field(default_factory=list, max_length=8)
     aoi: dict[str, Any] | None = None
     schema_version: Annotated[int, Field(strict=True, ge=1, le=1)] = 1
-    display_transform: Literal["ase-geojson-display-v1"] = "ase-geojson-display-v1"
+    display_transform: Literal["ase-geojson-display-v1", "ase-geojson-display-v2"] = (
+        "ase-geojson-display-v1"
+    )
     _domain: MapViewState = PrivateAttr()
 
     @model_validator(mode="after")

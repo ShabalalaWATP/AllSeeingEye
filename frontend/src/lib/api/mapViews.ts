@@ -36,7 +36,9 @@ export const mapStateSchema = z.object({
     .default([]),
   aoi: geometry.nullable().default(null),
   schema_version: z.literal(1).default(1),
-  display_transform: z.literal('ase-geojson-display-v1').default('ase-geojson-display-v1'),
+  display_transform: z
+    .enum(['ase-geojson-display-v1', 'ase-geojson-display-v2'])
+    .default('ase-geojson-display-v1'),
 }) satisfies z.ZodType<components['schemas']['MapStateFields']>;
 const viewSchema = z.object({
   id: z.string(),

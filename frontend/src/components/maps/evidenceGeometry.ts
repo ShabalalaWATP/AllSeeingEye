@@ -1,6 +1,9 @@
 import type { EvidenceItem } from '@/lib/api/reports';
 
 export function hasEvidencePoint(item: EvidenceItem): boolean {
+  return !item.geometry && hasLegacyEvidencePoint(item);
+}
+export function hasLegacyEvidencePoint(item: EvidenceItem): boolean {
   return (
     typeof item.lon === 'number' &&
     typeof item.lat === 'number' &&
@@ -12,6 +15,7 @@ export function hasEvidencePoint(item: EvidenceItem): boolean {
   );
 }
 export function evidencePrecision(item: EvidenceItem): string {
+  if (item.geometry) return item.geometry.precision;
   if (item.geo_confidence === 'country') return 'Country only, not plotted';
   if (!hasEvidencePoint(item)) return 'Location unavailable or precision unknown';
   return item.geo_confidence === 'exact'

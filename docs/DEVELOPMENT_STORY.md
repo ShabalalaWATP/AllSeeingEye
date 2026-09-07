@@ -1004,3 +1004,20 @@ Thirty-two focused backend tests and 24 frontend tests passed. Both type checks,
 formatting and file-length checks passed. Read-only review found no confirmed
 correctness, privacy or compatibility defect. Original-footprint rendering and
 the operator map-to-research launch form remain unfinished.
+
+### 7 September 2026: bounded frozen-footprint map display
+
+Source geometry has a selectable layer in both projections, with source-first
+shared preparation across optional overlays, the research area and temporary
+catalogue footprints. Large source polygons retain their coordinates while using
+the same topology checks; annotation limits remain unchanged. Unsupported shapes
+have labelled omissions. Explicit selection fits complete components, including
+seam envelopes, without creating event centroids. Access invalidation clears layers.
+
+Review found and verified fixes for duplicate pre-budget parsing and unnecessary
+revalidation on camera changes. The full frontend run passed 733 tests with 95.77%
+statements and 90.05% branches. Follow-up callback/bounds tests passed, then display
+compatibility passed 49 backend tests and 26 focused frontend tests. The v1 hash
+contract remains unchanged; new maps use v2, and old maps require an explicit
+operator upgrade before source footprints appear. Real GPU acceptance, saved
+acquisition-time filtering and the operator launch workflow remain unfinished.

@@ -1,23 +1,26 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { SetStateAction } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { MapState } from '@/lib/api/mapViews';
 import { LocalGeoJsonOverlay } from './LocalGeoJsonOverlay';
-import { localOverlay, savedOverlay } from './savedMapState';
+import { savedOverlay } from './savedMapState';
+import type { LocalOverlay } from '@/lib/map/geoJsonTypes';
 
 export function MapOverlaySet({
   overlays,
   onChange,
+  preparedFirst,
 }: {
   overlays: MapState['overlays'];
+  preparedFirst: LocalOverlay | null;
   onChange: (value: SetStateAction<MapState['overlays']>) => void;
 }) {
   const [adding, setAdding] = useState(false);
-  const first = useMemo(() => (overlays[0] ? localOverlay(overlays[0]) : null), [overlays]);
   return (
     <div className="space-y-3">
       <LocalGeoJsonOverlay
-        overlay={first}
+        overlay={preparedFirst}
+        retained={overlays[0]}
         visible={overlays[0]?.visible ?? true}
         onChange={(value) =>
           onChange((previous) =>

@@ -51,9 +51,16 @@ function inside(point: Position, ring: Position[], charge: () => void) {
   return result;
 }
 /** Reject ambiguous topology; bounded rings avoid quadratic work on large uploads. */
-export function validatePolygon(rings: Position[][], charge = topologyBudget()): void {
-  if (rings.reduce((sum, ring) => sum + ring.length, 0) > 256)
-    throw new Error('Each polygon is limited to 256 vertices. Simplify it before import.');
+export function validatePolygon(
+  rings: Position[][],
+  charge = topologyBudget(),
+  profile: 'annotation' | 'source' = 'annotation',
+): void {
+  const maximum = profile === 'source' ? 100_000 : 256;
+  if (rings.reduce((sum, ring) => sum + ring.length, 0) > maximum)
+    throw new Error(
+      `Each polygon is limited to ${maximum.toLocaleString('en-GB')} vertices. Simplify it before import.`,
+    );
   for (const ring of rings) {
     if (
       ring.length < 4 ||

@@ -6,7 +6,10 @@ import { parseLocalGeoJson } from '@/lib/map/localGeoJson';
 import type { EvidenceItem } from '@/lib/api/reports';
 
 export const initialMapState = (): MapState =>
-  mapStateSchema.parse({ camera: { longitude: 10, latitude: 30, zoom: 1.6 } });
+  mapStateSchema.parse({
+    camera: { longitude: 10, latitude: 30, zoom: 1.6 },
+    display_transform: 'ase-geojson-display-v2',
+  });
 export const toCamera = (state: MapState): MapCamera => ({
   center: [state.camera.longitude, state.camera.latitude],
   zoom: state.camera.zoom,
@@ -42,7 +45,13 @@ export function savedOverlay(value: LocalOverlay, visible: boolean): MapState['o
 export function mapRevisionLink(saved: Pick<SavedMapView, 'view' | 'revision'>) {
   return `/reports/${encodeURIComponent(saved.view.report_id)}?version=${saved.revision.report_version_number}&map_view=${encodeURIComponent(saved.view.id)}&map_revision=${encodeURIComponent(saved.revision.id)}`;
 }
-export function matchesMapFilters(item: EvidenceItem, state: MapState) {
+export function matchesMapFilters(
+  item: EvidenceItem,
+  state: Pick<
+    MapState,
+    'source_ids' | 'published_since' | 'published_until' | 'include_unknown_dates'
+  >,
+) {
   if (state.source_ids.length && !state.source_ids.includes(item.source_id)) return false;
   const published = item.published_at ? Date.parse(item.published_at) : NaN;
   if (!Number.isFinite(published)) return state.include_unknown_dates;

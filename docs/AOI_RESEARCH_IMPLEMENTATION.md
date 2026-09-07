@@ -312,3 +312,36 @@ bounded geometry renderer without submitting them to that renderer in this slice
 Thirty-two focused backend tests and 24 frontend tests passed. Backend and frontend
 type checks and file-length checks passed. Rendering original footprints in both
 projections and completing the authorised map-to-research launch remain open.
+
+### Frozen footprint rendering and saved display compatibility
+
+The renderer now prepares retained source geometry before optional saved overlays,
+the area and temporary catalogue footprints. These inputs share a 5 MiB input,
+2,000-feature, 100,000-vertex and one-million-topology-check budget. Source polygons
+can exceed the annotation-only 256-vertex ceiling, with the same topology checks;
+unsupported geometry remains in evidence with a labelled omission reason.
+
+A separate selectable source layer uses the existing evidence selection. Explicit
+selection fits complete geometry components, including split seam envelopes, while
+manual camera movement does not rerun geometry validation. Original coordinates
+and hashes remain unchanged. Visible saved overlays and their editor consume the
+same prepared data, avoiding independent topology budgets before rendering.
+
+The focused group passed 44 map/parser tests; the updated mounted two-case file
+also passed. Review identified and verified fixes for duplicate overlay parsing
+and camera-triggered revalidation. The full frontend suite passed 733 tests in
+130 files: 95.77% statements, 90.05% branches, 94.59% functions and 96.95% lines.
+Twelve affected tests passed after callback typing and bounds-assertion corrections.
+The display compatibility follow-up then passed 49 backend state/version tests
+and 26 focused frontend map, overlay and saved-link tests. This is a full frontend
+run plus targeted follow-up verification, not a second full run after those edits.
+Type and file-length checks passed. Real-GPU acceptance, persisted acquisition-time
+filtering and the launch workflow remain open.
+
+New maps explicitly select `ase-geojson-display-v2`. Legacy state and API defaults
+remain v1, and the canonical state serializer is unchanged. A pinned legacy
+revision digest remains valid. Restored v1 maps retain their scalar-point evidence
+display; original source geometry is included only after the operator chooses
+Include source footprints. Saving then creates a new immutable revision whose
+explicit display policy changes its digest. Merely opening an older map never
+upgrades its display policy.

@@ -18,7 +18,12 @@ function list(value: unknown, minimum = 1): unknown[] {
     throw new Error('Invalid or oversized geometry coordinates.');
   return value;
 }
-export function parseLocalGeoJson(text: string): {
+export function parseLocalGeoJson(
+  text: string,
+  profile: 'annotation' | 'source' = 'annotation',
+  chargeTopology = topologyBudget(),
+  chargeVertex: () => void = () => undefined,
+): {
   canonical: LocalCollection;
   display: LocalCollection;
   vertices: number;
@@ -31,7 +36,6 @@ export function parseLocalGeoJson(text: string): {
   if (features.length > MAX_GEOJSON_FEATURES)
     throw new Error('GeoJSON is limited to 2,000 features.');
   let vertices = 0;
-  const chargeTopology = topologyBudget();
   const point = (raw: unknown): Position => {
     const pos = list(raw, 2);
     if (
@@ -48,12 +52,13 @@ export function parseLocalGeoJson(text: string): {
       );
     if (++vertices > MAX_GEOJSON_VERTICES)
       throw new Error('GeoJSON is limited to 100,000 vertices.');
+    chargeVertex();
     return [pos[0], pos[1]];
   };
   const line = (raw: unknown) => list(raw, 2).map(point);
   const polygon = (raw: unknown) => {
     const rings = list(raw).map(line);
-    validatePolygon(rings, chargeTopology);
+    validatePolygon(rings, chargeTopology, profile);
     return rings;
   };
   const geometry = (raw: unknown): LocalGeometry => {
@@ -141,7 +146,7 @@ export function geometryIsPolar(geometry: LocalGeometry): boolean {
   }
 }
 
-function geometryVertices(geometry: LocalGeometry): number {
+export function geometryVertices(geometry: LocalGeometry): number {
   switch (geometry.type) {
     case 'Point':
       return 1;
