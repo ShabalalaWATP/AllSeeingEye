@@ -25,7 +25,11 @@ def available_slots():
 
 def exporter():
     selected = SimpleNamespace(
-        record=object(), version=object(), revisions=(), identity_revisions=()
+        record=object(),
+        version=object(),
+        revisions=(),
+        identity_revisions=(),
+        relationship_revisions=(),
     )
     selector = SimpleNamespace(resolve=AsyncMock(return_value=selected), recheck=AsyncMock())
     originals = SimpleNamespace(select=AsyncMock(return_value=(object(),)), recheck=AsyncMock())
