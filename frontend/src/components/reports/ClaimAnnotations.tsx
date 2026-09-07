@@ -4,14 +4,19 @@ import { Button } from '@/components/ui/Button';
 import { fetchClaim, listClaims } from '@/lib/api/claims';
 import { ClaimEditor } from './ClaimEditor';
 import { GenerateClaims } from './GenerateClaims';
+import { ClaimGenerationNote } from './ClaimGenerationNote';
+import type { ClaimGenerationReceipt } from '@/lib/api/claimGeneration';
 import type { EvidenceItem } from '@/lib/api/reports';
 import type { ClaimRevision } from '@/lib/api/claims';
 import { describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
-import { formatUtc } from '@/lib/format';
+import { ClaimHistory, RevisionText } from './ClaimHistory';
+import { ClaimExportSelection, ClaimExportChoice } from './ClaimExportSelection';
 
 interface AnnotationProps {
+  sharedSelection?: boolean;
+  generation?: ClaimGenerationReceipt | null | undefined;
   reportId: string;
   version: number;
   evidence?: EvidenceItem[];
@@ -36,10 +41,21 @@ function ExistingEditor({
     [value.claim_id, request],
   );
   const resource = useScopedResource(loader);
-  if (resource.loading) return <LoadingNote label="Checking claim permissions" />;
-  if (resource.error) return <Alert tone="error">{describeError(resource.error)}</Alert>;
   if (!resource.data || !scope.canManage?.(resource.data.root))
-    return <p className="text-sm text-muted">You can read this claim, but cannot revise it.</p>;
+    return (
+      <div className="space-y-3">
+        {resource.loading ? (
+          <LoadingNote label="Checking claim permissions" />
+        ) : resource.error ? (
+          <Alert tone="error">{describeError(resource.error)}</Alert>
+        ) : (
+          <p className="text-sm text-muted">You can read this claim, but cannot revise it.</p>
+        )}
+        <Button variant="secondary" onClick={onClose}>
+          Cancel review
+        </Button>
+      </div>
+    );
   return (
     <ClaimEditor
       key={`${resource.key}:${resource.data.revision.id}`}
@@ -53,114 +69,13 @@ function ExistingEditor({
   );
 }
 
-function RevisionText({ value }: { value: ClaimRevision }) {
-  return (
-    <div className="space-y-3 text-sm [overflow-wrap:anywhere]">
-      <p className="font-medium">{value.statement}</p>
-      <p className="text-xs text-muted">
-        {value.state} · Revision {value.number} · {formatUtc(value.created_at)}
-      </p>
-      <p>{value.kind === 'reported_fact' ? 'Attributed reporting' : 'Analytical inference'}</p>
-      {value.citations.map((citation, index) => (
-        <blockquote key={index} className="border-l-2 border-line pl-3">
-          <p className="text-xs text-muted">
-            {citation.label} · {citation.relation} · Original {citation.excerpt.field}
-          </p>
-          <p>{citation.excerpt.text}</p>
-        </blockquote>
-      ))}
-      {value.unresolved_conflicts.length > 0 && (
-        <div>
-          <h4 className="font-medium">Unresolved conflicts</h4>
-          <ul className="list-disc pl-5">
-            {value.unresolved_conflicts.map((text, i) => (
-              <li key={i}>{text}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {value.model_origin && (
-        <details className="text-xs text-muted">
-          <summary className="cursor-pointer">Model proposal provenance</summary>
-          <dl className="mt-2 space-y-1">
-            <div>
-              <dt>Provider and returned model</dt>
-              <dd>
-                {value.model_origin.provider} · {value.model_origin.returned_model}
-              </dd>
-            </div>
-            <div>
-              <dt>Requested model</dt>
-              <dd>{value.model_origin.requested_model}</dd>
-            </div>
-            <div>
-              <dt>Generated</dt>
-              <dd>{formatUtc(value.model_origin.generated_at)}</dd>
-            </div>
-            <div>
-              <dt>Profile revision</dt>
-              <dd>{value.model_origin.profile_revision}</dd>
-            </div>
-            <div>
-              <dt>Method</dt>
-              <dd>{value.model_origin.method_version}</dd>
-            </div>
-            <div>
-              <dt>Input SHA-256</dt>
-              <dd>{value.model_origin.input_sha256}</dd>
-            </div>
-          </dl>
-        </details>
-      )}
-      <p className="text-muted">Revision reason: {value.reason}</p>
-    </div>
-  );
-}
-
-function ClaimHistory({ current }: { current: ClaimRevision }) {
-  const [revisionId, setRevisionId] = useState(current.id);
-  const request = useScopedRequest();
-  const loader = useCallback(
-    () => fetchClaim(current.claim_id, revisionId, request()),
-    [current.claim_id, revisionId, request],
-  );
-  const resource = useScopedResource(loader);
-  return (
-    <div className="mt-4 space-y-3">
-      {resource.loading && <LoadingNote label="Loading claim revision" />}
-      {resource.error && <Alert tone="error">{describeError(resource.error)}</Alert>}
-      {resource.data && (
-        <>
-          <RevisionText value={resource.data.revision} />
-          <div className="flex flex-wrap gap-2">
-            {resource.data.revision.previous_id && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  const previous = resource.data?.revision.previous_id;
-                  if (previous) setRevisionId(previous);
-                }}
-              >
-                Previous revision
-              </Button>
-            )}
-            {revisionId !== current.id && (
-              <Button variant="secondary" onClick={() => setRevisionId(current.id)}>
-                Latest revision
-              </Button>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 function ClaimList(scope: AnnotationProps) {
   const { reportId, version } = scope;
   const [editing, setEditing] = useState<ClaimRevision | 'new' | null>(null);
   const [offset, setOffset] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const locked = editing !== null || generating;
   const request = useScopedRequest();
   const loader = useCallback(
     () => listClaims(reportId, version, offset, request()),
@@ -182,15 +97,23 @@ function ClaimList(scope: AnnotationProps) {
               key={`${resource.key}:generate`}
               reportId={reportId}
               version={version}
+              disabled={editing !== null}
+              onBusyChange={setGenerating}
               onSaved={() => {
                 void resource.reload();
               }}
             />
           )}
           {scope.canCreate && (
-            <Button variant="secondary" onClick={() => setEditing('new')}>
+            <Button variant="secondary" disabled={locked} onClick={() => setEditing('new')}>
               Add a claim
             </Button>
+          )}
+          {editing !== null && (
+            <p className="text-xs text-muted">
+              Save or cancel your claim before switching pages, generating proposals or opening
+              another editor.
+            </p>
           )}
           {editing === 'new' && scope.canCreate && (
             <ClaimEditor
@@ -223,8 +146,9 @@ function ClaimList(scope: AnnotationProps) {
           {resource.data.items.map((value) => (
             <article key={value.claim_id} className="rounded border border-line p-4">
               <RevisionText value={value} />
+              <ClaimExportChoice value={value} />
               {scope.canCreate && (
-                <Button variant="secondary" onClick={() => setEditing(value)}>
+                <Button variant="secondary" disabled={locked} onClick={() => setEditing(value)}>
                   Review or correct claim
                 </Button>
               )}
@@ -244,7 +168,7 @@ function ClaimList(scope: AnnotationProps) {
             <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
-                disabled={offset === 0}
+                disabled={locked || offset === 0}
                 onClick={() => setOffset(Math.max(0, offset - 20))}
               >
                 Previous page
@@ -254,7 +178,7 @@ function ClaimList(scope: AnnotationProps) {
               </span>
               <Button
                 variant="secondary"
-                disabled={offset + 20 >= resource.data.total}
+                disabled={locked || offset + 20 >= resource.data.total}
                 onClick={() => setOffset(offset + 20)}
               >
                 Next page
@@ -272,10 +196,18 @@ export function ClaimAnnotations(scope: AnnotationProps) {
   const [open, setOpen] = useState(false);
   return (
     <section className="rounded border border-line p-4" aria-label="Claim annotations">
+      <ClaimGenerationNote receipt={scope.generation ?? null} />
       <Button variant="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
         Claim annotations and history
       </Button>
-      {open && <ClaimList key={`${reportId}:${version}`} {...scope} />}
+      {open &&
+        (scope.sharedSelection ? (
+          <ClaimList key={`${reportId}:${version}`} {...scope} />
+        ) : (
+          <ClaimExportSelection reportId={reportId} version={version}>
+            <ClaimList key={`${reportId}:${version}`} {...scope} />
+          </ClaimExportSelection>
+        ))}
     </section>
   );
 }

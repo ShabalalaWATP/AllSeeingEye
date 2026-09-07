@@ -1695,6 +1695,21 @@ persistence are still pending; no actual model proposals were stored or generate
 against an external provider. The full objective remains active and uncommitted.
 # Claim proposal admission and atomic persistence, 7 September 2026
 
+Pipeline regression follow-up: the affected backend group had 407 passes and six
+scripted routing-provider failures because its response map lacked claim_proposals.
+The fixture now supplies valid claims and checks model provenance across assignment
+changes; all eight routing tests passed afterwards. The full frontend suite passed
+799 tests at 90.06% branch coverage and its build passed. A fresh full backend run
+is active. Automatic integration remains uncommitted while that verification runs.
+
+Automatic production is now wired locally for new reports, regeneration and the
+existing schedule/indicator execution path. Proposals use final evidence and frozen
+model routing before write guards. SaveProduction owns one transaction for report,
+usage, claims and audits; schema-1 outcomes persist in version analysis and appear
+in the report UI. Eight initial regression/pipeline tests and four late-access,
+cancellation and quota tests passed. Broader verification is running. Source grades
+and judgement confidence remain unchanged; no real provider or operator migration.
+
 Checked milestone: the full backend baseline completed with 2,557 passes,
 14 skips and 95.12% coverage. The newer automatic stage/receipt/storage tests
 passed separately (22 plus seven). Storage review found no blocker; tests verify
@@ -1727,3 +1742,250 @@ mismatch. Sixteen batch/service tests and seven provenance tests passed; mypy
 passed across 512 files. Scoped Ruff/format and file-length checks passed. These
 are internal foundations; automatic model orchestration and report integration
 remain unfinished. No operator migration, external model call or deployment.
+
+### Selected claim export access and integrity checks
+
+Implemented isolated exact-revision selection and offline evidence-package
+rendering foundations. Tests cover original member preservation, aggregate byte
+limits, later corrections, account deactivation and team membership removal.
+Fourteen combined cases and the subsequent six-case access suite passed; scoped
+Ruff and mypy (522 source files) passed. Download API/UI integration remains open.
+The concurrent full automatic report-pipeline suite is not yet a recorded pass.
+
+
+### Selected claim download integration and verification
+
+Added POST /api/reports/{report_id}/claim-evidence-package with strict explicit
+version/revision selection, no-store download headers and regenerated OpenAPI/client
+types. The exporter shares the existing two-worker package allowance, preserves
+admission through cancellation and rechecks access and report-content integrity
+after compression. Whole record/version hashes deliberately reject concurrent
+metadata changes, including regeneration; retry against the selected version.
+
+Read-only review found no confirmed access blocker. Its mutable-render-input gap
+was repaired and the cancellation test now waits for both admission slots to recover.
+All 24 combined selection/renderer/use-case tests passed; the five use-case cases
+passed again after deterministic cancellation cleanup. Six new API tests passed.
+Backend Ruff and mypy (526 files), generated frontend types and frontend type checks
+passed. The selection/download UI remains unfinished.
+
+The full automatic-pipeline backend run completed with 2,590 passes, 14 skips and
+three stale direction-stage fixture failures, at 94.94% coverage. These fixtures
+required new claim-stage order, token/latency and usage-purpose expectations.
+Targeted repairs are being verified; this is not a clean full-suite pass.
+
+The repaired direction/plan and new export API group subsequently passed all
+14 tests. This is the full run plus targeted repair evidence, not a second
+clean full run. File-length and diff checks also passed.
+
+
+### Selected claim package interface
+
+The claim panel now supports selecting exact current or historical revisions,
+reviewing/removing the selected list and downloading the v2 evidence package.
+Selection is limited to twenty revisions and stays in memory. Account, access,
+report and version changes remount the panel, clear selection and abort pending
+downloads. Failed downloads retain selection for retry. Claim history rendering
+was extracted into its own module to keep responsibilities and file sizes bounded.
+
+Ten focused UI tests passed, followed by the full frontend suite: 802 tests in
+144 files, 95.35% statements, 90.02% branches, 94.02% functions and 96.58% lines.
+Production build passed with the existing chunk-size advisory. Three additional
+selection-limit/report/version tests passed after full-suite collection. Read-only
+review found no confirmed blocker and identified further account/pagination test
+coverage opportunities. The export test root version was aligned with the rendered
+version. No browser visual acceptance or real provider test is implied.
+
+A fresh full backend run is active in data/claim-export-backend-full.log; its
+process handle is 81995. Do not infer completion from the previous repaired run.
+
+
+### Claim export review follow-up
+
+Added direct account-switch cancellation and cross-page exact-selection tests.
+The eight-test selection/scope group passed, and scoped ESLint passed. Updated the
+claim plan's current status to distinguish committed delivery, working-tree
+integration and outstanding verification, replacing stale pending-work wording.
+The backend full run remains active under handle 81995; no pass or commit claimed.
+
+
+### Organisation identity review domain foundation
+
+Added report-version-scoped candidate snapshots and immutable operator decision
+revisions. Original candidate projections remain unchanged; new snapshots retain
+full bounded frozen attributes, including GLEIF names/registration/jurisdiction.
+Corrections preserve subject/candidate/version anchors and exact optional excerpts.
+Thirteen domain tests passed; mypy (527 files) and scoped Ruff passed. Added
+IDENTITY_REVIEW_IMPLEMENTATION.md for storage/API/UI/export and acceptance work.
+This is an isolated foundation, not yet a persisted or user-facing capability.
+The earlier full backend suite remains active and excludes these new tests.
+
+
+### Identity review validation and storage codec
+
+Read-only review found shallowly mutable candidate snapshots and unchecked prior
+revision structure. Candidate validation now requires immutable typed collections,
+known historical context semantics and exact agreement between projected identity
+values and frozen source attributes. Correction validation rejects malformed
+sequence numbers, predecessor identities, dispositions, timestamps and containers.
+
+Added a bounded canonical storage codec with SHA-256 and byte-count checks.
+Decoding revalidates structure and compares canonical bytes, rejecting coercion
+(such as boolean revision numbers) and unknown fields even with recomputed hashes.
+These hashes detect retained-byte corruption, not source authenticity. All 36
+combined domain/codec tests passed; scoped Ruff and mypy (528 source files) passed.
+SQL tables, migration, repository and authorised API/UI remain unfinished. The
+concurrent full backend run excludes these newly introduced modules/tests.
+
+
+### Globe clocks and traffic presentation
+
+Added ten timezone-aware city clocks, dark cyan dashboard surfaces, reduced-motion
+aware transitions and spacing above the clock rail. Added explicit vessel-position
+symbols and retained a bounded traffic sample outside low-zoom clusters. NAVAREA
+warnings remain distinct. All 112 globe tests, scoped ESLint, type checks, build,
+file-length and diff checks passed. Browser security-policy verification blocked
+both NASA setup and localhost visual inspection; no account or key was created.
+The dedicated dashboard plan records unfinished live FIRMS/vessel integrations.
+
+The earlier claim-export backend run completed: 2,623 passed, 14 skipped, 94.46%
+coverage. Identity modules added after collection passed separately, including
+six SQL cases with revision-insert failure rollback. They are not covered by that
+full run. No combined full-plan completion or commit is implied.
+
+
+### Independent observation overlay controls
+
+Added separate aircraft/vessel/FIRMS display filters and loaded-count/category
+visibility disclosures without reclassifying unrelated maritime or disaster data.
+Three focused tests, type checks, ESLint, file-length and diff checks passed.
+The earlier full UI run missed branch coverage at 89.98%; a new full run is active
+after adding density/selection/overlay behaviour coverage. No provider activation
+or browser acceptance is claimed.
+
+
+### Dashboard review repairs and integration checks
+
+The full frontend overlay run passed 813 tests in 147 files: 95.41% statements,
+90.06% branches, 94.12% functions and 96.62% lines. The existing coverage gate is
+unchanged. Subsequent review repairs reserve a bottom attribution gutter, keep
+expanded attribution above instruments and use a transparent boat-deck cutout
+for the icon mask. World clocks now subscribe at minute boundaries rather than
+using the relative-time bucket. All 116 globe tests passed after these repairs.
+Type checks and production build passed; a test-only floating-expression lint
+issue was repaired and scoped ESLint then passed. Browser/GPU acceptance and
+actual vessel/FIRMS onboarding are still outstanding.
+
+### Reviewed identity persistence and migration 0026
+
+Added the identity root/revision migration and Alembic metadata registration.
+Report deletion removes the dependent review history within its existing
+transaction. Disposable SQLite checks preserve populated reports, frozen evidence,
+claim history and accounts across upgrade, empty downgrade and re-upgrade;
+retained identity roots or orphan revisions prevent downgrade before DDL.
+The identity suite passed 48 tests, followed by three strengthened migration
+checks. Seventeen existing report, claim and CLI/migration regressions passed.
+Mypy passed for 532 source files; scoped Ruff and file-length checks passed.
+Read-only review gaps in preservation/deletion coverage were addressed.
+No operator database was migrated. Authorised service/API/UI integration,
+team-scope checks and PostgreSQL acceptance remain open.
+
+### Authorised identity review service and API
+
+Added current-session and parent/root scope checks, exact candidate/citation
+revalidation, company-subject binding, stale-revision protection, scope quotas
+and transactional audit writes. Added strict `/api/identity-reviews` endpoints
+and regenerated OpenAPI/frontend types. Team checks cover shared report creation,
+other-author correction refusal, removal, archive/admin override and shared quotas.
+The combined identity suite passed 69 tests and HTTP tests passed 13 cases.
+Mypy passed for 536 source files, import contracts and scoped Ruff passed, and
+frontend types checked successfully. Review found no confirmed boundary blocker.
+UI/history controls, export selection, broader acceptance and PostgreSQL remain
+open; no operator migration or real-provider action occurred.
+
+### Report identity review interface
+
+Added candidate inspection, decision editing, exact revision history, source
+attributes and retained conflict/excerpt drafts beside report annotations. The
+interface uses generated API types and current-scope requests. It clears private
+state on account/access/report/version changes. Read-only review found pagination
+could discard a draft; switching pages/candidates or opening another editor now
+requires save/cancel first, with a regression test.
+The report suite passed 141 tests before that repair, and 13 focused identity UI
+tests now cover creation, correction, history, scope changes and error recovery.
+The first full frontend run passed 824 tests but missed the unchanged branch gate
+at 89.91%; meaningful missing interaction tests were added and coverage is being
+rerun. Build, type checks and scoped lint passed. Identity export selection and
+real browser acceptance remain open.
+
+### Selected identity evidence exports
+
+Extended the selected evidence package to exact identity revisions and mixed
+claim/identity selections, with a combined 20-revision cap. Frozen candidate and
+excerpt validation, final current-access/content checks, deterministic hashes and
+the existing bounded renderer apply to both kinds. Identity-containing packages
+use manifest v3 while claim-only packages retain v2. The report interface shares
+one selection tray and preserves deliberate historical choices. Generated API
+contracts were updated. Renderer tests passed 17 cases, legacy export regressions
+21 cases, and identity selection/API tests 10 cases. Scoped Ruff and mypy passed.
+Report UI integration passed 91 tests in 20 files. Frontend type checks, scoped
+ESLint and repository file-length checks passed. The two-worker full frontend run
+ended with 829 passes and one administrator-login timeout. All 12 login tests then
+passed in isolation; full coverage remains unconfirmed. The preceding four-worker frontend run ended
+with 821 passes, two failures and two worker-start errors; all four affected files
+then passed a focused 15-test run. Full frontend coverage remains unconfirmed.
+
+### Claim draft protection and reported organisation relationships
+
+Prevented claim pagination, generation and editor switching from discarding an
+open draft. In-flight generation blocks new edits and page changes, releasing on
+failure or completion. Permission/error states retain a cancel action. The
+pagination regression failed before the fix; 11 claim/generation tests passed.
+
+GLEIF collection was already wired, so added its missing report presentation:
+explicit direct/ultimate parent assertions from frozen evidence, with original
+dates, status, source corroboration and evidence links. No identity merge or
+ownership inference is introduced. Invalid relationship fields and unavailable
+periods remain disclosed. Corrected period omission counting for future
+collections, with a reproduced regression; historical reports are unchanged.
+Eleven relationship UI tests and 15 backend organisation tests passed. Type
+checks, scoped ESLint/Ruff, mypy and file-length checks passed. Read-only review
+found no blocker. The full frontend coverage run passed in
+data/relationships-full-frontend.log: 843 tests in 152 files, 95.45% statements, 90.11% branches, 94.2%
+functions and 96.64% lines. The unchanged 90% gates passed. Production build
+passed with the existing bundle-size advisory. IODA primary documentation was revisited;
+no new IODA/FIRMS/vessel connection or account was created.
+
+### Spherical globe clustering and integration verification
+
+Replaced degree-grid grouping with bounded unit-vector bins and vector-mean
+centres, preserving category boundaries and original coordinates at the date line
+and poles. Eight regressions failed before the repair; all nine new cases then
+passed. The globe suite passed 125 tests. Full frontend verification passed 852
+tests in 153 files, with 90.18% branch coverage; build, types, scoped lint and
+file-length checks passed. Full backend verification passed 2,724 tests with
+14 skips and 95.63% coverage, exit code zero.
+
+The expansion status audit now distinguishes implemented code from remaining
+provider, model, migration, human-review and GPU acceptance. Security scan
+c2e2ad9e-7a7b-49b6-87ca-0f032b924516 sealed with no findings after review of all
+76 source inventory items. The tool retained two obsolete pending-review checkpoint
+rows, so its sealed coverage is still partial. Scan-reported usage was 9,803,976
+tokens, including 9,473,024 cached input tokens, across three recorded threads.
+The initial final-draft submission rejected an unsupported field; the subsequent
+turn repaired the draft before successfully sealing it. No source edits occurred
+during that scan. Documentation updates follow the sealed snapshot.
+
+### Annotation citations open their frozen evidence
+
+Moved the existing evidence-navigation context into shared report components,
+retaining the feature re-export so all consumers use one provider. Claim and
+identity revision citations now open and focus their selected version's annex
+entry. Missing labels remain inert and excerpts retain their original relation
+and text. This improves inspection of historical annotations without fetching
+another report or changing authority. Two missing-link cases failed before the
+repair; 29 focused navigation/annotation tests, type checks, scoped ESLint and
+diff whitespace checks passed afterwards. Independent review found no actionable
+issue. This frontend-only change follows the sealed security snapshot and is
+covered by its separate review and focused tests, not that scan or the preceding
+full frontend run.

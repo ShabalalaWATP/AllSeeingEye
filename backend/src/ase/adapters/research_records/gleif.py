@@ -206,6 +206,8 @@ class GleifParentProvider:
             if isinstance(period, dict)
         ]
         periods_json, periods_omitted = bounded_json(periods)
+        # Count both the entry ceiling/malformed rows and the JSON character ceiling.
+        periods_omitted += len(raw_periods) - len(periods)
         status = text(relationship.get("status"), 50)
         return [
             _unassessed(

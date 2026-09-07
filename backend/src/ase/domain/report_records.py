@@ -13,6 +13,7 @@ from ase.domain.challenge import ReportChallenge
 from ase.domain.challenge_records import challenge_to_dict
 from ase.domain.citation_check_records import citation_checks_to_dict
 from ase.domain.citation_checks import ReportCitationChecks
+from ase.domain.claim_generation import ClaimGenerationReceipt, claim_generation_to_dict
 from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
@@ -91,6 +92,7 @@ class ReportVersion:
     research_context: ResearchContext | None = None
     challenge: ReportChallenge | None = None
     model_routing: ModelRoutingRecord | None = None
+    claim_generation: ClaimGenerationReceipt | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
@@ -105,9 +107,15 @@ def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
         and version.research_context is None
         and version.challenge is None
         and version.model_routing is None
+        and version.claim_generation is None
     ):
         return None
     return {
+        **(
+            {"claim_generation": claim_generation_to_dict(version.claim_generation)}
+            if version.claim_generation is not None
+            else {}
+        ),
         "model_routing": routing_to_dict(version.model_routing),
         **({"challenge": challenge_to_dict(version.challenge)} if version.challenge else {}),
         "direction": direction_to_dict(version.direction) if version.direction else None,

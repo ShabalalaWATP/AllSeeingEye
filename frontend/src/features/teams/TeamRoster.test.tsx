@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { manager, roster, setupTeams } from '@/test/fixtures.teams';
 
 let compact = true;
-let changed: (() => void) | undefined;
+const listeners = new Set<() => void>();
 beforeEach(() => {
   const original = window.matchMedia.bind(window);
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => {
@@ -15,10 +15,13 @@ beforeEach(() => {
         _type: string,
         listener: EventListenerOrEventListenerObject | null,
       ) => {
-        changed = listener as () => void;
+        if (listener) listeners.add(listener as () => void);
       };
-      media.removeEventListener = () => {
-        changed = undefined;
+      media.removeEventListener = (
+        _type: string,
+        listener: EventListenerOrEventListenerObject | null,
+      ) => {
+        listeners.delete(listener as () => void);
       };
     }
     return media;
@@ -26,7 +29,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   compact = true;
-  changed = undefined;
+  listeners.clear();
 });
 
 async function member(name: string) {
@@ -65,11 +68,14 @@ describe('compact team roster', () => {
   it('switches back to the semantic desktop table when the viewport widens', async () => {
     setupTeams(manager);
     await member('Uma User');
-    act(() => {
+    // The async roster can render before its external-store effect subscribes.
+    await waitFor(() => expect(listeners.size).toBeGreaterThan(0));
+    await act(async () => {
       compact = false;
-      changed?.();
+      for (const listener of listeners) listener();
+      await Promise.resolve();
     });
-    expect(screen.getByRole('table', { name: 'Team members' })).toBeVisible();
+    expect(await screen.findByRole('table', { name: 'Team members' })).toBeVisible();
     expect(screen.queryByRole('list', { name: 'Team members' })).not.toBeInTheDocument();
     expect(screen.getAllByText('Uma User')).toHaveLength(1);
   });

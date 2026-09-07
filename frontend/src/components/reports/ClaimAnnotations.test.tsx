@@ -62,5 +62,66 @@ it('clears unsaved private claim text after access invalidation', async () => {
   await waitFor(() =>
     expect(screen.queryByDisplayValue('Private unfinished annotation')).not.toBeInTheDocument(),
   );
-  await waitFor(() => expect(screen.getByLabelText('Claim statement')).toHaveValue(''));
+  expect(screen.queryByLabelText('Claim statement')).not.toBeInTheDocument();
+});
+
+it('keeps a draft while pagination, generation and another editor are locked', async () => {
+  server.use(
+    http.get('/api/claims', () =>
+      HttpResponse.json({ items: [], total: 21, limit: 20, offset: 0 }),
+    ),
+  );
+  render(
+    <ClaimAnnotations
+      reportId="report-1"
+      version={1}
+      evidence={report.version.evidence}
+      canCreate
+    />,
+  );
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Claim annotations and history' }));
+  await user.click(await screen.findByRole('button', { name: 'Add a claim' }));
+  await user.type(screen.getByLabelText('Claim statement'), 'Keep this research draft');
+  expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Generate proposed claims' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Add a claim' })).toBeDisabled();
+  expect(screen.getByLabelText('Claim statement')).toHaveValue('Keep this research draft');
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.getByRole('button', { name: 'Next page' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Generate proposed claims' })).toBeEnabled();
+});
+
+it('prevents opening a draft or changing pages during generation and releases after failure', async () => {
+  let finish: (() => void) | undefined;
+  const pending = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  server.use(
+    http.get('/api/claims', () =>
+      HttpResponse.json({ items: [], total: 21, limit: 20, offset: 0 }),
+    ),
+    http.post('/api/claims/generate', async () => {
+      await pending;
+      return HttpResponse.json(
+        { error: { code: 'unavailable', message: 'Provider unavailable.' } },
+        { status: 503 },
+      );
+    }),
+  );
+  render(<ClaimAnnotations reportId="report-1" version={1} canCreate />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: 'Claim annotations and history' }));
+  await user.click(await screen.findByRole('button', { name: 'Generate proposed claims' }));
+  const add = screen.getByRole('button', { name: 'Add a claim' });
+  const next = screen.getByRole('button', { name: 'Next page' });
+  const locked = [add.hasAttribute('disabled'), next.hasAttribute('disabled')];
+  await act(async () => {
+    finish?.();
+    await pending;
+  });
+  await screen.findByText('Provider unavailable.');
+  expect(locked).toEqual([true, true]);
+  expect(screen.getByRole('button', { name: 'Add a claim' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Next page' })).toBeEnabled();
 });

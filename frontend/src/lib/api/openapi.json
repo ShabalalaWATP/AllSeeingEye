@@ -2341,6 +2341,319 @@
         }
       }
     },
+    "/api/identity-reviews": {
+      "get": {
+        "tags": [
+          "identity-reviews"
+        ],
+        "summary": "List Identity Reviews",
+        "operationId": "list_identity_reviews_api_identity_reviews_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Version Number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "identity-reviews"
+        ],
+        "summary": "Create Identity Review",
+        "operationId": "create_identity_review_api_identity_reviews_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityDecisionRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/identity-reviews/{decision_id}/revisions/{revision_id}": {
+      "get": {
+        "tags": [
+          "identity-reviews"
+        ],
+        "summary": "Get Identity Review",
+        "operationId": "get_identity_review_api_identity_reviews__decision_id__revisions__revision_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Decision Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/identity-reviews/{decision_id}": {
+      "get": {
+        "tags": [
+          "identity-reviews"
+        ],
+        "summary": "Get Identity Review",
+        "operationId": "get_identity_review_api_identity_reviews__decision_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Decision Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "identity-reviews"
+        ],
+        "summary": "Update Identity Review",
+        "operationId": "update_identity_review_api_identity_reviews__decision_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Decision Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityDecisionRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/library": {
       "get": {
         "tags": [
@@ -3204,6 +3517,124 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ResearchRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/claim-evidence-package": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Claim Evidence Package",
+        "operationId": "export_claim_evidence_package_api_reports__report_id__claim_evidence_package_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimPackageIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/selected-evidence-package": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Export Claim Evidence Package",
+        "operationId": "export_claim_evidence_package_api_reports__report_id__selected_evidence_package_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimPackageIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -6538,6 +6969,24 @@
         "title": "CapabilitiesOut",
         "description": "What this deployment can offer the browser beyond the always-on features."
       },
+      "CapturedIdentityValue": {
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "title": "Namespace"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "namespace",
+          "value"
+        ],
+        "title": "CapturedIdentityValue"
+      },
       "CapturedIdentityValueOut": {
         "properties": {
           "namespace": {
@@ -7127,6 +7576,27 @@
         ],
         "title": "ClaimDimensionOut"
       },
+      "ClaimExportReferenceIn": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Id"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "claim_id",
+          "revision_id"
+        ],
+        "title": "ClaimExportReferenceIn"
+      },
       "ClaimGenerateIn": {
         "properties": {
           "report_id": {
@@ -7148,6 +7618,43 @@
           "version_number"
         ],
         "title": "ClaimGenerateIn"
+      },
+      "ClaimGenerationReceipt": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ClaimGenerationStatus"
+          },
+          "revision_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Revision Ids",
+            "default": []
+          },
+          "model_origin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClaimModelOrigin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ClaimGenerationReceipt",
+        "description": "Exact initial revisions allow later exports to distinguish operator corrections.\n\nAbsence on a legacy report means not recorded, never a successful empty result.\nThe receipt contains no prompt, credential or provider error text."
       },
       "ClaimGenerationResult": {
         "properties": {
@@ -7176,6 +7683,20 @@
           "status"
         ],
         "title": "ClaimGenerationResult"
+      },
+      "ClaimGenerationStatus": {
+        "type": "string",
+        "enum": [
+          "completed",
+          "empty",
+          "invalid",
+          "unavailable",
+          "unsupported",
+          "no_model",
+          "rate_limited",
+          "quota_exceeded"
+        ],
+        "title": "ClaimGenerationStatus"
       },
       "ClaimKind": {
         "type": "string",
@@ -7282,6 +7803,38 @@
           "generated_at"
         ],
         "title": "ClaimModelOrigin"
+      },
+      "ClaimPackageIn": {
+        "properties": {
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          },
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Revisions"
+          },
+          "identity_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/IdentityExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Identity Revisions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_number"
+        ],
+        "title": "ClaimPackageIn"
       },
       "ClaimPageOut": {
         "properties": {
@@ -8485,6 +9038,40 @@
         ],
         "title": "EvidenceAssessmentOut"
       },
+      "EvidenceAttribute": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "title": "EvidenceAttribute"
+      },
       "EvidenceAttributeOut": {
         "properties": {
           "key": {
@@ -9040,6 +9627,401 @@
           "version"
         ],
         "title": "HealthOut"
+      },
+      "IdentityCandidateSnapshot": {
+        "properties": {
+          "candidate": {
+            "$ref": "#/components/schemas/ResearchIdentityCandidate"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_content_hash": {
+            "type": "string",
+            "title": "Source Content Hash"
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAttribute"
+            },
+            "type": "array",
+            "title": "Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate",
+          "event_id",
+          "source_id",
+          "source_content_hash",
+          "attributes"
+        ],
+        "title": "IdentityCandidateSnapshot"
+      },
+      "IdentityCreateIn": {
+        "properties": {
+          "candidate_label": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Candidate Label"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/IdentityDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Citations"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_label",
+          "disposition",
+          "rationale",
+          "report_id",
+          "version_number"
+        ],
+        "title": "IdentityCreateIn"
+      },
+      "IdentityDecisionRevision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "decision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Decision Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/IdentityCandidateSnapshot"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/IdentityDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "authored_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Authored By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "decision_id",
+          "report_id",
+          "report_version_id",
+          "number",
+          "previous_id",
+          "subject",
+          "candidate",
+          "disposition",
+          "rationale",
+          "unresolved_conflicts",
+          "citations",
+          "authored_by",
+          "created_at"
+        ],
+        "title": "IdentityDecisionRevision"
+      },
+      "IdentityDecisionRoot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "title": "Report Version Number"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "candidate_label": {
+            "type": "string",
+            "title": "Candidate Label"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "title": "Evidence Sha256"
+          },
+          "latest_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Latest Revision Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "report_version_number",
+          "created_by",
+          "team_id",
+          "subject",
+          "candidate_label",
+          "evidence_sha256",
+          "latest_revision_id",
+          "created_at"
+        ],
+        "title": "IdentityDecisionRoot"
+      },
+      "IdentityDetailOut": {
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/IdentityDecisionRoot"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/IdentityDecisionRevision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root",
+          "revision"
+        ],
+        "title": "IdentityDetailOut"
+      },
+      "IdentityDisposition": {
+        "type": "string",
+        "enum": [
+          "matched",
+          "rejected",
+          "unresolved",
+          "withdrawn"
+        ],
+        "title": "IdentityDisposition"
+      },
+      "IdentityExportReferenceIn": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Decision Id"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_id",
+          "revision_id"
+        ],
+        "title": "IdentityExportReferenceIn"
+      },
+      "IdentityPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IdentityDecisionRevision"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "IdentityPageOut"
+      },
+      "IdentityUpdateIn": {
+        "properties": {
+          "candidate_label": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Candidate Label"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/IdentityDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Citations"
+          },
+          "base_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_label",
+          "disposition",
+          "rationale",
+          "base_revision_id"
+        ],
+        "title": "IdentityUpdateIn"
       },
       "IndicatorIn": {
         "properties": {
@@ -13467,6 +14449,16 @@
       },
       "ReportVersionOut": {
         "properties": {
+          "claim_generation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClaimGenerationReceipt"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "claim_ledger": {
             "anyOf": [
               {
@@ -13930,6 +14922,53 @@
           "media"
         ],
         "title": "ResearchFocus"
+      },
+      "ResearchIdentityCandidate": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "identifiers": {
+            "items": {
+              "$ref": "#/components/schemas/CapturedIdentityValue"
+            },
+            "type": "array",
+            "title": "Identifiers"
+          },
+          "aliases": {
+            "items": {
+              "$ref": "#/components/schemas/CapturedIdentityValue"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "declared_match_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Match Status"
+          },
+          "status": {
+            "type": "string",
+            "const": "unverified_candidate",
+            "title": "Status",
+            "default": "unverified_candidate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "identifiers",
+          "aliases",
+          "declared_match_status"
+        ],
+        "title": "ResearchIdentityCandidate"
       },
       "ResearchIdentityCandidateOut": {
         "properties": {

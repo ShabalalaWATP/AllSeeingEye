@@ -16,6 +16,7 @@ from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
+from ase.application.ports.claims import ClaimRepository
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
@@ -33,11 +34,13 @@ from ase.application.ports.research import ResearchCollection
 from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
+from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.progress import Progress
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.research_inputs import ReportResearchInputs
+from ase.application.reports.save_production import SaveProduction
 from ase.application.reports.scope import (
     conflict_background,
     report_scope,
@@ -45,7 +48,6 @@ from ase.application.reports.scope import (
     report_window,
 )
 from ase.application.reports.templates import Template, template_for
-from ase.domain.audit import AuditAction
 from ase.domain.collection import CollectionPlan
 from ase.domain.errors import (
     EncryptionUnavailable,
@@ -90,6 +92,7 @@ class GenerateReportUseCase:
         research_inputs: ResearchInputStore | None = None,
         llm_bindings: LlmBindingRepository | None = None,
         map_views: MapViewRepository | None = None,
+        claims: ClaimRepository | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -101,6 +104,9 @@ class GenerateReportUseCase:
             url_resolver=url_resolver,
             research=research,
             private_store_factory=private_store_factory,
+            automatic_claims=AutomaticClaims(gateway, cipher, clock, limiter)
+            if claims is not None
+            else None,
         )
         self._countries = countries
         self._conflicts = conflicts
@@ -112,7 +118,7 @@ class GenerateReportUseCase:
         self._clock = clock
         self._limiter = limiter
         self._limits = limits
-        self._auditor = auditor
+        self._save = SaveProduction(reports, claims, access, auditor, uow)
         self._uow = uow
         self._map_origin = ReportMapOrigin(access, reports, map_views)
         self._authorisation = ReportAuthorisation(
@@ -138,12 +144,13 @@ class GenerateReportUseCase:
         now = self._clock.now()
         job = inputs.apply(await self._job(actor, template, request, profile, now, plan=plan))
         await self._uow.rollback()
-        version = await self._producer.produce(
+        produced = await self._producer.produce_with_claims(
             job,
             routing.profile_for,
             lambda: self._authorisation.finish(actor, request, None, plan, inputs.parent),
             progress=progress,
         )
+        version = produced.version
         version.model_routing = routing.provenance
         record = ReportRecord(
             id=version.report_id,
@@ -159,8 +166,9 @@ class GenerateReportUseCase:
             latest_version=1,
             team_id=request.team_id,
         )
-        await self._reports.add(record, version)
-        await self._finish(actor, record, version, context)
+        await self._save.save(
+            actor, record, produced, context, creating=True, automation=request.automation
+        )
         return record, version
 
     async def regenerate(
@@ -202,20 +210,22 @@ class GenerateReportUseCase:
         )
         job = inputs.apply(job)
         await self._uow.rollback()
-        version = await self._producer.produce(
+        produced = await self._producer.produce_with_claims(
             job,
             routing.profile_for,
             lambda: self._authorisation.finish(actor, request, record, plan, inputs.parent),
             progress=progress,
         )
+        version = produced.version
         version.model_routing = routing.provenance
         record.status = version.status
         record.latest_version = version.number
         record.period_from = job.period_from
         record.period_to = job.period_to
         record.data_cutoff = version.data_cutoff or now
-        await self._reports.add_version(record, version)
-        await self._finish(actor, record, version, context)
+        await self._save.save(
+            actor, record, produced, context, creating=False, automation=request.automation
+        )
         return record, version
 
     async def _prepare(
@@ -275,23 +285,6 @@ class GenerateReportUseCase:
             background=background,
             direction=plan.direction() if plan is not None else None,
         )
-
-    async def _finish(
-        self, actor: User, record: ReportRecord, version: ReportVersion, context: RequestContext
-    ) -> None:
-        await self._auditor.record(
-            AuditAction.REPORT_GENERATED,
-            actor=actor.id,
-            subject=str(record.id),
-            ip=context.ip,
-            details={
-                "template": record.template,
-                "version": version.number,
-                "status": version.status.value,
-                "attempts": version.attempts,
-            },
-        )
-        await self._uow.commit()
 
     def _template(self, request: ReportRequest) -> Template:
         try:

@@ -151,7 +151,8 @@ async def test_generate_read_export_and_delete(
     }
     version = payload["version"]
     assert version["attempts"] == 1 and version["model"] == "llama3.1:8b"
-    assert version["prompt_tokens"] == 50 and version["completion_tokens"] == 20
+    assert version["prompt_tokens"] == 100 and version["completion_tokens"] == 40
+    assert version["claim_generation"]["status"] == "invalid"
     assert [item["label"] for item in version["evidence"]] == ["E1", "E2"]
     assert version["quality"]["items"] == 2 and version["quality"]["confidence_ceiling"] in (
         "low",
@@ -247,9 +248,8 @@ async def test_generation_faults_retry_limits_and_validation(
     assert failed.status_code == 201 and failed.json()["report"]["status"] == "failed"
     assert failed.json()["version"]["findings"][0]["rule"] == "model"
     usage = await client.get("/api/admin/llm/usage", headers=bearer(admin_token))
-    assert (
-        usage.json()["items"][0]["purpose"] == "report:intsum"
-        and usage.json()["items"][0]["ok"] is False
+    assert any(
+        item["purpose"] == "report:intsum" and item["ok"] is False for item in usage.json()["items"]
     )
 
     container.limits = RateLimits(reports_per_user=1)

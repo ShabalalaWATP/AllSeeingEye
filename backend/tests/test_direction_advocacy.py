@@ -108,7 +108,12 @@ async def test_ask_runs_direction_then_the_advocate(
         headers=bearer(token),
     )
     assert response.status_code == 201, response.text
-    assert [r.schema_name for r in gateway.requests] == ["direction", "report", "advocacy"]
+    assert [r.schema_name for r in gateway.requests] == [
+        "direction",
+        "report",
+        "advocacy",
+        "claim_proposals",
+    ]
     assert (
         "PIR-1: Will fighting around Kharkiv intensify this week?"
         in gateway.requests[1].messages[1].content
@@ -128,7 +133,7 @@ async def test_ask_runs_direction_then_the_advocate(
     assert advocacy["target"] == "KJ1" and advocacy["evidence"] == ["E2"]
     assert (advocacy["confidence_before"], advocacy["confidence_after"]) == ("moderate", "low")
     assert any("E7" in f["message"] for f in version["findings"])
-    assert version["prompt_tokens"] == 150 and version["latency_ms"] == 300.0
+    assert version["prompt_tokens"] == 200 and version["latency_ms"] == 400.0
     markdown = version["markdown"]
     assert "Requirements: PIR-1, SIR-1, SIR-2, EEI-1, EEI-2." in markdown
     assert "## Direction" in markdown and "## Devil's advocacy" in markdown
@@ -160,6 +165,7 @@ async def test_ask_runs_direction_then_the_advocate(
     async with container.session_factory() as session:
         usage = await container.repositories(session).llm_usage.list_recent(10)
     assert sorted({row.purpose for row in usage}) == [
+        "claim_proposals",
         "report:ask",
         "report:ask:advocacy",
         "report:ask:direction",
@@ -216,5 +222,11 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     )
     container.llm = gateway
     empty = await client.post("/api/reports", json=ask, headers=bearer(token))
-    assert empty.status_code == 201 and len(gateway.requests) == 3
+    assert empty.status_code == 201
+    assert [r.schema_name for r in gateway.requests] == [
+        "direction",
+        "report",
+        "report",
+        "claim_proposals",
+    ]
     assert empty.json()["version"]["status"] == "failed"

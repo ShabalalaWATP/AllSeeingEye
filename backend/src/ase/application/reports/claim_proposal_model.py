@@ -103,6 +103,15 @@ def _prompt(version: ReportVersion) -> str:
     return prompt
 
 
+def claim_input_supported(version: ReportVersion) -> bool:
+    """Preflight eligibility before consuming provider-call admission."""
+    try:
+        _prompt(version)
+    except (ValueError, RecursionError):
+        return False
+    return True
+
+
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     value: dict[str, Any] = {}
     for key, item in pairs:

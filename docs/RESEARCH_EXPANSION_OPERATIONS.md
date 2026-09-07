@@ -50,6 +50,15 @@ PSC queries share the existing Companies House credential allowance. A reported
 accounting-consolidation parent is not a verified beneficial owner. Names remain
 identity candidates; neither shared addresses nor missing records prove control.
 
+Reports now include **Reported organisation relationships**, derived solely from
+the selected version's frozen GLEIF parent evidence. Direct and ultimate parents
+remain separate assertions. Original periods, registry status and source-reported
+corroboration are shown with links to the evidence annex. Missing or unreadable
+metadata remains explicit. This view does not merge identities, establish current
+ownership or replace an operator relationship review. The corrected collection
+omission count includes malformed and over-limit period entries; older saved
+reports retain their original, potentially understated counts.
+
 Scholarly and parliamentary metadata require explicit source selection or the
 documented subject controls. OpenAlex and Crossref are overlapping aggregators,
 not automatically independent confirmation. Retraction/update flags remain
@@ -59,8 +68,9 @@ indicator and bounded annual interval, preserving missing values separately from
 OONI is optional and disabled until `ASE_OONI_NONCOMMERCIAL_USE_ACKNOWLEDGED=true`
 is deliberately configured for appropriate CC BY-NC-SA 4.0 use. Country/day
 counters are contributed measurements, not population coverage or proof of cause.
-No individual probe locations are collected. IODA remains deferred pending usable
-documented records and reuse terms.
+No individual probe locations are collected. A legacy IODA live-feed connector
+already exists. The separate historical research/time-series integration remains
+deferred pending usable documented records and reuse terms.
 
 ## Administrator source controls
 

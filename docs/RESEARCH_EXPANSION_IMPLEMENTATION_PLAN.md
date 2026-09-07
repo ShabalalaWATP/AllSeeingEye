@@ -9,6 +9,7 @@ This is the next expansion plan. Earlier delivered work remains in
 [the automated research plan](MASTER_AUTOMATED_RESEARCH_PLAN.md).
 
 Companion specifications:
+- [Current implementation and acceptance audit](RESEARCH_EXPANSION_STATUS_AUDIT.md)
 - [Russia, China, Iran and shared source matrix](REGIONAL_SOURCE_EXPANSION.md)
 - [Globe and flat-map implementation](GEOSPATIAL_RESEARCH_PLAN.md)
 - [Saved map-view persistence and acceptance contract](SAVED_MAP_VIEW_IMPLEMENTATION.md)
@@ -142,10 +143,23 @@ shared schemas, container wiring, generated API types and migrations.
   documents; extend SEC with selected filed content and bounded older pagination.
 - [ ] Add GLEIF reported parent relationships, UK/OFAC primary designations, ITA
   screening records and Contracts Finder/Find a Tender records.
+  GLEIF profile, direct and ultimate accounting-parent adapters are already wired.
+  A dedicated frozen-evidence relationship view now displays their original
+  dates, status, corroboration assertions and evidence links. This does not
+  complete independent relationship review or the other listed source work.
 - [ ] Store organisation identity candidates separately from reviewed matches.
   Prefer registration number, LEI and jurisdiction over string similarity.
+  Report-scoped review storage, migration 0026, authorised API and report interface
+  are implemented locally. Candidate snapshots retain original identifiers and
+  attributes, while operator decisions append separate history. Exact identity
+  revisions can be selected alongside claims for a frozen evidence package.
+  Broader acceptance, full coverage and PostgreSQL verification remain open;
+  see [identity review delivery](IDENTITY_REVIEW_IMPLEMENTATION.md).
 - [ ] Relationship assertions carry type, time validity, source/evidence references,
   review state and disagreement. Shared addresses are not ownership edges.
+  The GLEIF report view preserves captured source assertions without inferring
+  current validity, transitive edges or identity matches. Independent relationship
+  review/disagreement annotations remain outstanding.
 - [ ] Claim ledger uses stable IDs and atomic assertions, support/opposition excerpts,
   original-source chains, inference labels and unresolved conflicts.
 - [ ] Keep A-F source reliability, 1-6 information credibility and the current

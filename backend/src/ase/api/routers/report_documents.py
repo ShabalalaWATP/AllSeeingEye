@@ -6,11 +6,52 @@ from uuid import UUID
 from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.schemas_claim_export import ClaimPackageIn
 from ase.api.schemas_report_documents import ReportComparisonOut
 from ase.api.session_guard import validate_request_session
 from ase.domain.report_documents import ExportFormat
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.post(
+    "/{report_id}/selected-evidence-package",
+    response_class=Response,
+    responses={
+        200: {"content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}}}
+    },
+)
+@router.post(
+    "/{report_id}/claim-evidence-package",
+    response_class=Response,
+    responses={
+        200: {"content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}}}
+    },
+)
+async def export_claim_evidence_package(
+    report_id: UUID,
+    body: ClaimPackageIn,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+) -> Response:
+    result = await container.export_claim_package(session).execute(
+        claims,
+        report_id,
+        body.version_number,
+        body.references(),
+        identity_references=body.identity_references(),
+    )
+    await validate_request_session(container, claims)
+    return Response(
+        result.content,
+        media_type=result.media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{result.filename}"',
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get("/{report_id}/evidence-package", response_class=Response)

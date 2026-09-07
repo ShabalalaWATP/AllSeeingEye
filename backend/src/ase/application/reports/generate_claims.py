@@ -10,7 +10,7 @@ from ase.application.model_routing import ModelRouting
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
 from ase.application.ports.services import RateLimiter
-from ase.application.reports.claim_proposal_model import propose_claims
+from ase.application.reports.claim_proposal_model import claim_input_supported, propose_claims
 from ase.application.reports.claims import ReportClaims
 from ase.domain.claim_origin import ClaimModelOrigin
 from ase.domain.claim_revisions import ClaimRevision
@@ -44,6 +44,8 @@ class GenerateClaims:
         self, actor: AccessClaims, report_id: UUID, number: int, context: RequestContext
     ) -> ClaimGenerationResult:
         anchor = await self.claims.prepare_proposals(actor, report_id, number)
+        if not claim_input_supported(anchor.version):
+            return ClaimGenerationResult("unsupported")
         if not self.cipher.available:
             raise NoModelAvailable()
         routing = await self.routing.snapshot(team_id=anchor.team_id)

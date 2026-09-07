@@ -128,6 +128,18 @@ async def test_parent_relationship_retains_reported_dates_and_provenance(
     assert "not independent verification" in item.summary
 
 
+async def test_parent_period_omissions_count_all_unretained_entries(monkeypatch):
+    payload = parent_record()
+    relationship = payload["data"]["attributes"]["relationship"]
+    relationship["periods"] = [None, *relationship["periods"] * 25]
+    service = RecordService(monkeypatch, payload)
+    batch = await GleifParentProvider(service.http, CLOCK).collect(ENTITY)
+    await service.http.aclose()
+    attributes = batch.items[0].attributes
+    retained = json.loads(str(attributes["reported_periods"]))
+    assert len(retained) + attributes["reported_periods_omitted"] == 26
+
+
 async def test_parent_mismatched_child_or_type_does_not_create_edge(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

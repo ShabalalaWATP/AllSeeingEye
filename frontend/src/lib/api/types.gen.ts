@@ -794,6 +794,59 @@ export interface paths {
         patch: operations["update_claim_api_claims__claim_id__patch"];
         trace?: never;
     };
+    "/api/identity-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Identity Reviews */
+        get: operations["list_identity_reviews_api_identity_reviews_get"];
+        put?: never;
+        /** Create Identity Review */
+        post: operations["create_identity_review_api_identity_reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/identity-reviews/{decision_id}/revisions/{revision_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Identity Review */
+        get: operations["get_identity_review_api_identity_reviews__decision_id__revisions__revision_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/identity-reviews/{decision_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Identity Review */
+        get: operations["get_identity_review_api_identity_reviews__decision_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Identity Review */
+        patch: operations["update_identity_review_api_identity_reviews__decision_id__patch"];
+        trace?: never;
+    };
     "/api/me/library": {
         parameters: {
             query?: never;
@@ -1013,6 +1066,40 @@ export interface paths {
         get: operations["get_research_run_api_research_runs__run_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/claim-evidence-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Claim Evidence Package */
+        post: operations["export_claim_evidence_package_api_reports__report_id__claim_evidence_package_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/selected-evidence-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Claim Evidence Package */
+        post: operations["export_claim_evidence_package_api_reports__report_id__selected_evidence_package_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2133,6 +2220,13 @@ export interface components {
             /** Os Layers */
             os_layers: string[];
         };
+        /** CapturedIdentityValue */
+        CapturedIdentityValue: {
+            /** Namespace */
+            namespace: string;
+            /** Value */
+            value: string;
+        };
         /** CapturedIdentityValueOut */
         CapturedIdentityValueOut: {
             /** Namespace */
@@ -2316,6 +2410,19 @@ export interface components {
             /** Explanation */
             explanation: string;
         };
+        /** ClaimExportReferenceIn */
+        ClaimExportReferenceIn: {
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Revision Id
+             * Format: uuid
+             */
+            revision_id: string;
+        };
         /** ClaimGenerateIn */
         ClaimGenerateIn: {
             /**
@@ -2325,6 +2432,27 @@ export interface components {
             report_id: string;
             /** Version Number */
             version_number: number;
+        };
+        /**
+         * ClaimGenerationReceipt
+         * @description Exact initial revisions allow later exports to distinguish operator corrections.
+         *
+         *     Absence on a legacy report means not recorded, never a successful empty result.
+         *     The receipt contains no prompt, credential or provider error text.
+         */
+        ClaimGenerationReceipt: {
+            status: components["schemas"]["ClaimGenerationStatus"];
+            /**
+             * Revision Ids
+             * @default []
+             */
+            revision_ids: string[];
+            model_origin?: components["schemas"]["ClaimModelOrigin"] | null;
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
         };
         /** ClaimGenerationResult */
         ClaimGenerationResult: {
@@ -2339,6 +2467,11 @@ export interface components {
              */
             items: components["schemas"]["ClaimRevision"][];
         };
+        /**
+         * ClaimGenerationStatus
+         * @enum {string}
+         */
+        ClaimGenerationStatus: "completed" | "empty" | "invalid" | "unavailable" | "unsupported" | "no_model" | "rate_limited" | "quota_exceeded";
         /**
          * ClaimKind
          * @enum {string}
@@ -2386,6 +2519,15 @@ export interface components {
              * Format: date-time
              */
             generated_at: string;
+        };
+        /** ClaimPackageIn */
+        ClaimPackageIn: {
+            /** Version Number */
+            version_number: number;
+            /** Revisions */
+            revisions?: components["schemas"]["ClaimExportReferenceIn"][];
+            /** Identity Revisions */
+            identity_revisions?: components["schemas"]["IdentityExportReferenceIn"][];
         };
         /** ClaimPageOut */
         ClaimPageOut: {
@@ -2788,6 +2930,13 @@ export interface components {
             /** Reasons */
             reasons: string[];
         };
+        /** EvidenceAttribute */
+        EvidenceAttribute: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: string | number | boolean | null;
+        };
         /** EvidenceAttributeOut */
         EvidenceAttributeOut: {
             /** Key */
@@ -3004,6 +3153,178 @@ export interface components {
             status: string;
             /** Version */
             version: string;
+        };
+        /** IdentityCandidateSnapshot */
+        IdentityCandidateSnapshot: {
+            candidate: components["schemas"]["ResearchIdentityCandidate"];
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Content Hash */
+            source_content_hash: string;
+            /** Attributes */
+            attributes: components["schemas"]["EvidenceAttribute"][];
+        };
+        /** IdentityCreateIn */
+        IdentityCreateIn: {
+            /** Candidate Label */
+            candidate_label: string;
+            disposition: components["schemas"]["IdentityDisposition"];
+            /** Rationale */
+            rationale: string;
+            /** Unresolved Conflicts */
+            unresolved_conflicts?: string[];
+            /** Citations */
+            citations?: components["schemas"]["CitationInput"][];
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** IdentityDecisionRevision */
+        IdentityDecisionRevision: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Decision Id
+             * Format: uuid
+             */
+            decision_id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Number */
+            number: number;
+            /** Previous Id */
+            previous_id: string | null;
+            /** Subject */
+            subject: string;
+            candidate: components["schemas"]["IdentityCandidateSnapshot"];
+            disposition: components["schemas"]["IdentityDisposition"];
+            /** Rationale */
+            rationale: string;
+            /** Unresolved Conflicts */
+            unresolved_conflicts: string[];
+            /** Citations */
+            citations: components["schemas"]["ClaimCitation"][];
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** IdentityDecisionRoot */
+        IdentityDecisionRoot: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Report Version Number */
+            report_version_number: number;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Subject */
+            subject: string;
+            /** Candidate Label */
+            candidate_label: string;
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            /**
+             * Latest Revision Id
+             * Format: uuid
+             */
+            latest_revision_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** IdentityDetailOut */
+        IdentityDetailOut: {
+            root: components["schemas"]["IdentityDecisionRoot"];
+            revision: components["schemas"]["IdentityDecisionRevision"];
+        };
+        /**
+         * IdentityDisposition
+         * @enum {string}
+         */
+        IdentityDisposition: "matched" | "rejected" | "unresolved" | "withdrawn";
+        /** IdentityExportReferenceIn */
+        IdentityExportReferenceIn: {
+            /**
+             * Decision Id
+             * Format: uuid
+             */
+            decision_id: string;
+            /**
+             * Revision Id
+             * Format: uuid
+             */
+            revision_id: string;
+        };
+        /** IdentityPageOut */
+        IdentityPageOut: {
+            /** Items */
+            items: components["schemas"]["IdentityDecisionRevision"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /** IdentityUpdateIn */
+        IdentityUpdateIn: {
+            /** Candidate Label */
+            candidate_label: string;
+            disposition: components["schemas"]["IdentityDisposition"];
+            /** Rationale */
+            rationale: string;
+            /** Unresolved Conflicts */
+            unresolved_conflicts?: string[];
+            /** Citations */
+            citations?: components["schemas"]["CitationInput"][];
+            /**
+             * Base Revision Id
+             * Format: uuid
+             */
+            base_revision_id: string;
         };
         /** IndicatorIn */
         IndicatorIn: {
@@ -4524,6 +4845,7 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            claim_generation?: components["schemas"]["ClaimGenerationReceipt"] | null;
             claim_ledger?: components["schemas"]["ClaimLedgerOut"] | null;
             model_routing?: components["schemas"]["ModelRoutingOut"] | null;
             research_context?: components["schemas"]["ResearchContextOut"] | null;
@@ -4675,6 +4997,23 @@ export interface components {
          * @enum {string}
          */
         ResearchFocus: "general" | "company" | "domain" | "document" | "media";
+        /** ResearchIdentityCandidate */
+        ResearchIdentityCandidate: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Identifiers */
+            identifiers: components["schemas"]["CapturedIdentityValue"][];
+            /** Aliases */
+            aliases: components["schemas"]["CapturedIdentityValue"][];
+            /** Declared Match Status */
+            declared_match_status: string | null;
+            /**
+             * Status
+             * @default unverified_candidate
+             * @constant
+             */
+            status: "unverified_candidate";
+        };
         /** ResearchIdentityCandidateOut */
         ResearchIdentityCandidateOut: {
             /** Evidence Label */
@@ -7260,6 +7599,173 @@ export interface operations {
             };
         };
     };
+    list_identity_reviews_api_identity_reviews_get: {
+        parameters: {
+            query: {
+                report_id: string;
+                version_number: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_identity_review_api_identity_reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityDecisionRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_identity_review_api_identity_reviews__decision_id__revisions__revision_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+                revision_id: string | null;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_identity_review_api_identity_reviews__decision_id__get: {
+        parameters: {
+            query?: {
+                revision_id?: string | null;
+            };
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_identity_review_api_identity_reviews__decision_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityDecisionRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_library_api_me_library_get: {
         parameters: {
             query?: {
@@ -7761,6 +8267,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResearchRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_claim_evidence_package_api_reports__report_id__claim_evidence_package_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimPackageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_claim_evidence_package_api_reports__report_id__selected_evidence_package_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimPackageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
                 };
             };
             /** @description Validation Error */

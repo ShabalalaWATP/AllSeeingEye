@@ -20,6 +20,7 @@ from ase.api.schemas_research_plan import QueryVariantIn
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
+from ase.domain.claim_generation import ClaimGenerationReceipt
 from ase.domain.claim_ledger import build_claim_ledger
 from ase.domain.direction import direction_to_dict
 from ase.domain.events import Category
@@ -199,6 +200,7 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    claim_generation: ClaimGenerationReceipt | None = None
     claim_ledger: ClaimLedgerOut | None = None
     model_routing: ModelRoutingOut | None = None
     research_context: ResearchContextOut | None = None
@@ -229,6 +231,7 @@ class ReportVersionOut(BaseModel):
     def from_version(cls, version: ReportVersion) -> Self:
         return cls(
             claim_ledger=ClaimLedgerOut.model_validate(build_claim_ledger(version)),
+            claim_generation=version.claim_generation,
             model_routing=ModelRoutingOut.model_validate(version.model_routing)
             if version.model_routing
             else None,

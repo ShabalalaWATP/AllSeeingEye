@@ -1,10 +1,11 @@
 # Atomic claims and correction history
 
-Status: domain, SQL persistence, migration 0025, authorised API, operator editor and
-revision history are implemented locally and remain uncommitted. The bounded model
-gateway, routed request orchestration, batch persistence and report-page generation
-action are implemented locally. Automatic report integration remains unfinished.
-This extends E7 of the full research expansion plan. Existing scoring is unchanged.
+Status: domain, SQL persistence, migration 0025, authorised API, operator editor,
+revision history and request-driven model proposals were committed in e71a93e.
+Automatic report production and selected-revision evidence-package API/UI are now
+implemented in the working tree. Final backend regression, browser acceptance and
+human-reviewed model-quality acceptance remain open. The working tree is not yet
+committed. This extends E7/E9 of the full expansion plan; scoring is unchanged.
 
 ## Behaviour to deliver
 
@@ -30,31 +31,29 @@ latest revision with compare-and-swap and validate the entire frozen evidence
 anchor, not rely on the event content hash alone. The domain constructor does
 not replace access checks, persistence integrity or semantic review.
 
-## Remaining implementation and acceptance
+## Delivery status and remaining acceptance
 
-- Add strict serialisation and canonical revision digests, plus a claim root fixed
-  to a report ID, exact version UUID/number and evidence digest. Reuse the existing
-  saved-map evidence digest semantics, excluding mutable archive links.
-- Add scoped repository and immutable SQL revision records. Current migration head
-  is 0024; allocate the next revision after checking the live tree again. No
-  operator migration is authorised by this implementation step.
-- Follow SavedMapViews session validation, administration guard, account lock and
-  AccessPolicy checks. Authorise both claim and parent report on every operation.
-  Scope derives from the parent, including administrator-authored annotations.
-- Enforce scoped count/byte/revision quotas, counting withdrawn history. Filter
-  visibility before pagination. Concurrent corrections return a conflict instead
-  of overwriting. Report deletion explicitly removes dependent records even with
-  SQLite foreign keys disabled. Audit IDs and hashes, never private excerpt text.
-- Provide thin authenticated endpoints and an accessible report claim editor with
-  proposal/review/withdrawal states, supporting/opposing excerpts and history.
-- Add bounded model proposal generation governed by frozen model routing and
-  collection budgets. Validate evidence locators, treat source instructions as
-  untrusted, and keep claims outside scoring and model training by default.
-- Include deliberately selected ledger revisions in versioned evidence packages,
-  preserving existing report/package hashes and distinguishing later annotations.
-- Test revoked access, cross-team/admin scope, archived writes, concurrent edits,
-  stale evidence anchors, quota exhaustion, Unicode selections and unchanged
-  frozen report bytes. Evaluate atomicity and support with human-reviewed cases.
+| Contract | Current evidence |
+| --- | --- |
+| Strict revision codec, canonical digests, exact report/evidence anchors | Implemented in the claim domain and persistence, committed in e71a93e |
+| Scoped immutable storage, migration, quotas, CAS corrections and ID-only audit | Implemented with disposable SQL tests; no operator migration performed |
+| Authenticated editor, review/withdrawal and historical revision navigation | Implemented; UI regressions cover stale edits and access changes |
+| Bounded routed model proposals and retained origin | Manual action committed; automatic production integrated in working tree |
+| Deliberately selected revisions in evidence packages | Offline renderer, post-render guards, API and UI implemented in working tree |
+| Full integration verification | Frontend 802-test full pass plus focused additions; new full backend run ongoing |
+| Human-reviewed atomicity, citation support and real configured-model quality | Outstanding; fixture success does not establish these properties |
+| Browser visual/keyboard acceptance for the expanded claim/export flow | Outstanding |
+
+The automatic pipeline retains explicit outcomes and original proposal IDs. Later
+reviews do not rewrite frozen reports or change scoring. Selected exports preserve
+original base-package member bytes and carry separately identified annotations.
+Direct account changes clear selection and suppress pending downloads; selection
+across pagination keeps exact revision IDs. Eight focused selection/scope tests
+passed after adding those review-requested cases.
+
+Remaining work includes closing the running backend check, a coherent reviewed
+commit, browser acceptance and the wider human-reviewed benchmark. This status
+section supersedes earlier chronological notes that describe then-pending stages.
 
 No percentage of truth or source-grade change is introduced by claim review.
 
@@ -378,3 +377,127 @@ passed, as did file-length and diff checks. Frontend verification remains the
 Prettier repaired formatting in the claim workflow fixture. No operator migration,
 external model call, deployment or remote push was performed. The next integration
 must wire automatic proposals and receipts into Producer and the report transaction.
+
+### Automatic report pipeline integration
+
+Producer now has an explicit ProductionResult path. After the final challenge,
+redraft and evidence-link resolution, it runs the automatic proposal stage with
+the frozen assessment-profile lookup. Model usage is buffered and included in
+report token/latency totals before the final authorisation callback and SAVING
+stage. Unsupported inputs are preflighted before either manual or automatic
+provider-call allowances are consumed.
+
+SaveProduction performs fresh current/background access checks and retains a single
+transaction for report/version insertion, quota-admitted initial claims, usage and
+audits. A failed claim write rolls everything back. Quota rejection freezes a
+quota-exceeded receipt with no revision IDs before the report is serialised.
+ReportVersion stores optional schema-1 receipts in its existing analysis JSON;
+legacy records remain absent. The report API and UI now present that outcome
+separately from mutable annotations and scoring. No additional migration beyond
+the already required claim migration 0025 is introduced.
+
+Eight initial pipeline/report tests passed, covering actual creation/regeneration,
+the schedule factory, durable receipt reload and full report/usage/claim rollback.
+Four additional pipeline security cases passed: account deactivation and team-member
+removal during the model call, cancellation before persistence, and persisted
+quota-rejection provenance. Automatic cancellation follows the existing production
+policy: buffered usage is not persisted when the whole report is cancelled; no
+zero-cost assertion is made. Manual request cancellation has separate attempt accounting.
+Seventeen focused UI tests passed before a formatting/type refinement. Mypy (520
+files), full backend Ruff, configured Bandit and frontend type checks passed.
+Broader affected backend tests and the full frontend coverage run are in progress.
+The preceding full backend 2,557-pass baseline predates this integration.
+
+### Integration verification follow-up
+
+The affected backend group finished with 407 passes and six routing-fixture
+failures. Each failure was the scripted gateway lacking the newly invoked
+claim_proposals schema. The fixture now returns valid proposed claims; assertions
+verify destination routing and retained claim provenance across mid-run binding
+changes. All eight routing integration tests then passed. This is broad verification
+plus targeted repair, not a second clean run of the whole affected group.
+
+The full frontend suite passed 799 tests in 143 files, with 95.39% statements,
+90.06% branches, 94.02% functions and 96.57% lines. Production build passed with its
+existing chunk-size advisory. ESLint, frontend type checking, full backend Ruff,
+mypy (520 files), configured Bandit, architecture, file-length and diff checks passed.
+The new full backend run is active in data/automatic-claim-pipeline-backend-full.log.
+No real configured-model evaluation, migration of the operator database or deployment
+has occurred. Pipeline integration changes remain uncommitted pending that run.
+
+### Selected claim evidence package foundations
+
+Added an offline v2 package renderer for one to twenty explicitly selected claim
+revisions. It preserves the base package member bytes, retains the original
+manifest separately and records selected revision IDs and integrity hashes. It
+fetches no original assets or source URLs. A shared aggregate uncompressed size
+limit covers the base content and added claim records.
+
+The selection service resolves exact authorised revisions, releases read
+transactions before rendering and rechecks current session and parent access
+before delivery. New corrections do not silently replace the selected historical
+revision. Fourteen combined selection/renderer tests passed; an additional real
+team-membership revocation regression then passed in the six-test selection suite.
+Scoped Ruff and mypy across 522 source files passed. Endpoint, shared render
+admission and UI integration remain unfinished, and review is pending. The full
+automatic-pipeline backend suite is still running; these newly added tests are
+outside its previously collected test set.
+
+
+### Selected claim download integration and verification
+
+Added POST /api/reports/{report_id}/claim-evidence-package with strict explicit
+version/revision selection, no-store download headers and regenerated OpenAPI/client
+types. The exporter shares the existing two-worker package allowance, preserves
+admission through cancellation and rechecks access and report-content integrity
+after compression. Whole record/version hashes deliberately reject concurrent
+metadata changes, including regeneration; retry against the selected version.
+
+Read-only review found no confirmed access blocker. Its mutable-render-input gap
+was repaired and the cancellation test now waits for both admission slots to recover.
+All 24 combined selection/renderer/use-case tests passed; the five use-case cases
+passed again after deterministic cancellation cleanup. Six new API tests passed.
+Backend Ruff and mypy (526 files), generated frontend types and frontend type checks
+passed. The selection/download UI remains unfinished.
+
+The full automatic-pipeline backend run completed with 2,590 passes, 14 skips and
+three stale direction-stage fixture failures, at 94.94% coverage. These fixtures
+required new claim-stage order, token/latency and usage-purpose expectations.
+Targeted repairs are being verified; this is not a clean full-suite pass.
+
+The repaired direction/plan and new export API group subsequently passed all
+14 tests. This is the full run plus targeted repair evidence, not a second
+clean full run. File-length and diff checks also passed.
+
+
+### Selected claim package interface
+
+The claim panel now supports selecting exact current or historical revisions,
+reviewing/removing the selected list and downloading the v2 evidence package.
+Selection is limited to twenty revisions and stays in memory. Account, access,
+report and version changes remount the panel, clear selection and abort pending
+downloads. Failed downloads retain selection for retry. Claim history rendering
+was extracted into its own module to keep responsibilities and file sizes bounded.
+
+Ten focused UI tests passed, followed by the full frontend suite: 802 tests in
+144 files, 95.35% statements, 90.02% branches, 94.02% functions and 96.58% lines.
+Production build passed with the existing chunk-size advisory. Three additional
+selection-limit/report/version tests passed after full-suite collection. Read-only
+review found no confirmed blocker and identified further account/pagination test
+coverage opportunities. The export test root version was aligned with the rendered
+version. No browser visual acceptance or real provider test is implied.
+
+A subsequent full backend run completed with 2,623 passes, 14 skips and 94.46%
+coverage in data/claim-export-backend-full.log. This predates identity review and
+combined export additions and is not current full-backend acceptance.
+
+### Claim draft protection
+
+Claim pagination, generation and opening another editor are disabled while a
+draft is open. A generation request also prevents opening a draft or changing
+pages until it settles. The existing-review permission/error state now offers a
+cancel route so the edit lock can be released. A failing pagination regression
+was reproduced before the repair; 11 focused claim/generation tests passed after
+the fix. Access invalidation still clears private draft data. Full frontend
+integration passed with the organisation relationship view: 95.45% statements,
+90.11% branches, 94.2% functions and 96.64% lines. Production build passed.

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
 import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
+import { IdentityReviews } from '@/components/reports/IdentityReviews';
+import { ClaimExportSelection } from '@/components/reports/ClaimExportSelection';
 import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
 import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
 import { useMapRequest } from '@/components/maps/useMapRequest';
@@ -32,6 +34,7 @@ import { ResearchCoverage } from './ResearchCoverage';
 import { CitationCheckMethod } from './CitationChecks';
 import { ResearchContextView } from './ResearchContext';
 import { ReportChallengeView } from './ReportChallenge';
+import { ReportedRelationships } from './ReportedRelationships';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -170,14 +173,32 @@ export default function ReportPage() {
           citationChecks={version.citation_checks}
         />
         <ClaimLedgerView ledger={version.claim_ledger} />
-        <ClaimAnnotations
-          key={`${resource.key}:${id}:${version.number}`}
-          reportId={id}
-          version={version.number}
-          evidence={version.evidence}
-          canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
-          canManage={(root) => mapWritable && workspaces.canManage(root)}
-        />
+        <ClaimExportSelection reportId={id} version={version.number}>
+          <ClaimAnnotations
+            sharedSelection
+            key={`${resource.key}:${id}:${version.number}`}
+            reportId={id}
+            version={version.number}
+            evidence={version.evidence}
+            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
+            generation={version.claim_generation}
+            canManage={(root) => mapWritable && workspaces.canManage(root)}
+          />
+          <IdentityReviews
+            reportId={id}
+            version={version.number}
+            subject={
+              report.scope.research_focus === 'company' &&
+              typeof report.scope.research_subject === 'string'
+                ? report.scope.research_subject
+                : null
+            }
+            candidates={version.research_context?.identity_candidates ?? []}
+            evidence={version.evidence}
+            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
+            canManage={(root) => mapWritable && workspaces.canManage(root)}
+          />
+        </ClaimExportSelection>
         <ReportEvidenceMap
           key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
           reportId={id}
@@ -244,6 +265,7 @@ export default function ReportPage() {
         />
         <ResearchCoverage receipt={version.research} />
         <ResearchContextView context={version.research_context} />
+        <ReportedRelationships evidence={version.evidence} />
         <CitationCheckMethod checks={version.citation_checks} />
         <ReportAssessmentSummary assessment={version.assessment} />
         <ReportMethodology savedMethod={version.assessment?.method_version} />

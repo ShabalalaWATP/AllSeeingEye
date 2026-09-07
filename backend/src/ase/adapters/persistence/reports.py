@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.claims import SqlClaimRepository
+from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
 from ase.adapters.persistence.library_models import ResearchLibraryRow, ResearchLibraryTagRow
 from ase.adapters.persistence.map_views import SqlMapViewRepository
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
@@ -18,6 +19,7 @@ from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
 from ase.domain.citation_check_records import citation_checks_from_dict
+from ase.domain.claim_generation import claim_generation_from_dict
 from ase.domain.errors import NotFound
 from ase.domain.model_routing_records import routing_from_dict
 from ase.domain.report_assessment_records import assessment_from_dict
@@ -61,6 +63,9 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     direction, advocacy = analysis_from_dict(row.analysis)
     period = (row.analysis or {}).get("period") or {}
     return ReportVersion(
+        claim_generation=claim_generation_from_dict(row.analysis["claim_generation"])
+        if row.analysis and row.analysis.get("claim_generation") is not None
+        else None,
         model_routing=routing_from_dict((row.analysis or {}).get("model_routing")),
         direction=direction,
         advocacy=advocacy,
@@ -196,6 +201,7 @@ class SqlReportRepository:
     async def delete(self, report_id: UUID) -> None:
         # Explicit cleanup also supports SQLite connections without FK enforcement.
         await SqlClaimRepository(self._session).delete_for_report(report_id)
+        await SqlIdentityDecisionRepository(self._session).delete_for_report(report_id)
         await SqlMapViewRepository(self._session).delete_for_report(report_id)
         for model in (ResearchLibraryTagRow, ResearchLibraryRow):
             await self._session.execute(delete(model).where(model.report_id == report_id))

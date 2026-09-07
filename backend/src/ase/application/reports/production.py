@@ -15,11 +15,14 @@ from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
 from ase.application.ports.research import ResearchCollection
 from ase.application.reports.advocacy import advocate, apply_advocacy
+from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.challenge import run_challenge
 from ase.application.reports.citation_checks import check_generated_report_citations
 from ase.application.reports.direction import direct
 from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.production_collection import prepare_collection
+from ase.application.reports.production_completion import complete_production
+from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
 from ase.application.reports.progress import Progress, reached
@@ -55,6 +58,7 @@ class Producer:
         url_resolver: EvidenceUrlResolver | None = None,
         research: ResearchCollection | None = None,
         private_store_factory: Callable[[], EventStore] | None = None,
+        automatic_claims: AutomaticClaims | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -64,6 +68,7 @@ class Producer:
         self._url_resolver = url_resolver
         self._research = research
         self._private_store_factory = private_store_factory
+        self._automatic_claims = automatic_claims
 
     async def produce(
         self,
@@ -73,6 +78,17 @@ class Producer:
         *,
         progress: Progress | None = None,
     ) -> ReportVersion:
+        result = await self.produce_with_claims(job, profile_for, before_persist, progress=progress)
+        return result.version
+
+    async def produce_with_claims(
+        self,
+        job: Job,
+        profile_for: ProfileLookup,
+        before_persist: Callable[[], Awaitable[None]] | None = None,
+        *,
+        progress: Progress | None = None,
+    ) -> ProductionResult:
         totals = Totals()
         await reached(progress, ResearchStage.PLANNING)
         direction = await self._direct(job, profile_for, totals)
@@ -203,15 +219,7 @@ class Producer:
             citation_checks=citation_checks, research=receipt, challenge=challenge,
             research_context=research_context,
         )  # fmt: skip
-        # Usage adapters flush writes. Keep all outbound model and resolution work
-        # ahead of them so SQLite's writer lock is held only for persistence. The
-        # caller commits these rows atomically with the resulting report version.
-        if before_persist is not None:
-            await before_persist()
-        await reached(progress, ResearchStage.SAVING)
-        for usage in totals.usage:
-            await self._usage.add(usage)
-        return ReportVersion(
+        version = ReportVersion(
             id=uuid4(),
             report_id=job.report_id or uuid4(),
             number=job.previous.number + 1 if job.previous is not None else 1,
@@ -238,6 +246,16 @@ class Producer:
             citation_checks=citation_checks,
             challenge=challenge,
             research_context=research_context,
+        )
+        return await complete_production(
+            version,
+            job,
+            totals,
+            self._automatic_claims,
+            profile_for,
+            before_persist,
+            progress,
+            self._usage,
         )
 
     async def _direct(

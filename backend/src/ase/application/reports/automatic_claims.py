@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from ase.application.ports import Clock, RateLimiter
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.reports.claim_batch import build_proposal_batch, claim_body_digest
-from ase.application.reports.claim_proposal_model import propose_claims
+from ase.application.reports.claim_proposal_model import claim_input_supported, propose_claims
 from ase.application.research.map_view_evidence import evidence_digest
 from ase.domain.claim_generation import ClaimGenerationReceipt, ClaimGenerationStatus
 from ase.domain.claim_origin import ClaimModelOrigin
@@ -57,6 +57,8 @@ class AutomaticClaims:
             ClaimGenerationReceipt(ClaimGenerationStatus.NO_MODEL),
         )
         profile = await profile_for(LlmRole.ASSESSMENT)
+        if not claim_input_supported(version):
+            return self._outcome(anchor, ClaimGenerationReceipt(ClaimGenerationStatus.UNSUPPORTED))
         if profile is None or not self.cipher.available:
             return anchor
         for bucket, limit in ((f"claims:user:{actor_id}", 6), ("claims:global", 30)):

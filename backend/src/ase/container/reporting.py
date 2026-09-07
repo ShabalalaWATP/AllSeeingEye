@@ -8,9 +8,11 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
+from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
+from ase.adapters.reports.claim_evidence_package import SelectedClaimPackageRenderer
 from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
 from ase.application.access import AccessPolicy
@@ -21,11 +23,14 @@ from ase.application.reports.access import (
     ListReportsUseCase,
 )
 from ase.application.reports.archiving import archive_evidence
+from ase.application.reports.claim_export_selection import SelectClaimExport
 from ase.application.reports.claims import ReportClaims
 from ase.application.reports.evidence_package import ExportEvidencePackage
+from ase.application.reports.export_claim_package import ExportClaimPackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
 from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.generate_claims import GenerateClaims
+from ase.application.reports.identities import ReportIdentities
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
@@ -131,6 +136,7 @@ class ReportWiring:
             gateway=self.llm,
             reports=r.reports,
             map_views=r.map_views,
+            claims=r.claims,
             clock=self.clock,
             limiter=self.limiter,
             limits=self.limits,
@@ -190,6 +196,19 @@ class ReportWiring:
             r.uow,
         )
 
+    def report_identities(self, session: AsyncSession) -> ReportIdentities:
+        r = self.repositories(session)
+        return ReportIdentities(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            SqlIdentityDecisionRepository(session),
+            self.access_policy(session),
+            self.clock,
+            self._auditor(r),
+            r.uow,
+        )
+
     def generate_claims(self, session: AsyncSession) -> GenerateClaims:
         r = self.repositories(session)
         return GenerateClaims(
@@ -221,6 +240,15 @@ class ReportWiring:
 
     def export_evidence_package(self, session: AsyncSession) -> ExportEvidencePackage:
         return ExportEvidencePackage(self.get_report(session), FrozenEvidencePackageRenderer())
+
+    def export_claim_package(self, session: AsyncSession) -> ExportClaimPackage:
+        r = self.repositories(session)
+        return ExportClaimPackage(
+            SelectClaimExport(
+                self.report_claims(session), r.reports, r.uow, self.report_identities(session)
+            ),
+            SelectedClaimPackageRenderer(),
+        )
 
     def compare_reports(self, session: AsyncSession) -> CompareReportsUseCase:
         return CompareReportsUseCase(self.get_report(session))
