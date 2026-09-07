@@ -2133,3 +2133,25 @@ issue; the waiting-consumer and mounted-stream gaps it identified were addressed
 Documented LIVE_STREAM_RECOVERY.md and updated vessel/status notes. Snapshots
 remain explicitly bounded; durable replay and convergence under persistent
 overload are not claimed.
+
+## 7 September 2026: saved report-map measurements
+
+Extended dashboard WGS84 measurement to saved report maps. Shared controls and
+layers support typed or explicitly picked coordinates, distance and net area,
+undo/clear, both projections and typed use without WebGL. Measurement and AOI
+picking are mutually exclusive. Authority changes remove private controls and
+GPU layers. Extracted renderer controls to keep source responsibilities bounded.
+
+Revisions retain up to 32 original ordered coordinate pairs, mode and the pinned
+method identifier. Empty/incomplete sketches are deliberate drafts; clearing
+removes the field. Derived totals are never accepted from clients. Existing
+ownership, integrity hashes and quota accounting apply. Absent/null sketches
+preserve legacy canonical bytes and an independently frozen digest. No migration.
+
+116 backend tests and 234 focused frontend tests passed. Three new frontend tests
+passed again after lint/type corrections. Ruff, mypy, scoped ESLint, TypeScript,
+production build, two import contracts, file lengths and whitespace checks passed.
+The build retains its existing large-chunk advisory. Independent read-only review
+found no actionable issues. No new coverage, provider call, account onboarding or
+GPU validation. Updated ADR 0015, status audit and master plan. Map-image export
+and wider operational acceptance remain open.

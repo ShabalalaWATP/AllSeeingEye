@@ -12,6 +12,7 @@ import type { LocalCollection, LocalOverlay, Position } from '@/lib/map/geoJsonT
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
 import { hasEvidencePoint, hasLegacyEvidencePoint } from './evidenceGeometry';
 import { geometryBounds } from '@/lib/map/geometryBounds';
+import { measurementLayers } from '@/lib/map/measurementLayers';
 
 export default function EvidenceMapCanvas({
   evidence,
@@ -30,6 +31,9 @@ export default function EvidenceMapCanvas({
   areaMode = false,
   onAreaPoint,
   onViewportReady,
+  measurement = null,
+  measurementMode = false,
+  onMeasurementPoint,
 }: {
   evidence: readonly EvidenceItem[];
   overlays?: LocalOverlay[];
@@ -47,6 +51,9 @@ export default function EvidenceMapCanvas({
   areaMode?: boolean;
   onAreaPoint?: (point: Position) => void;
   onViewportReady?: (read: (() => MapBounds | null) | null) => void;
+  measurement?: MapState['measurement'];
+  measurementMode?: boolean;
+  onMeasurementPoint?: (point: Position) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const engine = useRef<MapEngine | null>(null);
@@ -58,6 +65,11 @@ export default function EvidenceMapCanvas({
     onViewportReady?.(read),
   );
   const areaClicked = useEffectEvent((event: unknown) => {
+    if (measurementMode) {
+      const point = areaClickPoint(event);
+      if (point) onMeasurementPoint?.(point);
+      return;
+    }
     if (areaMode) {
       const point = areaClickPoint(event);
       if (point) onAreaPoint?.(point);
@@ -185,6 +197,9 @@ export default function EvidenceMapCanvas({
     engine.current?.setLayers([
       ...imported,
       ...catalogue,
+      ...(measurement
+        ? measurementLayers(measurement.points, measurement.mode, projection === 'mercator')
+        : []),
       ...(sourceGeometry.features.some(
         (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
       )
@@ -207,7 +222,7 @@ export default function EvidenceMapCanvas({
               pointRadiusUnits: 'pixels',
               getPointRadius: 8,
               onClick: (info: { object?: { properties?: { label?: unknown } } }) => {
-                if (areaMode) return true;
+                if (areaMode || measurementMode) return true;
                 const label = info.object?.properties?.label;
                 if (typeof label === 'string' && evidence.some((item) => item.label === label))
                   onSelect(label);
@@ -234,7 +249,7 @@ export default function EvidenceMapCanvas({
             getLineColor: (item) =>
               item.label === selected ? [255, 255, 255, 255] : [230, 162, 74, 220],
             onClick: (info: { object?: EvidenceItem }) => {
-              if (areaMode) return true;
+              if (areaMode || measurementMode) return true;
               if (info.object) onSelect(info.object.label);
               return true;
             },
@@ -250,6 +265,8 @@ export default function EvidenceMapCanvas({
     footprints,
     aoi,
     areaMode,
+    measurement,
+    measurementMode,
     sourceGeometry,
     supportsPoint,
   ]);

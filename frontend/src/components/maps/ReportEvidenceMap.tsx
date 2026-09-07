@@ -1,18 +1,8 @@
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
-import { Alert, LoadingNote } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { Alert } from '@/components/ui/Alert';
 import { MapTimelineHeader } from './MapTimelineHeader';
 import { MapResearchLaunchLink } from './MapResearchLaunchLink';
 import { MapFilters } from './MapFilters';
@@ -34,15 +24,10 @@ import { MapDisplayVersionNotice } from './MapDisplayVersionNotice';
 import { MapGeometryOmissions } from './MapGeometryOmissions';
 import { prepareEvidenceGeometry } from './frozenEvidenceGeometry';
 
-const Canvas = lazy(() =>
-  import('./EvidenceMapCanvas').catch(() => ({
-    default: () => (
-      <Alert tone="warning">
-        The map renderer could not load. Use the evidence list or reload the page.
-      </Alert>
-    ),
-  })),
-);
+import { MapMeasurementPanel } from './MapMeasurementPanel';
+import { useReportMeasurement } from './useReportMeasurement';
+import { ReportMapRenderer } from './ReportMapRenderer';
+
 const PAGE_SIZE = 20;
 export interface ReportEvidenceMapProps {
   reportId: string;
@@ -129,6 +114,7 @@ export default function ReportEvidenceMap({
     };
   }, [resetArea]);
   const [opened, setOpened] = useState(false);
+  const measurement = useReportMeasurement(state, setState, opened);
   const projection = state.projection;
   const selected = state.selected_evidence;
   const setProjection = (projection: MapState['projection']) =>
@@ -241,7 +227,13 @@ export default function ReportEvidenceMap({
         }
       />
       <MapAreaSelection
-        selection={areaSelection}
+        selection={{
+          ...areaSelection,
+          start: () => {
+            measurement.setPicking(false);
+            areaSelection.start();
+          },
+        }}
         hasArea={!!state.aoi}
         opened={opened}
         readViewport={readViewport}
@@ -250,6 +242,11 @@ export default function ReportEvidenceMap({
       <MapResearchLaunchLink
         saved={saved.active}
         changed={areaChanged || areaSelection.dirty || areaSelection.picking}
+      />
+      <MapMeasurementPanel
+        key={measurement.resetSequence}
+        value={{ ...measurement, canPick: measurement.canPick && !areaSelection.picking }}
+        persistenceNote="Save the map to retain these coordinates and the calculation method in its revision. Incomplete sketches can also be saved."
       />
       <FootprintSearchPanel onChange={setFootprints} />
       <SavedMapControls
@@ -266,72 +263,39 @@ export default function ReportEvidenceMap({
               : null
         }
       />
-      {!opened ? (
-        <div className="space-y-2">
-          <p className="text-xs text-muted">
-            Opening the map requests public basemap tiles from an external provider, which can
-            disclose the viewed area and your network address. Evidence text is not sent to the tile
-            provider.
-          </p>
-          <Button variant="secondary" onClick={() => setOpened(true)}>
-            Open evidence map
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-wrap gap-2" aria-label="Evidence map projection">
-            <Button
-              variant="secondary"
-              aria-pressed={projection === 'globe'}
-              onClick={() => setProjection('globe')}
-            >
-              Globe
-            </Button>
-            <Button
-              variant="secondary"
-              aria-pressed={projection === 'mercator'}
-              onClick={() => setProjection('mercator')}
-            >
-              Flat map
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setOpened(false);
-                setFocusRequest(null);
-              }}
-            >
-              Close evidence map
-            </Button>
-          </div>
-          {projection === 'mercator' && polar > 0 && (
-            <Alert tone="warning">
-              {polar} polar records cannot be displayed in Mercator. Use Globe or select them in the
-              list; original coordinates are unchanged.
-            </Alert>
-          )}
-          <Suspense fallback={<LoadingNote label="Loading saved evidence map" />}>
-            <Canvas
-              sourceGeometry={prepared.source}
-              legacyDisplay={state.display_transform === 'ase-geojson-display-v1'}
-              footprints={prepared.footprints}
-              overlays={prepared.overlays}
-              aoi={prepared.aoi}
-              areaMode={areaSelection.picking}
-              onAreaPoint={areaSelection.pick}
-              onViewportReady={viewportReady}
-              camera={state.camera}
-              onCamera={captureCamera}
-              basemap={state.basemap}
-              focusRequest={focusRequest}
-              evidence={filtered}
-              projection={projection}
-              selected={chosen?.label ?? null}
-              onSelect={select}
-            />
-          </Suspense>
-        </>
-      )}
+      <ReportMapRenderer
+        opened={opened}
+        onOpened={(value) => {
+          setOpened(value);
+          if (!value) {
+            setFocusRequest(null);
+            measurement.setPicking(false);
+          }
+        }}
+        onProjection={setProjection}
+        polar={polar}
+        canvas={{
+          sourceGeometry: prepared.source,
+          legacyDisplay: state.display_transform === 'ase-geojson-display-v1',
+          footprints: prepared.footprints,
+          overlays: prepared.overlays,
+          aoi: prepared.aoi,
+          areaMode: areaSelection.picking,
+          onAreaPoint: areaSelection.pick,
+          measurement: state.measurement,
+          measurementMode: measurement.picking && !areaSelection.picking,
+          onMeasurementPoint: ([lon, lat]) => measurement.add(lon, lat),
+          onViewportReady: viewportReady,
+          camera: state.camera,
+          onCamera: captureCamera,
+          basemap: state.basemap,
+          focusRequest,
+          evidence: filtered,
+          projection,
+          selected: chosen?.label ?? null,
+          onSelect: select,
+        }}
+      />
       <MapEvidenceList
         timeBasis={state.time_basis}
         filtered={filtered}

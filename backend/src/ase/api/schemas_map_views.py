@@ -32,6 +32,17 @@ class MapOverlayFields(MapFields):
     visible: bool = Field(default=True, strict=True)
 
 
+class MapMeasurementFields(MapFields):
+    mode: Literal["distance", "area"]
+    method: Literal["wgs84-geographiclib-2.2.0-v1"]
+    points: list[
+        tuple[
+            Annotated[float, Field(ge=-180, le=180, strict=True, allow_inf_nan=False)],
+            Annotated[float, Field(ge=-90, le=90, strict=True, allow_inf_nan=False)],
+        ]
+    ] = Field(max_length=32)
+
+
 class MapStateFields(MapFields):
     camera: MapCameraFields
     projection: Literal["globe", "mercator"] = "globe"
@@ -48,6 +59,7 @@ class MapStateFields(MapFields):
     selected_evidence: str | None = Field(default=None, min_length=1, max_length=128)
     overlays: list[MapOverlayFields] = Field(default_factory=list, max_length=8)
     aoi: dict[str, Any] | None = None
+    measurement: MapMeasurementFields | None = None
     schema_version: Annotated[int, Field(strict=True, ge=1, le=1)] = 1
     display_transform: Literal["ase-geojson-display-v1", "ase-geojson-display-v2"] = (
         "ase-geojson-display-v1"

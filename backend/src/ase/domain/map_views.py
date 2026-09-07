@@ -6,6 +6,7 @@ from uuid import UUID
 
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_geometry import CanonicalMapGeometry
+from ase.domain.map_measurement import MapMeasurement
 
 BASEMAPS = frozenset(
     {"dark", "streets", "light", "satellite", "hybrid", "os_road", "os_outdoor", "os_light"}
@@ -91,8 +92,11 @@ class MapViewState:
     schema_version: int = 1
     display_transform: str = "ase-geojson-display-v1"
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    measurement: MapMeasurement | None = None
 
     def __post_init__(self) -> None:
+        if self.measurement is not None and not isinstance(self.measurement, MapMeasurement):
+            raise ValueError("Map state requires immutable measurement coordinates")
         if not isinstance(self.camera, MapCamera):
             raise ValueError("Map state requires an immutable camera")
         if not isinstance(self.time_basis, EvidenceTimeBasis):

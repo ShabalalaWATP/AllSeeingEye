@@ -3838,6 +3838,24 @@ export interface components {
              */
             pitch: number;
         };
+        /** MapMeasurementFields */
+        MapMeasurementFields: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "distance" | "area";
+            /**
+             * Method
+             * @constant
+             */
+            method: "wgs84-geographiclib-2.2.0-v1";
+            /** Points */
+            points: [
+                number,
+                number
+            ][];
+        };
         /** MapOverlayFields */
         MapOverlayFields: {
             /** Geometry */
@@ -3969,6 +3987,7 @@ export interface components {
             aoi?: {
                 [key: string]: unknown;
             } | null;
+            measurement?: components["schemas"]["MapMeasurementFields"] | null;
             /**
              * Schema Version
              * @default 1

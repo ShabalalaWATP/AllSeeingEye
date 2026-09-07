@@ -38,6 +38,17 @@ export const mapStateSchema = z.object({
     .max(8)
     .default([]),
   aoi: geometry.nullable().default(null),
+  measurement: z
+    .object({
+      mode: z.enum(['distance', 'area']),
+      method: z.literal('wgs84-geographiclib-2.2.0-v1'),
+      points: z
+        .array(z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]))
+        .max(32),
+    })
+    .strict()
+    .nullable()
+    .default(null),
   schema_version: z.literal(1).default(1),
   display_transform: z
     .enum(['ase-geojson-display-v1', 'ase-geojson-display-v2'])

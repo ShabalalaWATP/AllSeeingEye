@@ -8,12 +8,14 @@ from typing import Any
 
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_geometry import parse_map_geometry
+from ase.domain.map_measurement import measurement_from_dict, measurement_to_dict
 from ase.domain.map_topology import TopologyBudget
 from ase.domain.map_views import MAX_VIEW_BYTES, MapCamera, MapOverlay, MapViewState
 
 
 def state_to_dict(state: MapViewState) -> dict[str, Any]:
     return {
+        **({"measurement": measurement_to_dict(state.measurement)} if state.measurement else {}),
         **(
             {"time_basis": state.time_basis.value}
             if state.time_basis is not EvidenceTimeBasis.PUBLICATION
@@ -106,7 +108,8 @@ def state_from_dict(raw: object) -> MapViewState:
             "overlays",
             "aoi",
         }
-        | ({"time_basis"} if isinstance(raw, dict) and "time_basis" in raw else set()),
+        | ({"time_basis"} if isinstance(raw, dict) and "time_basis" in raw else set())
+        | ({"measurement"} if isinstance(raw, dict) and "measurement" in raw else set()),
     )
     # Bound before geometry normalisation or copying into durable state.
     try:
@@ -168,6 +171,7 @@ def state_from_dict(raw: object) -> MapViewState:
         schema_version=data["schema_version"],
         display_transform=data["display_transform"],
         time_basis=EvidenceTimeBasis(data.get("time_basis", "publication")),
+        measurement=measurement_from_dict(data.get("measurement")),
     )
     canonical_state(state)
     return state

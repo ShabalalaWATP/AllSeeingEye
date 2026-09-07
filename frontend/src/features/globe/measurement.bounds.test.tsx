@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { useMapMeasurement } from './useMapMeasurement';
-import { measurementLayers } from './layers/measurement';
+import { measurementLayers } from '@/lib/map/measurementLayers';
 import type { Position } from '@/lib/map/geoJsonTypes';
 
 it('caps batched coordinate submissions and rejects invalid numeric input', () => {

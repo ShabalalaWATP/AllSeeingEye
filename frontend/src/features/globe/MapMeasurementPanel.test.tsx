@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, it } from 'vitest';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
-import { MapMeasurementPanel } from './MapMeasurementPanel';
+import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
 import { useMapMeasurement } from './useMapMeasurement';
 
 const engine = { onClick: () => () => undefined };

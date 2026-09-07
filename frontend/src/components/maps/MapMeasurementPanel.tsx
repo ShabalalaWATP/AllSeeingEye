@@ -1,7 +1,28 @@
 import { useState } from 'react';
-import type { MapMeasurement } from './useMapMeasurement';
+import type { Position } from '@/lib/map/geoJsonTypes';
+import type { MeasurementMode } from '@/lib/map/measurements';
 
-export function MapMeasurementPanel({ value }: { value: MapMeasurement }) {
+export interface MeasurementControls {
+  points: readonly Position[];
+  mode: MeasurementMode;
+  setMode: (mode: MeasurementMode) => void;
+  picking: boolean;
+  setPicking: (picking: boolean) => void;
+  error: string | null;
+  result: string;
+  canPick: boolean;
+  add: (longitude: number, latitude: number) => void;
+  undo: () => void;
+  clear: () => void;
+}
+
+export function MapMeasurementPanel({
+  value,
+  persistenceNote = 'Local only, cleared when you leave this page.',
+}: {
+  value: MeasurementControls;
+  persistenceNote?: string;
+}) {
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   return (
@@ -113,10 +134,10 @@ export function MapMeasurementPanel({ value }: { value: MapMeasurement }) {
       </details>
       <p className="mt-2 text-[10px] text-muted">
         WGS84 surface measurement, excluding terrain and altitude. Area closes the last point to the
-        first; crossing edges cancel. Shortest paths are used. Local only, cleared when you leave
-        this page. Flat maps omit paths above 85° latitude; calculations retain the original
-        coordinates. Areas are the smaller net region, not shapes covering more than half the Earth.
-        The drawn line is sampled; numeric results use the full geodesic calculation.
+        first; crossing edges cancel. Shortest paths are used. {persistenceNote} Flat maps omit
+        paths above 85° latitude; calculations retain the original coordinates. Areas are the
+        smaller net region, not shapes covering more than half the Earth. The drawn line is sampled;
+        numeric results use the full geodesic calculation.
       </p>
     </section>
   );

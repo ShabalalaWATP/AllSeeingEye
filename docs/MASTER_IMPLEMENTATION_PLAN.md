@@ -4,6 +4,14 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: saved report-map measurements now retain original
+coordinates and a versioned WGS84 method in immutable map revisions. Dashboard
+and report maps share the panel and layers. Legacy revision hashes are preserved.
+116 backend and 234 focused frontend tests passed, with build, type, lint and
+architecture checks. The full expansion scope and remaining acceptance work are
+tracked in [RESEARCH_EXPANSION_STATUS_AUDIT.md](RESEARCH_EXPANSION_STATUS_AUDIT.md).
+Map-image export and current GPU acceptance remain open.
+
 The expanded app-quality, teams, map and design milestone is completed in
 [MASTER_FIX_IMPROVEMENT_PLAN.md](MASTER_FIX_IMPROVEMENT_PLAN.md), commit `cd8e498`.
 Alex has since set an operator-first automated research direction with basic team
