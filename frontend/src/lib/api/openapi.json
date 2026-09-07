@@ -3038,6 +3038,164 @@
         }
       }
     },
+    "/api/annotation-comparisons": {
+      "post": {
+        "tags": [
+          "annotation-comparisons"
+        ],
+        "summary": "Preview Annotation Comparison",
+        "operationId": "preview_annotation_comparison_api_annotation_comparisons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationComparisonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationComparisonOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/annotation-comparisons/export": {
+      "post": {
+        "tags": [
+          "annotation-comparisons"
+        ],
+        "summary": "Export Annotation Comparison",
+        "operationId": "export_annotation_comparison_api_annotation_comparisons_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationComparisonExportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/annotation-comparisons/reports": {
+      "get": {
+        "tags": [
+          "annotation-comparisons"
+        ],
+        "summary": "Comparison Reports",
+        "operationId": "comparison_reports_api_annotation_comparisons_reports_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonReportsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/relationship-reviews/assertions": {
       "get": {
         "tags": [
@@ -7298,6 +7456,322 @@
         ],
         "title": "AlertsOut"
       },
+      "AnnotationChange": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "claim",
+              "identity",
+              "relationship"
+            ],
+            "title": "Kind"
+          },
+          "before_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Revision Id"
+          },
+          "after_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Revision Id"
+          },
+          "correspondence": {
+            "type": "string",
+            "enum": [
+              "same_root",
+              "operator_declared",
+              "unmatched"
+            ],
+            "title": "Correspondence"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unchanged",
+              "changed",
+              "added",
+              "removed"
+            ],
+            "title": "Status"
+          },
+          "changed_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "before_revision_id",
+          "after_revision_id",
+          "correspondence",
+          "status",
+          "changed_fields"
+        ],
+        "title": "AnnotationChange"
+      },
+      "AnnotationComparison": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "comparison_sha256": {
+            "type": "string",
+            "title": "Comparison Sha256"
+          },
+          "compared_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Compared By"
+          },
+          "before": {
+            "$ref": "#/components/schemas/ComparisonSide"
+          },
+          "after": {
+            "$ref": "#/components/schemas/ComparisonSide"
+          },
+          "correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationCorrespondence"
+            },
+            "type": "array",
+            "title": "Correspondences"
+          },
+          "judgement_correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementCorrespondence"
+            },
+            "type": "array",
+            "title": "Judgement Correspondences"
+          },
+          "annotation_changes": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationChange"
+            },
+            "type": "array",
+            "title": "Annotation Changes"
+          },
+          "evidence_changes": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonEvidenceChange"
+            },
+            "type": "array",
+            "title": "Evidence Changes"
+          },
+          "confidence_changes": {
+            "items": {
+              "$ref": "#/components/schemas/ConfidenceChange"
+            },
+            "type": "array",
+            "title": "Confidence Changes"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations",
+            "default": [
+              "This compares explicitly selected frozen revisions, not a complete annotation inventory.",
+              "Different roots remain distinct unless an operator explicitly declares correspondence. Correspondence is not verified claim, identity or ownership equivalence.",
+              "Unique identical judgement statements may correspond; reused judgement IDs alone do not. Unmatched judgements have separate assessments, not a directional confidence change.",
+              "Reliability, information credibility and confidence are separate recorded dimensions. Observed differences do not establish unique causation or a probability of factual truth.",
+              "Frozen assessments are not recomputed. Method-version differences may limit comparability.",
+              "Removed evidence may reflect a collection window; it does not establish withdrawal. Publication, observation, capture, review and generated timestamps have distinct meanings.",
+              "Generated-at is the server response time, not a trusted source observation timestamp."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "generated_at",
+          "comparison_sha256",
+          "compared_by",
+          "before",
+          "after",
+          "correspondences",
+          "judgement_correspondences",
+          "annotation_changes",
+          "evidence_changes",
+          "confidence_changes"
+        ],
+        "title": "AnnotationComparison"
+      },
+      "AnnotationComparisonExportIn": {
+        "properties": {
+          "before": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "after": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationCorrespondenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Correspondences"
+          },
+          "judgement_correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementCorrespondenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Judgement Correspondences"
+          },
+          "expected_comparison_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Comparison Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "before",
+          "after",
+          "expected_comparison_sha256"
+        ],
+        "title": "AnnotationComparisonExportIn"
+      },
+      "AnnotationComparisonIn": {
+        "properties": {
+          "before": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "after": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationCorrespondenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Correspondences"
+          },
+          "judgement_correspondences": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementCorrespondenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Judgement Correspondences"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "before",
+          "after"
+        ],
+        "title": "AnnotationComparisonIn"
+      },
+      "AnnotationComparisonOut": {
+        "$ref": "#/components/schemas/AnnotationComparison",
+        "title": "AnnotationComparisonOut"
+      },
+      "AnnotationCorrespondence": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "claim",
+              "identity",
+              "relationship"
+            ],
+            "title": "Kind"
+          },
+          "before_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Before Revision Id"
+          },
+          "after_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "After Revision Id"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "before_revision_id",
+          "after_revision_id",
+          "rationale"
+        ],
+        "title": "AnnotationCorrespondence"
+      },
+      "AnnotationCorrespondenceIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "claim",
+              "identity",
+              "relationship"
+            ],
+            "title": "Kind"
+          },
+          "before_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Before Revision Id"
+          },
+          "after_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "After Revision Id"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "before_revision_id",
+          "after_revision_id",
+          "rationale"
+        ],
+        "title": "AnnotationCorrespondenceIn"
+      },
       "AoiIn": {
         "properties": {
           "team_id": {
@@ -7556,6 +8030,79 @@
           "description"
         ],
         "title": "AssessmentDimensionOut"
+      },
+      "AssessmentTallies": {
+        "properties": {
+          "evidence_items": {
+            "type": "integer",
+            "title": "Evidence Items"
+          },
+          "declared_groups": {
+            "type": "integer",
+            "title": "Declared Groups"
+          },
+          "unknown_provenance_items": {
+            "type": "integer",
+            "title": "Unknown Provenance Items"
+          },
+          "possible_copy_groups": {
+            "type": "integer",
+            "title": "Possible Copy Groups"
+          },
+          "judgements": {
+            "type": "integer",
+            "title": "Judgements"
+          },
+          "strong": {
+            "type": "integer",
+            "title": "Strong"
+          },
+          "moderate": {
+            "type": "integer",
+            "title": "Moderate"
+          },
+          "limited": {
+            "type": "integer",
+            "title": "Limited"
+          },
+          "unassessed": {
+            "type": "integer",
+            "title": "Unassessed"
+          },
+          "supported_judgements": {
+            "type": "integer",
+            "title": "Supported Judgements"
+          },
+          "limited_judgements": {
+            "type": "integer",
+            "title": "Limited Judgements"
+          },
+          "contested_judgements": {
+            "type": "integer",
+            "title": "Contested Judgements"
+          },
+          "unsupported_judgements": {
+            "type": "integer",
+            "title": "Unsupported Judgements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_items",
+          "declared_groups",
+          "unknown_provenance_items",
+          "possible_copy_groups",
+          "judgements",
+          "strong",
+          "moderate",
+          "limited",
+          "unassessed",
+          "supported_judgements",
+          "limited_judgements",
+          "contested_judgements",
+          "unsupported_judgements"
+        ],
+        "title": "AssessmentTallies"
       },
       "AssessmentTalliesOut": {
         "properties": {
@@ -8082,6 +8629,17 @@
           "explanation"
         ],
         "title": "ChallengeSearchOut"
+      },
+      "ChangeFromPrevious": {
+        "type": "string",
+        "enum": [
+          "new",
+          "unchanged",
+          "strengthened",
+          "weakened",
+          "reversed"
+        ],
+        "title": "ChangeFromPrevious"
       },
       "ChangeKind": {
         "type": "string",
@@ -9179,6 +9737,280 @@
         ],
         "title": "CollectionStatus"
       },
+      "ComparisonEvidenceChange": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "before_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Label"
+          },
+          "after_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Label"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unchanged",
+              "changed",
+              "added",
+              "removed"
+            ],
+            "title": "Status"
+          },
+          "changed_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "event_id",
+          "before_label",
+          "after_label",
+          "status",
+          "changed_fields"
+        ],
+        "title": "ComparisonEvidenceChange"
+      },
+      "ComparisonReportsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReportSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "ComparisonReportsOut"
+      },
+      "ComparisonSelectionIn": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          },
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Revisions"
+          },
+          "identity_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/IdentityExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Identity Revisions"
+          },
+          "relationship_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Relationship Revisions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "report_id",
+          "version_number"
+        ],
+        "title": "ComparisonSelectionIn"
+      },
+      "ComparisonSide": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Version Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "period_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period From"
+          },
+          "period_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period To"
+          },
+          "version_created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Version Created At"
+          },
+          "data_cutoff": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Cutoff"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "title": "Evidence Sha256"
+          },
+          "content_sha256": {
+            "type": "string",
+            "title": "Content Sha256"
+          },
+          "revisions": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimRevision"
+            },
+            "type": "array",
+            "title": "Revisions"
+          },
+          "identity_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/IdentityDecisionRevision"
+            },
+            "type": "array",
+            "title": "Identity Revisions"
+          },
+          "relationship_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipReviewRevision"
+            },
+            "type": "array",
+            "title": "Relationship Revisions"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceItem"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "judgements": {
+            "items": {
+              "$ref": "#/components/schemas/KeyJudgement"
+            },
+            "type": "array",
+            "title": "Judgements"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "version_id",
+          "version_number",
+          "title",
+          "period_from",
+          "period_to",
+          "version_created_at",
+          "data_cutoff",
+          "evidence_sha256",
+          "content_sha256",
+          "revisions",
+          "identity_revisions",
+          "relationship_revisions",
+          "evidence",
+          "judgements",
+          "assessment"
+        ],
+        "title": "ComparisonSide"
+      },
       "Confidence": {
         "type": "string",
         "enum": [
@@ -9187,6 +10019,75 @@
           "low"
         ],
         "title": "Confidence"
+      },
+      "ConfidenceChange": {
+        "properties": {
+          "before_judgement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Judgement Id"
+          },
+          "after_judgement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Judgement Id"
+          },
+          "correspondence": {
+            "type": "string",
+            "enum": [
+              "exact_statement",
+              "operator_declared",
+              "unmatched"
+            ],
+            "title": "Correspondence"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unchanged",
+              "changed",
+              "added",
+              "removed"
+            ],
+            "title": "Status"
+          },
+          "changed_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Fields"
+          },
+          "explanations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Explanations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "before_judgement_id",
+          "after_judgement_id",
+          "correspondence",
+          "status",
+          "changed_fields",
+          "explanations"
+        ],
+        "title": "ConfidenceChange"
       },
       "ConflictBoardOut": {
         "properties": {
@@ -9460,6 +10361,50 @@
           "unassessed"
         ],
         "title": "Contribution"
+      },
+      "ContributionGroup": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "known_organisation": {
+            "type": "boolean",
+            "title": "Known Organisation"
+          },
+          "contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "corroborating_contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "confirmed_strong": {
+            "type": "boolean",
+            "title": "Confirmed Strong"
+          },
+          "possible_copy": {
+            "type": "boolean",
+            "title": "Possible Copy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "labels",
+          "known_organisation",
+          "contribution",
+          "corroborating_contribution",
+          "confirmed_strong",
+          "possible_copy"
+        ],
+        "title": "ContributionGroup"
       },
       "ContributionGroupOut": {
         "properties": {
@@ -10023,6 +10968,71 @@
         ],
         "title": "EventsOut"
       },
+      "EvidenceAssessment": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "contribution": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "event_id",
+          "source_id",
+          "reliability",
+          "credibility",
+          "contribution",
+          "organisation",
+          "flags",
+          "reasons"
+        ],
+        "title": "EvidenceAssessment"
+      },
       "EvidenceAssessmentOut": {
         "properties": {
           "label": {
@@ -10193,6 +11203,43 @@
         ],
         "title": "EvidenceExcerptOut"
       },
+      "EvidenceGeometry": {
+        "properties": {
+          "source_geometry": {
+            "type": "string",
+            "title": "Source Geometry"
+          },
+          "location_role": {
+            "$ref": "#/components/schemas/LocationRole"
+          },
+          "precision": {
+            "type": "string",
+            "title": "Precision"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_geometry",
+          "location_role",
+          "precision",
+          "method",
+          "source_id",
+          "attribution"
+        ],
+        "title": "EvidenceGeometry"
+      },
       "EvidenceGeometryOut": {
         "properties": {
           "geometry": {
@@ -10233,6 +11280,281 @@
           "attribution"
         ],
         "title": "EvidenceGeometryOut"
+      },
+      "EvidenceItem": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "independence_key": {
+            "type": "string",
+            "title": "Independence Key"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "credibility": {
+            "type": "integer",
+            "title": "Credibility"
+          },
+          "grade_rationale": {
+            "type": "string",
+            "title": "Grade Rationale"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "instrument": {
+            "type": "boolean",
+            "title": "Instrument",
+            "default": false
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "default": []
+          },
+          "archive_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive Url"
+          },
+          "title_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title En"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "geo_confidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geo Confidence"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "story_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Story Id"
+          },
+          "source_rating": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRating"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAttribute"
+            },
+            "type": "array",
+            "title": "Attributes",
+            "default": []
+          },
+          "geometry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceGeometry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "event_id",
+          "source_id",
+          "source_name",
+          "independence_key",
+          "category",
+          "title",
+          "summary",
+          "url",
+          "published_at",
+          "captured_at",
+          "grade",
+          "reliability",
+          "credibility",
+          "grade_rationale",
+          "lon",
+          "lat",
+          "country_iso",
+          "content_hash"
+        ],
+        "title": "EvidenceItem"
       },
       "EvidenceTimeBasis": {
         "type": "string",
@@ -11485,6 +12807,121 @@
         "title": "JamMapOut"
       },
       "JsonValue": {},
+      "JudgementAssessment": {
+        "properties": {
+          "judgement_id": {
+            "type": "string",
+            "title": "Judgement Id"
+          },
+          "supporting_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supporting Labels"
+          },
+          "contradicting_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contradicting Labels"
+          },
+          "invalid_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Invalid Labels"
+          },
+          "support_groups": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionGroup"
+            },
+            "type": "array",
+            "title": "Support Groups"
+          },
+          "opposition_groups": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionGroup"
+            },
+            "type": "array",
+            "title": "Opposition Groups"
+          },
+          "support_tier": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "opposition_tier": {
+            "$ref": "#/components/schemas/Contribution"
+          },
+          "balance": {
+            "type": "string",
+            "enum": [
+              "no_support",
+              "support_only",
+              "support_stronger",
+              "opposition_at_least_as_strong"
+            ],
+            "title": "Balance"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "limited",
+              "contested",
+              "unsupported"
+            ],
+            "title": "Status"
+          },
+          "confidence_ceiling": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "final_confidence": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Explanation"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "improvements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Improvements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "judgement_id",
+          "supporting_labels",
+          "contradicting_labels",
+          "invalid_labels",
+          "support_groups",
+          "opposition_groups",
+          "support_tier",
+          "opposition_tier",
+          "balance",
+          "status",
+          "confidence_ceiling",
+          "final_confidence",
+          "explanation",
+          "limitations",
+          "improvements"
+        ],
+        "title": "JudgementAssessment"
+      },
       "JudgementAssessmentOut": {
         "properties": {
           "judgement_id": {
@@ -11632,6 +13069,132 @@
           "reasons"
         ],
         "title": "JudgementCitationCheckOut"
+      },
+      "JudgementCorrespondence": {
+        "properties": {
+          "before_judgement_id": {
+            "type": "string",
+            "title": "Before Judgement Id"
+          },
+          "after_judgement_id": {
+            "type": "string",
+            "title": "After Judgement Id"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "before_judgement_id",
+          "after_judgement_id",
+          "rationale"
+        ],
+        "title": "JudgementCorrespondence"
+      },
+      "JudgementCorrespondenceIn": {
+        "properties": {
+          "before_judgement_id": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Before Judgement Id"
+          },
+          "after_judgement_id": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "After Judgement Id"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "before_judgement_id",
+          "after_judgement_id",
+          "rationale"
+        ],
+        "title": "JudgementCorrespondenceIn"
+      },
+      "KeyJudgement": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "probability": {
+            "$ref": "#/components/schemas/Probability"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "confidence_statement": {
+            "type": "string",
+            "title": "Confidence Statement"
+          },
+          "supporting_evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supporting Evidence",
+            "default": []
+          },
+          "contradicting_evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contradicting Evidence",
+            "default": []
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions",
+            "default": []
+          },
+          "change_from_previous": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChangeFromPrevious"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "indicators": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Indicators",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "probability",
+          "confidence",
+          "confidence_statement"
+        ],
+        "title": "KeyJudgement"
       },
       "LanguageCapabilityOut": {
         "properties": {
@@ -13608,6 +15171,58 @@
         ],
         "title": "ModelRoutingOut"
       },
+      "ObservationMetadata": {
+        "properties": {
+          "acquired_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Acquired At"
+          },
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "scene_cloud_cover": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Cloud Cover"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acquired_at",
+          "collection_id",
+          "item_id",
+          "limitations"
+        ],
+        "title": "ObservationMetadata"
+      },
       "ObservationOut": {
         "properties": {
           "acquired_at": {
@@ -14639,6 +16254,102 @@
         "type": "object",
         "title": "ProfileUpdateIn"
       },
+      "ProjectMetadata": {
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "release_id": {
+            "type": "string",
+            "title": "Release Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "source_sha256": {
+            "type": "string",
+            "title": "Source Sha256"
+          },
+          "recipient_iso3": {
+            "type": "string",
+            "title": "Recipient Iso3"
+          },
+          "reported_status": {
+            "type": "string",
+            "title": "Reported Status"
+          },
+          "precision": {
+            "type": "string",
+            "title": "Precision"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "data_licence": {
+            "type": "string",
+            "title": "Data Licence"
+          },
+          "geometry_licence": {
+            "type": "string",
+            "title": "Geometry Licence"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          },
+          "commitment_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commitment Year"
+          },
+          "implementation_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implementation Year"
+          },
+          "completion_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "release_id",
+          "project_id",
+          "source_sha256",
+          "recipient_iso3",
+          "reported_status",
+          "precision",
+          "attribution",
+          "data_licence",
+          "geometry_licence",
+          "limitations"
+        ],
+        "title": "ProjectMetadata"
+      },
       "ProjectOut": {
         "properties": {
           "dataset_id": {
@@ -15476,6 +17187,57 @@
           "label"
         ],
         "title": "ReliabilityLabelOut"
+      },
+      "ReportAssessment": {
+        "properties": {
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAssessment"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "judgements": {
+            "items": {
+              "$ref": "#/components/schemas/JudgementAssessment"
+            },
+            "type": "array",
+            "title": "Judgements"
+          },
+          "tallies": {
+            "$ref": "#/components/schemas/AssessmentTallies"
+          },
+          "validation_errors": {
+            "type": "integer",
+            "title": "Validation Errors"
+          },
+          "validation_warnings": {
+            "type": "integer",
+            "title": "Validation Warnings"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method_version",
+          "evidence",
+          "judgements",
+          "tallies",
+          "validation_errors",
+          "validation_warnings",
+          "limitations"
+        ],
+        "title": "ReportAssessment"
       },
       "ReportAssessmentOut": {
         "properties": {
@@ -19382,6 +21144,86 @@
           "health"
         ],
         "title": "SourceOut"
+      },
+      "SourceRating": {
+        "properties": {
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "editorial",
+              "unassessed"
+            ],
+            "title": "Status"
+          },
+          "assessed_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reliability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "provenance_role": {
+            "type": "string",
+            "enum": [
+              "originator",
+              "publisher",
+              "aggregator",
+              "platform",
+              "unassessed"
+            ],
+            "title": "Provenance Role"
+          },
+          "publisher_reliability_assessed": {
+            "type": "boolean",
+            "title": "Publisher Reliability Assessed"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_version",
+          "status",
+          "assessed_grade",
+          "basis",
+          "scope",
+          "limitations",
+          "provenance_role",
+          "publisher_reliability_assessed"
+        ],
+        "title": "SourceRating"
       },
       "SourceRatingOut": {
         "properties": {

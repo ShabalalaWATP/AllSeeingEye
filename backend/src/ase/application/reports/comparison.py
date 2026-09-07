@@ -70,18 +70,22 @@ def compare_versions(
             _leaves({"status": after.status, "findings": [asdict(f) for f in after.findings]}),
         )
     )
-    # Labels are local to each version. Match by event ID so relabelling cannot hide
+    # Labels are local to each version. Match by source and event ID so relabelling cannot hide
     # replacement evidence, and include grades, hashes and capture provenance in changes.
-    old_items = {item.event_id: item for item in before.evidence}
-    new_items = {item.event_id: item for item in after.evidence}
+    old_items = {(item.source_id, item.event_id): item for item in before.evidence}
+    new_items = {(item.source_id, item.event_id): item for item in after.evidence}
     for event_id in sorted(old_items.keys() | new_items.keys()):
         old_item, new_item = old_items.get(event_id), new_items.get(event_id)
         prefix = new_item.label if new_item else old_items[event_id].label
         changes.extend(
             _changes(
                 "Evidence",
-                _leaves(asdict(old_item), f"{prefix} ({event_id})") if old_item else {},
-                _leaves(asdict(new_item), f"{prefix} ({event_id})") if new_item else {},
+                _leaves(asdict(old_item), f"{prefix} ({event_id[0]}:{event_id[1]})")
+                if old_item
+                else {},
+                _leaves(asdict(new_item), f"{prefix} ({event_id[0]}:{event_id[1]})")
+                if new_item
+                else {},
             )
         )
     return ReportComparison(before.number, after.number, tuple(changes))

@@ -26,10 +26,11 @@ export function fetchReportComparison(
   id: string,
   from: number,
   to: number,
+  signal?: AbortSignal,
 ): Promise<ReportComparison> {
   return apiCall(
     `/api/reports/${encodeURIComponent(id)}/diff?from_version=${String(from)}&to_version=${String(to)}`,
-    { schema: comparisonSchema },
+    { schema: comparisonSchema, ...(signal ? { signal } : {}) },
   );
 }
 
