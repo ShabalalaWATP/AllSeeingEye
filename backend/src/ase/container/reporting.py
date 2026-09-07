@@ -14,15 +14,18 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
 from ase.application.access import AccessPolicy
+from ase.application.model_routing import ModelRouting
 from ase.application.reports.access import (
     DeleteReportUseCase,
     GetReportUseCase,
     ListReportsUseCase,
 )
 from ase.application.reports.archiving import archive_evidence
+from ase.application.reports.claims import ReportClaims
 from ase.application.reports.evidence_package import ExportEvidencePackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.application.reports.generate_claims import GenerateClaims
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
@@ -171,6 +174,32 @@ class ReportWiring:
             self.access_policy(session),
             self.clock,
             self._auditor(r),
+            r.uow,
+        )
+
+    def report_claims(self, session: AsyncSession) -> ReportClaims:
+        r = self.repositories(session)
+        return ReportClaims(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            r.claims,
+            self.access_policy(session),
+            self.clock,
+            self._auditor(r),
+            r.uow,
+        )
+
+    def generate_claims(self, session: AsyncSession) -> GenerateClaims:
+        r = self.repositories(session)
+        return GenerateClaims(
+            self.report_claims(session),
+            ModelRouting(r.llm_profiles, r.llm_bindings),
+            self.llm,
+            self.cipher,
+            r.llm_usage,
+            self.clock,
+            self.limiter,
             r.uow,
         )
 

@@ -724,6 +724,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Claims */
+        get: operations["list_claims_api_claims_get"];
+        put?: never;
+        /** Create Claim */
+        post: operations["create_claim_api_claims_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/claims/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Claims */
+        post: operations["generate_claims_api_claims_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/claims/{claim_id}/revisions/{revision_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Claim */
+        get: operations["get_claim_api_claims__claim_id__revisions__revision_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/claims/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Claim */
+        get: operations["get_claim_api_claims__claim_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Claim */
+        patch: operations["update_claim_api_claims__claim_id__patch"];
+        trace?: never;
+    };
     "/api/me/library": {
         parameters: {
             query?: never;
@@ -2175,11 +2245,65 @@ export interface components {
             /** Reasons */
             reasons: string[];
         };
+        /** CitationInput */
+        CitationInput: {
+            /** Label */
+            label: string;
+            relation: components["schemas"]["ClaimRelation"];
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /** Text */
+            text: string;
+        };
         /**
          * CitationStatus
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** ClaimCitation */
+        ClaimCitation: {
+            /** Label */
+            label: string;
+            relation: components["schemas"]["ClaimRelation"];
+            /** Event Id */
+            event_id: string;
+            /** Source Content Hash */
+            source_content_hash: string;
+            excerpt: components["schemas"]["FrozenExcerpt"];
+        };
+        /** ClaimCreateIn */
+        ClaimCreateIn: {
+            /** Statement */
+            statement: string;
+            kind: components["schemas"]["ClaimKind"];
+            /** @default proposed */
+            state: components["schemas"]["ClaimReviewState"];
+            /** Citations */
+            citations: components["schemas"]["CitationInput"][];
+            /** Unresolved Conflicts */
+            unresolved_conflicts?: string[];
+            /** Reason */
+            reason: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** ClaimDetailOut */
+        ClaimDetailOut: {
+            root: components["schemas"]["ClaimRoot"];
+            revision: components["schemas"]["ClaimRevision"];
+        };
         /** ClaimDimensionOut */
         ClaimDimensionOut: {
             /**
@@ -2192,6 +2316,34 @@ export interface components {
             /** Explanation */
             explanation: string;
         };
+        /** ClaimGenerateIn */
+        ClaimGenerateIn: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+        };
+        /** ClaimGenerationResult */
+        ClaimGenerationResult: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "empty" | "invalid" | "unavailable" | "unsupported";
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["ClaimRevision"][];
+        };
+        /**
+         * ClaimKind
+         * @enum {string}
+         */
+        ClaimKind: "reported_fact" | "analytical_inference";
         /** ClaimLedgerOut */
         ClaimLedgerOut: {
             /** Derivation Version */
@@ -2204,6 +2356,144 @@ export interface components {
             recorded_gaps: string[];
             /** Limitations */
             limitations: string[];
+        };
+        /** ClaimModelOrigin */
+        ClaimModelOrigin: {
+            /**
+             * Batch Id
+             * Format: uuid
+             */
+            batch_id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Revision */
+            profile_revision: number;
+            /** Provider */
+            provider: string;
+            /** Requested Model */
+            requested_model: string;
+            /** Returned Model */
+            returned_model: string;
+            /** Input Sha256 */
+            input_sha256: string;
+            /** Method Version */
+            method_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+        };
+        /** ClaimPageOut */
+        ClaimPageOut: {
+            /** Items */
+            items: components["schemas"]["ClaimRevision"][];
+            /** Total */
+            total: number;
+            /** Offset */
+            offset: number;
+            /** Limit */
+            limit: number;
+        };
+        /**
+         * ClaimRelation
+         * @enum {string}
+         */
+        ClaimRelation: "supporting" | "opposing" | "context";
+        /**
+         * ClaimReviewState
+         * @enum {string}
+         */
+        ClaimReviewState: "proposed" | "reviewed" | "withdrawn";
+        /** ClaimRevision */
+        ClaimRevision: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Number */
+            number: number;
+            /** Previous Id */
+            previous_id: string | null;
+            /** Statement */
+            statement: string;
+            kind: components["schemas"]["ClaimKind"];
+            state: components["schemas"]["ClaimReviewState"];
+            /** Citations */
+            citations: components["schemas"]["ClaimCitation"][];
+            /** Unresolved Conflicts */
+            unresolved_conflicts: string[];
+            /** Reason */
+            reason: string;
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            model_origin?: components["schemas"]["ClaimModelOrigin"] | null;
+        };
+        /** ClaimRoot */
+        ClaimRoot: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Report Version Number */
+            report_version_number: number;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Evidence Sha256 */
+            evidence_sha256: string;
+            /**
+             * Latest Revision Id
+             * Format: uuid
+             */
+            latest_revision_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** ClaimSourceOut */
         ClaimSourceOut: {
@@ -2222,6 +2512,25 @@ export interface components {
             organisation: string | null;
             /** Content Hash */
             content_hash: string | null;
+        };
+        /** ClaimUpdateIn */
+        ClaimUpdateIn: {
+            /** Statement */
+            statement: string;
+            kind: components["schemas"]["ClaimKind"];
+            /** @default proposed */
+            state: components["schemas"]["ClaimReviewState"];
+            /** Citations */
+            citations: components["schemas"]["CitationInput"][];
+            /** Unresolved Conflicts */
+            unresolved_conflicts?: string[];
+            /** Reason */
+            reason: string;
+            /**
+             * Base Revision Id
+             * Format: uuid
+             */
+            base_revision_id: string;
         };
         /** CollectionAttemptOut */
         CollectionAttemptOut: {
@@ -2613,6 +2922,22 @@ export interface components {
              * Format: email
              */
             email: string;
+        };
+        /** FrozenExcerpt */
+        FrozenExcerpt: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /** Text */
+            text: string;
+            /** Sha256 */
+            sha256: string;
         };
         /** FrozenExcerptOut */
         FrozenExcerptOut: {
@@ -6722,6 +7047,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SavedMapViewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_claims_api_claims_get: {
+        parameters: {
+            query: {
+                report_id: string;
+                version_number: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_claim_api_claims_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_claims_api_claims_generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimGenerateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimGenerationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_claim_api_claims__claim_id__revisions__revision_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                claim_id: string;
+                revision_id: string | null;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_claim_api_claims__claim_id__get: {
+        parameters: {
+            query?: {
+                revision_id?: string | null;
+            };
+            header?: never;
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_claim_api_claims__claim_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClaimUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRevision"];
                 };
             };
             /** @description Validation Error */

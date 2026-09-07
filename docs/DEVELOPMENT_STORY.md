@@ -1487,3 +1487,243 @@ ESLint, file-length and diff checks passed. These are focused checks without a n
 coverage measurement. Whole-release catalogue performance, configured-model and
 real-browser operational acceptance remain open. No source activation, operator
 migration or deployment was performed.
+
+
+### Atomic claim revision foundation
+
+Added a separate internal immutable claim-revision contract with proposed,
+reviewed and withdrawn states, stable claim/version anchors, explicit conflicts,
+correction reasons and exact original-field excerpt locators. No automatic truth
+score, report mutation, exposed API or completed claim editor is implied. The
+remaining persistence, access, model-proposal, UI and export work is specified in
+CLAIM_LEDGER_IMPLEMENTATION.md.
+
+Read-only architecture review identified the saved-map guard/repository pattern
+and current migration head 0024. Code review caught mutable conflict-list aliases
+and unencodable Unicode; the implementation now freezes a defensive tuple and
+rejects invalid UTF-8/control text. Forty-two focused new/existing claim tests
+passed, including Chinese/emoji offsets, invalid citations, correction anchors,
+mutable-input isolation and malformed Unicode. Ruff and mypy (500 files) passed;
+file-length and diff checks passed. No coverage was measured, migration run,
+source activated or deployment performed. Persistence integration is next.
+
+
+### Internal claim persistence foundation
+
+Added scoped claim root and immutable revision ORM records, bounded canonical
+payload encoding/integrity checks and a conditional append repository. Scope is
+inherited from the exact parent report; operator authorship stays separate from
+ownership. Stale or retargeted corrections cannot advance the latest pointer.
+Explicit dependent cleanup is implemented but not yet wired to report deletion.
+
+Seven disposable SQLite tests passed. Ruff and mypy (503 source files) passed.
+No migration, application/API wiring, exposed editor or complete access/quota
+acceptance is claimed. Read-only repository review is pending. Full plan remains
+active, including automated claim proposals and user-facing history.
+
+
+### Claim migration and storage validation
+
+Implemented additive migration 0025 and report-deletion cleanup. Review found
+that a matching payload hash did not establish valid claim structure; encode and
+decode now invoke shared domain validation. Team roots use the author for member
+edit ownership while personal roots retain the parent owner. The combined claim
+suite passed 56 tests, including malformed rehashed payloads, retained-history
+downgrade refusal and explicit report deletion. Ruff, mypy (503 files), file-length
+and diff checks passed. No operator database was migrated. Application access,
+quota and API/editor integration remain unfinished; changes remain uncommitted.
+
+
+### Claim application service and quota enforcement
+
+Wired a session-scoped ReportClaims service and repository port into the container.
+Create, read and correction operations validate the current refresh family and
+security version under the administration guard, check parent/claim scope and
+revalidate exact frozen evidence/citation anchors. Corrections retain their root
+version and use conditional appends. Limits are 1,000 retained claims and 64 MiB
+per personal/team scope, with 100 retained revisions per claim; withdrawn history
+continues to count. Audit entries contain action and report/claim/revision IDs,
+not private statements or excerpts. No automatic grading changes occur.
+
+Eleven combined service/repository tests passed before adding access cases. The
+expanded eight-case service group passed, including stale-session rejection for
+create/read/update, foreign personal scope, quota failures, old-revision reads,
+stale correction rejection and unchanged frozen report content. Ruff and mypy
+(506 source files), file-length and diff checks passed. Review is pending. API,
+scoped lists, editor, automatic proposals, full team/revocation/concurrency tests
+and PostgreSQL acceptance remain unfinished. No operator migration or deployment.
+
+
+### Claim HTTP and scoped listing
+
+Added /api/claims create, conditional correction, current/exact revision reads
+and frozen-version listing. Pages contain at most twenty claims; visibility is
+filtered in SQL before counts/limits and the service rechecks parent scope and
+evidence anchors for each returned item. Responses use no-store. Request schemas
+reject extra audit fields, boolean offsets, unsupported source fields and oversized
+text/link collections. Exact excerpt mismatches are rejected by the domain service.
+
+Six HTTP tests passed, covering immutable history, stale correction conflict,
+bounded listing, malformed input and foreign personal scope. OpenAPI and frontend
+types were regenerated; frontend type checking, scoped Ruff, backend mypy (508
+files), file-length and diff checks passed. Earlier service review found no
+confirmed access/quota blocker. API/list review is pending; the editor, automated
+proposals and broader team/concurrency/operational acceptance remain unfinished.
+
+
+### Claim viewer and API review follow-up
+
+The report page now offers an on-demand claim annotation viewer with exact
+revision history, bounded pagination, original supporting/opposing excerpts,
+review states and unresolved conflicts. A shared scoped-request hook aborts
+requests across account/access changes; the existing map hook re-exports it.
+Claim data remains outside browser persistence. Creating/editing claims in the
+UI and automated proposal generation remain unfinished.
+
+API review identified oversized version integers reaching SQL binding. Schema,
+query and service now enforce the signed 32-bit range, with an HTTP regression.
+Listing computes the frozen evidence digest once per page while still checking
+each claim root's scope/version/anchor. Seven claim API tests passed and two
+viewer tests passed for lazy loading, exact selected version and explicit errors.
+OpenAPI/types were regenerated. Mypy (508 files), file-length and diff checks
+passed. Frontend type checking passed before the final viewer formatting change;
+ESLint identified non-null assertions, which were replaced with explicit guards.
+Broader history/access UI acceptance and final integration checks remain open.
+
+
+### Operator claim editor
+
+Added the report-page editor for proposed claims and appended review/correction/
+withdrawal revisions. It collects one assertion, type, original supporting/opposing/
+context excerpts, explicit conflicts and a required reason. Existing claims load
+latest root/revision permissions before editing; server-side authority and CAS remain
+mandatory. The editor retains at most twenty citations and does not alter prior
+report bodies, judgements or source grades.
+
+The excerpt picker uses selection in a read-only captured title/summary field,
+including keyboard selection. UTF-16 browser offsets convert explicitly to Unicode
+code-point offsets; split surrogate pairs and oversized/blank excerpts are rejected.
+Four focused UI tests passed for viewer states, Unicode locator conversion and
+proposed-claim submission. Frontend type checking passed after integration; scoped
+ESLint passed after explicit code-point conversion and test assertion repairs.
+File-length and diff checks passed. UI review, correction/conflict/access regression
+coverage, visual acceptance and automated model proposals remain outstanding.
+
+
+### Claim editor review repairs
+
+Read-only UI review found textarea CRLF/CR normalisation could shift original
+excerpt offsets, and controls remained editable during a pending save. The picker
+now renders normalised textarea text and maps selection boundaries back to the
+unchanged raw field. Mounted CRLF/CR regressions initially failed due to controlled
+textarea caret reset; rendering the normalised value fixed that remaining issue.
+
+The editor disables its entire fieldset while saving, uses one captured abort
+signal and checks it before completion callbacks. Ten focused UI tests passed,
+including Unicode/newline locators, proposal submission, withdrawal against an
+exact base, stale-edit retention, access-change draft clearing and suppressed
+completion after unmount. Broader frontend regression and final static checks
+are next. No automated claim-generation completion is implied.
+
+
+### Claim integration regression and coverage follow-up
+
+The combined backend claim suite completed with 71 passes. The full frontend
+suite completed with 785 passing tests in 140 files, but failed the existing
+branch-coverage gate: 89.45% branches (90% required), 94.81% statements, 93.15%
+functions and 95.98% lines. This is not a passing full verification.
+
+Added real API-client workflow tests for exact revision navigation, pagination,
+current-root edit permission, denied permission, failed revision loading and
+appending a review. Four workflow tests passed after correcting a mock response
+to return frozen citation records rather than editable citation inputs. The
+pending test-only require-await lint issue was repaired. A new full frontend
+coverage run is required; thresholds remain unchanged. Automated claim proposals
+and broader operational acceptance are still unfinished.
+
+
+### Full frontend coverage passes; model-proposal validation starts
+
+The full frontend rerun completed successfully: 789 tests in 141 files passed,
+with 95.43% statements, 90.05% branches, 94.05% functions and 96.62% lines. The
+existing 90% branch gate is unchanged. The frontend production build also passed.
+
+Started the model-proposal boundary with a bounded parser: at most twenty distinct
+assertions, five original-field citations each, explicit conflicts and known claim
+types. Locators derive from unique verbatim occurrences in frozen evidence;
+invented, translated-field, ambiguous, duplicate and instruction-like proposals
+are rejected. Model output cannot mark itself reviewed. Ten parser tests passed;
+Ruff and mypy (509 files) passed. This parser is not yet connected to a model call,
+provenance record, automatic report generation or persistence. Those integration
+steps remain part of the full objective. All claim changes remain uncommitted.
+
+
+### Bounded claim-proposal model call
+
+Added a one-call gateway function around the strict proposal parser. It uses the
+selected profile's provider/model/reasoning settings, a 45-second deadline and
+bounded input/output (100 evidence records, 256 KiB prompt, 128 KiB response).
+Original evidence and saved judgements are untrusted prompt data. Duplicate JSON
+keys and invalid proposals are rejected; cancellation propagates without retry.
+The result distinguishes completed, empty, invalid, unavailable and unsupported
+input, and retains profile revision, requested/returned model, input hash and usage.
+
+Nineteen model/parser tests passed. An oversized parametrised fixture initially
+exceeded Windows test-path handling; explicit short case IDs repaired that test
+setup. Ruff, mypy (510 files), file-length and diff checks passed. No real model
+call was made. Pipeline/API admission, provenance persistence, automatic report
+proposal creation and operator-facing generation remain unfinished; this is an
+internal gateway boundary, not end-to-end automated claim delivery. Review pending.
+
+
+### Immutable model-origin metadata
+
+Added optional model-origin metadata to claim revisions: batch/profile IDs,
+profile revision, provider, requested/returned model, exact input digest, method
+version and generation time. It validates before storage and survives operator
+corrections; a correction cannot replace the originating model record. Client
+claim-edit schemas still forbid caller-supplied origin. Claim history can display
+the retained provenance, and API types have been regenerated.
+
+Fifty combined origin/codec/domain tests passed, followed by sixteen origin/model
+cases including duplicate-label input rejection before any model call. Four UI
+workflow tests passed with provenance presentation. Ruff and mypy (511 files)
+passed. Frontend type checking passed after aligning optional wire metadata with
+the client's normalised null and declared generated response types. File-length
+and diff checks passed. Automatic generation admission and origin-aware batch
+persistence are still pending; no actual model proposals were stored or generated
+against an external provider. The full objective remains active and uncommitted.
+# Claim proposal admission and atomic persistence, 7 September 2026
+
+Checked milestone: the full backend baseline completed with 2,557 passes,
+14 skips and 95.12% coverage. The newer automatic stage/receipt/storage tests
+passed separately (22 plus seven). Storage review found no blocker; tests verify
+new-parent rollback and personal-owner quotas during administrator generation.
+Backend Ruff, formatting, mypy (518 files), Bandit and architecture checks passed.
+Frontend verification remains 795 passing tests and a successful build. Automatic
+Producer integration is still required; no model or operator database was used.
+
+Automatic production groundwork: added explicit generation receipts with exact
+initial revision IDs, plus a side-effect-free proposal stage using frozen profile
+lookup and buffered usage. Twenty-two stage/receipt tests passed, including routing
+changes and no invented returned model during outages. Mypy passed across 516 files.
+These isolated modules await shared Producer and report-persistence wiring while
+the previously started full backend suite runs. The full objective remains active.
+
+Follow-up: connected routed claim generation to an authenticated report action,
+with hourly admission limits, generic usage accounting, original model provenance
+and explicit empty/invalid/unavailable outcomes. The request watches disconnects
+and waits for cancellation accounting before releasing its database session.
+Twenty-one generation/batch/API tests passed. All 795 frontend tests passed with
+90.05% branch coverage; production build passed with its existing chunk-size advisory.
+Mypy passed across 514 files and architecture contracts passed. The full backend
+suite is still running. Automatic pipeline integration remains next; this manual
+generation action does not complete the full plan. Changes remain uncommitted.
+
+Added claim batch preparation that releases database guards before model work,
+and fresh authority/evidence checks before atomic quota-controlled persistence.
+Review found and repaired a mutable admission anchor and provider model-ID length
+mismatch. Sixteen batch/service tests and seven provenance tests passed; mypy
+passed across 512 files. Scoped Ruff/format and file-length checks passed. These
+are internal foundations; automatic model orchestration and report integration
+remain unfinished. No operator migration, external model call or deployment.

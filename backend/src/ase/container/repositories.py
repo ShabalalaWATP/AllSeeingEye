@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.audit import SqlAlchemyUnitOfWork, SqlAuditLogRepository
 from ase.adapters.persistence.baselines import SqlBaselineRepository
+from ase.adapters.persistence.claims import SqlClaimRepository
 from ase.adapters.persistence.direction import SqlAoiRepository, SqlPlanRepository
 from ase.adapters.persistence.llm import SqlLlmProfileRepository, SqlLlmUsageRepository
 from ase.adapters.persistence.llm_bindings import SqlLlmBindingRepository
@@ -24,6 +25,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.application.ports.baselines import BaselineRepository
+from ase.application.ports.claims import ClaimRepository
 from ase.application.ports.direction import AoiRepository, PlanRepository
 from ase.application.ports.llm import (
     LlmBindingRepository,
@@ -47,6 +49,7 @@ class Repositories:
     llm_usage: LlmUsageRepository
     llm_bindings: LlmBindingRepository
     reports: ReportRepository
+    claims: ClaimRepository
     map_views: MapViewRepository
     baselines: BaselineRepository
     aois: AoiRepository
@@ -59,6 +62,7 @@ class Repositories:
 
 def build_repositories(session: AsyncSession) -> Repositories:
     return Repositories(
+        claims=SqlClaimRepository(session),
         users=SqlUserRepository(session),
         requests=SqlAccountRequestRepository(session),
         refresh_tokens=SqlRefreshTokenRepository(session),

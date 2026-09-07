@@ -1982,6 +1982,365 @@
         }
       }
     },
+    "/api/claims": {
+      "get": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "List Claims",
+        "operationId": "list_claims_api_claims_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Version Number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Create Claim",
+        "operationId": "create_claim_api_claims_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/claims/generate": {
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Generate Claims",
+        "operationId": "generate_claims_api_claims_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimGenerateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimGenerationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/claims/{claim_id}/revisions/{revision_id}": {
+      "get": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Get Claim",
+        "operationId": "get_claim_api_claims__claim_id__revisions__revision_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/claims/{claim_id}": {
+      "get": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Get Claim",
+        "operationId": "get_claim_api_claims__claim_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Update Claim",
+        "operationId": "update_claim_api_claims__claim_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/library": {
       "get": {
         "tags": [
@@ -6568,6 +6927,56 @@
         ],
         "title": "CitationCheckOut"
       },
+      "CitationInput": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "relation": {
+            "$ref": "#/components/schemas/ClaimRelation"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "start": {
+            "type": "integer",
+            "maximum": 20000.0,
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "maximum": 20000.0,
+            "minimum": 1.0,
+            "title": "End"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "relation",
+          "field",
+          "start",
+          "end",
+          "text"
+        ],
+        "title": "CitationInput"
+      },
       "CitationStatus": {
         "type": "string",
         "enum": [
@@ -6577,6 +6986,117 @@
           "review_required"
         ],
         "title": "CitationStatus"
+      },
+      "ClaimCitation": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "relation": {
+            "$ref": "#/components/schemas/ClaimRelation"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_content_hash": {
+            "type": "string",
+            "title": "Source Content Hash"
+          },
+          "excerpt": {
+            "$ref": "#/components/schemas/FrozenExcerpt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "relation",
+          "event_id",
+          "source_content_hash",
+          "excerpt"
+        ],
+        "title": "ClaimCitation"
+      },
+      "ClaimCreateIn": {
+        "properties": {
+          "statement": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Statement"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ClaimKind"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ClaimReviewState",
+            "default": "proposed"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Citations"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "statement",
+          "kind",
+          "citations",
+          "reason",
+          "report_id",
+          "version_number"
+        ],
+        "title": "ClaimCreateIn"
+      },
+      "ClaimDetailOut": {
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/ClaimRoot"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/ClaimRevision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root",
+          "revision"
+        ],
+        "title": "ClaimDetailOut"
       },
       "ClaimDimensionOut": {
         "properties": {
@@ -6606,6 +7126,64 @@
           "explanation"
         ],
         "title": "ClaimDimensionOut"
+      },
+      "ClaimGenerateIn": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "report_id",
+          "version_number"
+        ],
+        "title": "ClaimGenerateIn"
+      },
+      "ClaimGenerationResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "empty",
+              "invalid",
+              "unavailable",
+              "unsupported"
+            ],
+            "title": "Status"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimRevision"
+            },
+            "type": "array",
+            "title": "Items",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ClaimGenerationResult"
+      },
+      "ClaimKind": {
+        "type": "string",
+        "enum": [
+          "reported_fact",
+          "analytical_inference"
+        ],
+        "title": "ClaimKind"
       },
       "ClaimLedgerOut": {
         "properties": {
@@ -6648,6 +7226,284 @@
           "limitations"
         ],
         "title": "ClaimLedgerOut"
+      },
+      "ClaimModelOrigin": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "title": "Profile Revision"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "requested_model": {
+            "type": "string",
+            "title": "Requested Model"
+          },
+          "returned_model": {
+            "type": "string",
+            "title": "Returned Model"
+          },
+          "input_sha256": {
+            "type": "string",
+            "title": "Input Sha256"
+          },
+          "method_version": {
+            "type": "string",
+            "title": "Method Version"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "profile_id",
+          "profile_revision",
+          "provider",
+          "requested_model",
+          "returned_model",
+          "input_sha256",
+          "method_version",
+          "generated_at"
+        ],
+        "title": "ClaimModelOrigin"
+      },
+      "ClaimPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimRevision"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "ClaimPageOut"
+      },
+      "ClaimRelation": {
+        "type": "string",
+        "enum": [
+          "supporting",
+          "opposing",
+          "context"
+        ],
+        "title": "ClaimRelation"
+      },
+      "ClaimReviewState": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "reviewed",
+          "withdrawn"
+        ],
+        "title": "ClaimReviewState"
+      },
+      "ClaimRevision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Claim Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ClaimKind"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ClaimReviewState"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Conflicts"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "authored_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Authored By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "model_origin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClaimModelOrigin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "claim_id",
+          "report_id",
+          "report_version_id",
+          "number",
+          "previous_id",
+          "statement",
+          "kind",
+          "state",
+          "citations",
+          "unresolved_conflicts",
+          "reason",
+          "authored_by",
+          "created_at"
+        ],
+        "title": "ClaimRevision"
+      },
+      "ClaimRoot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "title": "Report Version Number"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "title": "Evidence Sha256"
+          },
+          "latest_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Latest Revision Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "report_version_number",
+          "created_by",
+          "team_id",
+          "evidence_sha256",
+          "latest_revision_id",
+          "created_at"
+        ],
+        "title": "ClaimRoot"
       },
       "ClaimSourceOut": {
         "properties": {
@@ -6718,6 +7574,63 @@
           "content_hash"
         ],
         "title": "ClaimSourceOut"
+      },
+      "ClaimUpdateIn": {
+        "properties": {
+          "statement": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Statement"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ClaimKind"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ClaimReviewState",
+            "default": "proposed"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Citations"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "base_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "statement",
+          "kind",
+          "citations",
+          "reason",
+          "base_revision_id"
+        ],
+        "title": "ClaimUpdateIn"
       },
       "CollectionAttemptOut": {
         "properties": {
@@ -7884,6 +8797,43 @@
           "email"
         ],
         "title": "ForgotPasswordIn"
+      },
+      "FrozenExcerpt": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "start",
+          "end",
+          "text",
+          "sha256"
+        ],
+        "title": "FrozenExcerpt"
       },
       "FrozenExcerptOut": {
         "properties": {

@@ -47,6 +47,8 @@ class AuditAction(StrEnum):
     REPORT_DELETED = "report_deleted"
     LIBRARY_UPDATED = "library_updated"
     LIBRARY_REMOVED = "library_removed"
+    CLAIM_CREATED = "claim.created"
+    CLAIM_REVISED = "claim.revised"
     MAP_VIEW_CREATED = "map_view_created"
     MAP_VIEW_REVISED = "map_view_revised"
     MAP_VIEW_ARCHIVED = "map_view_archived"

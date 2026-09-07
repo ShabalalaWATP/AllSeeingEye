@@ -5,6 +5,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
+import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
 import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
 import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
 import { useMapRequest } from '@/components/maps/useMapRequest';
@@ -169,6 +170,14 @@ export default function ReportPage() {
           citationChecks={version.citation_checks}
         />
         <ClaimLedgerView ledger={version.claim_ledger} />
+        <ClaimAnnotations
+          key={`${resource.key}:${id}:${version.number}`}
+          reportId={id}
+          version={version.number}
+          evidence={version.evidence}
+          canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
+          canManage={(root) => mapWritable && workspaces.canManage(root)}
+        />
         <ReportEvidenceMap
           key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
           reportId={id}

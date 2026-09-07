@@ -14,6 +14,7 @@ from ase.api.routers import (
     admin_users,
     auth,
     capabilities,
+    claims,
     countries,
     direction,
     events,
@@ -56,6 +57,7 @@ api_router.include_router(recovery.router)
 api_router.include_router(events.router)
 api_router.include_router(footprints.router)
 api_router.include_router(map_views.router)
+api_router.include_router(claims.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
