@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 
+from ase.application.reports.observation_text import observation_lines
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
@@ -71,6 +72,9 @@ def evidence_block(item: EvidenceItem) -> str:
         f" Machine-translated title (unverified): {item.title_en}." if item.title_en else ""
     )
     provenance = f" Original language: {item.language or 'not recorded'}."
+    provenance += (
+        " " + ". ".join(observation_lines(item)) if item.observation or item.geometry else ""
+    )
     if item.geo_confidence:
         provenance += f" Location precision: {item.geo_confidence}."
     provenance += (

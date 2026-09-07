@@ -6,6 +6,19 @@ import { researchReceiptSchema } from '@/lib/api/reportResearch';
 import { researchReceipt } from '@/test/fixtures.researchMetadata';
 import { ResearchCoverage } from './ResearchCoverage';
 
+it('preserves and explains acquisition-based coverage without relabelling legacy receipts', () => {
+  const receipt = researchReceiptSchema.parse({
+    ...researchReceipt,
+    time_basis: 'acquisition_or_publication',
+  });
+  render(<ResearchCoverage receipt={receipt} />);
+  expect(screen.getByText('Acquisition/publication period (UTC)')).toBeInTheDocument();
+  expect(screen.getByText(/acquisition time for observations/)).toBeInTheDocument();
+  expect(
+    researchReceiptSchema.parse({ ...researchReceipt, time_basis: undefined }).time_basis,
+  ).toBe('publication');
+});
+
 const attempt = {
   source_id: 'example',
   source_name: 'Example search source',

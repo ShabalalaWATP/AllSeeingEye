@@ -22,6 +22,7 @@ export const sourceContext: components['schemas']['SourceSummaryOut'] = {
 };
 
 export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
+  time_basis: 'publication',
   question: '[QA] What has changed in Ukraine?',
   mode: 'detailed',
   focus: 'general',

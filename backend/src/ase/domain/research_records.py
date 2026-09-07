@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import (
     CollectionAttempt,
     CollectionPass,
@@ -29,6 +30,7 @@ class ResearchReceipt:
     policy_version: str = "ase-research-v1"
     plan: ResearchPlan | None = None
     passes: tuple[CollectionPass, ...] = ()
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
 
     @classmethod
     def build(
@@ -51,7 +53,18 @@ class ResearchReceipt:
             count,
             plan=plan,
             passes=passes,
+            time_basis=EvidenceTimeBasis.RESEARCH if query.area else EvidenceTimeBasis.PUBLICATION,
         )
+
+    @property
+    def temporal_notice(self) -> str:
+        if self.time_basis is EvidenceTimeBasis.RESEARCH:
+            return (
+                "Dates filter acquisition time for observations and publication time "
+                "for reporting, "
+                "not retrieval time. This does not establish complete event-time coverage."
+            )
+        return "Dates filter publication time, not necessarily event time."
 
     def describe(self) -> str:
         statuses = "; ".join(
@@ -61,7 +74,7 @@ class ResearchReceipt:
         )
         return (
             f"Collection coverage ({self.policy_version}): {statuses or 'No sources attempted.'} "
-            "Dates filter publication time, not necessarily event time. Empty or unavailable "
+            f"{self.temporal_notice} Empty or unavailable "
             "sources do not establish absence of events. Collection does not verify claims."
         )
 
@@ -70,6 +83,7 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     result = asdict(receipt)
     result["since"] = receipt.since.isoformat()
     result["until"] = receipt.until.isoformat()
+    result["time_basis"] = receipt.time_basis.value
     if receipt.plan is not None:
         result["plan"]["since"] = receipt.plan.since.isoformat()
         result["plan"]["until"] = receipt.plan.until.isoformat()
@@ -112,6 +126,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
         collected_items=int(data["collected_items"]),
         plan=plan_from_dict(data.get("plan")),
         passes=passes_from_dict(data.get("passes", ())),
+        time_basis=EvidenceTimeBasis(data.get("time_basis", "publication")),
     )
 
 

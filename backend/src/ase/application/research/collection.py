@@ -10,6 +10,7 @@ from ase.application.ports.research import ResearchProvider
 from ase.application.research.budget import CollectionBudget, CollectionRunBudget
 from ase.application.research.planning import build_plan
 from ase.domain.events import Event
+from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
 from ase.domain.research import (
     CollectionAttempt,
     CollectionStatus,
@@ -35,7 +36,8 @@ class ResearchCollector:
 
     Provider instances represent a single request (including a specific language).
     Serial admission avoids an unbounded task queue and keeps cancellation direct.
-    Output dates are publication dates; this does not establish event-time coverage.
+    Area observations use acquisition dates; other records use publication dates.
+    Neither establishes complete coverage of events in the requested interval.
     """
 
     def __init__(self, providers: Sequence[ResearchProvider]) -> None:
@@ -113,7 +115,7 @@ class ResearchCollector:
                     CollectionStatus.EMPTY,
                 )
                 retained = self._retain(batch.items if eligible else (), query, items, state)
-                attempt = self._summarise(provider, batch, retained)
+                attempt = self._summarise(provider, batch, retained, query)
             attempts.append(attempt)
             if progress is not None:
                 await progress(attempt)
@@ -147,9 +149,13 @@ class ResearchCollector:
         for item in incoming:
             if state.remaining_items <= 0:
                 break
-            if item.published_at.utcoffset() is None or (
-                item.attributes.get("record_kind") not in CURRENT_RECORDS
-                and not query.since <= item.published_at < query.until
+            basis = EvidenceTimeBasis.RESEARCH if query.area else EvidenceTimeBasis.PUBLICATION
+            timestamp = evidence_time(item, basis)
+            current_context = (
+                query.area is None and item.attributes.get("record_kind") in CURRENT_RECORDS
+            )
+            if timestamp is None or (
+                not current_context and not query.since <= timestamp < query.until
             ):
                 continue
             if state.retain(item.id):
@@ -165,7 +171,7 @@ class ResearchCollector:
 
     @staticmethod
     def _summarise(
-        provider: ResearchProvider, batch: ResearchBatch, retained: int
+        provider: ResearchProvider, batch: ResearchBatch, retained: int, query: ResearchQuery
     ) -> CollectionAttempt:
         if batch.attempts:
             first = batch.attempts[0]
@@ -180,9 +186,18 @@ class ResearchCollector:
         status = CollectionStatus.COMPLETED if retained else CollectionStatus.EMPTY
         if batch.items and not retained:
             explanation = (
-                "No additional items within the requested publication period. " + explanation
+                "No additional items within the requested "
+                + ("acquisition/publication" if query.area else "publication")
+                + " period. "
+                + explanation
             )
-        if any(item.attributes.get("record_kind") in CURRENT_RECORDS for item in batch.items):
+        if query.area and any(item.observation is not None for item in batch.items):
+            explanation = (
+                "Observations filtered by acquisition time, not retrieval time. " + explanation
+            )
+        if query.area is None and any(
+            item.attributes.get("record_kind") in CURRENT_RECORDS for item in batch.items
+        ):
             explanation = (
                 "Includes current observed records as context, not historical-window evidence. "
                 + explanation

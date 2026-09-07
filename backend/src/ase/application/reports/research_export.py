@@ -1,20 +1,27 @@
 """Shared frozen collection receipts, with no inference from empty or unavailable sources."""
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research_records import ResearchReceipt
 
 
 def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple[str, ...]], ...]:
     if receipt is None:
         return (("Collection coverage", ("No collection receipt was saved for this version.",)),)
+    period = (
+        "Acquisition/publication"
+        if receipt.time_basis is EvidenceTimeBasis.RESEARCH
+        else "Publication"
+    )
     lines = [
         f"Policy: {receipt.policy_version}. Mode: {receipt.mode}; focus: {receipt.focus}.",
         f"Research question: {receipt.question}",
-        f"Publication window: {receipt.since.isoformat()} to {receipt.until.isoformat()}.",
+        f"{period} "
+        f"window: {receipt.since.isoformat()} to {receipt.until.isoformat()} (end exclusive).",
         f"Requested languages: {', '.join(receipt.languages) or 'none recorded'}.",
         f"Planned search terms: {', '.join(receipt.terms) or 'none recorded'}.",
         f"Collected items: {receipt.collected_items} (new public collection). "
         "Selection for this report is a separate step.",
-        "Publication dates are not necessarily event dates. Empty or unavailable sources do not "
+        f"{receipt.temporal_notice} Empty or unavailable sources do not "
         "establish absence of events. Collection does not verify claims.",
     ]
     if not receipt.terms:

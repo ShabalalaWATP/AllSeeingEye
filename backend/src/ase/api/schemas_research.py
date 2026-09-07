@@ -1,6 +1,7 @@
 """Frozen research coverage response contract."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -39,6 +40,7 @@ class ResearchReceiptOut(BaseModel):
     attempts: list[CollectionAttemptOut]
     collected_items: int
     policy_version: str
+    time_basis: Literal["publication", "acquisition_or_publication"] = "publication"
     plan: ResearchPlanOut | None = None
 
     passes: list[CollectionPassOut] = Field(default_factory=list, max_length=2)

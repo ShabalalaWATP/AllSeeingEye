@@ -11,6 +11,7 @@ from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.reports.templates import EvidenceStrategy
 from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
 from ase.domain.evidence import EvidenceItem, injection_flags
+from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
 from ase.domain.grading import SourceProfile
 from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.trackers import Hazard, hazard_of
@@ -41,9 +42,17 @@ class Selection:
     considered: int
 
 
-def score(event: Event, now: datetime, window: timedelta) -> float:
+def score(
+    event: Event,
+    now: datetime,
+    window: timedelta,
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
+) -> float:
     """A retrieval priority, never a probability or a report confidence score."""
-    age_hours = max(0.0, (now - event.published_at).total_seconds() / 3600)
+    timestamp = evidence_time(event, time_basis)
+    if timestamp is None:
+        return 0.0
+    age_hours = max(0.0, (now - timestamp).total_seconds() / 3600)
     recency = math.exp(-age_hours / max(1.0, window.total_seconds() / 3600))
     severity = 1.0 + (event.severity or 0.0) * 0.5
     return (
@@ -68,15 +77,30 @@ def _pool(
     country_iso: str | None,
     bbox: BoundingBox | None,
     countries: Sequence[str],
+    time_basis: EvidenceTimeBasis,
+    until: datetime | None,
 ) -> list[Event]:
     """One query for the box or country, one per extra country, merged by event id."""
     queries = [
         EventQuery(
-            categories=categories, country_iso=country_iso, bbox=bbox, since=since, limit=MAX_POOL
+            categories=categories,
+            country_iso=country_iso,
+            bbox=bbox,
+            since=since,
+            limit=MAX_POOL,
+            time_basis=time_basis,
+            until=until,
         )
     ]
     queries.extend(
-        EventQuery(categories=categories, country_iso=iso, since=since, limit=MAX_POOL)
+        EventQuery(
+            categories=categories,
+            country_iso=iso,
+            since=since,
+            limit=MAX_POOL,
+            time_basis=time_basis,
+            until=until,
+        )
         for iso in countries
         if iso != country_iso
     )
@@ -143,6 +167,8 @@ def select_evidence(
     bbox: BoundingBox | None = None,
     countries: Sequence[str] = (),
     hazard: Hazard | None = None,
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
+    until: datetime | None = None,
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
@@ -153,14 +179,18 @@ def select_evidence(
     """
     window = timedelta(hours=strategy.window_hours)
     wanted = frozenset(categories) or strategy.categories
-    pool = _pool(store, wanted, now - window, country_iso, bbox, countries)
+    pool = _pool(store, wanted, now - window, country_iso, bbox, countries, time_basis, until)
     if hazard is not None:
         pool = [event for event in pool if hazard_of(event) is hazard]
     lowered = tuple(term.lower().strip() for term in terms if term.strip())
 
     def rank(event: Event) -> tuple[int, float, str]:
         matches = term_matches(event, lowered)
-        return (-bool(matches), -score(event, now, window) * (1 + 0.25 * matches), event.id)
+        return (
+            -bool(matches),
+            -score(event, now, window, time_basis) * (1 + 0.25 * matches),
+            event.id,
+        )
 
     safe = [
         event for event in pool if not injection_flags(event.title, event.title_en, event.summary)

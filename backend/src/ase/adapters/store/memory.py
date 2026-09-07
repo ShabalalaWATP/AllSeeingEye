@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from datetime import datetime
+from datetime import UTC, datetime
 
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
@@ -18,6 +18,7 @@ from ase.application.ports.feeds import (
     UpsertResult,
 )
 from ase.domain.events import Category, Event
+from ase.domain.evidence_time import evidence_time
 
 MAX_PRUNE_IDS = 10_000
 EVENT_OVERHEAD_BYTES = 240
@@ -113,14 +114,20 @@ class InMemoryEventStore:
             event = self._events[event_id]
             if query.source_ids and event.source_id not in query.source_ids:
                 continue
-            if query.since is not None and event.published_at < query.since:
+            timestamp = evidence_time(event, query.time_basis)
+            if query.since is not None and (timestamp is None or timestamp < query.since):
+                continue
+            if query.until is not None and (timestamp is None or timestamp >= query.until):
                 continue
             if query.bbox is not None and (
                 event.point is None or not query.bbox.contains(event.point)
             ):
                 continue
             matched.append(event)
-        matched.sort(key=lambda e: e.published_at, reverse=True)
+        matched.sort(
+            key=lambda e: evidence_time(e, query.time_basis) or datetime.min.replace(tzinfo=UTC),
+            reverse=True,
+        )
         return matched[: max(1, query.limit)]
 
     def prune(self, now: datetime) -> PruneResult:

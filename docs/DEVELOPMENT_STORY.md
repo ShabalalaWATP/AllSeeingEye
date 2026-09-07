@@ -929,3 +929,28 @@ group passed with 93.60% coverage across its four targeted modules; the existing
 contracts, scoped Bandit and file-length checks passed. No new full-suite coverage
 claim, live collection, migration or deployment is implied. Native area research
 still needs honest nullable publication times, temporal selection and API/UI wiring.
+
+### 7 September 2026: observation-time research selection
+
+Added an explicit time basis shared by store queries, collection admission and
+report ranking. Area observations use acquisition time, other reporting uses
+publication time, and bounded intervals include the start and exclude the end.
+Current-registry tags cannot bypass area date constraints. Point-only bbox filtering
+no longer discards already-admitted area footprints. Existing ordinary research
+keeps its publication basis.
+
+Review found stale publication-only wording in receipts supplied to the drafting
+model and exports. Receipts now freeze their actual time basis independently of
+the optional plan, and API/parser/coverage UI retain it. Missing legacy fields
+continue to mean publication. Evidence prompts and exports label structured
+observation times; freeform source metadata and geometry arrays stay out of prompts.
+Tests verify that instruction-like observation metadata is not interpolated there.
+
+The 70-test integration group passed, covering date boundaries, mixed evidence,
+storage, collection, selection, document exports and composed area generation.
+Eighteen frontend receipt/plan tests passed; the 11 affected receipt tests passed
+again after the generated-type fixture update. Mypy checked 487 files; both
+architecture contracts and scoped Bandit passed. Production build passed with the
+existing bundle-size advisory. No live source, operator database or deployment
+changed. Nullable publication contracts and native provider/API/map launch remain
+required before area collection can be exposed to operators.

@@ -4478,6 +4478,12 @@ export interface components {
             collected_items: number;
             /** Policy Version */
             policy_version: string;
+            /**
+             * Time Basis
+             * @default publication
+             * @enum {string}
+             */
+            time_basis: "publication" | "acquisition_or_publication";
             plan?: components["schemas"]["ResearchPlanOut"] | null;
             /** Passes */
             passes?: components["schemas"]["CollectionPassOut"][];

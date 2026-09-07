@@ -195,3 +195,24 @@ times, acquisition-based collection and ranking, evidence API/UI presentation an
 native provider registration are still required before catalogue observations can
 enter automated area research. Provider content hashes must include geometry and
 observation changes, so updates cannot disappear behind an unchanged text hash.
+
+### Acquisition-based collection and selection
+
+Strict area research now filters and ranks observations by their acquisition time;
+other area reporting uses publication time. The store, collector and final report
+selector share that explicit basis and an inclusive start/exclusive end interval.
+Retrieval time cannot supply recency or admit an out-of-window observation. Area
+research does not apply the current-registry historical-window exception, and its
+final selection does not discard footprints through a point-only bounding-box filter.
+Ordinary research retains publication-based selection.
+
+Receipts freeze `time_basis` independently of an optional plan. Drafting prompts,
+text exports and the coverage UI explain the actual basis; old receipts continue
+to mean publication time. Individual evidence text labels acquisition and processing
+times and scene cloud percentage without injecting coordinate arrays or freeform
+source metadata into prompts. Unknown processing/cloud values remain absent.
+
+Nullable actual publication times across all existing event/report consumers,
+evidence geometry/observation API and map presentation, native provider registration
+and the operator launch workflow remain unfinished. These foundations do not mean
+that an operator can yet run a live catalogue-backed area investigation.

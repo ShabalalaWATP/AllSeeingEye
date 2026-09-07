@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Protocol
 
 from ase.domain.events import BoundingBox, Category, Event
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.sources import SourceSpec
 
 
@@ -28,6 +29,8 @@ class EventQuery:
     since: datetime | None = None
     source_ids: frozenset[str] = frozenset()
     limit: int = 500
+    until: datetime | None = None
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
 
 
 @dataclass(frozen=True, slots=True)

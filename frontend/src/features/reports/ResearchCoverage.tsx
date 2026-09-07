@@ -6,6 +6,7 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
   if (!receipt)
     return <p className="text-xs text-muted">Collection receipt not recorded for this version.</p>;
   const passes = receipt.passes ?? [];
+  const observationTimes = receipt.time_basis === 'acquisition_or_publication';
   return (
     <details className="min-w-0 border-t border-line py-3 text-sm">
       <summary className="cursor-pointer py-1 font-medium focus-visible:outline-2 focus-visible:outline-ember">
@@ -15,9 +16,12 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
       </summary>
       <div className="mt-3 space-y-4 [overflow-wrap:anywhere]">
         <p className="text-xs text-muted">
-          Saved collection activity, not proof of completeness. Dates filter publication time, not
-          necessarily event time. Empty or unavailable sources do not establish absence of events.
-          Collected items may not all appear in the evidence annex.
+          Saved collection activity, not proof of completeness.{' '}
+          {observationTimes
+            ? 'Dates filter acquisition time for observations and publication time for reporting, not retrieval time.'
+            : 'Dates filter publication time, not necessarily event time.'}{' '}
+          Empty or unavailable sources do not establish absence of events. Collected items may not
+          all appear in the evidence annex.
         </p>
         <dl className="grid gap-3 text-xs sm:grid-cols-2">
           <div>
@@ -35,7 +39,11 @@ export function ResearchCoverage({ receipt }: { receipt: ResearchReceipt | null 
             <dd>{receipt.languages.join(', ') || 'Not recorded'}</dd>
           </div>
           <div>
-            <dt className="text-muted">Publication period (UTC)</dt>
+            <dt className="text-muted">
+              {observationTimes
+                ? 'Acquisition/publication period (UTC)'
+                : 'Publication period (UTC)'}
+            </dt>
             <dd>
               {formatUtc(receipt.since)} to {formatUtc(receipt.until)}
             </dd>

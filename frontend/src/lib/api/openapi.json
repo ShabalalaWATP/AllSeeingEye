@@ -13274,6 +13274,15 @@
             "type": "string",
             "title": "Policy Version"
           },
+          "time_basis": {
+            "type": "string",
+            "enum": [
+              "publication",
+              "acquisition_or_publication"
+            ],
+            "title": "Time Basis",
+            "default": "publication"
+          },
           "plan": {
             "anyOf": [
               {

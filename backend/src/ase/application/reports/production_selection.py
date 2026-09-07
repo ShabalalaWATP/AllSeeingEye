@@ -8,6 +8,7 @@ from ase.application.reports.production_types import Job
 from ase.application.reports.reused_evidence import with_reused_evidence
 from ase.application.reports.selection import Selection, select_evidence
 from ase.domain.direction import Direction
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.research import ResearchFocus
 
@@ -20,6 +21,7 @@ def select_for_job(
     extra_terms: tuple[str, ...] = (),
 ) -> Selection:
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
+    area = job.request.map_origin is not None
     window = int(job.window.total_seconds() // 3600)
     if private and job.seed_events:
         # A supplied historic document is relevant because it was explicitly supplied,
@@ -39,8 +41,12 @@ def select_for_job(
         country_iso=None if private else job.request.country_iso,
         categories=() if private else job.request.categories,
         terms=(*(direction.search_terms if direction else job.terms), *extra_terms),
-        bbox=None if private else job.bbox,
+        # Area eligibility was admitted by spatial providers. A point-only filter
+        # here would silently discard valid footprints without event coordinates.
+        bbox=None if private or area else job.bbox,
         countries=() if private else job.countries,
         hazard=None if private else job.hazard,
+        time_basis=EvidenceTimeBasis.RESEARCH if area else EvidenceTimeBasis.PUBLICATION,
+        until=job.now if area else None,
     )
     return with_reused_evidence(selected, job.reused_evidence)
