@@ -13,13 +13,13 @@ from ase.domain.users import User
 from helpers import USER_EMAIL, USER_PASSWORD, csrf_headers, login_token
 
 
-@pytest.mark.parametrize("message_arrives", [True, False])
+@pytest.mark.parametrize("message_arrives", ["event.expire", "event.resync", None])
 async def test_open_stream_rechecks_session_on_data_and_idle_heartbeat(
     client: AsyncClient,
     container: Container,
     user: User,
     monkeypatch,
-    message_arrives: bool,
+    message_arrives: str | None,
 ) -> None:
     monkeypatch.setattr(stream_router, "PING_SECONDS", 0.01)
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
@@ -30,7 +30,15 @@ async def test_open_stream_rechecks_session_on_data_and_idle_heartbeat(
         logout = await client.post("/api/auth/logout", headers=csrf_headers(client))
         assert logout.status_code == 204
         if message_arrives:
-            await container.bus.publish(BusMessage("event.expire", {"ids": ["private"]}))
+            await container.bus.publish(
+                BusMessage(
+                    message_arrives,
+                    {
+                        "ids": ["private"],
+                        "reason": "expiry_overflow",
+                    },
+                )
+            )
         async with asyncio.timeout(2):
             packet = await anext(iterator)
         assert packet["event"] == "bye"

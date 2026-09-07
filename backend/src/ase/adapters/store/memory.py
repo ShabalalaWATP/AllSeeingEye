@@ -82,7 +82,9 @@ class InMemoryEventStore:
         self._by_country: dict[str, set[str]] = {}
         self._estimated_bytes = 0
         # Evicted between prunes to hold the memory budget; announced at the next prune.
-        self._pending_expiry: list[str] = []
+        self._pending_expiry: set[str] = set()
+        self._pending_evictions = 0
+        self._pending_overflow = False
 
     def upsert(self, events: Iterable[Event]) -> UpsertResult:
         added = updated = unchanged = 0
@@ -100,7 +102,7 @@ class InMemoryEventStore:
                 self._insert(event)
                 updated += 1
                 changed_ids.append(event.id)
-        self._enforce_budget(self._pending_expiry)
+        self._capture_evictions()
         return UpsertResult(
             added=added, updated=updated, unchanged=unchanged, changed_ids=tuple(changed_ids)
         )
@@ -110,7 +112,7 @@ class InMemoryEventStore:
             if event.id in self._events:
                 self._remove(event.id)
             self._insert(event)
-        self._enforce_budget(self._pending_expiry)
+        self._capture_evictions()
 
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
@@ -166,11 +168,19 @@ class InMemoryEventStore:
                 evicted.extend(remaining[:overflow])
         for event_id in expired + evicted:
             self._remove(event_id)
-        evicted.extend(self._pending_expiry)
-        self._pending_expiry = []
         self._enforce_budget(evicted)
-        pruned_ids = tuple((expired + evicted)[:MAX_PRUNE_IDS])
-        return PruneResult(expired=len(expired), evicted=len(evicted), ids=pruned_ids)
+        missing = set(expired + evicted) | self._pending_expiry
+        missing.difference_update(self._events)
+        result = PruneResult(
+            expired=len(expired),
+            evicted=len(evicted) + self._pending_evictions,
+            ids=tuple(sorted(missing)[:MAX_PRUNE_IDS]),
+            resync_required=self._pending_overflow or len(missing) > MAX_PRUNE_IDS,
+        )
+        self._pending_expiry.clear()
+        self._pending_evictions = 0
+        self._pending_overflow = False
+        return result
 
     def stats(self) -> StoreStats:
         per_category = []
@@ -209,7 +219,20 @@ class InMemoryEventStore:
             self._remove(event_id)
             evicted.append(event_id)
 
+    def _capture_evictions(self) -> None:
+        evicted: list[str] = []
+        self._enforce_budget(evicted)
+        self._pending_evictions += len(evicted)
+        for event_id in evicted:
+            if event_id in self._pending_expiry:
+                continue
+            if len(self._pending_expiry) < MAX_PRUNE_IDS:
+                self._pending_expiry.add(event_id)
+            else:
+                self._pending_overflow = True
+
     def _insert(self, event: Event) -> None:
+        self._pending_expiry.discard(event.id)
         self._events[event.id] = event
         size = estimate_bytes(event)
         self._sizes[event.id] = size

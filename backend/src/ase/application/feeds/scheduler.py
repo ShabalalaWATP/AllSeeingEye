@@ -175,7 +175,9 @@ class FeedScheduler:
         while not self._stopping.is_set():
             await self._sleep(self._prune_interval.total_seconds())
             result = self._store.prune(self._clock.now())
-            if result.ids:
+            if result.resync_required:
+                await self._bus.publish(BusMessage("event.resync", {"reason": "expiry_overflow"}))
+            elif result.ids:
                 await self._bus.publish(
                     BusMessage("event.expire", {"ids": result.ids, "count": len(result.ids)})
                 )

@@ -74,6 +74,10 @@ def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any
         ids = message.payload.get("ids")
         id_list = [str(i) for i in ids] if isinstance(ids, tuple | list) else []
         return {"ids": id_list, "count": len(id_list)}
+    if message.kind == "event.resync":
+        reason = message.payload.get("reason")
+        if reason in ("expiry_overflow", "stream_gap"):
+            return {"reason": reason}
     if message.kind == "alert":
         alert = message.payload.get("alert")
         if isinstance(alert, Alert):

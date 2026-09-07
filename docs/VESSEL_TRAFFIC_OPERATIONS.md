@@ -69,7 +69,6 @@ not continual availability or completeness. Synthetic tests cover timestamps,
 sentinels, gzip limits, duplicate records, stationary updates, outage expiry and
 SSE delivery. Actual GPU/browser visual acceptance remains outstanding.
 
-Wider provider coverage and credential onboarding remain open. An existing
-store limitation caps a single expiry message at 10,000 IDs even when a larger
-combined batch is deleted; the per-response AIS cap is 5,000. A broader expiry
-resynchronisation repair remains separate work.
+Wider provider coverage and credential onboarding remain open. Large expiry
+batches now trigger [live-stream recovery](LIVE_STREAM_RECOVERY.md) instead of
+truncated removal notices. The per-response AIS cap remains 5,000.

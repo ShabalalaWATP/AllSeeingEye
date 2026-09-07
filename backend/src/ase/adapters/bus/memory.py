@@ -17,14 +17,17 @@ class InMemorySubscription:
         self._queue: asyncio.Queue[BusMessage] = asyncio.Queue(maxsize=max_queue)
         self._closed = False
         self.dropped = 0
+        self._resync_needed = False
 
     def push(self, message: BusMessage) -> None:
         if self._closed:
             return
         if self._queue.full():
             try:
-                self._queue.get_nowait()
+                dropped = self._queue.get_nowait()
                 self.dropped += 1
+                if dropped.kind in {"event.upsert", "event.expire", "event.resync"}:
+                    self._resync_needed = True
             except asyncio.QueueEmpty:  # pragma: no cover (race guard)
                 pass
         self._queue.put_nowait(message)
@@ -33,12 +36,30 @@ class InMemorySubscription:
         return self
 
     async def __anext__(self) -> BusMessage:
+        if self._resync_needed:
+            return self._resynchronise()
         if self._closed and self._queue.empty():
             raise StopAsyncIteration
         message = await self._queue.get()
+        if self._resync_needed:
+            return self._resynchronise(message)
         if message is _CLOSE:
             raise StopAsyncIteration
         return message
+
+    def _resynchronise(self, first: BusMessage | None = None) -> BusMessage:
+        self._resync_needed = False
+        # Keep the gap outside the queue; discard pre-barrier live deltas so they
+        # cannot overwrite a newer canonical snapshot, including after a waiting read.
+        queued = [first] if first is not None else []
+        while not self._queue.empty():
+            queued.append(self._queue.get_nowait())
+        for message in queued:
+            if message.kind in {"event.upsert", "event.expire", "event.resync"}:
+                self.dropped += 1
+            else:
+                self._queue.put_nowait(message)
+        return BusMessage("event.resync", {"reason": "stream_gap"})
 
     def close(self) -> None:
         if self._closed:

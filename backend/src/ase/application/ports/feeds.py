@@ -51,6 +51,7 @@ class PruneResult:
     expired: int = 0
     evicted: int = 0
     ids: tuple[str, ...] = ()
+    resync_required: bool = False
 
 
 @dataclass(frozen=True, slots=True)

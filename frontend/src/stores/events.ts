@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 
 import { fetchEvents, fetchStats } from '@/lib/api/events';
-import { streamExpireSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
+import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
 import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import { describeError } from '@/lib/api/errors';
 import type { SseMessage, StreamStatus } from '@/lib/sse';
@@ -207,6 +207,22 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       } else if (message.event === 'event.expire') {
         const parsed = streamExpireSchema.safeParse(payload);
         if (parsed.success) get().applyExpire(parsed.data.ids);
+      } else if (
+        message.event === 'event.resync' &&
+        streamResyncSchema.safeParse(payload).success
+      ) {
+        get().cancelLoad();
+        set({
+          byId: {},
+          list: [],
+          selectedId: null,
+          stats: null,
+          loaded: false,
+          snapshotCount: null,
+          snapshotLimited: false,
+          mirrorCapped: false,
+        });
+        void get().load();
       }
     },
 

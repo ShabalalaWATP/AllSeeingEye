@@ -2101,3 +2101,35 @@ expiry presentation points were addressed. No new dependency or credentials.
 Documented operation and limits in VESSEL_TRAFFIC_OPERATIONS.md and updated the
 source/status matrices. Wider vessel coverage, sustained/GPU acceptance and the
 existing 10,000-ID combined-expiry notification limit remain open.
+
+### Live-map resynchronisation after expiry and queue gaps
+
+Regression tests reproduced incomplete notices above 10,000 expired IDs,
+unbounded between-prune eviction bookkeeping and stale tombstones after an ID
+was reinserted. Bounded and deduplicated pending IDs, retained an overflow flag,
+and filtered notices against current store contents. Pruning now reports when
+a canonical snapshot is required, and the scheduler emits an allowlisted
+event.resync frame instead of incomplete removals.
+
+Added a subscription-level recovery flag that cannot be dropped with queue
+payloads. Before signalling a gap, it discards queued old live deltas while
+preserving other messages. Review prompted handling a consumer already waiting
+before overflow; the new test verifies the barrier precedes old deltas and
+subsequent fresh updates remain deliverable. Existing ordinary fan-out behaviour
+remains covered. Resync serialization follows current-session checks, including
+a new logout test for this frame.
+
+The browser cancels its old snapshot, clears stale events/selection/statistics,
+preserves display filters and reconciles later deltas with a fresh bounded
+snapshot. Tests cover late cancelled responses, failed reload, logout and the
+mounted globe stream callback. A regression assertion initially compared a
+hashed fixture ID with its input label; corrected it to compare the event itself.
+
+49 backend tests, 132 globe tests and 22 store tests passed. Ruff, mypy,
+architecture contracts, file-length checks, scoped ESLint, TypeScript, production
+build and whitespace checks passed. No coverage remeasurement, provider call or
+GPU acceptance. Focused independent review found no blocking integrity/session
+issue; the waiting-consumer and mounted-stream gaps it identified were addressed.
+Documented LIVE_STREAM_RECOVERY.md and updated vessel/status notes. Snapshots
+remain explicitly bounded; durable replay and convergence under persistent
+overload are not claimed.
