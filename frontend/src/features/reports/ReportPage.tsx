@@ -27,6 +27,7 @@ import { AdvocacyView, DirectionView, ReportBodyView } from './ReportSections';
 import { EvidenceAnnex } from './EvidenceAnnex';
 import { EvidenceNavigation } from './EvidenceLinks';
 import { ReportReviewStatus } from './ReportReviewStatus';
+import { AnnotationMonitorsSection } from './AnnotationMonitorsSection';
 import { ReportDiff } from './ReportDiff';
 import { ReportExports } from './ReportExports';
 import { StatusBadge } from './ReportsPage';
@@ -214,6 +215,11 @@ export default function ReportPage() {
             canEdit={canEdit}
           />
         </ClaimExportSelection>
+        <AnnotationMonitorsSection
+          reportId={id}
+          version={version.number}
+          canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
+        />
         <ReportEvidenceMap
           key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
           reportId={id}

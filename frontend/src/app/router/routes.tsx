@@ -32,6 +32,9 @@ const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
 const SourcesPage = lazy(() => import('@/features/sources/SourcesPage'));
+const AnnotationMonitorsPage = lazy(() => import('@/features/reports/AnnotationMonitorsPage'));
+const AnnotationMonitorPage = lazy(() => import('@/features/reports/AnnotationMonitorPage'));
+const AnnotationTransitionPage = lazy(() => import('@/features/reports/AnnotationTransitionPage'));
 const ReportPage = lazy(() => import('@/features/reports/ReportPage'));
 const TrackersPage = lazy(() => import('@/features/trackers/TrackersPage'));
 const ConflictPage = lazy(() => import('@/features/trackers/ConflictPage'));
@@ -78,6 +81,12 @@ export const routes: RouteObject[] = [
           { path: 'sources', element: <SourcesPage /> },
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:id', element: <ReportPage /> },
+          { path: 'annotation-monitors', element: <AnnotationMonitorsPage /> },
+          { path: 'annotation-monitors/:monitorId', element: <AnnotationMonitorPage /> },
+          {
+            path: 'annotation-monitors/:monitorId/transitions/:transitionId',
+            element: <AnnotationTransitionPage />,
+          },
           { path: 'trackers', element: <TrackersPage /> },
           { path: 'trackers/conflicts/:id', element: <ConflictPage /> },
           { path: 'trackers/disasters/:hazard', element: <HazardPage /> },

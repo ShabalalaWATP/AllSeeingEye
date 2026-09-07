@@ -91,6 +91,8 @@ class Alert:
     event_ids: tuple[str, ...]
     countries: tuple[str, ...]
     schedule_id: UUID | None = None
+    annotation_monitor_id: UUID | None = None
+    annotation_transition_id: UUID | None = None
     acknowledged_at: datetime | None = None
     acknowledged_by: UUID | None = None
     report_id: UUID | None = None

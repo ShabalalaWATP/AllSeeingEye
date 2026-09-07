@@ -1,8 +1,9 @@
 # Exact candidate registry routing
 
-Implementation contract, 7 September 2026. This is outstanding work in the full
-research expansion, not implemented provider capability. Read-only inspection of
-the local adapters and planning pipeline established the boundaries below.
+Implementation contract, 7 September 2026. The backend is implemented on isolated
+`codex/candidate-registry-routing`, with frontend and integration acceptance in
+progress. This is unfinished work in the full expansion. Read-only inspection of
+the local adapters and planning pipeline established the original gaps below.
 
 ## Verified gap
 
@@ -94,3 +95,53 @@ conditions. Generated API types must come from the backend schema.
 The completion evidence must exercise actual task query construction with fixture
 providers, not only validate DTO fields or show a route in the editor. Real model
 and provider acceptance remain separately disclosed release gates.
+
+
+## Temporal acceptance note
+
+During fixture execution, existing GLEIF parent and Companies House officer/PSC
+records were found to use relationship record kinds outside the collector's
+current-context retention exemption. An out-of-window current snapshot is
+therefore dropped under the existing publication-window policy. Exact routing
+must preserve this rule and report the temporal limitation honestly. Positive
+routing tests use in-window fixtures; out-of-window cases must remain excluded.
+A consistent provider-specific current-snapshot contract is separate follow-on
+work, not a reason to silently widen historical collection claims.
+
+
+## Backend acceptance in progress
+
+The isolated expanded suite passed 191 cases in 43.53 seconds, including seven
+provider fixture paths, multiple candidates and identity mismatches, namespace
+and model-reference restrictions, API/saved-scope/legacy roundtrips, shared quick
+and detailed limits, cancellation, source disablement and date-window exclusion.
+Log: `data/candidate-acceptance.log` in the candidate-routing checkout. Mypy passed
+598 source files; whole Ruff/format, both import contracts and file-length checks
+passed. Independent review and frontend integration are underway. No final full
+coverage, live registry or actual-model acceptance is claimed.
+
+
+Independent backend review found no actionable production correctness/security
+issues. Its country-isolation test improvement now uses a valid GB identifier
+with a conflicting China country filter, so namespace rejection cannot mask the
+country check. All thirteen routing-file cases passed after that test-only change.
+Configured whole-backend Bandit also passed. Frontend and final integrated
+acceptance remain open.
+
+
+## Frontend and repository acceptance
+
+The isolated frontend passed 983 tests in 188 files in 160.28 seconds, with
+95.11% statements, 90.16% branches, 93.61% functions and 96.42% lines. Gates
+were unchanged. Six subsequent focused cases passed after adding the candidate
+ID to option keys and testing shared local identifier IDs. Final typecheck and
+scoped lint passed; production build passed before that small key repair.
+Log: `data/candidate-registry-frontend-coverage.log`.
+
+Independent frontend review found no blocking issue. Its incorrect negative
+label matcher was repaired with a matching positive assertion before capability
+invalidation and a corresponding negative assertion afterwards; the affected
+routing integration test passed. All repository hooks passed before this final
+test-only repair, including Gitleaks, Ruff/format, file-length checks and full
+frontend lint/type checks. Both affected integration tests and final scoped lint for the repaired test passed.
+Final integration and configured-provider/model acceptance remain open.

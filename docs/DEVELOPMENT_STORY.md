@@ -2360,3 +2360,28 @@ connection warning. No remote push, operator migration or deployment occurred.
 Durable independent annotation monitoring is the next delivery; exact outbox
 revisions must preserve intermediate corrections and failed research must not
 advance a successful research baseline. The complete expansion remains active.
+
+
+## 8 September 2026: registry routing and durable annotation monitoring
+
+Integrated exact registry routing on main at `ebc1cfe`, feature `84f3a58`.
+Explicit operator identifiers drive selected LEI, SEC and Companies House lookup
+adapters through shared budgets and source controls. Model plans select validated
+operator references; legacy strings and discovered names remain unverified context.
+The backend passed 191 cases and the frontend 983 cases, followed by targeted
+identity-key and label-matcher test repairs. Independent review and hooks passed.
+
+Standalone selected-root monitoring is implemented with transactional correction
+events, exact checkpoints/transitions, opt-in scoped alerts, explicit catch-up or
+fresh baselines, quota reclamation through authorised removal and historical export.
+Local acceptance reached 99 cases; independent PostgreSQL concurrency and migration
+groups passed ten and six cases respectively. The frontend passed 1,003 cases,
+then twelve scope-clarity copy tests. Review found and repaired an avoidable
+post-guard asynchronous response window; six deletion/expiry regressions passed.
+Final hooks passed; combined integration remains pending at this entry.
+
+The preceding main comparison acceptance passed 3,195 backend cases with 39 skips,
+no warnings and 95.20% coverage in 3,126.76 seconds. That result predates the new
+registry/monitor integration and does not replace its combined regression run.
+No remote push, operator migration or deployment occurred. Newly created annotation
+inventory monitoring, cross-version monitoring and wider expansion work remain open.

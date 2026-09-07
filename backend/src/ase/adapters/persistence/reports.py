@@ -10,6 +10,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.annotation_outbox import delete_report_monitors
 from ase.adapters.persistence.claims import SqlClaimRepository
 from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
 from ase.adapters.persistence.library_models import ResearchLibraryRow, ResearchLibraryTagRow
@@ -201,6 +202,7 @@ class SqlReportRepository:
         return [_record_from_row(row) for row in rows]
 
     async def delete(self, report_id: UUID) -> None:
+        await delete_report_monitors(self._session, report_id)
         # Explicit cleanup also supports SQLite connections without FK enforcement.
         await SqlOriginalAssetRepository(self._session).delete_for_report(report_id)
         await SqlClaimRepository(self._session).delete_for_report(report_id)

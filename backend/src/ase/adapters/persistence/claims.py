@@ -7,6 +7,7 @@ from sqlalchemy import and_, delete, exists, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.annotation_outbox import enqueue_revision
 from ase.adapters.persistence.claim_models import ClaimRevisionRow, ClaimRow
 from ase.adapters.persistence.claim_payloads import decode_revision, encode_revision
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
@@ -192,6 +193,14 @@ class SqlClaimRepository:
             return False
         self.session.add(row)
         await self.session.flush()
+        await enqueue_revision(
+            self.session,
+            "claim",
+            revision.claim_id,
+            base_revision_id,
+            revision.id,
+            revision.created_at,
+        )
         return True
 
     async def delete_for_report(self, report_id: UUID) -> None:

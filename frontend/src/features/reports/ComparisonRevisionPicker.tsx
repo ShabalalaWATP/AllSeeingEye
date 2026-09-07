@@ -94,11 +94,13 @@ export function ComparisonRevisionPicker({
   version,
   selected,
   onChange,
+  latestOnly = false,
 }: {
   reportId: string;
   version: number;
   selected: ComparisonAnnotation[];
   onChange: (values: ComparisonAnnotation[]) => void;
+  latestOnly?: boolean;
 }) {
   const [kind, setKind] = useState<AnnotationKind>('claim');
   const [offset, setOffset] = useState(0);
@@ -125,9 +127,9 @@ export function ComparisonRevisionPicker({
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted">
-        Choose up to 20 exact revisions on this side. Current inventory entries are suggestions
-        only; selecting one freezes its displayed revision ID. Earlier revisions remain available
-        below. Selecting another revision of the same root replaces its selection on this side.
+        {latestOnly
+          ? 'Choose up to 20 current annotation roots in this exact report version. New roots are not watched automatically. Current revisions are rechecked when the monitor is saved.'
+          : 'Choose up to 20 exact revisions on this side. Current inventory entries are suggestions only; selecting one freezes its displayed revision ID. Earlier revisions remain available below. Selecting another revision of the same root replaces its selection on this side.'}
       </p>
       <SelectField
         label="Annotation type"
@@ -162,14 +164,18 @@ export function ComparisonRevisionPicker({
           {resource.data.items.map((value) => (
             <article className="space-y-2 border-b border-line py-3" key={value.id}>
               <Choice value={value} selected={selected} onToggle={toggle} />
-              <Button
-                variant="secondary"
-                onClick={() => setOpened(opened === value.id ? null : value.id)}
-              >
-                Browse revisions: {annotationTitle(value)}
-              </Button>
-              {opened === value.id && (
-                <RevisionBrowser value={value} selected={selected} onToggle={toggle} />
+              {!latestOnly && (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setOpened(opened === value.id ? null : value.id)}
+                  >
+                    Browse revisions: {annotationTitle(value)}
+                  </Button>
+                  {opened === value.id && (
+                    <RevisionBrowser value={value} selected={selected} onToggle={toggle} />
+                  )}
+                </>
               )}
             </article>
           ))}
@@ -198,7 +204,10 @@ export function ComparisonRevisionPicker({
       )}
       {selected.length > 0 && (
         <div>
-          <p className="text-sm">{selected.length} of 20 selected on this side</p>
+          <p className="text-sm">
+            {selected.length} of 20{' '}
+            {latestOnly ? 'watched roots selected' : 'selected on this side'}
+          </p>
           <ul className="space-y-2">
             {selected.map((value) => (
               <li key={annotationKey(value)} className="text-xs [overflow-wrap:anywhere]">

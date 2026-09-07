@@ -12,7 +12,7 @@ from ase.api.schemas_annotation_comparisons import (
     ComparisonReportsOut,
 )
 from ase.api.schemas_reports import ReportSummaryOut
-from ase.api.session_guard import validate_request_session
+from ase.api.session_guard import validate_request_expiry, validate_request_session
 
 router = APIRouter(
     prefix="/annotation-comparisons",
@@ -29,8 +29,9 @@ async def preview_annotation_comparison(
     session: SessionDep,
     response: Response,
 ) -> AnnotationComparisonOut:
-    result = await container.annotation_comparisons(session).execute(claims, body.to_domain())
     await validate_request_session(container, claims)
+    result = await container.annotation_comparisons(session).execute(claims, body.to_domain())
+    validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"
     return AnnotationComparisonOut(result)
 
@@ -42,10 +43,11 @@ async def export_annotation_comparison(
     container: ContainerDep,
     session: SessionDep,
 ) -> Response:
+    await validate_request_session(container, claims)
     result = await container.annotation_comparisons(session).execute(
         claims, body.to_domain(), body.expected_comparison_sha256
     )
-    await validate_request_session(container, claims)
+    validate_request_expiry(container, claims)
     return Response(
         result.content,
         media_type=result.media_type,
@@ -67,8 +69,9 @@ async def comparison_reports(
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
 ) -> ComparisonReportsOut:
-    records, total = await container.comparison_reports(session).execute(claims, q, limit, offset)
     await validate_request_session(container, claims)
+    records, total = await container.comparison_reports(session).execute(claims, q, limit, offset)
+    validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"
     return ComparisonReportsOut(
         items=[ReportSummaryOut.from_record(row) for row in records],

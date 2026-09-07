@@ -14,6 +14,7 @@ from ase.api.routers import (
     admin_sources,
     admin_users,
     annotation_comparisons,
+    annotation_monitors,
     auth,
     capabilities,
     claims,
@@ -68,6 +69,7 @@ api_router.include_router(original_assets.router)
 api_router.include_router(claims.router)
 api_router.include_router(identities.router)
 api_router.include_router(annotation_comparisons.router)
+api_router.include_router(annotation_monitors.router)
 api_router.include_router(relationships.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)

@@ -29,6 +29,8 @@ export const indicatorSchema = z.object({
 export type Indicator = z.infer<typeof indicatorSchema>;
 
 export const alertSchema = z.object({
+  annotation_monitor_id: z.string().nullable().default(null),
+  annotation_transition_id: z.string().nullable().default(null),
   team_id: z.uuid().nullable(),
   id: z.string(),
   indicator_id: z.string().nullable(),

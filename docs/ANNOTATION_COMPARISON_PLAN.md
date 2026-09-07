@@ -1,8 +1,8 @@
 # Reproducible annotation comparisons and meaningful-change monitoring
 
 Implementation contract, 7 September 2026. Comparison preview/export and
-confidence explanations are integrated on main in `d37f723`, with full backend
-acceptance still in progress. Durable
+confidence explanations are integrated on main in `d37f723`. Its full backend
+acceptance passed 3,195 tests with 39 skips and 95.20% coverage. Durable
 monitoring checkpoints and their alerts remain planned work. It preserves the expansion requirements for changed
 claims, identity and organisation assertions, evidence-linked confidence
 explanations, and opt-in meaningful-change alerts.
@@ -186,7 +186,10 @@ a monitoring subscription.
 Feature `090743f`, LF normalisation `737cdee` and fixture repairs `5776aaa` and
 `dbf6db4` are merged into main at `d37f723`. Backend and frontend Git tree hashes
 match the accepted comparison branch exactly. Full integrated backend acceptance
-is running in `data/annotation-comparison-integrated-backend-full.log`. The 978
+passed 3,195 tests with 39 skips, no warnings and 95.20% coverage in 3,126.76
+seconds (`data/annotation-comparison-integrated-backend-full.log`). This run
+predates registry routing and standalone monitoring, including the subsequent
+HTTP response-order repair. The 978
 frontend tests and full lint/type/build results apply to that identical frontend
 tree; no second identical full frontend run was required. There is no Git remote,
 operator migration or production deployment.
@@ -254,3 +257,51 @@ requirements. Keep these follow-on requirements open:
 
 These are part of the full expansion goal. Separate bounded deliveries organise
 implementation and verification; they do not redefine completion.
+
+
+## Standalone monitor acceptance in progress
+
+Ten independent PostgreSQL 17.10 concurrency cases passed in 37.00 seconds.
+Observed database lock waits and distinct backend IDs verify competing observers
+produce one exact transition/alert, both append-versus-baseline orderings preserve
+the right revisions, membership revocation preserves the pending checkpoint,
+and parent/monitor deletion coordinates with observation and exact export.
+The owned loopback container and per-test databases/volumes were verified removed.
+Log: `data/annotation-monitoring-concurrency-postgres.log` in the monitoring
+checkout. No operator database was used.
+
+The initial local runtime group passed five cases; mypy passed 609 source files.
+Wider lifecycle, API, quota, migration and frontend acceptance remain in progress.
+Source review required recovery from transient worker-cycle errors, meaningful
+rationale-only notifications, order-only conflict suppression, explicit policy
+rebaseline provenance, and independent monitor deletion to reclaim quotas without
+removing parent reports. These checks do not establish final release readiness.
+
+
+Expanded local monitoring acceptance subsequently passed thirty cases in 93.62
+seconds, including SQLite migration 0030 preservation/parity, clean roundtrip and
+five retained/damaged-history downgrade refusals. Independent backend review
+found a response-order gap: awaiting HTTP session validation after the final
+parent/scope guard permits an intervening deletion or membership change before
+private response delivery. The repair moves asynchronous validation ahead of the
+final guarded operation, retaining a synchronous expiry check afterwards, across
+monitoring and comparison routes. Route-level interleaving regressions and final
+repair review remain pending. No other actionable backend findings were reported.
+
+
+The isolated monitoring frontend full suite passed 1,003 tests in 193 files:
+95.07% statements, 90.09% branches, 93.52% functions and 96.43% lines, with
+unchanged coverage gates. Proper typecheck, production build and global lint
+passed. Log: `data/annotation-monitor-full.log`. A subsequent copy clarification
+will distinguish team-visible alerts from personal notifications; its twelve affected
+checks passed. Actual browser acceptance remains separate.
+
+
+Standalone monitoring final local acceptance comprises 99 unique passing cases
+(93 in the broad run, the corrected mixed fixture and five permission cases).
+All six HTTP response-order/expiry regressions passed; independent source
+re-review confirmed the repair across all changed routes. PostgreSQL migration
+acceptance passed six cases in 15.89 seconds, separately from the ten concurrency
+cases. Whole backend Ruff/format, mypy, both import contracts and Bandit passed.
+See ANNOTATION_MONITORING_IMPLEMENTATION.md for the operator workflow and limits.
+Repository hooks passed; final combined integration remains open.

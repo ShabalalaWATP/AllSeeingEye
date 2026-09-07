@@ -12,6 +12,14 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- 8 September: the pre-registry/monitor combined backend passed 3,195 tests,
+  39 skips, no warnings and 95.20% coverage. Registry routing is integrated at
+  `ebc1cfe` after 191 backend/983 frontend passes and targeted follow-up repairs.
+  Standalone selected-root monitoring passed 99 local backend, ten PostgreSQL
+  concurrency, six PostgreSQL migration and 1,003 frontend cases, with twelve
+  affected copy tests afterwards. Final monitoring hooks/integration and combined
+  acceptance remain pending. These supersede older pending-check notes below.
+
 - Exact annotation comparison and frozen confidence explanations are integrated
   on main at `d37f723`. The accepted frontend tree passed 978 tests in 185 files
   (95.12% statements, 90.17% branches, 93.61% functions, 96.42% lines), full
@@ -102,8 +110,8 @@ branch coverage. Build, scoped lint and the production dependency audit passed.
 | Shared language catalogue | `domain/languages.py`, profile schema, query preparation, `useLanguageCatalogue`; `test_language_capabilities.py` | Arabic/Persian PDF shaping; no inference that narrative support proves PDF support |
 | Original scripts and matching normalisation | Matching preserves original evidence and separates Persian matching substitutions | Explicit transliteration provenance and source-calendar contract; never guess a calendar |
 | Query translation and provenance | `query_translation.py`, `query_preparation.py`, retained transformations and model usage | Semantic preservation of unquoted names/negation requires representative model evaluation |
-| Editable bounded collection plan | Candidate hypotheses and executable operator/model challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Independent semantic acceptance; subject-only registry candidate routing |
-| Model-proposed plan constraints | One bounded precollection proposal call, operator-grounded identifiers, selected term-search adapters, frozen admission/origin and actual task outcomes; deterministic preview remains explicit | Independent model-quality and live acceptance; subject-only registry routing requires a separate contract |
+| Editable bounded collection plan | Candidate hypotheses and executable operator/model challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Independent semantic acceptance; evidence-grounded discovered-identifier chaining |
+| Model-proposed plan constraints | One bounded precollection proposal call, operator-grounded identifiers, selected term-search adapters, frozen admission/origin and actual task outcomes; deterministic preview remains explicit | Independent model-quality and live acceptance; explicit operator-grounded registry routing implemented, discovered identifiers remain separate |
 | Collection/model budgets | Quick 6 requests/45s; detailed 24/180s; shared admission across passes, separate bounded translation/replan calls | Cost/sufficiency evaluation against actual models |
 | Replanning | One shared-budget review can revise an empty search or investigate cited potential conflicts; bounded sufficiency stop requires complete review context and completed explicit tasks; proposed/applied decisions and excerpts are frozen | Independent semantic conflict/query-preservation and stopping-quality evaluation; calibrated sufficiency is not claimed |
 | Historical coverage honesty | Registry/RSS snapshots are disclosed; native historical providers carry capability metadata | Deeper provider-specific historical collection |
@@ -168,7 +176,7 @@ report evidence and source attributes remain the authority for the new display.
 | Local media | Sanitised images, English OCR and three bounded timestamped video frames | Audio transcription, multilingual original/translated OCR, paired comparison and supported candidate-location annotations |
 | PDF scripts | Chinese SC/TC embedded fonts and recorded round-trip/visual checks | Arabic/Persian shaping and visual/text-extraction acceptance; keep current warnings |
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
-| Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression; simultaneous link/confidence regression repaired | Independent durable annotation monitors, transactional revision events, exact transition history/alerts and replay/CAS acceptance |
+| Meaningful-change schedules | Existing research baselines plus locally tested independent selected-root annotation monitors, transactional revision events, exact checkpoint/history/alerts and replay/CAS controls | Final monitor integration; newly created/all-inventory and cross-version correspondence-aware monitoring |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
 | Current checks | Current integrated frontend tree: 978 passes, 90.17% branch coverage; pre-comparison full backend: 3,146 passes, 35 skips, five fixture failures, 95.26% coverage | Export-admission fixture repair passed all ten cases separately; final combined backend acceptance remains pending; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |

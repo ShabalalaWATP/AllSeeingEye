@@ -15,6 +15,7 @@ from ase.api.router import api_router
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.feeds import FeedConnector
 from ase.container import Container
+from ase.container.annotation_monitor_worker import build_annotation_monitor_worker
 from ase.container.original_asset_expiry import expire_original_assets
 from ase.infrastructure.logging import configure_logging
 from ase.infrastructure.settings import Settings
@@ -33,9 +34,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     asset_expiry = asyncio.create_task(
         expire_original_assets(container.session_factory, container.clock)
     )
+    annotation_monitoring = asyncio.create_task(build_annotation_monitor_worker(container).run())
     try:
         yield
     finally:
+        annotation_monitoring.cancel()
+        await asyncio.gather(annotation_monitoring, return_exceptions=True)
         asset_expiry.cancel()
         await asyncio.gather(asset_expiry, return_exceptions=True)
         await container.social_monitor.stop()
