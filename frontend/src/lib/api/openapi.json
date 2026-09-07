@@ -3038,6 +3038,378 @@
         }
       }
     },
+    "/api/relationship-reviews/assertions": {
+      "get": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "Captured Relationship Assertions",
+        "operationId": "captured_relationship_assertions_api_relationship_reviews_assertions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Version Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipAssertionsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship-reviews": {
+      "get": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "List Relationship Reviews",
+        "operationId": "list_relationship_reviews_api_relationship_reviews_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Version Number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "Create Relationship Review",
+        "operationId": "create_relationship_review_api_relationship_reviews_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipReviewRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship-reviews/{relationship_id}/revisions/{revision_id}": {
+      "get": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "Get Relationship Review",
+        "operationId": "get_relationship_review_api_relationship_reviews__relationship_id__revisions__revision_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relationship Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship-reviews/{relationship_id}": {
+      "get": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "Get Relationship Review",
+        "operationId": "get_relationship_review_api_relationship_reviews__relationship_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relationship Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "relationship-reviews"
+        ],
+        "summary": "Update Relationship Review",
+        "operationId": "update_relationship_review_api_relationship_reviews__relationship_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relationship Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipReviewRevision"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/library": {
       "get": {
         "tags": [
@@ -8308,6 +8680,14 @@
             "type": "array",
             "maxItems": 20,
             "title": "Identity Revisions"
+          },
+          "relationship_revisions": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipExportReferenceIn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Relationship Revisions"
           },
           "asset_ids": {
             "items": {
@@ -14404,6 +14784,516 @@
         },
         "type": "object",
         "title": "RejectIn"
+      },
+      "RelationshipAssertionSnapshot": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_content_hash": {
+            "type": "string",
+            "title": "Source Content Hash"
+          },
+          "child_lei": {
+            "type": "string",
+            "title": "Child Lei"
+          },
+          "parent_lei": {
+            "type": "string",
+            "title": "Parent Lei"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "ultimate"
+            ],
+            "title": "Kind"
+          },
+          "relationship_type": {
+            "type": "string",
+            "title": "Relationship Type"
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceAttribute"
+            },
+            "type": "array",
+            "title": "Attributes"
+          },
+          "periods": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RelationshipPeriod"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Periods"
+          },
+          "periods_state": {
+            "type": "string",
+            "enum": [
+              "parsed",
+              "missing",
+              "unavailable"
+            ],
+            "title": "Periods State"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "event_id",
+          "source_id",
+          "source_content_hash",
+          "child_lei",
+          "parent_lei",
+          "kind",
+          "relationship_type",
+          "attributes",
+          "periods",
+          "periods_state",
+          "captured_at",
+          "published_at"
+        ],
+        "title": "RelationshipAssertionSnapshot"
+      },
+      "RelationshipAssertionsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipAssertionSnapshot"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unavailable_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Labels"
+          },
+          "review_ids": {
+            "additionalProperties": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "object",
+            "title": "Review Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unavailable_labels",
+          "review_ids"
+        ],
+        "title": "RelationshipAssertionsOut"
+      },
+      "RelationshipCreateIn": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Evidence Label"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/RelationshipDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Citations"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Version Number"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "disposition",
+          "rationale",
+          "report_id",
+          "version_number"
+        ],
+        "title": "RelationshipCreateIn"
+      },
+      "RelationshipDetailOut": {
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/RelationshipReviewRoot"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/RelationshipReviewRevision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root",
+          "revision"
+        ],
+        "title": "RelationshipDetailOut"
+      },
+      "RelationshipDisposition": {
+        "type": "string",
+        "enum": [
+          "supported",
+          "disputed",
+          "unresolved",
+          "withdrawn"
+        ],
+        "title": "RelationshipDisposition"
+      },
+      "RelationshipExportReferenceIn": {
+        "properties": {
+          "relationship_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Relationship Id"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "relationship_id",
+          "revision_id"
+        ],
+        "title": "RelationshipExportReferenceIn"
+      },
+      "RelationshipPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipReviewRevision"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "RelationshipPageOut"
+      },
+      "RelationshipPeriod": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "startDate": {
+            "type": "string",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "title": "Enddate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "startDate",
+          "endDate"
+        ],
+        "title": "RelationshipPeriod"
+      },
+      "RelationshipReviewRevision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "relationship_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Relationship Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "assertion": {
+            "$ref": "#/components/schemas/RelationshipAssertionSnapshot"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/RelationshipDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "authored_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Authored By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "relationship_id",
+          "report_id",
+          "report_version_id",
+          "number",
+          "previous_id",
+          "assertion",
+          "disposition",
+          "rationale",
+          "unresolved_conflicts",
+          "citations",
+          "authored_by",
+          "created_at"
+        ],
+        "title": "RelationshipReviewRevision"
+      },
+      "RelationshipReviewRoot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "report_version_number": {
+            "type": "integer",
+            "title": "Report Version Number"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "evidence_sha256": {
+            "type": "string",
+            "title": "Evidence Sha256"
+          },
+          "latest_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Latest Revision Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "report_version_number",
+          "created_by",
+          "team_id",
+          "evidence_label",
+          "evidence_sha256",
+          "latest_revision_id",
+          "created_at"
+        ],
+        "title": "RelationshipReviewRoot"
+      },
+      "RelationshipUpdateIn": {
+        "properties": {
+          "evidence_label": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Evidence Label"
+          },
+          "disposition": {
+            "$ref": "#/components/schemas/RelationshipDisposition"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "unresolved_conflicts": {
+            "items": {
+              "type": "string",
+              "maxLength": 1200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Unresolved Conflicts"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationInput"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Citations"
+          },
+          "base_revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Revision Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_label",
+          "disposition",
+          "rationale",
+          "base_revision_id"
+        ],
+        "title": "RelationshipUpdateIn"
       },
       "Reliability": {
         "type": "string",

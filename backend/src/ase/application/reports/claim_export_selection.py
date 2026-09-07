@@ -9,10 +9,12 @@ from ase.application.ports.reports import ReportRepository
 from ase.application.reports.claim_export_integrity import export_content_digest
 from ase.application.reports.claims import ReportClaims
 from ase.application.reports.identities import ReportIdentities
+from ase.application.reports.relationships import ReportRelationships
 from ase.application.research.map_view_evidence import evidence_digest
 from ase.domain.claim_revisions import ClaimRevision
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
 from ase.domain.identity_review import IdentityDecisionRevision
+from ase.domain.relationship_review import RelationshipReviewRevision
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 
@@ -25,6 +27,12 @@ class ClaimExportReference:
 @dataclass(frozen=True, slots=True)
 class IdentityExportReference:
     decision_id: UUID
+    revision_id: UUID
+
+
+@dataclass(frozen=True, slots=True)
+class RelationshipExportReference:
+    relationship_id: UUID
     revision_id: UUID
 
 
@@ -44,6 +52,8 @@ class SelectedClaimExport:
     version: ReportVersion
     identity_references: tuple[IdentityExportReference, ...] = ()
     identity_revisions: tuple[IdentityDecisionRevision, ...] = ()
+    relationship_references: tuple[RelationshipExportReference, ...] = ()
+    relationship_revisions: tuple[RelationshipReviewRevision, ...] = ()
 
 
 class SelectClaimExport:
@@ -53,9 +63,11 @@ class SelectClaimExport:
         reports: ReportRepository,
         uow: UnitOfWork,
         identities: ReportIdentities | None = None,
+        relationships: ReportRelationships | None = None,
     ) -> None:
         self.claims, self.reports, self.uow = claims, reports, uow
         self.identities = identities
+        self.relationships = relationships
 
     async def resolve(
         self,
@@ -65,6 +77,7 @@ class SelectClaimExport:
         references: tuple[ClaimExportReference, ...],
         *,
         identity_references: tuple[IdentityExportReference, ...] = (),
+        relationship_references: tuple[RelationshipExportReference, ...] = (),
         allow_empty: bool = False,
     ) -> SelectedClaimExport:
         if type(number) is not int or not 1 <= number <= 2_147_483_647:
@@ -72,7 +85,10 @@ class SelectClaimExport:
         if (
             not isinstance(references, tuple)
             or not isinstance(identity_references, tuple)
-            or not (0 if allow_empty else 1) <= len(references) + len(identity_references) <= 20
+            or not isinstance(relationship_references, tuple)
+            or not (0 if allow_empty else 1)
+            <= (len(references) + len(identity_references) + len(relationship_references))
+            <= 20
         ):
             raise InvalidRequest("Select between one and twenty exact annotation revisions.")
         if len({item.revision_id for item in references}) != len(references):
@@ -101,7 +117,11 @@ class SelectClaimExport:
                 raise InvalidRequest("Selected revisions must belong to the chosen report version.")
             anchors.add((identity_root.report_version_id, identity_root.evidence_sha256))
             identity_revisions.append(identity_revision)
-        if not references and not identity_references:
+        relationship_revisions, relationship_anchors = await self._relationship_selection(
+            actor, report_id, number, relationship_references
+        )
+        anchors.update(relationship_anchors)
+        if not references and not identity_references and not relationship_references:
             access = await self.claims._context(actor)
             await self.claims._report(access, report_id)
             await self.claims._version(report_id, number)
@@ -111,7 +131,7 @@ class SelectClaimExport:
             raise NotFound()
         digest = evidence_digest(version)
         if anchors and anchors != {(version.id, digest)}:
-            raise Conflict("Selected claims have inconsistent frozen evidence anchors.")
+            raise Conflict("Selected annotations have inconsistent frozen evidence anchors.")
         snapshot = SelectedClaimExport(
             actor.user_id,
             report_id,
@@ -127,9 +147,33 @@ class SelectClaimExport:
             version,
             identity_references,
             tuple(identity_revisions),
+            relationship_references,
+            tuple(relationship_revisions),
         )
         await self.uow.commit()
         return snapshot
+
+    async def _relationship_selection(
+        self,
+        actor: AccessClaims,
+        report_id: UUID,
+        number: int,
+        references: tuple[RelationshipExportReference, ...],
+    ) -> tuple[list[RelationshipReviewRevision], set[tuple[UUID, str]]]:
+        if len({row.revision_id for row in references}) != len(references):
+            raise InvalidRequest("Each relationship revision must be selected once.")
+        revisions, anchors = [], set()
+        for reference in references:
+            if self.relationships is None:
+                raise InvalidRequest("Relationship revision export is unavailable.")
+            root, revision = await self.relationships.get(
+                actor, reference.relationship_id, reference.revision_id
+            )
+            if root.report_id != report_id or root.report_version_number != number:
+                raise InvalidRequest("Selected revisions must belong to the chosen report version.")
+            anchors.add((root.report_version_id, root.evidence_sha256))
+            revisions.append(revision)
+        return revisions, anchors
 
     async def recheck(self, actor: AccessClaims, snapshot: SelectedClaimExport) -> None:
         """Each get refreshes session/parent authority, never a cached export decision."""
@@ -142,7 +186,12 @@ class SelectClaimExport:
             snapshot.version_number,
             snapshot.references,
             identity_references=snapshot.identity_references,
-            allow_empty=not snapshot.references and not snapshot.identity_references,
+            relationship_references=snapshot.relationship_references,
+            allow_empty=not (
+                snapshot.references
+                or snapshot.identity_references
+                or snapshot.relationship_references
+            ),
         )
         if (
             fresh.report_version_id != snapshot.report_version_id
@@ -151,7 +200,8 @@ class SelectClaimExport:
             or fresh.evidence_sha256 != snapshot.evidence_sha256
             or fresh.revisions != snapshot.revisions
             or fresh.identity_revisions != snapshot.identity_revisions
+            or fresh.relationship_revisions != snapshot.relationship_revisions
             or fresh.content_sha256 != snapshot.content_sha256
             or export_content_digest(snapshot.record, snapshot.version) != snapshot.content_sha256
         ):
-            raise Conflict("The selected claim export changed while rendering.")
+            raise Conflict("The selected annotation export changed while rendering.")

@@ -9,7 +9,7 @@ export function fetchClaimPackage(
   signal: AbortSignal,
 ) {
   const route =
-    body.identity_revisions?.length || body.asset_ids?.length
+    body.identity_revisions?.length || body.relationship_revisions?.length || body.asset_ids?.length
       ? 'selected-evidence-package'
       : 'claim-evidence-package';
   return apiBlob(`/api/reports/${encodeURIComponent(reportId)}/${route}`, {

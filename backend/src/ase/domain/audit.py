@@ -51,6 +51,8 @@ class AuditAction(StrEnum):
     CLAIM_REVISED = "claim.revised"
     IDENTITY_CREATED = "identity.created"
     IDENTITY_REVISED = "identity.revised"
+    RELATIONSHIP_CREATED = "relationship.created"
+    RELATIONSHIP_REVISED = "relationship.revised"
     MAP_VIEW_CREATED = "map_view_created"
     MAP_VIEW_REVISED = "map_view_revised"
     MAP_VIEW_ARCHIVED = "map_view_archived"

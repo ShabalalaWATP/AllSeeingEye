@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import type { OriginalAsset } from '@/lib/api/originalAssets';
 import type { ClaimRevision } from '@/lib/api/claims';
+import type { RelationshipRevision } from '@/lib/api/relationships';
 import type { IdentityRevision } from '@/lib/api/identities';
 import { fetchClaimPackage } from '@/lib/api/claimExport';
 import { describeError } from '@/lib/api/errors';
@@ -12,17 +13,21 @@ import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
-type SelectedRevision = ClaimRevision | IdentityRevision | OriginalAsset;
+type SelectedRevision = ClaimRevision | IdentityRevision | RelationshipRevision | OriginalAsset;
 const isAsset = (value: SelectedRevision): value is OriginalAsset => 'sha256' in value;
 const isClaim = (value: SelectedRevision): value is ClaimRevision => 'claim_id' in value;
+const isRelationship = (value: SelectedRevision): value is RelationshipRevision =>
+  'relationship_id' in value;
 const selectionKey = (value: SelectedRevision) =>
-  `${isAsset(value) ? 'asset' : isClaim(value) ? 'claim' : 'identity'}:${value.id}`;
+  `${isAsset(value) ? 'asset' : isClaim(value) ? 'claim' : isRelationship(value) ? 'relationship' : 'identity'}:${value.id}`;
 const selectionTitle = (value: SelectedRevision) =>
   isAsset(value)
     ? value.filename
     : isClaim(value)
       ? value.statement
-      : `${value.subject} · Candidate ${value.candidate.candidate.evidence_label}`;
+      : isRelationship(value)
+        ? `Relationship ${value.assertion.evidence_label}: ${value.assertion.child_lei} to ${value.assertion.parent_lei}`
+        : `${value.subject} · Candidate ${value.candidate.candidate.evidence_label}`;
 
 interface SelectionContext {
   values: SelectedRevision[];
@@ -48,6 +53,10 @@ export function IdentityExportChoice({ value }: { value: IdentityRevision }) {
   return <ExportChoice value={value} />;
 }
 
+export function RelationshipExportChoice({ value }: { value: RelationshipRevision }) {
+  return <ExportChoice value={value} />;
+}
+
 function ExportChoice({ value }: { value: SelectedRevision }) {
   const selection = useContext(Selection);
   if (!selection) return null;
@@ -62,7 +71,7 @@ function ExportChoice({ value }: { value: SelectedRevision }) {
       />
       {isAsset(value)
         ? `Include original ${value.filename}`
-        : `Include ${isClaim(value) ? '' : 'identity '}revision ${String(value.number)}`}{' '}
+        : `Include ${isClaim(value) ? '' : isRelationship(value) ? 'relationship ' : 'identity '}revision ${String(value.number)}`}{' '}
       in evidence package
     </label>
   );
@@ -90,8 +99,10 @@ function SelectionBody({ reportId, version, children }: Props) {
     );
   };
   const identities = values.filter(
-    (value): value is IdentityRevision => !isClaim(value) && !isAsset(value),
+    (value): value is IdentityRevision =>
+      !isClaim(value) && !isAsset(value) && !isRelationship(value),
   );
+  const relationships = values.filter(isRelationship);
   const assets = values.filter(isAsset);
   const download = async () => {
     if (busy || values.length === 0) return;
@@ -103,6 +114,14 @@ function SelectionBody({ reportId, version, children }: Props) {
         reportId,
         {
           version_number: version,
+          ...(relationships.length
+            ? {
+                relationship_revisions: relationships.map((value) => ({
+                  relationship_id: value.relationship_id,
+                  revision_id: value.id,
+                })),
+              }
+            : {}),
           ...(assets.length ? { asset_ids: assets.map((value) => value.id) } : {}),
           revisions: values
             .filter(isClaim)
@@ -120,7 +139,7 @@ function SelectionBody({ reportId, version, children }: Props) {
       );
       if (!signal.aborted)
         saveBinaryFile(
-          `report-v${String(version)}-selected-${assets.length > 0 ? 'evidence' : identities.length > 0 ? 'annotations' : 'claims'}.zip`,
+          `report-v${String(version)}-selected-${assets.length > 0 ? 'evidence' : identities.length > 0 || relationships.length > 0 ? 'annotations' : 'claims'}.zip`,
           blob,
         );
     } catch (caught) {
@@ -145,9 +164,10 @@ function SelectionBody({ reportId, version, children }: Props) {
       >
         <h3 className="font-medium">Build an evidence package</h3>
         <p className="text-sm text-muted">
-          Choose up to 20 exact claim revisions, identity revisions and retained original files. The
-          ZIP includes this frozen report and your selected revisions, with excerpts and integrity
-          hashes. Originals require explicit selection below (24 MiB of originals, 32 MiB total).
+          Choose up to 20 exact claim revisions, identity revisions, relationship revisions and
+          retained original files. The ZIP includes this frozen report and your selected revisions,
+          with excerpts and integrity hashes. Originals require explicit selection below (24 MiB of
+          originals, 32 MiB total).
         </p>
         <p className="text-sm" role="status">
           {values.length} of 20 {assets.length ? 'items' : 'revisions'} selected
@@ -172,7 +192,7 @@ function SelectionBody({ reportId, version, children }: Props) {
                   aria-label={
                     isAsset(value)
                       ? `Remove original: ${value.filename}`
-                      : `Remove ${isClaim(value) ? '' : 'identity '}revision ${String(value.number)}: ${selectionTitle(value)}`
+                      : `Remove ${isClaim(value) ? '' : isRelationship(value) ? 'relationship ' : 'identity '}revision ${String(value.number)}: ${selectionTitle(value)}`
                   }
                 >
                   Remove
@@ -188,7 +208,7 @@ function SelectionBody({ reportId, version, children }: Props) {
             disabled={values.length === 0}
             onClick={() => void download()}
           >
-            {identities.length > 0 || assets.length > 0
+            {identities.length > 0 || relationships.length > 0 || assets.length > 0
               ? 'Download selected evidence'
               : 'Download selected claims'}
           </Button>

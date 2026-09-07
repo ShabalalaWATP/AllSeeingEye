@@ -8,6 +8,7 @@ from ase.application.ports.claim_evidence_package import ClaimEvidencePackageRen
 from ase.application.reports.claim_export_selection import (
     ClaimExportReference,
     IdentityExportReference,
+    RelationshipExportReference,
     SelectClaimExport,
 )
 from ase.application.reports.evidence_package import _PACKAGE_SLOTS
@@ -35,15 +36,24 @@ class ExportClaimPackage:
         references: tuple[ClaimExportReference, ...],
         *,
         identity_references: tuple[IdentityExportReference, ...] = (),
+        relationship_references: tuple[RelationshipExportReference, ...] = (),
         asset_ids: tuple[UUID, ...] = (),
     ) -> ReportFile:
         if (
             not isinstance(asset_ids, tuple)
             or not isinstance(references, tuple)
             or not isinstance(identity_references, tuple)
+            or not isinstance(relationship_references, tuple)
             or any(not isinstance(asset_id, UUID) for asset_id in asset_ids)
             or len(set(asset_ids)) != len(asset_ids)
-            or not 1 <= len(references) + len(identity_references) + len(asset_ids) <= 20
+            or not 1
+            <= (
+                len(references)
+                + len(identity_references)
+                + len(relationship_references)
+                + len(asset_ids)
+            )
+            <= 20
         ):
             raise InvalidRequest("Select between one and twenty annotations or original assets.")
         # Admission bounds retained blobs as well as compression workers.
@@ -63,9 +73,10 @@ class ExportClaimPackage:
                     number,
                     references,
                     identity_references=identity_references,
-                    allow_empty=True,
+                    relationship_references=relationship_references,
+                    allow_empty=bool(asset_ids),
                 )
-                if asset_ids
+                if relationship_references
                 else (
                     await self.selector.resolve(
                         actor,
@@ -73,13 +84,33 @@ class ExportClaimPackage:
                         number,
                         references,
                         identity_references=identity_references,
+                        allow_empty=True,
                     )
-                    if identity_references
-                    else await self.selector.resolve(actor, report_id, number, references)
+                    if asset_ids
+                    else (
+                        await self.selector.resolve(
+                            actor,
+                            report_id,
+                            number,
+                            references,
+                            identity_references=identity_references,
+                        )
+                        if identity_references
+                        else await self.selector.resolve(actor, report_id, number, references)
+                    )
                 )
             )
 
             def render() -> bytes:
+                if selected.relationship_revisions:
+                    return self.renderer.render(
+                        selected.record,
+                        selected.version,
+                        selected.revisions,
+                        identity_revisions=selected.identity_revisions,
+                        relationship_revisions=selected.relationship_revisions,
+                        original_assets=assets,
+                    )
                 if assets:
                     return self.renderer.render(
                         selected.record,
@@ -111,7 +142,7 @@ class ExportClaimPackage:
                 f"evidence-{report_id}-v{number}-selected-originals.zip"
                 if assets
                 else f"evidence-{report_id}-v{number}-selected-annotations.zip"
-                if selected.identity_revisions
+                if selected.identity_revisions or selected.relationship_revisions
                 else f"evidence-{report_id}-v{number}-selected-claims.zip",
             )
         finally:

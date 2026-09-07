@@ -11,6 +11,7 @@ from uuid import UUID
 from ase.adapters.reports.evidence_package import MAX_PACKAGE_BYTES, FrozenEvidencePackageRenderer
 from ase.adapters.reports.identity_package_validation import validate_identity_selection
 from ase.adapters.reports.original_asset_package import render_original_package
+from ase.adapters.reports.relationship_package_validation import validate_relationship_selection
 from ase.domain.claim_revisions import (
     ClaimCitationInput,
     ClaimRevision,
@@ -20,6 +21,7 @@ from ase.domain.claim_revisions import (
 from ase.domain.errors import InvalidRequest
 from ase.domain.identity_review import IdentityDecisionRevision
 from ase.domain.original_assets import OriginalAssetContent
+from ase.domain.relationship_review import RelationshipReviewRevision
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 MAX_SELECTED_REVISIONS = 20
@@ -100,27 +102,42 @@ class SelectedClaimPackageRenderer:
         revisions: tuple[ClaimRevision, ...],
         *,
         identity_revisions: tuple[IdentityDecisionRevision, ...] = (),
+        relationship_revisions: tuple[RelationshipReviewRevision, ...] = (),
         original_assets: tuple[OriginalAssetContent, ...] = (),
     ) -> bytes:
         if original_assets:
             if (
-                len(revisions) + len(identity_revisions) + len(original_assets)
+                len(revisions)
+                + len(identity_revisions)
+                + len(relationship_revisions)
+                + len(original_assets)
                 > MAX_SELECTED_REVISIONS
             ):
                 raise InvalidRequest("Select at most twenty annotations or original assets.")
             base = (
-                self.render(record, version, revisions, identity_revisions=identity_revisions)
-                if revisions or identity_revisions
+                self.render(
+                    record,
+                    version,
+                    revisions,
+                    identity_revisions=identity_revisions,
+                    relationship_revisions=relationship_revisions,
+                )
+                if revisions or identity_revisions or relationship_revisions
                 else FrozenEvidencePackageRenderer().render(record, version)
             )
             return render_original_package(record, version, base, original_assets)
         if record.id != version.report_id:
             raise InvalidRequest("The report and version do not match.")
-        if not 1 <= len(revisions) + len(identity_revisions) <= MAX_SELECTED_REVISIONS:
+        if (
+            not 1
+            <= len(revisions) + len(identity_revisions) + len(relationship_revisions)
+            <= MAX_SELECTED_REVISIONS
+        ):
             raise InvalidRequest("Select between one and twenty exact annotation revisions.")
         if revisions:
             _validate(version, revisions)
         validate_identity_selection(record, version, identity_revisions)
+        validate_relationship_selection(record, version, relationship_revisions)
         base = FrozenEvidencePackageRenderer().render(record, version)
         files: dict[str, bytes] = {}
         remaining = MAX_PACKAGE_BYTES
@@ -197,11 +214,39 @@ class SelectedClaimPackageRenderer:
                 b"retain their captured namespaces and text. Only selected revisions are included; "
                 b"a predecessor ID does not mean its revision is included.\n",
             )
+        if relationship_revisions:
+            add(
+                "relationship-revisions.json",
+                _json(
+                    {
+                        "schema_version": "ase-selected-relationship-revisions-v1",
+                        "report_id": record.id,
+                        "report_version_id": version.id,
+                        "selection": (
+                            "Explicit exact revisions; unselected history is not included."
+                        ),
+                        "revisions": [asdict(row) for row in relationship_revisions],
+                    }
+                ),
+            )
+            add(
+                "RELATIONSHIPS-README.txt",
+                b"Selected operator relationship reviews\n\n"
+                b"Supported, disputed, unresolved and withdrawn are attributed assessments of "
+                b"captured accounting-consolidation assertions, not verified beneficial ownership "
+                b"or identity matches. Original period strings, record-validity attributes, "
+                b"publication, capture and review timestamps have distinct meanings. No current "
+                b"validity is inferred. Only selected revisions are included; predecessor IDs "
+                b"do not mean those revisions are included. Excerpts establish literal presence, "
+                b"not source truth or consensus. Original report grades remain unchanged.\n",
+            )
         add(
             "manifest.json",
             _json(
                 {
-                    "schema_version": "ase-evidence-package-v3"
+                    "schema_version": "ase-evidence-package-relationships-v1"
+                    if relationship_revisions
+                    else "ase-evidence-package-v3"
                     if identity_revisions
                     else "ase-evidence-package-v2",
                     "report_id": str(record.id),
@@ -210,6 +255,15 @@ class SelectedClaimPackageRenderer:
                     "base_package_sha256": hashlib.sha256(base).hexdigest(),
                     "original_manifest": "original-manifest.json",
                     "selected_revision_ids": [str(row.id) for row in revisions],
+                    **(
+                        {
+                            "selected_relationship_revision_ids": [
+                                str(row.id) for row in relationship_revisions
+                            ]
+                        }
+                        if relationship_revisions
+                        else {}
+                    ),
                     **(
                         {
                             "selected_identity_revision_ids": [

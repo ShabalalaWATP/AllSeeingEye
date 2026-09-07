@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ase.application.reports.claim_export_selection import (
     ClaimExportReference,
     IdentityExportReference,
+    RelationshipExportReference,
 )
 
 
@@ -23,17 +24,35 @@ class IdentityExportReferenceIn(BaseModel):
     revision_id: UUID
 
 
+class RelationshipExportReferenceIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    relationship_id: UUID
+    revision_id: UUID
+
+
 class ClaimPackageIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     version_number: int = Field(strict=True, ge=1, le=2_147_483_647)
     revisions: list[ClaimExportReferenceIn] = Field(default_factory=list, max_length=20)
     identity_revisions: list[IdentityExportReferenceIn] = Field(default_factory=list, max_length=20)
+    relationship_revisions: list[RelationshipExportReferenceIn] = Field(
+        default_factory=list, max_length=20
+    )
 
     asset_ids: list[UUID] = Field(default_factory=list, max_length=20)
 
     @model_validator(mode="after")
     def selection_bounds(self) -> Self:
-        if not 1 <= len(self.revisions) + len(self.identity_revisions) + len(self.asset_ids) <= 20:
+        if (
+            not 1
+            <= (
+                len(self.revisions)
+                + len(self.identity_revisions)
+                + len(self.relationship_revisions)
+                + len(self.asset_ids)
+            )
+            <= 20
+        ):
             raise ValueError("Select between one and twenty annotations or original assets.")
         if len(set(self.asset_ids)) != len(self.asset_ids):
             raise ValueError("Each original asset must be selected once.")
@@ -46,4 +65,10 @@ class ClaimPackageIn(BaseModel):
         return tuple(
             IdentityExportReference(row.decision_id, row.revision_id)
             for row in self.identity_revisions
+        )
+
+    def relationship_references(self) -> tuple[RelationshipExportReference, ...]:
+        return tuple(
+            RelationshipExportReference(row.relationship_id, row.revision_id)
+            for row in self.relationship_revisions
         )
