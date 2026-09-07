@@ -1,3 +1,5 @@
+import { RegistryLookupDetails } from './RegistryLookupDetails';
+import { registryLabels } from '@/lib/api/registryRouting';
 import type { ResearchPlan } from '@/lib/api/researchPlan';
 
 /** Frozen inputs remain separate from the receipt's actual collection outcomes. */
@@ -20,7 +22,12 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
                 {candidate.origin === 'model' ? 'Model-proposed' : 'Operator-supplied'}) ·{' '}
                 {candidate.identifiers?.length
                   ? candidate.identifiers.join(' · ')
-                  : 'No distinguishing identifiers supplied'}
+                  : 'No context-only identifiers supplied'}
+                {candidate.registry_identifiers?.map((identifier) => (
+                  <p key={identifier.id}>
+                    {registryLabels[identifier.namespace]}: {identifier.value}
+                  </p>
+                ))}
               </li>
             ))}
           </ul>
@@ -116,6 +123,14 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
                 {task.task_id ? ` · ${task.task_id}` : ''}
               </p>
             )}
+            {task.registry_lookup && (
+              <RegistryLookupDetails
+                value={task.registry_lookup}
+                candidateLabel={
+                  plan.candidate_hypotheses?.find((row) => row.id === task.candidate_id)?.label
+                }
+              />
+            )}
             <p className="break-words text-muted" dir="auto">
               {task.terms.join(' · ') || 'No search terms recorded'}
             </p>
@@ -123,19 +138,21 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
               <p className="text-muted">Query language: {task.query_language}</p>
             )}
             <p className="text-muted">
-              {task.provenance === 'model_proposed_task'
-                ? 'Model-proposed task terms, not verified evidence'
-                : task.provenance === 'operator_supplied_task'
-                  ? 'Operator-supplied exact task terms'
-                  : task.provenance === 'operator_supplied_variant'
-                    ? 'Operator-supplied language terms'
-                    : task.provenance === 'model_replanned_variant'
-                      ? 'Model-replanned search terms'
-                      : task.provenance === 'machine_translated_variant'
-                        ? 'Machine-translated search terms, meaning unverified'
-                        : task.provenance === 'original_terms'
-                          ? 'Original terms'
-                          : `Recorded provenance: ${task.provenance}`}{' '}
+              {task.registry_lookup
+                ? 'Exact operator-supplied identifier'
+                : task.provenance === 'model_proposed_task'
+                  ? 'Model-proposed task terms, not verified evidence'
+                  : task.provenance === 'operator_supplied_task'
+                    ? 'Operator-supplied exact task terms'
+                    : task.provenance === 'operator_supplied_variant'
+                      ? 'Operator-supplied language terms'
+                      : task.provenance === 'model_replanned_variant'
+                        ? 'Model-replanned search terms'
+                        : task.provenance === 'machine_translated_variant'
+                          ? 'Machine-translated search terms, meaning unverified'
+                          : task.provenance === 'original_terms'
+                            ? 'Original terms'
+                            : `Recorded provenance: ${task.provenance}`}{' '}
               · {task.temporal_scope}
             </p>
             {plan.area && (

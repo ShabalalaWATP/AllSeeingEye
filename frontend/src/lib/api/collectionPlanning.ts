@@ -1,17 +1,21 @@
 import { z } from 'zod';
 import type { components } from './types.gen';
+import { registryIdentifierSchema } from './registryRouting';
 const candidate = z.object({
   id: z.string().min(1).max(64),
   label: z.string().min(1).max(200),
   identifiers: z.array(z.string().max(300)).max(8),
+  registry_identifiers: z.array(registryIdentifierSchema).max(8).default([]),
   origin: z.literal('model'),
 });
 const task = z.object({
   id: z.string().min(1).max(64),
   source_id: z.string().max(120),
   purpose: z.enum(['challenge', 'disambiguation']),
-  terms: z.array(z.string().min(1).max(300)).min(1).max(12),
+  terms: z.array(z.string().min(1).max(300)).max(12),
   candidate_id: z.string().nullable().default(null),
+  route: z.enum(['terms', 'candidate_identifier']).default('terms'),
+  identifier_id: z.string().nullable().default(null),
   origin: z.literal('model'),
 });
 /** Frozen model proposals are output metadata, never trusted research request inputs. */

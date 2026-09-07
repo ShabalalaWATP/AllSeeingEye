@@ -15,7 +15,13 @@ from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_plan import QueryVariant
-from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate, validate_operator_plan
+from ase.domain.research_tasks import (
+    PlannedQueryTask,
+    ResearchCandidate,
+    candidate_from_dict,
+    validate_operator_plan,
+    validate_registry_scope,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +77,12 @@ class ReportRequest:
             self.research_candidate_hypotheses,
             self.research_planned_tasks,
             self.research_source_ids,
+        )
+        validate_registry_scope(
+            self.research_planned_tasks,
+            self.research_focus is ResearchFocus.COMPANY
+            and self.map_origin is None
+            and self.map_view_id is None,
         )
         if (self.research_candidate_hypotheses or self.research_planned_tasks) and (
             self.research_mode is None
@@ -164,8 +176,7 @@ class ReportRequest:
                 for row in scope.get("research_query_variants", [])
             ),
             research_candidate_hypotheses=tuple(
-                ResearchCandidate(**{**row, "identifiers": tuple(row.get("identifiers", ()))})
-                for row in scope.get("research_candidate_hypotheses", ())
+                candidate_from_dict(row) for row in scope.get("research_candidate_hypotheses", ())
             ),
             research_planned_tasks=tuple(
                 PlannedQueryTask(**{**row, "terms": tuple(row["terms"])})

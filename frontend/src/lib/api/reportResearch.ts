@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import type { components } from './types.gen';
 import { planSchema } from './researchPlan';
+import { registryLookupSchema } from './registryRouting';
 
 const collectionAttemptSchema = z.object({
   source_id: z.string(),
   task_id: z.string().nullable().default(null),
   purpose: z.enum(['baseline', 'challenge', 'disambiguation']).default('baseline'),
   candidate_id: z.string().nullable().default(null),
+  registry_lookup: registryLookupSchema.nullable().default(null),
   source_name: z.string(),
   status: z.enum([
     'completed',

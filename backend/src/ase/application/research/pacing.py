@@ -52,6 +52,15 @@ class PacedProvider:
     def supports_planned_terms(self) -> bool:
         return getattr(self._provider, "supports_planned_terms", False) is True
 
+    @property
+    def registry_namespaces(self) -> tuple[str, ...]:
+        return getattr(self._provider, "registry_namespaces", ())
+
+    def registry_subject(self, namespace: str, value: str) -> str | None:
+        method = getattr(self._provider, "registry_subject", None)
+        result = method(namespace, value) if callable(method) else None
+        return result if isinstance(result, str) else None
+
     def supports(self, query: ResearchQuery) -> bool:
         return self._provider.supports(query)
 

@@ -29,8 +29,7 @@ def planning_context(
         for task in plan.tasks
         if task.purpose == "baseline"
         and task.selected
-        and task.supported
-        and task.planned_terms_supported
+        and ((task.supported and task.planned_terms_supported) or task.registry_options)
     ]
     task_slots = min(
         8 - len(query.planned_tasks),
@@ -68,7 +67,13 @@ def planning_context(
         "operator_candidates": [asdict(row) for row in query.candidate_hypotheses],
         "operator_tasks": [asdict(row) for row in query.planned_tasks],
         "allowed_sources": [
-            {"id": row.source_id, "name": row.source_name, "language": row.language}
+            {
+                "id": row.source_id,
+                "name": row.source_name,
+                "language": row.language,
+                "terms_supported": row.supported and row.planned_terms_supported,
+                "identifier_options": [asdict(option) for option in row.registry_options],
+            }
             for row in eligible
         ],
         "candidate_slots": 8 - len(query.candidate_hypotheses),
@@ -111,7 +116,12 @@ def parse_proposals(
             raise ValueError("Invalid proposal count")
         output = []
         for row in rows:
-            if type(row) is not dict or set(row) != names or type(row[sequence]) is not list:
+            allowed_names = names | ({"route", "identifier_id"} if key == "tasks" else set())
+            if (
+                type(row) is not dict
+                or not names <= set(row) <= allowed_names
+                or type(row[sequence]) is not list
+            ):
                 raise ValueError("Invalid proposal fields")
             output.append(kind(**{**row, sequence: tuple(row[sequence]), "origin": "model"}))
         if len({row.id for row in output}) != len(output):
@@ -135,6 +145,17 @@ def admit_proposals(
     allowed = {row["id"] for row in context["allowed_sources"]}
     if any(task.source_id not in allowed for task in tasks):
         raise ValueError("A proposed source does not support selected task searches")
+    for task in tasks:
+        source = next(row for row in context["allowed_sources"] if row["id"] == task.source_id)
+        if task.route == "candidate_identifier":
+            if not any(
+                option["candidate_id"] == task.candidate_id
+                and option["identifier_id"] == task.identifier_id
+                for option in source.get("identifier_options", ())
+            ):
+                raise ValueError("Model lookup must select an issued operator identifier reference")
+        elif not source.get("terms_supported", True):
+            raise ValueError("This source supports exact candidate lookup only")
     # Only the supplied question and operator context can ground exact identifiers.
     supplied = context["identifier_context"]
     if any(
@@ -152,7 +173,11 @@ def admit_proposals(
     accepted = {task_identity(row) for row in tasks}
     if sum(row.selected for row in plan.tasks) + seed_count > 64 or any(
         row.task_id in accepted
-        and not (row.selected and row.supported and row.planned_terms_supported)
+        and not (
+            row.selected
+            and row.supported
+            and (row.planned_terms_supported or row.registry_lookup is not None)
+        )
         for row in plan.tasks
     ):
         raise ValueError("The expanded plan is unsupported or exceeds receipt capacity")

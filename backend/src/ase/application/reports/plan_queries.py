@@ -33,7 +33,10 @@ INSTRUCTIONS = (
     "IDs must be unique and must not collide with existing IDs. Disambiguation references "
     "an existing or proposed candidate. Terms must be short searches for relevant evidence, "
     "including evidence against an assumption. No additional tasks are required when the "
-    "existing plan is sufficient for collection. Return only the bounded JSON schema."
+    "existing plan is sufficient for collection. For candidate_identifier routes select only "
+    "candidate_id and identifier_id from that source identifier_options, with disambiguation "
+    "purpose and empty terms. Never supply or change registry values. For terms routes set "
+    "identifier_id null. Return only the bounded JSON schema."
 )
 
 
@@ -79,7 +82,15 @@ def planning_schema(context: dict[str, Any]) -> dict[str, Any]:
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
-                    "required": ["id", "source_id", "purpose", "terms", "candidate_id"],
+                    "required": [
+                        "id",
+                        "source_id",
+                        "purpose",
+                        "terms",
+                        "candidate_id",
+                        "route",
+                        "identifier_id",
+                    ],
                     "properties": {
                         "id": identifier,
                         "source_id": {
@@ -87,7 +98,9 @@ def planning_schema(context: dict[str, Any]) -> dict[str, Any]:
                             "enum": [row["id"] for row in context["allowed_sources"]],
                         },
                         "purpose": {"type": "string", "enum": ["challenge", "disambiguation"]},
-                        "terms": terms,
+                        "terms": {**terms, "minItems": 0},
+                        "route": {"type": "string", "enum": ["terms", "candidate_identifier"]},
+                        "identifier_id": {"anyOf": [identifier, {"type": "null"}]},
                         "candidate_id": {"anyOf": [identifier, {"type": "null"}]},
                     },
                 },
@@ -122,7 +135,7 @@ async def prepare_model_plan(
             "",
             "",
             0,
-            "No selected source supports additional term-search tasks "
+            "No selected source supports additional term-search or exact-identifier tasks "
             "within the remaining plan capacity.",
         )
     profile = await profile_for(LlmRole.DIRECTION)

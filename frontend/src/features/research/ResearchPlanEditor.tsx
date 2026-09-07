@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
 import { useLanguageCatalogue } from '@/lib/hooks/useLanguageCatalogue';
 import type { ResearchPlanState } from './useResearchPlan';
+import { RegistryLookupDetails } from '@/components/reports/RegistryLookupDetails';
 import { PlannedTasksEditor } from './PlannedTasksEditor';
 
 export function ResearchPlanEditor({
@@ -17,9 +18,9 @@ export function ResearchPlanEditor({
   historical?: boolean;
 }) {
   const catalogue = useLanguageCatalogue();
-  const sources = [
-    ...new Map(plan.snapshot?.tasks.map((task) => [task.source_id, task]) ?? []).values(),
-  ];
+  const sources = (plan.snapshot?.tasks ?? []).filter(
+    (task, index, all) => all.findIndex((row) => row.source_id === task.source_id) === index,
+  );
   const languageName = (code: string) =>
     catalogue.data?.languages.find((entry) => entry.code === code)?.label ?? code;
   return (
@@ -100,6 +101,7 @@ export function ResearchPlanEditor({
             value={plan.tasks}
             sources={sources.map((source) => ({
               ...source,
+              registry_options: plan.registryOptionsCurrent ? (source.registry_options ?? []) : [],
               selected: plan.sourceIds?.includes(source.source_id) ?? source.selected,
             }))}
           />
@@ -177,17 +179,22 @@ export function ResearchPlanEditor({
                           : ''}
                       </p>
                     )}
+                    {task.registry_lookup && <RegistryLookupDetails value={task.registry_lookup} />}
                     <p className="break-words text-muted">
                       {task.terms.length
                         ? task.terms.join(' · ')
-                        : 'No exact terms available in this preview'}
+                        : task.registry_lookup
+                          ? 'Exact identifier route; no translated search terms'
+                          : 'No exact terms available in this preview'}
                     </p>
                     <p className="text-muted">
-                      {task.provenance === 'operator_supplied_variant'
-                        ? 'Your language-specific terms'
-                        : task.provenance === 'operator_supplied_task'
-                          ? 'Your exact task terms'
-                          : 'Original terms'}{' '}
+                      {task.registry_lookup
+                        ? 'Exact operator-supplied identifier'
+                        : task.provenance === 'operator_supplied_variant'
+                          ? 'Your language-specific terms'
+                          : task.provenance === 'operator_supplied_task'
+                            ? 'Your exact task terms'
+                            : 'Original terms'}{' '}
                       · {task.temporal_scope}
                     </p>
                     {!task.supported && (

@@ -2,12 +2,14 @@
 
 import re
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
+
+from ase.domain.registry_identifiers import RegistryIdentifier, registry_subject
 
 TaskPurpose = Literal["baseline", "challenge", "disambiguation"]
 
 
-def _id(value: str) -> bool:
+def _id(value: object) -> bool:
     return isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,64}", value) is not None
 
 
@@ -34,6 +36,8 @@ class ResearchCandidate:
     identifiers: tuple[str, ...] = ()
     origin: Literal["operator", "model"] = "operator"
 
+    registry_identifiers: tuple[RegistryIdentifier, ...] = ()
+
     def __post_init__(self) -> None:
         if self.origin not in {"operator", "model"}:
             raise ValueError("Invalid research task origin")
@@ -46,6 +50,26 @@ class ResearchCandidate:
             raise ValueError("Invalid candidate hypothesis identity")
         _terms((self.label,), 1)
         _terms(self.identifiers, 8)
+        if (
+            not isinstance(self.registry_identifiers, tuple)
+            or len(self.registry_identifiers) + len(self.identifiers) > 8
+            or any(not isinstance(row, RegistryIdentifier) for row in self.registry_identifiers)
+            or sum(len(row.value) for row in self.registry_identifiers)
+            + sum(map(len, self.identifiers))
+            > 1000
+        ):
+            raise ValueError("Provide at most eight bounded candidate identifiers")
+        if self.origin == "model" and self.registry_identifiers:
+            raise ValueError("Models may select operator identifiers, never supply registry values")
+        if len({row.id for row in self.registry_identifiers}) != len(self.registry_identifiers):
+            raise ValueError("Duplicate registry identifier reference")
+        if len(
+            {
+                (row.namespace, registry_subject(row.namespace, row.value))
+                for row in self.registry_identifiers
+            }
+        ) != len(self.registry_identifiers):
+            raise ValueError("Duplicate canonical registry identifier")
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +80,9 @@ class PlannedQueryTask:
     terms: tuple[str, ...]
     candidate_id: str | None = None
     origin: Literal["operator", "model"] = "operator"
+
+    route: Literal["terms", "candidate_identifier"] = "terms"
+    identifier_id: str | None = None
 
     def __post_init__(self) -> None:
         if self.origin not in {"operator", "model"}:
@@ -74,8 +101,16 @@ class PlannedQueryTask:
         if self.purpose == "disambiguation" and self.candidate_id is None:
             raise ValueError("Disambiguation requires a candidate hypothesis")
         _terms(self.terms, 12)
-        if not self.terms:
-            raise ValueError("Planned tasks require explicit search terms")
+        if self.route == "terms":
+            if not self.terms or self.identifier_id is not None:
+                raise ValueError("Term tasks require search terms and no registry reference")
+        elif self.route == "candidate_identifier":
+            if self.terms or self.purpose != "disambiguation" or not _id(self.identifier_id):
+                raise ValueError(
+                    "Exact lookups require disambiguation, one identifier reference and no terms"
+                )
+        else:
+            raise ValueError("Unknown planned task route")
 
 
 def validate_operator_plan(
@@ -96,6 +131,15 @@ def validate_operator_plan(
             raise ValueError("Provide at most eight immutable candidates and tasks")
         if len({row.id for row in rows}) != len(rows):
             raise ValueError("Candidate and task identifiers must be unique")
+    for task in tasks:
+        if task.route == "candidate_identifier":
+            candidate = next((row for row in candidates if row.id == task.candidate_id), None)
+            if (
+                candidate is None
+                or candidate.origin != "operator"
+                or not any(row.id == task.identifier_id for row in candidate.registry_identifiers)
+            ):
+                raise ValueError("Exact lookup requires an operator-supplied candidate identifier")
     ids = {row.id for row in candidates}
     if any(row.candidate_id is not None and row.candidate_id not in ids for row in tasks):
         raise ValueError("Planned task references an unknown candidate")
@@ -122,3 +166,20 @@ def validate_task_receipt(task_id: str | None, purpose: str, candidate_id: str |
 
 def task_identity(task: PlannedQueryTask) -> str:
     return f"{task.origin}:{task.id}"
+
+
+def candidate_from_dict(row: dict[str, Any]) -> ResearchCandidate:
+    return ResearchCandidate(
+        **{
+            **row,
+            "identifiers": tuple(row.get("identifiers", ())),
+            "registry_identifiers": tuple(
+                RegistryIdentifier(**item) for item in row.get("registry_identifiers", ())
+            ),
+        }
+    )
+
+
+def validate_registry_scope(tasks: tuple[PlannedQueryTask, ...], allowed: bool) -> None:
+    if not allowed and any(task.route == "candidate_identifier" for task in tasks):
+        raise ValueError("Exact registry tasks require company research without an area")

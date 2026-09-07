@@ -15,6 +15,7 @@ from ase.api.schemas_research_tasks import (
     ResearchCandidateOut,
 )
 from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.registry_identifiers import RegistryLookup
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
 
@@ -98,6 +99,9 @@ class ResearchTaskOut(BaseModel):
     purpose: Literal["baseline", "challenge", "disambiguation"] = "baseline"
     candidate_id: str | None = None
     planned_terms_supported: bool = False
+    registry_lookup: RegistryLookup | None = None
+    registry_namespaces: list[str] = Field(default_factory=list)
+    registry_options: list[RegistryLookup] = Field(default_factory=list)
 
 
 class QueryTransformationOut(BaseModel):

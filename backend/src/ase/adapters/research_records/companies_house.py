@@ -18,6 +18,7 @@ from ase.adapters.research_records.companies_house_client import (
     CompaniesHouseClient,
 )
 from ase.adapters.research_records.records import MAX_RESULTS, receipt, record_event, text
+from ase.adapters.research_records.registry_lookup import RegistryLookupCapability
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event, Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
@@ -52,7 +53,8 @@ def _subject_number(subject: str) -> str | None:
     return company_number(subject)
 
 
-class CompaniesHouseProvider:
+class CompaniesHouseProvider(RegistryLookupCapability):
+    registry_namespaces = ("gb_company_number",)
     id = "research-companies-house"
     name = "Companies House"
     temporal_scope = (

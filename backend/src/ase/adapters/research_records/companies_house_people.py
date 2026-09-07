@@ -14,6 +14,7 @@ from ase.adapters.research_records.companies_house import PUBLIC_ORIGIN, company
 from ase.adapters.research_records.companies_house_client import ORIGIN, CompaniesHouseClient
 from ase.adapters.research_records.record_metadata import bounded_json
 from ase.adapters.research_records.records import MAX_RESULTS, receipt, record_event, text
+from ase.adapters.research_records.registry_lookup import RegistryLookupCapability
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event, Reliability, content_hash
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
@@ -36,7 +37,8 @@ def explicit_company_number(subject: str | None) -> str | None:
     return None
 
 
-class CompaniesHouseOfficersProvider:
+class CompaniesHouseOfficersProvider(RegistryLookupCapability):
+    registry_namespaces = ("gb_company_number",)
     id = "research-companies-house-officers"
     name = "Companies House officers"
     endpoint = "officers"

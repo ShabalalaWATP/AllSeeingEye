@@ -104,6 +104,7 @@ class ResearchCollector:
             routed = replace(
                 query,
                 terms=task.terms,
+                subject=task.registry_lookup.subject if task.registry_lookup else query.subject,
                 query_variants=() if task.purpose != "baseline" else query.query_variants,
             )
             if not task.supported:
@@ -111,7 +112,9 @@ class ResearchCollector:
                     provider,
                     CollectionStatus.UNSUPPORTED,
                     "This source does not support explicit task terms. No task request was made."
-                    if task.purpose != "baseline" and not task.planned_terms_supported
+                    if task.purpose != "baseline"
+                    and not task.planned_terms_supported
+                    and task.registry_lookup is None
                     else "Area-based collection is unsupported for this request. "
                     + task.spatial_scope[:900]
                     if query.area is not None and not task.spatial_supported
@@ -133,7 +136,11 @@ class ResearchCollector:
                 retained = self._retain(batch.items if eligible else (), query, items, state)
                 attempt = self._summarise(provider, batch, retained, query)
             attempt = replace(
-                attempt, task_id=task.task_id, purpose=task.purpose, candidate_id=task.candidate_id
+                attempt,
+                task_id=task.task_id,
+                purpose=task.purpose,
+                candidate_id=task.candidate_id,
+                registry_lookup=task.registry_lookup,
             )
             attempts.append(attempt)
             if progress is not None:

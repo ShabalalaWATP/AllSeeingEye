@@ -9676,6 +9676,16 @@
               }
             ],
             "title": "Candidate Id"
+          },
+          "registry_lookup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegistryLookup"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -15760,7 +15770,6 @@
             },
             "type": "array",
             "maxItems": 12,
-            "minItems": 1,
             "title": "Terms"
           },
           "candidate_id": {
@@ -15774,6 +15783,27 @@
               }
             ],
             "title": "Candidate Id"
+          },
+          "route": {
+            "type": "string",
+            "enum": [
+              "terms",
+              "candidate_identifier"
+            ],
+            "title": "Route",
+            "default": "terms"
+          },
+          "identifier_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Id"
           }
         },
         "additionalProperties": false,
@@ -15781,8 +15811,7 @@
         "required": [
           "id",
           "source_id",
-          "purpose",
-          "terms"
+          "purpose"
         ],
         "title": "PlannedQueryTaskIn"
       },
@@ -15815,7 +15844,6 @@
             },
             "type": "array",
             "maxItems": 12,
-            "minItems": 1,
             "title": "Terms"
           },
           "candidate_id": {
@@ -15829,6 +15857,27 @@
               }
             ],
             "title": "Candidate Id"
+          },
+          "route": {
+            "type": "string",
+            "enum": [
+              "terms",
+              "candidate_identifier"
+            ],
+            "title": "Route",
+            "default": "terms"
+          },
+          "identifier_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Id"
           },
           "origin": {
             "type": "string",
@@ -15845,8 +15894,7 @@
         "required": [
           "id",
           "source_id",
-          "purpose",
-          "terms"
+          "purpose"
         ],
         "title": "PlannedQueryTaskOut"
       },
@@ -16628,6 +16676,76 @@
           "available"
         ],
         "title": "RecoveryStatusOut"
+      },
+      "RegistryIdentifierIn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Id"
+          },
+          "namespace": {
+            "type": "string",
+            "enum": [
+              "lei",
+              "sec_cik",
+              "gb_company_number"
+            ],
+            "title": "Namespace"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "namespace",
+          "value"
+        ],
+        "title": "RegistryIdentifierIn"
+      },
+      "RegistryLookup": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "identifier_id": {
+            "type": "string",
+            "title": "Identifier Id"
+          },
+          "namespace": {
+            "type": "string",
+            "enum": [
+              "lei",
+              "sec_cik",
+              "gb_company_number"
+            ],
+            "title": "Namespace"
+          },
+          "original_value": {
+            "type": "string",
+            "title": "Original Value"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "identifier_id",
+          "namespace",
+          "original_value",
+          "subject"
+        ],
+        "title": "RegistryLookup"
       },
       "RejectIn": {
         "properties": {
@@ -18678,6 +18796,14 @@
             "type": "array",
             "maxItems": 8,
             "title": "Identifiers"
+          },
+          "registry_identifiers": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryIdentifierIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Registry Identifiers"
           }
         },
         "additionalProperties": false,
@@ -18710,6 +18836,14 @@
             "type": "array",
             "maxItems": 8,
             "title": "Identifiers"
+          },
+          "registry_identifiers": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryIdentifierIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Registry Identifiers"
           },
           "origin": {
             "type": "string",
@@ -19973,6 +20107,30 @@
             "type": "boolean",
             "title": "Planned Terms Supported",
             "default": false
+          },
+          "registry_lookup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegistryLookup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "registry_namespaces": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Registry Namespaces"
+          },
+          "registry_options": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryLookup"
+            },
+            "type": "array",
+            "title": "Registry Options"
           }
         },
         "type": "object",

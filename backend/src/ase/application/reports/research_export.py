@@ -1,6 +1,7 @@
 """Shared frozen collection receipts, with no inference from empty or unavailable sources."""
 
 from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.registry_identifiers import describe_lookup
 from ase.domain.research_records import ResearchReceipt
 
 
@@ -59,6 +60,7 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
                     f"{task.provenance}; language {task.language or 'not specified'}; "
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
+                    + describe_lookup(task.registry_lookup)
                 )
     if receipt.plan and receipt.plan.planning:
         trace = receipt.plan.planning
@@ -110,6 +112,7 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
             f"candidate {attempt.candidate_id or 'none'}; "
             f"{attempt.status.value.replace('_', ' ')}, {attempt.result_count} {count_kind}; "
             f"language {attempt.language or 'not recorded'}. {attempt.explanation}"
+            + describe_lookup(attempt.registry_lookup)
         )
     return (("Collection coverage", tuple(lines)),)
 

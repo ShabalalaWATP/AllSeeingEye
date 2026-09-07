@@ -6,6 +6,7 @@ from typing import Literal
 
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
+from ase.domain.registry_identifiers import RegistryLookup, validate_lookup_anchor
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_planning import PlanningTrace
@@ -60,9 +61,25 @@ class ResearchTask:
     purpose: str = "baseline"
     candidate_id: str | None = None
     planned_terms_supported: bool = False
+    registry_lookup: RegistryLookup | None = None
+    registry_namespaces: tuple[str, ...] = ()
+    registry_options: tuple[RegistryLookup, ...] = ()
 
     def __post_init__(self) -> None:
         validate_task_receipt(self.task_id, self.purpose, self.candidate_id)
+        validate_lookup_anchor(self.registry_lookup, self.purpose, self.candidate_id)
+        if (
+            not isinstance(self.registry_namespaces, tuple)
+            or any(
+                value not in {"lei", "sec_cik", "gb_company_number"}
+                for value in self.registry_namespaces
+            )
+            or len(self.registry_namespaces) > 3
+            or not isinstance(self.registry_options, tuple)
+            or len(self.registry_options) > 64
+            or any(not isinstance(value, RegistryLookup) for value in self.registry_options)
+        ):
+            raise ValueError("Invalid frozen registry capabilities")
         if not isinstance(self.planned_terms_supported, bool):
             raise ValueError("Invalid planned-term capability")
 
