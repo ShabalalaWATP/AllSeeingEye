@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
 import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
+import { RelationshipReviews } from '@/components/reports/RelationshipReviews';
 import { IdentityReviews } from '@/components/reports/IdentityReviews';
 import { OriginalAssets } from '@/components/reports/OriginalAssets';
 import { ClaimExportSelection } from '@/components/reports/ClaimExportSelection';
@@ -195,6 +196,13 @@ export default function ReportPage() {
                 : null
             }
             candidates={version.research_context?.identity_candidates ?? []}
+            evidence={version.evidence}
+            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
+            canManage={(root) => mapWritable && workspaces.canManage(root)}
+          />
+          <RelationshipReviews
+            reportId={id}
+            version={version.number}
             evidence={version.evidence}
             canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
             canManage={(root) => mapWritable && workspaces.canManage(root)}

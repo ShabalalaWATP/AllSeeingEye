@@ -2316,3 +2316,22 @@ cases plus nine separate PostgreSQL migration cases. The clean full backend reru
 passed 3,059 tests with 24 skips and 95.39% coverage. Its one non-failing SQLite
 resource warning remains recorded in the acceptance log. Exact evidence and semantic/live limitations are recorded in
 AUTOMATIC_RESEARCH_PLANNING.md. The wider expansion remains incomplete.
+
+
+## 7 September 2026: dated organisation relationship review
+
+Added independent source-derived GLEIF relationship assertions, attributed
+assessment revisions, exact evidence/date anchors, scoped correction/history
+and selected package export. Existing reviews open directly across pagination.
+Migration 0029 preserves existing reports and refuses downgrade while complete
+or damaged review history remains. Source assertions remain separate from
+operator judgement and do not establish beneficial ownership or current validity.
+
+Isolated acceptance passed 133 backend cases, seven PostgreSQL concurrency
+cases, four PostgreSQL migration cases and 54 focused frontend cases. Types,
+lint, build, configured Bandit, import contracts and repository hooks passed.
+Integrated with automatic planning and regenerated the combined API; integration
+hooks passed. Full combined regression acceptance is pending. See
+RELATIONSHIP_REVIEW_IMPLEMENTATION.md. The next comparison contract records exact
+annotation checkpoints and a reproduced simultaneous link/confidence alert gap;
+that work and the wider expansion remain unfinished.

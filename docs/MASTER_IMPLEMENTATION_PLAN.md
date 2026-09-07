@@ -4,6 +4,14 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: dated relationship review is integrated, with frozen
+GLEIF assertions, separate operator assessments/history and exact revision
+exports. Isolated acceptance passed 133 backend cases, 11 PostgreSQL cases and
+54 frontend cases; integration hooks passed. Full combined regression acceptance
+remains pending. See [RELATIONSHIP_REVIEW_IMPLEMENTATION.md](RELATIONSHIP_REVIEW_IMPLEMENTATION.md).
+[ANNOTATION_COMPARISON_PLAN.md](ANNOTATION_COMPARISON_PLAN.md) preserves the next
+comparison, confidence explanation and monitoring checkpoint requirements.
+
 7 September continuation: one bounded model call now supplements public-source
 research with candidate hypotheses and challenge/disambiguation tasks. Admission
 preserves operator scope, selected source capabilities and shared collection

@@ -20,11 +20,12 @@ gate has been accepted. The full objective remains unfinished.
   repaired and verified with 189 focused passes plus nine separate PostgreSQL
   migration cases. One non-failing SQLite resource warning is recorded. See
   `AUTOMATIC_RESEARCH_PLANNING.md` for the exact limits and acceptance record.
-- Relationship assertion review is being implemented on the isolated
-  `codex/relationship-review` branch. Persistence, server projection, review UI
-  and exact revision export are present there but have not completed acceptance
-  or integration into main. The remaining-work rows below therefore continue
-  to identify relationship review as unfinished.
+- Relationship assertion review is integrated after isolated acceptance: 133
+  backend cases, seven PostgreSQL concurrency cases, four PostgreSQL migration
+  cases and 54 frontend cases passed. Source projection, independent operator
+  history and exact revision export are implemented for captured supported GLEIF
+  assertions. Integration hooks passed; full combined regression acceptance,
+  broader relationship sources and operational/human acceptance remain open.
 
 - Saved-map image packaging now has local implementation and targeted acceptance:
   82 distinct backend cases, 30 frontend integration cases and 29 engine/capture
@@ -136,10 +137,10 @@ FIRMS adapter still needs an operator key and live acceptance. Map-image export 
 | Companies House and SEC depth | Profiles, officers/PSC snapshots and recent SEC metadata providers | Selected filing documents/content and bounded older SEC pagination |
 | Registry/designation/procurement sources | GLEIF profile/direct/ultimate parents, imported UKSL/OFAC snapshots, first-page Contracts Finder | ITA, Find a Tender and wider upstream-format/operational acceptance |
 | Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export; 62 focused PostgreSQL checks plus seven independent-transaction quota/CAS/revocation races passed | Wider operational acceptance and human-reviewed false-merge evaluation |
-| Dated organisation assertions | GLEIF report relationship view preserves source type, dates, status and evidence | Independent immutable relationship review/disagreement annotations; do not substitute identity-match decisions |
+| Dated organisation assertions | GLEIF source projection, immutable relationship review/disagreement history, exact revision exports and migration 0029; 133 focused backend and 11 PostgreSQL cases passed | Full combined regression acceptance, broader relationship sources and human/operational acceptance |
 | Claims and original evidence | Migration 0025, exact title/summary excerpts, origin metadata, proposal/review/withdrawal revisions, automatic generation and selected packages | Representative atomicity/semantic-support evaluation and deeper original-source-chain inspection |
 | Separate grading dimensions | Doctrine/grading/assessment code and tests preserve A–F, 1–6, confidence and likelihood roles | No single truth percentage or politically assigned grade is authorised; new pathways require the same checks |
-| Corrections and audit | Claim and identity history, CAS, quotas, current access and final export rechecks | Relationship-specific review and wider operational acceptance |
+| Corrections and audit | Claim, identity and relationship history, CAS, quotas, current access and final export rechecks | Full combined regression and wider operational acceptance |
 
 The GLEIF period omission repair applies to future collections. Frozen historical
 reports retain their original, potentially understated counts. Existing canonical
@@ -158,7 +159,7 @@ report evidence and source attributes remain the authority for the new display.
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
 | Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression | Claim/identity revision-aware changes, substantive assertion comparison and richer explanations |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Full frontend: 946 passes, 90.18% branch coverage; full backend: 3,059 passes, 24 skips, 95.39% coverage | Isolated relationship review integration and combined acceptance remain pending; live acceptance remains separate |
+| Current checks | Full frontend: 946 passes, 90.18% branch coverage; full backend: 3,059 passes, 24 skips, 95.39% coverage | Full combined relationship regression acceptance remains pending; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 

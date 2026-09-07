@@ -45,6 +45,7 @@ async def export_claim_evidence_package(
         body.version_number,
         body.references(),
         identity_references=body.identity_references(),
+        relationship_references=body.relationship_references(),
         asset_ids=tuple(body.asset_ids),
     )
     if not body.asset_ids:

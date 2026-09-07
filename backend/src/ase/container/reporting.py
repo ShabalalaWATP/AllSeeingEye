@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
 from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
+from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
@@ -35,6 +36,7 @@ from ase.application.reports.generate_claims import GenerateClaims
 from ase.application.reports.identities import ReportIdentities
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.original_assets import OriginalAssets
+from ase.application.reports.relationships import ReportRelationships
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_image import ExportMapImage
@@ -213,6 +215,19 @@ class ReportWiring:
             r.uow,
         )
 
+    def report_relationships(self, session: AsyncSession) -> ReportRelationships:
+        r = self.repositories(session)
+        return ReportRelationships(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            SqlRelationshipReviewRepository(session),
+            self.access_policy(session),
+            self.clock,
+            self._auditor(r),
+            r.uow,
+        )
+
     def generate_claims(self, session: AsyncSession) -> GenerateClaims:
         r = self.repositories(session)
         return GenerateClaims(
@@ -264,7 +279,11 @@ class ReportWiring:
         r = self.repositories(session)
         return ExportClaimPackage(
             SelectClaimExport(
-                self.report_claims(session), r.reports, r.uow, self.report_identities(session)
+                self.report_claims(session),
+                r.reports,
+                r.uow,
+                self.report_identities(session),
+                self.report_relationships(session),
             ),
             SelectedClaimPackageRenderer(),
             self.original_assets(session),
