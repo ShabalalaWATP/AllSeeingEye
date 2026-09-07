@@ -1,8 +1,8 @@
 # Dated relationship assertion review
 
 Implementation contract, 7 September 2026. The relationship-review
-milestone is integrated into main after isolated local acceptance. Full combined
-regression acceptance remains pending. It advances the E6/E7
+milestone is integrated into main after isolated local acceptance. The combined frontend
+suite passed; combined backend acceptance requires the export-admission fixture repair. It advances the E6/E7
 requirement that assertions retain type, time validity, source references,
 review state and disagreement. It does not replace the remaining source-depth,
 identity, comparison, alert or human-evaluation requirements.
@@ -191,7 +191,17 @@ and downgrade/deletion behaviour; no unresolved actionable issue was found in
 that scope. This is scoped engineering review, not a live security assessment.
 All repository hooks passed, including secret detection and full frontend lint
 and type checks. The combined API regenerated without conflict and all integration repository
-hooks passed. Full combined regression acceptance remains required.
+hooks passed. Full combined frontend acceptance subsequently passed 958 tests in 179 files
+with 95.11% statements, 90.27% branches, 93.62% functions and 96.39% lines
+(unchanged coverage gates). Log: `data/relationship-integrated-frontend-full.log`.
+The integrated production frontend build also passed
+(`data/relationship-integrated-frontend-build.log`); the existing large-chunk
+advisory remains. The full backend run finished with 3,146 passes, 35 skips, five export-admission
+fixture failures and one SQLite resource warning (95.26% coverage, 2,706.92s).
+The test fake omitted the new relationship selection field; the repair passed
+all ten affected cases separately. The SQLite catalogue inspection connection
+was also explicitly closed and its four tests passed with warning tracing.
+These fixture fixes require final combined acceptance.
 
 The complete expansion goal, broader relationship source support, human
 assessment quality and operator migration remain open. No operator migration or production deployment was performed.

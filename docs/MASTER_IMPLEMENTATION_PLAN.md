@@ -7,8 +7,10 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 7 September continuation: dated relationship review is integrated, with frozen
 GLEIF assertions, separate operator assessments/history and exact revision
 exports. Isolated acceptance passed 133 backend cases, 11 PostgreSQL cases and
-54 frontend cases; integration hooks passed. Full combined regression acceptance
-remains pending. See [RELATIONSHIP_REVIEW_IMPLEMENTATION.md](RELATIONSHIP_REVIEW_IMPLEMENTATION.md).
+54 frontend cases; integration hooks passed. The combined frontend passed all
+958 tests with 90.27% branch coverage. The pre-comparison backend run finished with 3,146 passes, 35 skips and five
+export-admission fixture failures (95.26% coverage). The fixture repair passed
+all ten affected cases separately; combined acceptance is still required. See [RELATIONSHIP_REVIEW_IMPLEMENTATION.md](RELATIONSHIP_REVIEW_IMPLEMENTATION.md).
 [ANNOTATION_COMPARISON_PLAN.md](ANNOTATION_COMPARISON_PLAN.md) preserves the next
 comparison, confidence explanation and monitoring checkpoint requirements.
 

@@ -24,8 +24,9 @@ gate has been accepted. The full objective remains unfinished.
   backend cases, seven PostgreSQL concurrency cases, four PostgreSQL migration
   cases and 54 frontend cases passed. Source projection, independent operator
   history and exact revision export are implemented for captured supported GLEIF
-  assertions. Integration hooks passed; full combined regression acceptance,
-  broader relationship sources and operational/human acceptance remain open.
+  assertions. Integration hooks and full combined frontend acceptance passed
+  (958 tests, 90.27% branch coverage). Final combined backend acceptance after the isolated fixture repairs, broader
+  relationship sources and operational/human acceptance remain open.
 
 - Saved-map image packaging now has local implementation and targeted acceptance:
   82 distinct backend cases, 30 frontend integration cases and 29 engine/capture
@@ -159,7 +160,7 @@ report evidence and source attributes remain the authority for the new display.
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
 | Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression | Claim/identity revision-aware changes, substantive assertion comparison and richer explanations |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Full frontend: 946 passes, 90.18% branch coverage; full backend: 3,059 passes, 24 skips, 95.39% coverage | Full combined relationship regression acceptance remains pending; live acceptance remains separate |
+| Current checks | Full combined frontend: 958 passes, 90.27% branch coverage; pre-comparison full backend: 3,146 passes, 35 skips, five fixture failures, 95.26% coverage | Export-admission fixture repair passed all ten cases separately; final combined backend acceptance remains pending; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 

@@ -2331,7 +2331,10 @@ Isolated acceptance passed 133 backend cases, seven PostgreSQL concurrency
 cases, four PostgreSQL migration cases and 54 focused frontend cases. Types,
 lint, build, configured Bandit, import contracts and repository hooks passed.
 Integrated with automatic planning and regenerated the combined API; integration
-hooks passed. Full combined regression acceptance is pending. See
+hooks passed. Full combined frontend acceptance passed 958 tests with 90.27%
+branch coverage. The full backend run finished with 3,146 passes, 35 skips,
+five export-admission fixture failures and 95.26% coverage. The isolated fixture
+repair passed all ten affected cases. Final combined acceptance remains open. See
 RELATIONSHIP_REVIEW_IMPLEMENTATION.md. The next comparison contract records exact
 annotation checkpoints and a reproduced simultaneous link/confidence alert gap;
 that work and the wider expansion remain unfinished.
