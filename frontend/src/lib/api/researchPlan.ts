@@ -4,6 +4,7 @@ import { apiCall } from './client';
 import type { components } from './types.gen';
 import { collectionPlanningSchema } from './collectionPlanning';
 import { collectionContinuationSchema } from './collectionContinuation';
+import { registryIdentifierSchema, registryLookupSchema } from './registryRouting';
 
 export type ResearchPlanInput = components['schemas']['ResearchPlanIn'];
 export type ResearchPlan = components['schemas']['ResearchPlanOut'];
@@ -12,6 +13,7 @@ export const candidateHypothesisSchema = z.object({
   id: z.string(),
   label: z.string(),
   identifiers: z.array(z.string()),
+  registry_identifiers: z.array(registryIdentifierSchema).max(8).default([]),
 });
 export const plannedQueryTaskSchema = z.object({
   id: z.string(),
@@ -19,9 +21,11 @@ export const plannedQueryTaskSchema = z.object({
   purpose: z.enum(['challenge', 'disambiguation']),
   terms: z.array(z.string()),
   candidate_id: z.string().nullable(),
+  route: z.enum(['terms', 'candidate_identifier']).default('terms'),
+  identifier_id: z.string().nullable().default(null),
 });
-export type CandidateHypothesis = z.infer<typeof candidateHypothesisSchema>;
-export type PlannedQueryTask = z.infer<typeof plannedQueryTaskSchema>;
+export type CandidateHypothesis = components['schemas']['ResearchCandidateIn'];
+export type PlannedQueryTask = components['schemas']['PlannedQueryTaskIn'];
 const areaSchema = z.object({
   geometry: z.record(z.string(), z.unknown()),
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
@@ -56,6 +60,9 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
       purpose: z.enum(['baseline', 'challenge', 'disambiguation']).default('baseline'),
       candidate_id: z.string().nullable().default(null),
       planned_terms_supported: z.boolean().default(false),
+      registry_lookup: registryLookupSchema.nullable().default(null),
+      registry_namespaces: z.array(z.string()).default([]),
+      registry_options: z.array(registryLookupSchema).default([]),
       source_name: z.string(),
       selected: z.boolean(),
       supported: z.boolean(),

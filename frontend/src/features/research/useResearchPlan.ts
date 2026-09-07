@@ -43,6 +43,7 @@ export function useResearchPlan(scope: PlanScope) {
   const [variantText, setVariantText] = useState<Record<string, string>>({});
   const [snapshot, setSnapshot] = useState<{
     key: string;
+    capabilitiesKey: string;
     data: Awaited<ReturnType<typeof previewResearchPlan>>;
   } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -64,7 +65,8 @@ export function useResearchPlan(scope: PlanScope) {
     candidateHypotheses,
     plannedTasks,
   });
-  const current = snapshot?.key === key && error === null;
+  const capabilitiesKey = JSON.stringify({ scope, candidateHypotheses });
+  const current = snapshot?.key === key && error === null && tasks.error === null;
   const customised =
     customTerms ||
     sourceIds !== null ||
@@ -73,11 +75,11 @@ export function useResearchPlan(scope: PlanScope) {
     plannedTasks.length > 0;
   const preview = async () => {
     if (busy) return;
-    if (tasks.error) {
-      setError(tasks.error);
+    if (tasks.previewError) {
+      setError(tasks.previewError);
       return;
     }
-    if (sourceIds && plannedTasks.some((task) => !sourceIds.includes(task.source_id))) {
+    if (sourceIds && tasks.previewTasks.some((task) => !sourceIds.includes(task.source_id))) {
       setError(
         'Every additional search needs a selected source. Update the search or reselect its source.',
       );
@@ -142,7 +144,7 @@ export function useResearchPlan(scope: PlanScope) {
           source_ids: sourceIds,
           query_variants: variants,
           candidate_hypotheses: candidateHypotheses,
-          planned_tasks: plannedTasks,
+          planned_tasks: tasks.previewTasks,
         },
         signal,
       );
@@ -169,7 +171,7 @@ export function useResearchPlan(scope: PlanScope) {
           'invalid_request',
           'The preview does not match the historical period.',
         );
-      if (!signal.aborted) setSnapshot({ key, data });
+      if (!signal.aborted) setSnapshot({ key, data, capabilitiesKey });
     } catch (caught) {
       if (!signal.aborted) setError(describeError(caught));
     } finally {
@@ -203,6 +205,7 @@ export function useResearchPlan(scope: PlanScope) {
     variantText,
     setVariantText,
     snapshot: snapshot?.data ?? null,
+    registryOptionsCurrent: snapshot?.capabilitiesKey === capabilitiesKey,
     current,
     customised,
     busy,

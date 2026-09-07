@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.registry_identifiers import describe_lookup, lookup_from_dict
 from ase.domain.research import (
     CollectionAttempt,
     CollectionPass,
@@ -16,7 +17,7 @@ from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_continuation import continuation_from_dict
 from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan, ResearchTask
 from ase.domain.research_planning import planning_from_dict
-from ase.domain.research_tasks import ResearchCandidate
+from ase.domain.research_tasks import candidate_from_dict
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,7 +80,7 @@ class ResearchReceipt:
         statuses = "; ".join(
             f"{item.source_name} [{item.task_id or item.source_id}; {item.purpose}]: "
             f"{item.status.value}, {item.result_count} additional items. "
-            f"{item.explanation}"
+            f"{item.explanation}{describe_lookup(item.registry_lookup)}"
             for item in self.attempts
         )
         hypotheses = ""
@@ -162,9 +163,21 @@ def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
     for name in ("planning", "continuation"):
         if plan.get(name) is None:
             plan.pop(name, None)
+    trace = plan.get("planning")
+    if trace is not None:
+        for row in trace.get("proposed_candidates", ()):
+            if not row.get("registry_identifiers"):
+                row.pop("registry_identifiers", None)
+        for row in trace.get("proposed_tasks", ()):
+            if row.get("route") == "terms":
+                row.pop("route", None)
+            if row.get("identifier_id") is None:
+                row.pop("identifier_id", None)
     if not plan.get("candidate_hypotheses"):
         plan.pop("candidate_hypotheses", None)
     for candidate in plan.get("candidate_hypotheses", ()):
+        if not candidate.get("registry_identifiers"):
+            candidate.pop("registry_identifiers", None)
         if candidate.get("origin") == "operator":
             candidate.pop("origin", None)
 
@@ -175,6 +188,9 @@ def _omit_legacy_task_defaults(row: dict[str, Any]) -> None:
         ("purpose", "baseline"),
         ("candidate_id", None),
         ("planned_terms_supported", False),
+        ("registry_lookup", None),
+        ("registry_namespaces", ()),
+        ("registry_options", ()),
     ):
         if row.get(key) == default:
             row.pop(key, None)
@@ -207,6 +223,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
                 task_id=item.get("task_id"),
                 purpose=item.get("purpose", "baseline"),
                 candidate_id=item.get("candidate_id"),
+                registry_lookup=lookup_from_dict(item.get("registry_lookup")),
             )
             for item in attempts
         ),
@@ -231,13 +248,23 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
         data.get("time_basis", "acquisition_or_publication" if values["area"] else "publication")
     )
     values["candidate_hypotheses"] = tuple(
-        ResearchCandidate(**{**row, "identifiers": tuple(row.get("identifiers", ()))})
-        for row in data.get("candidate_hypotheses", ())
+        candidate_from_dict(row) for row in data.get("candidate_hypotheses", ())
     )
     values["planning"] = planning_from_dict(data.get("planning"))
     values["continuation"] = continuation_from_dict(data.get("continuation"))
     values["tasks"] = tuple(
-        ResearchTask(**{**row, "terms": tuple(row["terms"])}) for row in data["tasks"]
+        ResearchTask(
+            **{
+                **row,
+                "terms": tuple(row["terms"]),
+                "registry_lookup": lookup_from_dict(row.get("registry_lookup")),
+                "registry_namespaces": tuple(row.get("registry_namespaces", ())),
+                "registry_options": tuple(
+                    lookup_from_dict(item) for item in row.get("registry_options", ())
+                ),
+            }
+        )
+        for row in data["tasks"]
     )
     translation = values.get("translation")
     if translation is not None:
@@ -263,7 +290,13 @@ def passes_from_dict(data: Any) -> tuple[CollectionPass, ...]:
         CollectionPass(
             tuple(row["terms"]),
             tuple(
-                CollectionAttempt(**{**attempt, "status": CollectionStatus(attempt["status"])})
+                CollectionAttempt(
+                    **{
+                        **attempt,
+                        "status": CollectionStatus(attempt["status"]),
+                        "registry_lookup": lookup_from_dict(attempt.get("registry_lookup")),
+                    }
+                )
                 for attempt in row["attempts"]
             ),
             plan_from_dict(row.get("plan")),

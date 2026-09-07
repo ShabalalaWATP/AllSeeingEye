@@ -13,6 +13,7 @@ from typing import Any, Literal
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.research_records.record_metadata import bounded_json
 from ase.adapters.research_records.records import collect_json, receipt, record_event, text
+from ase.adapters.research_records.registry_lookup import RegistryLookupCapability
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event, Reliability
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
@@ -51,7 +52,8 @@ def _unassessed(event: Event) -> Event:
     )
 
 
-class GleifProfileProvider:
+class GleifProfileProvider(RegistryLookupCapability):
+    registry_namespaces = ("lei",)
     id = "research-gleif-profile"
     name = "GLEIF legal entity profile"
     temporal_scope = "Current GLEIF snapshot, not historical-window evidence or complete history."
@@ -134,7 +136,8 @@ class GleifProfileProvider:
         ]
 
 
-class GleifParentProvider:
+class GleifParentProvider(RegistryLookupCapability):
+    registry_namespaces = ("lei",)
     temporal_scope = (
         "Current reported parent context; relationship periods are not snapshot history."
     )

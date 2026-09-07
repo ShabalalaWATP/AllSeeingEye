@@ -4,7 +4,12 @@ from dataclasses import dataclass, fields
 from typing import Any, Literal
 
 from ase.domain.research_continuation import bounded_text
-from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate, task_identity
+from ase.domain.research_tasks import (
+    PlannedQueryTask,
+    ResearchCandidate,
+    candidate_from_dict,
+    task_identity,
+)
 
 PlanningStatus = Literal["applied", "empty", "rejected", "unavailable", "skipped"]
 
@@ -83,14 +88,22 @@ def planning_from_dict(data: Any) -> PlanningTrace | None:
             raise ValueError("Invalid saved planning proposals")
         field = "identifiers" if key == "proposed_candidates" else "terms"
         expected = {item.name for item in fields(kind)}
+        required = expected - (
+            {"registry_identifiers"} if key == "proposed_candidates" else {"route", "identifier_id"}
+        )
         if any(
             type(row) is not dict
-            or set(row) != expected
+            or not required <= set(row) <= expected
             or not isinstance(row[field], (tuple, list))
             for row in rows
         ):
             raise ValueError("Invalid saved planning proposal fields")
-        values[key] = tuple(kind(**{**row, field: tuple(row[field])}) for row in rows)
+        values[key] = tuple(
+            candidate_from_dict(row)
+            if key == "proposed_candidates"
+            else kind(**{**row, field: tuple(row[field])})
+            for row in rows
+        )
     for key in ("accepted_candidate_ids", "accepted_task_ids"):
         if not isinstance(data[key], (tuple, list)) or len(data[key]) > 8:
             raise ValueError("Invalid saved planning selection")

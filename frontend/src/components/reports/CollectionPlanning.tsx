@@ -74,7 +74,11 @@ export function CollectionPlanning({ value }: { value: CollectionPlanningTrace }
                     : 'Distinguish an identity candidate'}{' '}
                   - {task.source_id}
                 </p>
-                <p>{task.terms.join(' / ')}</p>
+                <p>
+                  {task.route === 'candidate_identifier'
+                    ? `Exact registry lookup using supplied identifier reference: ${task.identifier_id ?? 'Not recorded'}`
+                    : task.terms?.join(' / ')}
+                </p>
                 {task.candidate_id && (
                   <p className="text-muted">Candidate hypothesis: {task.candidate_id}</p>
                 )}

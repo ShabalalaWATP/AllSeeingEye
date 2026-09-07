@@ -4,6 +4,11 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from ase.application.ports.research import ResearchProvider
+from ase.application.research.registry_routing import (
+    lookup_options,
+    resolve_lookup,
+    supports_lookup,
+)
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchQuery
 from ase.domain.research_plan import (
@@ -94,20 +99,32 @@ def build_plan(
                 spatial_scope=spatial_scope,
                 task_id="source:" + provider.id,
                 planned_terms_supported=getattr(provider, "supports_planned_terms", False) is True,
+                registry_namespaces=getattr(provider, "registry_namespaces", ()),
+                registry_options=lookup_options(provider, query),
             )
         )
     supplementary = []
     baseline = {task.source_id: task for task in tasks}
     by_id = {provider.id: provider for provider in providers}
     for operator in query.planned_tasks:
-        routed = replace(query, terms=operator.terms, query_variants=())
+        lookup = resolve_lookup(query, operator)
+        routed = replace(
+            query,
+            terms=operator.terms,
+            query_variants=(),
+            subject=lookup.subject if lookup else query.subject,
+        )
         provider = by_id[operator.source_id]
         spatial_supported, spatial_scope = spatial_capability(provider, routed)
         supplementary.append(
             replace(
                 baseline[operator.source_id],
                 terms=operator.terms,
-                supported=baseline[operator.source_id].planned_terms_supported
+                supported=(
+                    supports_lookup(provider, query, lookup)
+                    if lookup
+                    else baseline[operator.source_id].planned_terms_supported
+                )
                 and provider.supports(routed)
                 and (query.area is None or spatial_supported),
                 provenance="model_proposed_task"
@@ -119,6 +136,7 @@ def build_plan(
                 task_id=task_identity(operator),
                 purpose=operator.purpose,
                 candidate_id=operator.candidate_id,
+                registry_lookup=lookup,
             )
         )
     # Alternate baseline and explicit tasks so the latter do not sit behind the

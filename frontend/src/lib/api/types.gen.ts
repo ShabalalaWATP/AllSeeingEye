@@ -3088,6 +3088,7 @@ export interface components {
             purpose: "baseline" | "challenge" | "disambiguation";
             /** Candidate Id */
             candidate_id?: string | null;
+            registry_lookup?: components["schemas"]["RegistryLookup"] | null;
         };
         /** CollectionPassOut */
         CollectionPassOut: {
@@ -5275,9 +5276,17 @@ export interface components {
              */
             purpose: "challenge" | "disambiguation";
             /** Terms */
-            terms: string[];
+            terms?: string[];
             /** Candidate Id */
             candidate_id?: string | null;
+            /**
+             * Route
+             * @default terms
+             * @enum {string}
+             */
+            route: "terms" | "candidate_identifier";
+            /** Identifier Id */
+            identifier_id?: string | null;
         };
         /** PlannedQueryTaskOut */
         PlannedQueryTaskOut: {
@@ -5291,9 +5300,17 @@ export interface components {
              */
             purpose: "challenge" | "disambiguation";
             /** Terms */
-            terms: string[];
+            terms?: string[];
             /** Candidate Id */
             candidate_id?: string | null;
+            /**
+             * Route
+             * @default terms
+             * @enum {string}
+             */
+            route: "terms" | "candidate_identifier";
+            /** Identifier Id */
+            identifier_id?: string | null;
             /**
              * Origin
              * @default operator
@@ -5533,6 +5550,34 @@ export interface components {
             remaining: number;
             /** Available */
             available: boolean;
+        };
+        /** RegistryIdentifierIn */
+        RegistryIdentifierIn: {
+            /** Id */
+            id: string;
+            /**
+             * Namespace
+             * @enum {string}
+             */
+            namespace: "lei" | "sec_cik" | "gb_company_number";
+            /** Value */
+            value: string;
+        };
+        /** RegistryLookup */
+        RegistryLookup: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Identifier Id */
+            identifier_id: string;
+            /**
+             * Namespace
+             * @enum {string}
+             */
+            namespace: "lei" | "sec_cik" | "gb_company_number";
+            /** Original Value */
+            original_value: string;
+            /** Subject */
+            subject: string;
         };
         /** RejectIn */
         RejectIn: {
@@ -6196,6 +6241,8 @@ export interface components {
             label: string;
             /** Identifiers */
             identifiers?: string[];
+            /** Registry Identifiers */
+            registry_identifiers?: components["schemas"]["RegistryIdentifierIn"][];
         };
         /** ResearchCandidateOut */
         ResearchCandidateOut: {
@@ -6205,6 +6252,8 @@ export interface components {
             label: string;
             /** Identifiers */
             identifiers?: string[];
+            /** Registry Identifiers */
+            registry_identifiers?: components["schemas"]["RegistryIdentifierIn"][];
             /**
              * Origin
              * @default operator
@@ -6652,6 +6701,11 @@ export interface components {
              * @default false
              */
             planned_terms_supported: boolean;
+            registry_lookup?: components["schemas"]["RegistryLookup"] | null;
+            /** Registry Namespaces */
+            registry_namespaces?: string[];
+            /** Registry Options */
+            registry_options?: components["schemas"]["RegistryLookup"][];
         };
         /** ResearchTimelineEntryOut */
         ResearchTimelineEntryOut: {

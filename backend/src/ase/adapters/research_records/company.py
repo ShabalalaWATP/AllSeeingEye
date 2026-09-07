@@ -18,6 +18,7 @@ from ase.adapters.research_records.records import (
     record_event,
     text,
 )
+from ase.adapters.research_records.registry_lookup import RegistryLookupCapability
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
@@ -34,7 +35,8 @@ def cik(value: Any) -> str | None:
     return match[1].zfill(10) if match and int(match[1]) else None
 
 
-class SecSubmissionsProvider:
+class SecSubmissionsProvider(RegistryLookupCapability):
+    registry_namespaces = ("sec_cik",)
     temporal_scope = (
         "Recent submission metadata filtered by filing date, at most 20 records; "
         "older archive files and filing contents are not retrieved."

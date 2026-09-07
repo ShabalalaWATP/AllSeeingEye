@@ -26,10 +26,13 @@ def _remaining(state: CollectionRunBudget) -> bool:
     )
 
 
-def _effective_terms(plan: ResearchPlan | None) -> dict[str, tuple[str, ...]]:
+def _effective_terms(plan: ResearchPlan | None) -> dict[str, tuple[tuple[str, ...], str | None]]:
     return (
         {
-            (task.task_id or task.source_id): task.terms
+            (task.task_id or task.source_id): (
+                task.terms,
+                task.registry_lookup.subject if task.registry_lookup else None,
+            )
             for task in plan.tasks
             if task.selected and task.supported
         }
