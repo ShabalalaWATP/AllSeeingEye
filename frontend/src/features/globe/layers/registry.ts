@@ -97,7 +97,9 @@ export function buildEventLayers(
   if (view !== undefined && view.zoom < CLUSTER_ZOOM) {
     // Keep a bounded sample of traffic recognisable at globe scale. Remaining
     // records still contribute to clusters, rather than disappearing.
-    const traffic = exact.filter((event) => ['aircraft', 'vessel'].includes(iconFor(event) ?? ''));
+    const traffic = exact.filter((event) =>
+      ['aircraft', 'vessel', 'vessel_unknown'].includes(iconFor(event) ?? ''),
+    );
     const shown = traffic.slice(0, 250);
     const selectedTraffic = traffic.find((event) => event.id === selectedId);
     if (selectedTraffic && !shown.includes(selectedTraffic))

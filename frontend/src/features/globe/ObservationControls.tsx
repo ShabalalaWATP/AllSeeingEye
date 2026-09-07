@@ -94,8 +94,31 @@ export function ObservationControls({
         </div>
       ))}
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
-        Selected regional ADS-B coverage. FIRMS requires a server connection; vessel connectivity is
-        pending. Switches control display only, and zero loaded records does not prove no activity.
+        Regional ADS-B and Finnish-waterway AIS coverage. FIRMS requires a server key. Switches
+        control display only; zero loaded records does not prove no activity. Vessel symbols expire
+        on the next cleanup after 15 minutes without a fresh record. A side-view boat means
+        direction is unknown.
+      </p>
+      <p className="mt-2 text-[10px] leading-relaxed text-muted">
+        AIS:{' '}
+        <a
+          className="underline"
+          href="https://www.digitraffic.fi/en/marine-traffic/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Fintraffic / Digitraffic
+        </a>
+        {' · '}
+        <a
+          className="underline"
+          href="https://creativecommons.org/licenses/by/4.0/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          CC BY 4.0
+        </a>
+        {' · '}Normalised and freshness-filtered.
       </p>
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
         At wide zoom, up to 250 traffic records stay outside clusters. Other records remain

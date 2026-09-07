@@ -2069,3 +2069,35 @@ production build passed, with the existing chunk-size advisory. Full-suite
 coverage was not remeasured for this addition. No real key, API account, Gmail
 verification, provider request or GPU acceptance was completed. A non-LLM source
 credential editor, vessel adapter and wider expansion work remain open.
+
+### Regional AIS vessel traffic
+
+Verified Fintraffic's official marine/OpenAPI contract, mandatory gzip,
+non-personal application headers and CC BY 4.0 attribution terms. Added the
+keyless Finnish-waterway AIS connector to normal application wiring using a
+dedicated, lifecycle-managed client. Decompression bounds both raw and decoded
+bytes and rejects invalid/trailing gzip. The parser preserves the provider's
+millisecond position-record time separately from the AIS seconds/status code,
+rejects unusable positions, handles unavailable heading/course/speed and updates
+stationary ships when a fresh timestamp arrives.
+
+Added vessel-only 15-minute record-age expiry without shortening maritime-warning
+retention. Synthetic outage tests verify expiry publication through the existing
+event bus. Both maps use directional boat symbols where direction is supplied
+and a side-view symbol otherwise. Added explicit regional/freshness labels,
+source/licence links and position-record wording in the inspector. Frozen event
+attributes retain attribution and transformation notices.
+
+One bounded request through the actual adapter accepted 681 fresh positions;
+only the count was saved in data/digitraffic-live-check.log, no raw positions.
+The initial retention test used a helper positional argument incorrectly; after
+repair, 48 backend tests passed. All 131 globe tests passed in 26 files. Ruff,
+mypy, architecture contracts, file-length checks, scoped ESLint, TypeScript,
+production build and whitespace checks passed. Build retains its known chunk-size
+advisory. Full-suite coverage was not remeasured. Independent focused review found
+no blocking gzip/lifecycle/expiry defect; its unknown-direction and periodic
+expiry presentation points were addressed. No new dependency or credentials.
+
+Documented operation and limits in VESSEL_TRAFFIC_OPERATIONS.md and updated the
+source/status matrices. Wider vessel coverage, sustained/GPU acceptance and the
+existing 10,000-ID combined-expiry notification limit remain open.

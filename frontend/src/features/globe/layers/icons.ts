@@ -9,12 +9,14 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
 
-export type IconKind = 'aircraft' | 'vessel' | 'cyclone' | 'volcano' | 'thermal';
+export type IconKind = 'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'volcano' | 'thermal';
 
 const ICON_SIZE = 64;
 
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
+  vessel_unknown:
+    '<path fill="#fff" d="M5 34h54l-9 16H17zM16 22h32v10H16zM27 12h10v8H27z"/><path d="M8 56h48" stroke="#fff" stroke-width="3"/>',
   thermal:
     '<circle cx="32" cy="32" r="9" fill="#fff"/><circle cx="32" cy="32" r="21" fill="none" stroke="#fff" stroke-width="3"/><path d="M32 2v8m0 44v8M2 32h8m44 0h8" stroke="#fff" stroke-width="3"/>',
   vessel:
@@ -39,7 +41,12 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
 /** Which icon, if any, an event should be drawn with. */
 export function iconFor(event: LiveEvent): IconKind | null {
   if (event.category === 'disaster' && event.subtype === 'thermal_detection') return 'thermal';
-  if (event.category === 'maritime' && event.subtype === 'vessel_position') return 'vessel';
+  if (event.category === 'maritime' && event.subtype === 'vessel_position') {
+    return typeof event.attributes.track_deg === 'number' &&
+      Number.isFinite(event.attributes.track_deg)
+      ? 'vessel'
+      : 'vessel_unknown';
+  }
   if (event.category === 'aviation') return 'aircraft';
   if (event.subtype === 'tropical_cyclone') return 'cyclone';
   if (event.subtype === 'volcano' || event.subtype === 'volcanoes') return 'volcano';

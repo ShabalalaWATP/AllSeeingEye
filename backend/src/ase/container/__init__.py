@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.adsb_watch import load_watch_areas
+from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
@@ -122,7 +123,10 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
         self.pipeline = Pipeline(
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
-        self.http = FeedHttpClient(settings.feeds_user_agent)
+        self.http, self.marine_http = (
+            FeedHttpClient(settings.feeds_user_agent),
+            DigitrafficHttpClient("TheAllSeeingEye/0.1"),
+        )
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
@@ -164,6 +168,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
                 if settings.firms_map_key
                 else None,
                 firms_area=settings.firms_area,
+                digitraffic_http=self.marine_http,
             )
         )
         watchlists = GoogleNewsWatchlistConnector(
@@ -209,6 +214,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
 
     async def dispose(self) -> None:
         await self.http.aclose()
+        await self.marine_http.aclose()
         await self._llm_gateway.aclose()
         await self._embedding_gateway.aclose()
         await self.tiles.aclose()

@@ -43,6 +43,11 @@ describe('icon layer accessors', () => {
       point: { lon: 2, lat: 50 },
     });
     expect(iconFor(vessel)).toBe('vessel');
+    const unknown = { ...vessel, attributes: { track_deg: null } };
+    expect(iconFor(unknown)).toBe('vessel_unknown');
+    expect(props(buildIconLayer([unknown], vi.fn(), null)).getIcon(unknown).url).not.toEqual(
+      props(buildIconLayer([vessel], vi.fn(), null)).getIcon(vessel).url,
+    );
     expect(iconFor(warning)).toBeNull();
     expect(props(buildIconLayer([vessel], vi.fn(), null)).getAngle(vessel)).toBe(-135);
   });

@@ -14,6 +14,7 @@ from ase.adapters.feeds.cyclones import (
     JtwcConnector,
     NhcConnector,
 )
+from ase.adapters.feeds.digitraffic import DigitrafficConnector
 from ase.adapters.feeds.emsc import EmscConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.firms import FirmsConnector
@@ -41,6 +42,7 @@ def build_connectors(
     *,
     firms_key: str | None = None,
     firms_area: str = "world",
+    digitraffic_http: FeedHttpClient | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
     connectors: list[FeedConnector] = [
@@ -77,4 +79,6 @@ def build_connectors(
     ]
     if firms_key and FirmsConnector.spec.id not in excluded:
         connectors.append(FirmsConnector(http, clock, firms_key, firms_area))
+    if digitraffic_http is not None and DigitrafficConnector.spec.id not in excluded:
+        connectors.append(DigitrafficConnector(digitraffic_http, clock))
     return [connector for connector in connectors if connector.spec.id not in excluded]

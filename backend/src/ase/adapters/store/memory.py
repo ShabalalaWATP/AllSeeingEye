@@ -8,6 +8,7 @@ from datetime import datetime
 
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
+    VESSEL_POSITION_AGE,
     RetentionBudget,
     budget_for,
 )
@@ -148,7 +149,15 @@ class InMemoryEventStore:
             cutoff = now - budget.window
             ordered = sorted(ids, key=lambda i: self._events[i].observed_at)
             for event_id in ordered:
-                if self._events[event_id].observed_at < cutoff:
+                event = self._events[event_id]
+                stale_position = (
+                    event.category is Category.MARITIME
+                    and event.subtype == "vessel_position"
+                    and (
+                        event.published_at is None or event.published_at < now - VESSEL_POSITION_AGE
+                    )
+                )
+                if event.observed_at < cutoff or stale_position:
                     expired.append(event_id)
             expired_ids = set(expired)
             remaining = [i for i in ordered if i not in expired_ids]

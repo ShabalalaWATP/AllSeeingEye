@@ -8,6 +8,8 @@ from datetime import timedelta
 
 from ase.domain.events import Category
 
+VESSEL_POSITION_AGE = timedelta(minutes=15)
+
 
 @dataclass(frozen=True, slots=True)
 class RetentionBudget:

@@ -87,7 +87,7 @@ translation quality or complete cancellation coverage at every real-model stage.
 | OONI | Country/day aggregate provider with explicit licence acknowledgement | Integrated time-chart layer and wider operational acceptance |
 | IODA | Registered live connector in `adapters/feeds/cyber.py` | Desired historical research/time-series layer, usable positive-record schema and current reuse/operational acceptance |
 | FIRMS | Optional NOAA-20 Area API connector, protected server-key requests, bounded CSV parsing, acquisition/quality metadata, scheduler health and both-map display controls | Administrator credential editor, actual key onboarding, live compatibility/coverage and GPU checks |
-| Vessel positions | Display controls and symbols are prepared | Runtime adapter, bounded collection, credentials, health/freshness, onboarding and live checks |
+| Vessel positions | Keyless Fintraffic regional AIS adapter, bounded gzip, stable positions, 15-minute record-age expiry, direction/unknown-direction symbols and attribution; one live check accepted 681 positions | Wider coverage/providers, account-based onboarding and sustained/GPU acceptance; existing large-expiry notification limit |
 | ChinaPower ADIZ, AMTI and ISW layers | Discovery/reference backlog | Approved versioned dataset adapters and map presentation; no invented tracks, borders or sovereignty assertions |
 
 The existing IODA feed must not be confused with the still-deferred IODA research

@@ -107,7 +107,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         <dl className={`mt-3 text-muted ${dl}`}>
           <dt>Source</dt>
           <dd className="text-text">{sourceLabel(event.source_id)}</dd>
-          <dt>Published</dt>
+          <dt>{event.subtype === 'vessel_position' ? 'Position record time' : 'Published'}</dt>
           <dd className="text-text">{formatUtc(event.published_at)}</dd>
           <dt>Location precision</dt>
           <dd className="text-text">{precisionLabel(event)}</dd>
