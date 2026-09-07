@@ -6,13 +6,29 @@ import type { components } from './types.gen';
 export type ResearchPlanInput = components['schemas']['ResearchPlanIn'];
 export type ResearchPlan = components['schemas']['ResearchPlanOut'];
 export type QueryVariant = components['schemas']['QueryVariantIn'];
+export const candidateHypothesisSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  identifiers: z.array(z.string()),
+});
+export const plannedQueryTaskSchema = z.object({
+  id: z.string(),
+  source_id: z.string(),
+  purpose: z.enum(['challenge', 'disambiguation']),
+  terms: z.array(z.string()),
+  candidate_id: z.string().nullable(),
+});
+export type CandidateHypothesis = z.infer<typeof candidateHypothesisSchema>;
+export type PlannedQueryTask = z.infer<typeof plannedQueryTaskSchema>;
 const areaSchema = z.object({
   geometry: z.record(z.string(), z.unknown()),
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
 });
 export const planSchema: z.ZodType<ResearchPlan> = z.object({
   question: z.string(),
-  time_basis: z.enum(['publication', 'acquisition_or_publication', 'recorded_time']).default('publication'),
+  time_basis: z
+    .enum(['publication', 'acquisition_or_publication', 'recorded_time'])
+    .default('publication'),
   since: z.string(),
   until: z.string(),
   languages: z.array(z.string()),
@@ -21,9 +37,14 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   subject: z.string().nullable(),
   country_iso: z.string().nullable(),
   area: areaSchema.nullable().default(null),
+  candidate_hypotheses: z.array(candidateHypothesisSchema).max(8).default([]),
   tasks: z.array(
     z.object({
       source_id: z.string(),
+      task_id: z.string().nullable().default(null),
+      purpose: z.enum(['baseline', 'challenge', 'disambiguation']).default('baseline'),
+      candidate_id: z.string().nullable().default(null),
+      planned_terms_supported: z.boolean().default(false),
       source_name: z.string(),
       selected: z.boolean(),
       supported: z.boolean(),

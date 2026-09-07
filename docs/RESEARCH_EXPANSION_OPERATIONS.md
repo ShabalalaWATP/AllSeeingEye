@@ -31,6 +31,40 @@ non-general record research do not use this replan. The challenge pass keeps
 its existing separate shared budget. Empty responses do not confirm absence.
 Historical completeness is not inferred from a recent feed or current registry.
 
+## Predeclared challenge and identity tasks
+
+The collection editor supports up to eight candidate hypotheses and eight explicit
+additional searches. Each candidate has a stable identifier, a label and optional
+distinguishing identifiers. These are operator-supplied hypotheses, never verified
+identity matches. An identity-disambiguation search must reference a candidate;
+a conflicting-evidence search can stand alone. Search phrases are supplied exactly
+by the operator and are not automatically translated or changed by replanning.
+
+Preview the ordinary inventory first, then choose an eligible selected source for
+each additional search. Only providers with explicit support for these term queries
+are offered. Subject-only registry queries and area-only imagery catalogue queries
+cannot silently repeat the original lookup while claiming to search another
+candidate. Unsupported tasks have an explicit receipt and make no request.
+
+Selected baseline tasks and additional searches are interleaved deterministically,
+starting with a baseline task. They share the same six/24 request, elapsed-time and
+unique-item ceilings, including both collection passes. No extra task allowance is
+created. Large plans can have unexecuted tasks; inspect budget-exhausted receipts.
+The expanded inventory is capped at 64 tasks and rejected before source requests
+if larger. Task IDs keep separate outcomes when one source is queried repeatedly.
+
+Candidate context, exact task terms, purpose and individual outcomes are retained
+in the frozen report receipt and exports. Follow-ups retain this explicit scope.
+Task phrases also contribute to ranking already-held context, including when a
+task is unsupported or not executed. This ranking does not establish a successful
+source search, a supporting relationship or a verified candidate identity.
+The existing post-draft challenge stage clears these predeclared tasks so it cannot
+replay them accidentally. Private document/media research does not accept public
+source tasks. A candidate's absence from a search does not establish a non-match.
+
+This implements executable operator planning. Model-generated candidate plans,
+contradiction-triggered replanning and evidence-sufficiency stopping remain open.
+
 Persian, simplified and traditional Chinese narrative preferences are available.
 The catalogue distinguishes narrative scripts from supported search editions.
 Persian does not invent a Google News edition. Original text and zero-width

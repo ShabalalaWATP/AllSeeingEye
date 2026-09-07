@@ -36,6 +36,7 @@ export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
     {
       source_id: 'bbc_world',
       source_name: 'BBC World',
+      purpose: 'baseline',
       status: 'completed',
       result_count: 1,
       explanation: 'One matching item collected.',
@@ -44,6 +45,7 @@ export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
     {
       source_id: 'qa_empty',
       source_name: 'QA empty feed',
+      purpose: 'baseline',
       status: 'empty',
       result_count: 0,
       explanation: 'No matching items in the publication period.',
@@ -52,6 +54,7 @@ export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
     {
       source_id: 'qa_unavailable',
       source_name: 'QA unavailable feed',
+      purpose: 'baseline',
       status: 'unavailable',
       result_count: 0,
       explanation: 'Feed unavailable for this run.',
@@ -60,6 +63,7 @@ export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
     {
       source_id: 'qa_failed',
       source_name: 'QA failed feed',
+      purpose: 'baseline',
       status: 'failed',
       result_count: 0,
       explanation: 'Collection request failed.',

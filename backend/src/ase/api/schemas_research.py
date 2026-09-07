@@ -18,6 +18,9 @@ class CollectionAttemptOut(BaseModel):
     result_count: int
     explanation: str
     language: str | None
+    task_id: str | None = None
+    purpose: Literal["baseline", "challenge", "disambiguation"] = "baseline"
+    candidate_id: str | None = None
 
 
 class CollectionPassOut(BaseModel):

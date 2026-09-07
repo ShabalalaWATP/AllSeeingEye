@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.api.schemas_map_origin import MapResearchOriginOut
 from ase.api.schemas_research_area import ResearchAreaOut
+from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
@@ -41,6 +42,8 @@ class ResearchPlanIn(BaseModel):
     source_ids: list[str] | None = Field(default=None, max_length=64)
     time_basis: EvidenceTimeBasis | None = None
     query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
+    candidate_hypotheses: list[ResearchCandidateIn] = Field(default_factory=list, max_length=8)
+    planned_tasks: list[PlannedQueryTaskIn] = Field(default_factory=list, max_length=8)
     map_view_id: UUID | None = None
     map_revision_id: UUID | None = None
     team_id: UUID | None = None
@@ -68,6 +71,8 @@ class ResearchPlanIn(BaseModel):
             country_iso=self.country_iso.upper() if self.country_iso else None,
             source_ids=tuple(self.source_ids) if self.source_ids is not None else None,
             query_variants=tuple(variant.to_domain() for variant in self.query_variants),
+            candidate_hypotheses=tuple(row.to_domain() for row in self.candidate_hypotheses),
+            planned_tasks=tuple(row.to_domain() for row in self.planned_tasks),
         )
 
 
@@ -84,6 +89,10 @@ class ResearchTaskOut(BaseModel):
     query_language: str | None = None
     spatial_supported: bool = False
     spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
+    task_id: str | None = None
+    purpose: Literal["baseline", "challenge", "disambiguation"] = "baseline"
+    candidate_id: str | None = None
+    planned_terms_supported: bool = False
 
 
 class QueryTransformationOut(BaseModel):
@@ -117,6 +126,7 @@ class ResearchPlanOut(BaseModel):
     translation: QueryTransformationOut | None = None
     area: ResearchAreaOut | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    candidate_hypotheses: list[ResearchCandidateIn] = Field(default_factory=list, max_length=8)
 
 
 class ResearchPreviewOut(ResearchPlanOut):

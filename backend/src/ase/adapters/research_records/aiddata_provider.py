@@ -24,6 +24,8 @@ from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, 
 
 
 class AidDataProvider:
+    supports_planned_terms = True
+
     id = SOURCE_ID
     name = "AidData Chinese development projects"
     temporal_scope = (

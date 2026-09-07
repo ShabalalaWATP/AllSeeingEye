@@ -37,6 +37,8 @@ LIMITATIONS = (
 
 
 class ContractsFinderProvider:
+    supports_planned_terms = True
+
     id = "research-contracts-finder"
     name = "Contracts Finder publication notices"
     temporal_scope = (

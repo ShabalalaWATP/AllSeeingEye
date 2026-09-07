@@ -2687,6 +2687,16 @@ export interface components {
             explanation: string;
             /** Language */
             language: string | null;
+            /** Task Id */
+            task_id?: string | null;
+            /**
+             * Purpose
+             * @default baseline
+             * @enum {string}
+             */
+            purpose: "baseline" | "challenge" | "disambiguation";
+            /** Candidate Id */
+            candidate_id?: string | null;
         };
         /** CollectionPassOut */
         CollectionPassOut: {
@@ -4359,6 +4369,22 @@ export interface components {
              */
             updated_at: string;
         };
+        /** PlannedQueryTaskIn */
+        PlannedQueryTaskIn: {
+            /** Id */
+            id: string;
+            /** Source Id */
+            source_id: string;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "challenge" | "disambiguation";
+            /** Terms */
+            terms: string[];
+            /** Candidate Id */
+            candidate_id?: string | null;
+        };
         /** PlansOut */
         PlansOut: {
             /** Items */
@@ -4661,6 +4687,10 @@ export interface components {
             research_source_ids?: string[] | null;
             /** Research Query Variants */
             research_query_variants?: components["schemas"]["QueryVariantIn"][];
+            /** Research Candidate Hypotheses */
+            research_candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            /** Research Planned Tasks */
+            research_planned_tasks?: components["schemas"]["PlannedQueryTaskIn"][];
             /** Research Terms */
             research_terms?: string[] | null;
             /** Research Subject */
@@ -4952,6 +4982,15 @@ export interface components {
             /** Sha256 */
             sha256: string;
         };
+        /** ResearchCandidateIn */
+        ResearchCandidateIn: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Identifiers */
+            identifiers?: string[];
+        };
         /** ResearchChange */
         ResearchChange: {
             /**
@@ -5128,6 +5167,10 @@ export interface components {
             time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
             /** Query Variants */
             query_variants?: components["schemas"]["QueryVariantIn"][];
+            /** Candidate Hypotheses */
+            candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
+            /** Planned Tasks */
+            planned_tasks?: components["schemas"]["PlannedQueryTaskIn"][];
             /** Map View Id */
             map_view_id?: string | null;
             /** Map Revision Id */
@@ -5179,6 +5222,8 @@ export interface components {
             area?: components["schemas"]["ResearchAreaOut"] | null;
             /** @default publication */
             time_basis: components["schemas"]["EvidenceTimeBasis"];
+            /** Candidate Hypotheses */
+            candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
         };
         /** ResearchPreviewOut */
         ResearchPreviewOut: {
@@ -5224,6 +5269,8 @@ export interface components {
             area?: components["schemas"]["ResearchAreaOut"] | null;
             /** @default publication */
             time_basis: components["schemas"]["EvidenceTimeBasis"];
+            /** Candidate Hypotheses */
+            candidate_hypotheses?: components["schemas"]["ResearchCandidateIn"][];
             map_origin?: components["schemas"]["MapResearchOriginOut"] | null;
         };
         /** ResearchReceiptOut */
@@ -5365,6 +5412,21 @@ export interface components {
              * @default This source does not establish support for collection within an area.
              */
             spatial_scope: string;
+            /** Task Id */
+            task_id?: string | null;
+            /**
+             * Purpose
+             * @default baseline
+             * @enum {string}
+             */
+            purpose: "baseline" | "challenge" | "disambiguation";
+            /** Candidate Id */
+            candidate_id?: string | null;
+            /**
+             * Planned Terms Supported
+             * @default false
+             */
+            planned_terms_supported: boolean;
         };
         /** ResearchTimelineEntryOut */
         ResearchTimelineEntryOut: {

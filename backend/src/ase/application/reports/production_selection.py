@@ -41,7 +41,11 @@ def select_for_job(
         now=job.now,
         country_iso=None if private else job.request.country_iso,
         categories=() if private else job.request.categories,
-        terms=(*(direction.search_terms if direction else job.terms), *extra_terms),
+        terms=(
+            *(direction.search_terms if direction else job.terms),
+            *extra_terms,
+            *(term for task in job.request.research_planned_tasks for term in task.terms),
+        ),
         # Area eligibility was admitted by spatial providers. A point-only filter
         # here would silently discard valid footprints without event coordinates.
         bbox=None if private or area else job.bbox,

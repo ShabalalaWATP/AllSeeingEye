@@ -21,6 +21,13 @@ export function FollowUpSummary({
         {request.research_subject ?? request.country ?? 'Original scope'} ·{' '}
         {request.research_languages?.join(', ')}
       </p>
+      {!!request.research_planned_tasks?.length && (
+        <p>
+          Retains {request.research_planned_tasks.length} explicit challenge or identity searches
+          and {request.research_candidate_hypotheses?.length ?? 0} candidate hypotheses. These
+          remain unverified research inputs and share the normal collection budget.
+        </p>
+      )}
       <p>
         The original workspace, focus and collection scope are fixed. The server binds the latest
         parent version when this run starts and saves that version reference with the new report.

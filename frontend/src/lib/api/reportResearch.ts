@@ -4,6 +4,9 @@ import { planSchema } from './researchPlan';
 
 const collectionAttemptSchema = z.object({
   source_id: z.string(),
+  task_id: z.string().nullable().default(null),
+  purpose: z.enum(['baseline', 'challenge', 'disambiguation']).default('baseline'),
+  candidate_id: z.string().nullable().default(null),
   source_name: z.string(),
   status: z.enum([
     'completed',

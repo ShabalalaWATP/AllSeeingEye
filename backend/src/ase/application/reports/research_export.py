@@ -41,10 +41,22 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
             "The preview is deterministic; run-time transformations are recorded separately. "
             "The plan does not establish complete historical coverage."
         )
+        if plan.candidate_hypotheses:
+            lines.append(
+                "Operator candidate hypotheses are unverified search context, "
+                "not established matches."
+            )
+            lines.extend(
+                f"Candidate {row.id}: {row.label}; "
+                f"supplied identifiers: {', '.join(row.identifiers) or 'none'}."
+                for row in plan.candidate_hypotheses
+            )
         for task in plan.tasks:
             if task.selected:
                 lines.append(
                     f"Selected task {task.source_name} ({task.source_id}): "
+                    f"task {task.task_id or task.source_id}; purpose {task.purpose}; "
+                    f"candidate {task.candidate_id or 'none'}; "
                     f"{task.provenance}; language {task.language or 'not specified'}; "
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
@@ -58,6 +70,8 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
         )
         lines.append(
             f"{attempt.source_name} ({attempt.source_id}): "
+            f"task {attempt.task_id or attempt.source_id}; purpose {attempt.purpose}; "
+            f"candidate {attempt.candidate_id or 'none'}; "
             f"{attempt.status.value.replace('_', ' ')}, {attempt.result_count} {count_kind}; "
             f"language {attempt.language or 'not recorded'}. {attempt.explanation}"
         )
@@ -83,6 +97,7 @@ def transformation_lines(receipt: ResearchReceipt) -> list[str]:
         for attempt in collection_pass.attempts:
             lines.append(
                 f"Pass {index}: {attempt.source_name} ({attempt.source_id}), "
+                f"task {attempt.task_id or attempt.source_id}; purpose {attempt.purpose}; "
                 f"{attempt.status.value}, {attempt.result_count} additional items. "
                 + attempt.explanation
             )
@@ -90,7 +105,7 @@ def transformation_lines(receipt: ResearchReceipt) -> list[str]:
             for task in collection_pass.plan.tasks:
                 if task.selected:
                     lines.append(
-                        f"Pass {index} terms for {task.source_id}: "
+                        f"Pass {index} terms for {task.task_id or task.source_id}: "
                         + ", ".join(task.terms)
                         + f" ({task.provenance})."
                     )

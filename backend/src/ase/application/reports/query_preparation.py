@@ -87,7 +87,9 @@ def record_query_translation(
         model_calls=plan.model_calls + calls,
         tasks=tuple(
             replace(task, provenance="machine_translated_variant")
-            if task.query_language and task.query_language.lower() in generated
+            if task.purpose == "baseline"
+            and task.query_language
+            and task.query_language.lower() in generated
             else task
             for task in plan.tasks
         ),
@@ -113,7 +115,8 @@ def record_pass_provenance(
                     plan,
                     tasks=tuple(
                         replace(task, provenance="model_replanned_variant")
-                        if not task.query_language or task.query_language.lower() not in fixed
+                        if task.purpose == "baseline"
+                        and (not task.query_language or task.query_language.lower() not in fixed)
                         else task
                         for task in plan.tasks
                     ),

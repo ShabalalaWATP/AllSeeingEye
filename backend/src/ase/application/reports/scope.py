@@ -82,6 +82,24 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
         ),
         **(
             {
+                **(
+                    {
+                        "research_candidate_hypotheses": [
+                            asdict(row) for row in request.research_candidate_hypotheses
+                        ]
+                    }
+                    if request.research_candidate_hypotheses
+                    else {}
+                ),
+                **(
+                    {
+                        "research_planned_tasks": [
+                            asdict(row) for row in request.research_planned_tasks
+                        ]
+                    }
+                    if request.research_planned_tasks
+                    else {}
+                ),
                 "research_mode": request.research_mode.value,
                 "research_languages": list(request.research_languages),
                 "research_source_ids": list(request.research_source_ids)

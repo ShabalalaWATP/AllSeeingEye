@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
 import { useLanguageCatalogue } from '@/lib/hooks/useLanguageCatalogue';
 import type { ResearchPlanState } from './useResearchPlan';
+import { PlannedTasksEditor } from './PlannedTasksEditor';
 
 export function ResearchPlanEditor({
   plan,
@@ -87,6 +88,13 @@ export function ResearchPlanEditor({
               />
             ))}
           </details>
+          <PlannedTasksEditor
+            value={plan.tasks}
+            sources={sources.map((source) => ({
+              ...source,
+              selected: plan.sourceIds?.includes(source.source_id) ?? source.selected,
+            }))}
+          />
           {sources.length > 0 && (
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium">Public sources</legend>
@@ -151,6 +159,16 @@ export function ResearchPlanEditor({
                       {task.source_name}
                       {task.language ? ` / ${languageName(task.language)}` : ''}
                     </p>
+                    {task.purpose !== 'baseline' && (
+                      <p className="text-cyan">
+                        {task.purpose === 'challenge'
+                          ? 'Conflicting evidence search'
+                          : 'Identity candidate check'}
+                        {task.candidate_id
+                          ? ` · Hypothesis: ${plan.snapshot?.candidate_hypotheses?.find((candidate) => candidate.id === task.candidate_id)?.label ?? task.candidate_id}`
+                          : ''}
+                      </p>
+                    )}
                     <p className="break-words text-muted">
                       {task.terms.length
                         ? task.terms.join(' · ')
@@ -159,7 +177,9 @@ export function ResearchPlanEditor({
                     <p className="text-muted">
                       {task.provenance === 'operator_supplied_variant'
                         ? 'Your language-specific terms'
-                        : 'Original terms'}{' '}
+                        : task.provenance === 'operator_supplied_task'
+                          ? 'Your exact task terms'
+                          : 'Original terms'}{' '}
                       · {task.temporal_scope}
                     </p>
                     {!task.supported && (

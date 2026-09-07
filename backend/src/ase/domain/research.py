@@ -10,6 +10,12 @@ from ase.domain.languages import valid_language_code
 from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_plan import QueryVariant, ResearchPlan
+from ase.domain.research_tasks import (
+    PlannedQueryTask,
+    ResearchCandidate,
+    validate_operator_plan,
+    validate_task_receipt,
+)
 
 
 class ResearchMode(StrEnum):
@@ -50,6 +56,8 @@ class ResearchQuery:
     query_variants: tuple[QueryVariant, ...] = ()
     area: ResearchArea | None = None
     time_basis: EvidenceTimeBasis | None = None
+    candidate_hypotheses: tuple[ResearchCandidate, ...] = ()
+    planned_tasks: tuple[PlannedQueryTask, ...] = ()
 
     @property
     def effective_time_basis(self) -> EvidenceTimeBasis:
@@ -58,6 +66,12 @@ class ResearchQuery:
         )
 
     def __post_init__(self) -> None:
+        validate_operator_plan(
+            self.candidate_hypotheses,
+            self.planned_tasks,
+            self.source_ids,
+            public_scope=self.focus not in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA},
+        )
         if self.time_basis is not None and not isinstance(self.time_basis, EvidenceTimeBasis):
             raise ValueError("Invalid research time basis")
         if self.area is not None and not isinstance(self.area, ResearchArea):
@@ -107,8 +121,12 @@ class CollectionAttempt:
     result_count: int = 0
     explanation: str = ""
     language: str | None = None
+    task_id: str | None = None
+    purpose: str = "baseline"
+    candidate_id: str | None = None
 
     def __post_init__(self) -> None:
+        validate_task_receipt(self.task_id, self.purpose, self.candidate_id)
         if not self.source_id or len(self.source_id) > 120 or len(self.source_name) > 200:
             raise ValueError("Invalid collection source identity")
         if not 0 <= self.result_count <= 1000 or len(self.explanation) > 1000:

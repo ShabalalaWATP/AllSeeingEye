@@ -61,6 +61,10 @@ def build_plan(
         raise InvalidRequest(
             "Selected sources are unavailable for this research scope. Preview the plan again."
         )
+    if any(task.source_id not in inventory for task in query.planned_tasks):
+        raise InvalidRequest("Planned task source is unavailable for this research scope")
+    if len(providers) + len(query.planned_tasks) > 64:
+        raise InvalidRequest("Expanded research plans support at most 64 tasks")
     tasks = []
     for provider in providers:
         language = getattr(provider, "language", None)
@@ -87,14 +91,49 @@ def build_plan(
                 query_language=variant.language if variant is not None else None,
                 spatial_supported=spatial_supported,
                 spatial_scope=spatial_scope,
+                task_id="source:" + provider.id,
+                planned_terms_supported=getattr(provider, "supports_planned_terms", False) is True,
             )
         )
+    supplementary = []
+    baseline = {task.source_id: task for task in tasks}
+    by_id = {provider.id: provider for provider in providers}
+    for operator in query.planned_tasks:
+        routed = replace(query, terms=operator.terms, query_variants=())
+        provider = by_id[operator.source_id]
+        spatial_supported, spatial_scope = spatial_capability(provider, routed)
+        supplementary.append(
+            replace(
+                baseline[operator.source_id],
+                terms=operator.terms,
+                supported=baseline[operator.source_id].planned_terms_supported
+                and provider.supports(routed)
+                and (query.area is None or spatial_supported),
+                provenance="operator_supplied_task",
+                query_language=None,
+                spatial_supported=spatial_supported,
+                spatial_scope=spatial_scope,
+                task_id="operator:" + operator.id,
+                purpose=operator.purpose,
+                candidate_id=operator.candidate_id,
+            )
+        )
+    # Alternate baseline and explicit tasks so the latter do not sit behind the
+    # full provider inventory. Every task still consumes the same run allowance.
+    ordered = []
+    selected = [task for task in tasks if task.selected]
+    for index in range(max(len(selected), len(supplementary))):
+        if index < len(selected):
+            ordered.append(selected[index])
+        if index < len(supplementary):
+            ordered.append(supplementary[index])
+    ordered.extend(task for task in tasks if not task.selected)
     return ResearchPlan(
         query.question,
         query.since,
         query.until,
         query.languages,
-        tuple(tasks),
+        tuple(ordered if supplementary else tasks),
         requests,
         seconds,
         items,
@@ -104,4 +143,5 @@ def build_plan(
         country_iso=query.country_iso,
         area=query.area,
         time_basis=query.effective_time_basis,
+        candidate_hypotheses=query.candidate_hypotheses,
     )

@@ -44,6 +44,8 @@ function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
         input.source_ids === undefined ||
         input.source_ids.includes(id),
       supported: true,
+      purpose: 'baseline',
+      planned_terms_supported: true,
       language: 'en',
       terms: input.query_variants?.[0]?.terms ?? input.terms ?? [],
       provenance: input.query_variants?.length ? 'operator_supplied_variant' : 'original_terms',

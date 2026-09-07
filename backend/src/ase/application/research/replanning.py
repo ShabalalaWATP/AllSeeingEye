@@ -26,7 +26,11 @@ def _remaining(state: CollectionRunBudget) -> bool:
 
 def _effective_terms(plan: ResearchPlan | None) -> dict[str, tuple[str, ...]]:
     return (
-        {task.source_id: task.terms for task in plan.tasks if task.selected and task.supported}
+        {
+            (task.task_id or task.source_id): task.terms
+            for task in plan.tasks
+            if task.selected and task.supported
+        }
         if plan is not None
         else {}
     )
@@ -39,18 +43,18 @@ def _merge(
     second: ResearchBatch | None = None,
     revised: ResearchQuery | None = None,
 ) -> ResearchBatch:
-    attempts = {row.source_id: row for row in first.attempts}
+    attempts = {(row.task_id or row.source_id): row for row in first.attempts}
     passes = [CollectionPass(query.terms, first.attempts, first.plan)]
     if second is not None:
         for row in second.attempts:
-            previous = attempts.get(row.source_id)
+            previous = attempts.get(row.task_id or row.source_id)
             # Reservations and unsupported tasks cannot erase an actual earlier search.
             if (
                 previous is None
                 or row.status not in _PLACEHOLDERS
                 or previous.status in _PLACEHOLDERS
             ):
-                attempts[row.source_id] = row
+                attempts[row.task_id or row.source_id] = row
         second_plan = second.plan
         if second_plan is not None and revised is not None and revised != query:
             second_plan = replace(second_plan, replans=1)
@@ -118,14 +122,14 @@ async def collect_with_replan(
     if not _remaining(state):
         return _merge(first, query, invoked)
     attempted = frozenset(
-        row.source_id for row in first.attempts if row.status not in _PLACEHOLDERS
+        (row.task_id or row.source_id) for row in first.attempts if row.status not in _PLACEHOLDERS
     )
     # A base-term edit may have no effect on a source with an operator-supplied
     # language variant. Spend the remaining allowance on changed or untried tasks.
     skip = attempted - changed_sources if revised is not None else attempted
     if first.plan is None or not any(
-        task.selected and task.source_id not in skip for task in first.plan.tasks
+        task.selected and (task.task_id or task.source_id) not in skip for task in first.plan.tasks
     ):
         return _merge(first, query, invoked)
-    second = await collector.collect(revised or query, run_budget=state, skip_source_ids=skip)
+    second = await collector.collect(revised or query, run_budget=state, skip_task_ids=skip)
     return _merge(first, query, invoked, second, revised)

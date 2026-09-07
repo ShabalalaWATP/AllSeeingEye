@@ -17,6 +17,7 @@ from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.api.schemas_research import ResearchReceiptOut
 from ase.api.schemas_research_context import ResearchContextOut
 from ase.api.schemas_research_plan import QueryVariantIn
+from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
@@ -60,6 +61,10 @@ class ReportCreateIn(BaseModel):
         default=None, max_length=64
     )
     research_query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
+    research_candidate_hypotheses: list[ResearchCandidateIn] = Field(
+        default_factory=list, max_length=8
+    )
+    research_planned_tasks: list[PlannedQueryTaskIn] = Field(default_factory=list, max_length=8)
     research_terms: list[Annotated[str, Field(min_length=1, max_length=300)]] | None = Field(
         default=None, max_length=12
     )
@@ -120,6 +125,10 @@ class ReportCreateIn(BaseModel):
             if self.research_source_ids is not None
             else None,
             research_query_variants=tuple(row.to_domain() for row in self.research_query_variants),
+            research_candidate_hypotheses=tuple(
+                row.to_domain() for row in self.research_candidate_hypotheses
+            ),
+            research_planned_tasks=tuple(row.to_domain() for row in self.research_planned_tasks),
             research_terms=tuple(self.research_terms) if self.research_terms is not None else None,
             research_subject=self.research_subject,
             research_input_id=self.research_input_id,

@@ -10,6 +10,21 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
         The plan recorded when this version was collected. Recorded collection outcomes show what
         happened.
       </p>
+      {!!plan.candidate_hypotheses?.length && (
+        <section aria-label="Candidate hypotheses" className="space-y-2 text-xs">
+          <h4 className="font-medium">Candidate hypotheses, not verified identities</h4>
+          <ul>
+            {plan.candidate_hypotheses.map((candidate) => (
+              <li key={candidate.id} className="break-words" dir="auto">
+                {candidate.label} ·{' '}
+                {candidate.identifiers?.length
+                  ? candidate.identifiers.join(' · ')
+                  : 'No distinguishing identifiers supplied'}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {translation && (
         <section
           aria-label="Automatic query translation"
@@ -89,6 +104,17 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
               {task.source_name} · {task.language ?? 'Language-independent'} ·{' '}
               {task.selected ? 'Selected' : 'Excluded'}
             </p>
+            {task.purpose !== 'baseline' && (
+              <p className="text-cyan">
+                {task.purpose === 'challenge'
+                  ? 'Conflicting evidence search'
+                  : 'Identity candidate check'}
+                {task.candidate_id
+                  ? ` · Hypothesis: ${plan.candidate_hypotheses?.find((candidate) => candidate.id === task.candidate_id)?.label ?? task.candidate_id}`
+                  : ''}
+                {task.task_id ? ` · ${task.task_id}` : ''}
+              </p>
+            )}
             <p className="break-words text-muted" dir="auto">
               {task.terms.join(' · ') || 'No search terms recorded'}
             </p>

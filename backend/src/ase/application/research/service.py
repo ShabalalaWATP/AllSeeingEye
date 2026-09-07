@@ -61,6 +61,9 @@ class ResearchCollectionService:
             raise RateLimited(5)
         async with self._admission:
             return await collect_challenges(
-                tuple(replace(query, query_variants=()) for query in queries),
+                tuple(
+                    replace(query, query_variants=(), planned_tasks=(), candidate_hypotheses=())
+                    for query in queries
+                ),
                 lambda query: self._paced(query, challenge=True),
             )

@@ -15,6 +15,7 @@ from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_plan import QueryVariant
+from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate, validate_operator_plan
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +37,8 @@ class ReportRequest:
     research_source_ids: tuple[str, ...] | None = None
     research_terms: tuple[str, ...] | None = None
     research_query_variants: tuple[QueryVariant, ...] = ()
+    research_candidate_hypotheses: tuple[ResearchCandidate, ...] = ()
+    research_planned_tasks: tuple[PlannedQueryTask, ...] = ()
     research_focus: ResearchFocus = ResearchFocus.GENERAL
     research_subject: str | None = None
     research_input_id: UUID | None = None
@@ -60,6 +63,16 @@ class ReportRequest:
         )
 
     def __post_init__(self) -> None:
+        validate_operator_plan(
+            self.research_candidate_hypotheses,
+            self.research_planned_tasks,
+            self.research_source_ids,
+        )
+        if (self.research_candidate_hypotheses or self.research_planned_tasks) and (
+            self.research_mode is None
+            or self.research_focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
+        ):
+            raise ValueError("Operator source tasks require public-source research")
         if self.research_time_basis is not None and not isinstance(
             self.research_time_basis, EvidenceTimeBasis
         ):
@@ -145,6 +158,14 @@ class ReportRequest:
             research_query_variants=tuple(
                 QueryVariant(row["language"], tuple(row["terms"]))
                 for row in scope.get("research_query_variants", [])
+            ),
+            research_candidate_hypotheses=tuple(
+                ResearchCandidate(**{**row, "identifiers": tuple(row.get("identifiers", ()))})
+                for row in scope.get("research_candidate_hypotheses", ())
+            ),
+            research_planned_tasks=tuple(
+                PlannedQueryTask(**{**row, "terms": tuple(row["terms"])})
+                for row in scope.get("research_planned_tasks", ())
             ),
             research_focus=ResearchFocus(scope.get("research_focus", "general")),
             research_subject=scope.get("research_subject") or None,

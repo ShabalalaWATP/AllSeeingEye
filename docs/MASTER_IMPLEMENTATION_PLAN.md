@@ -4,6 +4,13 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: executable predeclared challenge and identity searches
+now share the standard collection limits, with candidate hypotheses, exact terms,
+explicit provider capabilities and distinct frozen task outcomes. Follow-ups and
+exports preserve the task scope. 154 backend and 264 frontend tests passed for
+this milestone. Automated candidate planning, contradiction-driven replanning and
+independent semantic acceptance remain open in the expansion status audit.
+
 7 September continuation: saved report-map measurements now retain original
 coordinates and a versioned WGS84 method in immutable map revisions. Dashboard
 and report maps share the panel and layers. Legacy revision hashes are preserved.

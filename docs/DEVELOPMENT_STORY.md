@@ -2155,3 +2155,35 @@ The build retains its existing large-chunk advisory. Independent read-only revie
 found no actionable issues. No new coverage, provider call, account onboarding or
 GPU validation. Updated ADR 0015, status audit and master plan. Map-image export
 and wider operational acceptance remain open.
+
+
+## 7 September 2026: predeclared challenge and candidate searches
+
+Added up to eight immutable operator candidate hypotheses and eight additional
+source tasks to preview, report requests, saved scope, collection and exports.
+Tasks use exact terms and reference hypotheses without promoting them to verified
+identity matches. Stable task IDs preserve repeated-source outcomes. Baseline and
+explicit tasks interleave under the existing six/24-request, 45/180-second and
+unique-item caps; expanded task/seed receipt bounds fail before requests.
+
+Replanning preserves operator tasks, candidates and source scope. Translation
+provenance leaves exact task terms untouched. The existing post-draft challenge
+stage clears predeclared tasks to avoid replay. Task terms contribute to ranking
+existing context even when their source task cannot execute; this is disclosed.
+Follow-ups preserve the explicit scope. Legacy optional receipt fields remain
+readable and omitted on legacy reserialisation.
+
+Independent review found that subject-only registries ignored task terms and could
+misattribute repeated original lookups to another candidate. Added default-deny
+term-query capability, strict wrapper propagation and verified opt-in adapters.
+A real SEC adapter with mocked HTTP proves the unsupported task makes no extra
+request. The editor disables providers lacking that capability. Re-review found
+the original issue addressed. No semantic prompt-injection immunity is claimed.
+
+154 backend tests and 264 frontend tests passed; three focused UI tests passed
+again after final explanatory text. Ruff, mypy (544 files), both import contracts,
+scoped ESLint, TypeScript, production build, file lengths and whitespace checks
+passed. Initial test typing/default fixtures and one incorrect grade expectation
+were corrected. No coverage remeasurement, live provider/model call or browser
+acceptance. Updated operations, status audit and master plan. Automated candidate
+planning, contradiction-triggered replan and sufficiency stopping remain open.

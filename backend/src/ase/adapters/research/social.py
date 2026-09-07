@@ -20,6 +20,8 @@ LIMITATIONS = (
 
 
 class SocialFeedResearchProvider:
+    supports_planned_terms = True
+
     def __init__(self, http: FeedHttpClient, clock: Clock, seed: RssSeed) -> None:
         if seed.spec.category is not Category.SOCIAL or seed.spec.kind is not SourceKind.RSS:
             raise ValueError("Social research requires a configured social RSS/Atom feed")

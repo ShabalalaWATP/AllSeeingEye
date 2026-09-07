@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
+import { candidateHypothesisSchema, plannedQueryTaskSchema } from '@/lib/api/researchPlan';
 
 const savedScope = z.object({
   report_language: z
@@ -18,6 +19,8 @@ const savedScope = z.object({
   research_languages: z.array(z.string()).min(1).max(8).optional(),
   research_source_ids: z.array(z.string()).nullable().optional(),
   research_terms: z.array(z.string()).nullable().optional(),
+  research_candidate_hypotheses: z.array(candidateHypothesisSchema).max(8).optional(),
+  research_planned_tasks: z.array(plannedQueryTaskSchema).max(8).optional(),
   research_query_variants: z
     .array(z.object({ language: z.string(), terms: z.array(z.string()) }))
     .optional(),
@@ -28,7 +31,9 @@ const savedScope = z.object({
 /** Reuse explicit saved scope only; unknown or incomplete private scope must never widen. */
 export function followUpRequest(parent: Report): ReportRequest {
   if (parent.report.scope.research_time_basis === 'recorded_time') {
-    throw new Error('Start a new historical request. Ordinary follow-ups cannot preserve this time policy.');
+    throw new Error(
+      'Start a new historical request. Ordinary follow-ups cannot preserve this time policy.',
+    );
   }
   if (parent.report.scope.map_origin) {
     throw new Error(
@@ -65,6 +70,12 @@ export function followUpRequest(parent: Report): ReportRequest {
       ? {}
       : { research_source_ids: scope.research_source_ids }),
     ...(scope.research_terms === undefined ? {} : { research_terms: scope.research_terms }),
+    ...(scope.research_candidate_hypotheses === undefined
+      ? {}
+      : { research_candidate_hypotheses: scope.research_candidate_hypotheses }),
+    ...(scope.research_planned_tasks === undefined
+      ? {}
+      : { research_planned_tasks: scope.research_planned_tasks }),
     ...(scope.research_query_variants === undefined
       ? {}
       : { research_query_variants: scope.research_query_variants }),

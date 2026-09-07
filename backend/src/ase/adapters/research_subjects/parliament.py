@@ -20,6 +20,8 @@ from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
 
 class ParliamentQuestionsProvider:
+    supports_planned_terms = True
+
     id = "research-uk-parliament"
     name = "UK Parliament written questions"
     temporal_scope = (

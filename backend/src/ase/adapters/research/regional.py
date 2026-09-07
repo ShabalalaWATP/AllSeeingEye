@@ -32,6 +32,8 @@ LIMITATIONS = (
 
 
 class RegionalFeedResearchProvider:
+    supports_planned_terms = True
+
     def __init__(self, http: FeedHttpClient, clock: Clock, seed: RssSeed) -> None:
         if seed.spec.id not in REGIONAL_COUNTRIES or not seed.options.headlines_only:
             raise ValueError("Regional research requires an approved headline-only seed")

@@ -27,6 +27,10 @@ class ControlledResearchProvider:
         values = getattr(self._provider, "query_language_aliases", ())
         return tuple(value for value in values if isinstance(value, str))
 
+    @property
+    def supports_planned_terms(self) -> bool:
+        return getattr(self._provider, "supports_planned_terms", False) is True
+
     def supports(self, query: ResearchQuery) -> bool:
         return self._provider.supports(query)
 

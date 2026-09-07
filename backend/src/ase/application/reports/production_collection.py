@@ -48,6 +48,8 @@ async def prepare_collection(
             languages=job.request.research_languages,
             source_ids=job.request.research_source_ids,
             query_variants=job.request.research_query_variants,
+            candidate_hypotheses=job.request.research_candidate_hypotheses,
+            planned_tasks=job.request.research_planned_tasks,
             terms=job.request.research_terms
             if job.request.research_terms is not None
             else tuple(direction.search_terms if direction else job.terms),

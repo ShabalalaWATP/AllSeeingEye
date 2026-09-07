@@ -22,6 +22,8 @@ from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
 
 class OpenAlexProvider:
+    supports_planned_terms = True
+
     id = "research-openalex"
     name = "OpenAlex scholarly metadata"
     temporal_scope = (
@@ -115,6 +117,8 @@ class OpenAlexProvider:
 
 
 class CrossrefProvider:
+    supports_planned_terms = True
+
     id = "research-crossref"
     name = "Crossref scholarly metadata"
     temporal_scope = (

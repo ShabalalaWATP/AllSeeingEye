@@ -129,6 +129,14 @@ function CollectionAttempts({ attempts }: { attempts: ResearchReceipt['attempts'
           <p className="mt-1 text-xs text-muted">
             {attempt.language ?? 'Language not recorded'} · {attempt.source_id}
           </p>
+          {attempt.purpose !== 'baseline' && (
+            <p className="mt-1 text-xs text-cyan">
+              {attempt.purpose === 'challenge'
+                ? 'Conflicting evidence search'
+                : 'Identity candidate check'}
+              {attempt.task_id ? ` · ${attempt.task_id}` : ''}
+            </p>
+          )}
           <p className="mt-1 text-xs text-muted">{attempt.explanation}</p>
         </li>
       ))}

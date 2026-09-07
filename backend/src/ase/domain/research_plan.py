@@ -7,6 +7,7 @@ from typing import Literal
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
 from ase.domain.research_area import ResearchArea
+from ase.domain.research_tasks import ResearchCandidate, validate_task_receipt
 
 UNKNOWN_TEMPORAL_SCOPE = (
     "Bounded available records only; complete historical coverage is not established."
@@ -53,6 +54,15 @@ class ResearchTask:
     query_language: str | None = None
     spatial_supported: bool = False
     spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
+    task_id: str | None = None
+    purpose: str = "baseline"
+    candidate_id: str | None = None
+    planned_terms_supported: bool = False
+
+    def __post_init__(self) -> None:
+        validate_task_receipt(self.task_id, self.purpose, self.candidate_id)
+        if not isinstance(self.planned_terms_supported, bool):
+            raise ValueError("Invalid planned-term capability")
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,3 +86,4 @@ class ResearchPlan:
     translation: QueryTransformation | None = None
     area: ResearchArea | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    candidate_hypotheses: tuple[ResearchCandidate, ...] = ()

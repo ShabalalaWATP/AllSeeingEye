@@ -33,6 +33,8 @@ LIMITATIONS = (
 
 
 class GoogleNewsResearchProvider:
+    supports_planned_terms = True
+
     temporal_scope = (
         "Bounded RSS search results filtered by publication date; date operators do not "
         "establish a complete historical archive or event-time coverage."

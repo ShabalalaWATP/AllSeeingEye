@@ -54,6 +54,7 @@ class ResearchCollector:
         run_budget: CollectionRunBudget | None = None,
         request_allowance: int | None = None,
         skip_source_ids: frozenset[str] = frozenset(),
+        skip_task_ids: frozenset[str] = frozenset(),
     ) -> ResearchBatch:
         """Return this pass's new items; a shared run budget prevents double admission."""
         if budget is not None and run_budget is not None:
@@ -67,7 +68,9 @@ class ResearchCollector:
         ):
             raise ValueError("A pass request allowance must be an integer from zero to 32")
         with state.pass_scope():
-            return await self._collect(query, state, allowance, progress, skip_source_ids)
+            return await self._collect(
+                query, state, allowance, progress, skip_source_ids, skip_task_ids
+            )
 
     async def _collect(
         self,
@@ -76,6 +79,7 @@ class ResearchCollector:
         allowance: int,
         progress: Progress | None,
         skip_source_ids: frozenset[str],
+        skip_task_ids: frozenset[str],
     ) -> ResearchBatch:
         limits = state.limits
         plan = build_plan(
@@ -88,15 +92,27 @@ class ResearchCollector:
         requests = 0
         items: dict[str, Event] = {}
         attempts: list[CollectionAttempt] = []
-        for provider, task in zip(self._providers, plan.tasks, strict=True):
-            if not task.selected or provider.id in skip_source_ids:
+        providers = {provider.id: provider for provider in self._providers}
+        for task in plan.tasks:
+            provider = providers[task.source_id]
+            if (
+                not task.selected
+                or provider.id in skip_source_ids
+                or (task.task_id or task.source_id) in skip_task_ids
+            ):
                 continue
-            routed = replace(query, terms=task.terms)
+            routed = replace(
+                query,
+                terms=task.terms,
+                query_variants=() if task.purpose != "baseline" else query.query_variants,
+            )
             if not task.supported:
                 attempt = self._receipt(
                     provider,
                     CollectionStatus.UNSUPPORTED,
-                    "Area-based collection is unsupported for this request. "
+                    "This source does not support explicit task terms. No task request was made."
+                    if task.purpose != "baseline" and not task.planned_terms_supported
+                    else "Area-based collection is unsupported for this request. "
                     + task.spatial_scope[:900]
                     if query.area is not None and not task.spatial_supported
                     else "This source does not support the requested scope.",
@@ -116,6 +132,9 @@ class ResearchCollector:
                 )
                 retained = self._retain(batch.items if eligible else (), query, items, state)
                 attempt = self._summarise(provider, batch, retained, query)
+            attempt = replace(
+                attempt, task_id=task.task_id, purpose=task.purpose, candidate_id=task.candidate_id
+            )
             attempts.append(attempt)
             if progress is not None:
                 await progress(attempt)

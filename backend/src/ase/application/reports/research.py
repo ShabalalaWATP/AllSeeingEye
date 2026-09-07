@@ -25,6 +25,12 @@ async def collect_report_evidence(
     if store_factory is None:
         raise InvalidRequest("On-demand research collection is unavailable")
     private_focus = query.focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
+    if len(seed_attempts) > 64:
+        raise InvalidRequest("Too many retained collection receipts")
+    if seed_attempts and not private_focus and collection is not None:
+        planned = collection.plan(query)
+        if sum(task.selected for task in planned.tasks) + len(seed_attempts) > 64:
+            raise InvalidRequest("Expanded plan and retained receipts exceed the 64-task limit")
     if private_focus:
         # Extracted private text must not become an unsolicited public search query.
         batch = ResearchBatch()

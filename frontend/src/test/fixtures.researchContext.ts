@@ -73,6 +73,7 @@ export const reportChallenge: components['schemas']['ReportChallengeOut'] = {
         {
           source_id: 'qa_feed',
           source_name: 'QA feed',
+          purpose: 'baseline',
           status: 'budget_exhausted',
           result_count: 0,
           explanation: 'No request admitted within the shared limit.',

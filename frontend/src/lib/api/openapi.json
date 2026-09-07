@@ -8216,6 +8216,38 @@
               }
             ],
             "title": "Language"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "challenge",
+              "disambiguation"
+            ],
+            "title": "Purpose",
+            "default": "baseline"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
           }
         },
         "type": "object",
@@ -12780,6 +12812,61 @@
         ],
         "title": "PlanOut"
       },
+      "PlannedQueryTaskIn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Id"
+          },
+          "source_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "challenge",
+              "disambiguation"
+            ],
+            "title": "Purpose"
+          },
+          "terms": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Terms"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "source_id",
+          "purpose",
+          "terms"
+        ],
+        "title": "PlannedQueryTaskIn"
+      },
       "PlansOut": {
         "properties": {
           "items": {
@@ -13824,6 +13911,22 @@
             "maxItems": 8,
             "title": "Research Query Variants"
           },
+          "research_candidate_hypotheses": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCandidateIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Research Candidate Hypotheses"
+          },
+          "research_planned_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedQueryTaskIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Research Planned Tasks"
+          },
           "research_terms": {
             "anyOf": [
               {
@@ -14826,6 +14929,38 @@
         ],
         "title": "ResearchAreaOut"
       },
+      "ResearchCandidateIn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "identifiers": {
+            "items": {
+              "type": "string",
+              "maxLength": 300,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Identifiers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "ResearchCandidateIn"
+      },
       "ResearchChange": {
         "properties": {
           "status": {
@@ -15292,6 +15427,22 @@
             "maxItems": 8,
             "title": "Query Variants"
           },
+          "candidate_hypotheses": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCandidateIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Candidate Hypotheses"
+          },
+          "planned_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedQueryTaskIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Planned Tasks"
+          },
           "map_view_id": {
             "anyOf": [
               {
@@ -15449,6 +15600,14 @@
           "time_basis": {
             "$ref": "#/components/schemas/EvidenceTimeBasis",
             "default": "publication"
+          },
+          "candidate_hypotheses": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCandidateIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Candidate Hypotheses"
           }
         },
         "type": "object",
@@ -15583,6 +15742,14 @@
           "time_basis": {
             "$ref": "#/components/schemas/EvidenceTimeBasis",
             "default": "publication"
+          },
+          "candidate_hypotheses": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCandidateIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Candidate Hypotheses"
           },
           "map_origin": {
             "anyOf": [
@@ -15961,6 +16128,43 @@
             "type": "string",
             "title": "Spatial Scope",
             "default": "This source does not establish support for collection within an area."
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "challenge",
+              "disambiguation"
+            ],
+            "title": "Purpose",
+            "default": "baseline"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          },
+          "planned_terms_supported": {
+            "type": "boolean",
+            "title": "Planned Terms Supported",
+            "default": false
           }
         },
         "type": "object",
