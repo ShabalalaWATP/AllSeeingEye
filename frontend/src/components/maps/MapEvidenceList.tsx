@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { publicationDay, evidencePrecision } from './evidenceGeometry';
+import { EvidenceObservationDetails } from './EvidenceObservationDetails';
 const PAGE_SIZE = 20;
 export function MapEvidenceList({
   filtered,
@@ -65,6 +66,7 @@ export function MapEvidenceList({
             {chosen.label}: {chosen.title}
           </h3>
           <p className="text-sm">{chosen.summary ?? 'No saved excerpt available.'}</p>
+          <EvidenceObservationDetails item={chosen} />
           <p className="text-xs text-muted">
             {chosen.source_name} · Grade {chosen.grade} · {evidencePrecision(chosen)}
           </p>

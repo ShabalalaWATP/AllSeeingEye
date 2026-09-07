@@ -7606,6 +7606,47 @@
         ],
         "title": "EvidenceAttributeOut"
       },
+      "EvidenceGeometryOut": {
+        "properties": {
+          "geometry": {
+            "$ref": "#/components/schemas/SourceGeometryOut"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "location_role": {
+            "$ref": "#/components/schemas/LocationRole"
+          },
+          "precision": {
+            "type": "string",
+            "title": "Precision"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "geometry",
+          "sha256",
+          "location_role",
+          "precision",
+          "method",
+          "source_id",
+          "attribution"
+        ],
+        "title": "EvidenceGeometryOut"
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -8415,6 +8456,7 @@
         ],
         "title": "JamMapOut"
       },
+      "JsonValue": {},
       "JudgementAssessmentOut": {
         "properties": {
           "judgement_id": {
@@ -9442,6 +9484,19 @@
         ],
         "title": "LlmUsagePageOut"
       },
+      "LocationRole": {
+        "type": "string",
+        "enum": [
+          "incident",
+          "reported_area",
+          "registered_office",
+          "project_site",
+          "publisher_location",
+          "observation_footprint",
+          "analyst_annotation"
+        ],
+        "title": "LocationRole"
+      },
       "LoginIn": {
         "properties": {
           "email": {
@@ -10423,6 +10478,60 @@
           "profiles"
         ],
         "title": "ModelRoutingOut"
+      },
+      "ObservationOut": {
+        "properties": {
+          "acquired_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Acquired At"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "collection_id": {
+            "type": "string",
+            "title": "Collection Id"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          },
+          "scene_cloud_cover": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Cloud Cover"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acquired_at",
+          "processed_at",
+          "collection_id",
+          "item_id",
+          "limitations",
+          "scene_cloud_cover"
+        ],
+        "title": "ObservationOut"
       },
       "PirIn": {
         "properties": {
@@ -11887,6 +11996,26 @@
             },
             "type": "array",
             "title": "Attributes"
+          },
+          "geometry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceGeometryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -14519,6 +14648,35 @@
           "enabled"
         ],
         "title": "SourceActivationIn"
+      },
+      "SourceGeometryOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon"
+            ],
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "SourceGeometryOut"
       },
       "SourceHealthOut": {
         "properties": {

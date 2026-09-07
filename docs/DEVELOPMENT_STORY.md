@@ -991,3 +991,16 @@ including actual-container SQL disable-before/during checks and shared-store
 isolation. Mypy, architecture contracts and scoped Bandit passed. Live-source
 acceptance, observation API/map presentation and the operator launch form remain
 unfinished. No operator database or deployment changed.
+
+### 7 September 2026: inspect frozen source observations
+
+Report evidence DTOs and generated client types expose retained original geometry
+and observation metadata. The evidence annex and selected-map-evidence panel show
+acquisition/processing times, catalogue identity, cloud cover, attribution and
+source limitations. Unknown publication remains separate, zero cloud cover is
+not treated as missing, and legacy evidence has no invented observation fields.
+
+Thirty-two focused backend tests and 24 frontend tests passed. Both type checks,
+formatting and file-length checks passed. Read-only review found no confirmed
+correctness, privacy or compatibility defect. Original-footprint rendering and
+the operator map-to-research launch form remain unfinished.

@@ -2486,6 +2486,21 @@ export interface components {
             /** Value */
             value: string | number | boolean | null;
         };
+        /** EvidenceGeometryOut */
+        EvidenceGeometryOut: {
+            geometry: components["schemas"]["SourceGeometryOut"];
+            /** Sha256 */
+            sha256: string;
+            location_role: components["schemas"]["LocationRole"];
+            /** Precision */
+            precision: string;
+            /** Method */
+            method: string;
+            /** Source Id */
+            source_id: string;
+            /** Attribution */
+            attribution: string;
+        };
         /**
          * ExportFormat
          * @enum {string}
@@ -2794,6 +2809,7 @@ export interface components {
             /** Updated At */
             updated_at: string | null;
         };
+        JsonValue: unknown;
         /** JudgementAssessmentOut */
         JudgementAssessmentOut: {
             /** Judgement Id */
@@ -3137,6 +3153,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["LlmUsageOut"][];
         };
+        /**
+         * LocationRole
+         * @enum {string}
+         */
+        LocationRole: "incident" | "reported_area" | "registered_office" | "project_site" | "publisher_location" | "observation_footprint" | "analyst_annotation";
         /** LoginIn */
         LoginIn: {
             /**
@@ -3562,6 +3583,24 @@ export interface components {
             binding_team_id: string | null;
             /** Profiles */
             profiles: components["schemas"]["RoutedModelOut"][];
+        };
+        /** ObservationOut */
+        ObservationOut: {
+            /**
+             * Acquired At
+             * Format: date-time
+             */
+            acquired_at: string;
+            /** Processed At */
+            processed_at: string | null;
+            /** Collection Id */
+            collection_id: string;
+            /** Item Id */
+            item_id: string;
+            /** Limitations */
+            limitations: string;
+            /** Scene Cloud Cover */
+            scene_cloud_cover: number | null;
         };
         /** PirIn */
         PirIn: {
@@ -3990,6 +4029,8 @@ export interface components {
             source_rating?: components["schemas"]["SourceRatingOut"] | null;
             /** Attributes */
             attributes?: components["schemas"]["EvidenceAttributeOut"][];
+            geometry?: components["schemas"]["EvidenceGeometryOut"] | null;
+            observation?: components["schemas"]["ObservationOut"] | null;
         };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
@@ -4884,6 +4925,16 @@ export interface components {
         SourceActivationIn: {
             /** Enabled */
             enabled: boolean;
+        };
+        /** SourceGeometryOut */
+        SourceGeometryOut: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+            /** Coordinates */
+            coordinates: components["schemas"]["JsonValue"][];
         };
         /** SourceHealthOut */
         SourceHealthOut: {

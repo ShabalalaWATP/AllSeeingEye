@@ -5,6 +5,7 @@ import type { EvidenceAssessment, ReportAssessment } from '@/lib/api/reportAsses
 import { formatUtc } from '@/lib/format';
 import { SourceLink } from '@/components/ui/SourceLink';
 import { SourceRatingDetails } from '@/components/sources/SourceRatingDetails';
+import { EvidenceObservationDetails } from '@/components/maps/EvidenceObservationDetails';
 
 import { evidenceId } from './EvidenceLinks';
 
@@ -40,7 +41,10 @@ function EvidenceDetails({
           <span className="min-w-0">
             <span className="block font-medium [overflow-wrap:anywhere]">{item.title}</span>
             <span className="mt-1 block text-xs text-muted [overflow-wrap:anywhere]">
-              {item.source_name} · {time(item.published_at)}
+              {item.source_name} ·{' '}
+              {item.observation
+                ? `Acquired ${time(item.observation.acquired_at)}`
+                : time(item.published_at)}
             </span>
           </span>
           <span className="font-mono text-xs text-muted">{item.grade}</span>
@@ -59,6 +63,7 @@ function EvidenceDetails({
             <p className="mt-1 text-sm [overflow-wrap:anywhere]">{item.summary}</p>
           </div>
         )}
+        <EvidenceObservationDetails item={item} />
         <dl className="grid min-w-0 gap-x-8 gap-y-4 sm:grid-cols-2">
           {assessment && (
             <Metadata label="Automated contribution">

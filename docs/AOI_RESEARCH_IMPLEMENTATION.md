@@ -294,3 +294,21 @@ mocked, so this does not establish live-source acceptance.
 Observation/geometry API presentation, footprint rendering from frozen report
 evidence and the authorised operator launch form are still required. Registration
 alone does not make the complete area-investigation workflow available in the UI.
+
+### Observation evidence inspection
+
+Frozen report responses now expose original source geometry with its hash, role,
+precision, method and attribution, alongside acquisition/processing dates and
+scene metadata. Legacy evidence returns null for these optional additions. This
+does not change frozen persistence or evidence digests, and the live event API
+is unchanged.
+
+The evidence annex and selected-map-evidence panel show observation details and
+limitations. Catalogue summaries label acquisition explicitly; publication remains
+unknown when unavailable. Unknown cloud cover is separate from zero. Source text
+is rendered as React text. The API parser preserves coordinates for the upcoming
+bounded geometry renderer without submitting them to that renderer in this slice.
+
+Thirty-two focused backend tests and 24 frontend tests passed. Backend and frontend
+type checks and file-length checks passed. Rendering original footprints in both
+projections and completing the authorised map-to-research launch remain open.

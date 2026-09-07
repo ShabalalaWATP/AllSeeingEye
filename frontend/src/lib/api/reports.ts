@@ -15,6 +15,7 @@ import {
 import { sourceRatingSchema } from './sourceContext';
 import { researchContextSchema } from './researchContext';
 import { reportChallengeSchema } from './reportChallenge';
+import { evidenceGeometrySchema, observationSchema } from './observations';
 
 export const reportStatusSchema = z.enum(['ready', 'needs_review', 'failed']);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
@@ -82,6 +83,8 @@ export const reportBodySchema = z.object({
 export type ReportBody = z.infer<typeof reportBodySchema>;
 
 export const evidenceItemSchema = z.object({
+  geometry: evidenceGeometrySchema.nullable().optional(),
+  observation: observationSchema.nullable().optional(),
   source_rating: sourceRatingSchema.nullable().optional(),
   attributes: z.array(evidenceAttributeSchema).optional(),
   independence_key: z.string().optional(),
