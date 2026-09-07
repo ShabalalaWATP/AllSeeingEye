@@ -2018,3 +2018,26 @@ lifecycle and export requirements. No original-asset retention was implemented.
 Browser access again failed policy verification for both FIRMS and the existing
 local dashboard tab. Docker inspection succeeded and found cached PostgreSQL 17
 images, opening a local acceptance path without touching the operator database.
+
+### PostgreSQL identity and selected-export acceptance
+
+Added an opt-in migration 0026 test using the existing generated-database helper.
+It upgrades nonempty report history from 0025, compares identity schema with ORM
+metadata, checks empty downgrade/re-upgrade and verifies a populated-history
+downgrade refusal preserves the revision, reports and migration version. The
+revision round-trip includes Chinese, Persian and Cyrillic names and a
+leading-zero registration identifier. Independent read-only review found no
+actionable issue; concurrent CAS/quota behaviour and non-UTC conversion are not
+covered by this new test.
+
+Ran eight focused migration, repository, service, team, API and selected-export
+test files on an isolated PostgreSQL 17.10 Bookworm container: 62 passed in
+142.57 seconds, exit zero. Used cached image
+`sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f`,
+a generated temporary password, loopback-only port, temporary in-memory storage
+and separate generated migration/application databases. Removed the owned
+container after testing and confirmed none with its acceptance label remained.
+No operator database, credentials, provider or model was used. Coverage was not
+remeasured for this focused run. Ruff formatting/lint, file length and whitespace
+checks passed. Updated the status audit to remove stale active-test/unfinished
+clustering statements; browser, live-provider and wider release gates remain open.

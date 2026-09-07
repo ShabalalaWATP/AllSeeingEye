@@ -16,6 +16,12 @@ gate has been accepted. The full objective remains unfinished.
   95.48% statements, 90.18% branches, 94.19% functions and 96.65% lines.
 - The full backend passed 2,724 tests, with 14 skips and 95.63% coverage in
   `data/identity-relationships-backend-full.log`, exit code zero.
+- Subsequently, 62 identity migration/repository/service/API/team/export tests
+  passed on a fresh loopback-only PostgreSQL 17.10 container, in
+  `data/identity-postgres-acceptance.log`. The container was removed afterwards.
+  Migration 0026 schema parity, report preservation, empty downgrade/re-upgrade
+  and retained-history downgrade refusal passed. No operator database was used.
+  Concurrent CAS/quota races and backup recovery remain separate acceptance work.
 - The earlier backend full pass (2,623 tests, 14 skips, 94.46%) predates identity
   review and combined exports. It is historical evidence only.
 - Production build, type checks, scoped lint and file-length checks passed after
@@ -94,7 +100,7 @@ feature despite saved map-state and evidence-package support.
 | --- | --- | --- |
 | Companies House and SEC depth | Profiles, officers/PSC snapshots and recent SEC metadata providers | Selected filing documents/content and bounded older SEC pagination |
 | Registry/designation/procurement sources | GLEIF profile/direct/ultimate parents, imported UKSL/OFAC snapshots, first-page Contracts Finder | ITA, Find a Tender and wider upstream-format/operational acceptance |
-| Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export | PostgreSQL, wider failure/access acceptance and human-reviewed false-merge evaluation |
+| Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export; 62 focused PostgreSQL checks passed | Concurrent PostgreSQL CAS/quota acceptance, wider operational acceptance and human-reviewed false-merge evaluation |
 | Dated organisation assertions | GLEIF report relationship view preserves source type, dates, status and evidence | Independent immutable relationship review/disagreement annotations; do not substitute identity-match decisions |
 | Claims and original evidence | Migration 0025, exact title/summary excerpts, origin metadata, proposal/review/withdrawal revisions, automatic generation and selected packages | Representative atomicity/semantic-support evaluation and deeper original-source-chain inspection |
 | Separate grading dimensions | Doctrine/grading/assessment code and tests preserve A–F, 1–6, confidence and likelihood roles | No single truth percentage or politically assigned grade is authorised; new pathways require the same checks |
@@ -117,7 +123,7 @@ report evidence and source attributes remain the authority for the new display.
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
 | Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression | Claim/identity revision-aware changes, substantive assertion comparison and richer explanations |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Full frontend pass before clustering; backend full run active | Current complete behaviour/coverage/security result and coherent commits |
+| Current checks | Full frontend: 863 passes after measurements; full backend: 2,724 passes, 14 skips; coherent milestones committed | New work still requires appropriate checks; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 
@@ -128,8 +134,8 @@ evaluation seeds must never be relabelled as independent human review.
 
 ## Next engineering priorities
 
-1. Close current integration checks and preserve their exact scope in the record.
-2. Finish the local seam/pole clustering repair and its tests; keep GPU acceptance open.
+1. Extend PostgreSQL acceptance and preserve its exact scope in the record.
+2. Complete GPU acceptance for implemented seam/pole clustering and measurements.
 3. Implement selected original-asset retention and reproducible map-image export.
 4. Extend planning with candidate disambiguation, challenge tasks and bounded
    contradiction-driven replanning.
