@@ -1,3 +1,4 @@
+import type { AnnotationComparisonInput } from '@/lib/api/annotationComparisons';
 import { fetchClaim, listClaims } from '@/lib/api/claims';
 import type { ClaimRevision } from '@/lib/api/claims';
 import { fetchIdentity, listIdentities } from '@/lib/api/identities';
@@ -46,4 +47,26 @@ export async function fetchAnnotation(
   const fetcher =
     'claim_id' in value ? fetchClaim : 'decision_id' in value ? fetchIdentity : fetchRelationship;
   return (await fetcher(annotationRoot(value), revisionId, signal)).revision;
+}
+
+export function toComparisonSelection(value: {
+  reportId: string;
+  version: number;
+  annotations: ComparisonAnnotation[];
+}): AnnotationComparisonInput['before'] {
+  return {
+    report_id: value.reportId,
+    version_number: value.version,
+    revisions: value.annotations.flatMap((item) =>
+      'claim_id' in item ? [{ claim_id: item.claim_id, revision_id: item.id }] : [],
+    ),
+    identity_revisions: value.annotations.flatMap((item) =>
+      'decision_id' in item ? [{ decision_id: item.decision_id, revision_id: item.id }] : [],
+    ),
+    relationship_revisions: value.annotations.flatMap((item) =>
+      'relationship_id' in item
+        ? [{ relationship_id: item.relationship_id, revision_id: item.id }]
+        : [],
+    ),
+  };
 }

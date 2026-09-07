@@ -4,6 +4,30 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+8 September continuation: exact candidate registry routing is integrated on main
+at `ebc1cfe` (feature `84f3a58`): explicit LEI/CIK/UK company identifiers,
+operator-grounded model choices, selected-provider execution and frozen receipts.
+Acceptance passed 191 backend cases, 983 frontend cases and subsequent targeted
+repairs; independent reviews and repository hooks passed. Standalone selected-root
+monitoring is ready for integration after 99 local backend cases, ten PostgreSQL
+concurrency cases, six PostgreSQL migration cases and 1,003 frontend cases.
+Its final hooks passed. The prior combined comparison backend tree passed
+3,195 tests, 39 skips, no warnings and 95.20% coverage. A new combined acceptance
+run is required after both features and the HTTP response-order repair are merged.
+Whole-inventory/new-root and cross-version monitoring remain required follow-ons.
+See [ANNOTATION_MONITORING_IMPLEMENTATION.md](ANNOTATION_MONITORING_IMPLEMENTATION.md)
+and [CANDIDATE_REGISTRY_ROUTING_PLAN.md](CANDIDATE_REGISTRY_ROUTING_PLAN.md).
+
+7 September continuation: exact annotation comparison and frozen confidence
+explanations are integrated at `d37f723`. Historical selections, declared
+correspondence, scoped report search and digest-bound JSON export are available.
+The identical frontend tree passed 978 tests and all lint/type/build checks;
+121 focused backend cases and four PostgreSQL release cases passed. Final full
+backend acceptance is running. Durable standalone annotation monitoring is now
+in development, with transactional exact revision events, immutable transitions
+and independent checkpoints. See
+[ANNOTATION_COMPARISON_PLAN.md](ANNOTATION_COMPARISON_PLAN.md).
+
 7 September continuation: dated relationship review is integrated, with frozen
 GLEIF assertions, separate operator assessments/history and exact revision
 exports. Isolated acceptance passed 133 backend cases, 11 PostgreSQL cases and

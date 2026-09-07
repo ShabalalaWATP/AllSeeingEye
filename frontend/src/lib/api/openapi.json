@@ -3196,6 +3196,490 @@
         }
       }
     },
+    "/api/annotation-monitors": {
+      "post": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Create Monitor",
+        "operationId": "create_monitor_api_annotation_monitors_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationMonitorCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationMonitorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Monitors",
+        "operationId": "monitors_api_annotation_monitors_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version Number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationMonitorsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/annotation-monitors/{monitor_id}": {
+      "get": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Monitor",
+        "operationId": "monitor_api_annotation_monitors__monitor_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationMonitorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Update Monitor",
+        "operationId": "update_monitor_api_annotation_monitors__monitor_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationMonitorUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationMonitorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Delete Monitor",
+        "operationId": "delete_monitor_api_annotation_monitors__monitor_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/annotation-monitors/{monitor_id}/transitions": {
+      "get": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Transitions",
+        "operationId": "transitions_api_annotation_monitors__monitor_id__transitions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationTransitionsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/annotation-monitors/{monitor_id}/transitions/{transition_id}": {
+      "get": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Transition",
+        "operationId": "transition_api_annotation_monitors__monitor_id__transitions__transition_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          },
+          {
+            "name": "transition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Transition Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationTransitionDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/annotation-monitors/{monitor_id}/transitions/{transition_id}/export": {
+      "post": {
+        "tags": [
+          "annotation-monitors"
+        ],
+        "summary": "Export Transition",
+        "operationId": "export_transition_api_annotation_monitors__monitor_id__transitions__transition_id__export_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "monitor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Monitor Id"
+            }
+          },
+          {
+            "name": "transition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Transition Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationTransitionExportIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/relationship-reviews/assertions": {
       "get": {
         "tags": [
@@ -7319,6 +7803,30 @@
             ],
             "title": "Schedule Id"
           },
+          "annotation_monitor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation Monitor Id"
+          },
+          "annotation_transition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation Transition Id"
+          },
           "fired_at": {
             "type": "string",
             "format": "date-time",
@@ -7420,6 +7928,8 @@
           "id",
           "indicator_id",
           "schedule_id",
+          "annotation_monitor_id",
+          "annotation_transition_id",
           "fired_at",
           "title",
           "summary",
@@ -7771,6 +8281,439 @@
           "rationale"
         ],
         "title": "AnnotationCorrespondenceIn"
+      },
+      "AnnotationMonitorCreateIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "claim",
+                "identity",
+                "relationship"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Categories"
+          },
+          "notify_on_change": {
+            "type": "boolean",
+            "title": "Notify On Change",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "selection",
+          "categories"
+        ],
+        "title": "AnnotationMonitorCreateIn"
+      },
+      "AnnotationMonitorOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "claim",
+                "identity",
+                "relationship"
+              ]
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "notify_on_change": {
+            "type": "boolean",
+            "title": "Notify On Change"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "checkpoint_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Checkpoint Id"
+          },
+          "checkpoint_number": {
+            "type": "integer",
+            "title": "Checkpoint Number"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ComparisonSelectionIn"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_by",
+          "team_id",
+          "report_id",
+          "version_number",
+          "name",
+          "categories",
+          "notify_on_change",
+          "status",
+          "unavailable_reason",
+          "revision",
+          "checkpoint_id",
+          "checkpoint_number",
+          "selection",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AnnotationMonitorOut"
+      },
+      "AnnotationMonitorUpdateIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "configure",
+              "pause",
+              "resume_catch_up",
+              "resume_rebaseline"
+            ],
+            "title": "Action"
+          },
+          "rebaseline": {
+            "type": "boolean",
+            "title": "Rebaseline",
+            "default": false
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "claim",
+                    "identity",
+                    "relationship"
+                  ]
+                },
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categories"
+          },
+          "notify_on_change": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notify On Change"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "action"
+        ],
+        "title": "AnnotationMonitorUpdateIn"
+      },
+      "AnnotationMonitorsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationMonitorOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AnnotationMonitorsOut"
+      },
+      "AnnotationTransitionDetailOut": {
+        "properties": {
+          "transition": {
+            "$ref": "#/components/schemas/AnnotationTransitionOut"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/AnnotationComparison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transition",
+          "comparison"
+        ],
+        "title": "AnnotationTransitionDetailOut"
+      },
+      "AnnotationTransitionExportIn": {
+        "properties": {
+          "expected_comparison_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Comparison Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_comparison_sha256"
+        ],
+        "title": "AnnotationTransitionExportIn"
+      },
+      "AnnotationTransitionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "monitor_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Monitor Id"
+          },
+          "checkpoint_before": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Checkpoint Before"
+          },
+          "checkpoint_after": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Checkpoint After"
+          },
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^(revision|rebaseline)$",
+            "title": "Kind"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "changed_categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "claim",
+                "identity",
+                "relationship"
+              ]
+            },
+            "type": "array",
+            "title": "Changed Categories"
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
+          },
+          "comparison_sha256": {
+            "type": "string",
+            "title": "Comparison Sha256"
+          },
+          "configuration_revision": {
+            "type": "integer",
+            "title": "Configuration Revision"
+          },
+          "notification_categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "claim",
+                "identity",
+                "relationship"
+              ]
+            },
+            "type": "array",
+            "title": "Notification Categories"
+          },
+          "notify_on_change": {
+            "type": "boolean",
+            "title": "Notify On Change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "monitor_id",
+          "checkpoint_before",
+          "checkpoint_after",
+          "sequence",
+          "kind",
+          "recorded_at",
+          "changed_categories",
+          "alert_id",
+          "comparison_sha256",
+          "configuration_revision",
+          "notification_categories",
+          "notify_on_change"
+        ],
+        "title": "AnnotationTransitionOut"
+      },
+      "AnnotationTransitionsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationTransitionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AnnotationTransitionsOut"
       },
       "AoiIn": {
         "properties": {

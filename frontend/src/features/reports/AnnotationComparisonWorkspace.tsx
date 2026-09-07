@@ -13,7 +13,7 @@ import { describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { saveBinaryFile } from '@/lib/downloadBinary';
-import { annotationKind } from './comparisonSelection';
+import { annotationKind, toComparisonSelection } from './comparisonSelection';
 import type { ComparisonAnnotation } from './comparisonSelection';
 import { ComparisonReportPicker } from './ComparisonReportPicker';
 import { ComparisonRevisionPicker } from './ComparisonRevisionPicker';
@@ -23,23 +23,6 @@ interface SideSelection {
   reportId: string;
   version: number;
   annotations: ComparisonAnnotation[];
-}
-function selection(value: SideSelection): AnnotationComparisonInput['before'] {
-  return {
-    report_id: value.reportId,
-    version_number: value.version,
-    revisions: value.annotations.flatMap((item) =>
-      'claim_id' in item ? [{ claim_id: item.claim_id, revision_id: item.id }] : [],
-    ),
-    identity_revisions: value.annotations.flatMap((item) =>
-      'decision_id' in item ? [{ decision_id: item.decision_id, revision_id: item.id }] : [],
-    ),
-    relationship_revisions: value.annotations.flatMap((item) =>
-      'relationship_id' in item
-        ? [{ relationship_id: item.relationship_id, revision_id: item.id }]
-        : [],
-    ),
-  };
 }
 function SideControls({
   name,
@@ -134,8 +117,8 @@ export function AnnotationComparisonWorkspace({ id, current }: { id: string; cur
     setResult(null);
     setError(null);
     const body: AnnotationComparisonInput = {
-      before: selection(before),
-      after: selection(after),
+      before: toComparisonSelection(before),
+      after: toComparisonSelection(after),
       correspondences,
       judgement_correspondences: judgements,
     };

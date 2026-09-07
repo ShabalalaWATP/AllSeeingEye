@@ -22,6 +22,7 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { fetchPlans } from '@/lib/api/direction';
 
+import { AlertDestination } from './AlertDestination';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
 
 function describeScope(indicator: Indicator): string {
@@ -66,11 +67,11 @@ function AlertItem({
         {alert.countries.length > 0 && (
           <span className="font-mono text-muted">{alert.countries.join(', ')}</span>
         )}
-        {alert.report_id !== null && (
-          <Link to={`/reports/${alert.report_id}`} className="text-text hover:underline">
-            Report
-          </Link>
-        )}
+        <AlertDestination
+          monitorId={alert.annotation_monitor_id}
+          transitionId={alert.annotation_transition_id}
+          reportId={alert.report_id}
+        />
         {alert.acknowledged_at === null ? (
           <Button variant="secondary" disabled={!canAcknowledge} onClick={onAcknowledge}>
             Acknowledge
@@ -130,6 +131,9 @@ export default function WarningPage() {
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Warning</h1>
+      <Link to="/annotation-monitors" className="text-sm text-ember underline">
+        Annotation monitors and exact transition history
+      </Link>
       <p className="text-sm text-muted">
         Indicators are standing rules over the live picture. When one fires, the alert lands here
         and on the stream, goes to the webhook when one is configured, and can open a report.

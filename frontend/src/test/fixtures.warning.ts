@@ -23,6 +23,8 @@ export const indicator: Indicator = {
 };
 
 export const alert: Alert = {
+  annotation_monitor_id: null,
+  annotation_transition_id: null,
   team_id: null,
   id: 'd1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1',
   indicator_id: indicator.id,

@@ -12,6 +12,24 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- 8 September: the pre-registry/monitor combined backend passed 3,195 tests,
+  39 skips, no warnings and 95.20% coverage. Registry routing is integrated at
+  `ebc1cfe` after 191 backend/983 frontend passes and targeted follow-up repairs.
+  Standalone selected-root monitoring passed 99 local backend, ten PostgreSQL
+  concurrency, six PostgreSQL migration and 1,003 frontend cases, with twelve
+  affected copy tests afterwards. Final monitoring hooks/integration and combined
+  acceptance remain pending. These supersede older pending-check notes below.
+
+- Exact annotation comparison and frozen confidence explanations are integrated
+  on main at `d37f723`. The accepted frontend tree passed 978 tests in 185 files
+  (95.12% statements, 90.17% branches, 93.61% functions, 96.42% lines), full
+  lint/type/build and repository hooks. Backend focused acceptance passed 121
+  cases across the broad run and targeted fixture repair; four independent
+  PostgreSQL final-release cases passed. Main's full combined backend suite is
+  running. This supersedes earlier rows describing revision comparisons as
+  absent. Durable annotation monitoring remains in development. See
+  `ANNOTATION_COMPARISON_PLAN.md` for contracts, exact checks and limitations.
+
 - Automatic research planning and the admin connection regression repairs passed
   the full frontend suite: 946 tests in 176 files, 95.12% statements, 90.18%
   branches, 93.70% functions and 96.43% lines. Final lint/build and repository
@@ -92,8 +110,8 @@ branch coverage. Build, scoped lint and the production dependency audit passed.
 | Shared language catalogue | `domain/languages.py`, profile schema, query preparation, `useLanguageCatalogue`; `test_language_capabilities.py` | Arabic/Persian PDF shaping; no inference that narrative support proves PDF support |
 | Original scripts and matching normalisation | Matching preserves original evidence and separates Persian matching substitutions | Explicit transliteration provenance and source-calendar contract; never guess a calendar |
 | Query translation and provenance | `query_translation.py`, `query_preparation.py`, retained transformations and model usage | Semantic preservation of unquoted names/negation requires representative model evaluation |
-| Editable bounded collection plan | Candidate hypotheses and executable operator/model challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Independent semantic acceptance; subject-only registry candidate routing |
-| Model-proposed plan constraints | One bounded precollection proposal call, operator-grounded identifiers, selected term-search adapters, frozen admission/origin and actual task outcomes; deterministic preview remains explicit | Independent model-quality and live acceptance; subject-only registry routing requires a separate contract |
+| Editable bounded collection plan | Candidate hypotheses and executable operator/model challenge/disambiguation term searches; exact source capability, shared-budget interleaving, distinct task receipts, scope reuse and exports | Independent semantic acceptance; evidence-grounded discovered-identifier chaining |
+| Model-proposed plan constraints | One bounded precollection proposal call, operator-grounded identifiers, selected term-search adapters, frozen admission/origin and actual task outcomes; deterministic preview remains explicit | Independent model-quality and live acceptance; explicit operator-grounded registry routing implemented, discovered identifiers remain separate |
 | Collection/model budgets | Quick 6 requests/45s; detailed 24/180s; shared admission across passes, separate bounded translation/replan calls | Cost/sufficiency evaluation against actual models |
 | Replanning | One shared-budget review can revise an empty search or investigate cited potential conflicts; bounded sufficiency stop requires complete review context and completed explicit tasks; proposed/applied decisions and excerpts are frozen | Independent semantic conflict/query-preservation and stopping-quality evaluation; calibrated sufficiency is not claimed |
 | Historical coverage honesty | Registry/RSS snapshots are disclosed; native historical providers carry capability metadata | Deeper provider-specific historical collection |
@@ -151,16 +169,16 @@ report evidence and source attributes remain the authority for the new display.
 
 | Requirement | Implemented evidence | Remaining work |
 | --- | --- | --- |
-| Version comparison | `application/reports/comparison.py` compares structured report/evidence/assessment fields | Claim/identity revision comparison and a dedicated evidence-linked confidence-change explanation |
+| Version comparison | Exact selected claim/identity/relationship revisions, declared correspondence, separate source/provenance changes, frozen evidence-linked confidence explanations and digest-bound JSON export; integrated at `d37f723` | Final full backend acceptance; durable monitored transitions remain separate |
 | Selected retained assets | Exact-version re-upload matched to frozen original SHA-256; migration 0027, permitted-use declarations, personal/team/global reservations and quotas, scoped UI/download/delete, periodic expiry and bounded tombstones | Explicit retain-at-import and permitted source-specific original retrieval; operational backup/recovery acceptance |
 | Evidence packages | Frozen report/receipts/locators, hashes, exact annotation and original-asset selection; generated inert members and final access/lifecycle checks | Saved-map GPU acceptance; wider source-original coverage |
 | Archives | Availability lookup and optional Save Page Now return a dated URL | Operator capture inventory, selected content retrieval, completeness manifest and terms-gated retention |
 | Local media | Sanitised images, English OCR and three bounded timestamped video frames | Audio transcription, multilingual original/translated OCR, paired comparison and supported candidate-location annotations |
 | PDF scripts | Chinese SC/TC embedded fonts and recorded round-trip/visual checks | Arabic/Persian shaping and visual/text-extraction acceptance; keep current warnings |
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
-| Meaningful-change schedules | Evidence/hash/flag/support/confidence/validation comparison, opt-in and unchanged/replay suppression | Claim/identity revision-aware changes, substantive assertion comparison and richer explanations |
+| Meaningful-change schedules | Existing research baselines plus locally tested independent selected-root annotation monitors, transactional revision events, exact checkpoint/history/alerts and replay/CAS controls | Final monitor integration; newly created/all-inventory and cross-version correspondence-aware monitoring |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Full combined frontend: 958 passes, 90.27% branch coverage; pre-comparison full backend: 3,146 passes, 35 skips, five fixture failures, 95.26% coverage | Export-admission fixture repair passed all ten cases separately; final combined backend acceptance remains pending; live acceptance remains separate |
+| Current checks | Current integrated frontend tree: 978 passes, 90.17% branch coverage; pre-comparison full backend: 3,146 passes, 35 skips, five fixture failures, 95.26% coverage | Export-admission fixture repair passed all ten cases separately; final combined backend acceptance remains pending; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 
@@ -179,11 +197,16 @@ be relabelled as independent human review.
 4. Independently evaluate automatic candidate planning, operator tasks,
    possible-conflict replanning and sufficiency decisions; extend validated
    candidate routing to subject-only registry sources.
-5. Add relationship review, claim-aware comparison/alerts and evidence-linked
-   confidence explanations.
+5. Complete independent annotation monitoring and exact historical alerts,
+   building on integrated relationship review and revision/confidence comparisons.
 6. Add timestamped transcription, multilingual OCR and Arabic/Persian PDF shaping.
 7. Complete permitted regional layers, FIRMS/vessel onboarding and source health.
 8. Obtain independent human benchmark labels and complete actual model/provider,
    PostgreSQL and browser release acceptance.
 
 These priorities organise the full backlog; they do not redefine completion.
+
+The next exact-identifier routing contract is recorded in
+[CANDIDATE_REGISTRY_ROUTING_PLAN.md](CANDIDATE_REGISTRY_ROUTING_PLAN.md). It is
+planned work, preserving company focus, explicit namespaces, operator-grounded
+references and the existing shared collection budgets.

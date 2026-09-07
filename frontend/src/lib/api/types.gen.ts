@@ -968,6 +968,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/annotation-monitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Monitors */
+        get: operations["monitors_api_annotation_monitors_get"];
+        put?: never;
+        /** Create Monitor */
+        post: operations["create_monitor_api_annotation_monitors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/annotation-monitors/{monitor_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Monitor */
+        get: operations["monitor_api_annotation_monitors__monitor_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Monitor */
+        delete: operations["delete_monitor_api_annotation_monitors__monitor_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Monitor */
+        patch: operations["update_monitor_api_annotation_monitors__monitor_id__patch"];
+        trace?: never;
+    };
+    "/api/annotation-monitors/{monitor_id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transitions */
+        get: operations["transitions_api_annotation_monitors__monitor_id__transitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/annotation-monitors/{monitor_id}/transitions/{transition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transition */
+        get: operations["transition_api_annotation_monitors__monitor_id__transitions__transition_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/annotation-monitors/{monitor_id}/transitions/{transition_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export Transition */
+        post: operations["export_transition_api_annotation_monitors__monitor_id__transitions__transition_id__export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/relationship-reviews/assertions": {
         parameters: {
             query?: never;
@@ -2228,6 +2316,10 @@ export interface components {
             indicator_id: string | null;
             /** Schedule Id */
             schedule_id: string | null;
+            /** Annotation Monitor Id */
+            annotation_monitor_id: string | null;
+            /** Annotation Transition Id */
+            annotation_transition_id: string | null;
             /**
              * Fired At
              * Format: date-time
@@ -2390,6 +2482,171 @@ export interface components {
             after_revision_id: string;
             /** Rationale */
             rationale: string;
+        };
+        /** AnnotationMonitorCreateIn */
+        AnnotationMonitorCreateIn: {
+            /** Name */
+            name: string;
+            selection: components["schemas"]["ComparisonSelectionIn"];
+            /** Categories */
+            categories: ("claim" | "identity" | "relationship")[];
+            /**
+             * Notify On Change
+             * @default false
+             */
+            notify_on_change: boolean;
+        };
+        /** AnnotationMonitorOut */
+        AnnotationMonitorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Name */
+            name: string;
+            /** Categories */
+            categories: ("claim" | "identity" | "relationship")[];
+            /** Notify On Change */
+            notify_on_change: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "paused" | "unavailable";
+            /** Unavailable Reason */
+            unavailable_reason: string | null;
+            /** Revision */
+            revision: number;
+            /**
+             * Checkpoint Id
+             * Format: uuid
+             */
+            checkpoint_id: string;
+            /** Checkpoint Number */
+            checkpoint_number: number;
+            selection: components["schemas"]["ComparisonSelectionIn"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** AnnotationMonitorUpdateIn */
+        AnnotationMonitorUpdateIn: {
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "configure" | "pause" | "resume_catch_up" | "resume_rebaseline";
+            /**
+             * Rebaseline
+             * @default false
+             */
+            rebaseline: boolean;
+            /** Name */
+            name?: string | null;
+            /** Categories */
+            categories?: ("claim" | "identity" | "relationship")[] | null;
+            /** Notify On Change */
+            notify_on_change?: boolean | null;
+        };
+        /** AnnotationMonitorsOut */
+        AnnotationMonitorsOut: {
+            /** Items */
+            items: components["schemas"]["AnnotationMonitorOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** AnnotationTransitionDetailOut */
+        AnnotationTransitionDetailOut: {
+            transition: components["schemas"]["AnnotationTransitionOut"];
+            comparison: components["schemas"]["AnnotationComparison"];
+        };
+        /** AnnotationTransitionExportIn */
+        AnnotationTransitionExportIn: {
+            /** Expected Comparison Sha256 */
+            expected_comparison_sha256: string;
+        };
+        /** AnnotationTransitionOut */
+        AnnotationTransitionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Monitor Id
+             * Format: uuid
+             */
+            monitor_id: string;
+            /**
+             * Checkpoint Before
+             * Format: uuid
+             */
+            checkpoint_before: string;
+            /**
+             * Checkpoint After
+             * Format: uuid
+             */
+            checkpoint_after: string;
+            /** Sequence */
+            sequence: number;
+            /** Kind */
+            kind: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Changed Categories */
+            changed_categories: ("claim" | "identity" | "relationship")[];
+            /** Alert Id */
+            alert_id: string | null;
+            /** Comparison Sha256 */
+            comparison_sha256: string;
+            /** Configuration Revision */
+            configuration_revision: number;
+            /** Notification Categories */
+            notification_categories: ("claim" | "identity" | "relationship")[];
+            /** Notify On Change */
+            notify_on_change: boolean;
+        };
+        /** AnnotationTransitionsOut */
+        AnnotationTransitionsOut: {
+            /** Items */
+            items: components["schemas"]["AnnotationTransitionOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** AoiIn */
         AoiIn: {
@@ -9456,6 +9713,270 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ComparisonReportsOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    monitors_api_annotation_monitors_get: {
+        parameters: {
+            query?: {
+                report_id?: string | null;
+                version_number?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationMonitorsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_monitor_api_annotation_monitors_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnotationMonitorCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationMonitorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    monitor_api_annotation_monitors__monitor_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                monitor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationMonitorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_monitor_api_annotation_monitors__monitor_id__delete: {
+        parameters: {
+            query: {
+                expected_revision: number;
+            };
+            header?: never;
+            path: {
+                monitor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_monitor_api_annotation_monitors__monitor_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                monitor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnotationMonitorUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationMonitorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transitions_api_annotation_monitors__monitor_id__transitions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                monitor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationTransitionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transition_api_annotation_monitors__monitor_id__transitions__transition_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                monitor_id: string;
+                transition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnotationTransitionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_transition_api_annotation_monitors__monitor_id__transitions__transition_id__export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                monitor_id: string;
+                transition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnnotationTransitionExportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

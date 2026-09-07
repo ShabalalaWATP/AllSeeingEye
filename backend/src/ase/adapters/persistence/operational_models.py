@@ -150,11 +150,19 @@ class IndicatorRow(Base):
 
 
 class AlertRow(Base):
+    annotation_monitor_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True, index=True)
+    annotation_transition_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+
     __tablename__ = "alerts"
     __table_args__ = (
+        UniqueConstraint("annotation_transition_id", name="uq_alerts_annotation_transition_id"),
         CheckConstraint(
-            "(indicator_id IS NOT NULL AND schedule_id IS NULL) OR "
-            "(indicator_id IS NULL AND schedule_id IS NOT NULL)",
+            "(indicator_id IS NOT NULL AND schedule_id IS NULL "
+            "AND annotation_monitor_id IS NULL AND annotation_transition_id IS NULL) OR "
+            "(indicator_id IS NULL AND schedule_id IS NOT NULL "
+            "AND annotation_monitor_id IS NULL AND annotation_transition_id IS NULL) OR "
+            "(indicator_id IS NULL AND schedule_id IS NULL "
+            "AND annotation_monitor_id IS NOT NULL AND annotation_transition_id IS NOT NULL)",
             name="ck_alerts_one_origin",
         ),
     )

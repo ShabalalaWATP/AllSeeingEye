@@ -102,6 +102,8 @@ class AlertOut(BaseModel):
     id: UUID
     indicator_id: UUID | None
     schedule_id: UUID | None
+    annotation_monitor_id: UUID | None
+    annotation_transition_id: UUID | None
     fired_at: datetime
     title: str
     summary: str
@@ -121,6 +123,8 @@ class AlertOut(BaseModel):
             id=alert.id,
             indicator_id=alert.indicator_id,
             schedule_id=alert.schedule_id,
+            annotation_monitor_id=alert.annotation_monitor_id,
+            annotation_transition_id=alert.annotation_transition_id,
             fired_at=alert.fired_at,
             title=alert.title,
             summary=alert.summary,

@@ -25,3 +25,9 @@ async def validate_request_session(
     # The original token can expire while the database reads or close are awaited.
     if claims.expires_at <= container.clock.now():
         raise Unauthenticated("The session has ended. Sign in again.")
+
+
+def validate_request_expiry(container: "Container", claims: AccessClaims) -> None:
+    """No await may reopen a release gap after the guarded private-object checks."""
+    if claims.expires_at <= container.clock.now():
+        raise Unauthenticated("The session has ended. Sign in again.")

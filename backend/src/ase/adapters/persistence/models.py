@@ -18,6 +18,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
+from ase.adapters.persistence import (
+    annotation_monitor_models as _annotation_monitor_models,  # noqa: F401
+)
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.operational_models import (
     ActivitySampleRow,
