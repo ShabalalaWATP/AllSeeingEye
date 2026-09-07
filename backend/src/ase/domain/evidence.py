@@ -14,7 +14,9 @@ from datetime import datetime
 from ase.domain.doctrine import Confidence
 from ase.domain.events import Event
 from ase.domain.evidence_attributes import EvidenceAttribute, freeze_evidence_attributes
+from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
+from ase.domain.observation import ObservationMetadata
 from ase.domain.source_provenance import ProvenanceItem, organisation_groups
 from ase.domain.source_ratings import SourceRating
 
@@ -80,6 +82,8 @@ class EvidenceItem:
     story_id: str | None = None
     source_rating: SourceRating | None = None
     attributes: tuple[EvidenceAttribute, ...] = ()
+    geometry: EvidenceGeometry | None = None
+    observation: ObservationMetadata | None = None
 
     @classmethod
     def from_event(
@@ -126,6 +130,8 @@ class EvidenceItem:
             story_id=event.story_id,
             source_rating=source_rating,
             attributes=freeze_evidence_attributes(event.attributes),
+            geometry=event.geometry,
+            observation=event.observation,
         )
 
 

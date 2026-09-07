@@ -9,6 +9,9 @@ from datetime import datetime
 from enum import IntEnum, StrEnum
 from types import MappingProxyType
 
+from ase.domain.evidence_geometry import EvidenceGeometry
+from ase.domain.observation import ObservationMetadata
+
 JsonScalar = str | int | float | bool | None
 
 MAX_TITLE = 300
@@ -122,6 +125,8 @@ class Event:
     story_id: str | None = None
     attributes: Mapping[str, JsonScalar] = field(default_factory=lambda: MappingProxyType({}))
     content_hash: str = ""
+    geometry: EvidenceGeometry | None = None
+    observation: ObservationMetadata | None = None
 
     @property
     def grade(self) -> str:

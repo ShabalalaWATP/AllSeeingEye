@@ -906,3 +906,26 @@ The next evidence integration must preserve original satellite geometry and
 separate acquisition, publication, retrieval and snapshot times. The AOI contract
 now records the existing saved-map hash compatibility requirement and explicit
 collection/selection/export acceptance. No live provider or operator database changed.
+
+### 7 September 2026: original observation geometry retention
+
+Added immutable bounded source geometry and observation metadata to events and
+frozen evidence. Original coordinates survive snapshot, persistence and evidence
+package export without annotation topology limits or invented centroids. Existing
+evidence omits absent fields and retains a pinned legacy saved-map digest.
+Package JSON now uses the canonical persistence serializer; its timestamp strings
+therefore use ISO formatting consistently. Private-store estimates include geometry.
+
+Security review found that export checked aggregate size after constructing large
+JSON trees. Early geometry preflight and incremental per-member encoding now keep
+output under the shared 8 MiB limit, including the manifest. A regression verifies
+rejection before evidence trees are materialised. Follow-up review found no
+remaining actionable issue in the fix.
+
+The 80-test integration group passed, covering new metadata, exports, frozen
+provenance, saved maps and map-origin checks. The 50-test geometry/store/export
+group passed with 93.60% coverage across its four targeted modules; the existing
+90% threshold remains unchanged. Ruff, format, mypy (485 files), both architecture
+contracts, scoped Bandit and file-length checks passed. No new full-suite coverage
+claim, live collection, migration or deployment is implied. Native area research
+still needs honest nullable publication times, temporal selection and API/UI wiring.

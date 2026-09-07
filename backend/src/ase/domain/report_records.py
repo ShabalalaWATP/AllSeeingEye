@@ -20,9 +20,11 @@ from ase.domain.evidence_attributes import (
     evidence_attributes_from_list,
     evidence_attributes_to_list,
 )
+from ase.domain.evidence_geometry import geometry_from_dict, geometry_to_dict
 from ase.domain.evidence_matrix import ReportAssessment
 from ase.domain.model_routing import ModelRoutingRecord
 from ase.domain.model_routing_records import routing_to_dict
+from ase.domain.observation import observation_from_dict, observation_to_dict
 from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
 from ase.domain.research_context import ResearchContext
@@ -201,6 +203,13 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
         data["flags"] = list(item.flags)
         data["source_rating"] = source_rating_to_dict(item.source_rating)
         data["attributes"] = evidence_attributes_to_list(item.attributes)
+        # Omit absent additions: saved map revisions hash the historical wire shape.
+        data.pop("geometry")
+        data.pop("observation")
+        if item.geometry is not None:
+            data["geometry"] = geometry_to_dict(item.geometry)
+        if item.observation is not None:
+            data["observation"] = observation_to_dict(item.observation)
         rows.append(data)
     return rows
 
@@ -239,6 +248,8 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             story_id=row.get("story_id"),
             source_rating=source_rating_from_dict(row.get("source_rating")),
             attributes=evidence_attributes_from_list(row.get("attributes")),
+            geometry=geometry_from_dict(row.get("geometry")),
+            observation=observation_from_dict(row.get("observation")),
         )
         for row in rows
     )

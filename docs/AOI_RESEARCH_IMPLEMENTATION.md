@@ -171,3 +171,27 @@ package JSON should share one canonical serializer. Absent new fields must not c
 legacy evidence digests, because saved-map integrity checks already depend on those
 digests. Regression acceptance must cover old map hashes plus footprint/time
 roundtrips through collection, selection, persistence and evidence-package export.
+
+### Retained source geometry foundation
+
+Events and frozen evidence now carry optional immutable source geometry and
+observation metadata. Source geometry supports bounded WGS84 points, lines and
+polygons, including multipart forms, without replacing coordinates to satisfy
+annotation-display limits. It records an explicit location role, precision,
+method, source attribution and canonical hash. Observation metadata records
+acquisition/processing times, catalogue identity, scene cloud percentage and
+limitations. These additions remain absent on legacy evidence records.
+
+Snapshot/persistence roundtrips and evidence packages preserve full coordinates
+and metadata. Package JSON uses the persistence serializer; GeoJSON prefers
+retained source geometry to any legacy point and labels its role. Geometry counts
+towards private-store estimates. Export rejects excessive aggregate geometry
+before materialising JSON trees, then encodes each member and the manifest within
+the remaining 8 MiB allowance. A pinned pre-extension digest verifies that legacy
+saved maps remain valid.
+
+This completes retention/export foundations only. Nullable actual publication
+times, acquisition-based collection and ranking, evidence API/UI presentation and
+native provider registration are still required before catalogue observations can
+enter automated area research. Provider content hashes must include geometry and
+observation changes, so updates cannot disappear behind an unchanged text hash.

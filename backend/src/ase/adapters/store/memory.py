@@ -28,6 +28,34 @@ def estimate_bytes(event: Event) -> int:
     size += len(event.summary or "") + len(event.url or "") + len(event.title_en or "")
     size += sum(len(key) + len(str(value)) for key, value in event.attributes.items())
     size += sum(len(tag) for tag in event.tags)
+    if event.geometry is not None:
+        geometry = event.geometry
+        size += len(geometry.source_geometry.encode("utf-8"))
+        size += (
+            sum(
+                len(value.encode("utf-8"))
+                for value in (
+                    geometry.precision,
+                    geometry.method,
+                    geometry.source_id,
+                    geometry.attribution,
+                )
+            )
+            + 256
+        )
+    if event.observation is not None:
+        observation = event.observation
+        size += (
+            sum(
+                len(value.encode("utf-8"))
+                for value in (
+                    observation.collection_id,
+                    observation.item_id,
+                    observation.limitations,
+                )
+            )
+            + 256
+        )
     return size
 
 

@@ -5,35 +5,46 @@ import io
 import json
 import math
 import zipfile
-from dataclasses import asdict
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from ase.domain.errors import InvalidRequest
-from ase.domain.report_records import ReportRecord, ReportVersion, analysis_to_dict, body_to_dict
+from ase.domain.observation import observation_to_dict
+from ase.domain.report_records import (
+    ReportRecord,
+    ReportVersion,
+    analysis_to_dict,
+    body_to_dict,
+    evidence_to_list,
+)
 
 MAX_PACKAGE_BYTES = 8 * 1024 * 1024
 MAX_EVIDENCE = 1000
 
 
-def _json(value: object) -> bytes:
+def _json(value: object, remaining: int = MAX_PACKAGE_BYTES) -> bytes:
     def convert(item: object) -> str:
         if isinstance(item, datetime | UUID):
             return str(item)
         raise TypeError("Unsupported package value")
 
-    return (
-        json.dumps(
-            value, default=convert, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False
-        )
-        + "\n"
-    ).encode("utf-8")
+    encoder = json.JSONEncoder(
+        default=convert, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False
+    )
+    output = io.BytesIO()
+    for part in encoder.iterencode(value):
+        encoded = part.encode("utf-8")
+        if output.tell() + len(encoded) + 1 > remaining:
+            raise InvalidRequest("Evidence package exceeds the 8 MiB uncompressed limit.")
+        output.write(encoded)
+    output.write(b"\n")
+    return output.getvalue()
 
 
 def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
     """Unlocated findings remain null geometries; never export centroid incident points."""
-    features = []
+    features: list[dict[str, Any]] = []
     for item in version.evidence:
         located = (
             item.geo_confidence in {"exact", "city", "admin1"}
@@ -69,6 +80,24 @@ def evidence_geojson(version: ReportVersion) -> dict[str, Any]:
                 },
             }
         )
+        if item.geometry is not None:
+            geometry = item.geometry
+            feature = features[-1]
+            feature["geometry"] = geometry.to_geometry()
+            feature["properties"].update(
+                {
+                    "location_role": geometry.location_role.value,
+                    "precision": geometry.precision,
+                    "geometry_sha256": geometry.sha256,
+                    "geometry_method": geometry.method,
+                    "geometry_source_id": geometry.source_id,
+                    "geometry_attribution": geometry.attribution,
+                    "notice": "Original source geometry; structural validation does not establish "
+                    "topological validity, an incident or usable sensor coverage.",
+                }
+            )
+        if item.observation is not None:
+            features[-1]["properties"]["observation"] = observation_to_dict(item.observation)
     return {"type": "FeatureCollection", "features": features}
 
 
@@ -76,23 +105,46 @@ class FrozenEvidencePackageRenderer:
     def render(self, record: ReportRecord, version: ReportVersion) -> bytes:
         if version.report_id != record.id or len(version.evidence) > MAX_EVIDENCE:
             raise InvalidRequest("Invalid or oversized evidence package.")
-        files = {
-            "report.md": version.markdown.encode("utf-8"),
-            "report.json": _json(
-                {
-                    "report_id": record.id,
-                    "version_id": version.id,
-                    "version": version.number,
-                    "body": body_to_dict(version.body),
-                }
-            ),
-            "evidence.json": _json([asdict(item) for item in version.evidence]),
-            "analysis.json": _json(analysis_to_dict(version)),
-            "evidence.geojson": _json(evidence_geojson(version)),
-            "README.txt": (
+        # Reject excessive source geometry before materialising its JSON trees.
+        # Coordinates occur in evidence.json and evidence.geojson. This lower-bound
+        # check is followed by incremental encoding under the remaining byte budget.
+        minimum = len(version.markdown.encode("utf-8"))
+        for item in version.evidence:
+            if item.geometry is not None:
+                minimum += 2 * len(item.geometry.source_geometry.encode("utf-8"))
+            minimum += len(item.title.encode("utf-8")) + len((item.summary or "").encode("utf-8"))
+            if minimum > MAX_PACKAGE_BYTES:
+                raise InvalidRequest("Evidence package exceeds the 8 MiB uncompressed limit.")
+        files: dict[str, bytes] = {}
+        remaining = MAX_PACKAGE_BYTES
+
+        def add(name: str, value: object) -> None:
+            nonlocal remaining
+            content = value if isinstance(value, bytes) else _json(value, remaining)
+            if len(content) > remaining:
+                raise InvalidRequest("Evidence package exceeds the 8 MiB uncompressed limit.")
+            remaining -= len(content)
+            files[name] = content
+
+        add("report.md", version.markdown.encode("utf-8"))
+        add(
+            "report.json",
+            {
+                "report_id": record.id,
+                "version_id": version.id,
+                "version": version.number,
+                "body": body_to_dict(version.body),
+            },
+        )
+        add("evidence.json", evidence_to_list(version.evidence))
+        add("analysis.json", analysis_to_dict(version))
+        add("evidence.geojson", evidence_geojson(version))
+        add(
+            "README.txt",
+            (
                 b"Frozen research evidence package\n\n"
                 b"Contains the saved report, captured excerpts, citation locators, source URLs, "
-                b"source assessments, collection receipts and supported point geometry. "
+                b"source assessments, collection receipts and retained source geometry. "
                 b"No source URLs were fetched during export. Original pages, media, documents "
                 b"and external map tiles are not included. "
                 b"Missing legacy metadata remains unknown.\n\n"
@@ -102,7 +154,7 @@ class FrozenEvidencePackageRenderer:
                 b"No signature or trusted timestamp is supplied. Source rights still apply; "
                 b"this package does not grant permission to republish captured excerpts.\n"
             ),
-        }
+        )
         manifest = {
             "schema_version": "ase-evidence-package-v1",
             "report_id": str(record.id),
@@ -119,9 +171,7 @@ class FrozenEvidencePackageRenderer:
                 for name, content in files.items()
             ],
         }
-        files["manifest.json"] = _json(manifest)
-        if sum(map(len, files.values())) > MAX_PACKAGE_BYTES:
-            raise InvalidRequest("Evidence package exceeds the 8 MiB uncompressed limit.")
+        add("manifest.json", manifest)
         output = io.BytesIO()
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for name, content in files.items():
