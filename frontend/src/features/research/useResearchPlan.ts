@@ -14,7 +14,7 @@ export interface PlanScope {
   focus: NonNullable<ReportRequest['research_focus']>;
   subject: string;
   country: string;
-  history?: { since: string; until: string };
+  history?: { since: string; until: string; projectId?: string };
   area?: {
     viewId: string;
     revisionId: string;
@@ -45,7 +45,10 @@ export function useResearchPlan(scope: PlanScope) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const beginRequest = useAccountRequest();
-  const terms = customTerms ? lines(termsText) : null;
+  const suppliedTerms = customTerms ? lines(termsText) : null;
+  const terms = scope.history?.projectId
+    ? [`aiddata:${scope.history.projectId}`, ...(suppliedTerms ?? [])]
+    : suppliedTerms;
   const variants: QueryVariant[] = scope.languages.flatMap((language) => {
     const values = lines(variantText[language] ?? '');
     return values.length ? [{ language, terms: values }] : [];
@@ -66,6 +69,10 @@ export function useResearchPlan(scope: PlanScope) {
       return;
     }
     if (scope.history) {
+      if (scope.history.projectId && !/^[0-9]{1,12}$/.test(scope.history.projectId)) {
+        setError('Enter a project ID containing up to 12 digits.');
+        return;
+      }
       const duration = Date.parse(scope.history.until) - Date.parse(scope.history.since);
       if (!Number.isFinite(duration) || duration <= 0 || duration > 10980 * 86_400_000) {
         setError('Choose valid project years, spanning at most 30 years.');

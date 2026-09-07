@@ -70,7 +70,14 @@ export function ResearchForm({
   const historical = !parent && focus === 'general' && history.enabled;
   const interval = historical ? projectInterval(history) : null;
   const collectionPlan = useResearchPlan({
-    ...(historical ? { history: interval ?? { since: '', until: '' } } : {}),
+    ...(historical
+      ? {
+          history: {
+            ...(interval ?? { since: '', until: '' }),
+            projectId: history.projectId ?? '',
+          },
+        }
+      : {}),
     question,
     windowHours,
     languages: selectedLanguages,

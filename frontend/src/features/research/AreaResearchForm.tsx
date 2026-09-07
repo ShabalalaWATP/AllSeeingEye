@@ -45,7 +45,9 @@ export function AreaResearchForm({
   const teamId = saved.view.team_id;
   const plan = useResearchPlan({
     question,
-    ...(historical ? { history: { since: fixedSince, until: fixedUntil } } : {}),
+    ...(historical
+      ? { history: { since: fixedSince, until: fixedUntil, projectId: history.projectId ?? '' } }
+      : {}),
     windowHours: '',
     languages: preferences.research_languages,
     mode,

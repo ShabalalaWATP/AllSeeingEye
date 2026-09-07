@@ -19,6 +19,7 @@ from ase.domain.events import (
 )
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.project import project_to_dict
+from ase.domain.project_lookup import project_lookup
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 
 
@@ -41,6 +42,10 @@ class AidDataProvider:
         self._slots = asyncio.Semaphore(2)
 
     def supports(self, query: ResearchQuery) -> bool:
+        try:
+            project_lookup(query.terms)
+        except ValueError:
+            return False
         return (
             query.focus is ResearchFocus.GENERAL
             and query.effective_time_basis is EvidenceTimeBasis.RECORDED
@@ -72,12 +77,14 @@ class AidDataProvider:
                 CollectionStatus.UNAVAILABLE,
                 "No local project catalogue is configured. No download was attempted.",
             )
+        project_id, terms = project_lookup(query.terms)
         await self._slots.acquire()
         task = asyncio.create_task(
             asyncio.to_thread(
                 search_catalogue,
                 self._path,
-                terms=query.terms,
+                terms=terms,
+                project_id=project_id,
                 since=query.since,
                 until=query.until,
                 area=query.area,

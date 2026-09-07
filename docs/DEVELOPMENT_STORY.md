@@ -1438,3 +1438,52 @@ architecture, configured Bandit and dependency audit results are recorded above.
 The integrated AidData milestone is ready for final pre-commit gates. Exact-ID
 lookup and relevance ranking are isolated follow-up drafts and are not included.
 Whole-release, real-browser and configured-model acceptance remain outstanding.
+
+
+### Exact lookup and relevance follow-up, after 0a48040
+
+The integrated AidData milestone was committed to main as 0a48040 after all
+pre-commit gates passed. The working tree was clean and no remote was configured.
+The next uncommitted slice integrates exact project lookup and relevance ranking.
+
+An optional Project ID field adds an explicit aiddata:<digits> constraint to the
+frozen research terms, using the existing preview/request/receipt contract. Native
+search binds the ID as an exact SQL value and retains other terms, recipient,
+year and polygon filters. Partial IDs are not aliases; malformed/multiple IDs are
+unsupported. Both ordinary historical and saved-area report/regeneration tests
+exercise the identifier path. Model replan and challenge term changes retain the
+selected project ID and reject substitution of another ID.
+
+Year-only project records now receive neutral retrieval recency so the existing
+keyword and source weights can rank them. A regression failed before the change
+and passed afterwards, selecting the stronger keyword match despite opposite ID
+order. This is retrieval priority only: publication stays unknown, and source and
+judgement grades are unchanged. Ordinary undated records retain prior behaviour.
+
+Focused backend groups passed 18 lookup/ranking/provider cases, 17 native-HTTP/
+lookup/ranking cases and 27 lookup/replan/challenge cases (groups overlap and later
+groups follow the model-scope changes). Seven area UI tests passed with exact ID
+submission. Frontend type checks passed before the last test-only edit; scoped
+ESLint, final Ruff, mypy (499 files), file-length and diff checks passed. Read-only
+review and final integrated checks remain pending. No new full coverage run or
+follow-up commit is claimed; prior full verification belongs to 0a48040.
+
+
+### Exact lookup receipt and preview verification
+
+Read-only review found that challenge collection preserved the selected project
+ID while its top-level receipt retained only model-proposed terms. Two regression
+cases failed before the fix. Receipts now use the effective validated query terms
+passed to collection, including the project ID. The regression covers successful
+and failed redrafts and exhausted-source receipts. Review found no remaining
+concrete issue in this fix.
+
+The area UI regression now changes, removes and restores the project ID after
+preview. Each edit invalidates the preview, clears disclosure consent and disables
+submission until a fresh preview and consent are supplied. All seven area UI tests
+passed. The combined lookup, ranking, native HTTP, replan and challenge backend
+group passed 59 tests. Ruff, mypy (499 source files), frontend type checks, scoped
+ESLint, file-length and diff checks passed. These are focused checks without a new
+coverage measurement. Whole-release catalogue performance, configured-model and
+real-browser operational acceptance remain open. No source activation, operator
+migration or deployment was performed.

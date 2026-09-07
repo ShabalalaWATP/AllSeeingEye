@@ -17,6 +17,7 @@ from ase.application.reports.selection import Selection
 from ase.domain.challenge import ChallengeReview, ChallengeSearch, ReportChallenge
 from ase.domain.errors import RateLimited
 from ase.domain.llm import LlmProfile, LlmRole
+from ase.domain.project_lookup import preserve_project_lookup
 from ase.domain.reports import ReportBody
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.research_runs import ResearchStage
@@ -75,10 +76,17 @@ async def run_challenge(
         plan = await model_call(body)
     targets = tuple(row for row in body.key_judgements if row.id in plan.plans)
     batches: tuple[ResearchBatch, ...] = ()
+    effective_terms: dict[str, tuple[str, ...]] = {}
     private_input = query.focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
     if targets and collection is not None and not private_input and not area_search:
-        queries = tuple(replace(query, terms=plan.plans[row.id]) for row in targets)
         try:
+            queries = tuple(
+                replace(query, terms=preserve_project_lookup(query.terms, plan.plans[row.id]))
+                for row in targets
+            )
+            effective_terms = {
+                row.id: task.terms for row, task in zip(targets, queries, strict=True)
+            }
             await reached(progress, ResearchStage.COLLECTING)
             batches = await collection.challenge_many(queries)
             if len(batches) != len(queries):
@@ -95,7 +103,9 @@ async def run_challenge(
                 )
             )
     found = {row.id: batch for row, batch in zip(targets, batches, strict=False)}
-    searches = tuple(_search(row.id, row.statement, plan, found) for row in body.key_judgements)
+    searches = tuple(
+        _search(row.id, row.statement, plan, found, effective_terms) for row in body.key_judgements
+    )
     searches = tuple(
         replace(
             row,
@@ -200,9 +210,13 @@ def _identity(selection: Selection) -> tuple[tuple[str, str, str], ...]:
 
 
 def _search(
-    target: str, statement: str, plan: ChallengeModelDraft, batches: dict[str, ResearchBatch]
+    target: str,
+    statement: str,
+    plan: ChallengeModelDraft,
+    batches: dict[str, ResearchBatch],
+    effective_terms: dict[str, tuple[str, ...]],
 ) -> ChallengeSearch:
-    terms = plan.plans.get(target, ())
+    terms = effective_terms.get(target, plan.plans.get(target, ()))
     if not terms:
         return ChallengeSearch(
             target,

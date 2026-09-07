@@ -51,9 +51,13 @@ def score(
 ) -> float:
     """A retrieval priority, never a probability or a report confidence score."""
     timestamp = evidence_time(event, time_basis)
-    if timestamp is None:
+    if timestamp is None and not (
+        time_basis is EvidenceTimeBasis.RECORDED and event.project is not None
+    ):
         return 0.0
-    age_hours = max(0.0, (now - timestamp).total_seconds() / 3600)
+    # Admitted project-year intervals have no exact instant. Use neutral recency,
+    # retaining relevance and source weights without inventing a publication date.
+    age_hours = 0.0 if timestamp is None else max(0.0, (now - timestamp).total_seconds() / 3600)
     recency = math.exp(-age_hours / max(1.0, window.total_seconds() / 3600))
     severity = 1.0 + (event.severity or 0.0) * 0.5
     return (

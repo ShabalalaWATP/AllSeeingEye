@@ -4,6 +4,7 @@ export interface ProjectHistoryState {
   enabled: boolean;
   firstYear: string;
   lastYear: string;
+  projectId?: string;
 }
 
 export function projectInterval(history: ProjectHistoryState) {
@@ -15,7 +16,8 @@ export function projectInterval(history: ProjectHistoryState) {
     first < 1000 ||
     last > 9998 ||
     last < first ||
-    last - first >= 30
+    last - first >= 30 ||
+    (Boolean(history.projectId) && !/^[0-9]{1,12}$/.test(history.projectId ?? ''))
   )
     return null;
   return {
@@ -60,6 +62,14 @@ export function ProjectHistory({
               onChange={(event) => onChange({ ...value, lastYear: event.target.value })}
             />
           </div>
+          <TextField
+            label="Project ID (optional)"
+            inputMode="numeric"
+            maxLength={12}
+            value={value.projectId ?? ''}
+            onChange={(event) => onChange({ ...value, projectId: event.target.value })}
+            hint="Look up one exact AidData project. Your years, area and any additional search terms still apply."
+          />
           <p className="text-xs text-muted">
             Both years are included, up to 30 years. Select a project source and preview before
             starting. Country means project recipient. Commitments are not payments or evidence of

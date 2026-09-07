@@ -14,6 +14,7 @@ from ase.application.research.query_translation import (
     parse_translation,
 )
 from ase.domain.llm import LlmMessage, LlmRequest, LlmRole
+from ase.domain.project_lookup import preserve_project_lookup
 from ase.domain.research import ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.research_plan import QueryVariant
 from ase.domain.validation import Finding, Severity
@@ -30,6 +31,7 @@ def revised_query(
     terms = payload["terms"]
     if not isinstance(terms, list) or any(not isinstance(term, str) for term in terms):
         raise ValueError("Invalid revised terms")
+    terms = list(preserve_project_lookup(original.terms, tuple(terms)))
     QueryVariant("en", tuple(terms))
     if any(ord(char) < 32 for term in terms for char in term):
         raise ValueError("Invalid revised terms")

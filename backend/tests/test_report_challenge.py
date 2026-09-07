@@ -108,9 +108,10 @@ def test_each_missing_review_and_invalid_boolean_is_explicit():
     assert parse_reviews(payload, version.body, version.evidence)[0][0].status == "invalid"
 
 
+@pytest.mark.parametrize("project_id", [None, "35756"])
 @pytest.mark.parametrize("failure", [False, True])
 async def test_private_collection_reselects_and_reviews_all_final_judgements(
-    container, user, failure
+    container, user, failure, project_id
 ):
     _, version = document_records()
     job = production_job(user, container.cipher)
@@ -162,7 +163,12 @@ async def test_private_collection_reselects_and_reviews_all_final_judgements(
         job,
         Draft(body=version.body),
         selected,
-        query=ResearchQuery(job.title, job.now - job.window, job.now),
+        query=ResearchQuery(
+            job.title,
+            job.now - job.window,
+            job.now,
+            terms=(f"aiddata:{project_id}",) if project_id else (),
+        ),
         store=store,
         collection=collection,
         gateway=gateway,
@@ -174,6 +180,10 @@ async def test_private_collection_reselects_and_reviews_all_final_judgements(
     )
     assert collection.challenge_many.await_count == 1
     assert len(collection.challenge_many.await_args.args[0]) == 2
+    executed = collection.challenge_many.await_args.args[0]
+    assert [row.terms for row in result.challenge.searches] == [row.terms for row in executed]
+    if project_id:
+        assert all(row.terms[0] == f"aiddata:{project_id}" for row in executed)
     assert result.challenge.redrafted is not failure
     assert result.selection is (selected if failure else candidate)
     assert len(result.challenge.searches) == len(result.challenge.reviews) == 2

@@ -1,7 +1,9 @@
 # Research from a selected map area
 
-Status: area selection, spatial admission and authorised exact-map plan previews
-implemented locally; research launch and native provider integration remain unfinished.
+Status: area selection, authorised exact-map previews and research launch are
+implemented locally, including bounded native Copernicus catalogue collection and
+historical AidData polygon collection. Broader spatial providers and operational
+acceptance remain unfinished. See AIDDATA_IMPLEMENTATION.md for the latest evidence.
 This extends the full research and geospatial plans; it does not replace their
 polygon, regional dataset, imagery or historical comparison requirements.
 

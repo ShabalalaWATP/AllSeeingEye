@@ -32,12 +32,24 @@ it('launches historical project research from the exact saved area and resets co
   const { user } = renderApp(path, 'user');
   await user.type(await screen.findByLabelText('Your area research question'), 'Which projects?');
   await user.selectOptions(screen.getByLabelText('Research period'), 'history');
+  await user.type(screen.getByLabelText('Project ID (optional)'), '35756');
   await user.click(screen.getByText('Collection plan (required)'));
   await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
   await screen.findByText('Current preview');
   const consent = screen.getByLabelText(
     'Allow selected providers to receive this area and interval for collection.',
   );
+  for (const identifier of ['100', '', '35756']) {
+    await user.click(consent);
+    fireEvent.change(screen.getByLabelText('Project ID (optional)'), {
+      target: { value: identifier },
+    });
+    expect(consent).not.toBeChecked();
+    expect(screen.queryByText('Current preview')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Research saved area' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
+    await screen.findByText('Current preview');
+  }
   await user.click(consent);
   await user.clear(screen.getByLabelText('Last commitment year'));
   await user.type(screen.getByLabelText('Last commitment year'), '2020');
@@ -52,6 +64,7 @@ it('launches historical project research from the exact saved area and resets co
       map_view_id: viewId,
       map_revision_id: revisionId,
       research_source_ids: ['research-aiddata-projects'],
+      research_terms: ['aiddata:35756'],
       research_time_basis: 'recorded_time',
       research_since: '2000-01-01T00:00:00.000Z',
       research_until: '2021-01-01T00:00:00.000Z',

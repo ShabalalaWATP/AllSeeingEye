@@ -129,6 +129,7 @@ def search_catalogue(
     since: datetime,
     until: datetime,
     recipient_iso3: str | None = None,
+    project_id: str | None = None,
     include_unknown_years: bool = False,
     area: ResearchArea | None = None,
 ) -> CatalogueResults:
@@ -141,6 +142,7 @@ def search_catalogue(
     if (
         any(value.utcoffset() is None for value in (since, until))
         or since >= until
+        or (project_id is not None and not re.fullmatch(r"[0-9]{1,12}", project_id))
         or type(include_unknown_years) is not bool
         or len(terms) > 12
         or any(not term.strip() or len(term) > 300 for term in terms)
@@ -158,6 +160,8 @@ def search_catalogue(
         include_unknown_years,
         recipient_iso3,
         recipient_iso3,
+        project_id,
+        project_id,
         json.dumps([term.casefold() for term in terms]),
         MAX_PROJECTS + 1 if spatial else MAX_RESULTS + 1,
     ]
@@ -166,6 +170,7 @@ def search_catalogue(
         "THEN record_json END FROM projects "
         "WHERE (commitment_year BETWEEN ? AND ? OR (? AND commitment_year IS NULL)) "
         "AND (? IS NULL OR recipient_iso3=?) "
+        "AND (? IS NULL OR id=?) "
         "AND NOT EXISTS (SELECT 1 FROM json_each(?) AS term "
         "WHERE instr(search_text, term.value)=0) "
         "ORDER BY id LIMIT ?"
@@ -198,6 +203,7 @@ def search_catalogue(
                 record = _record(encoded)
                 if (
                     record.project.project_id != identity
+                    or (project_id is not None and identity != project_id)
                     or record.project.recipient_iso3 != country
                     or record.project.commitment_year != year
                 ):

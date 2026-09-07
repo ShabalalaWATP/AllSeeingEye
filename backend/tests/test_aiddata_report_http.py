@@ -18,11 +18,13 @@ from test_research_area import area
 from test_saved_map_views import STATE, claims_for, create, revise
 
 
+@pytest.mark.parametrize("lookup", [False, True])
 @pytest.mark.parametrize("disabled", [False, True])
 @pytest.mark.parametrize("saved_area", [False, True])
 async def test_historical_http_report_and_regeneration_preserve_project_records(
-    client, container, user, admin, tmp_path, disabled, saved_area
+    client, container, user, admin, tmp_path, disabled, saved_area, lookup
 ):
+    terms = ["aiddata:35756"] if lookup else ["airport"]
     map_ids = {}
     if saved_area:
         parent = await save_team_report(container, user, None)
@@ -56,7 +58,7 @@ async def test_historical_http_report_and_regeneration_preserve_project_records(
             "question": "Airport project commitments",
             "country_iso": None if saved_area else "LA",
             "source_ids": ["research-aiddata-projects"],
-            "terms": ["airport"],
+            "terms": terms,
             "time_basis": "recorded_time",
             "since": START.isoformat(),
             "until": END.isoformat(),
@@ -77,7 +79,7 @@ async def test_historical_http_report_and_regeneration_preserve_project_records(
             "country": None if saved_area else "LA",
             "research_mode": "quick",
             "research_source_ids": ["research-aiddata-projects"],
-            "research_terms": ["airport"],
+            "research_terms": terms,
             "research_time_basis": "recorded_time",
             "research_since": START.isoformat(),
             "research_until": END.isoformat(),
