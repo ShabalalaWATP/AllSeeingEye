@@ -35,6 +35,9 @@ import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
+import { WorldClocks } from './WorldClocks';
+import { ObservationControls, useObservationFilters } from './ObservationControls';
+import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
@@ -158,6 +161,7 @@ export default function GlobePage() {
     [countryEvents, windowHours, now],
   );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
+  const observations = useObservationFilters(scoped);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
     () =>
@@ -176,8 +180,10 @@ export default function GlobePage() {
 
   const eventLayers = useMemo(
     () =>
-      supported ? buildEventLayers(scoped, hidden, onPick, selectedId, { zoom, onCluster }) : [],
-    [hidden, onCluster, onPick, scoped, selectedId, supported, zoom],
+      supported
+        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId, { zoom, onCluster })
+        : [],
+    [hidden, onCluster, onPick, observations.filtered, selectedId, supported, zoom],
   );
   const night = useMemo(
     () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),
@@ -228,7 +234,7 @@ export default function GlobePage() {
   return (
     // Fills the shell's relative <main> directly: a percentage height would collapse
     // because the main area takes its height from flex, not from an explicit value.
-    <div className="absolute inset-0 bg-ground">
+    <div className="globe-dashboard absolute inset-0 bg-ground">
       {supported ? (
         <div
           ref={containerRef}
@@ -249,9 +255,16 @@ export default function GlobePage() {
       )}
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
+      <WorldClocks />
       {!opsRoom && (
         <GlobeControls>
           <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
+          <ObservationControls
+            events={scoped}
+            visibility={observations.visibility}
+            hidden={hidden}
+            onToggle={observations.toggle}
+          />
           <NationFilter
             countries={countries}
             value={country}
@@ -274,7 +287,11 @@ export default function GlobePage() {
             interference={interference}
             onToggleInterference={toggleInterference}
           />
-          <GeographicPrecisionPanel events={scoped} hidden={hidden} onSelect={focus} />
+          <GeographicPrecisionPanel
+            events={observations.filtered}
+            hidden={hidden}
+            onSelect={focus}
+          />
           {nation !== null && (
             <CountryPanel
               country={nation}

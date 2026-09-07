@@ -18,7 +18,7 @@ export function GlobeControls({ children }: { children: ReactNode }) {
   return compact ? (
     <CompactControls>{children}</CompactControls>
   ) : (
-    <div className="absolute top-16 bottom-3 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+    <div className="absolute top-16 bottom-40 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
       {children}
     </div>
   );
@@ -61,7 +61,7 @@ function ControlsSheet({ children, onClose }: { children: ReactNode; onClose: ()
     <dialog
       ref={dialogRef}
       aria-label="Map controls"
-      className="fixed inset-x-3 top-auto bottom-4 mx-auto my-0 max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-line bg-ground p-0 text-text open:flex backdrop:bg-black/60 sm:max-w-sm"
+      className="globe-dashboard-controls fixed inset-x-3 top-auto bottom-4 mx-auto my-0 max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-line bg-ground p-0 text-text open:flex backdrop:bg-black/60 sm:max-w-sm"
       onCancel={(event) => {
         event.preventDefault();
         onClose();

@@ -1,5 +1,5 @@
 /**
- * Low-zoom clustering: located events are binned into grid cells per category so the
+ * Low-zoom clustering: located events are binned on a unit sphere per category so the
  * globe shows a few sized circles with counts instead of thousands of overlapping dots.
  */
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
@@ -28,7 +28,7 @@ export interface Clustered {
   loose: LiveEvent[];
 }
 
-/** Cell size in degrees for a zoom level: coarser when further out. */
+/** Nominal angular cell width: coarser when further out. */
 export function cellSizeFor(zoom: number): number {
   const bucket = clusteringZoomFor(zoom);
   return bucket === 0 ? 12 : bucket === 1.5 ? 6 : 3;
@@ -39,16 +39,39 @@ export function clusteringZoomFor(zoom: number): number {
   return zoom < 1.5 ? 0 : zoom < 2.5 ? 1.5 : zoom < CLUSTER_ZOOM ? 2.5 : CLUSTER_ZOOM;
 }
 
-/** Bins located events into cells; cells with enough events become clusters. */
+interface SphericalCell {
+  category: Category;
+  members: LiveEvent[];
+  x: number;
+  y: number;
+  z: number;
+}
+
+/**
+ * Quantised unit-vector bins avoid the date-line seam and collapsing polar longitude cells.
+ * This is bounded grid aggregation, not a radius-neighbour search: nearby points
+ * on opposite cell boundaries can still occupy different bins. The centre is the
+ * normalised vector mean, never an arithmetic longitude mean across the date line.
+ */
 export function clusterEvents(events: readonly LiveEvent[], cellDegrees: number): Clustered {
-  const cells = new Map<string, { category: Category; members: LiveEvent[] }>();
+  if (!Number.isFinite(cellDegrees) || cellDegrees <= 0 || cellDegrees > 30)
+    throw new RangeError('Cluster angular width must be greater than zero and at most 30 degrees.');
+  const radians = Math.PI / 180;
+  const step = 2 * Math.sin((cellDegrees * radians) / 2);
+  const cells = new Map<string, SphericalCell>();
   for (const event of events) {
     if (event.point === null) continue;
-    const col = Math.floor(event.point.lon / cellDegrees);
-    const row = Math.floor(event.point.lat / cellDegrees);
-    const key = `${event.category}:${String(col)}:${String(row)}`;
-    const cell = cells.get(key) ?? { category: event.category, members: [] };
+    const lon = event.point.lon * radians;
+    const lat = event.point.lat * radians;
+    const x = Math.cos(lat) * Math.cos(lon);
+    const y = Math.cos(lat) * Math.sin(lon);
+    const z = Math.sin(lat);
+    const key = `${event.category}:${Math.round(x / step)}:${Math.round(y / step)}:${Math.round(z / step)}`;
+    const cell = cells.get(key) ?? { category: event.category, members: [], x: 0, y: 0, z: 0 };
     cell.members.push(event);
+    cell.x += x;
+    cell.y += y;
+    cell.z += z;
     cells.set(key, cell);
   }
   const clusters: Cluster[] = [];
@@ -59,11 +82,13 @@ export function clusterEvents(events: readonly LiveEvent[], cellDegrees: number)
       continue;
     }
     const count = cell.members.length;
+    const horizontal = Math.hypot(cell.x, cell.y);
+    const longitude = horizontal / count < 1e-12 ? 0 : Math.atan2(cell.y, cell.x) / radians;
     clusters.push({
       id: key,
       category: cell.category,
-      lon: cell.members.reduce((sum, event) => sum + (event.point?.lon ?? 0), 0) / count,
-      lat: cell.members.reduce((sum, event) => sum + (event.point?.lat ?? 0), 0) / count,
+      lon: Math.abs(longitude) > 180 - 1e-10 ? -180 : longitude,
+      lat: Math.atan2(cell.z, horizontal) / radians,
       count,
       maxSeverity: Math.max(...cell.members.map((event) => event.severity ?? 0)),
     });

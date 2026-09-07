@@ -9,12 +9,14 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
 
-export type IconKind = 'aircraft' | 'cyclone' | 'volcano';
+export type IconKind = 'aircraft' | 'vessel' | 'cyclone' | 'volcano';
 
 const ICON_SIZE = 64;
 
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
+  vessel:
+    '<path fill="#fff" fill-rule="evenodd" d="M32 3 45 20v31L32 61 19 51V20z M26 24h12v18H26z"/>',
   aircraft:
     '<path fill="#fff" d="M32 4c2.4 0 4 3 4 8v12l22 13v6l-22-6v13l6 5v4l-10-3-10 3v-4l6-5V37L6 43v-6l22-13V12c0-5 1.6-8 4-8z"/>',
   cyclone:
@@ -34,6 +36,7 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
 
 /** Which icon, if any, an event should be drawn with. */
 export function iconFor(event: LiveEvent): IconKind | null {
+  if (event.category === 'maritime' && event.subtype === 'vessel_position') return 'vessel';
   if (event.category === 'aviation') return 'aircraft';
   if (event.subtype === 'tropical_cyclone') return 'cyclone';
   if (event.subtype === 'volcano' || event.subtype === 'volcanoes') return 'volcano';
@@ -76,7 +79,8 @@ export function buildIconLayer(
         ? [255, 90, 90, 255]
         : [...CATEGORY_STYLES[event.category].colour, 235],
     // deck.gl rotates anticlockwise; a track is clockwise from north.
-    getAngle: (event) => (iconFor(event) === 'aircraft' ? -headingOf(event) : 0),
+    getAngle: (event) =>
+      ['aircraft', 'vessel'].includes(iconFor(event) ?? '') ? -headingOf(event) : 0,
     updateTriggers: { getSize: [selectedId] },
     onClick: (info: IconPick) => {
       onPick(info.object ?? null);

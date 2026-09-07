@@ -95,9 +95,20 @@ export function buildEventLayers(
   let loose: LiveEvent[] = exact;
   const layers: Layer[] = approximate ? [approximate] : [];
   if (view !== undefined && view.zoom < CLUSTER_ZOOM) {
-    const clustered = clusterEvents(exact, cellSizeFor(view.zoom));
+    // Keep a bounded sample of traffic recognisable at globe scale. Remaining
+    // records still contribute to clusters, rather than disappearing.
+    const traffic = exact.filter((event) => ['aircraft', 'vessel'].includes(iconFor(event) ?? ''));
+    const shown = traffic.slice(0, 250);
+    const selectedTraffic = traffic.find((event) => event.id === selectedId);
+    if (selectedTraffic && !shown.includes(selectedTraffic))
+      shown[shown.length - 1] = selectedTraffic;
+    const ids = new Set(shown.map((event) => event.id));
+    const clustered = clusterEvents(
+      exact.filter((event) => !ids.has(event.id)),
+      cellSizeFor(view.zoom),
+    );
     layers.push(...buildClusterLayers(clustered.clusters, view.onCluster));
-    loose = clustered.loose;
+    loose = [...shown, ...clustered.loose];
   }
   layers.push(
     ...scatterLayers(

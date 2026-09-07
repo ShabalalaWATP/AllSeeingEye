@@ -47,7 +47,7 @@ export function CoordinateReadout({ engine }: { engine: GlobeEngineHandle }) {
       aria-label="Copy coordinates"
       title="Click to copy"
       onClick={() => void copy()}
-      className="absolute bottom-32 left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:bottom-3 lg:min-h-0"
+      className="absolute bottom-40 left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:bottom-40 lg:min-h-0"
     >
       {copied ? 'Copied' : text}
     </button>

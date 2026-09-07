@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { liveEvent } from '@/test/fixtures';
 
-import { buildIconLayer } from './icons';
+import { buildIconLayer, iconFor } from './icons';
 
 type Accessor<T> = (event: LiveEvent) => T;
 
@@ -19,6 +19,22 @@ function props(layer: ReturnType<typeof buildIconLayer>) {
 }
 
 describe('icon layer accessors', () => {
+  it('draws only vessel positions as boats, retaining heading and warning distinctions', () => {
+    const vessel = liveEvent({
+      category: 'maritime',
+      subtype: 'vessel_position',
+      point: { lon: 2, lat: 50 },
+      attributes: { track_deg: 135 },
+    });
+    const warning = liveEvent({
+      category: 'maritime',
+      subtype: 'hazard',
+      point: { lon: 2, lat: 50 },
+    });
+    expect(iconFor(vessel)).toBe('vessel');
+    expect(iconFor(warning)).toBeNull();
+    expect(props(buildIconLayer([vessel], vi.fn(), null)).getAngle(vessel)).toBe(-135);
+  });
   const aircraft = liveEvent({
     id: 'a1',
     category: 'aviation',

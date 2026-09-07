@@ -1,0 +1,64 @@
+.globe-dashboard,
+.globe-dashboard-controls {
+  --color-ground: #030609;
+  --color-surface: #080f15;
+  --color-surface-2: #111e27;
+  --color-line: #23313c;
+  --color-ember: #79d8eb;
+  --color-text: #e1edf1;
+  --color-muted: #99abb6;
+}
+
+.globe-dashboard {
+  isolation: isolate;
+}
+
+.globe-dashboard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #02050955, transparent 20%, transparent 75%, #020509aa);
+  z-index: 1;
+}
+
+.globe-dashboard [aria-label='World clocks'],
+.globe-dashboard [aria-label='View mode'],
+.globe-dashboard [aria-label='Latest events'] {
+  animation: dashboard-arrive 450ms ease-out both;
+}
+
+.globe-dashboard [aria-label='World clocks'] {
+  animation-delay: 100ms;
+}
+
+.globe-dashboard button {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+@keyframes dashboard-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-dashboard [aria-label],
+  .globe-dashboard button {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Expanded source attribution must remain above dashboard instruments. */
+.globe-dashboard .maplibregl-ctrl-bottom-right {
+  z-index: 20;
+}
