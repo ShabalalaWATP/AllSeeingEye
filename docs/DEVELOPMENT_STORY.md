@@ -1021,3 +1021,34 @@ compatibility passed 49 backend tests and 26 focused frontend tests. The v1 hash
 contract remains unchanged; new maps use v2, and old maps require an explicit
 operator upgrade before source footprints appear. Real GPU acceptance, saved
 acquisition-time filtering and the operator launch workflow remain unfinished.
+
+
+### Explicit saved timeline basis, 7 September 2026
+
+Map state now records publication or acquisition-where-recorded time filtering.
+Legacy publication defaults remain omitted from canonical persistence, preserving
+old revision hashes. New unsaved report maps inherit the frozen research receipt's
+time basis; restored saved maps retain their own basis. Timeline options, range
+filters and evidence-list dates use the same choice, without retrieval fallback.
+The existing inclusive map cutoffs remain unchanged.
+
+A loader regression exposed independent overlay/AOI parsing before the shared
+bounded renderer. That duplicate parsing is removed. An unsupported retained
+overlay no longer prevents the anchored report from opening; the renderer owns
+bounded preparation and omission reporting. Exact report/version access checks
+remain unchanged.
+
+Focused verification: 57 backend state/compatibility cases and 27 frontend timeline,
+saved-view and anchored-link cases passed. The loader regression failed before the
+fix and passed afterwards. Type checks and scoped lint passed before the loader
+follow-up; final build/check results are recorded separately. Read-only review found
+no time-basis blocker. This remains uncommitted work pending broader checks and
+save/restore integration acceptance. The map-to-research launch remains unfinished.
+
+The subsequent full frontend run passed all 740 tests in 132 files, including
+saving an explicitly changed time basis: 95.75% statements, 90.12% branches,
+94.62% functions and 96.96% lines. The production build, final scoped loader lint
+and file-length checks passed. The existing bundle-size advisory remains.
+The historical launch must add an explicit collection interval: the current
+create-report contract only supports a rolling window. Collection, selection,
+report periods and regeneration must agree without changing actual creation time.

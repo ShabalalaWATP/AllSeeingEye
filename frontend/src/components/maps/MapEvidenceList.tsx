@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import type { EvidenceItem } from '@/lib/api/reports';
-import { publicationDay, evidencePrecision } from './evidenceGeometry';
+import { mapEvidenceDay, evidencePrecision } from './evidenceGeometry';
+import type { MapState } from '@/lib/api/mapViews';
 import { EvidenceObservationDetails } from './EvidenceObservationDetails';
 const PAGE_SIZE = 20;
 export function MapEvidenceList({
@@ -10,8 +11,10 @@ export function MapEvidenceList({
   chosen,
   select,
   onSelectEvidence,
+  timeBasis,
 }: {
   filtered: EvidenceItem[];
+  timeBasis: MapState['time_basis'];
   current: number;
   setPage: (value: number) => void;
   chosen: EvidenceItem | undefined;
@@ -36,7 +39,10 @@ export function MapEvidenceList({
                   {item.label}: {item.title}
                 </span>
                 <span className="mt-1 block text-xs text-muted">
-                  {publicationDay(item) ?? 'Publication date unknown'} · {evidencePrecision(item)}
+                  {timeBasis === 'acquisition_or_publication' && item.observation
+                    ? 'Acquired '
+                    : 'Published '}
+                  {mapEvidenceDay(item, timeBasis) ?? 'date unknown'} · {evidencePrecision(item)}
                 </span>
               </button>
             </li>

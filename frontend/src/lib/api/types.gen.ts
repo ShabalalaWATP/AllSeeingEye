@@ -2502,6 +2502,11 @@ export interface components {
             attribution: string;
         };
         /**
+         * EvidenceTimeBasis
+         * @enum {string}
+         */
+        EvidenceTimeBasis: "publication" | "acquisition_or_publication";
+        /**
          * ExportFormat
          * @enum {string}
          */
@@ -3308,6 +3313,8 @@ export interface components {
              * @default true
              */
             include_unknown_dates: boolean;
+            /** @default publication */
+            time_basis: components["schemas"]["EvidenceTimeBasis"];
             /** Selected Evidence */
             selected_evidence?: string | null;
             /** Overlays */

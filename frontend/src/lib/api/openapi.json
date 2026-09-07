@@ -7647,6 +7647,14 @@
         ],
         "title": "EvidenceGeometryOut"
       },
+      "EvidenceTimeBasis": {
+        "type": "string",
+        "enum": [
+          "publication",
+          "acquisition_or_publication"
+        ],
+        "title": "EvidenceTimeBasis"
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -9801,6 +9809,10 @@
             "type": "boolean",
             "title": "Include Unknown Dates",
             "default": true
+          },
+          "time_basis": {
+            "$ref": "#/components/schemas/EvidenceTimeBasis",
+            "default": "publication"
           },
           "selected_evidence": {
             "anyOf": [

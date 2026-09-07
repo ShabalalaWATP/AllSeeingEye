@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_view_records import state_from_dict, state_to_dict
 from ase.domain.map_views import MapView, MapViewPage, MapViewRevision, MapViewState, bounded_text
 
@@ -43,6 +44,7 @@ class MapStateFields(MapFields):
     published_since: AwareDatetime | None = None
     published_until: AwareDatetime | None = None
     include_unknown_dates: bool = Field(default=True, strict=True)
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
     selected_evidence: str | None = Field(default=None, min_length=1, max_length=128)
     overlays: list[MapOverlayFields] = Field(default_factory=list, max_length=8)
     aoi: dict[str, Any] | None = None

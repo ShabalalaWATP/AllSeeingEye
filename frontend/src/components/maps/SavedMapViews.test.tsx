@@ -90,10 +90,15 @@ it('roundtrips all saved state and captures a manually moved camera without repl
   map.getBearing.mockReturnValue(10);
   map.getPitch.mockReturnValue(30);
   act(() => map.fire('moveend'));
+  await user.selectOptions(
+    screen.getByLabelText('Timeline time basis'),
+    'acquisition_or_publication',
+  );
   await user.click(screen.getByRole('button', { name: 'Save new revision' }));
   await screen.findByText('Saved immutable revision 2.');
   expect(submitted).toEqual({
     ...saved.revision.state,
+    time_basis: 'acquisition_or_publication',
     camera: { longitude: 55, latitude: 45, zoom: 8, bearing: 10, pitch: 30 },
   });
   expect(screen.getByRole('link', { name: /Open saved revision 2/ })).toHaveAttribute(

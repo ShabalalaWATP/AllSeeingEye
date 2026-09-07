@@ -16,11 +16,35 @@ export function MapFilters({
   const day = state.published_until?.slice(0, 10) ?? '';
   const sinceOnly = !!state.published_since && !state.published_until;
   const dates = [...new Set([...days, ...(day ? [day] : [])])].sort();
+  const acquisition = state.time_basis === 'acquisition_or_publication';
+  const dateKind = acquisition ? 'observation/reporting' : 'publication';
   return (
     <div className="space-y-3">
+      <SelectField
+        label="Timeline time basis"
+        value={state.time_basis}
+        onChange={(event) =>
+          onChange({
+            ...state,
+            time_basis:
+              event.target.value === 'acquisition_or_publication'
+                ? 'acquisition_or_publication'
+                : 'publication',
+          })
+        }
+        options={[
+          { value: 'publication', label: 'Publication dates' },
+          {
+            value: 'acquisition_or_publication',
+            label: 'Acquisition dates where recorded, otherwise publication',
+          },
+        ]}
+      />
       <div className="grid gap-3 sm:grid-cols-2">
         <SelectField
-          label="Publication timeline (UTC)"
+          label={
+            acquisition ? 'Acquisition / publication timeline (UTC)' : 'Publication timeline (UTC)'
+          }
           value={sinceOnly ? '__since_only__' : day}
           onChange={(event) => {
             if (event.target.value === '__since_only__') return;
@@ -32,11 +56,21 @@ export function MapFilters({
             });
           }}
           options={[
-            { value: '', label: 'All publication dates' },
+            { value: '', label: `All ${dateKind} dates` },
             ...(sinceOnly
-              ? [{ value: '__since_only__', label: 'Custom range: published from a start date' }]
+              ? [
+                  {
+                    value: '__since_only__',
+                    label: acquisition
+                      ? 'Custom range: from a start date'
+                      : 'Custom range: published from a start date',
+                  },
+                ]
               : []),
-            ...dates.map((value) => ({ value, label: `Published through ${value}` })),
+            ...dates.map((value) => ({
+              value,
+              label: `${acquisition ? 'Acquired / published' : 'Published'} through ${value}`,
+            })),
           ]}
         />
         <SelectField
@@ -57,8 +91,8 @@ export function MapFilters({
       </div>
       {(state.published_since ?? state.published_until) && !state.include_unknown_dates && (
         <p className="text-xs text-muted">
-          Records without a valid publication date are excluded from this date filter. Choose All
-          publication dates to inspect them.
+          Records without a valid {dateKind} date are excluded from this date filter. Choose All
+          {` ${dateKind} dates`} to inspect them.
         </p>
       )}
       <details>
@@ -71,7 +105,13 @@ export function MapFilters({
                 type="datetime-local"
                 step="1"
                 label={
-                  field === 'published_since' ? 'Published from (UTC)' : 'Published until (UTC)'
+                  field === 'published_since'
+                    ? acquisition
+                      ? 'Time from (UTC)'
+                      : 'Published from (UTC)'
+                    : acquisition
+                      ? 'Time until (UTC)'
+                      : 'Published until (UTC)'
                 }
                 value={state[field] ? new Date(state[field]).toISOString().slice(0, 19) : ''}
                 onChange={(event) =>
@@ -91,7 +131,7 @@ export function MapFilters({
                 onChange({ ...state, include_unknown_dates: event.target.checked })
               }
             />
-            Include unknown publication dates
+            Include unknown {dateKind} dates
           </label>
           <fieldset>
             <legend className="text-sm">Source selection (none selected means all)</legend>

@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import UTC, date, datetime
 from typing import Any
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_geometry import parse_map_geometry
 from ase.domain.map_topology import TopologyBudget
 from ase.domain.map_views import MAX_VIEW_BYTES, MapCamera, MapOverlay, MapViewState
@@ -13,6 +14,11 @@ from ase.domain.map_views import MAX_VIEW_BYTES, MapCamera, MapOverlay, MapViewS
 
 def state_to_dict(state: MapViewState) -> dict[str, Any]:
     return {
+        **(
+            {"time_basis": state.time_basis.value}
+            if state.time_basis is not EvidenceTimeBasis.PUBLICATION
+            else {}
+        ),
         "schema_version": state.schema_version,
         "display_transform": state.display_transform,
         "camera": asdict(state.camera),
@@ -99,7 +105,8 @@ def state_from_dict(raw: object) -> MapViewState:
             "selected_evidence",
             "overlays",
             "aoi",
-        },
+        }
+        | ({"time_basis"} if isinstance(raw, dict) and "time_basis" in raw else set()),
     )
     # Bound before geometry normalisation or copying into durable state.
     try:
@@ -160,6 +167,7 @@ def state_from_dict(raw: object) -> MapViewState:
         else None,
         schema_version=data["schema_version"],
         display_transform=data["display_transform"],
+        time_basis=EvidenceTimeBasis(data.get("time_basis", "publication")),
     )
     canonical_state(state)
     return state

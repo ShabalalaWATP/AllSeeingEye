@@ -4,6 +4,7 @@ import type { MapCamera } from '@/lib/map/MapEngine';
 import type { LocalOverlay } from '@/lib/map/geoJsonTypes';
 import { parseLocalGeoJson } from '@/lib/map/localGeoJson';
 import type { EvidenceItem } from '@/lib/api/reports';
+import { mapEvidenceTimestamp } from './evidenceGeometry';
 
 export const initialMapState = (): MapState =>
   mapStateSchema.parse({
@@ -49,11 +50,12 @@ export function matchesMapFilters(
   item: EvidenceItem,
   state: Pick<
     MapState,
-    'source_ids' | 'published_since' | 'published_until' | 'include_unknown_dates'
+    'source_ids' | 'published_since' | 'published_until' | 'include_unknown_dates' | 'time_basis'
   >,
 ) {
   if (state.source_ids.length && !state.source_ids.includes(item.source_id)) return false;
-  const published = item.published_at ? Date.parse(item.published_at) : NaN;
+  const timestamp = mapEvidenceTimestamp(item, state.time_basis);
+  const published = timestamp ? Date.parse(timestamp) : NaN;
   if (!Number.isFinite(published)) return state.include_unknown_dates;
   return (
     (!state.published_since || published >= Date.parse(state.published_since)) &&

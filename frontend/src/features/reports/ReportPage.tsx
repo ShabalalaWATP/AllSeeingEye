@@ -8,8 +8,6 @@ import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDow
 import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
 import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
 import { useMapRequest } from '@/components/maps/useMapRequest';
-import { localOverlay } from '@/components/maps/savedMapState';
-import { parseLocalGeoJson } from '@/lib/map/localGeoJson';
 import { fetchMapView } from '@/lib/api/mapViews';
 import { ApiError, describeError } from '@/lib/api/errors';
 import { deleteReport, fetchReport, regenerateReport } from '@/lib/api/reports';
@@ -66,11 +64,6 @@ export default function ReportPage() {
         'invalid_map_link',
         'This map link must identify its exact report version and immutable revision.',
       );
-    if (savedMap) {
-      savedMap.revision.state.overlays.forEach(localOverlay);
-      if (savedMap.revision.state.aoi)
-        parseLocalGeoJson(JSON.stringify(savedMap.revision.state.aoi));
-    }
     signal.throwIfAborted();
     const report = await fetchReport(id, requested, signal);
     signal.throwIfAborted();
@@ -180,6 +173,7 @@ export default function ReportPage() {
           key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
           reportId={id}
           version={version.number}
+          initialTimeBasis={version.research?.time_basis ?? 'publication'}
           evidence={version.evidence}
           savedView={data.savedMap}
           scopeLabel={workspaces.label(report.team_id)}

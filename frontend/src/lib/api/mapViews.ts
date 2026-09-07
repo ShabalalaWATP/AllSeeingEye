@@ -20,6 +20,7 @@ export const mapStateSchema = z.object({
   published_since: z.string().nullable().default(null),
   published_until: z.string().nullable().default(null),
   include_unknown_dates: z.boolean().default(true),
+  time_basis: z.enum(['publication', 'acquisition_or_publication']).default('publication'),
   selected_evidence: z.string().nullable().default(null),
   overlays: z
     .array(

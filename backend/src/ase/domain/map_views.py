@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from uuid import UUID
 
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.map_geometry import CanonicalMapGeometry
 
 BASEMAPS = frozenset(
@@ -89,10 +90,13 @@ class MapViewState:
     aoi: CanonicalMapGeometry | None = None
     schema_version: int = 1
     display_transform: str = "ase-geojson-display-v1"
+    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
 
     def __post_init__(self) -> None:
         if not isinstance(self.camera, MapCamera):
             raise ValueError("Map state requires an immutable camera")
+        if not isinstance(self.time_basis, EvidenceTimeBasis):
+            raise ValueError("Unsupported map time basis")
         if type(self.schema_version) is not int or self.schema_version != 1:
             raise ValueError("Unsupported map state version")
         if (

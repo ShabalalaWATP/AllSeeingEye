@@ -135,3 +135,46 @@ it('keeps an owned map in an archived team readable without offering writes', as
   for (const name of ['Save separate copy', 'Save new revision', 'Archive view'])
     expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
 });
+
+it('opens the anchored report when a retained overlay cannot be displayed', async () => {
+  const overlay = {
+    ...saved.revision.state.overlays[0]!,
+    visible: true,
+    geometry: {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [0, 0],
+                [2, 2],
+                [0, 2],
+                [2, 0],
+                [0, 0],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+  };
+  server.use(
+    http.get('/api/map/views/:view/revisions/:revision', () =>
+      HttpResponse.json({
+        ...saved,
+        revision: { ...saved.revision, state: { ...saved.revision.state, overlays: [overlay] } },
+      }),
+    ),
+  );
+  renderApp(
+    `/reports/${report.report.id}?version=1&map_view=view-1&map_revision=revision-1`,
+    'user',
+  );
+  await screen.findByRole('heading', { name: 'Map and timeline' });
+  expect(screen.getByLabelText('Map view title')).toHaveValue('Saved geography');
+  expect(screen.getByRole('button', { name: 'Open evidence map' })).toBeVisible();
+});

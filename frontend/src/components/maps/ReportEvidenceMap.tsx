@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { MapTimelineHeader } from './MapTimelineHeader';
 import { MapFilters } from './MapFilters';
 import { MapEvidenceList } from './MapEvidenceList';
 import { MapOverlaySet } from './MapOverlaySet';
@@ -27,7 +28,7 @@ import type { MapBounds, MapCamera } from '@/lib/map/MapEngine';
 import { FootprintSearchPanel } from './FootprintSearchPanel';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
-import { hasEvidencePoint, hasLegacyEvidencePoint, publicationDay } from './evidenceGeometry';
+import { hasEvidencePoint, hasLegacyEvidencePoint, mapEvidenceDay } from './evidenceGeometry';
 import { MapDisplayVersionNotice } from './MapDisplayVersionNotice';
 import { MapGeometryOmissions } from './MapGeometryOmissions';
 import { prepareEvidenceGeometry } from './frozenEvidenceGeometry';
@@ -45,6 +46,7 @@ const PAGE_SIZE = 20;
 export interface ReportEvidenceMapProps {
   reportId: string;
   version: number;
+  initialTimeBasis?: MapState['time_basis'];
   evidence: readonly EvidenceItem[];
   onSelectEvidence?: (label: string) => void;
   savedView?: SavedMapView | undefined;
@@ -56,6 +58,7 @@ export interface ReportEvidenceMapProps {
 export default function ReportEvidenceMap({
   reportId,
   version,
+  initialTimeBasis = 'publication',
   evidence,
   onSelectEvidence,
   savedView,
@@ -78,7 +81,7 @@ export default function ReportEvidenceMap({
     actor.endsWith(':true');
   const [footprints, setFootprints] = useState<LocalCollection | null>(null);
   const [state, setState] = useState<MapState>(
-    () => savedView?.revision.state ?? initialMapState(),
+    () => savedView?.revision.state ?? { ...initialMapState(), time_basis: initialTimeBasis },
   );
   const saved = useSavedMapViews(reportId, version, savedView);
   const areaChanged = useMemo(
@@ -133,15 +136,19 @@ export default function ReportEvidenceMap({
   const days = useMemo(
     () =>
       [
-        ...new Set(evidence.map(publicationDay).filter((value): value is string => value !== null)),
+        ...new Set(
+          evidence
+            .map((item) => mapEvidenceDay(item, state.time_basis))
+            .filter((value): value is string => value !== null),
+        ),
       ].sort(),
-    [evidence],
+    [evidence, state.time_basis],
   );
   const sources = useMemo(
     () => [...new Map(evidence.map((item) => [item.source_id, item.source_name])).entries()],
     [evidence],
   );
-  const { source_ids, published_since, published_until, include_unknown_dates } = state;
+  const { source_ids, published_since, published_until, include_unknown_dates, time_basis } = state;
   const filtered = useMemo(
     () =>
       evidence.filter((item) =>
@@ -150,9 +157,10 @@ export default function ReportEvidenceMap({
           published_since,
           published_until,
           include_unknown_dates,
+          time_basis,
         }),
       ),
-    [evidence, source_ids, published_since, published_until, include_unknown_dates],
+    [evidence, source_ids, published_since, published_until, include_unknown_dates, time_basis],
   );
   const current = Math.min(page, Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1));
   const prepared = useMemo(
@@ -198,14 +206,7 @@ export default function ReportEvidenceMap({
       aria-label="Saved evidence map and timeline"
       className="space-y-4 rounded-md border border-line p-4"
     >
-      <header>
-        <h2 className="text-lg font-semibold">Map and timeline</h2>
-        <p className="mt-1 text-sm text-muted">
-          Frozen evidence from version {version}. Publication dates describe reporting time, not
-          necessarily when an event happened. Optional catalogue and local overlays remain separate
-          from saved evidence.
-        </p>
-      </header>
+      <MapTimelineHeader version={version} timeBasis={state.time_basis} />
       <MapDisplayVersionNotice
         version={state.display_transform}
         onUpgrade={() =>
@@ -327,6 +328,7 @@ export default function ReportEvidenceMap({
         </>
       )}
       <MapEvidenceList
+        timeBasis={state.time_basis}
         filtered={filtered}
         current={current}
         setPage={setPage}

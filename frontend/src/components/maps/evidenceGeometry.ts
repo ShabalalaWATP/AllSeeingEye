@@ -1,4 +1,5 @@
 import type { EvidenceItem } from '@/lib/api/reports';
+import type { MapState } from '@/lib/api/mapViews';
 
 export function hasEvidencePoint(item: EvidenceItem): boolean {
   return !item.geometry && hasLegacyEvidencePoint(item);
@@ -23,7 +24,21 @@ export function evidencePrecision(item: EvidenceItem): string {
     : `Approximate ${item.geo_confidence === 'city' ? 'city' : 'administrative area'}`;
 }
 export function publicationDay(item: EvidenceItem): string | null {
-  if (item.published_at === null) return null;
-  const date = new Date(item.published_at);
+  return mapEvidenceDay(item, 'publication');
+}
+export function mapEvidenceTimestamp(
+  item: EvidenceItem,
+  basis: MapState['time_basis'],
+): string | null {
+  const value =
+    basis === 'acquisition_or_publication' && item.observation
+      ? item.observation.acquired_at
+      : item.published_at;
+  return value && Number.isFinite(Date.parse(value)) ? value : null;
+}
+export function mapEvidenceDay(item: EvidenceItem, basis: MapState['time_basis']): string | null {
+  const timestamp = mapEvidenceTimestamp(item, basis);
+  if (timestamp === null) return null;
+  const date = new Date(timestamp);
   return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : null;
 }
