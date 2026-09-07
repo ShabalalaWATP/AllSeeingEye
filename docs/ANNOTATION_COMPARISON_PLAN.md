@@ -1,8 +1,8 @@
 # Reproducible annotation comparisons and meaningful-change monitoring
 
 Implementation contract, 7 September 2026. Comparison preview/export and
-confidence explanations are implemented on the isolated
-`codex/annotation-comparisons` branch, with acceptance still in progress. Durable
+confidence explanations are integrated on main in `d37f723`, with full backend
+acceptance still in progress. Durable
 monitoring checkpoints and their alerts remain planned work. It preserves the expansion requirements for changed
 claims, identity and organisation assertions, evidence-linked confidence
 explanations, and opt-in meaningful-change alerts.
@@ -163,3 +163,94 @@ validation, current access, digest binding, scoped search and frontend scope
 invalidation. All repository hooks passed, including Gitleaks, Ruff/format,
 file-length checks and full frontend lint/type checks. No live provider, browser
 or human assessment acceptance is implied.
+
+
+## Operator workflow
+
+Open the report comparison view and choose the before and after report/version.
+The searchable report chooser includes older reports through pagination. Select
+exact historical claim, identity or organisation-review revisions on each side,
+up to twenty combined and one revision per root. A comparison may use two
+revisions within the same report version.
+
+Same-root revisions correspond automatically. For different roots or judgements,
+declare correspondence only when justified and record the rationale. The server
+attributes the declaration to the requesting account. Inspect annotation changes,
+side-specific evidence and frozen confidence explanations separately. Export JSON
+from the preview to preserve its exact inputs, method, results and digest. If the
+selected content changes before export, preview again. A preview does not create
+a monitoring subscription.
+
+## Integration record
+
+Feature `090743f`, LF normalisation `737cdee` and fixture repairs `5776aaa` and
+`dbf6db4` are merged into main at `d37f723`. Backend and frontend Git tree hashes
+match the accepted comparison branch exactly. Full integrated backend acceptance
+is running in `data/annotation-comparison-integrated-backend-full.log`. The 978
+frontend tests and full lint/type/build results apply to that identical frontend
+tree; no second identical full frontend run was required. There is no Git remote,
+operator migration or production deployment.
+
+## Phase 3 implementation decisions
+
+Standalone monitors will observe selected annotation roots without requiring
+report regeneration. Start with an explicitly disclosed selection of up to twenty
+roots on one exact report version. This does not claim discovery of newly created
+roots or complete report inventory monitoring.
+
+Insert an ID-only outbox event inside each annotation mutation transaction. Record
+the exact committed revision and predecessor so rapid reversals are observed in
+order, including changes made before worker restart. Audit rows are not the queue.
+Creation captures an authorised baseline without an alert. Configuration changes
+use CAS and an explicit new baseline. Pause preserves history; resume distinguishes
+catch-up from deliberately establishing a fresh baseline.
+
+Under the shared administration guard, recheck background authority and scope,
+resolve the exact event, then atomically persist the immutable transition,
+checkpoint advancement, optional alert and event-delivery state. CAS and unique
+transition identity prevent replay duplicates. Suppress provenance-only alerts
+while preserving their history. Missing anchors, corrupt snapshots, overflow or
+history gaps preserve the valid baseline and disclose unavailable monitoring.
+Never translate loss of access into a withdrawal.
+
+Extend the alert origin constraint to support a real annotation monitor and exact
+transition ID alongside existing indicator and schedule origins. Preserve old
+alerts and acknowledgements. History/detail/export must resolve the immutable
+transition with current authority, not recompute against latest or redirect to a
+newer report. Store bounded manifests and disclose retention/expiry. Private
+snapshots and excerpts must remain outside shared SSE messages.
+
+Research successful baselines remain separate. Annotation changes must survive
+failed research runs. Cross-report correspondence remains explicit; standalone
+same-version monitoring cannot imply fresh evidence or new model confidence.
+SQLite/PostgreSQL migration preservation, competing-worker CAS, rapid reversal,
+rollback/restart, unavailable recovery and export/revocation contention tests are
+required before acceptance.
+
+
+## Remaining monitoring scope after selected-root delivery
+
+The first standalone monitor delivery does not complete all comparison monitoring
+requirements. Keep these follow-on requirements open:
+
+- Complete-inventory monitoring must observe newly created roots through a bounded
+  authorised count plus cap-plus-one inventory, and report overflow/inconsistency
+  explicitly. A selected-root subscription must never be labelled all annotations.
+- Cross-version monitoring needs an explicit correspondence contract and frozen
+  transition before/after references. Distinct annotation roots remain unmatched
+  unless an operator declaration or documented exact rule establishes the relation.
+- Future evidence, judgement links and confidence changes use new report versions
+  and their separate successful-research baseline. Pinned-version controls must
+  not expose selectable categories that cannot change. Existing research schedule
+  alerts are useful but do not establish annotation-aware historical transitions.
+- Multi-monitor delivery is keyed per monitor, configuration and event. One
+  subscriber consuming an event must not hide it from another. Retention must
+  preserve each paused/unavailable subscriber's required history or explicitly
+  report a gap; it must not silently reset to latest.
+- Report/monitor deletion must remove or invalidate alert summaries, transition
+  references and outbox delivery state consistently, including SQLite operation
+  where foreign-key enforcement is disabled. Existing alert reads cannot be
+  assumed to validate a deleted annotation parent.
+
+These are part of the full expansion goal. Separate bounded deliveries organise
+implementation and verification; they do not redefine completion.

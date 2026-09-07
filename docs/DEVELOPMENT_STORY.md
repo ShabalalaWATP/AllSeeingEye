@@ -2338,3 +2338,25 @@ repair passed all ten affected cases. Final combined acceptance remains open. Se
 RELATIONSHIP_REVIEW_IMPLEMENTATION.md. The next comparison contract records exact
 annotation checkpoints and a reproduced simultaneous link/confidence alert gap;
 that work and the wider expansion remain unfinished.
+
+
+## 7 September 2026: reproducible annotation comparisons integrated
+
+Main `d37f723` adds exact selected claim, identity and organisation-review
+revision comparisons, explicit attributed correspondence, frozen confidence
+explanations and digest-bound JSON export. Report selection is searchable and
+paged. Independent PostgreSQL tests verify both parent reports remain guarded
+through final release. A simultaneous evidence-link and confidence-change alert
+regression is repaired without treating link-only changes as confidence changes.
+
+Acceptance: 121 focused backend cases across the broad run and fixture repair,
+four PostgreSQL cases, 978 frontend tests (90.17% branch coverage), full types,
+lint, build, Bandit, import contracts and repository hooks passed. The final
+read-only review found no additional actionable issues. Integrated backend full
+coverage is running. Earlier full relationship coverage was 95.26%, with five
+stale export-fixture failures now repaired and a separately repaired SQLite test
+connection warning. No remote push, operator migration or deployment occurred.
+
+Durable independent annotation monitoring is the next delivery; exact outbox
+revisions must preserve intermediate corrections and failed research must not
+advance a successful research baseline. The complete expansion remains active.
