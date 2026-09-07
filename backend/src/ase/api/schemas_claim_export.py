@@ -29,10 +29,14 @@ class ClaimPackageIn(BaseModel):
     revisions: list[ClaimExportReferenceIn] = Field(default_factory=list, max_length=20)
     identity_revisions: list[IdentityExportReferenceIn] = Field(default_factory=list, max_length=20)
 
+    asset_ids: list[UUID] = Field(default_factory=list, max_length=20)
+
     @model_validator(mode="after")
     def selection_bounds(self) -> Self:
-        if not 1 <= len(self.revisions) + len(self.identity_revisions) <= 20:
-            raise ValueError("Select between one and twenty exact annotation revisions.")
+        if not 1 <= len(self.revisions) + len(self.identity_revisions) + len(self.asset_ids) <= 20:
+            raise ValueError("Select between one and twenty annotations or original assets.")
+        if len(set(self.asset_ids)) != len(self.asset_ids):
+            raise ValueError("Each original asset must be selected once.")
         return self
 
     def references(self) -> tuple[ClaimExportReference, ...]:

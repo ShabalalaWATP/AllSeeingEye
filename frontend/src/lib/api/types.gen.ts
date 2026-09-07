@@ -724,6 +724,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/original-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: operations["list_assets_api_reports__report_id__original_assets_get"];
+        put?: never;
+        /** Reserve Asset */
+        post: operations["reserve_asset_api_reports__report_id__original_assets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/original-assets/{asset_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Asset */
+        get: operations["download_asset_api_reports__report_id__original_assets__asset_id__content_get"];
+        /** Upload Asset */
+        put: operations["upload_asset_api_reports__report_id__original_assets__asset_id__content_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/original-assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Asset */
+        delete: operations["delete_asset_api_reports__report_id__original_assets__asset_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/claims": {
         parameters: {
             query?: never;
@@ -2528,6 +2581,8 @@ export interface components {
             revisions?: components["schemas"]["ClaimExportReferenceIn"][];
             /** Identity Revisions */
             identity_revisions?: components["schemas"]["IdentityExportReferenceIn"][];
+            /** Asset Ids */
+            asset_ids?: string[];
         };
         /** ClaimPageOut */
         ClaimPageOut: {
@@ -4334,6 +4389,101 @@ export interface components {
             limitations: string;
             /** Scene Cloud Cover */
             scene_cloud_cover: number | null;
+        };
+        /** OriginalAssetListOut */
+        OriginalAssetListOut: {
+            /** Items */
+            items: components["schemas"]["OriginalAssetOut"][];
+        };
+        /** OriginalAssetOut */
+        OriginalAssetOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Evidence Label */
+            evidence_label: string;
+            /** Source Id */
+            source_id: string;
+            /** Event Id */
+            event_id: string;
+            /** Sha256 */
+            sha256: string;
+            /** Byte Count */
+            byte_count: number;
+            /** Filename */
+            filename: string;
+            /** Media Type */
+            media_type: string;
+            /** Permitted Use */
+            permitted_use: string;
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Uploader Id
+             * Format: uuid
+             */
+            uploader_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Reservation Expires At
+             * Format: date-time
+             */
+            reservation_expires_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "reserved" | "uploading" | "active" | "deleted" | "expired";
+            /** Transitioned At */
+            transitioned_at: string | null;
+        };
+        /** OriginalAssetReserveIn */
+        OriginalAssetReserveIn: {
+            /** Version Number */
+            version_number: number;
+            /** Evidence Label */
+            evidence_label: string;
+            /** Filename */
+            filename: string;
+            /** Media Type */
+            media_type: string;
+            /** Permitted Use */
+            permitted_use: string;
+            /** Byte Count */
+            byte_count: number;
+            /**
+             * Retention Days
+             * @default 30
+             */
+            retention_days: number;
         };
         /** PirIn */
         PirIn: {
@@ -7521,6 +7671,170 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SavedMapViewOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_assets_api_reports__report_id__original_assets_get: {
+        parameters: {
+            query: {
+                version_number: number;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OriginalAssetListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reserve_asset_api_reports__report_id__original_assets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OriginalAssetReserveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OriginalAssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_asset_api_reports__report_id__original_assets__asset_id__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_asset_api_reports__report_id__original_assets__asset_id__content_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OriginalAssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_asset_api_reports__report_id__original_assets__asset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

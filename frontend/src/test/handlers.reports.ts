@@ -4,6 +4,7 @@ import { report, reportSummary, reportTemplates } from './fixtures';
 import { apiError } from './handlers';
 
 export const reportHandlers = [
+  http.get('/api/reports/:id/original-assets', () => HttpResponse.json({ items: [] })),
   http.get('/api/reports/templates', () => HttpResponse.json({ items: reportTemplates })),
 
   http.get('/api/reports', () => HttpResponse.json({ items: [reportSummary] })),

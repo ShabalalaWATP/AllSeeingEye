@@ -35,14 +35,20 @@ async def export_claim_evidence_package(
     session: SessionDep,
     container: ContainerDep,
 ) -> Response:
+    if body.asset_ids:
+        # The asset use case performs the final combined lifecycle/session check.
+        # Keep this separate request guard before that final transaction.
+        await validate_request_session(container, claims)
     result = await container.export_claim_package(session).execute(
         claims,
         report_id,
         body.version_number,
         body.references(),
         identity_references=body.identity_references(),
+        asset_ids=tuple(body.asset_ids),
     )
-    await validate_request_session(container, claims)
+    if not body.asset_ids:
+        await validate_request_session(container, claims)
     return Response(
         result.content,
         media_type=result.media_type,

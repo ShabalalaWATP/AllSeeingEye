@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
+from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
@@ -32,6 +33,7 @@ from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.generate_claims import GenerateClaims
 from ase.application.reports.identities import ReportIdentities
 from ase.application.reports.map_origin import ReportMapOrigin
+from ase.application.reports.original_assets import OriginalAssets
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_views import SavedMapViews
@@ -238,6 +240,18 @@ class ReportWiring:
     def export_report(self, session: AsyncSession) -> ExportReportUseCase:
         return ExportReportUseCase(self.get_report(session), ReportDocumentRenderer())
 
+    def original_assets(self, session: AsyncSession) -> OriginalAssets:
+        r = self.repositories(session)
+        return OriginalAssets(
+            r.users,
+            r.refresh_tokens,
+            r.reports,
+            SqlOriginalAssetRepository(session),
+            self.access_policy(session),
+            self.clock,
+            r.uow,
+        )
+
     def export_evidence_package(self, session: AsyncSession) -> ExportEvidencePackage:
         return ExportEvidencePackage(self.get_report(session), FrozenEvidencePackageRenderer())
 
@@ -248,6 +262,7 @@ class ReportWiring:
                 self.report_claims(session), r.reports, r.uow, self.report_identities(session)
             ),
             SelectedClaimPackageRenderer(),
+            self.original_assets(session),
         )
 
     def compare_reports(self, session: AsyncSession) -> CompareReportsUseCase:

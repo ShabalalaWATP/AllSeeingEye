@@ -7,6 +7,7 @@ import { CopyButton } from '@/components/ui/CopyButton';
 import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
 import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
 import { IdentityReviews } from '@/components/reports/IdentityReviews';
+import { OriginalAssets } from '@/components/reports/OriginalAssets';
 import { ClaimExportSelection } from '@/components/reports/ClaimExportSelection';
 import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
 import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
@@ -197,6 +198,12 @@ export default function ReportPage() {
             evidence={version.evidence}
             canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
             canManage={(root) => mapWritable && workspaces.canManage(root)}
+          />
+          <OriginalAssets
+            reportId={id}
+            version={version.number}
+            evidence={version.evidence}
+            canEdit={canEdit}
           />
         </ClaimExportSelection>
         <ReportEvidenceMap

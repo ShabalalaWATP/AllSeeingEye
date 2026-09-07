@@ -174,10 +174,16 @@ shared schemas, container wiring, generated API types and migrations.
 
 - [ ] Extend existing version comparison with added/withdrawn evidence, changed
   claims and why confidence changed. Preserve valid-time and collected-time.
-- [ ] Save only deliberately selected permitted records/assets, with retention and
+- [x] Save only deliberately selected permitted records/assets, with retention and
   size quotas. Do not turn this into a historical copy of every live feed.
-- [ ] Evidence package: report, manifest, source URLs, exact cited excerpts/locators,
+  Selected original re-upload now matches an internal import's frozen original
+  hash, with an operator permitted-use declaration, scoped quotas and expiry.
+  Wider source-specific retrieval and retain-at-import remain follow-ups, as
+  recorded in `SELECTED_ORIGINAL_ASSETS_IMPLEMENTATION.md` and the status audit.
+- [x] Evidence package: report, manifest, source URLs, exact cited excerpts/locators,
   permitted selected files, hashes, licence notes and collection receipts.
+  Selected originals join exact annotation revisions with bounded manifests and
+  final access/lifecycle checks. Exact saved-map image export remains open.
 - [ ] Archive support first discovers dated captures. Retrieval is gated by archive
   terms; missing captures and incomplete content remain explicit.
 - [ ] Add bounded local transcription with timestamped excerpts, frame comparison,

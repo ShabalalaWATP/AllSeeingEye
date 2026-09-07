@@ -10,6 +10,7 @@ from uuid import UUID
 
 from ase.adapters.reports.evidence_package import MAX_PACKAGE_BYTES, FrozenEvidencePackageRenderer
 from ase.adapters.reports.identity_package_validation import validate_identity_selection
+from ase.adapters.reports.original_asset_package import render_original_package
 from ase.domain.claim_revisions import (
     ClaimCitationInput,
     ClaimRevision,
@@ -18,6 +19,7 @@ from ase.domain.claim_revisions import (
 )
 from ase.domain.errors import InvalidRequest
 from ase.domain.identity_review import IdentityDecisionRevision
+from ase.domain.original_assets import OriginalAssetContent
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 MAX_SELECTED_REVISIONS = 20
@@ -98,7 +100,20 @@ class SelectedClaimPackageRenderer:
         revisions: tuple[ClaimRevision, ...],
         *,
         identity_revisions: tuple[IdentityDecisionRevision, ...] = (),
+        original_assets: tuple[OriginalAssetContent, ...] = (),
     ) -> bytes:
+        if original_assets:
+            if (
+                len(revisions) + len(identity_revisions) + len(original_assets)
+                > MAX_SELECTED_REVISIONS
+            ):
+                raise InvalidRequest("Select at most twenty annotations or original assets.")
+            base = (
+                self.render(record, version, revisions, identity_revisions=identity_revisions)
+                if revisions or identity_revisions
+                else FrozenEvidencePackageRenderer().render(record, version)
+            )
+            return render_original_package(record, version, base, original_assets)
         if record.id != version.report_id:
             raise InvalidRequest("The report and version do not match.")
         if not 1 <= len(revisions) + len(identity_revisions) <= MAX_SELECTED_REVISIONS:

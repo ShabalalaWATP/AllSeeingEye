@@ -227,6 +227,52 @@ and a generated PDF was visually inspected. Arabic/Persian shaping remains an
 explicit PDF limitation; DOCX preserves original text. No runtime font downloads
 or automatic translation-quality claim is introduced.
 
+## Selected original evidence retention
+
+The selected-original path attaches a deliberately re-uploaded file to one
+frozen report version and evidence label. It is eligible only when an internal
+document or media import retained a valid `original_sha256` anchor. The server
+matches the submitted bytes to that hash, preserving the frozen source filename
+and media type. Extracted-text and thumbnail hashes cannot substitute for it.
+This does not establish authenticity, truth or permission to redistribute.
+
+In the report reader, choose eligible evidence, select the original file, enter
+a permitted-use declaration and choose 1–90 days of retention (default 30).
+Readers with current report access can download retained originals. Retention
+and deletion require current report write permission. Storage belongs to the
+report's personal or team scope, with no cross-team hash lookup or shared blob.
+The declaration records the operator's assertion rather than a licence check.
+
+Files are bounded to 8 MiB. Personal storage permits 64 records and 64 MiB,
+team storage 256 records and 256 MiB, and global storage 4,096 records and 1 GiB.
+Pending reservations count towards those limits. At most two reservations can
+be pending globally, and they expire after two minutes. Deleted, expired or
+abandoned entries have their bytes and source metadata scrubbed; their minimal
+lifecycle records count towards the record allowance for 30 days. Deletion
+therefore frees bytes immediately, but does not immediately free a record slot.
+
+Expired assets are unavailable on access. A cleanup task runs every minute,
+independently of feed activation, to remove expired bytes and old tombstones.
+This is application-level removal from the active database, not secure erasure
+of database pages, storage snapshots, downloaded exports or independent backups.
+Parent report deletion also removes its asset records transactionally.
+
+Select active originals in the existing evidence-package builder alongside
+exact claim and identity revisions, or select originals alone. The combined
+selection permits 20 items, at most 24 MiB of originals and 32 MiB of total
+uncompressed package content. An oversized package fails instead of silently
+dropping files. Packages without selected originals retain their 8 MiB limit.
+Downloads and archive members use generated `.bin` names; source names are
+metadata only. The package carries exact asset IDs, permitted-use declarations,
+integrity hashes and a versioned manifest. Current access and asset lifecycle
+are rechecked after rendering. No source file is opened or executed by this path.
+
+Migration `0027` adds the selected-original table. It refuses a downgrade while
+any retained records or lifecycle tombstones remain. Development acceptance
+uses disposable databases; no operator database has been migrated by this work.
+Automatic retain-at-import, universal web capture, original satellite imagery
+and saved-map image export remain separate work.
+
 ## Remaining acceptance
 
 Saved-map API/UI integration subsequently passed all 698 frontend tests, with
@@ -245,8 +291,10 @@ backend verification below predates these additions and is not a new full run.
 
 The [implementation plan](RESEARCH_EXPANSION_IMPLEMENTATION_PLAN.md) remains the
 full backlog. These features do not establish automated translation quality,
-complete historical datasets, fully accepted reproducible map exports, retained original
-assets, human-reviewed identity corrections or unrestricted provider coverage.
+complete historical datasets, fully accepted reproducible map exports, universal
+original-source capture or unrestricted provider coverage. Selected re-uploaded
+original retention and operator identity-review revisions have subsequently been
+implemented with their own scoped checks.
 Twelve synthetic regional cases are development seeds, not human-labelled results.
 Configured-model evaluation and the wider 60-case human review remain open.
 Verification: the full backend run completed with 1,946 passing tests, 14 skips

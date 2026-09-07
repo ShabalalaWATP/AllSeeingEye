@@ -65,13 +65,14 @@ class SelectClaimExport:
         references: tuple[ClaimExportReference, ...],
         *,
         identity_references: tuple[IdentityExportReference, ...] = (),
+        allow_empty: bool = False,
     ) -> SelectedClaimExport:
         if type(number) is not int or not 1 <= number <= 2_147_483_647:
             raise InvalidRequest("Choose a positive report version.")
         if (
             not isinstance(references, tuple)
             or not isinstance(identity_references, tuple)
-            or not 1 <= len(references) + len(identity_references) <= 20
+            or not (0 if allow_empty else 1) <= len(references) + len(identity_references) <= 20
         ):
             raise InvalidRequest("Select between one and twenty exact annotation revisions.")
         if len({item.revision_id for item in references}) != len(references):
@@ -100,12 +101,16 @@ class SelectClaimExport:
                 raise InvalidRequest("Selected revisions must belong to the chosen report version.")
             anchors.add((identity_root.report_version_id, identity_root.evidence_sha256))
             identity_revisions.append(identity_revision)
+        if not references and not identity_references:
+            access = await self.claims._context(actor)
+            await self.claims._report(access, report_id)
+            await self.claims._version(report_id, number)
         record = await self.reports.get(report_id)
         version = await self.reports.get_version(report_id, number)
         if record is None or version is None:
             raise NotFound()
         digest = evidence_digest(version)
-        if anchors != {(version.id, digest)}:
+        if anchors and anchors != {(version.id, digest)}:
             raise Conflict("Selected claims have inconsistent frozen evidence anchors.")
         snapshot = SelectedClaimExport(
             actor.user_id,
@@ -137,6 +142,7 @@ class SelectClaimExport:
             snapshot.version_number,
             snapshot.references,
             identity_references=snapshot.identity_references,
+            allow_empty=not snapshot.references and not snapshot.identity_references,
         )
         if (
             fresh.report_version_id != snapshot.report_version_id

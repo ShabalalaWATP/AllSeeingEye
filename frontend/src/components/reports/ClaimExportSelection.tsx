@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useSyncExternalStore } from 'react
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import type { OriginalAsset } from '@/lib/api/originalAssets';
 import type { ClaimRevision } from '@/lib/api/claims';
 import type { IdentityRevision } from '@/lib/api/identities';
 import { fetchClaimPackage } from '@/lib/api/claimExport';
@@ -11,21 +12,33 @@ import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
-type SelectedRevision = ClaimRevision | IdentityRevision;
+type SelectedRevision = ClaimRevision | IdentityRevision | OriginalAsset;
+const isAsset = (value: SelectedRevision): value is OriginalAsset => 'sha256' in value;
 const isClaim = (value: SelectedRevision): value is ClaimRevision => 'claim_id' in value;
 const selectionKey = (value: SelectedRevision) =>
-  `${isClaim(value) ? 'claim' : 'identity'}:${value.id}`;
+  `${isAsset(value) ? 'asset' : isClaim(value) ? 'claim' : 'identity'}:${value.id}`;
 const selectionTitle = (value: SelectedRevision) =>
-  isClaim(value)
-    ? value.statement
-    : `${value.subject} · Candidate ${value.candidate.candidate.evidence_label}`;
+  isAsset(value)
+    ? value.filename
+    : isClaim(value)
+      ? value.statement
+      : `${value.subject} · Candidate ${value.candidate.candidate.evidence_label}`;
 
 interface SelectionContext {
   values: SelectedRevision[];
   busy: boolean;
   toggle: (value: SelectedRevision) => void;
+  removeAsset: (id: string) => void;
 }
 const Selection = createContext<SelectionContext | null>(null);
+
+export function useOriginalAssetSelection() {
+  return useContext(Selection);
+}
+
+export function OriginalAssetExportChoice({ value }: { value: OriginalAsset }) {
+  return <ExportChoice value={value} />;
+}
 
 export function ClaimExportChoice({ value }: { value: ClaimRevision }) {
   return <ExportChoice value={value} />;
@@ -47,7 +60,10 @@ function ExportChoice({ value }: { value: SelectedRevision }) {
         disabled={selection.busy || (!checked && selection.values.length >= 20)}
         onChange={() => selection.toggle(value)}
       />
-      Include {isClaim(value) ? '' : 'identity '}revision {value.number} in evidence package
+      {isAsset(value)
+        ? `Include original ${value.filename}`
+        : `Include ${isClaim(value) ? '' : 'identity '}revision ${String(value.number)}`}{' '}
+      in evidence package
     </label>
   );
 }
@@ -73,7 +89,10 @@ function SelectionBody({ reportId, version, children }: Props) {
           : previous,
     );
   };
-  const identities = values.filter((value): value is IdentityRevision => !isClaim(value));
+  const identities = values.filter(
+    (value): value is IdentityRevision => !isClaim(value) && !isAsset(value),
+  );
+  const assets = values.filter(isAsset);
   const download = async () => {
     if (busy || values.length === 0) return;
     const signal = request();
@@ -84,6 +103,7 @@ function SelectionBody({ reportId, version, children }: Props) {
         reportId,
         {
           version_number: version,
+          ...(assets.length ? { asset_ids: assets.map((value) => value.id) } : {}),
           revisions: values
             .filter(isClaim)
             .map((value) => ({ claim_id: value.claim_id, revision_id: value.id })),
@@ -100,7 +120,7 @@ function SelectionBody({ reportId, version, children }: Props) {
       );
       if (!signal.aborted)
         saveBinaryFile(
-          `report-v${String(version)}-selected-${identities.length > 0 ? 'annotations' : 'claims'}.zip`,
+          `report-v${String(version)}-selected-${assets.length > 0 ? 'evidence' : identities.length > 0 ? 'annotations' : 'claims'}.zip`,
           blob,
         );
     } catch (caught) {
@@ -110,19 +130,27 @@ function SelectionBody({ reportId, version, children }: Props) {
     }
   };
   return (
-    <Selection.Provider value={{ values, busy, toggle }}>
+    <Selection.Provider
+      value={{
+        values,
+        busy,
+        toggle,
+        removeAsset: (id) =>
+          setValues((previous) => previous.filter((value) => !isAsset(value) || value.id !== id)),
+      }}
+    >
       <div
         className="mt-4 space-y-3 rounded border border-line p-4"
         aria-label="Selected evidence package"
       >
         <h3 className="font-medium">Build an evidence package</h3>
         <p className="text-sm text-muted">
-          Choose up to 20 exact revisions from claims, identity reviews or their history. The ZIP
-          includes this frozen report and your selected revisions, with excerpts and integrity
-          hashes. Original source files are not included.
+          Choose up to 20 exact claim revisions, identity revisions and retained original files. The
+          ZIP includes this frozen report and your selected revisions, with excerpts and integrity
+          hashes. Originals require explicit selection below (24 MiB of originals, 32 MiB total).
         </p>
         <p className="text-sm" role="status">
-          {values.length} of 20 revisions selected
+          {values.length} of 20 {assets.length ? 'items' : 'revisions'} selected
         </p>
         {values.length > 0 && (
           <ul className="space-y-2 text-sm">
@@ -132,14 +160,20 @@ function SelectionBody({ reportId, version, children }: Props) {
                 className="flex items-start justify-between gap-3 [overflow-wrap:anywhere]"
               >
                 <span>
-                  {selectionTitle(value)} · Revision {value.number} ·{' '}
-                  {isClaim(value) ? value.state : value.disposition}
+                  {selectionTitle(value)} ·{' '}
+                  {isAsset(value)
+                    ? `Original · ${value.evidence_label}`
+                    : `Revision ${String(value.number)} · ${isClaim(value) ? value.state : value.disposition}`}
                 </span>
                 <Button
                   variant="secondary"
                   disabled={busy}
                   onClick={() => toggle(value)}
-                  aria-label={`Remove ${isClaim(value) ? '' : 'identity '}revision ${String(value.number)}: ${selectionTitle(value)}`}
+                  aria-label={
+                    isAsset(value)
+                      ? `Remove original: ${value.filename}`
+                      : `Remove ${isClaim(value) ? '' : 'identity '}revision ${String(value.number)}: ${selectionTitle(value)}`
+                  }
                 >
                   Remove
                 </Button>
@@ -154,7 +188,9 @@ function SelectionBody({ reportId, version, children }: Props) {
             disabled={values.length === 0}
             onClick={() => void download()}
           >
-            {identities.length > 0 ? 'Download selected evidence' : 'Download selected claims'}
+            {identities.length > 0 || assets.length > 0
+              ? 'Download selected evidence'
+              : 'Download selected claims'}
           </Button>
           <Button
             variant="secondary"

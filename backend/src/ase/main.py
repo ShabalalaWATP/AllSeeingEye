@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 
@@ -14,6 +15,7 @@ from ase.api.router import api_router
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.feeds import FeedConnector
 from ase.container import Container
+from ase.container.original_asset_expiry import expire_original_assets
 from ase.infrastructure.logging import configure_logging
 from ase.infrastructure.settings import Settings
 
@@ -28,9 +30,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await container.schedule_runner.start()
         await container.translation_queue.start()
         await container.social_monitor.start()
+    asset_expiry = asyncio.create_task(
+        expire_original_assets(container.session_factory, container.clock)
+    )
     try:
         yield
     finally:
+        asset_expiry.cancel()
+        await asyncio.gather(asset_expiry, return_exceptions=True)
         await container.social_monitor.stop()
         await container.translation_queue.stop()
         await container.schedule_runner.stop()

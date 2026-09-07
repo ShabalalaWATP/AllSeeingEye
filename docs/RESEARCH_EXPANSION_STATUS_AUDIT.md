@@ -12,6 +12,16 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- Selected-original retention subsequently passed 84 checks on disposable
+  PostgreSQL 17.10, including real quota/consume races and migration 0027 parity,
+  report preservation and downgrade refusal with retained bytes. Final SQLite
+  groups passed 30 and 52 checks; frontend passed 175 tests across 37 files.
+  Mypy (558 files), Ruff, architecture contracts, configured Bandit, scoped
+  frontend lint, types/build, Caddy validation and file/whitespace checks passed.
+  Focused independent review has no unresolved blocking findings. The disposable
+  database was removed. No operator migration, deployment, coverage
+  remeasurement, live model/provider or GPU acceptance was performed.
+  See `SELECTED_ORIGINAL_ASSETS_IMPLEMENTATION.md` for exact scope and logs.
 - After spherical clustering, the full frontend passed 852 tests in 153 files:
   95.48% statements, 90.18% branches, 94.19% functions and 96.65% lines.
 - The full backend passed 2,724 tests, with 14 skips and 95.63% coverage in
@@ -52,7 +62,7 @@ branch coverage. Build, scoped lint and the production dependency audit passed.
 | --- | --- | --- |
 | Regional seed scenarios | `backend/evaluations/regional_cases/` contains 12 synthetic cases, four per country | Independent human labels/agreement and actual model evaluation |
 | Source feasibility inventory | `REGIONAL_SOURCE_EXPANSION.md`, `SOURCE_FEASIBILITY_2026_09.md`, source catalogue; eight regional feed checks recorded | Complete source-specific access, reuse and live coverage acceptance across the proposed matrix |
-| Retention and map-geometry decisions | `adr/0014-research-evidence-retention.md` | Implement the original-asset lifecycle described there |
+| Retention and map-geometry decisions | `adr/0014-research-evidence-retention.md`; selected original re-upload, scoped quotas and expiry/deletion lifecycle | Wider source-specific capture and retain-at-import integration |
 | Map hardware/browser baseline | `SAVED_MAP_VIEW_IMPLEMENTATION.md` records Intel Iris Xe, Chrome, projection and 390px fixture checks | Complete measured performance, seam/pole restoration and repeated-cycle memory acceptance |
 | Shared language catalogue | `domain/languages.py`, profile schema, query preparation, `useLanguageCatalogue`; `test_language_capabilities.py` | Arabic/Persian PDF shaping; no inference that narrative support proves PDF support |
 | Original scripts and matching normalisation | Matching preserves original evidence and separates Persian matching substitutions | Explicit transliteration provenance and source-calendar contract; never guess a calendar |
@@ -118,8 +128,8 @@ report evidence and source attributes remain the authority for the new display.
 | Requirement | Implemented evidence | Remaining work |
 | --- | --- | --- |
 | Version comparison | `application/reports/comparison.py` compares structured report/evidence/assessment fields | Claim/identity revision comparison and a dedicated evidence-linked confidence-change explanation |
-| Selected retained assets | Frozen report evidence, selected annotations and saved map revisions with quotas | Original-file store, permitted-use metadata, retention/deletion lifecycle and user/team/global quotas |
-| Evidence packages | Frozen report/receipts/locators, hashes, exact annotation selection and licence limitations | Permitted original files and exact saved-map images |
+| Selected retained assets | Exact-version re-upload matched to frozen original SHA-256; migration 0027, permitted-use declarations, personal/team/global reservations and quotas, scoped UI/download/delete, periodic expiry and bounded tombstones | Explicit retain-at-import and permitted source-specific original retrieval; operational backup/recovery acceptance |
+| Evidence packages | Frozen report/receipts/locators, hashes, exact annotation and original-asset selection; generated inert members and final access/lifecycle checks | Exact saved-map images; wider source-original coverage |
 | Archives | Availability lookup and optional Save Page Now return a dated URL | Operator capture inventory, selected content retrieval, completeness manifest and terms-gated retention |
 | Local media | Sanitised images, English OCR and three bounded timestamped video frames | Audio transcription, multilingual original/translated OCR, paired comparison and supported candidate-location annotations |
 | PDF scripts | Chinese SC/TC embedded fonts and recorded round-trip/visual checks | Arabic/Persian shaping and visual/text-extraction acceptance; keep current warnings |
@@ -132,14 +142,16 @@ report evidence and source attributes remain the authority for the new display.
 
 Meaningful monitoring is already partly implemented in `domain/research_changes.py`
 and `persistence/schedule_changes.py`; it is not a missing scheduling foundation.
-The library's privacy checks do not prove original-asset retention, and synthetic
-evaluation seeds must never be relabelled as independent human review.
+Original-asset retention has its own scoped lifecycle and acceptance checks,
+separate from the library's privacy checks. Synthetic evaluation seeds must never
+be relabelled as independent human review.
 
 ## Next engineering priorities
 
 1. Extend PostgreSQL acceptance and preserve its exact scope in the record.
 2. Complete GPU acceptance for implemented seam/pole clustering and measurements.
-3. Implement selected original-asset retention and reproducible map-image export.
+3. Implement reproducible map-image export and extend explicit original retention
+   to eligible source-specific capture and retain-at-import workflows.
 4. Extend automated candidate planning and independently evaluate implemented
    operator tasks, possible-conflict replanning and sufficiency decisions.
 5. Add relationship review, claim-aware comparison/alerts and evidence-linked

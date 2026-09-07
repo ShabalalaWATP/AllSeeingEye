@@ -15,6 +15,7 @@ from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepos
 from ase.adapters.persistence.library_models import ResearchLibraryRow, ResearchLibraryTagRow
 from ase.adapters.persistence.map_views import SqlMapViewRepository
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
+from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
 from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
@@ -200,6 +201,7 @@ class SqlReportRepository:
 
     async def delete(self, report_id: UUID) -> None:
         # Explicit cleanup also supports SQLite connections without FK enforcement.
+        await SqlOriginalAssetRepository(self._session).delete_for_report(report_id)
         await SqlClaimRepository(self._session).delete_for_report(report_id)
         await SqlIdentityDecisionRepository(self._session).delete_for_report(report_id)
         await SqlMapViewRepository(self._session).delete_for_report(report_id)

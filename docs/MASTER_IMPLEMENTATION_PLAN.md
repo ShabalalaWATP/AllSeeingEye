@@ -4,6 +4,16 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: selected originals can now be deliberately re-uploaded
+against frozen report evidence, retained with scoped quotas and expiry, downloaded
+and included in selected evidence packages. Migration 0027 adds transactional
+reservations and bounded lifecycle records. PostgreSQL acceptance passed 84 tests;
+final SQLite groups passed 30 and 52 tests; frontend passed 175 tests. Static,
+security, architecture, build and proxy checks passed. No operator migration or
+deployment was performed. See [the contract and acceptance record](SELECTED_ORIGINAL_ASSETS_IMPLEMENTATION.md).
+Retain-at-import, wider source retrieval, backup/recovery acceptance and exact
+saved-map image export remain open in the full expansion audit.
+
 7 September continuation: one bounded first-pass model review now supports
 possible-conflict replanning and explicit sufficiency stopping, with exact
 source excerpts and proposed/applied decision receipts. Scope, explicit tasks

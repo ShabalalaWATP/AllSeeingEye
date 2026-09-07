@@ -8,9 +8,10 @@ export function fetchClaimPackage(
   body: ClaimPackageSelection,
   signal: AbortSignal,
 ) {
-  const route = body.identity_revisions?.length
-    ? 'selected-evidence-package'
-    : 'claim-evidence-package';
+  const route =
+    body.identity_revisions?.length || body.asset_ids?.length
+      ? 'selected-evidence-package'
+      : 'claim-evidence-package';
   return apiBlob(`/api/reports/${encodeURIComponent(reportId)}/${route}`, {
     method: 'POST',
     body,

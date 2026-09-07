@@ -2223,3 +2223,40 @@ were updated for nonempty review calls, and clock fixtures were corrected to
 exercise the actual admission boundary. No coverage remeasurement, live model or
 provider call, GPU check or deployment. Updated operations, status audit and master
 plan. Independent semantic query/conflict/sufficiency evaluation remains open.
+
+## 7 September 2026: selected original evidence retention
+
+Implemented deliberate original-file re-upload against an exact frozen internal
+document/media evidence hash. Migration 0027, transactional personal/team/global
+quotas, two pending uploads, session-family binding, timed intake, periodic expiry
+and scrubbed 30-day lifecycle records now support scoped retention. Original
+filenames and MIME remain frozen provenance; generated attachment and ZIP paths
+are inert. The report reader supports declaration, retention, download, deletion
+and original-only or combined annotation packages. Original bytes are limited to
+8 MiB each / 24 MiB per export, with a 32 MiB overall package limit.
+
+Focused review led to final session/lifecycle ordering, export admission before
+blob loading and through final rechecks, disconnect cancellation and bounded
+tombstones. Tests found the general request middleware still buffered new uploads;
+the exact PUT route now streams after authentication. The Caddy outer limit was
+also raised for original content routes and validated in a disposable container.
+The UI uses frozen MIME even when the browser supplies none for a renamed file.
+
+Final PostgreSQL acceptance passed 84 tests on a separate loopback-only 17.10
+instance, including independent-transaction quota/consume races, migration parity,
+existing-report preservation and retained-data downgrade refusal. The instance
+was removed. SQLite final affected and compatibility groups passed 30 and 52
+tests. The initial 76-pass run had two team-fixture setup failures, repaired and
+covered by final checks. All 175 frontend tests passed with two workers after an
+earlier existing lazy-page test timed out under contention.
+
+Mypy (558 files), Ruff, two architecture contracts, configured Bandit, scoped
+ESLint, TypeScript/build, file-length and whitespace checks passed. Independent
+focused security/code review has no unresolved blocking findings. Logs are
+`data/original-assets-postgres.log`, `data/original-assets-recheck.log`,
+`data/original-assets-compatibility.log` and `data/original-assets-frontend-final.log`.
+Updated the contract, operating notes, master plan and expansion audit. The
+existing build chunk advisory remains. No new full-suite coverage measurement,
+provider/model call, browser/GPU check, operator migration or deployment occurred.
+Wider original-source capture, retain-at-import, backup/recovery acceptance and
+saved-map image export remain unfinished parts of the full plan.

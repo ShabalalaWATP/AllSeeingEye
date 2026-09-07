@@ -1982,6 +1982,290 @@
         }
       }
     },
+    "/api/reports/{report_id}/original-assets": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Assets",
+        "operationId": "list_assets_api_reports__report_id__original_assets_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Version Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OriginalAssetListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Reserve Asset",
+        "operationId": "reserve_asset_api_reports__report_id__original_assets_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OriginalAssetReserveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OriginalAssetOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/original-assets/{asset_id}/content": {
+      "put": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Upload Asset",
+        "operationId": "upload_asset_api_reports__report_id__original_assets__asset_id__content_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OriginalAssetOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "maxLength": 8388608
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Download Asset",
+        "operationId": "download_asset_api_reports__report_id__original_assets__asset_id__content_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/original-assets/{asset_id}": {
+      "delete": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Delete Asset",
+        "operationId": "delete_asset_api_reports__report_id__original_assets__asset_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/claims": {
       "get": {
         "tags": [
@@ -7827,6 +8111,15 @@
             "type": "array",
             "maxItems": 20,
             "title": "Identity Revisions"
+          },
+          "asset_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Asset Ids"
           }
         },
         "additionalProperties": false,
@@ -12706,6 +12999,218 @@
           "scene_cloud_cover"
         ],
         "title": "ObservationOut"
+      },
+      "OriginalAssetListOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OriginalAssetOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "OriginalAssetListOut"
+      },
+      "OriginalAssetOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "report_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Version Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "byte_count": {
+            "type": "integer",
+            "title": "Byte Count"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "permitted_use": {
+            "type": "string",
+            "title": "Permitted Use"
+          },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "uploader_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Uploader Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "reservation_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Reservation Expires At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "reserved",
+              "uploading",
+              "active",
+              "deleted",
+              "expired"
+            ],
+            "title": "Status"
+          },
+          "transitioned_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transitioned At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "report_id",
+          "report_version_id",
+          "version_number",
+          "evidence_label",
+          "source_id",
+          "event_id",
+          "sha256",
+          "byte_count",
+          "filename",
+          "media_type",
+          "permitted_use",
+          "owner_id",
+          "team_id",
+          "uploader_id",
+          "created_at",
+          "expires_at",
+          "reservation_expires_at",
+          "status",
+          "transitioned_at"
+        ],
+        "title": "OriginalAssetOut"
+      },
+      "OriginalAssetReserveIn": {
+        "properties": {
+          "version_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version Number"
+          },
+          "evidence_label": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Evidence Label"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Media Type"
+          },
+          "permitted_use": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Permitted Use"
+          },
+          "byte_count": {
+            "type": "integer",
+            "maximum": 8388608.0,
+            "minimum": 1.0,
+            "title": "Byte Count"
+          },
+          "retention_days": {
+            "type": "integer",
+            "maximum": 90.0,
+            "minimum": 1.0,
+            "title": "Retention Days",
+            "default": 30
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_number",
+          "evidence_label",
+          "filename",
+          "media_type",
+          "permitted_use",
+          "byte_count"
+        ],
+        "title": "OriginalAssetReserveIn"
       },
       "PirIn": {
         "properties": {

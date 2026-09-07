@@ -24,6 +24,7 @@ from ase.api.routers import (
     map_views,
     me,
     mfa,
+    original_assets,
     profile,
     recovery,
     report_documents,
@@ -58,6 +59,7 @@ api_router.include_router(recovery.router)
 api_router.include_router(events.router)
 api_router.include_router(footprints.router)
 api_router.include_router(map_views.router)
+api_router.include_router(original_assets.router)
 api_router.include_router(claims.router)
 api_router.include_router(identities.router)
 api_router.include_router(research_library.router)

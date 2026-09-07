@@ -4,6 +4,7 @@ from typing import Protocol
 
 from ase.domain.claim_revisions import ClaimRevision
 from ase.domain.identity_review import IdentityDecisionRevision
+from ase.domain.original_assets import OriginalAssetContent
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 
@@ -15,4 +16,5 @@ class ClaimEvidencePackageRenderer(Protocol):
         revisions: tuple[ClaimRevision, ...],
         *,
         identity_revisions: tuple[IdentityDecisionRevision, ...] = (),
+        original_assets: tuple[OriginalAssetContent, ...] = (),
     ) -> bytes: ...

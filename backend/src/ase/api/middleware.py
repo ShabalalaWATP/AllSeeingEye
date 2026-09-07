@@ -31,6 +31,10 @@ API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
 IMPORT_MAX_BODY_BYTES = 8 * 1024 * 1024
 IMPORT_PATH = "/api/research/inputs"
+_UUID_PATH = r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
+ORIGINAL_UPLOAD_PATH = re.compile(
+    rf"/api/reports/{_UUID_PATH}/original-assets/{_UUID_PATH}/content"
+)
 MAP_VIEW_MAX_BODY_BYTES = 6 * 1024 * 1024 + 16 * 1024
 MAP_VIEW_REVISION_PATH = re.compile(
     r"/api/map/views/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
@@ -83,7 +87,10 @@ class BodySizeLimitMiddleware:
             await self.app(scope, receive, send)
             return
         declared = Headers(scope=scope).get("content-length")
-        importing = scope.get("path") == IMPORT_PATH and scope.get("method") == "POST"
+        importing = (scope.get("path") == IMPORT_PATH and scope.get("method") == "POST") or (
+            scope.get("method") == "PUT"
+            and ORIGINAL_UPLOAD_PATH.fullmatch(scope.get("path", "")) is not None
+        )
         saving_map = (scope.get("path") == "/api/map/views" and scope.get("method") == "POST") or (
             scope.get("method") == "PATCH"
             and MAP_VIEW_REVISION_PATH.fullmatch(scope.get("path", "")) is not None
