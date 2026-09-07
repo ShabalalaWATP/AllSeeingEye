@@ -4,6 +4,14 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: seven PostgreSQL identity-review concurrency cases now
+prove personal/team quota contention, service and repository CAS, preserved
+history and denial after membership revocation during lock contention. Separate
+backend processes and observed PostgreSQL lock waiting establish real concurrent
+transactions. Disposable databases/container were removed. See
+[IDENTITY_REVIEW_IMPLEMENTATION.md](IDENTITY_REVIEW_IMPLEMENTATION.md).
+
+
 7 September continuation: administrator AI setup is a progressive provider,
 model/test and audience-confirmation journey. Unsaved account model discovery,
 per-person personal-workspace overrides and safe authority-bound mutations are

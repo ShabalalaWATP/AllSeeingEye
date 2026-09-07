@@ -112,8 +112,7 @@ translation quality or complete cancellation coverage at every real-model stage.
 
 The existing IODA feed must not be confused with the still-deferred IODA research
 provider. Likewise, a Copernicus footprint is not retained imagery, and the optional
-FIRMS adapter still needs an operator key and live acceptance. Map-image export has local implementation; actual GPU acceptance remains a missing
-feature despite saved map-state and evidence-package support.
+FIRMS adapter still needs an operator key and live acceptance. Map-image export has local implementation; actual GPU acceptance remains open despite saved map-state and evidence-package support.
 
 ## E6–E7: organisations, relationships and claims
 
@@ -121,7 +120,7 @@ feature despite saved map-state and evidence-package support.
 | --- | --- | --- |
 | Companies House and SEC depth | Profiles, officers/PSC snapshots and recent SEC metadata providers | Selected filing documents/content and bounded older SEC pagination |
 | Registry/designation/procurement sources | GLEIF profile/direct/ultimate parents, imported UKSL/OFAC snapshots, first-page Contracts Finder | ITA, Find a Tender and wider upstream-format/operational acceptance |
-| Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export; 62 focused PostgreSQL checks passed | Concurrent PostgreSQL CAS/quota acceptance, wider operational acceptance and human-reviewed false-merge evaluation |
+| Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export; 62 focused PostgreSQL checks plus seven independent-transaction quota/CAS/revocation races passed | Wider operational acceptance and human-reviewed false-merge evaluation |
 | Dated organisation assertions | GLEIF report relationship view preserves source type, dates, status and evidence | Independent immutable relationship review/disagreement annotations; do not substitute identity-match decisions |
 | Claims and original evidence | Migration 0025, exact title/summary excerpts, origin metadata, proposal/review/withdrawal revisions, automatic generation and selected packages | Representative atomicity/semantic-support evaluation and deeper original-source-chain inspection |
 | Separate grading dimensions | Doctrine/grading/assessment code and tests preserve A–F, 1–6, confidence and likelihood roles | No single truth percentage or politically assigned grade is authorised; new pathways require the same checks |
@@ -158,7 +157,7 @@ be relabelled as independent human review.
 
 1. Extend PostgreSQL acceptance and preserve its exact scope in the record.
 2. Complete GPU acceptance for implemented seam/pole clustering and measurements.
-3. Implement reproducible map-image export and extend explicit original retention
+3. Verify rendered map-image exports and extend explicit original retention
    to eligible source-specific capture and retain-at-import workflows.
 4. Extend automated candidate planning and independently evaluate implemented
    operator tasks, possible-conflict replanning and sufficiency decisions.

@@ -2287,3 +2287,14 @@ combined frontend pass contains 222 tests. Build, types, lint, configured Bandit
 architecture contracts and file checks passed. The acceptance record and remaining
 operator migration/live-provider gates are in ADMIN_AI_CONNECTION_JOURNEY.md.
 No operator credentials, model assignments or database were changed.
+
+
+## 7 September 2026: identity-review concurrency acceptance
+
+Added seven opt-in PostgreSQL tests using independently generated databases and
+distinct backend process IDs. Last-slot personal/team count and byte quotas,
+service and repository compare-and-swap, immutable history and revocation during
+observed lock contention all passed. Ruff and formatting passed. No production
+change was needed; all disposable databases, container and volumes were removed.
+Updated the identity acceptance record and expansion audit. Human false-merge,
+backup/recovery and wider release gates remain open.

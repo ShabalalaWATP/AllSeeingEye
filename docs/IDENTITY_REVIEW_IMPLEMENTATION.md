@@ -238,3 +238,27 @@ The full frontend run including the new relationship view subsequently passed:
 95.45% statements, 90.11% branches, 94.2% functions and 96.64% lines. This supersedes
 the earlier failed frontend runs, but not the outstanding backend, PostgreSQL,
 real-provider and browser acceptance checks.
+
+
+## 7 September 2026: PostgreSQL concurrent-writer acceptance
+
+Seven additional cases passed on a disposable PostgreSQL 17.10 instance, with
+separate generated databases and distinct PostgreSQL backend process IDs for
+competing writers. Personal and team last-slot count/byte quota races preserve
+the admitted limit. Same-base service corrections retain one winner, one conflict
+and immutable history; direct repository compare-and-swap also admits one winner
+without relying on the application's administration guard.
+
+A membership-revocation case holds the real administration guard, verifies that
+the correction writer is waiting on a PostgreSQL lock, commits revocation and
+then checks that the writer is denied with no additional identity revision or
+audit entry. These tests exercise independent transactions, not two coroutines
+sharing one transaction.
+
+All seven cases passed in `data/identity-concurrency-postgres.log`. Ruff and
+formatting passed. The seven generated databases, container and volumes were
+removed and absence verified. No operator database or production implementation
+was changed. The opt-in test is `backend/tests/test_identity_concurrency_postgres.py`;
+`ASE_IDENTITY_CONCURRENCY_POSTGRES_URL` must name an owned disposable loopback
+PostgreSQL server with database-creation privileges. Human false-merge evaluation,
+wider deployment and recovery acceptance remain separate requirements.
