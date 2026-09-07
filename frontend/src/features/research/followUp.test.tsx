@@ -241,3 +241,15 @@ describe('private and follow-up research', () => {
     ).toThrow(/private research scope is incomplete/);
   });
 });
+
+it('does not turn an area report into a rolling general follow-up', () => {
+  expect(() =>
+    followUpRequest({
+      ...report,
+      report: {
+        ...report.report,
+        scope: { ...report.report.scope, map_origin: { revision_id: 'saved' }, window_hours: 0 },
+      },
+    }),
+  ).toThrow('Start area research from its saved map revision');
+});

@@ -10,6 +10,7 @@ import { fetchReport, fetchTemplates } from '@/lib/api/reports';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 
+import { SavedAreaResearch } from './SavedAreaResearch';
 import { ResearchForm } from './ResearchForm';
 import { followUpRequest } from './followUpScope';
 
@@ -20,6 +21,7 @@ export default function ResearchPage() {
   const templates = useScopedResource(fetchTemplates);
   const countries = useScopedResource(fetchCountries);
   const parentId = params.get('parent');
+  const areaRequested = params.has('map_view') || params.has('map_revision');
   const loadParent = useCallback(async () => {
     if (!parentId) return null;
     const report = await fetchReport(parentId);
@@ -85,23 +87,36 @@ export default function ResearchPage() {
             </Button>
           </Alert>
         )}
-        {preferences.profile && (!parentId || parent.data?.report.report.id === parentId) && (
-          <ResearchForm
-            key={`${workspaces.key}:${params.toString()}:${parent.data?.report.version.number ?? ''}`}
+        {areaRequested && parentId && (
+          <Alert tone="error">Choose area research or a parent follow-up, not both.</Alert>
+        )}
+        {areaRequested && !parentId && preferences.profile && (
+          <SavedAreaResearch
+            viewId={params.get('map_view') ?? ''}
+            revisionId={params.get('map_revision') ?? ''}
             preferences={preferences.profile}
             workspaces={workspaces}
-            countries={countries.data ?? []}
-            countriesLoading={countries.loading}
-            template={template}
-            initialQuestion={params.get('question') ?? ''}
-            initialCountry={(
-              params.get('country') ??
-              preferences.profile.research_country ??
-              ''
-            ).toUpperCase()}
-            parent={parentId ? (parent.data ?? undefined) : undefined}
           />
         )}
+        {!areaRequested &&
+          preferences.profile &&
+          (!parentId || parent.data?.report.report.id === parentId) && (
+            <ResearchForm
+              key={`${workspaces.key}:${params.toString()}:${parent.data?.report.version.number ?? ''}`}
+              preferences={preferences.profile}
+              workspaces={workspaces}
+              countries={countries.data ?? []}
+              countriesLoading={countries.loading}
+              template={template}
+              initialQuestion={params.get('question') ?? ''}
+              initialCountry={(
+                params.get('country') ??
+                preferences.profile.research_country ??
+                ''
+              ).toUpperCase()}
+              parent={parentId ? (parent.data ?? undefined) : undefined}
+            />
+          )}
         <footer className="flex flex-col gap-3 pb-4 text-xs leading-relaxed text-muted">
           <p>
             Automated research can be incomplete or mistaken. Inspect the cited evidence and

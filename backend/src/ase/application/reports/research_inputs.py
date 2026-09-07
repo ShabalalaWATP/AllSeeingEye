@@ -137,6 +137,11 @@ class ReportResearchInputs:
                 record.id, request.parent_version or record.latest_version, owner_id or actor.id
             )
             version = await require_parent(self._access, self._reports, actor, request, parent)
+            if record.scope.get("map_origin"):
+                raise InvalidRequest(
+                    "Start area research from its saved map revision; "
+                    "ordinary follow-ups cannot preserve that scope"
+                )
             if record.scope.get("research_focus") in {"document", "media"} and (
                 request.research_focus not in PRIVATE_FOCUS or request.research_mode is None
             ):

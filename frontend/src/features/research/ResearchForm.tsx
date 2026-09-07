@@ -126,6 +126,7 @@ export function ResearchForm({
       return;
     }
     const request: ReportRequest = {
+      disclose_area_to_provider: false,
       template: template.id,
       question: question.trim(),
       research_mode: mode,

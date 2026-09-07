@@ -159,6 +159,8 @@ def test_area_job_retains_pointless_observation_using_acquisition_date():
     job = SimpleNamespace(
         request=request,
         window=WINDOW,
+        period_from=NOW - WINDOW,
+        period_to=NOW,
         template=template_for("ask"),
         now=NOW,
         bbox=BoundingBox(10, 40, 12, 42),

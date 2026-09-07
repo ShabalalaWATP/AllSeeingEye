@@ -27,6 +27,11 @@ const savedScope = z.object({
 
 /** Reuse explicit saved scope only; unknown or incomplete private scope must never widen. */
 export function followUpRequest(parent: Report): ReportRequest {
+  if (parent.report.scope.map_origin) {
+    throw new Error(
+      'Start area research from its saved map revision. Ordinary follow-ups cannot preserve that scope.',
+    );
+  }
   const scope = savedScope.parse(parent.report.scope);
   if (
     (parent.report.scope.research_input || parent.report.scope.research_reuse) &&
@@ -37,6 +42,7 @@ export function followUpRequest(parent: Report): ReportRequest {
     );
   }
   return {
+    disclose_area_to_provider: false,
     report_language: scope.report_language ?? 'en',
     report_style: scope.report_style ?? 'assessment',
     country: scope.country ?? null,

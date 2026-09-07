@@ -55,6 +55,7 @@ describe('ReportsPage', () => {
       await screen.findByRole('heading', { name: 'Ask the Eye: What next?' }),
     ).toBeInTheDocument();
     expect(body).toEqual({
+      disclose_area_to_provider: false,
       template: 'ask',
       report_language: 'en',
       report_style: 'assessment',

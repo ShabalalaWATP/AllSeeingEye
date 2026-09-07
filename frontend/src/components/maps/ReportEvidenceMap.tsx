@@ -14,6 +14,7 @@ import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAcce
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { MapTimelineHeader } from './MapTimelineHeader';
+import { MapResearchLaunchLink } from './MapResearchLaunchLink';
 import { MapFilters } from './MapFilters';
 import { MapEvidenceList } from './MapEvidenceList';
 import { MapOverlaySet } from './MapOverlaySet';
@@ -245,6 +246,10 @@ export default function ReportEvidenceMap({
         opened={opened}
         readViewport={readViewport}
         changed={areaChanged}
+      />
+      <MapResearchLaunchLink
+        saved={saved.active}
+        changed={areaChanged || areaSelection.dirty || areaSelection.picking}
       />
       <FootprintSearchPanel onChange={setFootprints} />
       <SavedMapControls

@@ -98,8 +98,8 @@ class Producer:
             template=job.template.id,
             title=job.title,
             scope=job.scope,
-            period_from=job.now - job.window,
-            period_to=job.now,
+            period_from=job.period_from,
+            period_to=job.period_to,
             data_cutoff=max((job.now, *(item.captured_at for item in selection.items))),
             requirements=direction.requirement_ids() if direction else (),
         )

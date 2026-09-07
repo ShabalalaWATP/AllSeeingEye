@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 from uuid import UUID
 
@@ -44,6 +45,26 @@ class ReportRequest:
     map_revision_id: UUID | None = None
     disclose_area_to_provider: bool = False
     map_origin: MapResearchOrigin | None = None
+    research_since: datetime | None = None
+    research_until: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if self.research_since is None and self.research_until is None:
+            return
+        if self.research_since is None or self.research_until is None:
+            raise ValueError("Provide both research interval bounds")
+        if any(value.utcoffset() is None for value in (self.research_since, self.research_until)):
+            raise ValueError("Research interval bounds must include a timezone")
+        if not timedelta(0) < self.research_until - self.research_since <= timedelta(days=14):
+            raise ValueError("Research interval must be positive and at most 14 days")
+        object.__setattr__(self, "research_since", self.research_since.astimezone(UTC))
+        object.__setattr__(self, "research_until", self.research_until.astimezone(UTC))
+        if self.window_hours is not None:
+            raise ValueError("Choose a fixed research interval or a rolling window")
+        if self.map_view_id is None or self.map_revision_id is None or self.research_mode is None:
+            raise ValueError(
+                "Fixed research intervals require an exact saved map and research mode"
+            )
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
@@ -61,7 +82,13 @@ class ReportRequest:
             country_iso=scope.get("country") or None,
             categories=categories,
             question=scope.get("question") or None,
-            window_hours=int(window) if window else None,
+            window_hours=int(window) if window and not scope.get("research_since") else None,
+            research_since=datetime.fromisoformat(str(scope["research_since"]))
+            if scope.get("research_since")
+            else None,
+            research_until=datetime.fromisoformat(str(scope["research_until"]))
+            if scope.get("research_until")
+            else None,
             devils_advocacy=bool(scope.get("devils_advocacy", False)),
             hazard=scope.get("hazard") or None,
             conflict_id=scope.get("conflict") or None,

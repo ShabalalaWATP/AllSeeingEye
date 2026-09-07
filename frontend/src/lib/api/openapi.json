@@ -11787,6 +11787,59 @@
               }
             ],
             "title": "Parent Report Id"
+          },
+          "map_view_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map View Id"
+          },
+          "map_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Revision Id"
+          },
+          "disclose_area_to_provider": {
+            "type": "boolean",
+            "title": "Disclose Area To Provider",
+            "default": false
+          },
+          "research_since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Since"
+          },
+          "research_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Until"
           }
         },
         "type": "object",

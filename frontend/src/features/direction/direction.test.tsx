@@ -116,6 +116,7 @@ describe('direction', () => {
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
       expect(captured).toEqual({
+        disclose_area_to_provider: false,
         template: 'ask',
         plan: plan.id,
         research_focus: 'general',

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, Field, StrictBool, model_validator
 
 from ase.api.schemas_challenge import ReportChallengeOut
 from ase.api.schemas_citation_checks import ReportCitationChecksOut
@@ -64,6 +64,11 @@ class ReportCreateIn(BaseModel):
     research_subject: str | None = Field(default=None, max_length=300)
     research_input_id: UUID | None = None
     parent_report_id: UUID | None = None
+    map_view_id: UUID | None = None
+    map_revision_id: UUID | None = None
+    disclose_area_to_provider: StrictBool = False
+    research_since: AwareDatetime | None = None
+    research_until: AwareDatetime | None = None
 
     @model_validator(mode="after")
     def research_requires_question(self) -> Self:
@@ -85,6 +90,9 @@ class ReportCreateIn(BaseModel):
             raise ValueError("On-demand research requires a question")
         if self.research_mode and self.country and self.research_focus is not ResearchFocus.GENERAL:
             raise ValueError("Country filters are unavailable for record-focused research")
+        if (self.map_view_id is None) != (self.map_revision_id is None):
+            raise ValueError("Choose both saved map and revision identifiers")
+        self.to_request()
         return self
 
     def to_request(self) -> ReportRequest:
@@ -113,6 +121,11 @@ class ReportCreateIn(BaseModel):
             research_subject=self.research_subject,
             research_input_id=self.research_input_id,
             parent_report_id=self.parent_report_id,
+            map_view_id=self.map_view_id,
+            map_revision_id=self.map_revision_id,
+            disclose_area_to_provider=self.disclose_area_to_provider,
+            research_since=self.research_since,
+            research_until=self.research_until,
         )
 
 

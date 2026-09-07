@@ -1,7 +1,7 @@
 """Pure report display metadata and period helpers."""
 
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import UTC, timedelta
 from typing import Any
 
 from ase.application.reports.request import ReportRequest
@@ -12,6 +12,8 @@ from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 
 
 def report_window(request: ReportRequest, template: Template) -> timedelta:
+    if request.research_since is not None and request.research_until is not None:
+        return request.research_until - request.research_since
     return timedelta(hours=request.window_hours or template.strategy.window_hours)
 
 
@@ -47,6 +49,14 @@ def conflict_background(conflict: Conflict | None) -> str | None:
 
 def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
     return {
+        **(
+            {
+                "research_since": request.research_since.astimezone(UTC).isoformat(),
+                "research_until": request.research_until.astimezone(UTC).isoformat(),
+            }
+            if request.research_since is not None and request.research_until is not None
+            else {}
+        ),
         "report_language": request.report_language,
         "report_style": request.report_style,
         "country": request.country_iso,

@@ -109,6 +109,7 @@ def compose_messages(
     background: str | None = None,
     report_language: str = "en",
     report_style: str = "assessment",
+    data_cutoff: datetime | None = None,
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
@@ -117,7 +118,7 @@ def compose_messages(
         f"Scope: {scope_line}",
         f"Period: {period_from.strftime('%Y-%m-%d %H:%M')} to "
         f"{period_to.strftime('%Y-%m-%d %H:%M')} UTC. Data cut-off: "
-        f"{period_to.strftime('%Y-%m-%d %H:%M')} UTC.",
+        f"{(data_cutoff or period_to).strftime('%Y-%m-%d %H:%M')} UTC.",
     ]
     if question:
         parts.append(f"Question to answer: {question}")

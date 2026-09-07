@@ -2,7 +2,7 @@
 
 import json
 from dataclasses import replace
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -75,9 +75,10 @@ class SpatialFixture:
         )
 
 
+@pytest.mark.parametrize("fixed", [False, True])
 @pytest.mark.parametrize("unknown_publication", [False, True])
 async def test_application_create_and_regenerate_keep_exact_map_origin(
-    client, container, user, unknown_publication
+    client, container, user, unknown_publication, fixed
 ):
     parent, claims, view, revision, request = await setup(client, container, user)
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
@@ -86,6 +87,13 @@ async def test_application_create_and_regenerate_keep_exact_map_origin(
     container.llm = ScriptedGateway("{}", json.dumps(good_body()))
     container.store.upsert(filled_store().query(EventQuery(limit=100)))
     request = replace(request, research_terms=("area records",))
+    if fixed:
+        request = replace(
+            request,
+            window_hours=None,
+            research_since=datetime(2020, 1, 1, 10, 0, 0, 123456, tzinfo=UTC),
+            research_until=datetime(2020, 1, 1, 12, 0, 0, 654321, tzinfo=UTC),
+        )
     async with container.session_factory() as session:
         record, first = await container.generate_report(session).execute(user, request, CONTEXT)
     assert record.id != parent.id and record.scope["map_origin"]["revision_id"] == str(revision.id)
@@ -110,3 +118,15 @@ async def test_application_create_and_regenerate_keep_exact_map_origin(
         assert all(item.published_at is None for item in second.evidence)
         assert all(item.observation is not None for item in second.evidence)
         assert second.quality.newest is second.quality.oldest is None
+
+    if fixed:
+        for query in provider.queries:
+            assert query.since == request.research_since
+            assert query.until == request.research_until
+        for version in (first, second):
+            assert version.period_from == request.research_since
+            assert version.period_to == request.research_until
+            assert version.created_at > request.research_until
+            assert all(item.captured_at > request.research_until for item in version.evidence)
+        assert updated.period_from == request.research_since
+        assert updated.period_to == request.research_until

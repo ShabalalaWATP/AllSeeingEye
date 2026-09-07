@@ -7,9 +7,11 @@ import type { ResearchPlanState } from './useResearchPlan';
 export function ResearchPlanEditor({
   plan,
   languages,
+  area = false,
 }: {
   plan: ResearchPlanState;
   languages: string[];
+  area?: boolean;
 }) {
   const catalogue = useLanguageCatalogue();
   const sources = [
@@ -20,15 +22,18 @@ export function ResearchPlanEditor({
   return (
     <details className="min-w-0 border-b border-line pb-5">
       <summary className="cursor-pointer py-2 text-sm font-medium">
-        Collection plan (optional)
+        Collection plan {area ? '(required)' : '(optional)'}
       </summary>
       <div className="mt-4 space-y-5">
         <p className="text-xs leading-relaxed text-muted">
           Choose public sources and exact search terms before collection. This preview makes no
-          model calls or source requests. The reporting window advances to the time the run starts.
-          General research may revise an empty search once using the configured AI connection,
-          within the same collection budget. Source selection and research scope stay fixed; both
-          passes are saved for review.
+          model calls or source requests.{' '}
+          {area
+            ? 'The chosen area and fixed dates are used for preview and collection.'
+            : 'The reporting window advances to the time the run starts.'}
+          {area
+            ? ' Area collection only uses providers that explicitly support this geometry. Empty results do not prove absence.'
+            : ' General research may revise an empty search once using the configured AI connection, within the same collection budget. Source selection and research scope stay fixed; both passes are saved for review.'}
         </p>
         <fieldset disabled={plan.busy} className="space-y-5">
           <label className="flex min-h-11 items-center gap-2 text-sm">
@@ -59,10 +64,9 @@ export function ResearchPlanEditor({
           <details className="space-y-3">
             <summary className="cursor-pointer text-sm">Language-specific search terms</summary>
             <p className="text-xs text-muted">
-              Enter your own terms in each language. These are operator-supplied text, not automatic
-              translations. For blank non-English fields, the run can make one translation call
-              using your configured AI connection (up to 30 seconds). If unavailable or invalid,
-              original terms are used. Translations and their status are saved for review.
+              {area
+                ? 'Enter your own language-specific terms where a spatial provider supports them. Area collection does not automatically translate or replan queries.'
+                : 'Enter your own terms in each language. These are operator-supplied text, not automatic translations. For blank non-English fields, the run can make one translation call using your configured AI connection (up to 30 seconds). If unavailable or invalid, original terms are used. Translations and their status are saved for review.'}
             </p>
             {languages.map((language) => (
               <TextAreaField
@@ -105,7 +109,9 @@ export function ResearchPlanEditor({
         </fieldset>
         {plan.sourceIds?.length === 0 && (
           <Alert tone="warning">
-            No public sources selected. This run will rely on existing evidence.
+            {area
+              ? 'Select at least one supported spatial source and preview again. Area research does not reuse parent or global evidence.'
+              : 'No public sources selected. This run will rely on existing evidence.'}
           </Alert>
         )}
         {plan.error && <Alert tone="error">{plan.error}</Alert>}

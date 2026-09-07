@@ -172,6 +172,7 @@ def select_evidence(
     hazard: Hazard | None = None,
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION,
     until: datetime | None = None,
+    since: datetime | None = None,
     include_unknown_dates: bool = False,
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
@@ -181,12 +182,16 @@ def select_evidence(
     fill the remaining places. A bounding box and extra countries widen the pool (a
     conflict area); a hazard narrows it to one kind of disaster.
     """
-    window = timedelta(hours=strategy.window_hours)
+    window = (
+        (until - since)
+        if since is not None and until is not None
+        else timedelta(hours=strategy.window_hours)
+    )
     wanted = frozenset(categories) or strategy.categories
     pool = _pool(
         store,
         wanted,
-        now - window,
+        since if since is not None else now - window,
         country_iso,
         bbox,
         countries,
@@ -202,7 +207,10 @@ def select_evidence(
         matches = term_matches(event, lowered)
         return (
             -bool(matches),
-            -score(event, now, window, time_basis) * (1 + 0.25 * matches),
+            -score(
+                event, until if since is not None and until is not None else now, window, time_basis
+            )
+            * (1 + 0.25 * matches),
             event.id,
         )
 

@@ -50,6 +50,14 @@ class Job:
     reused_evidence: tuple[EvidenceItem, ...] = ()
     followup_judgements: tuple[KeyJudgement, ...] = ()
 
+    @property
+    def period_from(self) -> datetime:
+        return self.request.research_since or self.now - self.window
+
+    @property
+    def period_to(self) -> datetime:
+        return self.request.research_until or self.now
+
 
 @dataclass(slots=True)
 class Totals:

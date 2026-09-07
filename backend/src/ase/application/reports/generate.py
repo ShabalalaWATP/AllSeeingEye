@@ -150,8 +150,8 @@ class GenerateReportUseCase:
             template=template.id,
             title=job.title,
             scope=dict(job.scope),
-            period_from=now - job.window,
-            period_to=now,
+            period_from=job.period_from,
+            period_to=job.period_to,
             data_cutoff=version.data_cutoff or now,
             status=version.status,
             created_by=actor.id,
@@ -211,8 +211,8 @@ class GenerateReportUseCase:
         version.model_routing = routing.provenance
         record.status = version.status
         record.latest_version = version.number
-        record.period_from = now - job.window
-        record.period_to = now
+        record.period_from = job.period_from
+        record.period_to = job.period_to
         record.data_cutoff = version.data_cutoff or now
         await self._reports.add_version(record, version)
         await self._finish(actor, record, version, context)

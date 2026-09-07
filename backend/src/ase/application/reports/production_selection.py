@@ -49,7 +49,8 @@ def select_for_job(
         countries=() if private else job.countries,
         hazard=None if private else job.hazard,
         time_basis=EvidenceTimeBasis.RESEARCH if area else EvidenceTimeBasis.PUBLICATION,
-        until=job.now if area else None,
+        since=job.period_from if area else None,
+        until=job.period_to if area else None,
         include_unknown_dates=private,
     )
     return with_reused_evidence(selected, job.reused_evidence)

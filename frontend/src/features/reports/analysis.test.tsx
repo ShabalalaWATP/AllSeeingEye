@@ -76,6 +76,7 @@ describe('direction, advocacy and archives in the reader', () => {
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
       expect(body).toEqual({
+        disclose_area_to_provider: false,
         template: 'intsum',
         research_focus: 'general',
         report_language: 'en',

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 import { useAccountRequest } from '@/components/account/useAccountRequest';
-import { describeError } from '@/lib/api/errors';
+import { ApiError, describeError } from '@/lib/api/errors';
 import { previewResearchPlan } from '@/lib/api/researchPlan';
-import type { ResearchPlan, QueryVariant } from '@/lib/api/researchPlan';
+import type { QueryVariant } from '@/lib/api/researchPlan';
 import type { ReportRequest } from '@/lib/api/reports';
 
 export interface PlanScope {
@@ -14,6 +14,13 @@ export interface PlanScope {
   focus: NonNullable<ReportRequest['research_focus']>;
   subject: string;
   country: string;
+  area?: {
+    viewId: string;
+    revisionId: string;
+    teamId: string | null;
+    since: string;
+    until: string;
+  };
 }
 const lines = (text: string) =>
   text
@@ -29,7 +36,10 @@ export function useResearchPlan(scope: PlanScope) {
   const [customTerms, setCustomTerms] = useState(false);
   const [termsText, setTermsText] = useState('');
   const [variantText, setVariantText] = useState<Record<string, string>>({});
-  const [snapshot, setSnapshot] = useState<{ key: string; data: ResearchPlan } | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    key: string;
+    data: Awaited<ReturnType<typeof previewResearchPlan>>;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const beginRequest = useAccountRequest();
@@ -53,14 +63,30 @@ export function useResearchPlan(scope: PlanScope) {
       );
       return;
     }
+    if (scope.area) {
+      const duration = Date.parse(scope.area.until) - Date.parse(scope.area.since);
+      if (!Number.isFinite(duration) || duration <= 0 || duration > 14 * 86_400_000) {
+        setError('Choose a positive UTC interval of at most 14 days before previewing.');
+        return;
+      }
+    }
     const signal = beginRequest();
     setBusy(true);
     setError(null);
-    const until = new Date();
-    const since = new Date(until.getTime() - Number(scope.windowHours) * 3_600_000);
+    const until = scope.area ? new Date(scope.area.until) : new Date();
+    const since = scope.area
+      ? new Date(scope.area.since)
+      : new Date(until.getTime() - Number(scope.windowHours) * 3_600_000);
     try {
       const data = await previewResearchPlan(
         {
+          ...(scope.area
+            ? {
+                map_view_id: scope.area.viewId,
+                map_revision_id: scope.area.revisionId,
+                team_id: scope.area.teamId,
+              }
+            : {}),
           question: scope.question.trim(),
           since: since.toISOString(),
           until: until.toISOString(),
@@ -75,6 +101,18 @@ export function useResearchPlan(scope: PlanScope) {
         },
         signal,
       );
+      if (
+        scope.area &&
+        (data.map_origin?.view_id !== scope.area.viewId ||
+          data.map_origin.revision_id !== scope.area.revisionId ||
+          Date.parse(data.since) !== since.getTime() ||
+          Date.parse(data.until) !== until.getTime())
+      )
+        throw new ApiError(
+          422,
+          'invalid_request',
+          'The preview does not match the selected map revision and interval.',
+        );
       if (!signal.aborted) setSnapshot({ key, data });
     } catch (caught) {
       if (!signal.aborted) setError(describeError(caught));

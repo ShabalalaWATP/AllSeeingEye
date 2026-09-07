@@ -59,6 +59,7 @@ async def draft_body(
             scope_line=header.title,
             period_from=header.period_from,
             period_to=header.period_to,
+            data_cutoff=header.data_cutoff,
             question=question,
             quality=quality,
             evidence=evidence,

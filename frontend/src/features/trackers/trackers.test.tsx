@@ -96,6 +96,7 @@ describe('tracker products', () => {
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     await waitFor(() => {
       expect(body).toEqual({
+        disclose_area_to_provider: false,
         template: 'conflict_assessment',
         conflict: 'ukraine',
         research_focus: 'general',

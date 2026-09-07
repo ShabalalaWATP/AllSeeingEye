@@ -376,3 +376,116 @@ and file-length checks passed. The existing bundle-size advisory remains.
 The historical launch must add an explicit collection interval: the current
 create-report contract only supports a rolling window. Collection, selection,
 report periods and regeneration must agree without changing actual creation time.
+
+
+### Fixed historical area intervals and HTTP launch contract
+
+The saved-timeline milestone was committed as `5e97d9c` after all 740 frontend
+tests and pre-commit gates passed. The next uncommitted slice exposes exact saved
+map/revision references, strict disclosure consent and optional fixed research
+bounds in report creation. Fixed bounds require an aware positive interval of at
+most 14 days, cannot combine with a rolling window, and retain microseconds.
+Inputs normalise to UTC before collection, headers and persistence.
+
+Collection, final selection, report periods and regeneration use the chosen
+interval. Historical ranking uses its end; evidence capture, usage and report
+creation keep actual execution time. Drafting receives the true data cut-off
+separately. Legacy rolling-window behaviour remains intact. Ordinary parent
+follow-ups explicitly reject map-origin reports after authorisation because that
+path cannot preserve area scope; the frontend explains this before parsing scope.
+
+Fifty focused backend tests passed, including HTTP creation from an older saved
+revision, offset conversion, disclosure refusal, half-open sub-hour selection,
+access isolation and regeneration. An outdated preview assertion was corrected:
+the registered Copernicus provider now supports the fixture area. The other
+providers remain unsupported. Read-only review found and verified the UTC and
+follow-up fixes. Backend mypy passed across 489 source files; frontend type checks,
+scoped lint and file-length checks passed. Seven follow-up UI tests passed.
+
+This is synthetic HTTP/application verification, not live catalogue/model acceptance.
+The operator launch form, shared explicit-date preview, native HTTP interval
+acceptance and wider integration remain unfinished. No operator data was migrated.
+
+The broader focused frontend research/plan/follow-up group passed 22 tests after
+two exact-payload fixtures were updated for explicit false area-disclosure consent.
+Final scoped Ruff passed. The fixed-interval slice remains uncommitted pending
+native-provider HTTP interval, prompt and wider integration verification.
+
+
+### Operator saved-area launch form
+
+Saved report maps now link to research using the exact saved view/revision. A dirty
+area draft, active picking or applied unsaved area blocks launch. The research page
+loads that revision through the existing map request cancellation and scoped-resource
+hooks; incomplete or ambiguous links never fall back to ordinary question research.
+
+The area form fixes personal/team scope, asks for a new UTC half-open interval,
+requires a current preview with a supported selected spatial provider and explicit
+area/date disclosure, and sends those same dates and revision IDs to creation.
+It sends neither parent-report reuse nor a rolling window. Date edits invalidate
+preview and consent. Preview response revision/date mismatches are rejected.
+Account/access changes abort or hide scoped work. Other personal ownership disables
+creation even when a caller can read it. Shared editor copy reflects area collection's
+lack of automatic translation, replanning and existing-evidence fallback.
+
+Twenty-one focused launch, plan and saved-map tests passed. These include payload
+binding, changed-date repreview, missing links, pending-load sign-out cancellation,
+foreign ownership, unsaved areas and mismatched preview results. A loader effect
+loop was fixed by using the stable map request hook. The production build passed
+with its existing bundle advisory; the final preview error-message change received
+focused verification afterwards. Native-provider HTTP interval propagation, wider
+frontend integration and real browser/GPU operator acceptance remain required.
+
+The full frontend run completed with 746 passes and four exact-payload fixture
+failures across 134 files. Those four expectations now include explicit false
+area disclosure; all 25 affected/area-launch tests passed afterwards. This is a
+full run plus targeted repairs, not a second clean full suite or new coverage
+measurement. Archived-team launch is disabled for ordinary users; the existing
+administrator override remains. Source/file-length checks passed. The combined
+interval and launch work remains uncommitted pending final integration checks.
+
+
+### Native HTTP integration and browser launch acceptance
+
+Four tests now drive HTTP report creation through the actual registered catalogue
+provider and shared source admission, replacing only outbound transport/DNS and
+the model with fixtures. The exact microsecond interval and area reach the fixed
+STAC host, private question/terms stay out of that URL, and start/end inclusion is
+verified in the frozen evidence. Source disable before or during collection
+releases no evidence. An out-of-window provider record rejects the response rather
+than releasing partial results. A prompt assertion separates historical period
+from actual current data cut-off. The combined focused group passed 29 tests.
+
+A real Chrome synthetic form harness verified date entry, preview/consent reset
+on interval change, repreview and final submission with matching map/date values.
+At 390 pixels the document width was 390 pixels; a screenshot was inspected at
+`output/playwright/area-launch-mobile.png`. This harness exercised the actual form
+with fixture responses, not operator data. Its language-catalogue fixture was
+unavailable, and its favicon returned 404; these do not establish language-selector
+acceptance. The dedicated browser and Vite process were closed after the check.
+Live catalogue/model quality and full globe/flat-map performance acceptance remain
+open. Wider final suites are recorded after their actual completion.
+
+The clean final frontend run passed all 750 tests in 134 files: 95.67% statements,
+90.07% branches, 94.60% functions and 96.92% lines. Backend Ruff, mypy across 489
+source files, both architecture contracts and full-source Bandit passed. The final
+read-only combined review found no remaining confirmed blocker. Full backend
+regression and commit status remain pending; no operator migration or deployment
+is implied by these results.
+
+
+### Area-research launch regression completion
+
+The unchanged interval and saved-area launch implementation completed the full
+backend suite: 2,365 passed, 14 skipped, 96.14% coverage, terminal exit 0
+(1,155.17 seconds). This is a clean full run, not a targeted repair result.
+The clean frontend result remains 750 tests in 134 files, with 95.67% statements,
+90.07% branches, 94.60% functions and 96.92% lines. Previously recorded static,
+architecture, security and pre-commit checks passed against this implementation.
+
+Saved-map research now has exact revision and historical interval binding from
+preview through native catalogue collection, frozen evidence and regeneration.
+The broader plan remains incomplete. Live catalogue/model acceptance, expanded
+regional datasets, map export/performance acceptance and the human-reviewed
+benchmark are not established by these tests. No operator database was migrated,
+no source was activated and no deployment or push was performed.

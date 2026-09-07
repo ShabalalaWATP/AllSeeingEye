@@ -3973,6 +3973,19 @@ export interface components {
             research_input_id?: string | null;
             /** Parent Report Id */
             parent_report_id?: string | null;
+            /** Map View Id */
+            map_view_id?: string | null;
+            /** Map Revision Id */
+            map_revision_id?: string | null;
+            /**
+             * Disclose Area To Provider
+             * @default false
+             */
+            disclose_area_to_provider: boolean;
+            /** Research Since */
+            research_since?: string | null;
+            /** Research Until */
+            research_until?: string | null;
         };
         /** ReportEvidenceOut */
         ReportEvidenceOut: {

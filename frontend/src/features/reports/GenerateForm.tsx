@@ -73,6 +73,7 @@ export function GenerateForm({
     event.preventDefault();
     if (!scope.ready || invalidPlan) return;
     const request: ReportRequest = {
+      disclose_area_to_provider: false,
       template: templateId,
       report_language: reportLanguage,
       report_style: reportStyle,

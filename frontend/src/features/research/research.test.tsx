@@ -55,6 +55,7 @@ describe('question-led research', () => {
       expect(router.state.location.pathname).toBe(`/reports/${report.report.id}`),
     );
     expect(body).toEqual({
+      disclose_area_to_provider: false,
       template: 'ask',
       question: 'What changed in Ukraine?',
       country: 'UA',
@@ -99,6 +100,7 @@ describe('question-led research', () => {
     await user.click(screen.getByRole('button', { name: 'Start research' }));
     await waitFor(() =>
       expect(body).toEqual({
+        disclose_area_to_provider: false,
         template: 'ask',
         question: 'Assess recent changes at Example Company.',
         window_hours: 168,

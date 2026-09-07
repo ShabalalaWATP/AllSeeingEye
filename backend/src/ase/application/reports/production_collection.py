@@ -42,8 +42,8 @@ async def prepare_collection(
     if job.request.research_mode is not None:
         query = ResearchQuery(
             question=job.request.question or job.title,
-            since=job.now - job.window,
-            until=job.now,
+            since=job.period_from,
+            until=job.period_to,
             languages=job.request.research_languages,
             source_ids=job.request.research_source_ids,
             query_variants=job.request.research_query_variants,
