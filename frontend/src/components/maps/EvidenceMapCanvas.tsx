@@ -1,6 +1,4 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
-import type { Layer } from '@deck.gl/core';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { createMapLibreEngine } from '@/lib/map/MapLibreEngine';
 import type { MapBounds, MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
@@ -12,7 +10,7 @@ import type { LocalCollection, LocalOverlay, Position } from '@/lib/map/geoJsonT
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
 import { hasEvidencePoint, hasLegacyEvidencePoint } from './evidenceGeometry';
 import { geometryBounds } from '@/lib/map/geometryBounds';
-import { measurementLayers } from '@/lib/map/measurementLayers';
+import { evidenceMapLayers } from './evidenceMapLayers';
 
 export default function EvidenceMapCanvas({
   evidence,
@@ -34,7 +32,11 @@ export default function EvidenceMapCanvas({
   measurement = null,
   measurementMode = false,
   onMeasurementPoint,
+  captureEnabled = false,
+  onCaptureReady,
 }: {
+  captureEnabled?: boolean;
+  onCaptureReady?: (capture: ((signal: AbortSignal) => Promise<Blob>) | null) => void;
   evidence: readonly EvidenceItem[];
   overlays?: LocalOverlay[];
   aoi?: LocalCollection | null;
@@ -60,6 +62,9 @@ export default function EvidenceMapCanvas({
   const [mapError, setMapError] = useState(false);
   const initial = useRef({ camera, projection, basemap });
   const supportsPoint = legacyDisplay ? hasLegacyEvidencePoint : hasEvidencePoint;
+  const captureReady = useEffectEvent((capture: ((signal: AbortSignal) => Promise<Blob>) | null) =>
+    onCaptureReady?.(capture),
+  );
   const cameraChanged = useEffectEvent((value: MapCamera) => onCamera(value));
   const viewportReady = useEffectEvent((read: (() => MapBounds | null) | null) =>
     onViewportReady?.(read),
@@ -95,13 +100,17 @@ export default function EvidenceMapCanvas({
   const supported = useMemo(() => hasWebGl2(), []);
   useEffect(() => {
     if (!container.current || !supported) return;
-    const map = createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken });
+    const map = createMapLibreEngine({
+      captureEnabled,
+      authHeader: () => useAuthStore.getState().accessToken,
+    });
     map.setProjection(initial.current.projection);
     map.setBaseLayer(initial.current.basemap);
     map.mount(container.current);
     map.setLite(true);
     const stopErrors = map.on('error', () => setMapError(true));
     engine.current = map;
+    if (captureEnabled) captureReady((signal) => map.captureImage(signal));
     viewportReady(() => map.getViewportBounds());
     const stopArea = map.on('click', areaClicked);
     const saved = initial.current.camera;
@@ -120,11 +129,12 @@ export default function EvidenceMapCanvas({
       stopCamera();
       stopArea();
       viewportReady(null);
+      captureReady(null);
       map.setLayers([]);
       map.destroy();
       engine.current = null;
     };
-  }, [supported]);
+  }, [supported, captureEnabled]);
   useEffect(() => {
     engine.current?.setProjection(projection);
   }, [projection]);
@@ -132,130 +142,22 @@ export default function EvidenceMapCanvas({
     engine.current?.setBaseLayer(basemap);
   }, [basemap]);
   useEffect(() => {
-    const located = evidence.filter(
-      (item) =>
-        supportsPoint(item) && (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878),
+    engine.current?.setLayers(
+      evidenceMapLayers({
+        evidence,
+        overlays,
+        aoi,
+        footprints,
+        measurement,
+        projection,
+        sourceGeometry,
+        selected,
+        areaMode,
+        measurementMode,
+        onSelect,
+        legacyDisplay,
+      }),
     );
-    const imported: Layer[] = overlays.map(
-      (overlay, index) =>
-        new GeoJsonLayer<{ label: string }>({
-          id: index === 0 ? 'private-local-geometry' : `private-local-geometry-${index}`,
-          data: {
-            type: 'FeatureCollection' as const,
-            features: overlay.display.features.filter(
-              (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-            ),
-          },
-          pickable: false,
-          stroked: true,
-          filled: overlay.precision === 'exact',
-          getFillColor: [80, 200, 195, 40],
-          getLineColor: [80, 200, 195, 220],
-          lineWidthUnits: 'pixels',
-          getLineWidth: 2,
-          pointRadiusUnits: 'pixels',
-          getPointRadius: 7,
-        }),
-    );
-    if (aoi)
-      imported.push(
-        new GeoJsonLayer({
-          id: 'saved-research-area',
-          data: {
-            ...aoi,
-            features: aoi.features.filter(
-              (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-            ),
-          },
-          pickable: false,
-          stroked: true,
-          filled: false,
-          getLineColor: [255, 255, 255, 220],
-          lineWidthUnits: 'pixels',
-          getLineWidth: 2,
-        }),
-      );
-    const catalogue = footprints
-      ? [
-          new GeoJsonLayer({
-            id: 'copernicus-acquisition-footprints',
-            data: {
-              type: 'FeatureCollection' as const,
-              features: footprints.features.filter(
-                (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-              ),
-            },
-            pickable: false,
-            stroked: true,
-            filled: false,
-            getLineColor: [182, 130, 255, 240],
-            lineWidthUnits: 'pixels',
-            getLineWidth: 2,
-          }),
-        ]
-      : [];
-    engine.current?.setLayers([
-      ...imported,
-      ...catalogue,
-      ...(measurement
-        ? measurementLayers(measurement.points, measurement.mode, projection === 'mercator')
-        : []),
-      ...(sourceGeometry.features.some(
-        (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-      )
-        ? [
-            new GeoJsonLayer({
-              id: 'frozen-evidence-geometry',
-              data: {
-                ...sourceGeometry,
-                features: sourceGeometry.features.filter(
-                  (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
-                ),
-              },
-              pickable: true,
-              stroked: true,
-              filled: false,
-              getLineColor: [230, 162, 74, 240],
-              lineWidthUnits: 'pixels',
-              getLineWidth: (feature: { properties: { label?: unknown } }) =>
-                feature.properties.label === selected ? 4 : 2,
-              pointRadiusUnits: 'pixels',
-              getPointRadius: 8,
-              onClick: (info: { object?: { properties?: { label?: unknown } } }) => {
-                if (areaMode || measurementMode) return true;
-                const label = info.object?.properties?.label;
-                if (typeof label === 'string' && evidence.some((item) => item.label === label))
-                  onSelect(label);
-                return true;
-              },
-              updateTriggers: { getLineWidth: [selected] },
-            }),
-          ]
-        : []),
-      ...[true, false].map(
-        (exact) =>
-          new ScatterplotLayer<EvidenceItem>({
-            id: exact ? 'frozen-evidence-exact' : 'frozen-evidence-approximate',
-            data: located.filter((item) => (item.geo_confidence === 'exact') === exact),
-            filled: exact,
-            stroked: true,
-            pickable: true,
-            radiusUnits: 'pixels',
-            lineWidthUnits: 'pixels',
-            lineWidthMinPixels: 2,
-            getPosition: (item) => [item.lon ?? NaN, item.lat ?? NaN],
-            getRadius: (item) => (item.label === selected ? 12 : exact ? 6 : 9),
-            getFillColor: [230, 162, 74, 200],
-            getLineColor: (item) =>
-              item.label === selected ? [255, 255, 255, 255] : [230, 162, 74, 220],
-            onClick: (info: { object?: EvidenceItem }) => {
-              if (areaMode || measurementMode) return true;
-              if (info.object) onSelect(info.object.label);
-              return true;
-            },
-          }),
-      ),
-    ]);
   }, [
     evidence,
     projection,
@@ -269,6 +171,7 @@ export default function EvidenceMapCanvas({
     measurementMode,
     sourceGeometry,
     supportsPoint,
+    legacyDisplay,
   ]);
   useEffect(() => {
     if (focusRequest) focusSelection();
@@ -291,7 +194,8 @@ export default function EvidenceMapCanvas({
         ref={container}
         aria-label={projection === 'globe' ? 'Saved evidence globe' : 'Saved evidence flat map'}
         role="region"
-        className="h-96 w-full"
+        className={captureEnabled ? undefined : 'h-96 w-full'}
+        style={captureEnabled ? { width: 1200, height: 800, pointerEvents: 'none' } : undefined}
       />
     </>
   );

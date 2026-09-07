@@ -16,6 +16,7 @@ from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.reports.claim_evidence_package import SelectedClaimPackageRenderer
 from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
+from ase.adapters.reports.map_image import SavedMapImageRenderer
 from ase.application.access import AccessPolicy
 from ase.application.model_routing import ModelRouting
 from ase.application.reports.access import (
@@ -36,6 +37,7 @@ from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.original_assets import OriginalAssets
 from ase.application.reports.search import ReportSearchService
 from ase.application.research.library import ResearchLibrary
+from ase.application.research.map_image import ExportMapImage
 from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
 from ase.container.research import private_research_store
@@ -223,6 +225,9 @@ class ReportWiring:
             self.limiter,
             r.uow,
         )
+
+    def export_map_image(self, session: AsyncSession) -> ExportMapImage:
+        return ExportMapImage(self.saved_map_views(session), SavedMapImageRenderer())
 
     def saved_map_views(self, session: AsyncSession) -> SavedMapViews:
         r = self.repositories(session)

@@ -20,6 +20,7 @@ function fakeEngine() {
     onCursor: vi.fn(() => vi.fn()),
     on: vi.fn(() => vi.fn()),
     destroy: vi.fn(),
+    captureImage: vi.fn(),
     setLayers: vi.fn(),
     spin: vi.fn(),
     flyTo: vi.fn(),

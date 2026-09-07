@@ -1,3 +1,4 @@
+import { SavedMapImageExport } from './SavedMapImageExport';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -81,6 +82,7 @@ export function SavedMapControls({
           {saved.active.view.archived ? ' (archived)' : ''}
         </a>
       )}
+      {saved.active && <SavedMapImageExport key={saved.active.revision.id} saved={saved.active} />}
       {saved.page && (
         <div className="space-y-2">
           {saved.page.items.length === 0 ? (

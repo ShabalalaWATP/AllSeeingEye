@@ -7,7 +7,7 @@
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
 import { Map as MapLibreMap } from 'maplibre-gl';
-import type { RequestParameters, SkySpecification } from 'maplibre-gl';
+import type { RequestParameters } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import type {
@@ -23,15 +23,7 @@ import type {
   MapEngineHandler,
   Projection,
 } from './MapEngine';
-import {
-  RASTER_LAYER_ID,
-  RASTER_SOURCE_ID,
-  DARK_STYLE_URL,
-  hidesVectorLabels,
-  isApiRequest,
-  rasterSourceFor,
-  vectorStyleFor,
-} from './baseLayers';
+import { DARK_STYLE_URL, isApiRequest, vectorStyleFor } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
 import {
   CAMERA_MAX_PITCH,
@@ -42,49 +34,15 @@ import {
   validateFitOptions,
 } from './camera';
 
+import { GLOBE_SKY, PAINT_OVERRIDES, applyRasterLayer } from './mapAppearance';
+import { captureMapImage } from './mapCapture';
+
+export { GLOBE_SKY, PAINT_OVERRIDES } from './mapAppearance';
 export { DARK_STYLE_URL };
 export const INITIAL_CENTER: [number, number] = [10, 30];
 export const INITIAL_ZOOM = 1.6;
 export const SPIN_DEGREES = 15;
 export const SPIN_STEP_MS = 30_000;
-
-/** Dark atmosphere: the glow fades out as the user zooms towards street scale. */
-export const GLOBE_SKY: SkySpecification = {
-  'sky-color': '#0b1230',
-  'horizon-color': '#28407a',
-  'fog-color': '#07070b',
-  // Keep ground fog low: at planet scale the whole surface counts as "far away",
-  // and a strong blend towards the dark fog colour blacks out the continents.
-  'fog-ground-blend': 0.1,
-  'horizon-fog-blend': 0.5,
-  'sky-horizon-blend': 0.6,
-  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
-};
-
-/**
- * The OpenFreeMap dark style paints land at 5 percent grey and water at 11 percent,
- * which is invisible on a globe. These overrides move it onto the app palette:
- * obsidian land, deep navy water, slate borders and muted labels.
- */
-type PaintOverride = readonly [
-  layer: string,
-  property: 'background-color' | 'fill-color' | 'line-color' | 'text-color',
-  value: string,
-];
-
-export const PAINT_OVERRIDES: readonly PaintOverride[] = [
-  ['background', 'background-color', '#15151d'],
-  ['water', 'fill-color', '#0b1626'],
-  ['waterway', 'line-color', '#0b1626'],
-  ['boundary_country_z0-4', 'line-color', '#4a4a5c'],
-  ['boundary_country_z5-', 'line-color', '#4a4a5c'],
-  ['boundary_state', 'line-color', '#33333f'],
-  ['place_country_major', 'text-color', '#9a95a3'],
-  ['place_country_minor', 'text-color', '#9a95a3'],
-  ['place_country_other', 'text-color', '#9a95a3'],
-  ['place_city_large', 'text-color', '#7d7886'],
-  ['place_city', 'text-color', '#7d7886'],
-];
 
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
@@ -96,6 +54,10 @@ export class MapLibreEngine implements MapEngine {
   private styleReady = false;
   private spinning = false;
   private stepping = false;
+  private revision = 0;
+  private captureAbort: AbortController | null = null;
+  private captureFailed = false;
+  private layers: readonly Layer[] = [];
 
   constructor(private readonly options: EngineOptions = {}) {}
 
@@ -111,10 +73,39 @@ export class MapLibreEngine implements MapEngine {
       maxZoom: CAMERA_MAX_ZOOM,
       minPitch: 0,
       maxPitch: CAMERA_MAX_PITCH,
+      ...(this.options.captureEnabled
+        ? {
+            interactive: false,
+            pixelRatio: 1,
+            canvasContextAttributes: { preserveDrawingBuffer: true },
+          }
+        : {}),
       transformRequest: (url) => this.transformRequest(url),
     });
     // deck.gl draws the data layers in its own canvas above the base map.
-    this.overlay = new MapboxOverlay({ interleaved: false, layers: [] });
+    this.overlay = new MapboxOverlay({
+      interleaved: false,
+      layers: [],
+      ...(this.options.captureEnabled
+        ? {
+            useDevicePixels: 1,
+            onError: () => {
+              this.captureFailed = true;
+            },
+          }
+        : {}),
+    });
+    if (this.options.captureEnabled) {
+      map.on('error', () => {
+        this.captureFailed = true;
+      });
+      map.on('move', () => {
+        this.revision += 1;
+      });
+      map.on('resize', () => {
+        this.revision += 1;
+      });
+    }
     map.addControl(this.overlay);
     map.on('style.load', () => {
       this.styleReady = true;
@@ -167,11 +158,13 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setProjection(projection: Projection): void {
+    this.revision += 1;
     this.projection = projection;
     this.applyProjection();
   }
 
   setBaseLayer(layer: BaseLayer): void {
+    this.revision += 1;
     this.baseLayer = layer;
     const nextStyle = vectorStyleFor(layer);
     if (this.map !== null && this.styleUrl !== nextStyle) {
@@ -186,11 +179,13 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setLite(lite: boolean): void {
+    this.revision += 1;
     this.lite = lite;
     this.applySky();
   }
 
   flyTo(target: FlyToTarget): void {
+    this.revision += 1;
     if (this.lite) this.map?.jumpTo({ center: target.center, zoom: target.zoom });
     else this.map?.flyTo({ center: target.center, zoom: target.zoom });
   }
@@ -212,6 +207,7 @@ export class MapLibreEngine implements MapEngine {
   }
 
   restoreCamera(camera: MapCamera): void {
+    this.revision += 1;
     const snapshot = normaliseCamera(camera);
     this.spin(false);
     this.map?.jumpTo(snapshot);
@@ -229,6 +225,7 @@ export class MapLibreEngine implements MapEngine {
   }
 
   fitBounds(bounds: MapBounds, options: FitBoundsOptions = {}): void {
+    this.revision += 1;
     const { west, south, east, north } = validateBounds(bounds);
     const fitOptions = validateFitOptions(options);
     this.spin(false);
@@ -258,6 +255,8 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setLayers(layers: readonly DataLayer[]): void {
+    this.revision += 1;
+    this.layers = layers as readonly Layer[];
     this.overlay?.setProps({ layers: [...(layers as readonly Layer[])] });
   }
 
@@ -270,7 +269,36 @@ export class MapLibreEngine implements MapEngine {
     };
   }
 
+  async captureImage(signal: AbortSignal): Promise<Blob> {
+    const map = this.map;
+    const overlay = this.overlay;
+    if (!this.options.captureEnabled || !map || !overlay || this.captureFailed) {
+      throw new Error('Map image capture is unavailable. Use a fresh export map.');
+    }
+    if (this.captureAbort) throw new Error('A map image capture is already running.');
+    const controller = new AbortController();
+    this.captureAbort = controller;
+    const abort = () => controller.abort();
+    signal.addEventListener('abort', abort, { once: true });
+    if (signal.aborted) abort();
+    const revision = this.revision;
+    try {
+      return await captureMapImage(
+        map,
+        overlay,
+        controller.signal,
+        () => this.revision === revision && !this.captureFailed,
+        () => this.layers.every((layer) => layer.isLoaded),
+      );
+    } finally {
+      signal.removeEventListener('abort', abort);
+      this.captureAbort = null;
+    }
+  }
+
   destroy(): void {
+    this.captureAbort?.abort();
+    this.revision += 1;
     this.spinning = false;
     this.map?.remove();
     this.map = null;
@@ -298,22 +326,7 @@ export class MapLibreEngine implements MapEngine {
   private applyBaseLayer(): void {
     const map = this.map;
     if (map === null || !this.styleReady) return;
-    if (map.getLayer(RASTER_LAYER_ID) !== undefined) map.removeLayer(RASTER_LAYER_ID);
-    if (map.getSource(RASTER_SOURCE_ID) !== undefined) map.removeSource(RASTER_SOURCE_ID);
-    const layers = map.getStyle().layers;
-    const source = rasterSourceFor(this.baseLayer);
-    if (source !== null) {
-      map.addSource(RASTER_SOURCE_ID, source);
-      // Under boundaries and labels, above the flat land and water fills.
-      const above = layers.find((layer) => layer.type === 'line' || layer.type === 'symbol');
-      map.addLayer({ id: RASTER_LAYER_ID, type: 'raster', source: RASTER_SOURCE_ID }, above?.id);
-    }
-    const visibility = hidesVectorLabels(this.baseLayer) ? 'none' : 'visible';
-    for (const layer of layers) {
-      if (layer.type === 'symbol' || layer.type === 'line') {
-        map.setLayoutProperty(layer.id, 'visibility', visibility);
-      }
-    }
+    applyRasterLayer(map, this.baseLayer);
   }
 }
 

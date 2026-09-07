@@ -48,6 +48,8 @@ export interface FitBoundsOptions {
 export type DataLayer = object;
 
 export interface EngineOptions {
+  /** Dedicated, fixed-size export instances only. Preserves the base map drawing buffer. */
+  captureEnabled?: boolean;
   /** Returns the session's access token for requests to our own API (tile proxy), or null. */
   authHeader?: () => string | null;
 }
@@ -77,6 +79,8 @@ export interface MapEngine {
   setLayers(layers: readonly DataLayer[]): void;
   /** Subscribes to an engine event and returns the unsubscribe function. */
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void;
+  /** Captures actual base-map and data canvases on a dedicated export instance. */
+  captureImage(signal: AbortSignal): Promise<Blob>;
   destroy(): void;
 }
 

@@ -14,7 +14,15 @@
 		# The API admits only exact UUID PUT routes before reading original bytes.
 		max_size 8MiB
 	}
-	@map_views path /api/map/views /api/map/views/*
+	@map_image_export path /api/map/views/*/revisions/*/image-package
+	request_body @map_image_export {
+		# Exact POST routes authorise before the bounded PNG JSON envelope is read.
+		max_size 12MiB
+	}
+	@map_views {
+		path /api/map/views /api/map/views/*
+		not path /api/map/views/*/revisions/*/image-package
+	}
 	request_body @map_views {
 		# API enforces the tighter state/envelope cap on save routes only.
 		max_size 7MiB

@@ -311,3 +311,16 @@ vulnerabilities (the local application package is not a PyPI audit target).
 The production build retains a bundle-size advisory. Browser QA verified both
 projections, no horizontal overflow at 390 pixels, and canvas removal on close.
 No operator database, deployment or real-model evaluation was performed.
+
+
+## Saved-map image packages
+
+Use a saved revision's image preview to create a fixed 1,200 by 800 capture and
+provenance ZIP. Private annotations are excluded by default; frozen report
+locations remain. Restricted basemaps require a reuse declaration. The server
+re-encodes client PNG bytes, adds credits and validates current access before
+release; it does not attest pixel correspondence or redaction. Request intake is
+12 MiB, PNG input 8 MiB, and aggregate uncompressed package content 16 MiB.
+Two export slots are retained until workers finish, including cancelled requests.
+No image is durably retained. Details and outstanding GPU acceptance are in
+SAVED_MAP_IMAGE_EXPORT.md. No operator database migration is needed for this path.

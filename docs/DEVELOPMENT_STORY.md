@@ -2260,3 +2260,13 @@ existing build chunk advisory remains. No new full-suite coverage measurement,
 provider/model call, browser/GPU check, operator migration or deployment occurred.
 Wider original-source capture, retain-at-import, backup/recovery acceptance and
 saved-map image export remain unfinished parts of the full plan.
+
+
+## 7 September 2026: saved-map image packages
+
+Implemented exact saved-revision preview and two-canvas map capture, default
+private annotation exclusion, declared source-use conditions, visible credits
+and bounded PNG/ZIP processing. Fresh access and immutable revision checks run
+before intake and after packaging; cancellation retains worker admission.
+Client pixels are explicitly not server-attested evidence. The local checks and
+remaining browser/GPU gate are recorded in SAVED_MAP_IMAGE_EXPORT.md.

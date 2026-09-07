@@ -12,6 +12,14 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- Saved-map image packaging now has local implementation and targeted acceptance:
+  82 distinct backend cases, 30 frontend integration cases and 29 engine/capture
+  cases passed, followed by final regression and static checks. See
+  `SAVED_MAP_IMAGE_EXPORT.md`. Actual browser/GPU acceptance remains open after
+  browser policy verification denied tab access. Earlier historical notes about
+  image export being absent are superseded by this entry.
+
+
 - Selected-original retention subsequently passed 84 checks on disposable
   PostgreSQL 17.10, including real quota/consume races and migration 0027 parity,
   report preservation and downgrade refusal with retained bytes. Final SQLite
@@ -88,12 +96,12 @@ translation quality or complete cancellation coverage at every real-model stage.
 | Snapshot/SSE consistency and bounds | `stores/events.ts`, reconciliation tests, `LiveCoverage.tsx`; explicit snapshot/browser bounds | Measured performance acceptance |
 | Frozen evidence geometry | `domain/evidence_geometry.py`, separate observation acquisition metadata | Complete uncertainty, original CRS, exact locator and geometry review/history contract |
 | Shared globe/flat rendering | MapEngine, MapLibre engine and EvidenceMapCanvas share records and state | Full projection/GPU parity |
-| Private report overlays and saved revisions | ReportEvidenceMap, frozen geometry, immutable map-view domain/service/API/storage | Exact image export and its redaction/access checks |
+| Private report overlays and saved revisions | ReportEvidenceMap, frozen geometry, immutable map-view domain/service/API/storage | Real GPU acceptance of the implemented image export |
 | Bounded local GeoJSON import | 5 MiB, 2,000 features, 100,000 vertices and operation limits | Full seam/pole/topology acceptance |
 | AOI launch and time basis | MapAreaSelection, exact saved-map launch, native AidData/Copernicus collection; publication/acquisition/project-year basis | Universal coverage is not promised; provider support remains explicit |
 | Layer catalogue | Category controls, observation switches and local overlays exist | Unified descriptor/grouped-layer service and source-health/freshness presentation |
 | Clustering | Existing low-zoom category aggregation; spherical-bin repair in progress | GPU acceptance and measured density behaviour; ordinary bin boundaries remain |
-| Wrapped geometry and measurement | Bounded line splitting, polar preservation and GeographicLib-backed dashboard/report-map distance/perimeter/net-area measurement; saved original coordinates and versioned method | Polygon clipping/tessellation with holes, complete geodesic paths, map-image export and current GPU acceptance |
+| Wrapped geometry and measurement | Bounded line splitting, polar preservation and GeographicLib-backed dashboard/report-map distance/perimeter/net-area measurement; saved original coordinates and versioned method | Polygon clipping/tessellation with holes, complete geodesic paths and current GPU acceptance |
 | AidData | Exact project/year/recipient/AOI query and frozen provenance | Full-release compatibility/performance and operator activation |
 | Copernicus | AOI/date/cloud search, original footprint/acquisition metadata | Selected original imagery, paired comparison and live acceptance |
 | OONI | Country/day aggregate provider with explicit licence acknowledgement | Integrated time-chart layer and wider operational acceptance |
@@ -104,7 +112,7 @@ translation quality or complete cancellation coverage at every real-model stage.
 
 The existing IODA feed must not be confused with the still-deferred IODA research
 provider. Likewise, a Copernicus footprint is not retained imagery, and the optional
-FIRMS adapter still needs an operator key and live acceptance. Map-image export is a genuine missing
+FIRMS adapter still needs an operator key and live acceptance. Map-image export has local implementation; actual GPU acceptance remains a missing
 feature despite saved map-state and evidence-package support.
 
 ## E6–E7: organisations, relationships and claims
@@ -129,7 +137,7 @@ report evidence and source attributes remain the authority for the new display.
 | --- | --- | --- |
 | Version comparison | `application/reports/comparison.py` compares structured report/evidence/assessment fields | Claim/identity revision comparison and a dedicated evidence-linked confidence-change explanation |
 | Selected retained assets | Exact-version re-upload matched to frozen original SHA-256; migration 0027, permitted-use declarations, personal/team/global reservations and quotas, scoped UI/download/delete, periodic expiry and bounded tombstones | Explicit retain-at-import and permitted source-specific original retrieval; operational backup/recovery acceptance |
-| Evidence packages | Frozen report/receipts/locators, hashes, exact annotation and original-asset selection; generated inert members and final access/lifecycle checks | Exact saved-map images; wider source-original coverage |
+| Evidence packages | Frozen report/receipts/locators, hashes, exact annotation and original-asset selection; generated inert members and final access/lifecycle checks | Saved-map GPU acceptance; wider source-original coverage |
 | Archives | Availability lookup and optional Save Page Now return a dated URL | Operator capture inventory, selected content retrieval, completeness manifest and terms-gated retention |
 | Local media | Sanitised images, English OCR and three bounded timestamped video frames | Audio transcription, multilingual original/translated OCR, paired comparison and supported candidate-location annotations |
 | PDF scripts | Chinese SC/TC embedded fonts and recorded round-trip/visual checks | Arabic/Persian shaping and visual/text-extraction acceptance; keep current warnings |

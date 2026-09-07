@@ -35,6 +35,8 @@ _UUID_PATH = r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
 ORIGINAL_UPLOAD_PATH = re.compile(
     rf"/api/reports/{_UUID_PATH}/original-assets/{_UUID_PATH}/content"
 )
+MAP_IMAGE_MAX_BODY_BYTES = 12 * 1024 * 1024
+MAP_IMAGE_PATH = re.compile(rf"/api/map/views/{_UUID_PATH}/revisions/{_UUID_PATH}/image-package")
 MAP_VIEW_MAX_BODY_BYTES = 6 * 1024 * 1024 + 16 * 1024
 MAP_VIEW_REVISION_PATH = re.compile(
     r"/api/map/views/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
@@ -95,8 +97,14 @@ class BodySizeLimitMiddleware:
             scope.get("method") == "PATCH"
             and MAP_VIEW_REVISION_PATH.fullmatch(scope.get("path", "")) is not None
         )
+        exporting_image = (
+            scope.get("method") == "POST"
+            and MAP_IMAGE_PATH.fullmatch(scope.get("path", "")) is not None
+        )
         limit = (
-            IMPORT_MAX_BODY_BYTES
+            MAP_IMAGE_MAX_BODY_BYTES
+            if exporting_image
+            else IMPORT_MAX_BODY_BYTES
             if importing
             else MAP_VIEW_MAX_BODY_BYTES
             if saving_map
@@ -105,8 +113,8 @@ class BodySizeLimitMiddleware:
         if declared is not None and declared.isdigit() and int(declared) > limit:
             await self._reject(scope, receive, send)
             return
-        if importing:
-            await self._stream_import(scope, receive, send)
+        if importing or exporting_image:
+            await self._stream_import(scope, receive, send, limit)
             return
 
         buffered: list[Message] = []
@@ -130,7 +138,7 @@ class BodySizeLimitMiddleware:
 
         await self.app(scope, replay, send)
 
-    async def _stream_import(self, scope: Scope, receive: Receive, send: Send) -> None:
+    async def _stream_import(self, scope: Scope, receive: Receive, send: Send, limit: int) -> None:
         """Authenticate upload routes before allocating a large request body.
 
         The route reads only after its identity dependencies succeed. Guard chunked
@@ -144,7 +152,7 @@ class BodySizeLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 total += len(message.get("body", b""))
-                if total > IMPORT_MAX_BODY_BYTES:
+                if total > limit:
                     raise PayloadTooLarge()
             return message
 

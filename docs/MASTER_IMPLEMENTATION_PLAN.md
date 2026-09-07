@@ -4,6 +4,15 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+7 September continuation: exact saved-map image packaging now has a dedicated
+1,200 by 800 two-canvas preview, default annotation exclusion, source-use review,
+burned-in attribution and bounded authenticated ZIP delivery. Local backend,
+frontend and static checks passed, with evidence in
+[SAVED_MAP_IMAGE_EXPORT.md](SAVED_MAP_IMAGE_EXPORT.md). Real globe/flat-map GPU
+acceptance remains open because browser policy verification denied access.
+Earlier notes describing image export as absent are superseded by this entry.
+
+
 7 September continuation: selected originals can now be deliberately re-uploaded
 against frozen report evidence, retained with scoped quotas and expiry, downloaded
 and included in selected evidence packages. Migration 0027 adds transactional
