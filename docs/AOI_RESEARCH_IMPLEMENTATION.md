@@ -273,3 +273,24 @@ is established. Synthetic source-admission tests verify disabling before a call
 and during an in-flight result, with no scene evidence released. Actual planning
 and collection tests verify explicit source selection and acquisition filtering.
 Persisted source-control races and actual container integration remain open.
+
+### Native catalogue registration
+
+The reviewed adapter and parser are now integrated into production source. The
+existing `research-copernicus-footprints` identity participates in planning and
+collection through the same source admission instance and environment exclusions
+as other research providers. Unsupported scopes remain explicit. Original source
+geometry is an optional backwards-compatible addition to the footprint record;
+the existing standalone footprint display contract remains unchanged.
+
+Forty catalogue tests, 23 catalogue/planner/source-control compatibility tests and
+three actual-container wiring tests passed. The wiring tests use persisted SQL
+activation, suppress collection before disable and suppress release when disabled
+during collection. They verify that private results do not enter the shared store.
+Type checks cover 488 source files; both architecture contracts and scoped Bandit
+passed. A read-only draft review found no confirmed blocker. HTTP responses remain
+mocked, so this does not establish live-source acceptance.
+
+Observation/geometry API presentation, footprint rendering from frozen report
+evidence and the authorised operator launch form are still required. Registration
+alone does not make the complete area-investigation workflow available in the UI.

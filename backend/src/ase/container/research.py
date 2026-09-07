@@ -23,6 +23,8 @@ from ase.adapters.research_records.company import (
     SecSubmissionsProvider,
 )
 from ase.adapters.research_records.contracts_finder import ContractsFinderProvider
+from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
+from ase.adapters.research_records.copernicus_research import CopernicusResearchProvider
 from ase.adapters.research_records.designation_import import load_designation_snapshot
 from ase.adapters.research_records.designations import DesignationProvider
 from ase.adapters.research_records.domains import DnsResearchProvider, RdapResearchProvider
@@ -100,6 +102,7 @@ def research_service(
         selected.extend(
             (
                 procurement,
+                CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
                 *designations,
                 OpenAlexProvider(http, clock),
                 CrossrefProvider(http, clock),

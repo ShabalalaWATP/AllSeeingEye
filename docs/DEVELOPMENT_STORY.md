@@ -976,3 +976,18 @@ build passed with its existing bundle-size advisory. All 720 frontend tests in
 127 files passed: 95.83% statements, 90.17% branches, 94.70% functions and 97.01%
 lines. Full-source Bandit, staged Gitleaks and file-length checks also passed.
 No source was enabled, operator database migrated or deployment performed.
+
+### 7 September 2026: native spatial catalogue research adapter
+
+Copernicus catalogue research now uses the existing fixed-host, bounded STAC
+client through production research composition and persisted source admission.
+Original footprint type/coordinates and acquisition metadata survive frozen
+evidence; publication remains unknown and no event centroid is invented. Content
+hashes include geometry and observation changes. Empty, unavailable and truncated
+coverage remain distinct, and question terms are not sent to the spatial endpoint.
+
+The catalogue and compatibility groups passed 66 tests across three invocations,
+including actual-container SQL disable-before/during checks and shared-store
+isolation. Mypy, architecture contracts and scoped Bandit passed. Live-source
+acceptance, observation API/map presentation and the operator launch form remain
+unfinished. No operator database or deployment changed.

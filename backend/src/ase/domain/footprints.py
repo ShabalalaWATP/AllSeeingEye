@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
 
+from ase.domain.evidence_geometry import EvidenceGeometry
+
 Position = tuple[float, float]
 Ring = tuple[Position, ...]
 Polygon = tuple[Ring, ...]
@@ -46,6 +48,7 @@ class Footprint:
     source_url: str
     licence: str
     licence_url: str
+    source_geometry: EvidenceGeometry | None = None
 
 
 @dataclass(frozen=True, slots=True)

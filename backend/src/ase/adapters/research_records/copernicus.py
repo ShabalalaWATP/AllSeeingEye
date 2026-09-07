@@ -1,6 +1,7 @@
 """Single-page public STAC metadata search. Asset links are never followed or returned."""
 
 import asyncio
+import json
 import math
 import re
 from datetime import UTC, datetime
@@ -9,6 +10,7 @@ from urllib.parse import urlencode
 
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.application.ports import Clock
+from ase.domain.evidence_geometry import EvidenceGeometry, LocationRole
 from ase.domain.footprints import Footprint, FootprintCollection, FootprintQuery, Polygon
 
 BASE = "https://stac.dataspace.copernicus.eu/v1"
@@ -162,6 +164,14 @@ class CopernicusFootprintProvider:
                     f"{BASE}/collections/{COLLECTION}/items/{identity}",
                     "Copernicus Sentinel data legal notice",
                     LICENCE_URL,
+                    EvidenceGeometry(
+                        json.dumps(row["geometry"], ensure_ascii=False, allow_nan=False),
+                        LocationRole.OBSERVATION_FOOTPRINT,
+                        "Catalogue scene footprint; usable coverage is unverified",
+                        "Original STAC scene geometry",
+                        "research-copernicus-footprints",
+                        "Copernicus Sentinel-2 L2A catalogue",
+                    ),
                 )
             )
         links = data.get("links", [])
