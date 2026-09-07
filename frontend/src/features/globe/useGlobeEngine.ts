@@ -12,6 +12,7 @@ import type {
   Projection,
 } from './engine/MapEngine';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
+import { areaClickPoint } from '@/lib/map/areaGeometry';
 
 export function projectionFor(mode: ViewMode): Projection {
   return mode === 'globe' ? 'globe' : 'mercator';
@@ -24,6 +25,7 @@ export interface GlobeEngineHandle {
   spin: (enabled: boolean) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
   onCursor: (handler: CursorHandler) => () => void;
+  onClick: (handler: CursorHandler) => () => void;
   /** Subscribes to camera moves with the zoom after each; safe before the engine mounts. */
   onView: (handler: ViewHandler) => () => void;
 }
@@ -50,6 +52,7 @@ export function useGlobeEngine(
 ): GlobeEngineHandle {
   const engineRef = useRef<MapEngine | null>(null);
   const cursorHandlers = useRef(new Set<CursorHandler>());
+  const clickHandlers = useRef(new Set<CursorHandler>());
   const viewHandlers = useRef(new Set<ViewHandler>());
   const latestLayers = useRef<readonly DataLayer[]>([]);
   const spinning = useRef(false);
@@ -69,9 +72,15 @@ export function useGlobeEngine(
       const view = { zoom: engine.getZoom() };
       for (const handler of viewHandlers.current) handler(view);
     });
+    const offClick = engine.on('click', (event) => {
+      const point = areaClickPoint(event);
+      if (point)
+        for (const handler of clickHandlers.current) handler({ lon: point[0], lat: point[1] });
+    });
     engineRef.current = engine;
     return () => {
       offMove();
+      offClick();
       offCursor();
       engine.destroy();
       engineRef.current = null;
@@ -119,9 +128,15 @@ export function useGlobeEngine(
       viewHandlers.current.delete(handler);
     };
   }, []);
+  const onClick = useCallback((handler: CursorHandler) => {
+    clickHandlers.current.add(handler);
+    return () => {
+      clickHandlers.current.delete(handler);
+    };
+  }, []);
 
   return useMemo(
-    () => ({ setLayers, flyTo, getZoom, spin, onCursor, onView }),
-    [setLayers, flyTo, getZoom, spin, onCursor, onView],
+    () => ({ setLayers, flyTo, getZoom, spin, onCursor, onView, onClick }),
+    [setLayers, flyTo, getZoom, spin, onCursor, onView, onClick],
   );
 }

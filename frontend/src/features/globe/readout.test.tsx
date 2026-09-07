@@ -17,6 +17,7 @@ function fakeHandle() {
     getZoom: () => 1.5,
     spin: vi.fn(),
     onView: () => () => undefined,
+    onClick: () => () => undefined,
     onCursor: (handler) => {
       handlers.add(handler);
       return () => {

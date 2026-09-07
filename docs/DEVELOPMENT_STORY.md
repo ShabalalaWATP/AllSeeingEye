@@ -1989,3 +1989,32 @@ diff whitespace checks passed afterwards. Independent review found no actionable
 issue. This frontend-only change follows the sealed security snapshot and is
 covered by its separate review and focused tests, not that scan or the preceding
 full frontend run.
+
+### WGS84 measurements on the dashboard
+
+Added local distance, perimeter and net-area measurement from typed or clicked
+coordinates in both dashboard projections. Verified the official GeographicLib
+source/licence and pinned its geodesic package to 2.2.0. Numeric results use the
+WGS84 ellipsoid; bounded sampled paths are display-only. Added undo/clear, an
+explicit picking mode, independent measurement layers and account/access clearing
+for coordinates and drafts. Typed entry remains available without WebGL.
+
+Review prompted WebGL picking availability and hemisphere/drawing-limit
+disclosures. Navigation remains available to reach distant points while picking;
+marker/cluster selection does not interrupt it. Fixed an existing test's ambiguous
+status query after adding a measurement output. All 131 globe/measurement tests
+then passed, followed by two additional bound/polar tests. Build, types, scoped
+lint, file-length and whitespace checks passed; production dependency audit found
+no known vulnerabilities. The full frontend run in
+data/map-measurement-full-frontend.log passed 863 tests in 158 files, exit zero:
+95.5% statements, 90.11% branches, 94.21% functions and 96.67% lines.
+Saved-report-map integration and actual GPU/browser acceptance
+remain open. No provider calls, database changes or measurement persistence.
+
+Documented the selected-original E9 contract after tracing original-file hashes
+through internal import/media evidence. It distinguishes discarded originals,
+extracted-content hashes and sanitised frames, with explicit attachment, quota,
+lifecycle and export requirements. No original-asset retention was implemented.
+Browser access again failed policy verification for both FIRMS and the existing
+local dashboard tab. Docker inspection succeeded and found cached PostgreSQL 17
+images, opening a local acceptance path without touching the operator database.

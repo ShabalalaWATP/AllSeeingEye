@@ -32,6 +32,14 @@ gate has been accepted. The full objective remains unfinished.
 
 ## E0–E3: sources, language and planning
 
+Subsequent map implementation: dashboard distance/perimeter/net-area measurement
+now uses GeographicLib WGS84 with bounded typed/clicked vertices on both
+projections. This follows the full-suite snapshot above. Saved-report-map reuse,
+retained/exported measurements and actual GPU drawing acceptance are not claimed.
+See `adr/0015-geodesic-measurement.md` for formula, dependency and rendering limits.
+The resulting full frontend suite passed 863 tests in 158 files, with 90.11%
+branch coverage. Build, scoped lint and the production dependency audit passed.
+
 | Requirement | Implemented evidence | Remaining work |
 | --- | --- | --- |
 | Regional seed scenarios | `backend/evaluations/regional_cases/` contains 12 synthetic cases, four per country | Independent human labels/agreement and actual model evaluation |
@@ -67,7 +75,7 @@ translation quality or complete cancellation coverage at every real-model stage.
 | AOI launch and time basis | MapAreaSelection, exact saved-map launch, native AidData/Copernicus collection; publication/acquisition/project-year basis | Universal coverage is not promised; provider support remains explicit |
 | Layer catalogue | Category controls, observation switches and local overlays exist | Unified descriptor/grouped-layer service and source-health/freshness presentation |
 | Clustering | Existing low-zoom category aggregation; spherical-bin repair in progress | GPU acceptance and measured density behaviour; ordinary bin boundaries remain |
-| Wrapped geometry and measurement | Bounded line splitting and polar preservation | Polygon clipping/tessellation with holes, complete geodesic paths, reviewed distance/area measurements |
+| Wrapped geometry and measurement | Bounded line splitting, polar preservation and GeographicLib-backed dashboard distance/perimeter/net-area measurement | Polygon clipping/tessellation with holes, complete geodesic paths, saved-report-map measurement and current GPU acceptance |
 | AidData | Exact project/year/recipient/AOI query and frozen provenance | Full-release compatibility/performance and operator activation |
 | Copernicus | AOI/date/cloud search, original footprint/acquisition metadata | Selected original imagery, paired comparison and live acceptance |
 | OONI | Country/day aggregate provider with explicit licence acknowledgement | Integrated time-chart layer and wider operational acceptance |

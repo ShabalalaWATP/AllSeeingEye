@@ -182,6 +182,10 @@ KMZ, arbitrary shapefiles and remote layer URLs wait for separate parser/SSRF re
 - [ ] Distances/areas use a reviewed geodesic implementation and consistent units,
   not screen-space measurement. Choose a dependency only after examining existing
   tooling and verifying its source/licence; no hand-rolled geodesic formula suite.
+  Local implementation now uses GeographicLib WGS84 on the dashboard's globe and
+  flat map, with typed/clicked vertices, distance/perimeter/net area and bounded
+  geodesic drawing. See ADR 0015. Saved-report-map integration and actual GPU
+  seam/polar visual acceptance remain open, so the full item is not checked off.
 
 ## 8. Imagery and map exports
 

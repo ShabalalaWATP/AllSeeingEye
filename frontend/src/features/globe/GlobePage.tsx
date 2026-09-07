@@ -36,6 +36,9 @@ import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
 import { WorldClocks } from './WorldClocks';
+import { MapMeasurementPanel } from './MapMeasurementPanel';
+import { useMapMeasurement } from './useMapMeasurement';
+import { measurementLayers } from './layers/measurement';
 import { ObservationControls, useObservationFilters } from './ObservationControls';
 import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
@@ -104,6 +107,11 @@ export default function GlobePage() {
     createEngine,
   });
   useLiveEvents();
+  const measurement = useMapMeasurement(engine, supported && !opsRoom);
+  const measured = useMemo(
+    () => measurementLayers(measurement.points, measurement.mode, mode === 'map'),
+    [measurement.points, measurement.mode, mode],
+  );
   const now = useNow();
   const [zoom, setZoom] = useState(1.5);
   useEffect(
@@ -115,12 +123,13 @@ export default function GlobePage() {
   );
   const onCluster = useCallback(
     (cluster: Cluster) => {
+      if (measurement.picking) return;
       engine.flyTo({
         center: [cluster.lon, cluster.lat],
         zoom: Math.min(FOCUS_ZOOM, engine.getZoom() + 2.5),
       });
     },
-    [engine],
+    [engine, measurement.picking],
   );
 
   const osMaps = useCapabilitiesStore((state) => state.osMaps);
@@ -173,9 +182,10 @@ export default function GlobePage() {
 
   const onPick = useCallback(
     (event: LiveEvent | null) => {
+      if (measurement.picking) return;
       select(event?.id ?? null);
     },
-    [select],
+    [select, measurement.picking],
   );
 
   const eventLayers = useMemo(
@@ -194,8 +204,9 @@ export default function GlobePage() {
     [interference, jamCells, supported],
   );
   useEffect(() => {
-    if (supported) engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...eventLayers]);
-  }, [engine, eventLayers, jam, night, supported]);
+    if (supported)
+      engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...eventLayers, ...measured]);
+  }, [engine, eventLayers, jam, night, supported, measured]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
   useEffect(() => {
@@ -259,6 +270,7 @@ export default function GlobePage() {
       {!opsRoom && (
         <GlobeControls>
           <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
+          <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
           <ObservationControls
             events={scoped}
             visibility={observations.visibility}
@@ -303,8 +315,17 @@ export default function GlobePage() {
           )}
         </GlobeControls>
       )}
-      {supported && !opsRoom && <CoordinateReadout engine={engine} />}
-      {selected !== null && !opsRoom && (
+      {measurement.picking && (
+        <button
+          type="button"
+          onClick={() => measurement.setPicking(false)}
+          className="absolute bottom-40 left-1/2 z-10 -translate-x-1/2 rounded border border-cyan bg-ground px-3 py-2 text-xs text-cyan"
+        >
+          {measurement.points.length}/32 points · Stop measuring
+        </button>
+      )}
+      {supported && !opsRoom && !measurement.picking && <CoordinateReadout engine={engine} />}
+      {selected !== null && !opsRoom && !measurement.picking && (
         <EventInspector event={selected} storySize={storySize} onClose={close} />
       )}
     </div>
