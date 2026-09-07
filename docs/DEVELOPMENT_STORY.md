@@ -2041,3 +2041,31 @@ No operator database, credentials, provider or model was used. Coverage was not
 remeasured for this focused run. Ruff formatting/lint, file length and whitespace
 checks passed. Updated the status audit to remove stale active-test/unfinished
 clustering statements; browser, live-provider and wider release gates remain open.
+
+### Optional NASA FIRMS live collection
+
+Verified NASA's official Area API, NOAA-20 example and VIIRS field descriptions.
+Added an opt-in NOAA-20 connector with server-side MAP_KEY configuration, a
+regional box or world query, latest UTC-day observations and 15-minute polling.
+It joins existing admission, health, backoff and live-store paths. CSV ingestion
+is bounded to 5 MiB/30,000 rows and rejects invalid batches atomically. Preserved
+acquisition time, sensor confidence and processing version, with explicit units
+for Kelvin temperatures, kilometre pixel dimensions and megawatt radiative power.
+No thermal cause or intelligence probability is inferred.
+
+Introduced an exact-origin secret-URL request boundary because FIRMS embeds its
+key in the path. It disables redirects and URL validator caching, returns fixed
+safe errors and suppresses actual HTTPX/HTTPcore emitting loggers only within the
+request task. Synthetic tests cover HTTP/DNS/size/encoding errors, redirects,
+304, concurrent public logs and cancellation. Focused security review found no
+concrete leak, and identified a frontend subtype mismatch, which was corrected
+with regression assertions. Added a distinct thermal sensor icon and corrected
+the dashboard's configuration wording. Setup and limits are documented in
+FIRMS_OPERATIONS.md and the source/status matrices.
+
+115 focused backend tests and 15 frontend layer/filter tests passed. Ruff,
+mypy, architecture contracts, file-length checks, scoped ESLint, TypeScript and
+production build passed, with the existing chunk-size advisory. Full-suite
+coverage was not remeasured for this addition. No real key, API account, Gmail
+verification, provider request or GPU acceptance was completed. A non-LLM source
+credential editor, vessel adapter and wider expansion work remain open.

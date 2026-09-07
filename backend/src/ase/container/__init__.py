@@ -156,7 +156,15 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
         self.connectors: list[FeedConnector] = (
             list(connectors)
             if connectors is not None
-            else build_connectors(self.http, self.clock, settings.disabled_feed_ids)
+            else build_connectors(
+                self.http,
+                self.clock,
+                settings.disabled_feed_ids,
+                firms_key=settings.firms_map_key.get_secret_value()
+                if settings.firms_map_key
+                else None,
+                firms_area=settings.firms_area,
+            )
         )
         watchlists = GoogleNewsWatchlistConnector(
             self.http, self.clock, SqlWatchlistPlanStore(self.session_factory)

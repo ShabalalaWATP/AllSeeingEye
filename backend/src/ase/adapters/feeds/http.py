@@ -19,6 +19,8 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
 
+from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
+
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 3
 MAX_VALIDATORS = 256
@@ -162,6 +164,15 @@ class FeedHttpClient:
 
     async def aclose(self) -> None:
         await self._client.aclose()
+
+    async def get_secret_bytes(self, target: SecretFeedUrl) -> bytes:
+        """No redirects, URL cache or diagnostics for keys embedded in upstream paths."""
+        with protect_http_logs():
+            try:
+                return await self.get_bytes(target.url, conditional=False, max_redirects=0)
+            except Exception:
+                # Scheduler health and tracebacks must not retain upstream text or URL.
+                raise FeedFetchError("Protected feed request failed.") from None
 
     async def get_bytes(
         self,

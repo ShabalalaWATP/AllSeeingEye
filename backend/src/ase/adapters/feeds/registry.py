@@ -16,6 +16,7 @@ from ase.adapters.feeds.cyclones import (
 )
 from ase.adapters.feeds.emsc import EmscConnector
 from ase.adapters.feeds.eonet import EonetConnector
+from ase.adapters.feeds.firms import FirmsConnector
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
@@ -34,7 +35,12 @@ from ase.application.ports.feeds import FeedConnector
 
 
 def build_connectors(
-    http: FeedHttpClient, clock: Clock, disabled: Iterable[str] = ()
+    http: FeedHttpClient,
+    clock: Clock,
+    disabled: Iterable[str] = (),
+    *,
+    firms_key: str | None = None,
+    firms_area: str = "world",
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
     connectors: list[FeedConnector] = [
@@ -69,4 +75,6 @@ def build_connectors(
         *build_rss_connectors(http, clock),
         *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
     ]
+    if firms_key and FirmsConnector.spec.id not in excluded:
+        connectors.append(FirmsConnector(http, clock, firms_key, firms_area))
     return [connector for connector in connectors if connector.spec.id not in excluded]

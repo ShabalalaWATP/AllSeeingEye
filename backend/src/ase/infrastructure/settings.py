@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
+    firms_map_key: SecretStr | None = None
+    firms_area: str = Field(default="world", min_length=1, max_length=100)
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)
     max_streams_per_user: int = Field(default=4, ge=1, le=64)
     # Wayback Machine snapshots of cited URLs after each report: on by default outside tests.

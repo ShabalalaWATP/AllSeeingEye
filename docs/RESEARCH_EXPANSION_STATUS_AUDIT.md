@@ -86,12 +86,13 @@ translation quality or complete cancellation coverage at every real-model stage.
 | Copernicus | AOI/date/cloud search, original footprint/acquisition metadata | Selected original imagery, paired comparison and live acceptance |
 | OONI | Country/day aggregate provider with explicit licence acknowledgement | Integrated time-chart layer and wider operational acceptance |
 | IODA | Registered live connector in `adapters/feeds/cyber.py` | Desired historical research/time-series layer, usable positive-record schema and current reuse/operational acceptance |
-| FIRMS and vessel positions | Display controls and symbols are prepared | Runtime adapters, bounded collection, credentials, health/freshness, onboarding and live checks |
+| FIRMS | Optional NOAA-20 Area API connector, protected server-key requests, bounded CSV parsing, acquisition/quality metadata, scheduler health and both-map display controls | Administrator credential editor, actual key onboarding, live compatibility/coverage and GPU checks |
+| Vessel positions | Display controls and symbols are prepared | Runtime adapter, bounded collection, credentials, health/freshness, onboarding and live checks |
 | ChinaPower ADIZ, AMTI and ISW layers | Discovery/reference backlog | Approved versioned dataset adapters and map presentation; no invented tracks, borders or sovereignty assertions |
 
 The existing IODA feed must not be confused with the still-deferred IODA research
-provider. Likewise, a Copernicus footprint is not retained imagery, and a FIRMS
-toggle is not a working FIRMS connection. Map-image export is a genuine missing
+provider. Likewise, a Copernicus footprint is not retained imagery, and the optional
+FIRMS adapter still needs an operator key and live acceptance. Map-image export is a genuine missing
 feature despite saved map-state and evidence-package support.
 
 ## E6–E7: organisations, relationships and claims

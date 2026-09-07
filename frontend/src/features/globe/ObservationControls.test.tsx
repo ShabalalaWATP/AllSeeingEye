@@ -16,7 +16,7 @@ const vessel = liveEvent({ id: 'boat', category: 'maritime', subtype: 'vessel_po
 const thermal = liveEvent({
   id: 'thermal',
   category: 'disaster',
-  source_id: 'firms_viirs',
+  source_id: 'firms_viirs_noaa20',
   subtype: 'thermal_detection',
 });
 const warning = liveEvent({ id: 'warning', category: 'maritime', subtype: 'hazard' });

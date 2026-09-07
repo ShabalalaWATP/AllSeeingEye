@@ -94,8 +94,8 @@ export function ObservationControls({
         </div>
       ))}
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
-        Selected regional ADS-B coverage. Vessel and FIRMS connections are not configured. Switches
-        control display only.
+        Selected regional ADS-B coverage. FIRMS requires a server connection; vessel connectivity is
+        pending. Switches control display only, and zero loaded records does not prove no activity.
       </p>
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
         At wide zoom, up to 250 traffic records stay outside clusters. Other records remain

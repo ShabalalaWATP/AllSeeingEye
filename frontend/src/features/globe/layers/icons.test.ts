@@ -19,6 +19,17 @@ function props(layer: ReturnType<typeof buildIconLayer>) {
 }
 
 describe('icon layer accessors', () => {
+  it('draws a thermal sensor symbol for FIRMS detections without relabelling other disasters', () => {
+    const thermal = liveEvent({
+      source_id: 'firms_viirs_noaa20',
+      category: 'disaster',
+      subtype: 'thermal_detection',
+      point: { lon: 0, lat: 0 },
+    });
+    expect(iconFor(thermal)).toBe('thermal');
+    expect(props(buildIconLayer([thermal], vi.fn(), null)).getIcon(thermal).url).toContain('svg');
+    expect(iconFor({ ...thermal, subtype: 'earthquake' })).toBeNull();
+  });
   it('draws only vessel positions as boats, retaining heading and warning distinctions', () => {
     const vessel = liveEvent({
       category: 'maritime',
