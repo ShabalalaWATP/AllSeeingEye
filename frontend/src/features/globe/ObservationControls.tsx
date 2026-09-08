@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { isObservationShown, toggleObservationLayer } from './layerVisibility';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 
 export type ObservationKind = 'aircraft' | 'vessels' | 'firms';
@@ -51,11 +52,13 @@ export function ObservationControls({
   visibility,
   hidden,
   onToggle,
+  onToggleCategory,
 }: {
   events: readonly LiveEvent[];
   visibility: ObservationVisibility;
   hidden: readonly Category[];
   onToggle: (kind: ObservationKind) => void;
+  onToggleCategory: (category: Category) => void;
 }) {
   const counts = { aircraft: 0, vessels: 0, firms: 0 };
   for (const event of events) {
@@ -63,10 +66,7 @@ export function ObservationControls({
     if (kind !== null) counts[kind] += 1;
   }
   return (
-    <section
-      aria-label="Observation overlays"
-      className="rounded-md border border-line bg-surface/90 p-3 backdrop-blur"
-    >
+    <section aria-label="Observation overlays" className="mt-3 border-t border-line pt-3">
       <h2 className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan">
         Observation overlays
       </h2>
@@ -76,15 +76,17 @@ export function ObservationControls({
             type="button"
             role="switch"
             aria-label={label}
-            aria-checked={visibility[kind]}
-            onClick={() => onToggle(kind)}
+            aria-checked={isObservationShown(kind, visibility, hidden)}
+            onClick={() =>
+              toggleObservationLayer(kind, visibility, hidden, onToggle, onToggleCategory)
+            }
             className="flex min-h-11 w-full items-center justify-between gap-2 text-left text-xs hover:text-cyan focus-visible:outline-2 focus-visible:outline-cyan"
           >
             <span>{label}</span>
             <span
-              className={`font-mono text-[10px] ${visibility[kind] ? 'text-cyan' : 'text-muted'}`}
+              className={`font-mono text-[10px] ${isObservationShown(kind, visibility, hidden) ? 'text-cyan' : 'text-muted'}`}
             >
-              {visibility[kind] ? 'ON' : 'OFF'}
+              {isObservationShown(kind, visibility, hidden) ? 'ON' : 'OFF'}
             </span>
           </button>
           <p className="font-mono text-[10px] text-muted">

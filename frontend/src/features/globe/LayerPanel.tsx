@@ -1,13 +1,20 @@
 import { useId } from 'react';
 import { LiveCoverage } from './LiveCoverage';
+import { ObservationControls } from './ObservationControls';
+import type { ObservationKind, ObservationVisibility } from './ObservationControls';
 
-import type { Category, StoreStats } from '@/lib/api/eventSchemas';
+import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
 
 import { ConnectionStatus } from './ConnectionStatus';
 import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
 
 export interface LayerPanelProps {
+  observations?: {
+    events: readonly LiveEvent[];
+    visibility: ObservationVisibility;
+    onToggle: (kind: ObservationKind) => void;
+  };
   counts: Partial<Record<Category, number>>;
   hidden: readonly Category[];
   stats: StoreStats | null;
@@ -69,6 +76,7 @@ function Toggle({
 }
 
 export function LayerPanel({
+  observations,
   counts,
   hidden,
   stats,
@@ -94,6 +102,9 @@ export function LayerPanel({
         <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Layers</h2>
         <ConnectionStatus status={status} />
       </div>
+      <p className="mb-2 px-1 text-xs text-muted">
+        Choose the categories and observation overlays shown on the map.
+      </p>
       <ul className="space-y-0.5">
         {ORDERED_CATEGORIES.map((category) => {
           const style = CATEGORY_STYLES[category];
@@ -125,6 +136,10 @@ export function LayerPanel({
           );
         })}
       </ul>
+      {observations && (
+        <ObservationControls {...observations} hidden={hidden} onToggleCategory={onToggle} />
+      )}
+      <h3 className="mt-3 px-1 text-xs font-medium">Time window</h3>
       <div
         role="radiogroup"
         aria-label="Time window"
@@ -149,6 +164,7 @@ export function LayerPanel({
         ))}
       </div>
       <div className="mt-1 border-t border-line pt-1">
+        <h3 className="px-1 py-2 text-xs font-medium">Map display</h3>
         <Toggle label="Day and night" checked={terminator} onToggle={onToggleTerminator} />
         <Toggle label="Lite mode" checked={lite} onToggle={onToggleLite} />
         <Toggle label="GNSS interference" checked={interference} onToggle={onToggleInterference} />

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
@@ -9,7 +10,7 @@ import {
   useObservationFilters,
 } from './ObservationControls';
 import { buildEventLayers } from './layers/registry';
-import type { LiveEvent } from '@/lib/api/eventSchemas';
+import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 
 const aircraft = liveEvent({ id: 'plane', category: 'aviation' });
 const vessel = liveEvent({ id: 'boat', category: 'maritime', subtype: 'vessel_position' });
@@ -38,12 +39,14 @@ it('keeps unrelated warnings and disasters when every observation overlay is off
 it('toggles each overlay independently while explaining loaded counts and hidden categories', async () => {
   function Panel() {
     const state = useObservationFilters(events);
+    const [hidden, setHidden] = useState<Category[]>(['maritime']);
     return (
       <>
         <ObservationControls
           events={events}
           visibility={state.visibility}
-          hidden={['maritime']}
+          hidden={hidden}
+          onToggleCategory={() => setHidden([])}
           onToggle={state.toggle}
         />
         <output aria-label="Visible records">
@@ -59,6 +62,10 @@ it('toggles each overlay independently while explaining loaded counts and hidden
   await user.click(screen.getByRole('switch', { name: 'FIRMS thermal detections' }));
   expect(screen.getByLabelText('Visible records')).toHaveTextContent('boat,warning,quake');
   expect(screen.getByText(/category hidden/)).toBeInTheDocument();
+  expect(screen.getByRole('switch', { name: 'Vessel positions' })).not.toBeChecked();
+  await user.click(screen.getByRole('switch', { name: 'Vessel positions' }));
+  expect(screen.getByRole('switch', { name: 'Vessel positions' })).toBeChecked();
+  expect(screen.queryByText(/category hidden/)).not.toBeInTheDocument();
   await user.click(screen.getByRole('switch', { name: 'Vessel positions' }));
   expect(screen.getByLabelText('Visible records')).toHaveTextContent('warning,quake');
 });

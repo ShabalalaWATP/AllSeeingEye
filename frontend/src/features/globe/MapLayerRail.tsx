@@ -4,6 +4,7 @@ import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import { observationKind } from './ObservationControls';
 import type { ObservationKind, ObservationVisibility } from './ObservationControls';
+import { isObservationShown, toggleObservationLayer } from './layerVisibility';
 import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
@@ -60,25 +61,20 @@ export function MapLayerRail({
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
   const { terminator, toggleTerminator, interference, toggleInterference } = useGlobeStore();
   const observations = [
-    { kind: 'aircraft', label: 'Flights', category: 'aviation' },
-    { kind: 'vessels', label: 'Boats', category: 'maritime' },
-    { kind: 'firms', label: 'FIRMS', category: 'disaster' },
+    { kind: 'aircraft', label: 'Flights' },
+    { kind: 'vessels', label: 'Boats' },
+    { kind: 'firms', label: 'FIRMS' },
   ] as const;
   return (
     <>
-      {observations.map(({ kind, label, category }) => (
+      {observations.map(({ kind, label }) => (
         <LayerButton
           key={kind}
           label={label}
           icon={kind}
           count={events.filter((event) => observationKind(event) === kind).length}
-          active={visibility[kind] && !hidden.includes(category)}
-          onClick={() => {
-            if (hidden.includes(category)) {
-              toggleCategory(category);
-              if (!visibility[kind]) onToggle(kind);
-            } else onToggle(kind);
-          }}
+          active={isObservationShown(kind, visibility, hidden)}
+          onClick={() => toggleObservationLayer(kind, visibility, hidden, onToggle, toggleCategory)}
         />
       ))}
       {(['space', 'disaster', 'conflict', 'news'] as const).map((category) => (

@@ -124,6 +124,15 @@
   overflow: hidden;
   animation: dashboard-arrive 120ms ease-out;
 }
+.map-tool-panel[data-side='left'] {
+  left: 68px;
+  right: auto;
+}
+.map-rail-divider {
+  width: 26px;
+  border-top: 1px solid var(--color-line);
+  margin: 4px 0;
+}
 .map-tool-content {
   min-height: 0;
   overflow-y: auto;
@@ -142,7 +151,8 @@
   .map-tool-rail {
     right: 6px;
   }
-  .map-tool-panel {
+  .map-tool-panel,
+  .map-tool-panel[data-side='left'] {
     right: 58px;
     left: 58px;
     width: auto;
@@ -172,16 +182,16 @@
   right: 68px;
   max-width: calc(100% - 136px);
 }
-.globe-dashboard:has(.map-tool-panel) > aside[aria-label='Event details'],
-.globe-dashboard:has(.map-tool-panel) > aside[aria-label='Map details'] {
+.globe-dashboard:has(.map-tool-panel[data-side='right']) > aside[aria-label='Event details'],
+.globe-dashboard:has(.map-tool-panel[data-side='right']) > aside[aria-label='Map details'] {
   right: auto;
   left: 68px;
 }
 @media (max-width: 767px) {
   .globe-dashboard > aside[aria-label='Event details'],
   .globe-dashboard > aside[aria-label='Map details'],
-  .globe-dashboard:has(.map-tool-panel) > aside[aria-label='Event details'],
-  .globe-dashboard:has(.map-tool-panel) > aside[aria-label='Map details'] {
+  .globe-dashboard:has(.map-tool-panel[data-side='right']) > aside[aria-label='Event details'],
+  .globe-dashboard:has(.map-tool-panel[data-side='right']) > aside[aria-label='Map details'] {
     right: 12px;
     left: 12px;
     width: auto;

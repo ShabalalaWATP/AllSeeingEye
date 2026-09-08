@@ -476,3 +476,8 @@ Conflict & unrest coding; added bounded BNG grid and approximate coordinates.
 Full frontend regression passed 1,129 tests and unchanged coverage gates.
 See MAP_INTERACTION_CORRECTIONS.md for browser evidence, projection limits and
 verification of the final presentation changes.
+
+8 September map configuration follow-up: completed left-side configuration
+and CCTV placement, removed the separate observation-filter panel, and unified
+effective observation visibility between settings and quick toggles. Desktop
+and mobile browser checks passed. CCTV provider integration remains outstanding.

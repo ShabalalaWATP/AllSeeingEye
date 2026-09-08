@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
 import { ControlPanel, GlobeControls } from './GlobeControls';
@@ -6,7 +6,7 @@ import { ControlPanel, GlobeControls } from './GlobeControls';
 function Fixture({ action = () => undefined }: { action?: () => void }) {
   return (
     <GlobeControls layers={<button>Flight layer</button>}>
-      <ControlPanel label="Map style" icon="layers">
+      <ControlPanel side="left" label="Map style" icon="layers">
         <button onClick={action}>Choose layer</button>
       </ControlPanel>
       <ControlPanel label="Measure" icon="measure">
@@ -48,4 +48,18 @@ it('closes through the explicit control or the same rail button', async () => {
   await user.click(screen.getByRole('button', { name: 'Map style' }));
   await user.click(screen.getByRole('button', { name: 'Map style' }));
   expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
+});
+
+it('keeps configuration on the left and opens its panel beside that rail', async () => {
+  const user = userEvent.setup();
+  render(<Fixture />);
+  const left = screen.getByRole('group', { name: 'Map layers' });
+  const right = screen.getByRole('group', { name: 'Map tools' });
+  expect(within(left).getByRole('button', { name: 'Map style' })).toBeInTheDocument();
+  expect(within(right).queryByRole('button', { name: 'Map style' })).not.toBeInTheDocument();
+  expect(within(right).getByRole('button', { name: 'Measure' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Map style' }));
+  expect(screen.getByRole('region', { name: 'Map style' })).toHaveAttribute('data-side', 'left');
+  await user.click(screen.getByRole('button', { name: 'Measure' }));
+  expect(screen.getByRole('region', { name: 'Measure' })).toHaveAttribute('data-side', 'right');
 });

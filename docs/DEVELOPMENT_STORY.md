@@ -2528,3 +2528,24 @@ selection, headings, far-side culling and mobile layout. The full frontend suite
 passed 1,129 tests; final icon/spacing changes passed focused checks and build.
 Production dependency audit found no known vulnerabilities. See
 MAP_INTERACTION_CORRECTIONS.md for exact evidence and limitations.
+
+## 8 September 2026: consolidate map configuration
+
+Moved map style, Layers and settings, British National Grid and CCTV to the
+left rail. Removed the separate Observation filters button and embedded its
+controls in Layers and settings. Measurement, nation search, precision and
+navigation remain on the right. Flyouts open beside their owning rail and
+selection details occupy the opposite side on larger screens.
+
+Observation switches now report effective visibility, including their parent
+category. Both quick controls and settings use the same helper: enabling a
+hidden subgroup restores its parent without flipping its saved preference.
+Browser checks passed for desktop/mobile placement, bidirectional switch
+synchronisation, parent recovery, time-window selection and mobile map style.
+Focused map tests: 167 passed. Type checks, lint and production build passed.
+Read-only code/security review found no actionable regressions. No new network,
+authorisation or credential handling was introduced. CCTV remains unconnected.
+
+Final regression: 1,135 tests passed across 225 files. Coverage: 95.21%
+statements, 90.09% branches, 93.59% functions and 96.57% lines. Existing
+coverage thresholds remain unchanged. Build retains its bundle-size warning.

@@ -72,3 +72,22 @@ the existing performance test. Final combined types, lint and build passed.
 Subsequent grid-icon and mobile coordinate-clearance adjustments passed 12
 focused tests, a production build and actual browser clearance checks.
 Production dependency audit reported no known vulnerabilities.
+
+## Configuration rail follow-up, 8 September
+
+Map style, layer settings, BNG and CCTV now belong to the left rail. There is
+one configuration flyout at a time, positioned beside its owning rail. The
+separate Observation filters button has been removed; its switches and source
+coverage information live in Layers and settings. Effective subgroup state
+accounts for hidden parent categories and enabling a subgroup restores its
+parent consistently from either control surface.
+
+Verified using the local authenticated app: one copy of each configuration
+button on the left, no duplicate filter button, bidirectional flight switch
+synchronisation, parent-category recovery, time-window selection, mobile panel
+bounds and mobile map-style interaction. Screenshots are stored locally under
+output/playwright/rail-settings-*.png. CCTV is still a planned integration.
+
+Final regression: 1,135 tests passed across 225 files. Coverage: 95.21%
+statements, 90.09% branches, 93.59% functions and 96.57% lines. Existing
+coverage thresholds remain unchanged. Build retains its bundle-size warning.

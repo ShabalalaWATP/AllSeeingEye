@@ -38,7 +38,7 @@ import { WorldClocks } from './WorldClocks';
 import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
 import { useMapMeasurement } from './useMapMeasurement';
 import { measurementLayers } from '@/lib/map/measurementLayers';
-import { ObservationControls, useObservationFilters } from './ObservationControls';
+import { useObservationFilters } from './ObservationControls';
 import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
@@ -259,7 +259,7 @@ export default function GlobePage() {
           }
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
-          <ControlPanel label="Map style" icon="layers">
+          <ControlPanel side="left" label="Map style" icon="layers">
             <BaseLayerToolbar
               initialExpanded
               value={baseLayer}
@@ -269,14 +269,6 @@ export default function GlobePage() {
           </ControlPanel>
           <ControlPanel label="Measure distance and area" icon="measure">
             <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
-          </ControlPanel>
-          <ControlPanel label="Observation filters" icon="filter">
-            <ObservationControls
-              events={scoped}
-              visibility={observations.visibility}
-              hidden={hidden}
-              onToggle={observations.toggle}
-            />
           </ControlPanel>
           <ControlPanel label="Find nation" icon="nation">
             <NationFilter
@@ -295,8 +287,13 @@ export default function GlobePage() {
               />
             )}
           </ControlPanel>
-          <ControlPanel label="Layers and settings" icon="settings">
+          <ControlPanel side="left" label="Layers and settings" icon="settings">
             <LayerPanel
+              observations={{
+                events: scoped,
+                visibility: observations.visibility,
+                onToggle: observations.toggle,
+              }}
               counts={counts}
               hidden={hidden}
               stats={stats}
@@ -320,10 +317,10 @@ export default function GlobePage() {
               onSelect={focus}
             />
           </ControlPanel>
-          <ControlPanel label="British National Grid" icon="grid">
+          <ControlPanel side="left" label="British National Grid" icon="grid">
             <BritishGridTool grid={britishGrid} engine={engine} />
           </ControlPanel>
-          <ControlPanel label="CCTV" icon="camera">
+          <ControlPanel side="left" label="CCTV" icon="camera">
             <p className="p-3 text-sm text-muted">
               Public CCTV integration is planned. Camera locations and previews are not available
               yet.
