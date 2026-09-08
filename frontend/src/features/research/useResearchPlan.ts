@@ -6,6 +6,7 @@ import { previewResearchPlan } from '@/lib/api/researchPlan';
 import type { QueryVariant } from '@/lib/api/researchPlan';
 import type { ReportRequest } from '@/lib/api/reports';
 import { usePlannedTasks } from './usePlannedTasks';
+import { useQueryTransliterations } from './useQueryTransliterations';
 
 export interface PlanScope {
   question: string;
@@ -41,6 +42,7 @@ export function useResearchPlan(scope: PlanScope) {
   const [customTerms, setCustomTerms] = useState(false);
   const [termsText, setTermsText] = useState('');
   const [variantText, setVariantText] = useState<Record<string, string>>({});
+  const [variantOriginalText, setVariantOriginalText] = useState<Record<string, string>>({});
   const [snapshot, setSnapshot] = useState<{
     key: string;
     capabilitiesKey: string;
@@ -53,10 +55,22 @@ export function useResearchPlan(scope: PlanScope) {
   const terms = scope.history?.projectId
     ? [`aiddata:${scope.history.projectId}`, ...(suppliedTerms ?? [])]
     : suppliedTerms;
-  const variants: QueryVariant[] = scope.languages.flatMap((language) => {
+  const transliterations = useQueryTransliterations(scope.languages, terms);
+  const translations: QueryVariant[] = scope.languages.flatMap((language) => {
     const values = lines(variantText[language] ?? '');
-    return values.length ? [{ language, terms: values }] : [];
+    const originals = lines(variantOriginalText[language] ?? '');
+    return values.length
+      ? [
+          {
+            language,
+            terms: values,
+            kind: 'translation',
+            ...(originals.length ? { original_terms: originals } : {}),
+          },
+        ]
+      : [];
   });
+  const variants = [...translations, ...transliterations.variants];
   const key = JSON.stringify({
     scope,
     sourceIds,
@@ -75,6 +89,26 @@ export function useResearchPlan(scope: PlanScope) {
     plannedTasks.length > 0;
   const preview = async () => {
     if (busy) return;
+    if (
+      translations.some(
+        (variant) =>
+          variant.original_terms?.length &&
+          (variant.original_terms.length !== variant.terms.length ||
+            variant.original_terms.some((term) => !terms?.includes(term))),
+      )
+    ) {
+      setError(
+        'Link translation originals to exact original search terms, one original per translated line.',
+      );
+      return;
+    }
+    if (transliterations.error || variants.length > 8) {
+      setError(
+        transliterations.error ??
+          'Use at most eight translation and transliteration variants combined.',
+      );
+      return;
+    }
     if (tasks.previewError) {
       setError(tasks.previewError);
       return;
@@ -197,6 +231,7 @@ export function useResearchPlan(scope: PlanScope) {
   };
   return {
     tasks,
+    transliterations,
     sourceIds,
     customTerms,
     setCustomTerms,
@@ -204,6 +239,8 @@ export function useResearchPlan(scope: PlanScope) {
     setTermsText,
     variantText,
     setVariantText,
+    variantOriginalText,
+    setVariantOriginalText,
     snapshot: snapshot?.data ?? null,
     registryOptionsCurrent: snapshot?.capabilitiesKey === capabilitiesKey,
     current,

@@ -88,7 +88,7 @@ def events_from_media(result: MediaExtractionResult, captured_at: datetime) -> t
                 subtype=subtype,
                 title=f"{result.filename}: {reference}"[:300],
                 summary=text,
-                published_at=captured_at,
+                published_at=None,
                 observed_at=captured_at,
                 reliability=Reliability.F,
                 credibility=Credibility.CANNOT_BE_JUDGED,

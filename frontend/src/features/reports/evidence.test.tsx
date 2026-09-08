@@ -7,7 +7,7 @@ import { report } from '@/test/fixtures';
 import { EvidenceAnnex } from './ReportSections';
 
 const rich = {
-  ...report.version.evidence[0],
+  ...report.version.evidence[0]!,
   label: 'E1',
   event_id: 'e1',
   source_id: 'source',

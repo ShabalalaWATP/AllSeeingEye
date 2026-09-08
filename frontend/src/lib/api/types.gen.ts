@@ -1300,6 +1300,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research/inputs/{input_id}/declaration-targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Declaration Targets */
+        get: operations["declaration_targets_api_research_inputs__input_id__declaration_targets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/inputs/{input_id}/declarations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Declare Input */
+        post: operations["declare_input_api_research_inputs__input_id__declarations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/research/inputs": {
         parameters: {
             query?: never;
@@ -1311,6 +1345,57 @@ export interface paths {
         put?: never;
         /** Import Input */
         post: operations["import_input_api_research_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/sec/filings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** List Filings */
+        post: operations["list_filings_api_research_sec_filings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/sec/filings/{selection_id}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Filing */
+        post: operations["import_filing_api_research_sec_filings__selection_id__import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/sec/filings/{selection_id}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Original Filing */
+        get: operations["original_filing_api_research_sec_filings__selection_id__original_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3427,6 +3512,7 @@ export interface components {
             /** Candidate Id */
             candidate_id?: string | null;
             registry_lookup?: components["schemas"]["RegistryLookup"] | null;
+            query_variant?: components["schemas"]["QueryVariantIn"] | null;
         };
         /** CollectionPassOut */
         CollectionPassOut: {
@@ -3816,6 +3902,10 @@ export interface components {
             attributes: {
                 [key: string]: string | number | boolean | null;
             };
+            /** Transformations */
+            transformations?: components["schemas"]["TextTransformation"][];
+            /** Source Dates */
+            source_dates?: components["schemas"]["SourceDate"][];
         };
         /** EventsOut */
         EventsOut: {
@@ -3997,6 +4087,16 @@ export interface components {
             geometry?: components["schemas"]["EvidenceGeometry"] | null;
             observation?: components["schemas"]["ObservationMetadata"] | null;
             project?: components["schemas"]["ProjectMetadata"] | null;
+            /**
+             * Transformations
+             * @default []
+             */
+            transformations: components["schemas"]["TextTransformation"][];
+            /**
+             * Source Dates
+             * @default []
+             */
+            source_dates: components["schemas"]["SourceDate"][];
         };
         /**
          * EvidenceTimeBasis
@@ -4536,6 +4636,105 @@ export interface components {
         IndicatorsOut: {
             /** Items */
             items: components["schemas"]["IndicatorOut"][];
+        };
+        /** InputDeclarationTargetOut */
+        InputDeclarationTargetOut: {
+            /** Event Id */
+            event_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string | null;
+            /** Language */
+            language: string;
+            /** Transformations */
+            transformations: components["schemas"]["TextTransformation"][];
+            /** Source Dates */
+            source_dates: components["schemas"]["SourceDate"][];
+        };
+        /** InputDeclarationTargetsOut */
+        InputDeclarationTargetsOut: {
+            /**
+             * Input Id
+             * Format: uuid
+             */
+            input_id: string;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Targets */
+            targets: components["schemas"]["InputDeclarationTargetOut"][];
+        };
+        /** InputDeclarationsIn */
+        InputDeclarationsIn: {
+            /** Sha256 */
+            sha256: string;
+            /** Declarations */
+            declarations: components["schemas"]["InputPassageDeclarationIn"][];
+        };
+        /** InputPassageDeclarationIn */
+        InputPassageDeclarationIn: {
+            /** Event Id */
+            event_id: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Transformations */
+            transformations?: components["schemas"]["InputTextTransformationIn"][];
+            /** Source Dates */
+            source_dates?: components["schemas"]["InputSourceDateIn"][];
+        };
+        /** InputSourceDateIn */
+        InputSourceDateIn: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Raw Text */
+            raw_text: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "publication" | "occurrence" | "record_validity" | "modification" | "unspecified";
+            /**
+             * Calendar
+             * @enum {string}
+             */
+            calendar: "gregorian" | "solar_hijri_icu33" | "unknown";
+        };
+        /** InputTextTransformationIn */
+        InputTextTransformationIn: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Original Text */
+            original_text: string;
+            /** Transformed Text */
+            transformed_text: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "translation" | "transliteration";
+            /** Source Language */
+            source_language: string;
+            /** Target Language */
+            target_language: string;
+            /** Source Script */
+            source_script?: string | null;
+            /** Target Script */
+            target_script?: string | null;
+            /** Method */
+            method: string;
         };
         /** JamCellOut */
         JamCellOut: {
@@ -5914,6 +6113,20 @@ export interface components {
             language: string;
             /** Terms */
             terms: string[];
+            /**
+             * Kind
+             * @default translation
+             * @enum {string}
+             */
+            kind: "translation" | "transliteration";
+            /** Original Terms */
+            original_terms?: string[];
+            /** Source Script */
+            source_script?: string | null;
+            /** Target Script */
+            target_script?: string | null;
+            /** Method */
+            method?: string | null;
         };
         /** ReadyOut */
         ReadyOut: {
@@ -6430,6 +6643,10 @@ export interface components {
             geometry?: components["schemas"]["EvidenceGeometryOut"] | null;
             observation?: components["schemas"]["ObservationOut"] | null;
             project?: components["schemas"]["ProjectOut"] | null;
+            /** Transformations */
+            transformations?: components["schemas"]["TextTransformation"][];
+            /** Source Dates */
+            source_dates?: components["schemas"]["SourceDate"][];
         };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
@@ -6789,6 +7006,8 @@ export interface components {
             preview: string;
             /** Limitations */
             limitations: string[];
+            /** Parent Input Id */
+            parent_input_id?: string | null;
             /** Previews */
             previews?: components["schemas"]["ResearchInputPreviewOut"][];
         };
@@ -7076,6 +7295,7 @@ export interface components {
             temporal_scope: string;
             /** Query Language */
             query_language?: string | null;
+            query_variant?: components["schemas"]["QueryVariantIn"] | null;
             /**
              * Spatial Supported
              * @default false
@@ -7304,6 +7524,74 @@ export interface components {
             /** Ceid */
             ceid: string;
         };
+        /** SecFilingChoiceOut */
+        SecFilingChoiceOut: {
+            /**
+             * Selection Id
+             * Format: uuid
+             */
+            selection_id: string;
+            /** Cik */
+            cik: string;
+            /** Accession */
+            accession: string;
+            /** Primary Document */
+            primary_document: string;
+            /** Form */
+            form: string;
+            /**
+             * Filing Date
+             * Format: date
+             */
+            filing_date: string;
+            /** Company Name */
+            company_name: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /** SecFilingsPageOut */
+        SecFilingsPageOut: {
+            /** Items */
+            items: components["schemas"]["SecFilingChoiceOut"][];
+            /** Archive Page */
+            archive_page: number;
+            /** Archive Pages */
+            archive_pages: number;
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+            /** Limitations */
+            limitations: string[];
+        };
+        /** SecFilingsSearchIn */
+        SecFilingsSearchIn: {
+            /** Cik */
+            cik: string;
+            /**
+             * Since
+             * Format: date
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date
+             */
+            until: string;
+            /**
+             * Archive Page
+             * @default 0
+             */
+            archive_page: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
+        };
         /** SetPasswordIn */
         SetPasswordIn: {
             /** Token */
@@ -7407,6 +7695,53 @@ export interface components {
         SourceActivationIn: {
             /** Enabled */
             enabled: boolean;
+        };
+        /** SourceDate */
+        SourceDate: {
+            /** Field */
+            field: string;
+            /** Raw Text */
+            raw_text: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "publication" | "occurrence" | "record_validity" | "modification" | "unspecified";
+            /**
+             * Calendar
+             * @enum {string}
+             */
+            calendar: "gregorian" | "solar_hijri_icu33" | "unknown";
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "operator" | "source_spec" | "source_metadata";
+            /**
+             * Precision
+             * @enum {string}
+             */
+            precision: "instant" | "day" | "unknown";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "resolved" | "ambiguous" | "unsupported" | "invalid";
+            /** Method */
+            method: string;
+            /** Value */
+            value?: string | null;
+            /** Day Start */
+            day_start?: string | null;
+            /** Day End */
+            day_end?: string | null;
+            /** Actor Id */
+            actor_id?: string | null;
+            /**
+             * Limitations
+             * @default []
+             */
+            limitations: string[];
         };
         /** SourceGeometryOut */
         SourceGeometryOut: {
@@ -7681,6 +8016,57 @@ export interface components {
         TemplatesOut: {
             /** Items */
             items: components["schemas"]["TemplateOut"][];
+        };
+        /** TextTransformation */
+        TextTransformation: {
+            /**
+             * Field
+             * @enum {string}
+             */
+            field: "title" | "summary";
+            /** Original Text */
+            original_text: string;
+            /** Transformed Text */
+            transformed_text: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "translation" | "transliteration";
+            /** Source Language */
+            source_language: string;
+            /** Target Language */
+            target_language: string;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "operator" | "source" | "machine";
+            /** Method */
+            method: string;
+            /** Source Script */
+            source_script?: string | null;
+            /** Target Script */
+            target_script?: string | null;
+            /** Actor Id */
+            actor_id?: string | null;
+            /**
+             * Review Status
+             * @default unreviewed
+             * @enum {string}
+             */
+            review_status: "unreviewed" | "operator_declared";
+            /**
+             * Limitations
+             * @default []
+             */
+            limitations: string[];
+            /** Model */
+            model?: string | null;
+            /** Profile Id */
+            profile_id?: string | null;
+            /** Provider */
+            provider?: string | null;
         };
         /** TokenResponse */
         TokenResponse: {
@@ -10746,6 +11132,72 @@ export interface operations {
             };
         };
     };
+    declaration_targets_api_research_inputs__input_id__declaration_targets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                input_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputDeclarationTargetsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_input_api_research_inputs__input_id__declarations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                input_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputDeclarationsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchInputOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     import_input_api_research_inputs_post: {
         parameters: {
             query: {
@@ -10768,6 +11220,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResearchInputOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_filings_api_research_sec_filings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecFilingsSearchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecFilingsPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_filing_api_research_sec_filings__selection_id__import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                selection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchInputOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    original_filing_api_research_sec_filings__selection_id__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                selection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

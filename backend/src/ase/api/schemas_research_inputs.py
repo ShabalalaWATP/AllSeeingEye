@@ -28,6 +28,7 @@ class ResearchInputOut(BaseModel):
     extracted_characters: int = Field(ge=0, le=200_000)
     preview: str = Field(max_length=1000)
     limitations: list[str] = Field(max_length=20)
+    parent_input_id: UUID | None = None
     previews: list[ResearchInputPreviewOut] = Field(default_factory=list, max_length=3)
 
     @classmethod

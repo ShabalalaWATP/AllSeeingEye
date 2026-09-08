@@ -51,7 +51,7 @@ async def test_sec_one_request_stable_public_metadata(monkeypatch: pytest.Monkey
     )
     assert first.credibility is Credibility.CANNOT_BE_JUDGED
     assert first.attributes["date_precision"] == "day"
-    assert first.published_at.date() == COMPANY.since.date()
+    assert first.published_at is None
     assert first.observed_at == CLOCK.now()
     assert "not verified" in (first.summary or "")
     again = await provider.collect(COMPANY)

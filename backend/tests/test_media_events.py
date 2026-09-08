@@ -9,6 +9,7 @@ import pytest
 from ase.adapters.research_imports.models import ExtractedUnit, ImportRejected
 from ase.adapters.research_media import MediaTools, extract_media
 from ase.adapters.research_media.events import events_from_media
+from ase.domain.evidence_time import EvidenceTimeBasis, evidence_matches_time
 from media_helpers import synthetic_image
 
 NOW = datetime(2026, 9, 6, tzinfo=UTC)
@@ -21,7 +22,18 @@ def test_image_metadata_stays_unverified_and_does_not_backdate_or_geolocate() ->
     metadata, frame = events
     assert metadata.subtype == "media_metadata" and frame.subtype == "media_frame"
     assert "metadata_datetime: 2026:01:01" in (metadata.summary or "")
-    assert all(event.published_at == event.observed_at == NOW for event in events)
+    assert all(event.published_at is None and event.observed_at == NOW for event in events)
+    for event in events:
+        assert not evidence_matches_time(
+            event, EvidenceTimeBasis.PUBLICATION, NOW - timedelta(days=1), NOW
+        )
+        assert evidence_matches_time(
+            event,
+            EvidenceTimeBasis.PUBLICATION,
+            NOW - timedelta(days=1),
+            NOW,
+            include_unknown=True,
+        )
     assert all(event.point is None and event.country_iso is None for event in events)
     assert all(
         event.grade == "F6" and event.language == "und" and event.url is None for event in events

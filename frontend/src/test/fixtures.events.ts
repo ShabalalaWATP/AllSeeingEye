@@ -1,8 +1,12 @@
 /** Live event, store statistics and stream fixtures. */
+import type { liveEventSchema } from '@/lib/api/eventSchemas';
 import type { LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import { sourceDateSchema, textTransformationSchema } from '@/lib/api/sourceProvenance';
 
 /** A located, graded live event; override fields per test. */
-export function liveEvent(overrides: Partial<LiveEvent> = {}): LiveEvent {
+export function liveEvent(
+  overrides: Partial<LiveEvent> = {},
+): ReturnType<typeof liveEventSchema.parse> {
   return {
     id: 'e1',
     source_id: 'usgs_earthquakes',
@@ -27,6 +31,10 @@ export function liveEvent(overrides: Partial<LiveEvent> = {}): LiveEvent {
     story_id: null,
     attributes: { magnitude: 4.2 },
     ...overrides,
+    transformations: (overrides.transformations ?? []).map((value) =>
+      textTransformationSchema.parse(value),
+    ),
+    source_dates: (overrides.source_dates ?? []).map((value) => sourceDateSchema.parse(value)),
   };
 }
 

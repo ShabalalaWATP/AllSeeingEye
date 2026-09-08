@@ -12,12 +12,10 @@ from defusedxml.ElementTree import fromstring
 
 from ase.adapters.feeds.http import FeedHttpClient, is_public_address
 from ase.adapters.feeds.rss import (
-    DATE_TAGS,
     MAX_ITEMS,
     RssConnector,
     child_text,
     children,
-    parse_feed_date,
     select_feed_items,
 )
 from ase.adapters.feeds.rss_seeds import RssSeed
@@ -86,11 +84,10 @@ class ResearchFeedParser(RssConnector):
         now = self._clock.now()
         selected, count = select_feed_items(root, newest_first=self._options.newest_first)
         for item in selected:
-            published = parse_feed_date(child_text(item, *DATE_TAGS))
-            if published is None or not query.since <= published < query.until:
-                continue
             event = self._to_event(item, now)
-            if event is None:
+            if event is None or event.published_at is None:
+                continue
+            if not query.since <= event.published_at < query.until:
                 continue
             if local_match and not any(
                 matching_text(term, event.language)

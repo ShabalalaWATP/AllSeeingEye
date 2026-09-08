@@ -49,7 +49,7 @@ async def test_rss2_items_become_events() -> None:
     assert (
         second.summary == "Country: Sudan More than 23,000 people have reportedly been displaced."
     )
-    assert third.published_at == NOW
+    assert third.published_at is None
     assert third.id == event_id("feed_test", "https://example.org/undated")
     assert third.summary is None and third.attributes["author"] is None
 
@@ -58,9 +58,11 @@ async def test_rdf_and_atom_feeds() -> None:
     rdf = await connector(read("rdf_sample.xml")).fetch()
     assert len(rdf) == 2
     assert rdf[0].title == "Outrage as tycoon acquitted in journalist's murder"
-    assert rdf[0].published_at == datetime(2026, 9, 4, 19, 31, tzinfo=UTC)
+    assert rdf[0].published_at is None
+    assert rdf[0].source_dates[0].role == "unspecified"
+    assert rdf[0].source_dates[0].value == datetime(2026, 9, 4, 19, 31, tzinfo=UTC)
     assert rdf[0].attributes["categories"] is None
-    assert rdf[1].published_at == NOW and rdf[1].summary is None
+    assert rdf[1].published_at is None and rdf[1].summary is None
 
     atom = await connector(read("atom_sample.xml")).fetch()
     assert len(atom) == 1
@@ -69,7 +71,9 @@ async def test_rdf_and_atom_feeds() -> None:
     assert entry.summary == (
         "Updated information on Ebola and travelling from Reunion Island (Entry requirements)"
     )
-    assert entry.published_at == datetime(2026, 9, 4, 15, 8, 37, tzinfo=UTC)
+    assert entry.published_at is None
+    assert entry.source_dates[0].role == "modification"
+    assert entry.source_dates[0].value == datetime(2026, 9, 4, 15, 8, 37, tzinfo=UTC)
     assert entry.attributes["author"] == "FCDO"
     assert entry.attributes["categories"] == "travel"
 
@@ -80,7 +84,7 @@ async def test_country_codes_from_category_domains() -> None:
     assert events[0].country_iso == "BE"
     assert events[0].geo_confidence is GeoConfidence.COUNTRY
     assert events[0].subtype == "travel_advisory"
-    assert events[0].published_at == datetime(2026, 9, 5, tzinfo=UTC)
+    assert events[0].published_at is None
     assert events[1].country_iso is None
     assert events[1].geo_confidence is GeoConfidence.NONE
 
@@ -105,7 +109,7 @@ def test_helpers() -> None:
     assert parse_feed_date("garbage") is None
     assert parse_feed_date("2026-09-04T19:31:00Z") == datetime(2026, 9, 4, 19, 31, tzinfo=UTC)
     naive = parse_feed_date("2026-09-04 10:00:00")
-    assert naive == datetime(2026, 9, 4, 10, tzinfo=UTC)
+    assert naive is None
     assert strip_html(None) is None
     assert strip_html("<p></p>") is None
     assert strip_html("a &lt;b&gt;c&lt;/b&gt;") == "a c"

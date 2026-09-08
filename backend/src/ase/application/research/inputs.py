@@ -9,12 +9,15 @@ from ase.application.ports.research_inputs import (
     INPUT_TTL_SECONDS,
     MAX_INPUT_BYTES,
     DocumentImportPort,
+    InputExtraction,
     InputPreviewFrame,
     InputReservation,
     ResearchInputReceipt,
     ResearchInputStore,
+    StoredResearchInput,
 )
 from ase.domain.errors import InvalidRequest, RateLimited, Unauthenticated
+from ase.domain.input_declarations import InputPassageDeclaration, apply_declarations
 from ase.domain.users import User
 
 INPUT_ATTEMPTS_PER_WINDOW = 6
@@ -59,6 +62,65 @@ class ImportResearchInput:
 
     def previews(self, actor: User, input_id: UUID) -> tuple[InputPreviewFrame, ...]:
         return self._store.read(actor, input_id).frames
+
+    async def declaration_targets(
+        self,
+        actor: User,
+        input_id: UUID,
+        *,
+        before_release: BeforeRetain | None = None,
+    ) -> StoredResearchInput:
+        # Read all asynchronous authority before the final synchronous private-store read.
+        # Successful release holds the guard until the request session is closed.
+        await self._uow.rollback()
+        try:
+            current = await self._access.context(actor, for_update=True)
+            if before_release is not None:
+                await before_release()
+            return self._store.read(current.actor, input_id)
+        except BaseException:
+            await self._uow.rollback()
+            raise
+
+    async def declare(
+        self,
+        actor: User,
+        input_id: UUID,
+        sha256: str,
+        declarations: tuple[InputPassageDeclaration, ...],
+        *,
+        before_retain: BeforeRetain | None = None,
+    ) -> ResearchInputReceipt:
+        original = await self.declaration_targets(actor, input_id)
+        if original.receipt.parent_input_id is not None:
+            raise InvalidRequest("Declare against the original input, not a derived receipt.")
+        reservation = await self.reserve(actor, original.receipt.filename)
+        try:
+            try:
+                current = await self._access.context(actor, for_update=True)
+                if before_retain is not None:
+                    await before_retain()
+                original = self._store.read(current.actor, input_id)
+                if original.receipt.sha256 != sha256:
+                    raise InvalidRequest("The input content digest does not match.")
+                try:
+                    events = apply_declarations(original.events, declarations, actor.id)
+                except ValueError as exc:
+                    raise InvalidRequest(str(exc)) from None
+                extraction = InputExtraction(
+                    original.receipt.filename,
+                    original.receipt.media_type,
+                    original.receipt.sha256,
+                    events,
+                    original.receipt.limitations,
+                    original.frames,
+                    parent_input_id=input_id,
+                )
+                return self._store.put(reservation, extraction).receipt
+            finally:
+                await self._uow.rollback()
+        finally:
+            self._store.release(reservation)
 
     async def execute(
         self, actor: User, filename: str, data: bytes, *, before_retain: BeforeRetain | None = None

@@ -3,7 +3,24 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol
+from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
+from uuid import UUID
+
+
+@dataclass(frozen=True, slots=True)
+class TranslatedText:
+    text: str
+    model: str | None = None
+    profile_id: UUID | None = None
+    provider: str | None = None
+
+
+@runtime_checkable
+class TracedTranslator(Protocol):
+    async def translate_traced(
+        self, items: Sequence[tuple[str, str]]
+    ) -> list[TranslatedText | None]: ...
 
 
 class Translator(Protocol):

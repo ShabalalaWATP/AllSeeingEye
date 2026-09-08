@@ -19,6 +19,7 @@ from ase.application.ports.research_inputs import (
 )
 from ase.domain.errors import InvalidRequest, NotFound, RateLimited
 from ase.domain.events import Event
+from ase.domain.source_provenance_records import provenance_size
 from ase.domain.users import User
 
 MAX_GLOBAL_SLOTS = 8
@@ -46,6 +47,9 @@ def _freeze_and_measure(extraction: InputExtraction) -> tuple[tuple[Event, ...],
     for event in extraction.events:
         if len(event.title) > 300 or len(event.summary or "") > 1800:
             raise InvalidRequest("An extracted passage exceeds its text limit.")
+        if len(event.transformations) > 4 or len(event.source_dates) > 4:
+            raise InvalidRequest("Extracted provenance exceeds the passage limit.")
+        estimate += provenance_size(event.transformations, event.source_dates)
         text_characters += len(event.summary or "")
         if len(event.attributes) > 40 or len(event.tags) > 40:
             raise InvalidRequest("Extracted input metadata exceeds its limits.")
@@ -132,6 +136,7 @@ class BoundedResearchInputStore:
             extracted_characters=sum(len(event.summary or "") for event in events),
             preview="\n".join(event.summary or "" for event in events)[:MAX_PREVIEW_CHARACTERS],
             limitations=tuple(extraction.limitations),
+            parent_input_id=extraction.parent_input_id,
         )
         result = StoredResearchInput(receipt, events, tuple(extraction.frames))
         self._ready[reservation.id] = result

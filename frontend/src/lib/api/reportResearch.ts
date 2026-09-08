@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryVariantSchema } from './sourceProvenance';
 import type { components } from './types.gen';
 import { planSchema } from './researchPlan';
 import { registryLookupSchema } from './registryRouting';
@@ -23,6 +24,7 @@ const collectionAttemptSchema = z.object({
   result_count: z.number().int(),
   explanation: z.string(),
   language: z.string().nullable(),
+  query_variant: queryVariantSchema.nullable().default(null),
 });
 
 export const researchReceiptSchema = z.object({

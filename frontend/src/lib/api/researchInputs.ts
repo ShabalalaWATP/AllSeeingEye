@@ -18,8 +18,9 @@ const previewSchema = z.object({
     .regex(/^iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/),
 });
 
-const receiptSchema: z.ZodType<ResearchInputReceipt> = z.object({
+export const researchInputReceiptSchema: z.ZodType<ResearchInputReceipt> = z.object({
   id: z.uuid(),
+  parent_input_id: z.uuid().nullable().default(null),
   filename: z.string().max(120),
   media_type: z.string().max(120),
   sha256: hash,
@@ -41,7 +42,7 @@ export function uploadResearchInput(
       method: 'POST',
       rawBody: file,
       signal,
-      schema: receiptSchema,
+      schema: researchInputReceiptSchema,
     }),
   );
 }

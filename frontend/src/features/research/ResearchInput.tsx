@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { formatUtc } from '@/lib/format';
 
+import { InputProvenanceDeclarations } from './InputProvenanceDeclarations';
 import { IMPORT_EXTENSIONS, useResearchInput } from './useResearchInput';
 
 export interface ResearchInputProps {
@@ -16,14 +17,15 @@ export interface ResearchInputProps {
 export function ResearchInput({ onChange, onBusyChange, disabled = false }: ResearchInputProps) {
   const input = useResearchInput(onChange);
   const id = useId();
+  const [declarationBusy, setDeclarationBusy] = useState(false);
   const busyChanged = useRef(onBusyChange);
   useEffect(() => {
     busyChanged.current = onBusyChange;
   }, [onBusyChange]);
   useEffect(() => {
-    busyChanged.current?.(input.busy);
+    busyChanged.current?.(input.busy || declarationBusy);
     return () => busyChanged.current?.(false);
-  }, [input.busy]);
+  }, [input.busy, declarationBusy]);
   const receipt = input.receipt;
   return (
     <section
@@ -43,7 +45,7 @@ export function ResearchInput({ onChange, onBusyChange, disabled = false }: Rese
         id={id}
         type="file"
         accept={IMPORT_EXTENSIONS}
-        disabled={disabled}
+        disabled={disabled || declarationBusy}
         aria-describedby={`${id}-help ${id}-retention`}
         className="block w-full min-w-0 text-xs text-muted file:mr-3 file:rounded-md file:border file:border-line file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:font-medium file:text-text focus-visible:outline-2 focus-visible:outline-ember disabled:opacity-50"
         onChange={(event) => {
@@ -91,7 +93,11 @@ export function ResearchInput({ onChange, onBusyChange, disabled = false }: Rese
               </p>
               <p className="mt-1 text-xs text-muted">Expires {formatUtc(receipt.expires_at)}</p>
             </div>
-            <Button variant="ghost" disabled={disabled} onClick={() => input.clear()}>
+            <Button
+              variant="ghost"
+              disabled={disabled || declarationBusy}
+              onClick={() => input.clear()}
+            >
               Remove attachment
             </Button>
           </div>
@@ -113,6 +119,13 @@ export function ResearchInput({ onChange, onBusyChange, disabled = false }: Rese
               ))}
             </div>
           )}
+          <InputProvenanceDeclarations
+            key={`${input.key}:${receipt.id}`}
+            receipt={receipt}
+            disabled={disabled}
+            onReplace={input.replaceReceipt}
+            onBusy={setDeclarationBusy}
+          />
           <details className="text-xs text-muted">
             <summary className="cursor-pointer py-2 font-medium text-text">
               Extraction preview and limitations

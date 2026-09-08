@@ -69,6 +69,7 @@ from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
+from ase.container.sec_filings import SecFilingWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -77,7 +78,7 @@ from ase.infrastructure.settings import Environment, Settings
 log = structlog.get_logger(__name__)
 
 
-class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
+class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring, AuthWiring):
     def __init__(
         self,
         settings: Settings,
@@ -109,8 +110,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
         self.store = InMemoryEventStore(
             memory_budget_bytes=settings.live_store_memory_mb * 1024 * 1024
         )
-        self.bus = InMemoryEventBus()
-        self.health = HealthRegistry()
+        self.bus, self.health = InMemoryEventBus(), HealthRegistry()
         self.countries: CountryDirectory = CountryIndex.from_resource()
         self.conflicts: ConflictDirectory = ConflictIndex.from_resource()
         self.streams = StreamLimiter(settings.max_streams_per_user)
@@ -128,6 +128,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
             FeedHttpClient(settings.feeds_user_agent),
             DigitrafficHttpClient("TheAllSeeingEye/0.1"),
         )
+        self.initialise_sec_filings()
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
@@ -142,6 +143,7 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
             self.clock,
             tuple(settings.disabled_feed_ids),
             admission=self.source_admission,
+            sec_client=self.sec_client,
             ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
             uksl_snapshot_path=settings.uksl_snapshot_path,
             ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,

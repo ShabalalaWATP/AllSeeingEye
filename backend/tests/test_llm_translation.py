@@ -10,8 +10,10 @@ from httpx import AsyncClient
 from ase.adapters.llm.translator import LlmTranslator, parse_translations
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.ports.translate import TranslatorUnavailable
+from ase.application.reports.source_provenance_text import source_provenance_lines
 from ase.container import Container
 from ase.domain.events import MAX_TITLE
+from ase.domain.evidence import EvidenceItem
 from ase.domain.llm import LlmProfile, LlmRole
 from ase.domain.users import User
 from feeds_helpers import make_event
@@ -42,6 +44,22 @@ async def test_translation_legacy_profile_reaches_store_stream_and_usage(
     stored = container.store.get(event.id)
     assert stored is not None and stored.title_en == "Talks resume"
     assert stored.title == event.title and stored.content_hash == event.content_hash
+    trace = stored.transformations[0]
+    assert trace.original_text == event.title and trace.transformed_text == stored.title_en
+    assert trace.origin == "machine" and trace.model and trace.profile_id
+    assert trace.provider and trace.review_status == "unreviewed"
+    evidence = EvidenceItem.from_event(
+        "E1", stored, container.clock.now(), source_name="fixture", independence_key="fixture"
+    )
+    exported = "\n".join(source_provenance_lines(evidence))
+    assert f"model: {trace.model}" in exported
+    assert f"provider: {trace.provider}" in exported
+    assert f"profile: {trace.profile_id}" in exported
+    cached_event = replace(event, id="same-title-new-event")
+    container.store.upsert([cached_event])
+    assert await queue.run_once() == 1
+    assert container.store.get(cached_event.id).transformations == stored.transformations
+    assert len(gateway.requests) == 1
     assert await queue.run_once() == 0
     request = gateway.requests[0]
     assert request.schema_name == "translation"

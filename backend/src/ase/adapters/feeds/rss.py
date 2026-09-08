@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from email.utils import parsedate_to_datetime
 from heapq import nlargest
 from itertools import islice
 
@@ -26,11 +25,14 @@ from ase.domain.events import (
     event_id,
     freeze_attributes,
 )
+from ase.domain.source_dates import Calendar, DateBasis, DateRole, SourceDate, resolve_source_date
 from ase.domain.sources import SourceSpec
 
 MAX_ITEMS = 200
 ITEM_TAGS = frozenset({"item", "entry"})
-DATE_TAGS = ("pubDate", "published", "updated", "date", "dc:date")
+DC_TERMS = "http://purl.org/dc/terms/"
+DC_ELEMENTS = "http://purl.org/dc/elements/1.1/"
+ATOM = "http://www.w3.org/2005/Atom"
 BODY_TAGS = ("description", "summary", "content", "encoded")
 
 
@@ -76,19 +78,9 @@ def _link(item: Element) -> str:
 
 def parse_feed_date(value: str) -> datetime | None:
     """RFC 822 (RSS) or ISO 8601 (Atom, Dublin Core) to an aware UTC datetime."""
-    if not value:
+    if not value or len(value) > 300:
         return None
-    parsed: datetime | None = None
-    try:
-        parsed = parsedate_to_datetime(value)
-    except (TypeError, ValueError):
-        try:
-            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError:
-            return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=UTC)
-    return parsed.astimezone(UTC)
+    return resolve_source_date(value, "feed_date", "gregorian", basis="source_spec").value
 
 
 def _point(item: Element) -> Point | None:
@@ -122,6 +114,42 @@ def _categories(item: Element) -> list[str]:
     return names[:10]
 
 
+def feed_source_dates(item: Element) -> tuple[SourceDate, ...]:
+    # Exact vocabularies establish roles; generic lifecycle dates are not publication.
+    declarations: list[SourceDate] = []
+    ordered = sorted(item, key=lambda child: _date_priority(child.tag))
+    for child in ordered:
+        local = _local(child.tag)
+        if local not in {"pubDate", "published", "issued", "updated", "date"}:
+            continue
+        raw = "".join(child.itertext())
+        if not raw.strip() or len(raw) > 300 or len(child.tag) > 120:
+            continue
+        role: DateRole = "unspecified"
+        calendar: Calendar = "unknown"
+        basis: DateBasis = "source_metadata"
+        if _date_priority(child.tag) == 0:
+            role, calendar, basis = "publication", "gregorian", "source_spec"
+        elif child.tag in {"updated", f"{{{ATOM}}}updated"}:
+            role, calendar, basis = "modification", "gregorian", "source_spec"
+        elif child.tag in {f"{{{DC_TERMS}}}date", f"{{{DC_ELEMENTS}}}date"}:
+            calendar, basis = "gregorian", "source_spec"
+        declarations.append(resolve_source_date(raw, child.tag, calendar, basis=basis, role=role))
+        if len(declarations) == 4:
+            break
+    return tuple(declarations)
+
+
+def _date_priority(tag: str) -> int:
+    return (
+        0 if tag in {"pubDate", "published", f"{{{ATOM}}}published", f"{{{DC_TERMS}}}issued"} else 1
+    )
+
+
+def feed_publication(item: Element) -> datetime | None:
+    return next((row.value for row in feed_source_dates(item) if row.role == "publication"), None)
+
+
 def select_feed_items(root: Element, *, newest_first: bool) -> tuple[list[Element], int]:
     """Select at most MAX_ITEMS within the HTTP byte cap, without an archive-sized list."""
     count = sum(_local(element.tag) in ITEM_TAGS for element in root.iter())
@@ -130,9 +158,7 @@ def select_feed_items(root: Element, *, newest_first: bool) -> tuple[list[Elemen
         nlargest(
             MAX_ITEMS,
             items,
-            key=lambda item: (
-                parse_feed_date(_child_text(item, *DATE_TAGS)) or datetime.min.replace(tzinfo=UTC)
-            ),
+            key=lambda item: feed_publication(item) or datetime.min.replace(tzinfo=UTC),
         )
         if newest_first
         else list(islice(items, MAX_ITEMS))
@@ -192,7 +218,8 @@ class RssConnector:
         summary = (
             None if self._options.headlines_only else strip_html(_child_text(item, *BODY_TAGS))
         )
-        published = parse_feed_date(_child_text(item, *DATE_TAGS)) or now
+        source_dates = feed_source_dates(item)
+        published = feed_publication(item)
         point = _point(item)
         country = _country(item, self._options.country_category_domain)
         if point is not None:
@@ -211,6 +238,7 @@ class RssConnector:
             summary=summary,
             url=link or None,
             published_at=published,
+            source_dates=source_dates,
             observed_at=now,
             language=self.spec.language,
             point=point,
@@ -228,7 +256,9 @@ class RssConnector:
                     "categories": ", ".join(_categories(item))[:200] or None,
                 }
             ),
-            content_hash=content_hash(key, title, summary, published.isoformat()),
+            content_hash=content_hash(
+                key, title, summary, published.isoformat() if published else None
+            ),
         )
 
 

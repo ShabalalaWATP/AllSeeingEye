@@ -14,6 +14,7 @@ import { useWorkspaceSelection, type Workspaces } from '@/lib/hooks/useWorkspace
 import { ResearchScope, type ResearchFocus } from './ResearchScope';
 import { useResearchRun } from './useResearchRun';
 import { ResearchInput } from './ResearchInput';
+import { DocumentResearchInput } from './DocumentResearchInput';
 import { FollowUpSummary } from './FollowUpSummary';
 import { ResearchProgress } from './ResearchProgress';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
@@ -292,13 +293,22 @@ export function ResearchForm({
           onStyle={setReportStyle}
           disabled={Boolean(parent)}
         />
-        {privateFocus && (
-          <ResearchInput
-            key={focus}
+        {focus === 'document' ? (
+          <DocumentResearchInput
+            key={`${focus}:${teamId}`}
             onChange={changeInput}
             onBusyChange={setInputBusy}
             disabled={action.busy}
           />
+        ) : (
+          privateFocus && (
+            <ResearchInput
+              key={`${focus}:${teamId}`}
+              onChange={changeInput}
+              onBusyChange={setInputBusy}
+              disabled={action.busy}
+            />
+          )
         )}
       </fieldset>
       {!scope.valid && (

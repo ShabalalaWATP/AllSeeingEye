@@ -18,7 +18,13 @@ from datetime import datetime, timedelta
 
 from ase.application.ports import Clock
 from ase.application.ports.feeds import BusMessage, EventBus, EventQuery, EventStore
-from ase.application.ports.translate import Translator, TranslatorUnavailable
+from ase.application.ports.translate import (
+    TracedTranslator,
+    TranslatedText,
+    Translator,
+    TranslatorUnavailable,
+)
+from ase.application.translate.provenance import translated_event
 from ase.domain.events import Event
 
 log = logging.getLogger(__name__)
@@ -59,7 +65,7 @@ class TranslationQueue:
         self._interval = interval
         self._sleep = sleep
         self._tried: OrderedDict[str, tuple[str, str]] = OrderedDict()
-        self._cache: OrderedDict[tuple[str, str], str] = OrderedDict()
+        self._cache: OrderedDict[tuple[str, str], TranslatedText] = OrderedDict()
         self._hour: datetime | None = None
         self._calls = 0
         self._task: asyncio.Task[None] | None = None
@@ -76,7 +82,7 @@ class TranslationQueue:
             self._calls = 0
         return self._calls < self._calls_per_hour
 
-    def _remember(self, key: tuple[str, str], text: str) -> None:
+    def _remember(self, key: tuple[str, str], text: TranslatedText) -> None:
         self._cache[key] = text
         self._cache.move_to_end(key)
         while len(self._cache) > CACHE_SIZE:
@@ -100,7 +106,7 @@ class TranslationQueue:
         for event in batch:
             cached = self._cache.get((event.language.lower(), event.title))
             if cached is not None:
-                updated.append(replace(event, title_en=cached))
+                updated.append(translated_event(event, cached))
             else:
                 pending.append(event)
         if pending and budget_left:
@@ -116,7 +122,9 @@ class TranslationQueue:
                 and current.language.lower() == event.language.lower()
                 and current.title_en is None
             ):
-                merged.append(replace(current, title_en=event.title_en))
+                merged.append(
+                    replace(current, title_en=event.title_en, transformations=event.transformations)
+                )
         updated = merged
         if updated:
             # put, not upsert: the content hash is unchanged, only the English title is new.
@@ -139,7 +147,13 @@ class TranslationQueue:
                 unique.append((event.title, event.language.lower()))
         self._calls += 1
         try:
-            texts = await self._translator.translate(unique)
+            if isinstance(self._translator, TracedTranslator):
+                texts = await self._translator.translate_traced(unique)
+            else:
+                texts = [
+                    TranslatedText(text) if text else None
+                    for text in await self._translator.translate(unique)
+                ]
         except TranslatorUnavailable:
             self._calls -= 1
             return []
@@ -153,7 +167,7 @@ class TranslationQueue:
             text = texts[seen[key]] if seen[key] < len(texts) else None
             if text:
                 self._remember(key, text)
-                translated.append(replace(event, title_en=text))
+                translated.append(translated_event(event, text))
         return translated
 
     async def start(self) -> None:

@@ -162,6 +162,10 @@ class FeedHttpClient:
         self._client.headers["User-Agent"] = user_agent
         self._client.headers["Accept"] = "application/json, text/*;q=0.8, */*;q=0.5"
 
+    @property
+    def user_agent(self) -> str:
+        return str(self._client.headers.get("User-Agent", ""))
+
     async def aclose(self) -> None:
         await self._client.aclose()
 

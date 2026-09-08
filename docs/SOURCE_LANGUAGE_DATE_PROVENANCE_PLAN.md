@@ -1,8 +1,13 @@
 # Source language and date provenance
 
-Implementation contract, 8 September 2026. Work has started on
-`codex/source-language-date-provenance`, based on integrated main `0c91741`.
-Implementation and acceptance remain unfinished.
+Implementation contract, 8 September 2026. Initial work on
+`codex/source-language-date-provenance` is now combined with SEC filing import on
+`codex/source-provenance-sec`, based on integrated main `99e65d5`.
+Combined focused backend acceptance passed 164 cases. Final frontend acceptance
+passed 1,064 cases with zero skips and all coverage gates; full combined backend
+acceptance and main integration remain unfinished.
+See [operator guidance](SOURCE_PROVENANCE_OPERATIONS.md) for the
+implemented bounds and exact verification scope.
 It addresses the research expansion requirement to preserve original script,
 original dates, transliteration and translation separately, and to convert dates
 only with an explicit source-calendar contract. It does not establish provider,

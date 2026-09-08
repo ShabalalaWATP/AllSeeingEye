@@ -12,6 +12,9 @@ from types import MappingProxyType
 from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.observation import ObservationMetadata
 from ase.domain.project import ProjectMetadata
+from ase.domain.source_dates import SourceDate
+from ase.domain.source_provenance_records import validate_provenance
+from ase.domain.text_transformations import TextTransformation
 
 JsonScalar = str | int | float | bool | None
 
@@ -129,6 +132,11 @@ class Event:
     geometry: EvidenceGeometry | None = None
     observation: ObservationMetadata | None = None
     project: ProjectMetadata | None = None
+    transformations: tuple[TextTransformation, ...] = ()
+    source_dates: tuple[SourceDate, ...] = ()
+
+    def __post_init__(self) -> None:
+        validate_provenance(self.transformations, self.source_dates)
 
     @property
     def grade(self) -> str:

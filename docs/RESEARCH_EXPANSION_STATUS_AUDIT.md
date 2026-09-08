@@ -12,6 +12,14 @@ gate has been accepted. The full objective remains unfinished.
 
 ## Current verification
 
+- 8 September combined SEC/provenance integration: the implementation on
+  `codex/source-provenance-sec`, based on `99e65d5`, passed 164 focused backend
+  cases, static checks and independent security review. Generated API contracts
+  and final frontend acceptance passed: 1,064 tests, zero skips, 90.23% branch
+  coverage, types, lint and production build. Full backend acceptance remains
+  running. These are local branch results, not main integration or live-source
+  acceptance. The source and organisation rows below reflect this combined tree.
+
 - 8 September: the pre-registry/monitor combined backend passed 3,195 tests,
   39 skips, no warnings and 95.20% coverage. Registry routing is integrated at
   `ebc1cfe` after 191 backend/983 frontend passes and targeted follow-up repairs.
@@ -160,7 +168,7 @@ FIRMS adapter still needs an operator key and live acceptance. Map-image export 
 
 | Requirement | Implemented evidence | Remaining work |
 | --- | --- | --- |
-| Companies House and SEC depth | Profiles, officers/PSC snapshots and recent SEC metadata providers | Selected filing documents/content and bounded older SEC pagination |
+| Companies House and SEC depth | Profiles and officers/PSC snapshots; SEC recent and bounded older metadata, explicit filing discovery and selected primary-document import with typed filing-day provenance | Companies House selected filing documents/content; full combined backend and live-source acceptance |
 | Registry/designation/procurement sources | GLEIF profile/direct/ultimate parents, imported UKSL/OFAC snapshots, first-page Contracts Finder | ITA, Find a Tender and wider upstream-format/operational acceptance |
 | Candidate versus reviewed identity | Migration 0026, immutable root/revisions, authorised identity service/API/editor/history and selected export; 62 focused PostgreSQL checks plus seven independent-transaction quota/CAS/revocation races passed | Wider operational acceptance and human-reviewed false-merge evaluation |
 | Dated organisation assertions | GLEIF source projection, immutable relationship review/disagreement history, exact revision exports and migration 0029; 133 focused backend and 11 PostgreSQL cases passed | Full combined regression acceptance, broader relationship sources and human/operational acceptance |
@@ -176,7 +184,7 @@ report evidence and source attributes remain the authority for the new display.
 
 | Requirement | Implemented evidence | Remaining work |
 | --- | --- | --- |
-| Version comparison | Exact selected claim/identity/relationship revisions, declared correspondence, separate source/provenance changes, frozen evidence-linked confidence explanations and digest-bound JSON export; integrated at `d37f723` | Final full backend acceptance; durable monitored transitions remain separate |
+| Version comparison | Exact selected claim/identity/relationship revisions, declared correspondence, separate source/provenance changes, frozen evidence-linked confidence explanations and digest-bound JSON export; accepted on main with selected-root and whole-inventory annotation monitoring | Cross-version and successive scheduled-report monitoring is being implemented separately |
 | Selected retained assets | Exact-version re-upload matched to frozen original SHA-256; migration 0027, permitted-use declarations, personal/team/global reservations and quotas, scoped UI/download/delete, periodic expiry and bounded tombstones | Explicit retain-at-import and permitted source-specific original retrieval; operational backup/recovery acceptance |
 | Evidence packages | Frozen report/receipts/locators, hashes, exact annotation and original-asset selection; generated inert members and final access/lifecycle checks | Saved-map GPU acceptance; wider source-original coverage |
 | Archives | Availability lookup and optional Save Page Now return a dated URL | Operator capture inventory, selected content retrieval, completeness manifest and terms-gated retention |
@@ -185,7 +193,7 @@ report evidence and source attributes remain the authority for the new display.
 | Personal research library | Private report favourites/tags/notes and separate saved maps | Unified exact saved-view and reproducible research-preset workflow |
 | Meaningful-change schedules | Existing research baselines plus locally tested independent selected-root annotation monitors, transactional revision events, exact checkpoint/history/alerts and replay/CAS controls | Final monitor integration; newly created/all-inventory and cross-version correspondence-aware monitoring |
 | Broader subjects | Bounded OpenAlex/Crossref, Parliament and World Bank providers | Live acceptance, selected court source if pursued, deeper content/history where approved |
-| Current checks | Current integrated frontend tree: 978 passes, 90.17% branch coverage; pre-comparison full backend: 3,146 passes, 35 skips, five fixture failures, 95.26% coverage | Export-admission fixture repair passed all ten cases separately; final combined backend acceptance remains pending; live acceptance remains separate |
+| Current checks | Main `99e65d5` matches the accepted inventory runtime: 3,291 backend passes, 70 skips, 95.05% coverage and 1,018 frontend passes; this combined SEC/provenance branch passed 1,064 frontend cases and 164 focused backend cases | Full SEC/provenance backend acceptance is running; live acceptance remains separate |
 | Human benchmark | Synthetic seeds and evaluation harness | At least 60 independently human-labelled cases with required split/reviewer/date, measured release metrics and actual configured-model results |
 | Operational release | Some historical disposable DB/browser checks | Current PostgreSQL, real provider/model, GPU, migration/recovery and privacy/export acceptance |
 
@@ -213,7 +221,7 @@ be relabelled as independent human review.
 
 These priorities organise the full backlog; they do not redefine completion.
 
-The next exact-identifier routing contract is recorded in
+The integrated exact-identifier routing contract is recorded in
 [CANDIDATE_REGISTRY_ROUTING_PLAN.md](CANDIDATE_REGISTRY_ROUTING_PLAN.md). It is
-planned work, preserving company focus, explicit namespaces, operator-grounded
+implemented on main, preserving company focus, explicit namespaces, operator-grounded
 references and the existing shared collection budgets.

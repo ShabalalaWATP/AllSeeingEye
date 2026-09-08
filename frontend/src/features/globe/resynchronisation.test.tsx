@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { useEventsStore } from '@/stores/events';
 import { mockWebGl2 } from '@/test/env';
 import { MapboxOverlay } from '@/test/fakeDeck';
@@ -18,6 +18,11 @@ beforeEach(() => {
   FakeMap.reset();
   MapboxOverlay.reset();
   FakeEventStreamClient.reset();
+});
+
+// Resolve the real lazy route before timing mounted stream behaviour.
+beforeAll(async () => {
+  await import('./GlobePage');
 });
 
 it('an actual mounted stream callback clears an expired selection and reloads the map', async () => {

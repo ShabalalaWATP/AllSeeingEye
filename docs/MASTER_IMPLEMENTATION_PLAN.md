@@ -14,6 +14,17 @@ Final repository hooks and configured Bandit passed. Migration 0032 is accepted
 on disposable databases only; actual NASA connectivity and operator migration
 remain unverified. See [FIRMS_ADMIN_CONNECTIVITY_PLAN.md](FIRMS_ADMIN_CONNECTIVITY_PLAN.md).
 The historical entries below preserve earlier implementation status.
+8 September combined acceptance: SEC filing discovery/import and source language/date
+provenance are now integrated together on `codex/source-provenance-sec`, based on
+accepted main `99e65d5`. Typed filing-day provenance is preserved through automatic
+collection, selected imports, operator declarations and retained report exports.
+The integration passed 164 focused backend cases, static checks and an independent
+security review. Generated API contracts are current. The final combined frontend
+passed 1,064 cases with zero skips, 90.23% branch coverage and all coverage gates;
+types, lint and production build also passed on that snapshot.
+Full combined backend acceptance is running. Neither this feature nor
+FIRMS connectivity is yet integrated on main or deployed. These results supersede
+the isolated-branch integration prerequisites below, but do not close the wider plan.
 
 8 September parallel implementation: source language/date provenance is present
 on `codex/source-language-date-provenance`; 1,034 frontend tests and its unchanged
@@ -421,3 +432,9 @@ final tests and targeted static checks passed. The accompanying exact-version,
 object and session release repair passed regression and independent review.
 See STRUCTURED_REPORT_HTML.md and security/REPORT_DOCUMENT_RELEASE.md. Browser
 worker integration, visual/native-speaker and accessibility acceptance remain.
+
+8 September SEC/provenance acceptance: the repaired FIRMS-integrated backend
+passed 3,470 tests with 84 skips and 94.94% coverage. Its frontend passed 1,088
+tests and the unchanged coverage gates, types, lint and build. This establishes
+this feature snapshot's local acceptance; later source/retention/version changes
+remain separate. See SEC_SOURCE_PROVENANCE_INTEGRATION.md for evidence and limits.

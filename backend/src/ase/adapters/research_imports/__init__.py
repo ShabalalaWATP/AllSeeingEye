@@ -100,7 +100,7 @@ def events_from_extraction(
             subtype="document_passage",
             title=f"{result.filename}: {unit.reference}"[:300],
             summary=unit.text,
-            published_at=captured_at,
+            published_at=None,
             observed_at=captured_at,
             reliability=Reliability.F,
             language="und",

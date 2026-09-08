@@ -2436,3 +2436,18 @@ A guarded exact-version release service now rejects those stale downloads.
 Twenty focused final tests passed, together with targeted static checks and
 independent read-only review. Chromium worker/runtime integration and language
 acceptance remain unfinished; no deployment or PDF support flag changed.
+
+## 8 September 2026: combined SEC and source provenance acceptance
+
+SEC discovery and selected filing imports now retain the exact reported filing day
+as typed source provenance, without inventing a publication instant. Selected
+documents can receive bounded operator declarations while preserving original
+bytes, hashes, source metadata and parent lineage. The connected frontend exposes
+the same declaration journey for SEC and local imports.
+
+The combined integration passed 164 focused backend cases, static checks and an
+independent security review. Generated API contracts are current. Final frontend
+acceptance passed 1,064 tests across 210 files, with zero skips, 95.12% statement,
+90.23% branch, 93.69% function and 96.49% line coverage. Types, lint and production
+build passed. Full backend acceptance remains running, so integration on main is
+still pending. No live provider, operator database or deployment was changed.

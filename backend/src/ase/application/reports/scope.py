@@ -8,6 +8,7 @@ from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import Template
 from ase.domain.collection import CollectionPlan
 from ase.domain.map_research_origin import origin_to_dict
+from ase.domain.query_variant_records import variant_to_dict
 from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 
 
@@ -107,7 +108,9 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
                 "research_source_ids": list(request.research_source_ids)
                 if request.research_source_ids is not None
                 else None,
-                "research_query_variants": [asdict(row) for row in request.research_query_variants],
+                "research_query_variants": [
+                    variant_to_dict(row) for row in request.research_query_variants
+                ],
                 "research_terms": list(request.research_terms)
                 if request.research_terms is not None
                 else None,

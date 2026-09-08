@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, Stri
 from ase.api.schemas_observations import EvidenceGeometryOut, ObservationOut
 from ase.api.schemas_projects import ProjectOut
 from ase.api.schemas_source_ratings import SourceRatingOut
+from ase.domain.source_dates import SourceDate
+from ase.domain.text_transformations import TextTransformation
 
 
 class EvidenceAttributeOut(BaseModel):
@@ -51,3 +53,5 @@ class ReportEvidenceOut(BaseModel):
     geometry: EvidenceGeometryOut | None = None
     observation: ObservationOut | None = None
     project: ProjectOut | None = None
+    transformations: list[TextTransformation] = Field(default_factory=list)
+    source_dates: list[SourceDate] = Field(default_factory=list)

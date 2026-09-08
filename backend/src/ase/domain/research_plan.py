@@ -11,6 +11,7 @@ from ase.domain.research_area import ResearchArea
 from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_planning import PlanningTrace
 from ase.domain.research_tasks import ResearchCandidate, validate_task_receipt
+from ase.domain.text_transformations import validate_script
 
 UNKNOWN_TEMPORAL_SCOPE = (
     "Bounded available records only; complete historical coverage is not established."
@@ -22,8 +23,32 @@ UNKNOWN_SPATIAL_SCOPE = "This source does not establish support for collection w
 class QueryVariant:
     language: str
     terms: tuple[str, ...]
+    kind: Literal["translation", "transliteration"] = "translation"
+    original_terms: tuple[str, ...] = ()
+    source_script: str | None = None
+    target_script: str | None = None
+    method: str | None = None
 
     def __post_init__(self) -> None:
+        if self.kind not in {"translation", "transliteration"}:
+            raise ValueError("Invalid query transformation kind")
+        validate_script(self.source_script)
+        validate_script(self.target_script)
+        if self.method is not None and not 1 <= len(self.method.strip()) <= 120:
+            raise ValueError("Invalid query transformation method")
+        if self.original_terms and (
+            len(self.original_terms) != len(self.terms)
+            or sum(map(len, self.original_terms)) > 1000
+            or any(not term.strip() or len(term) > 300 for term in self.original_terms)
+        ):
+            raise ValueError("Original terms must be bounded and aligned")
+        if self.kind == "transliteration" and (
+            not self.original_terms
+            or not self.method
+            or not self.source_script
+            or not self.target_script
+        ):
+            raise ValueError("Transliteration requires original terms, scripts and method")
         if not valid_language_code(self.language):
             raise ValueError("Invalid query variant language")
         if (
@@ -55,6 +80,7 @@ class ResearchTask:
     provenance: str
     temporal_scope: str = UNKNOWN_TEMPORAL_SCOPE
     query_language: str | None = None
+    query_variant: QueryVariant | None = None
     spatial_supported: bool = False
     spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
     task_id: str | None = None

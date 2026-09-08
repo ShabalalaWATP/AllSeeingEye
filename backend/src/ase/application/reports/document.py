@@ -157,14 +157,18 @@ def _evidence(doc: DocumentBuilder, items: Sequence[EvidenceItem]) -> None:
         if item.summary:
             doc.add(f"Source snippet: {item.summary}")
         metadata = evidence_metadata_runs(item)
-        doc.inline(
-            tuple(
-                run
-                for index, row in enumerate(metadata)
-                for run in ((DocumentInline("\n"),) if index else ()) + row
-            ),
-            BlockKind.METADATA,
-        )
+        if item.transformations or item.source_dates:
+            for row in metadata:
+                doc.inline(row, BlockKind.METADATA)
+        else:
+            doc.inline(
+                tuple(
+                    run
+                    for index, row in enumerate(metadata)
+                    for run in ((DocumentInline("\n"),) if index else ()) + row
+                ),
+                BlockKind.METADATA,
+            )
         for name, value in (("Source URL", item.url), ("Archive URL", item.archive_url)):
             if value:
                 doc.inline(

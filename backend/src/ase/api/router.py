@@ -41,6 +41,7 @@ from ase.api.routers import (
     research_library,
     research_runs,
     schedules,
+    sec_filings,
     social,
     sources,
     stream,
@@ -78,6 +79,7 @@ api_router.include_router(capabilities.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
 api_router.include_router(research_inputs.router)
+api_router.include_router(sec_filings.router)
 api_router.include_router(research_runs.router)
 api_router.include_router(report_documents.router)
 api_router.include_router(report_methodology.router)

@@ -22,6 +22,7 @@ from ase.application.ports.feeds import (
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import evidence_matches_time, evidence_order
 from ase.domain.project import project_to_dict
+from ase.domain.source_provenance_records import provenance_size
 
 MAX_PRUNE_IDS = 10_000
 EVENT_OVERHEAD_BYTES = 240
@@ -65,6 +66,7 @@ def estimate_bytes(event: Event) -> int:
             len(json.dumps(project_to_dict(event.project), ensure_ascii=False).encode("utf-8"))
             + 256
         )
+    size += provenance_size(event.transformations, event.source_dates)
     return size
 
 

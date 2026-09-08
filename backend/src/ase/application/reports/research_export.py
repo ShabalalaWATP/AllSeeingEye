@@ -1,6 +1,7 @@
 """Shared frozen collection receipts, with no inference from empty or unavailable sources."""
 
 from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.query_variant_records import describe_variant
 from ase.domain.registry_identifiers import describe_lookup
 from ase.domain.research_records import ResearchReceipt
 
@@ -61,6 +62,7 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
                     f"query language {task.query_language or 'original terms'}; "
                     f"terms: {', '.join(task.terms) or 'none supplied'}. {task.temporal_scope}"
                     + describe_lookup(task.registry_lookup)
+                    + describe_variant(task.query_variant)
                 )
     if receipt.plan and receipt.plan.planning:
         trace = receipt.plan.planning
@@ -113,6 +115,7 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
             f"{attempt.status.value.replace('_', ' ')}, {attempt.result_count} {count_kind}; "
             f"language {attempt.language or 'not recorded'}. {attempt.explanation}"
             + describe_lookup(attempt.registry_lookup)
+            + describe_variant(attempt.query_variant)
         )
     return (("Collection coverage", tuple(lines)),)
 
@@ -139,6 +142,7 @@ def transformation_lines(receipt: ResearchReceipt) -> list[str]:
                 f"task {attempt.task_id or attempt.source_id}; purpose {attempt.purpose}; "
                 f"{attempt.status.value}, {attempt.result_count} additional items. "
                 + attempt.explanation
+                + describe_variant(attempt.query_variant)
             )
         if collection_pass.plan is not None:
             for task in collection_pass.plan.tasks:

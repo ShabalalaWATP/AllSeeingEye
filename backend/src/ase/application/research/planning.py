@@ -95,6 +95,7 @@ def build_plan(
                 provenance,
                 temporal_scope,
                 query_language=variant.language if variant is not None else None,
+                query_variant=variant,
                 spatial_supported=spatial_supported,
                 spatial_scope=spatial_scope,
                 task_id="source:" + provider.id,
@@ -131,6 +132,7 @@ def build_plan(
                 if operator.origin == "model"
                 else "operator_supplied_task",
                 query_language=None,
+                query_variant=None,
                 spatial_supported=spatial_supported,
                 spatial_scope=spatial_scope,
                 task_id=task_identity(operator),

@@ -5,6 +5,7 @@ from enum import StrEnum
 
 from ase.domain.events import Event
 from ase.domain.project_time import commitment_bounds
+from ase.domain.sec_filing_time import filing_day_matches
 
 
 class EvidenceTimeBasis(StrEnum):
@@ -53,6 +54,10 @@ def evidence_matches_time(
         start, end = bounds
         return (since is None or end > since) and (until is None or start < until)
     if timestamp is None:
+        if basis is not EvidenceTimeBasis.RECORDED:
+            filing_match = filing_day_matches(event, since, until)
+            if filing_match is not None:
+                return filing_match
         return include_unknown or (since is None and until is None)
     return (since is None or timestamp >= since) and (until is None or timestamp < until)
 

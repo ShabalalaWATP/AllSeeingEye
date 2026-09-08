@@ -112,5 +112,16 @@ export function useResearchInput(onChange: (inputId: string | null) => void) {
     [actor, clear, key, revision],
   );
 
-  return { ...state, key, upload, clear, busy: state.status === 'loading' };
+  const replaceReceipt = (receipt: ResearchInputReceipt) => {
+    if (
+      actorKey() !== actor ||
+      workspaceRevision() !== revision ||
+      Date.parse(receipt.expires_at) <= Date.now()
+    )
+      return;
+    sequence.current += 1;
+    setSnapshot({ key, status: 'ready', receipt, filename: receipt.filename, error: null });
+    changed.current(receipt.id);
+  };
+  return { ...state, key, upload, clear, replaceReceipt, busy: state.status === 'loading' };
 }

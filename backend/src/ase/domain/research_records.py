@@ -6,6 +6,11 @@ from datetime import datetime
 from typing import Any
 
 from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.query_variant_records import (
+    omit_variant_defaults,
+    required_variant,
+    variant_from_dict,
+)
 from ase.domain.registry_identifiers import describe_lookup, lookup_from_dict
 from ase.domain.research import (
     CollectionAttempt,
@@ -15,7 +20,7 @@ from ase.domain.research import (
 )
 from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_continuation import continuation_from_dict
-from ase.domain.research_plan import QueryTransformation, QueryVariant, ResearchPlan, ResearchTask
+from ase.domain.research_plan import QueryTransformation, ResearchPlan, ResearchTask
 from ase.domain.research_planning import planning_from_dict
 from ase.domain.research_tasks import candidate_from_dict
 
@@ -160,6 +165,7 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
 
 
 def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
+    _omit_translation_defaults(plan)
     for name in ("planning", "continuation"):
         if plan.get(name) is None:
             plan.pop(name, None)
@@ -183,12 +189,15 @@ def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
 
 
 def _omit_legacy_task_defaults(row: dict[str, Any]) -> None:
+    if row.get("query_variant") is not None:
+        omit_variant_defaults(row["query_variant"])
     for key, default in (
         ("task_id", None),
         ("purpose", "baseline"),
         ("candidate_id", None),
         ("planned_terms_supported", False),
         ("registry_lookup", None),
+        ("query_variant", None),
         ("registry_namespaces", ()),
         ("registry_options", ()),
     ):
@@ -224,6 +233,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
                 purpose=item.get("purpose", "baseline"),
                 candidate_id=item.get("candidate_id"),
                 registry_lookup=lookup_from_dict(item.get("registry_lookup")),
+                query_variant=variant_from_dict(item.get("query_variant")),
             )
             for item in attempts
         ),
@@ -258,6 +268,7 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
                 **row,
                 "terms": tuple(row["terms"]),
                 "registry_lookup": lookup_from_dict(row.get("registry_lookup")),
+                "query_variant": variant_from_dict(row.get("query_variant")),
                 "registry_namespaces": tuple(row.get("registry_namespaces", ())),
                 "registry_options": tuple(
                     lookup_from_dict(item) for item in row.get("registry_options", ())
@@ -275,10 +286,7 @@ def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
             languages=tuple(translation["languages"]),
             model=translation["model"],
             status=translation["status"],
-            variants=tuple(
-                QueryVariant(row["language"], tuple(row["terms"]))
-                for row in translation["variants"]
-            ),
+            variants=tuple(required_variant(row) for row in translation["variants"]),
         )
     return ResearchPlan(**values)
 
@@ -295,6 +303,7 @@ def passes_from_dict(data: Any) -> tuple[CollectionPass, ...]:
                         **attempt,
                         "status": CollectionStatus(attempt["status"]),
                         "registry_lookup": lookup_from_dict(attempt.get("registry_lookup")),
+                        "query_variant": variant_from_dict(attempt.get("query_variant")),
                     }
                 )
                 for attempt in row["attempts"]
@@ -303,3 +312,8 @@ def passes_from_dict(data: Any) -> tuple[CollectionPass, ...]:
         )
         for row in data
     )
+
+
+def _omit_translation_defaults(plan: dict[str, Any]) -> None:
+    for row in (plan.get("translation") or {}).get("variants", ()):
+        omit_variant_defaults(row)

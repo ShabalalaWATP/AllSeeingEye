@@ -10,6 +10,9 @@ vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
+// Load the real route after Vitest hoists its mocks, outside timed UI assertions.
+import './GlobePage';
+
 it('keeps typed measurement available while disabling picking without WebGL', async () => {
   FakeMap.reset();
   MapboxOverlay.reset();
