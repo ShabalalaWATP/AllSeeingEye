@@ -48,6 +48,13 @@ async def list_events(
     since: datetime | None = None,
     sources: Annotated[str | None, Query(max_length=500)] = None,
     limit: Annotated[int, Query(ge=1, le=2000)] = 500,
+    military: Annotated[
+        bool | None,
+        Query(
+            description="Reported military aircraft/vessel classification; affiliation unverified."
+        ),
+    ] = None,
+    offset: Annotated[int, Query(ge=0, le=15_000)] = 0,
 ) -> EventsOut:
     query = EventQuery(
         categories=parse_categories(categories),
@@ -58,6 +65,8 @@ async def list_events(
         if sources
         else frozenset(),
         limit=limit,
+        military=military,
+        offset=offset,
     )
     items = [EventOut.from_event(event) for event in container.store.query(query)]
     return EventsOut(items=items, count=len(items))

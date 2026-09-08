@@ -5,7 +5,7 @@ import { createMapLibreEngine } from './MapLibreEngine';
 import { captureMapImage } from './mapCapture';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('./mapCapture', () => ({ captureMapImage: vi.fn() }));
 
 beforeEach(() => {

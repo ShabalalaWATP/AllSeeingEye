@@ -14,6 +14,8 @@ export interface EventsQuery {
   country?: string;
   since?: string;
   limit?: number;
+  military?: boolean;
+  offset?: number;
 }
 
 export function eventsQueryString(query: EventsQuery): string {
@@ -26,6 +28,8 @@ export function eventsQueryString(query: EventsQuery): string {
   if (query.country) params.set('country', query.country);
   if (query.since) params.set('since', query.since);
   if (query.limit !== undefined) params.set('limit', String(query.limit));
+  if (query.military !== undefined) params.set('military', String(query.military));
+  if (query.offset !== undefined) params.set('offset', String(query.offset));
   const text = params.toString();
   return text ? `?${text}` : '';
 }

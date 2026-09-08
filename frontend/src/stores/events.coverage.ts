@@ -1,12 +1,15 @@
 import { isSatellite, satellitePriority } from '@/lib/satellites';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
+import { isMilitaryAircraft, isMilitaryVessel } from '@/lib/traffic';
 
 export const MARITIME_SNAPSHOT_LIMIT = 1_500;
 export const RESERVED_VESSELS = 1_500;
 export const SATELLITE_SNAPSHOT_LIMIT = 1_500;
-export const RESERVED_SATELLITES = 1_500;
+export const RESERVED_SATELLITES = 1_000;
 export const FIRMS_SNAPSHOT_LIMIT = 1_000;
-export const RESERVED_FIRMS = 1_000;
+export const RESERVED_FIRMS = 500;
+export const AVIATION_SNAPSHOT_LIMIT = 2_000;
+export const RESERVED_AIRCRAFT = 1_500;
 
 export function isFirms(event: LiveEvent): boolean {
   return (
@@ -37,6 +40,7 @@ export function mergeSnapshots(main: LiveEvent[], maritime: LiveEvent[]): Map<st
 export function boundedEvents(
   byId: Record<string, LiveEvent>,
   limit: number,
+  selectedId?: string | null,
 ): Record<string, LiveEvent> {
   const events = Object.values(byId);
   if (events.length <= limit) return byId;
@@ -55,7 +59,14 @@ export function boundedEvents(
   events.sort(newestFirst);
   const reserved = events
     .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
+    .sort((a, b) => Number(isMilitaryVessel(b)) - Number(isMilitaryVessel(a)))
     .slice(0, Math.min(RESERVED_VESSELS, limit));
+  reserved.push(
+    ...events
+      .filter((event) => event.category === 'aviation')
+      .sort((a, b) => Number(isMilitaryAircraft(b)) - Number(isMilitaryAircraft(a)))
+      .slice(0, Math.min(RESERVED_AIRCRAFT, limit - reserved.length)),
+  );
   const satellites = events
     .filter(isSatellite)
     .sort((a, b) => satellitePriority(b) - satellitePriority(a) || newestFirst(a, b))
@@ -66,5 +77,9 @@ export function boundedEvents(
   );
   const ids = new Set(reserved.map((event) => event.id));
   const remaining = events.filter((event) => !ids.has(event.id)).slice(0, limit - reserved.length);
-  return Object.fromEntries([...reserved, ...remaining].map((event) => [event.id, event]));
+  const retained = [...reserved, ...remaining];
+  const selected = selectedId ? byId[selectedId] : undefined;
+  if (selected && retained.length > 0 && !retained.some((event) => event.id === selected.id))
+    retained[retained.length - 1] = selected;
+  return Object.fromEntries(retained.map((event) => [event.id, event]));
 }

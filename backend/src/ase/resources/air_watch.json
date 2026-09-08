@@ -1,13 +1,159 @@
 {
-  "note": "Areas polled for all traffic (civil and military) through adsb.lol point queries, which take a centre and a radius of at most 250 nautical miles. Chosen for tension areas where unusual movement matters. Seeded 5 September 2026.",
+  "note": "Selected regional traffic and tension-area coverage via public adsb.lol point queries, each bounded to 250 nautical miles. These circles are not complete worldwide coverage.",
   "areas": [
-    { "id": "black_sea", "name": "Black Sea and southern Ukraine", "lat": 45.0, "lon": 33.5, "radius_nm": 250 },
-    { "id": "eastern_med", "name": "Eastern Mediterranean and the Levant", "lat": 33.5, "lon": 34.5, "radius_nm": 250 },
-    { "id": "red_sea", "name": "Red Sea and Yemen", "lat": 16.0, "lon": 41.5, "radius_nm": 250 },
-    { "id": "gulf", "name": "Persian Gulf", "lat": 26.5, "lon": 53.0, "radius_nm": 250 },
-    { "id": "baltic", "name": "Baltic Sea and Kaliningrad", "lat": 57.5, "lon": 21.0, "radius_nm": 250 },
-    { "id": "taiwan_strait", "name": "Taiwan Strait", "lat": 24.0, "lon": 120.5, "radius_nm": 250 },
-    { "id": "korea", "name": "Korean peninsula", "lat": 37.5, "lon": 127.5, "radius_nm": 250 },
-    { "id": "south_china_sea", "name": "South China Sea", "lat": 14.0, "lon": 115.0, "radius_nm": 250 }
+    {
+      "id": "black_sea",
+      "name": "Black Sea and southern Ukraine",
+      "lat": 45.0,
+      "lon": 33.5,
+      "radius_nm": 250
+    },
+    {
+      "id": "eastern_med",
+      "name": "Eastern Mediterranean and the Levant",
+      "lat": 33.5,
+      "lon": 34.5,
+      "radius_nm": 250
+    },
+    {
+      "id": "red_sea",
+      "name": "Red Sea and Yemen",
+      "lat": 16.0,
+      "lon": 41.5,
+      "radius_nm": 250
+    },
+    {
+      "id": "gulf",
+      "name": "Persian Gulf",
+      "lat": 26.5,
+      "lon": 53.0,
+      "radius_nm": 250
+    },
+    {
+      "id": "baltic",
+      "name": "Baltic Sea and Kaliningrad",
+      "lat": 57.5,
+      "lon": 21.0,
+      "radius_nm": 250
+    },
+    {
+      "id": "taiwan_strait",
+      "name": "Taiwan Strait",
+      "lat": 24.0,
+      "lon": 120.5,
+      "radius_nm": 250
+    },
+    {
+      "id": "korea",
+      "name": "Korean peninsula",
+      "lat": 37.5,
+      "lon": 127.5,
+      "radius_nm": 250
+    },
+    {
+      "id": "south_china_sea",
+      "name": "South China Sea",
+      "lat": 14.0,
+      "lon": 115.0,
+      "radius_nm": 250
+    },
+    {
+      "id": "uk",
+      "name": "United Kingdom",
+      "lat": 52,
+      "lon": -1,
+      "radius_nm": 250
+    },
+    {
+      "id": "western_europe",
+      "name": "Western Europe",
+      "lat": 49,
+      "lon": 4,
+      "radius_nm": 250
+    },
+    {
+      "id": "central_europe",
+      "name": "Central Europe",
+      "lat": 51,
+      "lon": 12,
+      "radius_nm": 250
+    },
+    {
+      "id": "iberia",
+      "name": "Iberian Peninsula",
+      "lat": 40,
+      "lon": -4,
+      "radius_nm": 250
+    },
+    {
+      "id": "italy",
+      "name": "Italy",
+      "lat": 42,
+      "lon": 12,
+      "radius_nm": 250
+    },
+    {
+      "id": "us_northeast",
+      "name": "US north-east",
+      "lat": 40,
+      "lon": -75,
+      "radius_nm": 250
+    },
+    {
+      "id": "us_southeast",
+      "name": "US south-east",
+      "lat": 33,
+      "lon": -84,
+      "radius_nm": 250
+    },
+    {
+      "id": "us_midwest",
+      "name": "US Midwest",
+      "lat": 41,
+      "lon": -88,
+      "radius_nm": 250
+    },
+    {
+      "id": "us_texas",
+      "name": "Texas",
+      "lat": 31,
+      "lon": -98,
+      "radius_nm": 250
+    },
+    {
+      "id": "us_west",
+      "name": "US west coast",
+      "lat": 35,
+      "lon": -119,
+      "radius_nm": 250
+    },
+    {
+      "id": "japan",
+      "name": "Japan",
+      "lat": 36,
+      "lon": 139,
+      "radius_nm": 250
+    },
+    {
+      "id": "india",
+      "name": "Western India",
+      "lat": 19,
+      "lon": 73,
+      "radius_nm": 250
+    },
+    {
+      "id": "southeast_asia",
+      "name": "Singapore and southern Malaysia",
+      "lat": 2,
+      "lon": 103,
+      "radius_nm": 250
+    },
+    {
+      "id": "australia",
+      "name": "South-eastern Australia",
+      "lat": -35,
+      "lon": 149,
+      "radius_nm": 250
+    }
   ]
 }

@@ -1,6 +1,7 @@
 import type { Camera } from '@/lib/api/cameras';
 import { useState } from 'react';
 import type { CameraState } from './useCameras';
+import { CameraSources } from './CameraSources';
 
 export function CameraPanel({
   cameras,
@@ -36,32 +37,11 @@ export function CameraPanel({
           >
             Refresh catalogue
           </button>
-          {cameras.loading && <p role="status">Loading camera catalogue…</p>}
+          {cameras.loading && (
+            <p role="status">Loading selected sources… Completed cameras appear as they arrive.</p>
+          )}
           {cameras.error && <p role="alert">{cameras.error}</p>}
-          <div className="max-h-56 overflow-y-auto" aria-label="Camera sources">
-            {cameras.catalogue?.providers.map((provider) => (
-              <div key={provider.id} className="border-t border-line py-2">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-label={provider.name}
-                  aria-checked={cameras.providers[provider.id] ?? false}
-                  onClick={() => cameras.toggleProvider(provider.id)}
-                  className="min-h-11 w-full text-left"
-                >
-                  {provider.name}{' '}
-                  <span className="float-right">
-                    {cameras.providers[provider.id] ? 'ON' : 'OFF'}
-                  </span>
-                </button>
-                <p className="text-muted">
-                  {provider.count} cameras ·{' '}
-                  {provider.status === 'not_loaded' ? 'Not loaded' : provider.status}
-                </p>
-                {provider.message && <p className="text-muted">{provider.message}</p>}
-              </div>
-            ))}
-          </div>
+          <CameraSources cameras={cameras} />
           <label className="block">
             Find a camera
             <input
@@ -71,7 +51,7 @@ export function CameraPanel({
               className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
             />
           </label>
-          <p role="status">{cameras.visible.length} cameras shown on the map</p>
+          <p role="status">{cameras.visible.length} cameras in enabled catalogues</p>
           <ul>
             {cameras.visible.slice(current * 50, (current + 1) * 50).map((camera) => (
               <li key={camera.id}>
@@ -105,7 +85,8 @@ export function CameraPanel({
             </div>
           )}
           <p className="text-muted">
-            Search or browse this list to select cameras with overlapping map icons.
+            Click a numbered map cluster to zoom in. Search this list to select any camera,
+            including overlapping cameras.
           </p>
         </>
       )}

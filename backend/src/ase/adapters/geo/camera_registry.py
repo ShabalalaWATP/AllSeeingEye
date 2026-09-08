@@ -22,6 +22,11 @@ class GuardedCameraSource:
     def name(self) -> str:
         return self.source.name
 
+    @property
+    def warning(self) -> str | None:
+        message = getattr(self.source, "warning", None)
+        return message if isinstance(message, str) else None
+
     async def fetch(self) -> tuple[Camera, ...]:
         try:
             return await self.source.fetch()

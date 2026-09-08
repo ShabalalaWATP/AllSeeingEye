@@ -9,7 +9,7 @@ describe('events store edges', () => {
     useEventsStore.setState({ ...initialEventsState });
   });
 
-  it('bounds every merged batch and clears an evicted selection', () => {
+  it('bounds every merged batch while protecting the selected record', () => {
     const many = Array.from({ length: MAX_CLIENT_EVENTS + 2 }, (_, index) =>
       liveEvent({
         id: `e${String(index)}`,
@@ -28,9 +28,10 @@ describe('events store edges', () => {
     expect(state.list).toHaveLength(MAX_CLIENT_EVENTS);
     expect(state.byId.e0).toBeUndefined();
     expect(state.byId.e1).toBeUndefined();
-    expect(state.byId.e2).toBeUndefined();
+    expect(state.byId.e2).toBeDefined();
+    expect(state.byId.e3).toBeUndefined();
     expect(state.byId.late).toBeDefined();
-    expect(state.selectedId).toBeNull();
+    expect(state.selectedId).toBe('e2');
   });
 
   it('retains a refreshed event and its selection when merging at the cap', () => {

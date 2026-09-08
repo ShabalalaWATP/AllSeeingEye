@@ -14,7 +14,7 @@ import type { MapState, SavedMapView } from '@/lib/api/mapViews';
 import ReportEvidenceMap from './ReportEvidenceMap';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 const measurement = {
   mode: 'distance' as const,
   method: 'wgs84-geographiclib-2.2.0-v1' as const,

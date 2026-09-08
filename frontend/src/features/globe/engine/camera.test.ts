@@ -7,7 +7,7 @@ import { FakeMap } from '@/test/fakeMap';
 import { createMapLibreEngine } from './MapLibreEngine';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 
 const camera: MapCamera = { center: [179, 52], zoom: 5, bearing: 35, pitch: 40 };
 const bounds: MapBounds = { west: 170, east: -170, south: -10, north: 10 };

@@ -32,6 +32,8 @@ class EventQuery:
     until: datetime | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
     include_unknown_dates: bool = False
+    military: bool | None = None
+    offset: int = 0
 
 
 @dataclass(frozen=True, slots=True)

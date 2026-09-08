@@ -5,6 +5,8 @@ import {
   MARITIME_SNAPSHOT_LIMIT,
   SATELLITE_SNAPSHOT_LIMIT,
   FIRMS_SNAPSHOT_LIMIT,
+  AVIATION_SNAPSHOT_LIMIT,
+  RESERVED_AIRCRAFT,
 } from './events.coverage';
 
 /** Supplemental snapshots stop busy categories from hiding ships or public spacecraft. */
@@ -14,7 +16,7 @@ export async function loadCoverageSupplements(
   signal: AbortSignal,
 ): Promise<{ events: LiveEvent[]; error: string | null; limited: boolean }> {
   const requests: { label: string; query: EventsQuery }[] = [];
-  const count = (category: 'maritime' | 'space' | 'disaster') =>
+  const count = (category: 'maritime' | 'space' | 'disaster' | 'aviation') =>
     stats.per_category.find((entry) => entry.category === category)?.count ?? 0;
   if (count('maritime') > events.filter((event) => event.category === 'maritime').length) {
     requests.push({
@@ -22,6 +24,22 @@ export async function loadCoverageSupplements(
       query: { categories: ['maritime'], limit: MARITIME_SNAPSHOT_LIMIT },
     });
   }
+  if (count('aviation') > 0) {
+    if (count('aviation') > events.filter((event) => event.category === 'aviation').length)
+      requests.push({
+        label: 'aviation',
+        query: { categories: ['aviation'], limit: AVIATION_SNAPSHOT_LIMIT },
+      });
+    requests.push({
+      label: 'military aircraft',
+      query: { categories: ['aviation'], military: true, limit: RESERVED_AIRCRAFT },
+    });
+  }
+  if (count('maritime') > MARITIME_SNAPSHOT_LIMIT)
+    requests.push({
+      label: 'reported military vessel',
+      query: { categories: ['maritime'], military: true, limit: MARITIME_SNAPSHOT_LIMIT },
+    });
   if (count('space') > 0) {
     if (count('space') > events.filter((event) => event.category === 'space').length) {
       requests.push({

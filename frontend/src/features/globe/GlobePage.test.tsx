@@ -15,7 +15,7 @@ import { server } from '@/test/server';
 import { FOCUS_ZOOM } from './GlobePage';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
 interface PickableLayer {

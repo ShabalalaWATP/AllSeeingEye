@@ -135,7 +135,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           else merged.set(id, event);
         }
         const byId = Object.fromEntries(merged);
-        const capped = boundedEvents(byId, MAX_CLIENT_EVENTS);
+        const capped = boundedEvents(byId, MAX_CLIENT_EVENTS, get().selectedId);
         const selectedId = get().selectedId;
         set({
           byId: capped,
@@ -178,7 +178,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         merged[event.id] = event;
         record(event.id, event);
       }
-      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS);
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, get().selectedId);
       const selectedId = get().selectedId;
       set({
         byId,

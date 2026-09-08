@@ -102,3 +102,60 @@ Coverage was 95.36% statements, 90.19% branches, 93.70% functions and 96.71% lin
 The existing map interaction test now waits for the deliberate batch boundary,
 including expiry, instead of assuming synchronous delivery. Thresholds were not
 lowered. The final build, lint and type checks passed.
+
+
+## 8 September: rotating globe overlays and graphics failure
+
+The installed deck.gl 9.3 GlobeViewport did not apply bearing or pitch to its
+view matrix. MapLibre rotated the basemap while those overlays kept a north-up
+projection. This explains the reported separation without assuming that a
+north-down map or its geographic labels are themselves corrupted. A numerical
+regression checks bearing 180 degrees and pitched projection/unprojection.
+
+The old Mapbox adapter also depended on MapLibre internals removed in version 6.
+The app now pins deck.gl core/layers and the dedicated MapLibre adapter to 9.4.0,
+using the documented public camera integration. References:
+[MapLibre adapter](https://deck.gl/docs/api-reference/maplibre/overview) and
+[MapLibre 6 compatibility issue](https://github.com/visgl/deck.gl/issues/10501).
+
+The overlay controller retains the newest layer set, releases failed renderers,
+waits for map context restoration, bounds overlay recovery to two attempts and
+shows recovery/failure status. Generation guards ignore delayed callbacks from
+disposed renderers. An explicit Reload map action recreates the engine while
+preserving camera, style, lite mode and data; there is no automatic page reload
+loop. Graphics loss invalidates image exports instead of returning a partial
+capture. Existing pixel-ratio, tile-cache and event-count limits remain in place.
+
+The original React Bits eye now releases its animation and GPU resources on
+initialisation, rendering or context-loss failures. It then retains the existing
+original frame capture instead of repeatedly trying to allocate another context.
+Shader/noise code was extracted without changing the visual algorithm. Four
+lifetime tests cover failed startup, context loss, rendering errors and unmount.
+
+Validation: 1,288 frontend tests across 256 files passed (95.32% statements,
+90.31% branches, 93.69% functions, 96.70% lines), including camera clustering,
+progressive initial loading and the stale-callback recovery regression. Backend regression checks passed 169 tests covering camera
+catalogues, traffic, API bounds, store retention and scheduling. Full backend
+Ruff/formatting, mypy (704 modules) and both architecture contracts passed.
+Frontend lint, TypeScript and production build passed. No coverage threshold was
+lowered. Live traffic samples included 314 provider-labelled military aircraft,
+three AIS-labelled military vessels and 291 regional aircraft records after the
+bounded collector repair; these are changing samples, not complete inventories.
+
+These are regression and source-level checks, not a live GPU soak test. Browser
+policy verification blocked interactive local inspection. A driver/GPU-process
+crash can still invalidate the whole browser renderer beyond JavaScript recovery;
+long-duration visual verification remains outstanding.
+
+Production dependency audit reported zero known vulnerabilities. Scoped review
+checked graphics cleanup/lifetime, generation guards, bounded camera requests,
+malformed directory IDs and preservation of fixed upstream/media trust boundaries.
+Exact matching of four configured local secret values found none in changed files.
+This is scoped review and dependency checking, not a repository-wide security scan.
+
+Final local checks: API health, login page and the new dedicated overlay module
+returned HTTP 200 after restarting only ASE ports 8001 and 5174. The frontend
+was started with fresh dependency optimisation. Focused camera service/directory
+coverage passed 33 tests at 99.56% branch-aware combined coverage, with the 90%
+gate unchanged. Source-file lengths and whitespace checks passed. The earlier
+traffic-focused backend modules retained their separately measured 95.23% result.

@@ -9,8 +9,14 @@ import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
 import { FlightLayerControl } from './FlightLayerControl';
-import { isMilitaryFlight, matchesFlightFilter } from './flightFilters';
+import { isMilitaryFlight, matchesFlightFilter, matchesVesselFilter } from './flightFilters';
 import type { FlightFilter } from './flightFilters';
+import { isMilitaryVessel } from '@/lib/traffic';
+
+const compactCount = new Intl.NumberFormat('en-GB', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
 
 function LayerButton({
   label,
@@ -41,7 +47,7 @@ function LayerButton({
         <MapControlIcon name={icon} />
         {count !== undefined && count > 0 && (
           <span aria-hidden="true" className="map-layer-count">
-            {count > 999 ? '999+' : count}
+            {compactCount.format(count)}
           </span>
         )}
       </button>
@@ -56,16 +62,25 @@ export function MapLayerRail({
   onToggle,
   flightFilter = 'all',
   onFlightFilter,
+  onTrafficSelect,
+  vesselFilter = 'all',
+  onVesselFilter,
+  selectionDisabled = false,
 }: {
   events: readonly LiveEvent[];
   counts: Partial<Record<Category, number>>;
   visibility: ObservationVisibility;
   onToggle: (kind: ObservationKind) => void;
+  vesselFilter?: FlightFilter;
+  onVesselFilter?: (value: FlightFilter) => void;
+  selectionDisabled?: boolean;
   flightFilter?: FlightFilter;
   onFlightFilter?: (value: FlightFilter) => void;
+  onTrafficSelect?: (event: LiveEvent) => void;
 }) {
   const hidden = useEventsStore((state) => state.hidden);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
+  const stats = useEventsStore((state) => state.stats);
   const { terminator, toggleTerminator, interference, toggleInterference } = useGlobeStore();
   const observations = [
     { kind: 'aircraft', label: 'Flights' },
@@ -83,7 +98,9 @@ export function MapLayerRail({
             count={
               events.filter(
                 (event) =>
-                  observationKind(event) === kind && matchesFlightFilter(event, flightFilter),
+                  observationKind(event) === kind &&
+                  matchesFlightFilter(event, flightFilter) &&
+                  matchesVesselFilter(event, vesselFilter),
               ).length
             }
             active={isObservationShown(kind, visibility, hidden)}
@@ -98,6 +115,32 @@ export function MapLayerRail({
             filter={flightFilter}
             onChange={onFlightFilter}
             count={events.filter(isMilitaryFlight).length}
+            events={events.filter(
+              (event) =>
+                observationKind(event) === kind &&
+                matchesFlightFilter(event, flightFilter) &&
+                matchesVesselFilter(event, vesselFilter),
+            )}
+            available={stats?.per_category.find((item) => item.category === 'aviation')?.count}
+            onSelect={onTrafficSelect}
+            selectionDisabled={selectionDisabled}
+          >
+            {button}
+          </FlightLayerControl>
+        ) : kind === 'vessels' && onTrafficSelect ? (
+          <FlightLayerControl
+            key={kind}
+            kind="vessels"
+            filter={vesselFilter}
+            onChange={onVesselFilter}
+            count={events.filter(isMilitaryVessel).length}
+            events={events.filter(
+              (event) =>
+                observationKind(event) === kind && matchesVesselFilter(event, vesselFilter),
+            )}
+            available={stats?.per_category.find((item) => item.category === 'maritime')?.count}
+            onSelect={onTrafficSelect}
+            selectionDisabled={selectionDisabled}
           >
             {button}
           </FlightLayerControl>

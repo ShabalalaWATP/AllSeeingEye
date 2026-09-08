@@ -50,38 +50,11 @@ export function useCameras() {
     let current = true;
     const ids = Object.keys(providers).filter((id) => providers[id]);
     const missing = ids.filter((id) => cache.current.get(id)?.revision !== revision);
-    const initial =
-      revision === 0 &&
-      cache.current.size === 0 &&
-      missing.length === 3 &&
-      ['tfl', 'hongkong', 'fintraffic'].every((id) => providers[id]);
-    const requests: (string | undefined)[] = initial ? [undefined] : missing;
+    const requests = missing;
     let next = 0;
     let failed = false;
     let limited = false;
-    // Only four provider requests may be outstanding. Completed responses survive
-    // a checkbox change, so adding one region never re-downloads its neighbours.
-    const worker = async () => {
-      while (current && next < requests.length) {
-        const provider = requests[next++];
-        try {
-          const value = await fetchCameras(controller.signal, provider);
-          if (controller.signal.aborted) return;
-          for (const id of provider ? [provider] : ids)
-            cache.current.set(id, {
-              revision,
-              value: {
-                ...value,
-                cameras: value.cameras.filter((camera) => camera.provider === id),
-              },
-            });
-          limited = boundCache(cache.current, providers) || limited;
-        } catch {
-          if (!controller.signal.aborted) failed = true;
-        }
-      }
-    };
-    void Promise.all(Array.from({ length: Math.min(4, requests.length) }, worker)).then(() => {
+    const publish = () => {
       if (!current) return;
       // The bounded cache is the sole owner of camera payloads. Old revisions
       // remain usable after a failed refresh, but evicted regions must not live
@@ -107,6 +80,41 @@ export function useCameras() {
           providers: [...statuses.values()],
         };
       });
+    };
+    let publishTimer: ReturnType<typeof setTimeout> | undefined;
+    const schedulePublish = () => {
+      publishTimer ??= setTimeout(() => {
+        publishTimer = undefined;
+        publish();
+      }, 100);
+    };
+    // Only four provider requests may be outstanding. Completed responses survive
+    // a checkbox change, so adding one region never re-downloads its neighbours.
+    const worker = async () => {
+      while (current && next < requests.length) {
+        const provider = requests[next++];
+        try {
+          const value = await fetchCameras(controller.signal, provider);
+          if (controller.signal.aborted) return;
+          for (const id of provider ? [provider] : ids)
+            cache.current.set(id, {
+              revision,
+              value: {
+                ...value,
+                cameras: value.cameras.filter((camera) => camera.provider === id),
+              },
+            });
+          limited = boundCache(cache.current, providers) || limited;
+          schedulePublish();
+        } catch {
+          if (!controller.signal.aborted) failed = true;
+        }
+      }
+    };
+    void Promise.all(Array.from({ length: Math.min(4, requests.length) }, worker)).then(() => {
+      if (!current) return;
+      clearTimeout(publishTimer);
+      publish();
       setError(
         failed
           ? 'Some camera catalogues could not be loaded. Please try again.'
@@ -118,6 +126,7 @@ export function useCameras() {
     });
     return () => {
       current = false;
+      clearTimeout(publishTimer);
       controller.abort();
     };
   }, [enabled, revision, providers]);
@@ -154,6 +163,11 @@ export function useCameras() {
     },
     [catalogue, providers, selectedId],
   );
+  const setProviderGroup = useCallback((ids: readonly string[], value: boolean) => {
+    setProviders((old) => ({ ...old, ...Object.fromEntries(ids.map((id) => [id, value])) }));
+    if (!value) setSelectedId(null);
+    setLoading(true);
+  }, []);
   const search = useCallback((value: string) => {
     setQuery(value);
     setSelectedId(null);
@@ -170,6 +184,7 @@ export function useCameras() {
     error,
     providers,
     toggleProvider,
+    setProviderGroup,
     query,
     setQuery: search,
     visible,

@@ -30,6 +30,7 @@ export default mergeConfig(
         include: ['src/**/*.{ts,tsx}'],
         exclude: [
           'src/components/brand/EvilEye.tsx',
+          'src/components/brand/evilEyeShader.ts', // Unchanged extracted third-party shader/noise.
           'src/lib/api/types.gen.ts',
           'src/main.tsx',
           'src/vite-env.d.ts',

@@ -9,10 +9,13 @@ import type {
   FlyToTarget,
   MapEngine,
   MapCamera,
+  MapBounds,
   MapEngineFactory,
   Projection,
 } from './engine/MapEngine';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
+import { useMapRecovery } from './useMapRecovery';
+import type { MapRenderState } from './useMapRecovery';
 import { areaClickPoint } from '@/lib/map/areaGeometry';
 
 export function projectionFor(mode: ViewMode): Projection {
@@ -20,10 +23,13 @@ export function projectionFor(mode: ViewMode): Projection {
 }
 
 export interface GlobeEngineHandle {
+  renderState?: MapRenderState;
+  reload?: () => void;
   setLayers: (layers: readonly DataLayer[]) => void;
   flyTo: (target: FlyToTarget) => void;
   getZoom: () => number;
   getCamera?: () => MapCamera | null;
+  getViewportBounds?: () => MapBounds | null;
   restoreCamera?: (camera: MapCamera) => void;
   pickObjectsAt?: (x: number, y: number) => readonly unknown[];
   spin: (enabled: boolean) => void;
@@ -61,12 +67,28 @@ export function useGlobeEngine(
   const latestLayers = useRef<readonly DataLayer[]>([]);
   const spinning = useRef(false);
   const factory = createEngine ?? createMapLibreEngine;
+  const { renderState, revision, reload, onRenderStatus, restoreReloadCamera } =
+    useMapRecovery(engineRef);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!enabled || container === null) return;
-    const engine = factory();
-    engine.mount(container);
+    let active = true;
+    const engine = factory({
+      onRenderStatus: (status, message) => {
+        if (active) onRenderStatus(status, message);
+      },
+    });
+    try {
+      engine.mount(container);
+      restoreReloadCamera(engine);
+    } catch {
+      engine.destroy();
+      onRenderStatus('failed', 'Map graphics could not start. Reload the map to retry.');
+      return () => {
+        active = false;
+      };
+    }
     engine.setLayers(latestLayers.current);
     engine.spin(spinning.current);
     const offCursor = engine.onCursor((position) => {
@@ -83,25 +105,26 @@ export function useGlobeEngine(
     });
     engineRef.current = engine;
     return () => {
+      active = false;
       offMove();
       offClick();
       offCursor();
       engine.destroy();
       engineRef.current = null;
     };
-  }, [containerRef, factory, enabled]);
+  }, [containerRef, factory, enabled, revision, onRenderStatus, restoreReloadCamera]);
 
   useEffect(() => {
     engineRef.current?.setProjection(projectionFor(mode));
-  }, [mode, enabled, factory, containerRef]);
+  }, [mode, enabled, factory, containerRef, revision]);
 
   useEffect(() => {
     engineRef.current?.setBaseLayer(baseLayer);
-  }, [baseLayer, enabled, factory, containerRef]);
+  }, [baseLayer, enabled, factory, containerRef, revision]);
 
   useEffect(() => {
     engineRef.current?.setLite(lite);
-  }, [lite, enabled, factory, containerRef]);
+  }, [lite, enabled, factory, containerRef, revision]);
 
   const setLayers = useCallback((layers: readonly DataLayer[]) => {
     latestLayers.current = layers;
@@ -120,6 +143,7 @@ export function useGlobeEngine(
   const restoreCamera = useCallback((camera: MapCamera) => {
     engineRef.current?.restoreCamera(camera);
   }, []);
+  const getViewportBounds = useCallback(() => engineRef.current?.getViewportBounds() ?? null, []);
   const getZoom = useCallback(() => engineRef.current?.getZoom() ?? 0, []);
 
   const spin = useCallback((enabled: boolean) => {
@@ -149,6 +173,8 @@ export function useGlobeEngine(
 
   return useMemo(
     () => ({
+      renderState,
+      reload,
       setLayers,
       flyTo,
       getZoom,
@@ -158,9 +184,12 @@ export function useGlobeEngine(
       onClick,
       pickObjectsAt,
       getCamera,
+      getViewportBounds,
       restoreCamera,
     }),
     [
+      renderState,
+      reload,
       setLayers,
       flyTo,
       getZoom,
@@ -170,6 +199,7 @@ export function useGlobeEngine(
       onClick,
       pickObjectsAt,
       getCamera,
+      getViewportBounds,
       restoreCamera,
     ],
   );

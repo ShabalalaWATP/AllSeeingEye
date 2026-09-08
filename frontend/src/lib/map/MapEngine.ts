@@ -47,7 +47,11 @@ export interface FitBoundsOptions {
 /** Data layers are opaque to the engine interface; the registry decides their shape. */
 export type DataLayer = object;
 
+export type MapRenderStatus = 'ready' | 'recovering' | 'failed';
+
 export interface EngineOptions {
+  /** Sanitised renderer lifecycle notices, never upstream data or credentials. */
+  onRenderStatus?: (status: MapRenderStatus, message: string) => void;
   /** Dedicated, fixed-size export instances only. Preserves the base map drawing buffer. */
   captureEnabled?: boolean;
   /** Returns the session's access token for requests to our own API (tile proxy), or null. */

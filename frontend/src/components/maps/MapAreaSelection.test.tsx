@@ -14,7 +14,7 @@ import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import ReportEvidenceMap from './ReportEvidenceMap';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 beforeEach(() => {
   applySession('user');
   mockWebGl2(true);

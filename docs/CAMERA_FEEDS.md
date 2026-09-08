@@ -83,3 +83,34 @@ security audit or proof that every provider stream is available.
 Final full frontend regression: 1,152 tests across 229 files passed, with 95.26%
 statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configured
 90% thresholds remain unchanged.
+
+
+## 8 September: regional discovery and partial catalogues
+
+Compared the 57 ASE providers with OSIRIS commit
+[fac8d1b](https://github.com/simplifaisoul/osiris/blob/fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8/src/app/api/cctv/route.ts).
+The main provider families are already represented. This does not prove identical
+camera records or current playback for every camera. A bounded DriveBC probe
+returned 1,062 records which all parsed successfully.
+
+The CCTV panel now groups providers by region with enable/disable controls and
+country/provider search. Three initial providers remain the default, loaded independently; operators
+can load additional regions from this panel. Completed provider responses appear
+progressively, coalesced over 100 milliseconds, instead of waiting for every
+slow request. Four concurrent browser requests and the 75,000-record CPU cache
+remain bounded. Camera graphics use counted spherical clusters with at most 2,000 representations,
+including the selected individual. Offscreen cameras are culled from drawing,
+not the searchable catalogue, so zooming into a region can unpack its cameras
+without far-away records forcing coarse clusters. Date-line bounds are handled
+explicitly. Media is requested only after selection, not for every loaded marker.
+
+OSIRIS's [directory adapter](https://github.com/simplifaisoul/osiris/blob/fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8/src/app/api/cctv/opencctv.ts)
+uses the same 1,200/800/600 regional sampling limits as ASE, rather than full
+pagination. ASE now shares its bounded marker index across the three directory
+regions and retains successful batches when others fail. Index requests have a
+12-second deadline; batch work has a 28-second budget and five-second request
+limits inside the existing service deadline. Partial results have a visible
+warning and become eligible for retry after one minute on a later request.
+No unauthorised camera host, embedded provider credential or arbitrary media
+proxy was added. Public demo HTML was inspected; interactive demo/local GPU
+verification was unavailable because browser policy verification blocked access.

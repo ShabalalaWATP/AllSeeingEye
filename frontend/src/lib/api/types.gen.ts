@@ -9515,6 +9515,9 @@ export interface operations {
                 since?: string | null;
                 sources?: string | null;
                 limit?: number;
+                /** @description Reported military aircraft/vessel classification; affiliation unverified. */
+                military?: boolean | null;
+                offset?: number;
             };
             header?: never;
             path?: never;

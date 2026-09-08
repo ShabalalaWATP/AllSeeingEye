@@ -8,6 +8,7 @@ from typing import Any
 
 from websockets.asyncio.client import connect
 
+from ase.adapters.feeds.aisstream_classification import VesselClassificationCache
 from ase.adapters.feeds.aisstream_positions import parse_position
 from ase.adapters.feeds.http import FeedFetchError, assert_public_host
 from ase.application.ports import Clock
@@ -47,6 +48,7 @@ class AisStreamConnector:
 
     def __init__(self, key: str, clock: Clock) -> None:
         self._key, self._clock = key, clock
+        self._classifications = VesselClassificationCache()
 
     async def fetch(self) -> list[Event]:
         events: dict[str, Event] = {}
@@ -73,6 +75,8 @@ class AisStreamConnector:
                                 "PositionReport",
                                 "StandardClassBPositionReport",
                                 "ExtendedClassBPositionReport",
+                                "ShipStaticData",
+                                "StaticDataReport",
                             ],
                         }
                     )
@@ -83,6 +87,7 @@ class AisStreamConnector:
                             data: Any = json.loads(await socket.recv())
                             if not isinstance(data, dict) or "error" in data or "Error" in data:
                                 raise FeedFetchError("AISStream refused the subscription")
+                            self._classifications.observe(data, self._clock.now())
                             event = parse_position(data, self._clock.now())
                             if event is not None:
                                 previous = events.get(event.id)
@@ -105,4 +110,5 @@ class AisStreamConnector:
             raise FeedFetchError(
                 "AISStream returned no fresh vessel positions in the collection window"
             )
-        return list(events.values())
+        now = self._clock.now()
+        return [self._classifications.enrich(event, now) for event in events.values()]

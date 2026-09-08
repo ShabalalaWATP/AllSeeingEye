@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { MapboxOverlay } from '@deck.gl/mapbox';
+import type { MapLibreOverlay } from '@deck.gl/maplibre';
 import { captureMapImage, CAPTURE_TIMEOUT_MS, compositeMapCanvases } from './mapCapture';
 
 function fixture() {
@@ -44,7 +44,7 @@ function fixture() {
     capture: () =>
       captureMapImage(
         map as unknown as MapLibreMap,
-        overlay as unknown as MapboxOverlay,
+        overlay as unknown as MapLibreOverlay,
         controller.signal,
         unchanged,
         layersLoaded,

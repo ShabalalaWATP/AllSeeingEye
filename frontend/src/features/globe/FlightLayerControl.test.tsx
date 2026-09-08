@@ -30,8 +30,10 @@ it('filters explicit military labels without guessing from titles or removing ot
   expect(
     filterObservations(events, { aircraft: false, vessels: true, firms: true }, 'military'),
   ).toEqual([boat]);
+  useEventsStore.setState({ selectedId: unclassified.id });
   const { result } = renderHook(() => useObservationFilters(events));
   act(() => result.current.setFlightFilter('military'));
+  expect(useEventsStore.getState().selectedId).toBeNull();
   expect(result.current.filtered).toEqual([military, flagged, boat]);
   act(() => result.current.toggle('aircraft'));
   expect(result.current.filtered).toEqual([boat]);
@@ -84,4 +86,42 @@ it('opens a labelled flight submenu, applies the filter and keeps its switch fun
   await user.click(opener);
   await user.click(opener);
   expect(opener).toHaveAttribute('aria-expanded', 'false');
+});
+
+it('applies the boat military filter to the map and clears a filtered selection', async () => {
+  const civilian = liveEvent({
+    id: 'civil-ship',
+    category: 'maritime',
+    subtype: 'vessel_position',
+  });
+  const vessels = [boat, civilian];
+  useEventsStore.setState({ hidden: [], selectedId: civilian.id });
+  function Rail() {
+    const state = useObservationFilters(vessels);
+    return (
+      <>
+        <MapLayerRail
+          events={vessels}
+          counts={{}}
+          visibility={state.visibility}
+          onToggle={state.toggle}
+          vesselFilter={state.vesselFilter}
+          onVesselFilter={state.setVesselFilter}
+          onTrafficSelect={() => undefined}
+        />
+        <output aria-label="Visible vessels">
+          {state.filtered.map((event) => event.id).join(',')}
+        </output>
+      </>
+    );
+  }
+  const user = userEvent.setup();
+  render(<Rail />);
+  await user.click(screen.getByRole('button', { name: 'Boat list' }));
+  await user.click(screen.getByRole('radio', { name: 'Military only' }));
+  expect(screen.getByLabelText('Visible vessels')).toHaveTextContent(/^boat$/);
+  expect(screen.getByRole('switch', { name: 'Boats 1' })).toBeChecked();
+  expect(useEventsStore.getState().selectedId).toBeNull();
+  await user.click(screen.getByRole('radio', { name: 'All vessels' }));
+  expect(screen.getByLabelText('Visible vessels')).toHaveTextContent('boat,civil-ship');
 });

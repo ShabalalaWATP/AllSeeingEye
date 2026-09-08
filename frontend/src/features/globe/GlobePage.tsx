@@ -4,14 +4,13 @@ import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
 import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
 
-import { WebGlFallback } from './WebGlFallback';
+import { MapCanvas } from './MapCanvas';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useCameras } from './cameras/useCameras';
 import { CameraPanel } from './cameras/CameraPanel';
 import { CameraInspector } from './cameras/CameraInspector';
 import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
-import { useAuthStore } from '@/stores/auth';
 import { useMapReferenceData } from './useMapReferenceData';
 import {
   countByCategory,
@@ -46,10 +45,11 @@ import { useSatelliteFilters } from './useSatelliteFilters';
 import { useConflictFilters } from './useConflictFilters';
 import { catalogueControlPanels } from './catalogueControlPanels';
 import './dashboard.css';
-import { createMapLibreEngine } from './engine/MapLibreEngine';
+import { createEngine } from './globeEngineFactory';
 import { useInterference } from './useInterference';
 import { useGlobeScene } from './useGlobeScene';
 import { useMapPicking } from './useMapPicking';
+import { useTrafficSelection } from './useTrafficSelection';
 
 import { clusteringZoomFor } from './layers/clusters';
 import { useGlobeEngine } from './useGlobeEngine';
@@ -58,10 +58,6 @@ import { hasWebGl2 } from './webgl';
 
 export { FOCUS_ZOOM } from './useMapFocus';
 import { useMapFocus } from './useMapFocus';
-
-// Only our own tile proxy ever sees the session token; the engine checks the origin.
-const createEngine = () =>
-  createMapLibreEngine({ authHeader: () => useAuthStore.getState().accessToken });
 
 export default function GlobePage() {
   const mode = useGlobeStore((state) => state.mode);
@@ -172,6 +168,14 @@ export default function GlobePage() {
     engine,
     mode,
   );
+  const selectTraffic = useTrafficSelection(
+    engine,
+    choose,
+    observations.visibility,
+    observations.toggle,
+    hidden,
+    toggleCategory,
+  );
   const { focus: focusInfrastructure, layers: infrastructureLayers } = useInfrastructureSelection(
     infrastructure,
     measurement.picking,
@@ -215,19 +219,7 @@ export default function GlobePage() {
 
   return (
     <div className="globe-dashboard absolute inset-0 bg-ground">
-      {supported ? (
-        <div
-          ref={containerRef}
-          role="region"
-          aria-label={mode === 'globe' ? '3D globe' : 'Map'}
-          data-testid="map-container"
-          // MapLibre's stylesheet forces position: relative on this element, so it
-          // needs an explicit height rather than absolute positioning.
-          className="h-full w-full"
-        />
-      ) : (
-        <WebGlFallback />
-      )}
+      <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       <WorldClocks />
@@ -241,6 +233,10 @@ export default function GlobePage() {
               onToggle={observations.toggle}
               flightFilter={observations.flightFilter}
               onFlightFilter={observations.setFlightFilter}
+              onTrafficSelect={selectTraffic}
+              selectionDisabled={measurement.picking}
+              vesselFilter={observations.vesselFilter}
+              onVesselFilter={observations.setVesselFilter}
             />
           }
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}

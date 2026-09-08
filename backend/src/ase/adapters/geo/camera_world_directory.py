@@ -8,8 +8,10 @@ import asyncio
 import json
 import math
 from dataclasses import replace
+from time import monotonic
 from typing import Any
 
+from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_world import make_camera
 from ase.application.ports.cameras import CameraSource
@@ -17,6 +19,7 @@ from ase.domain.cameras import Camera
 
 MARKERS = "https://opencctv.org/api/cameras/markers"
 BATCH = "https://opencctv.org/api/cameras/batch"
+BATCH_BUDGET_SECONDS = 28.0
 REGIONS = {
     "eastasia": ((18, 46, 73.5, 146), 1200),
     "seasia": ((-11, 24, 92, 130), 800),
@@ -76,33 +79,86 @@ def map_record(region: str, item: Any) -> Camera | None:
     )
 
 
+class MarkerIndexCache:
+    """One bounded index per registry, shared across the three regional loaders."""
+
+    def __init__(self, http: CameraHttpClient) -> None:
+        self._http = http
+        self._index: dict[str, Any] | None = None
+        self._until = 0.0
+        self._lock = asyncio.Lock()
+
+    async def get(self) -> dict[str, Any]:
+        async with self._lock:
+            if self._index is not None and monotonic() < self._until:
+                return self._index
+            async with asyncio.timeout(12):
+                payload = await self._http.get_bytes(MARKERS, conditional=False, max_redirects=0)
+            index = json.loads(payload)
+            regional_ids(index, "eastasia")  # Validate before caching.
+            self._index = {key: index[key][:200000] for key in ("ids", "lats", "lngs")}
+            self._until = monotonic() + 900
+            return self._index
+
+
 class DirectorySource:
-    def __init__(self, region: str, http: CameraHttpClient) -> None:
+    def __init__(
+        self, region: str, http: CameraHttpClient, index: MarkerIndexCache | None = None
+    ) -> None:
         self.id = region
         self.name = NAMES[region]
         self._http = http
+        self._index = index or MarkerIndexCache(http)
+        self.warning: str | None = None
 
     async def fetch(self) -> tuple[Camera, ...]:
-        payload = await self._http.get_bytes(MARKERS, conditional=False, max_redirects=0)
-        ids = regional_ids(json.loads(payload), self.id)
-        semaphore = asyncio.Semaphore(4)
+        self.warning = None
+        ids = regional_ids(await self._index.get(), self.id)
+        chunks = [ids[i : i + 50] for i in range(0, len(ids), 50)]
+        results: dict[str, Camera] = {}
+        next_batch = 0
+        completed = 0
+        failed = 0
 
-        async def batch(keys: list[str]) -> list[Camera]:
-            async with semaphore:
-                data = await self._http.post_json(BATCH, {"ids": keys})
-            if not isinstance(data, list):
-                raise ValueError("Invalid OpenCCTV camera batch")
-            allowed = set(keys)
-            results = (
-                map_record(self.id, row)
-                for row in data[:50]
-                if isinstance(row, dict) and row.get("id") in allowed
-            )
-            return [camera for camera in results if camera is not None]
+        async def worker() -> None:
+            nonlocal next_batch, completed, failed
+            while next_batch < len(chunks):
+                keys = chunks[next_batch]
+                next_batch += 1
+                try:
+                    async with asyncio.timeout(5):
+                        data = await self._http.post_json(BATCH, {"ids": keys})
+                    if not isinstance(data, list):
+                        raise ValueError("Invalid OpenCCTV camera batch")
+                    allowed = set(keys)
+                    for row in data[:50]:
+                        if (
+                            isinstance(row, dict)
+                            and isinstance(row.get("id"), str)
+                            and row["id"] in allowed
+                        ):
+                            camera = map_record(self.id, row)
+                            if camera is not None:
+                                results[camera.id] = camera
+                    completed += 1
+                except (FeedFetchError, OSError, ValueError, TimeoutError):
+                    failed += 1
 
-        batches = await asyncio.gather(*(batch(ids[i : i + 50]) for i in range(0, len(ids), 50)))
-        return tuple({camera.id: camera for cameras in batches for camera in cameras}.values())
+        # Index fetch plus batch work stays below the service's 45-second deadline.
+        # Successful batches survive a slow or broken neighbour; cancellation from
+        # the caller still propagates and cancels every worker.
+        try:
+            async with asyncio.timeout(BATCH_BUDGET_SECONDS):
+                await asyncio.gather(*(worker() for _ in range(min(4, len(chunks)))))
+        except TimeoutError:
+            failed += 1
+        if failed or completed < len(chunks):
+            self.warning = f"Partial directory catalogue: {completed}/{len(chunks)} batches loaded."
+            if not results:
+                raise ValueError("OpenCCTV camera batch unavailable")
+        return tuple(results.values())
 
 
 def build_sources(http: CameraHttpClient) -> tuple[CameraSource, ...]:
-    return tuple(DirectorySource(region, http) for region in REGIONS)
+    index = MarkerIndexCache(http)
+    return tuple(DirectorySource(region, http, index) for region in REGIONS)

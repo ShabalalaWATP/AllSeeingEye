@@ -12,7 +12,7 @@ import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 beforeAll(async () => {
   await import('./GlobePage');

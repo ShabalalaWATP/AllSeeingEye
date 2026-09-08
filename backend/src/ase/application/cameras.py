@@ -24,6 +24,7 @@ class _CachedSource:
     fetched_at: datetime | None = None
     retry_at: datetime | None = None
     failed: bool = False
+    warning: str | None = None
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 
@@ -83,7 +84,7 @@ class CameraCatalogueService:
                     cached.fetched_at,
                     "Catalogue temporarily unavailable or provider access restricted."
                     if cached.failed
-                    else None,
+                    else cached.warning,
                 )
             )
             if cached in requested:
@@ -106,7 +107,9 @@ class CameraCatalogueService:
             cached.cameras = result[:MAX_CAMERAS_PER_PROVIDER]
             cached.fetched_at = self._clock.now()
             cached.failed = False
-            cached.retry_at = self._clock.now() + CACHE_TTL
+            message = getattr(cached.source, "warning", None)
+            cached.warning = message if isinstance(message, str) else None
+            cached.retry_at = self._clock.now() + (FAILURE_RETRY if cached.warning else CACHE_TTL)
         except (OSError, ValueError, TimeoutError):
             cached.failed = True
             cached.retry_at = self._clock.now() + FAILURE_RETRY

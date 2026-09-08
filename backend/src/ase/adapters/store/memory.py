@@ -25,6 +25,7 @@ from ase.domain.events import Category, Event
 from ase.domain.evidence_time import evidence_matches_time, evidence_order
 from ase.domain.project import project_to_dict
 from ase.domain.source_provenance_records import provenance_size
+from ase.domain.traffic_classification import is_reported_military
 
 MAX_PRUNE_IDS = 10_000
 # Includes the slotted event, dates/point, per-record dict/set index entries,
@@ -116,6 +117,18 @@ class InMemoryEventStore:
                 self._insert(event)
                 added += 1
                 changed_ids.append(event.id)
+            elif (
+                event.category is Category.AVIATION
+                and existing.category is Category.AVIATION
+                and "adsb" in event.tags
+                and "adsb" in existing.tags
+                and event.published_at is not None
+                and existing.published_at is not None
+                and event.published_at < existing.published_at
+            ):
+                # Overlapping regional/list polls share an ICAO identity. A slow
+                # response must not move a newer transponder position backwards.
+                unchanged += 1
             elif existing.content_hash == event.content_hash:
                 unchanged += 1
             else:
@@ -145,6 +158,8 @@ class InMemoryEventStore:
             event = self._events[event_id]
             if query.source_ids and event.source_id not in query.source_ids:
                 continue
+            if query.military is not None and is_reported_military(event) is not query.military:
+                continue
             if not evidence_matches_time(
                 event,
                 query.time_basis,
@@ -158,9 +173,13 @@ class InMemoryEventStore:
             ):
                 continue
             matched.append(event)
-        return nlargest(
-            max(1, query.limit), matched, key=lambda e: evidence_order(e, query.time_basis)
+        offset = max(0, min(15_000, query.offset))
+        ranked = nlargest(
+            offset + max(1, query.limit),
+            matched,
+            key=lambda e: (evidence_order(e, query.time_basis), e.id),
         )
+        return ranked[offset:]
 
     def prune(self, now: datetime) -> PruneResult:
         expired: list[str] = []

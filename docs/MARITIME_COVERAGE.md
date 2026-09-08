@@ -90,3 +90,20 @@ not remove provider coverage gaps, country/time filters or freshness expiry.
 Independent peer review found no material credential, transport or timestamp
 issue. The dependency audit reported no known vulnerabilities in installed
 published dependencies (the local application package is not a PyPI package).
+
+
+## Military metadata and list controls, 8 September 2026
+
+The connector now also consumes AIS static metadata and joins it to fresh position
+reports by MMSI. A bounded memory-only cache retains metadata across the sampled
+collection windows. Ship type 35 is displayed as reported military operations;
+it is a transmitted assertion, not independently verified naval ownership.
+Names and MMSI prefixes are not used to guess military status. A metadata message
+alone does not create or refresh a map position. Missing military markers can
+mean missing position broadcasts or static metadata, not absence of naval vessels.
+
+The Ships control offers a searchable list and military filter. Selecting an item
+locates and highlights it on either map view; closing details clears selection.
+See [aircraft coverage and shared map behaviour](AVIATION_COVERAGE.md) for the
+browser allocation and loaded/server count distinctions. Earlier verification
+figures above describe the prior milestone, not the final results of this update.

@@ -95,6 +95,42 @@ async def test_events_query_validation(client: AsyncClient, user: User) -> None:
     ).status_code == 422
 
 
+async def test_military_filter_precedes_page_limit_and_pagination_is_bounded(
+    client: AsyncClient,
+    container: Container,
+    user: User,
+) -> None:
+    container.store.upsert(
+        [
+            make_event("civil", category=Category.AVIATION),
+            make_event(
+                "military",
+                category=Category.AVIATION,
+                subtype="military_aircraft",
+                published_at=NOW - timedelta(seconds=30),
+            ),
+        ]
+    )
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    response = await client.get(
+        "/api/events",
+        params={"categories": "aviation", "military": "true", "limit": 1},
+        headers=bearer(token),
+    )
+    assert response.status_code == 200
+    assert response.json()["items"][0]["subtype"] == "military_aircraft"
+    second = await client.get(
+        "/api/events",
+        params={"categories": "aviation", "offset": 1, "limit": 1},
+        headers=bearer(token),
+    )
+    assert second.json()["items"][0]["subtype"] == "military_aircraft"
+    for offset in (-1, 15001):
+        assert (
+            await client.get("/api/events", params={"offset": offset}, headers=bearer(token))
+        ).status_code == 422
+
+
 async def test_stream_delivers_upserts_and_expiries(
     app: FastAPI, container: Container, user: User, clock: FakeClock
 ) -> None:

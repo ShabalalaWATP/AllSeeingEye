@@ -13,7 +13,7 @@ import { mapEvidence, savedMapFixture as saved } from '@/test/fixtures.savedMaps
 import { initialMapState, matchesMapFilters } from './savedMapState';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('./FootprintSearchPanel', () => ({
   FootprintSearchPanel: ({ onChange }: { onChange: (value: unknown) => void }) => (
     <button

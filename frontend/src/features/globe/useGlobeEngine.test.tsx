@@ -9,7 +9,7 @@ import type { MapEngine, MapEngineFactory } from './engine/MapEngine';
 import { useGlobeEngine } from './useGlobeEngine';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 
 function fakeEngine() {
   return {

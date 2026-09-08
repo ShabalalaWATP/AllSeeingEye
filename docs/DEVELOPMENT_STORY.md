@@ -2751,3 +2751,38 @@ existing large vendor-chunk warning. Additional backend suites passed 40 HTTP/GD
 tests and 37 scheduler, map registration and source-control tests. Configured-secret
 matching found no local credential values in the changed code. No remote exists,
 so this milestone is committed locally on main and cannot be pushed.
+
+
+## 8 September 2026: visible military traffic and map lists
+
+Expanded regional aircraft collection, preserved explicit military labels across
+overlapping ADS-B queries, and added AIS static ship-type enrichment. Added
+bounded military-filtered event queries and dedicated client snapshots. Flights
+and Ships controls now support searchable lists, military filters and selection
+that locates/highlights an object on either map view. The browser event budget
+remains bounded; counts distinguish loaded records from server-retained records.
+See [aircraft coverage](AVIATION_COVERAGE.md) and
+[ship coverage](MARITIME_COVERAGE.md) for provider limits and classification basis.
+Validation: 1,288 frontend tests across 256 files passed (95.32% statements,
+90.31% branches, 93.69% functions, 96.70% lines), including camera clustering,
+progressive initial loading and the stale-callback recovery regression. Backend regression checks passed 169 tests covering camera
+catalogues, traffic, API bounds, store retention and scheduling. Full backend
+Ruff/formatting, mypy (704 modules) and both architecture contracts passed.
+Frontend lint, TypeScript and production build passed. No coverage threshold was
+lowered. Live traffic samples included 314 provider-labelled military aircraft,
+three AIS-labelled military vessels and 291 regional aircraft records after the
+bounded collector repair; these are changing samples, not complete inventories.
+
+
+## 8 September 2026: globe graphics and camera loading repair
+
+- [x] Replace incompatible overlay adapter and verify globe bearing/pitch maths.
+- [x] Bound graphics recovery, ignore stale callbacks and preserve state on manual reload.
+- [x] Retain the original eye frame after animation/context failures.
+- [x] Compare OSIRIS providers, expose regional discovery and publish partial camera results.
+- [x] Share bounded directory index and retain successful batches on partial failure.
+- [ ] Complete interactive GPU/long-duration verification when browser policy permits.
+
+See [rendering repair](PERFORMANCE_REPAIR.md) and [camera coverage](CAMERA_FEEDS.md)
+for evidence, checks and remaining limits. No database migration or production
+deployment was performed; no remote is configured for this repository.

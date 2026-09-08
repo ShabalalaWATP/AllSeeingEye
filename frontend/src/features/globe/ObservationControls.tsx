@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { isObservationShown, toggleObservationLayer } from './layerVisibility';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
-import { matchesFlightFilter } from './flightFilters';
+import { useEventsStore } from '@/stores/events';
+import { matchesFlightFilter, matchesVesselFilter } from './flightFilters';
 import type { FlightFilter } from './flightFilters';
 
 export type ObservationKind = 'aircraft' | 'vessels' | 'firms';
@@ -28,29 +29,47 @@ export function filterObservations(
   events: readonly LiveEvent[],
   visibility: ObservationVisibility,
   flightFilter: FlightFilter = 'all',
+  vesselFilter: FlightFilter = 'all',
 ) {
   return events.filter((event) => {
     const kind = observationKind(event);
-    return (kind === null || visibility[kind]) && matchesFlightFilter(event, flightFilter);
+    return (
+      (kind === null || visibility[kind]) &&
+      matchesFlightFilter(event, flightFilter) &&
+      matchesVesselFilter(event, vesselFilter)
+    );
   });
 }
 
 export function useObservationFilters(events: readonly LiveEvent[]) {
   const [flightFilter, setFlightFilter] = useState<FlightFilter>('all');
+  const [vesselFilter, setVesselFilter] = useState<FlightFilter>('all');
+  const selectedId = useEventsStore((state) => state.selectedId);
+  const select = useEventsStore((state) => state.select);
+  useEffect(() => {
+    const selected = events.find((event) => event.id === selectedId);
+    if (
+      selected &&
+      (!matchesVesselFilter(selected, vesselFilter) || !matchesFlightFilter(selected, flightFilter))
+    )
+      select(null);
+  }, [events, selectedId, select, vesselFilter, flightFilter]);
   const [visibility, setVisibility] = useState<ObservationVisibility>({
     aircraft: true,
     vessels: true,
     firms: true,
   });
   const filtered = useMemo(
-    () => filterObservations(events, visibility, flightFilter),
-    [events, visibility, flightFilter],
+    () => filterObservations(events, visibility, flightFilter, vesselFilter),
+    [events, visibility, flightFilter, vesselFilter],
   );
   return {
     visibility,
     filtered,
     flightFilter,
     setFlightFilter,
+    vesselFilter,
+    setVesselFilter,
     toggle: (kind: ObservationKind) =>
       setVisibility((previous) => ({ ...previous, [kind]: !previous[kind] })),
   };

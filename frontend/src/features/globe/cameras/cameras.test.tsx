@@ -215,7 +215,7 @@ it('browses all overlapping facilities using the paginated list and provider swi
   await user.click(screen.getByRole('button', { name: 'Previous cameras' }));
   await user.type(screen.getByRole('textbox', { name: 'Find a camera' }), 'Road 0');
   await user.click(screen.getByRole('switch', { name: 'London' }));
-  expect(screen.getByText('0 cameras shown on the map')).toBeInTheDocument();
+  expect(screen.getByText('0 cameras in enabled catalogues')).toBeInTheDocument();
 });
 
 it('builds clickable camera icons with a separate selection halo on both projections', () => {
@@ -246,4 +246,50 @@ it('builds clickable camera icons with a separate selection halo on both project
     expect(select).toHaveBeenCalledOnce();
     expect(buildCameraLayers([camera], select, null, globe)).toHaveLength(1);
   }
+});
+
+it('discovers dormant providers by country and enables a region on demand', async () => {
+  const requested: (string | null)[] = [];
+  server.use(
+    http.get('/api/cameras', ({ request }) => {
+      const provider = new URL(request.url).searchParams.get('provider');
+      requested.push(provider);
+      return HttpResponse.json({
+        ...catalogue,
+        providers: [
+          ...catalogue.providers,
+          {
+            id: 'poland',
+            name: 'Poland public cameras',
+            status: provider === 'poland' ? 'available' : 'not_loaded',
+            count: provider === 'poland' ? 1 : 0,
+            fetched_at: null,
+            message: null,
+          },
+        ],
+        cameras:
+          provider === 'poland'
+            ? [{ ...camera, id: 'poland:1', provider: 'poland', title: 'Warsaw' }]
+            : catalogue.cameras,
+      });
+    }),
+  );
+  function Harness() {
+    const cameras = useCameras();
+    return <CameraPanel cameras={cameras} />;
+  }
+  const user = userEvent.setup();
+  render(<Harness />);
+  await user.click(screen.getByRole('switch', { name: /Show public cameras/ }));
+  await screen.findByRole('textbox', { name: 'Find a country, region or provider' });
+  await waitFor(() => expect(requested).toEqual(['tfl', 'hongkong', 'fintraffic']));
+  await user.type(
+    screen.getByRole('textbox', { name: 'Find a country, region or provider' }),
+    'poland',
+  );
+  await user.click(screen.getByRole('button', { name: 'Enable UK and Europe' }));
+  await screen.findByRole('button', { name: 'Warsaw' });
+  expect(requested).toEqual(['tfl', 'hongkong', 'fintraffic', 'poland']);
+  await user.click(screen.getByRole('button', { name: 'Disable UK and Europe' }));
+  expect(screen.queryByRole('button', { name: 'Warsaw' })).not.toBeInTheDocument();
 });

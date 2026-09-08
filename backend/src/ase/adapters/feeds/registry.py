@@ -6,6 +6,7 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
+from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.aisstream import AisStreamConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
@@ -63,6 +64,7 @@ def build_connectors(
     iso3_to_iso2: Mapping[str, str] | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
+    classifications = AircraftClassificationCache()
     connectors: list[FeedConnector] = [
         UsgsConnector(http, clock),
         GdacsConnector(http, clock),
@@ -71,11 +73,25 @@ def build_connectors(
         SwpcScalesConnector(http, clock),
         CisaKevConnector(http, clock),
         GdeltEventsConnector(http, clock),
-        AdsbMilitaryConnector(http, clock),
-        AdsbListConnector(http, clock, LADD, subtype="ladd_aircraft", tags=frozenset({"ladd"})),
-        AdsbListConnector(http, clock, PIA, subtype="pia_aircraft", tags=frozenset({"pia"})),
-        AdsbSquawkConnector(http, clock),
-        AdsbAreaConnector(http, clock),
+        AdsbMilitaryConnector(http, clock, classifications=classifications),
+        AdsbListConnector(
+            http,
+            clock,
+            LADD,
+            subtype="ladd_aircraft",
+            tags=frozenset({"ladd"}),
+            classifications=classifications,
+        ),
+        AdsbListConnector(
+            http,
+            clock,
+            PIA,
+            subtype="pia_aircraft",
+            tags=frozenset({"pia"}),
+            classifications=classifications,
+        ),
+        AdsbSquawkConnector(http, clock, classifications=classifications),
+        AdsbAreaConnector(http, clock, classifications=classifications),
         EmscConnector(http, clock),
         NhcConnector(http, clock, NHC_ATLANTIC),
         NhcConnector(http, clock, NHC_EAST_PACIFIC),

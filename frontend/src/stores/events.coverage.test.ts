@@ -3,7 +3,13 @@ import * as api from '@/lib/api/events';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { liveEvent, storeStats } from '@/test/fixtures';
 import { MAX_CLIENT_EVENTS, useEventsStore } from './events';
-import { boundedEvents, mergeSnapshots, RESERVED_VESSELS } from './events.coverage';
+import {
+  boundedEvents,
+  mergeSnapshots,
+  RESERVED_VESSELS,
+  RESERVED_SATELLITES,
+  RESERVED_FIRMS,
+} from './events.coverage';
 
 const vessel = (id: string) => liveEvent({ id, category: 'maritime', subtype: 'vessel_position' });
 const crowded = {
@@ -160,7 +166,9 @@ it('reserves satellites and ships while favouring a specific military catalogue'
     Object.fromEntries([...ships, ...satellites, skynet, ...news].map((e) => [e.id, e])),
     5000,
   );
-  expect(Object.values(bounded).filter((event) => event.category === 'space')).toHaveLength(1500);
+  expect(Object.values(bounded).filter((event) => event.category === 'space')).toHaveLength(
+    RESERVED_SATELLITES,
+  );
   expect(Object.values(bounded).filter((event) => event.category === 'maritime')).toHaveLength(
     1500,
   );
@@ -213,9 +221,13 @@ it('reserves thermal detections alongside ships and satellites when feeds are cr
       5000,
     ),
   );
-  expect(bounded.filter((event) => event.subtype === 'thermal_detection')).toHaveLength(1000);
+  expect(bounded.filter((event) => event.subtype === 'thermal_detection')).toHaveLength(
+    RESERVED_FIRMS,
+  );
   expect(bounded.filter((event) => event.subtype === 'vessel_position')).toHaveLength(1500);
-  expect(bounded.filter((event) => event.subtype === 'satellite')).toHaveLength(1500);
+  expect(bounded.filter((event) => event.subtype === 'satellite')).toHaveLength(
+    RESERVED_SATELLITES,
+  );
   expect(bounded).toHaveLength(5000);
 });
 

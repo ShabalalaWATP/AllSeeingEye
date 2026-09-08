@@ -8,9 +8,12 @@ emergency-squawk queries and the area queries, so one parser handles them all.
 
 from __future__ import annotations
 
+import asyncio
+import math
 from datetime import datetime, timedelta
 from typing import Any
 
+from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.http import FeedHttpClient, NotModified
 from ase.application.ports import Clock
 from ase.domain.events import (
@@ -73,7 +76,7 @@ PIA = adsb_spec(
 def _number(value: object) -> float | None:
     if isinstance(value, bool) or not isinstance(value, int | float):
         return None
-    return float(value)
+    return float(value) if math.isfinite(value) else None
 
 
 def _text(value: object) -> str:
@@ -136,6 +139,11 @@ def aircraft_event(
         "Position from volunteer ADS-B receivers via adsb.lol."
     )
     all_tags = set(tags) | {"adsb"} | flag_tags(item)
+    military_basis = (
+        ("adsb_lol_military_list" if spec.id == "adsb_mil" else "adsb_lol_database_flag")
+        if "military" in all_tags
+        else None
+    )
     if aircraft_type:
         all_tags.add(aircraft_type.lower())
     # An aircraft seen over a watched area keeps its military identity, so the marker
@@ -165,6 +173,9 @@ def aircraft_event(
         attributes=freeze_attributes(
             {
                 "icao_hex": hex_code,
+                "military": "military" in all_tags,
+                "military_classification_basis": military_basis,
+                "military_classification_observed_at": now.isoformat() if military_basis else None,
                 "callsign": callsign or None,
                 "registration": registration or None,
                 "aircraft_type": aircraft_type or None,
@@ -184,14 +195,26 @@ def aircraft_event(
             }
         ),
         content_hash=content_hash(
-            hex_code, f"{lat:.4f}", f"{lon:.4f}", str(altitude), str(track), str(speed), squawk
+            hex_code,
+            f"{lat:.4f}",
+            f"{lon:.4f}",
+            str(altitude),
+            str(track),
+            str(speed),
+            squawk,
+            military_basis,
+            (now - timedelta(seconds=age)).isoformat(),
         ),
     )
 
 
 def records(data: Any) -> list[dict[str, Any]]:
     aircraft = data.get("ac", []) if isinstance(data, dict) else []
-    return [item for item in aircraft[:MAX_AIRCRAFT] if isinstance(item, dict)]
+    return (
+        [item for item in aircraft[:MAX_AIRCRAFT] if isinstance(item, dict)]
+        if isinstance(aircraft, list)
+        else []
+    )
 
 
 class AdsbListConnector:
@@ -205,12 +228,14 @@ class AdsbListConnector:
         *,
         subtype: str = "military_aircraft",
         tags: frozenset[str] = frozenset({"military"}),
+        classifications: AircraftClassificationCache | None = None,
     ) -> None:
         self._http = http
         self._clock = clock
         self.spec = spec
         self._subtype = subtype
         self._tags = tags
+        self._classifications = classifications or AircraftClassificationCache()
 
     async def fetch(self) -> list[Event]:
         try:
@@ -218,13 +243,21 @@ class AdsbListConnector:
         except NotModified:
             return []
         now = self._clock.now()
-        events = [
-            aircraft_event(self.spec, item, now, subtype=self._subtype, tags=self._tags)
-            for item in records(data)
-        ]
-        return [event for event in events if event is not None]
+        events: list[Event] = []
+        for index, item in enumerate(records(data)):
+            event = aircraft_event(self.spec, item, now, subtype=self._subtype, tags=self._tags)
+            if event is not None:
+                events.append(self._classifications.enrich(event, now))
+            if index % 250 == 249:
+                await asyncio.sleep(0)
+        return events
 
 
-def AdsbMilitaryConnector(http: FeedHttpClient, clock: Clock) -> AdsbListConnector:  # noqa: N802
+def AdsbMilitaryConnector(  # noqa: N802
+    http: FeedHttpClient,
+    clock: Clock,
+    *,
+    classifications: AircraftClassificationCache | None = None,
+) -> AdsbListConnector:
     """The original military list connector, kept under its old name."""
-    return AdsbListConnector(http, clock, SPEC)
+    return AdsbListConnector(http, clock, SPEC, classifications=classifications)

@@ -17,7 +17,7 @@ import './GlobePage';
 const clock = vi.hoisted(() => ({ now: Date.UTC(2026, 8, 6) }));
 vi.mock('@/lib/hooks/useNow', () => ({ useNow: () => clock.now }));
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
 interface TestLayer {

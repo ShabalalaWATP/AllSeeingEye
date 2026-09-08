@@ -214,3 +214,51 @@ it('bounds retained catalogues, evicts disabled providers first and explains act
   expect(result.current.error).toContain('75,000');
   expect(result.current.catalogue!.cameras.length).toBeLessThanOrEqual(75000);
 });
+
+it('publishes completed regions while a slow region is still pending', async () => {
+  const fetch = vi.mocked(fetchCameras);
+  let release!: (value: CameraCatalogue) => void;
+  fetch.mockImplementation((_signal, id) =>
+    id === 'poland'
+      ? new Promise((resolve) => {
+          release = resolve;
+        })
+      : Promise.resolve(catalogue(id ?? 'tfl')),
+  );
+  const { result } = renderHook(useCameras);
+  act(() => {
+    result.current.setProviderGroup(['poland', 'bulgaria'], true);
+    result.current.setEnabled(true);
+  });
+  await waitFor(() =>
+    expect(result.current.visible.some((c) => c.provider === 'bulgaria')).toBe(true),
+  );
+  expect(result.current.loading).toBe(true);
+  act(() => release(catalogue('poland')));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(result.current.visible.some((c) => c.provider === 'poland')).toBe(true);
+  act(() => result.current.setProviderGroup(['poland', 'bulgaria'], false));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(result.current.visible.some((c) => ['poland', 'bulgaria'].includes(c.provider))).toBe(
+    false,
+  );
+});
+
+it('shows the first default catalogue before another default provider finishes', async () => {
+  let release!: (value: CameraCatalogue) => void;
+  vi.mocked(fetchCameras).mockImplementation((_signal, id) =>
+    id === 'hongkong'
+      ? new Promise((resolve) => {
+          release = resolve;
+        })
+      : Promise.resolve(catalogue(id ?? 'tfl')),
+  );
+  const { result } = renderHook(useCameras);
+  act(() => result.current.setEnabled(true));
+  await waitFor(() =>
+    expect(result.current.visible.some((row) => row.provider === 'tfl')).toBe(true),
+  );
+  expect(result.current.loading).toBe(true);
+  act(() => release(catalogue('hongkong')));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+});

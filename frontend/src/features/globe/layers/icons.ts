@@ -8,6 +8,12 @@ import type { Layer } from '@deck.gl/core';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
+import {
+  isMilitaryAircraft,
+  isMilitaryVessel,
+  MILITARY_AIRCRAFT_COLOUR,
+  MILITARY_VESSEL_COLOUR,
+} from '@/lib/traffic';
 
 export type IconKind = 'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'volcano' | 'thermal';
 
@@ -102,7 +108,11 @@ export function buildIconLayer(
     getColor: (event) =>
       event.subtype === 'emergency'
         ? [255, 90, 90, 255]
-        : [...CATEGORY_STYLES[event.category].colour, 235],
+        : isMilitaryAircraft(event)
+          ? MILITARY_AIRCRAFT_COLOUR
+          : isMilitaryVessel(event)
+            ? MILITARY_VESSEL_COLOUR
+            : [...CATEGORY_STYLES[event.category].colour, 235],
     // deck.gl rotates anticlockwise; a track is clockwise from north.
     getAngle: (event) =>
       (globe ? 180 : 0) +

@@ -8,6 +8,7 @@ tension areas reaches the globe without any key.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from importlib import resources
 from typing import Any
 
 from ase.adapters.feeds.adsb import adsb_spec, aircraft_event, records
+from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.application.ports import Clock
 from ase.domain.events import Event, Reliability
@@ -28,6 +30,9 @@ SQUAWKS: dict[str, tuple[str, float]] = {
     "7600": ("radio failure", 0.6),
 }
 MAX_RADIUS_NM = 250
+MAX_AREA_EVENTS = 15_000
+AREA_FETCH_BUDGET_SECONDS = 45.0
+AREA_REQUEST_TIMEOUT_SECONDS = 5.0
 RESOURCE = "air_watch.json"
 
 EMERGENCY = adsb_spec(
@@ -80,9 +85,16 @@ class AdsbSquawkConnector:
 
     spec = EMERGENCY
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
+    def __init__(
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        *,
+        classifications: AircraftClassificationCache | None = None,
+    ) -> None:
         self._http = http
         self._clock = clock
+        self._classifications = classifications or AircraftClassificationCache()
 
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
@@ -107,7 +119,11 @@ class AdsbSquawkConnector:
                 if event is None or event.id in seen:
                     continue
                 seen.add(event.id)
-                events.append(event.with_changes(title=f"{event.title}: squawk {code}, {meaning}"))
+                events.append(
+                    self._classifications.enrich(event, now).with_changes(
+                        title=f"{event.title}: squawk {code}, {meaning}"
+                    )
+                )
         return events
 
 
@@ -117,25 +133,53 @@ class AdsbAreaConnector:
     spec = AREAS
 
     def __init__(
-        self, http: FeedHttpClient, clock: Clock, areas: Sequence[WatchArea] | None = None
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        areas: Sequence[WatchArea] | None = None,
+        *,
+        classifications: AircraftClassificationCache | None = None,
     ) -> None:
         self._http = http
         self._clock = clock
         self._areas = tuple(areas) if areas is not None else load_watch_areas()
+        self._classifications = classifications or AircraftClassificationCache()
+        self._start_area = 0
+        self._warning: str | None = None
 
     @property
     def areas(self) -> tuple[WatchArea, ...]:
         return self._areas
 
+    @property
+    def warning(self) -> str | None:
+        return self._warning
+
+    def request_retry(self) -> None:
+        """The scheduler controls retries; retain the bounded regional rotation."""
+
     async def fetch(self) -> list[Event]:
-        now = self._clock.now()
+        self._warning = None
         events: dict[str, Event] = {}
-        for area in self._areas:
+        start = self._start_area
+        areas = self._areas[start:] + self._areas[:start]
+        deadline = asyncio.get_running_loop().time() + AREA_FETCH_BUDGET_SECONDS
+        successful = attempted = 0
+        for offset, area in enumerate(areas):
+            remaining = deadline - asyncio.get_running_loop().time()
+            if remaining <= 0 or len(events) >= MAX_AREA_EVENTS:
+                break
+            attempted += 1
+            # Continue after the last attempted region next time, including timeouts.
+            self._start_area = (start + offset + 1) % len(self._areas)
             try:
-                data = await self._http.get_json(area.url, conditional=False)
-            except (FeedFetchError, NotModified):
+                async with asyncio.timeout(min(AREA_REQUEST_TIMEOUT_SECONDS, remaining)):
+                    data = await self._http.get_json(area.url, conditional=False)
+            except (FeedFetchError, NotModified, TimeoutError):
                 continue
-            for item in records(data):
+            successful += 1
+            now = self._clock.now()  # Anchor reported position age to this response.
+            for index, item in enumerate(records(data)):
                 event = aircraft_event(
                     self.spec,
                     item,
@@ -143,6 +187,19 @@ class AdsbAreaConnector:
                     subtype="aircraft",
                     tags=frozenset({"area_watch", f"area_{area.id}"}),
                 )
-                if event is not None and event.id not in events:
-                    events[event.id] = event
+                if event is not None and event.id not in events and len(events) < MAX_AREA_EVENTS:
+                    events[event.id] = self._classifications.enrich(event, now)
+                if index % 250 == 249:
+                    await asyncio.sleep(0)
+                    if asyncio.get_running_loop().time() >= deadline:
+                        break
+        if successful < len(areas) or len(events) >= MAX_AREA_EVENTS:
+            self._warning = (
+                f"Partial regional coverage: {successful}/{len(areas)} areas retrieved; "
+                "remaining or unavailable regions rotate through subsequent polls."
+            )
+        if attempted == len(areas) and areas:
+            self._start_area = (start + 1) % len(areas)
+        if attempted and not successful:
+            raise FeedFetchError("ADS-B regional queries returned no successful responses.")
         return list(events.values())

@@ -12,7 +12,7 @@ import {
 import { EOX_TILES, OS_BOUNDS, RASTER_LAYER_ID, RASTER_SOURCE_ID } from './baseLayers';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 
 describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
   beforeEach(() => {

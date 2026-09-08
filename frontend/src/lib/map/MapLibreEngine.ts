@@ -1,10 +1,5 @@
-/**
- * MapLibre GL JS 6 implementation of MapEngine. Defaults to the OpenFreeMap dark style
- * (keyless, attribution required), the `globe` projection preset (a sphere that
- * flattens to Mercator only between zoom 10 and 12) and a dark sky so the globe
- * has its atmosphere glow. Unit tests mock the map; rendering needs browser verification.
- */
-import { MapboxOverlay } from '@deck.gl/mapbox';
+/** MapLibre GL JS6 engine with the dedicated deck.gl camera adapter. */
+import { MapOverlayController } from './MapOverlayController';
 import type { Layer } from '@deck.gl/core';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import type { RequestParameters } from 'maplibre-gl';
@@ -46,12 +41,16 @@ export const SPIN_STEP_MS = 30_000;
 
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
-  private overlay: MapboxOverlay | null = null;
+  private overlays: MapOverlayController | null = null;
+  private get overlay() {
+    return this.overlays?.overlay ?? null;
+  }
   private projection: Projection = 'globe';
   private baseLayer: BaseLayer = 'dark';
   private styleUrl = DARK_STYLE_URL;
   private lite = false;
   private styleReady = false;
+  private contextLost = false;
   private spinning = false;
   private stepping = false;
   private revision = 0;
@@ -85,19 +84,19 @@ export class MapLibreEngine implements MapEngine {
         : {}),
       transformRequest: (url) => this.transformRequest(url),
     });
-    // deck.gl draws the data layers in its own canvas above the base map.
-    this.overlay = new MapboxOverlay({
-      interleaved: false,
-      layers: [],
-      useDevicePixels: Math.min(window.devicePixelRatio || 1, 1.5),
-      ...(this.options.captureEnabled
-        ? {
-            useDevicePixels: 1,
-            onError: () => {
-              this.captureFailed = true;
-            },
-          }
-        : {}),
+    this.map = map;
+    this.overlays = new MapOverlayController(map, this.options, () => {
+      this.captureFailed = true;
+      this.revision += 1;
+    });
+    map.on('webglcontextlost', () => {
+      this.contextLost = true;
+      this.styleReady = false;
+      this.spin(false);
+    });
+    map.on('webglcontextrestored', () => {
+      this.contextLost = false;
+      this.setBaseLayer(this.baseLayer);
     });
     if (this.options.captureEnabled) {
       map.on('error', () => {
@@ -110,7 +109,6 @@ export class MapLibreEngine implements MapEngine {
         this.revision += 1;
       });
     }
-    map.addControl(this.overlay);
     map.on('style.load', () => {
       this.styleReady = true;
       this.applySky();
@@ -129,7 +127,6 @@ export class MapLibreEngine implements MapEngine {
     map.on('moveend', () => {
       if (this.spinning) this.spinStep();
     });
-    this.map = map;
   }
 
   spin(enabled: boolean): void {
@@ -170,6 +167,7 @@ export class MapLibreEngine implements MapEngine {
   setBaseLayer(layer: BaseLayer): void {
     this.revision += 1;
     this.baseLayer = layer;
+    if (this.contextLost) return;
     const nextStyle = vectorStyleFor(layer);
     if (this.map !== null && this.styleUrl !== nextStyle) {
       this.styleUrl = nextStyle;
@@ -196,11 +194,7 @@ export class MapLibreEngine implements MapEngine {
 
   pickObjectsAt(x: number, y: number): readonly unknown[] {
     if (!Number.isFinite(x) || !Number.isFinite(y) || this.options.captureEnabled) return [];
-    return (
-      this.overlay
-        ?.pickMultipleObjects({ x, y, radius: 4, depth: 8 })
-        .map((hit) => hit.object as unknown) ?? []
-    );
+    return this.overlays?.pickObjectsAt(x, y) ?? [];
   }
 
   getZoom(): number {
@@ -270,7 +264,7 @@ export class MapLibreEngine implements MapEngine {
   setLayers(layers: readonly DataLayer[]): void {
     this.revision += 1;
     this.layers = layers as readonly Layer[];
-    this.overlay?.setProps({ layers: [...(layers as readonly Layer[])] });
+    this.overlays?.setLayers(layers as readonly Layer[]);
   }
 
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void {
@@ -314,9 +308,10 @@ export class MapLibreEngine implements MapEngine {
     this.captureAbort?.abort();
     this.revision += 1;
     this.spinning = false;
+    this.overlays?.destroy();
     this.map?.remove();
     this.map = null;
-    this.overlay = null;
+    this.overlays = null;
     this.layers = [];
     if (import.meta.env.DEV) {
       const debug = window as unknown as { __aseMap?: MapLibreMap };

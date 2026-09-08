@@ -1,5 +1,5 @@
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { MapboxOverlay } from '@deck.gl/mapbox';
+import type { MapLibreOverlay } from '@deck.gl/maplibre';
 
 export const CAPTURE_TIMEOUT_MS = 30_000;
 const MAX_PIXELS = 4_000_000;
@@ -58,7 +58,7 @@ export function compositeMapCanvases(
  */
 export function captureMapImage(
   map: MapLibreMap,
-  overlay: MapboxOverlay,
+  overlay: MapLibreOverlay,
   signal: AbortSignal,
   unchanged: () => boolean,
   layersLoaded: () => boolean,

@@ -79,7 +79,7 @@ async def test_squawk_connector_survives_one_failed_code() -> None:
 
 async def test_area_connector_polls_every_watched_area_once() -> None:
     areas = load_watch_areas()
-    assert len(areas) == 8 and all(area.radius_nm <= 250 for area in areas)
+    assert len(areas) == 22 and all(area.radius_nm <= 250 for area in areas)
     assert areas[0].url == "https://api.adsb.lol/v2/point/45/33.5/250"
     data = fixture()
     first, second = usable(data)[:2]

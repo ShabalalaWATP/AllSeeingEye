@@ -1520,6 +1520,36 @@
               "default": 500,
               "title": "Limit"
             }
+          },
+          {
+            "name": "military",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Reported military aircraft/vessel classification; affiliation unverified.",
+              "title": "Military"
+            },
+            "description": "Reported military aircraft/vessel classification; affiliation unverified."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 15000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
           }
         ],
         "responses": {

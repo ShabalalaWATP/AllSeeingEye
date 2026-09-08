@@ -10,7 +10,7 @@ import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
-vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
 beforeEach(() => {
