@@ -490,3 +490,16 @@ snapshot previews on globe/map. Actual provider images and both projection
 clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
 remaining regions/evidence-capture work. This supersedes the earlier CCTV
 unavailable notes above.
+
+## Camera expansion milestone, 8 September 2026
+
+- [x] Add the remaining OSIRIS CCTV source groups through explicit regional adapters
+  (57 source entries total, with on-demand loading and honest failure statuses).
+- [x] Add user-requested live stream, embedded video, MJPEG and clip playback.
+- [x] Preserve searchable map/globe selection and distinguish approximate positions.
+- [x] Verify an actual live HLS stream in the browser and bound nested media requests.
+- [x] Document source inventories, attribution, access restrictions and observed probes.
+- [ ] Revalidate blocked/retired providers when their public endpoints or authorised
+  access become available. Source-group coverage is not universal camera availability.
+
+Details: CAMERA_FEEDS.md, CAMERA_AMERICAS.md, CAMERA_EUROPE.md, CAMERA_WORLD.md.

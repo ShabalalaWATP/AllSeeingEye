@@ -22,7 +22,8 @@ from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
-from ase.adapters.geo.cameras import OfficialCameraSource
+from ase.adapters.geo.camera_http import CameraHttpClient
+from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
@@ -222,12 +223,9 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         )
 
     def _initialise_map_catalogues(self) -> None:
+        self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(
-            (
-                OfficialCameraSource("tfl", self.http),
-                OfficialCameraSource("hongkong", self.http),
-                OfficialCameraSource("fintraffic", self.marine_http),
-            ),
+            build_camera_sources(self.camera_http, self.marine_http),
             self.clock,
         )
         self.footprints = FootprintSearchUseCase(
@@ -240,6 +238,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
     async def dispose(self) -> None:
         await self.http.aclose()
         await self.marine_http.aclose()
+        await self.camera_http.aclose()
         await self._llm_gateway.aclose()
         await self._embedding_gateway.aclose()
         await self.tiles.aclose()

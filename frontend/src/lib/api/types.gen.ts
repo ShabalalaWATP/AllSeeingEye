@@ -3048,11 +3048,8 @@ export interface components {
         CameraOut: {
             /** Id */
             id: string;
-            /**
-             * Provider
-             * @enum {string}
-             */
-            provider: "tfl" | "hongkong" | "fintraffic";
+            /** Provider */
+            provider: string;
             /** Title */
             title: string;
             /** Latitude */
@@ -3060,28 +3057,37 @@ export interface components {
             /** Longitude */
             longitude: number;
             /** Snapshot Url */
-            snapshot_url: string;
+            snapshot_url: string | null;
             /** Source Url */
             source_url: string;
             /** Attribution */
             attribution: string;
             /** Captured At */
             captured_at: string | null;
+            /** Stream Url */
+            stream_url?: string | null;
+            /** Stream Type */
+            stream_type?: ("hls" | "mp4" | "mjpeg" | "iframe") | null;
+            /** External Url */
+            external_url?: string | null;
+            /**
+             * Coordinate Precision
+             * @default exact
+             * @enum {string}
+             */
+            coordinate_precision: "exact" | "approximate";
         };
         /** CameraProviderOut */
         CameraProviderOut: {
-            /**
-             * Id
-             * @enum {string}
-             */
-            id: "tfl" | "hongkong" | "fintraffic";
+            /** Id */
+            id: string;
             /** Name */
             name: string;
             /**
              * Status
              * @enum {string}
              */
-            status: "available" | "stale" | "unavailable";
+            status: "available" | "stale" | "unavailable" | "not_loaded";
             /** Count */
             count: number;
             /** Fetched At */
@@ -10962,7 +10968,9 @@ export interface operations {
     };
     camera_catalogue_api_cameras_get: {
         parameters: {
-            query?: never;
+            query?: {
+                provider?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -10976,6 +10984,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CameraCatalogueOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

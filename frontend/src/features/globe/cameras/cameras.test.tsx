@@ -24,6 +24,7 @@ const camera: Camera = {
   source_url: 'https://tfl.gov.uk/traffic/status/',
   attribution: 'Transport for London',
   captured_at: null,
+  coordinate_precision: 'exact',
 };
 const catalogue: CameraCatalogue = {
   cameras: [camera, { ...camera, id: 'hk:1', title: 'Hong Kong Road', provider: 'hongkong' }],
@@ -82,8 +83,10 @@ it('fetches on demand and clears selection on provider changes, search and disab
   act(() => result.current.select(camera));
   act(() => result.current.close());
   expect(result.current.selected).toBeNull();
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  const previousCalls = calls;
   act(() => result.current.refresh());
-  await waitFor(() => expect(calls).toBe(2));
+  await waitFor(() => expect(calls).toBeGreaterThan(previousCalls));
   act(() => result.current.setEnabled(false));
   expect(result.current.visible).toEqual([]);
 });

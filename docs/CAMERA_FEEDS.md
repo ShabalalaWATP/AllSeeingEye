@@ -1,81 +1,85 @@
 # Public camera feeds
 
-Implemented 8 September 2026. Use the left CCTV button, enable Show public
-cameras, then select a marker or search the catalogue. Selecting a list entry
-moves the map to the camera. Load image requests one snapshot; Refresh image
-requests another. Closing details, switching source filters or disabling cameras
-clears the selection highlight. The same controls work on globe and flat map.
+Expanded on 8 September 2026. Open CCTV on the left, enable public cameras,
+then switch on a region and search or select a marker. The globe and flat map
+share selection and filters. Closing details removes the selection highlight.
 
-## Sources and reference
+## Coverage and playback
 
-OSIRIS uses official traffic/weather camera catalogues alongside regional webcam
-and broadcaster links. Reference code was inspected, not copied:
-https://github.com/simplifaisoul/osiris/tree/master/src/app/api/cctv
+The registry now contains 57 source entries covering every CCTV source group in
+OSIRIS revision `fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8` inspected for this work.
+This is source-group coverage, not a guarantee that every upstream camera is
+available. Providers change their catalogues and access policies. Empty, blocked
+and retired sources report their actual status instead of fabricated cameras.
 
-| Provider | Official catalogue | Read-only adapter probe |
-| --- | --- | --- |
-| TfL | https://api.tfl.gov.uk/Place/Type/JamCam | 840 available locations |
-| Hong Kong Transport Department | https://static.data.gov.hk/td/traffic-snapshot-images/code/Traffic_Camera_Locations_En.xml | 1,013 locations |
-| Fintraffic | https://tie.digitraffic.fi/api/weathercam/v1/stations | 782 collecting stations |
+The original TfL, Hong Kong and Fintraffic sources load first. Additional regions
+load on demand. The source list shows not loaded, available, stale or unavailable.
+Search and pagination expose cameras that overlap on the map.
 
-Counts are observations from this run, not guaranteed coverage. TfL unavailable
-cameras and Fintraffic stations/presets outside collection are excluded. Fintraffic
-uses the first active preset per station. These are still-image feeds, not
-continuous video. Capture time is unknown where the catalogue does not supply it;
-metadata retrieval time is never presented as image capture time.
+- [Americas source inventory](CAMERA_AMERICAS.md): 21 providers, including US state
+  transport agencies and Canadian provincial and city catalogues.
+- [European source inventory](CAMERA_EUROPE.md): 18 providers, including official
+  traffic sources and attributed regional webcam directories.
+- [Asia and worldwide inventory](CAMERA_WORLD.md): 15 providers, including
+  Australia, New Zealand, Singapore, Taiwan, Japan, regional webcams, Skyline
+  links and three bounded OpenCCTV regions.
+- Original sources: TfL, Hong Kong Transport Department and Fintraffic.
 
-Provider guidance:
-- TfL: https://tfl.gov.uk/info-for/open-data-users/our-open-data
-  Preserve complete images and embedded attribution; hide images after 15 minutes.
-- Hong Kong: https://data.gov.hk/en-data/dataset/hk-td-tis_1-traffic-snapshot-images
-  Provider service/outage placeholders may be returned as valid images.
-- Fintraffic: https://www.digitraffic.fi/en/road-traffic/
-  Approximately ten-minute image updates, attributed to Fintraffic under CC BY 4.0.
+OSIRIS reference: https://github.com/simplifaisoul/osiris/tree/master/src/app/api/cctv
+Adapted directory data retains MIT attribution and licence text in the regional
+inventories and generated catalogue files.
+
+Play video starts supported HLS, embedded video, MJPEG or MP4 media. MP4 is labelled
+as a provider clip. Streams are not presumed live merely because a URL exists.
+Provider restrictions, delays and outages still apply. Stop video or closing
+camera details releases the player. Provider website links remain available when
+embedding is unsupported. Approximate directory coordinates are explicitly labelled.
+
+Load image requests a snapshot and Refresh image requests another. The original
+three sources are still-image services. Unknown capture times are not replaced
+with metadata retrieval times. Snapshots expire after 15 minutes and loading has
+a 20-second deadline. No automatic recording or evidence capture is added.
 
 ## Boundaries
 
-GET /api/cameras requires a current active session and revalidates it after
-provider work. Camera facilities stay in a separate bounded in-memory catalogue;
-no database migration or raw image persistence is introduced. Upstream requests
-use fixed URLs and the existing DNS-pinned 5 MiB HTTP client, no redirects and
-15-second per-provider deadlines. The cache holds at most 1,500 locations per
-provider, refreshes after 15 minutes, retries failures after one minute and drops
-stale metadata after 24 hours. Provider failures are reported independently.
+The authenticated API revalidates the session after provider work. Catalogues
+remain in memory, with at most 5,000 cameras per provider, a 15-minute cache,
+one-minute failure retry and 24-hour maximum stale age. Four upstream fetches run
+at once. The 45-second fetch deadline starts after the concurrency queue and lock.
+The dedicated HTTP client bounds responses to 10 MiB, pins public DNS addresses,
+rejects redirects and does not forward application credentials. OpenCCTV metadata
+POSTs have a 64 KiB body cap and fixed destinations. No arbitrary proxy is exposed.
 
-Images load directly from exact approved HTTPS hosts after a user request, with
-no referrer or ASE token. The server is not an arbitrary image proxy. Canonical
-image URLs are validated before a locally generated refresh token is appended.
-Image loading times out after 20 seconds; late callbacks cannot restore expired
-images. Refresh requests bypass reuse of the prior browser-cache URL. Caddy CSP
-permits only the three image providers, restricting the TfL S3 bucket path.
-
-The paginated catalogue exposes overlapping markers through a searchable list.
-There is no camera clustering, automatic video playback, recording or evidence
-capture in this milestone. Other OSIRIS regions require their own provider
-verification and adapters; they are not silently represented as connected.
+Media loads only after an explicit request. Exact HTTPS host allowlists constrain
+images, streams and frames. HLS manifests, segments and keys are checked on each
+request, omit credentials and reject redirects. TfL S3 images are restricted to
+its bucket path; S3 streams are rejected. Embedded providers receive the site
+origin as referrer where their player requires it. Caddy CSP mirrors approved
+media/frame hosts. Local Vite playback does not verify a deployed Caddy policy.
 
 ## Verification
 
-- Eighteen offline backend tests pass, camera-module coverage 98.88%.
-- Whole-backend mypy passes across 659 files; Ruff/format and import architecture
-  checks pass for the backend change.
-- Full frontend regression: 1,145 tests across 227 files pass, 95.27% statements,
-  90.08% branches, 93.68% functions and 96.62% lines. Thresholds unchanged.
-- Fifteen final focused frontend tests pass after callback/lint cleanup.
-- Authenticated browser loaded and decoded actual snapshots from all three
-  providers. Physical marker clicks opened camera details on both projections.
-  Mobile preview and close controls were inspected at 390 by 600.
-- Review identified browser cache reuse and deeply nested provider JSON handling;
-  both were repaired with regression tests.
+- 152 focused backend camera tests pass. Whole-backend mypy passes across 680 files.
+- Actual browser playback of Burgas Smart Burgas HLS reached readyState 4,
+  1920 by 1080 video and over 108 seconds of playback.
+- Provider probes also returned valid HLS manifests from Caltrans, Nevada,
+  Louisiana, Serbia and North Macedonia. This does not establish every stream's
+  browser playback. Quebec clips returned 403 and an Indiana stream returned 503.
+- ASFINAG requires authorised access. Retired or failed endpoints remain visible
+  as unavailable; no embedded credentials or access bypasses were copied.
 
-Existing local issues observed separately: alerts return HTTP 500 because the
-operator SQLite database lacks alerts.annotation_monitor_id; map basemaps report
-missing circle-11/wood-pattern sprites. No operator database was migrated.
-The production build retains its existing large-bundle warning. Caddy was not
-deployed as part of local Vite verification.
+Existing local alerts still return HTTP 500 because the operator database lacks
+`alerts.annotation_monitor_id`. No operator database migration was performed.
+Basemap sprite warnings and the existing production bundle warning are separate.
 
-Final presentation verification: eight camera tests and production build pass
-after moving metadata below the preview. Thirty combined backend camera and
-health/error tests pass. Final lint and both TypeScript configurations pass.
-The file-length check passes; GlobePage remains a 353-line composition module
-after extracting scene composition and navigation hooks.
+Final integration checks: production build, frontend lint and both TypeScript
+configurations pass. Seventeen focused frontend camera tests pass. Dependency
+audit reports no known production vulnerabilities. Exact-host parity was checked
+between adapter declarations, the browser allowlist (72 media hosts, two frame
+hosts) and Caddy. Architecture contracts and source-file length checks pass.
+This is scoped security review and regression verification, not a repository-wide
+security audit or proof that every provider stream is available.
+
+Final full frontend regression: 1,152 tests across 229 files passed, with 95.26%
+statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configured
+90% thresholds remain unchanged.

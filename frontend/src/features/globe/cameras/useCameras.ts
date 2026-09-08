@@ -23,24 +23,56 @@ export function useCameras() {
     if (!enabled) return;
     const controller = new AbortController();
     let current = true;
-    void fetchCameras(controller.signal)
-      .then((result) => {
-        if (current) {
-          setCatalogue(result);
-          setError(null);
-        }
-      })
-      .catch(() => {
-        if (current) setError('The camera catalogue could not be loaded. Please try again.');
-      })
-      .finally(() => {
-        if (current) setLoading(false);
-      });
+    const ids = Object.keys(providers).filter((id) => providers[id]);
+    const initial =
+      ids.length === 3 && ['tfl', 'hongkong', 'fintraffic'].every((id) => providers[id]);
+    const requests = initial ? [undefined] : ids;
+    void Promise.allSettled(requests.map((id) => fetchCameras(controller.signal, id))).then(
+      (results) => {
+        if (!current) return;
+        const success = results.flatMap((result) =>
+          result.status === 'fulfilled' ? [result.value] : [],
+        );
+        const refreshed = requests.flatMap((id, index) =>
+          results[index]?.status === 'fulfilled' ? (id ? [id] : ids) : [],
+        );
+        setCatalogue((previous) => {
+          const first = success[0];
+          if (!first) return previous;
+          const cameras = new Map(
+            (previous?.cameras ?? [])
+              .filter((camera) => !refreshed.includes(camera.provider))
+              .map((camera) => [camera.id, camera]),
+          );
+          const statuses = new Map(
+            previous?.providers.map((provider) => [provider.id, provider]) ?? [],
+          );
+          for (const result of success) {
+            for (const camera of result.cameras) cameras.set(camera.id, camera);
+            for (const provider of result.providers) {
+              if (provider.status !== 'not_loaded' || !statuses.has(provider.id))
+                statuses.set(provider.id, provider);
+            }
+          }
+          return {
+            ...first,
+            cameras: [...cameras.values()].slice(-75000),
+            providers: [...statuses.values()],
+          };
+        });
+        setError(
+          results.some((result) => result.status === 'rejected')
+            ? 'Some camera catalogues could not be loaded. Please try again.'
+            : null,
+        );
+        setLoading(false);
+      },
+    );
     return () => {
       current = false;
       controller.abort();
     };
-  }, [enabled, revision]);
+  }, [enabled, revision, providers]);
   const toggleEnabled = useCallback((value: boolean) => {
     setEnabled(value);
     setLoading(value);
@@ -63,6 +95,7 @@ export function useCameras() {
   const toggleProvider = useCallback((provider: CameraProvider) => {
     setProviders((old) => ({ ...old, [provider]: !old[provider] }));
     setSelectedId(null);
+    setLoading(true);
   }, []);
   const search = useCallback((value: string) => {
     setQuery(value);

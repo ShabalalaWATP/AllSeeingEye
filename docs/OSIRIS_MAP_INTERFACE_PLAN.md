@@ -160,3 +160,11 @@ snapshot previews on globe/map. Actual provider images and both projection
 clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
 remaining regions/evidence-capture work. This supersedes the earlier CCTV
 unavailable notes above.
+
+## Camera source expansion delivered, 8 September 2026
+
+All CCTV source groups in OSIRIS revision fac8d1b are represented by 57 registry
+entries. Additional regions load on demand; unsupported or blocked sources remain
+explicitly unavailable. HLS, iframe, MJPEG and MP4 players start on request, with
+external provider fallbacks and approximate-coordinate labels. Burgas HLS playback
+was verified in the browser. See CAMERA_FEEDS.md for limits and regional inventories.

@@ -23,8 +23,8 @@ export function CameraPanel({
         Show public cameras <span className="float-right">{cameras.enabled ? 'ON' : 'OFF'}</span>
       </button>
       <p className="text-muted">
-        Official road and weather cameras in London, Hong Kong and Finland. Still images load only
-        when requested. Coverage is regional, not worldwide.
+        Worldwide public camera sources. Enable a region to load its catalogue. Snapshots, video and
+        provider links are labelled separately.
       </p>
       {cameras.enabled && (
         <>
@@ -38,25 +38,30 @@ export function CameraPanel({
           </button>
           {cameras.loading && <p role="status">Loading camera catalogue…</p>}
           {cameras.error && <p role="alert">{cameras.error}</p>}
-          {cameras.catalogue?.providers.map((provider) => (
-            <div key={provider.id} className="border-t border-line py-2">
-              <button
-                type="button"
-                role="switch"
-                aria-label={provider.name}
-                aria-checked={cameras.providers[provider.id]}
-                onClick={() => cameras.toggleProvider(provider.id)}
-                className="min-h-11 w-full text-left"
-              >
-                {provider.name}{' '}
-                <span className="float-right">{cameras.providers[provider.id] ? 'ON' : 'OFF'}</span>
-              </button>
-              <p className="text-muted">
-                {provider.count} cameras · {provider.status}
-              </p>
-              {provider.message && <p className="text-muted">{provider.message}</p>}
-            </div>
-          ))}
+          <div className="max-h-56 overflow-y-auto" aria-label="Camera sources">
+            {cameras.catalogue?.providers.map((provider) => (
+              <div key={provider.id} className="border-t border-line py-2">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-label={provider.name}
+                  aria-checked={cameras.providers[provider.id] ?? false}
+                  onClick={() => cameras.toggleProvider(provider.id)}
+                  className="min-h-11 w-full text-left"
+                >
+                  {provider.name}{' '}
+                  <span className="float-right">
+                    {cameras.providers[provider.id] ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+                <p className="text-muted">
+                  {provider.count} cameras ·{' '}
+                  {provider.status === 'not_loaded' ? 'Not loaded' : provider.status}
+                </p>
+                {provider.message && <p className="text-muted">{provider.message}</p>}
+              </div>
+            ))}
+          </div>
           <label className="block">
             Find a camera
             <input

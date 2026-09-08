@@ -6,7 +6,10 @@ from ase.domain.cameras import Camera, CameraProviderId
 
 
 class CameraSource(Protocol):
-    id: CameraProviderId
-    name: str
+    @property
+    def id(self) -> CameraProviderId: ...
+
+    @property
+    def name(self) -> str: ...
 
     async def fetch(self) -> tuple[Camera, ...]: ...

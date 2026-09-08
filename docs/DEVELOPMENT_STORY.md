@@ -2558,3 +2558,20 @@ snapshot previews on globe/map. Actual provider images and both projection
 clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
 remaining regions/evidence-capture work. This supersedes the earlier CCTV
 unavailable notes above.
+
+## 8 September 2026: worldwide camera catalogues and provider video
+
+Expanded the CCTV registry from three sources to 57 entries covering the source
+groups in the inspected OSIRIS revision. Regional catalogues load on demand and
+report blocked, empty or retired endpoints honestly. Added explicit-request HLS,
+embedded video, MJPEG and clip players, approximate-location labels and external
+provider links. Preserved snapshot expiry and selection behaviour.
+
+Burgas HLS played in the authenticated browser at 1920 by 1080 with advancing
+playback time; stopping removed the video. Backend camera tests: 152 passed.
+Whole-backend mypy, Ruff, formatting and both architecture contracts passed.
+Review repaired partial refresh data loss and added concurrent-region regressions.
+See CAMERA_FEEDS.md and the three regional inventories for source limitations,
+MIT attribution and verification evidence. No operator database migration.
+Final frontend gate: 1,152 tests passed, 95.26% statements and 90.07% branches.
+Production build and dependency audit passed; existing bundle warning remains.

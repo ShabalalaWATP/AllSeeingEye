@@ -4344,6 +4344,30 @@
         ],
         "summary": "Camera Catalogue",
         "operationId": "camera_catalogue_api_cameras_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4354,13 +4378,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/tiles/os/{layer}/{z}/{x}/{y}.png": {
@@ -9826,11 +9855,6 @@
           },
           "provider": {
             "type": "string",
-            "enum": [
-              "tfl",
-              "hongkong",
-              "fintraffic"
-            ],
             "title": "Provider"
           },
           "title": {
@@ -9846,7 +9870,14 @@
             "title": "Longitude"
           },
           "snapshot_url": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Snapshot Url"
           },
           "source_url": {
@@ -9868,6 +9899,54 @@
               }
             ],
             "title": "Captured At"
+          },
+          "stream_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Url"
+          },
+          "stream_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hls",
+                  "mp4",
+                  "mjpeg",
+                  "iframe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Type"
+          },
+          "external_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Url"
+          },
+          "coordinate_precision": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "approximate"
+            ],
+            "title": "Coordinate Precision",
+            "default": "exact"
           }
         },
         "type": "object",
@@ -9888,11 +9967,6 @@
         "properties": {
           "id": {
             "type": "string",
-            "enum": [
-              "tfl",
-              "hongkong",
-              "fintraffic"
-            ],
             "title": "Id"
           },
           "name": {
@@ -9904,7 +9978,8 @@
             "enum": [
               "available",
               "stale",
-              "unavailable"
+              "unavailable",
+              "not_loaded"
             ],
             "title": "Status"
           },

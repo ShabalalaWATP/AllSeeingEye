@@ -24,6 +24,7 @@ const camera: Camera = {
   source_url: 'https://tfl.gov.uk/traffic/status/',
   attribution: 'Transport for London',
   captured_at: null,
+  coordinate_precision: 'exact',
 };
 function layers() {
   return (MapboxOverlay.instances[0]?.props.layers ?? []) as {

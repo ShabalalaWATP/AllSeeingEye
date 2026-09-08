@@ -1,0 +1,34 @@
+"""Generated public camera catalogue from OSIRIS fac8d1b.
+
+MIT License
+
+Copyright (c) 2026 simplifaisoul
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+# ruff: noqa: E501
+DATA = r"""[
+{"id": "sky-ch-matterhorn", "lat": 45.9763, "lng": 7.6586, "name": "Zermatt - Matterhorn", "city": "Zermatt", "country": "Switzerland", "external_url": "https://www.skylinewebcams.com/en/webcam/suisse/valais/zermatt/matterhorn.html", "source": "SkylineWebcams"},
+{"id": "sky-ch-lugano", "lat": 46.0037, "lng": 8.9511, "name": "Lake Lugano", "city": "Lugano", "country": "Switzerland", "external_url": "https://www.skylinewebcams.com/en/webcam/suisse/ticino/lugano/lake-lugano.html", "source": "SkylineWebcams"},
+{"id": "sky-ch-st-moritz", "lat": 46.4908, "lng": 9.8355, "name": "St. Moritz - Lake", "city": "St. Moritz", "country": "Switzerland", "external_url": "https://www.skylinewebcams.com/en/webcam/suisse/grisons/st-moritz/st-moritz.html", "source": "SkylineWebcams"},
+{"id": "sky-ch-jungfrau", "lat": 46.5475, "lng": 7.9826, "name": "Jungfraujoch - Top of Europe", "city": "Interlaken", "country": "Switzerland", "external_url": "https://www.skylinewebcams.com/en/webcam/suisse/bern/interlaken/jungfraujoch.html", "source": "SkylineWebcams"},
+{"id": "sky-ch-geneva", "lat": 46.2044, "lng": 6.1432, "name": "Geneva - Jet d'Eau", "city": "Geneva", "country": "Switzerland", "external_url": "https://www.skylinewebcams.com/en/webcam/suisse/geneve/geneve/geneva-jet-deau.html", "source": "SkylineWebcams"},
+{"id": "chuv-heliport", "lat": 46.525, "lng": 6.642, "name": "CHUV Heliport Webcam", "city": "Lausanne", "country": "Switzerland", "external_url": "https://wc-heli.chuv.ch/view/view.shtml", "source": "chuv.ch", "feed_url": "https://wc-heli.chuv.ch/axis-cgi/jpg/image.cgi?resolution=640x480"}
+]"""

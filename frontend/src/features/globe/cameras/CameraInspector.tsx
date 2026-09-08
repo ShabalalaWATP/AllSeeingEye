@@ -1,3 +1,4 @@
+import { CameraStream } from './CameraStream';
 import { useEffect, useRef, useState } from 'react';
 import { isCameraImageUrl, type Camera } from '@/lib/api/cameras';
 
@@ -64,25 +65,32 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
         </button>
       </header>
       <div className="mt-3 space-y-3 overflow-y-auto text-xs">
-        <p className="text-cyan">Public traffic / weather camera · Still image</p>
-        <button
-          type="button"
-          disabled={!safe}
-          onClick={() => {
-            if (!safe) return;
-            const id = (request?.id ?? 0) + 1;
-            // Only append a locally generated value after canonical URL validation.
-            const url = new URL(camera.snapshot_url);
-            url.searchParams.set('_ase_refresh', `${Date.now()}-${id}`);
-            activeRequest.current = id;
-            setState('loading');
-            setRequest({ id, url: url.href });
-          }}
-          className="min-h-11 rounded border border-line px-3 text-cyan"
-        >
-          {request ? 'Refresh image' : 'Load image'}
-        </button>
-        {!safe && <p role="alert">This image address is not an approved camera source.</p>}
+        <p className="text-cyan">
+          Public camera · {camera.snapshot_url ? 'Snapshot available' : 'Provider video or website'}
+        </p>
+        <CameraStream key={camera.id} camera={camera} />
+        {camera.snapshot_url && (
+          <button
+            type="button"
+            disabled={!safe}
+            onClick={() => {
+              if (!safe || !camera.snapshot_url) return;
+              const id = (request?.id ?? 0) + 1;
+              // Only append a locally generated value after canonical URL validation.
+              const url = new URL(camera.snapshot_url);
+              url.searchParams.set('_ase_refresh', `${Date.now()}-${id}`);
+              activeRequest.current = id;
+              setState('loading');
+              setRequest({ id, url: url.href });
+            }}
+            className="min-h-11 rounded border border-line px-3 text-cyan"
+          >
+            {request ? 'Refresh image' : 'Load image'}
+          </button>
+        )}
+        {camera.snapshot_url && !safe && (
+          <p role="alert">This image address is not an approved camera source.</p>
+        )}
         {safe && request && (state === 'loading' || state === 'loaded') && (
           <img
             key={request.id}
@@ -119,23 +127,24 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
         )}
         <p>
           {camera.latitude.toFixed(5)}, {camera.longitude.toFixed(5)}
+          {camera.coordinate_precision === 'approximate' &&
+            ' · Approximate area, not a verified camera position'}
         </p>
         <p>
           Capture time: {camera.captured_at ?? 'Unknown'}. Catalogue refresh time does not establish
-          image age. This is not continuous live video.
+          image age.
         </p>
         <p className="text-muted">
-          Loading an image contacts the camera provider directly. No image loads until you request
-          it.
+          Loading media contacts the camera provider directly. Media loads only when requested.
         </p>
         <p>{camera.attribution}</p>
         <a
-          href={camera.source_url}
+          href={camera.external_url ?? camera.source_url}
           target="_blank"
           rel="noreferrer"
           className="inline-block min-h-11 underline"
         >
-          Open official provider
+          Open provider website
         </a>
       </div>
     </aside>
