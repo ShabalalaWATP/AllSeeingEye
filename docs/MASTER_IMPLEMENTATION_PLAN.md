@@ -446,3 +446,12 @@ independent review. All configured commit hooks passed. Actual Linux runtime,
 native-speaker, accessibility and faithful extraction acceptance remain open;
 Arabic/Persian PDF capabilities are not enabled. See ISOLATED_REPORT_RENDERER.md
 and REPORT_RENDERING_VISUAL_ACCEPTANCE.md.
+
+## 8 September 2026: OSIRIS-inspired map direction
+
+User requested a quieter map-first interface, exactly four clocks (London, Kyiv,
+Moscow, Beijing), and inspectable data objects on both projections. The source
+comparison and camera/transport follow-up sequence are in
+OSIRIS_MAP_INTERFACE_PLAN.md. Public-camera feeds are planned, not implemented.
+Current clock changes passed seasonal-offset checks and isolated desktop/mobile
+visual inspection; map interaction repairs and final acceptance are in progress.

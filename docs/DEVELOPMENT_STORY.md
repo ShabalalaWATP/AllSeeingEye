@@ -2464,3 +2464,18 @@ still pending. No live provider, operator database or deployment was changed.
 - Desktop Chrome visual evidence covers a seven-page real report projection,
   with extraction limitations recorded. No Linux deployment, PDF/UA or
   native-speaker acceptance is claimed and language flags remain unchanged.
+
+## 8 September 2026: quieter map interface and OSIRIS review
+
+Reduced the ten-city clock panel to a compact four-city strip, removed its heading,
+country codes and oversized time display, and reduced the space reserved beneath
+map controls. The map surface uses neutral charcoal tones without the decorative
+gradient. Seven focused clock/control tests passed; the actual clock component
+was visually inspected at 390 × 844 and 1440 × 900 in an isolated local Vite page.
+That is component evidence, not whole-dashboard GPU acceptance.
+
+Reviewed the public OSIRIS source at fac8d1b and official provider documentation.
+Recorded camera, transport and other source opportunities with live/static and
+licence distinctions. Browser policy verification prevented opening its live
+demo; no alternative route was used to access that demo. Camera integration is
+a follow-up, while clickable layer/cluster/geometry improvements are underway.

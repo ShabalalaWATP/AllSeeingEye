@@ -18,7 +18,7 @@ export function GlobeControls({ children }: { children: ReactNode }) {
   return compact ? (
     <CompactControls>{children}</CompactControls>
   ) : (
-    <div className="absolute top-16 bottom-40 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
+    <div className="absolute top-16 bottom-24 left-3 z-10 flex w-52 flex-col gap-2 overflow-y-auto">
       {children}
     </div>
   );
