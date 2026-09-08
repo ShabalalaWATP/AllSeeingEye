@@ -3,8 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { WebGlFallback } from './WebGlFallback';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
-import type { LiveEvent } from '@/lib/api/eventSchemas';
-import { zoomForBounds } from '@/lib/api/geo';
+import type { Camera } from '@/lib/api/cameras';
+import { useCameras } from './cameras/useCameras';
+import { CameraPanel } from './cameras/CameraPanel';
+import { CameraInspector } from './cameras/CameraInspector';
+import { buildCameraLayers } from './cameras/cameraLayers';
 import { useNow } from '@/lib/hooks/useNow';
 import { useAuthStore } from '@/stores/auth';
 import { useCapabilitiesStore } from '@/stores/capabilities';
@@ -20,7 +23,6 @@ import { useGlobeStore } from '@/stores/globe';
 
 import { BaseLayerToolbar } from './BaseLayerToolbar';
 import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
-import { isMappedEvent } from './geographicPrecision';
 import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
 import { SelectedMapDetails } from './SelectedMapDetails';
@@ -42,19 +44,17 @@ import { useObservationFilters } from './ObservationControls';
 import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
-import { buildEventLayers } from './layers/registry';
 import { useInterference } from './useInterference';
+import { useGlobeScene } from './useGlobeScene';
 import { useMapPicking } from './useMapPicking';
 
 import { clusteringZoomFor } from './layers/clusters';
-import { buildJamLayer } from './layers/jamming';
-import { buildTerminatorLayer } from './layers/terminator';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useLiveEvents } from './useLiveEvents';
 import { hasWebGl2 } from './webgl';
 
-/** Zoom used when the user focuses an event from a list. */
-export const FOCUS_ZOOM = 4;
+export { FOCUS_ZOOM } from './useMapFocus';
+import { useMapFocus } from './useMapFocus';
 
 // Only our own tile proxy ever sees the session token; the engine checks the origin.
 const createEngine = () =>
@@ -148,6 +148,7 @@ export default function GlobePage() {
     [list, selected],
   );
 
+  const cameras = useCameras();
   const {
     details,
     highlightedId,
@@ -157,76 +158,73 @@ export default function GlobePage() {
     onPick,
     onCluster,
     onJam,
-  } = useMapPicking(observations.filtered, hidden, measurement.picking, select, engine);
+  } = useMapPicking(
+    observations.filtered,
+    hidden,
+    measurement.picking,
+    select,
+    engine,
+    cameras.close,
+  );
 
-  const eventLayers = useMemo(
+  const selectPublicCamera = cameras.select;
+  const selectCamera = useCallback(
+    (camera: Camera) => {
+      if (measurement.picking) return;
+      close();
+      selectPublicCamera(camera);
+    },
+    [measurement.picking, close, selectPublicCamera],
+  );
+  const focusCamera = useCallback(
+    (camera: Camera) => {
+      selectCamera(camera);
+      if (!measurement.picking)
+        engine.flyTo({ center: [camera.longitude, camera.latitude], zoom: 13 });
+    },
+    [selectCamera, measurement.picking, engine],
+  );
+  const cameraLayers = useMemo(
     () =>
-      supported
-        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId ?? highlightedId, {
-            zoom,
-            onCluster,
-            globe: mode === 'globe',
-          })
-        : [],
-    [
-      hidden,
-      onCluster,
-      onPick,
-      observations.filtered,
-      selectedId,
-      supported,
-      zoom,
-      mode,
-      highlightedId,
-    ],
+      buildCameraLayers(
+        cameras.visible,
+        selectCamera,
+        cameras.selected?.id ?? null,
+        mode === 'globe',
+      ),
+    [cameras.visible, cameras.selected?.id, selectCamera, mode],
   );
-  const night = useMemo(
-    () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),
-    [lite, now, supported, terminator],
-  );
-  const jam = useMemo(
-    () => (supported && interference ? buildJamLayer(jamCells, onJam) : null),
-    [interference, jamCells, supported, onJam],
-  );
-  useEffect(() => {
-    if (supported)
-      engine.setLayers([
-        ...night,
-        ...(jam === null ? [] : [jam]),
-        ...britishGrid.layers,
-        ...eventLayers,
-        ...measured,
-      ]);
-  }, [engine, eventLayers, jam, night, supported, measured, britishGrid.layers]);
+  useGlobeScene({
+    engine,
+    events: observations.filtered,
+    hidden,
+    selectedId,
+    highlightedId,
+    onPick,
+    onCluster,
+    onJam,
+    jamCells,
+    gridLayers: britishGrid.layers,
+    cameraLayers,
+    measured,
+    supported,
+    terminator,
+    lite,
+    interference,
+    opsRoom,
+    reducedMotion,
+    visible,
+    now,
+    zoom,
+    mode,
+  });
 
-  // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
-  useEffect(() => {
-    if (!supported) return;
-    engine.spin(opsRoom && mode === 'globe' && !lite && !reducedMotion && visible);
-    return () => {
-      engine.spin(false);
-    };
-  }, [engine, lite, mode, opsRoom, reducedMotion, supported, visible]);
-
-  const focus = useCallback(
-    (event: LiveEvent) => {
-      select(event.id);
-      if (event.point !== null && isMappedEvent(event)) {
-        engine.flyTo({ center: [event.point.lon, event.point.lat], zoom: FOCUS_ZOOM });
-      }
-    },
-    [engine, select],
-  );
-
-  const changeNation = useCallback(
-    (iso: string | null) => {
-      setCountry(iso);
-      const target = iso === null ? null : countryByIso[iso];
-      if (target !== null && target !== undefined) {
-        engine.flyTo({ center: target.centroid, zoom: zoomForBounds(target.bounds) });
-      }
-    },
-    [countryByIso, engine, setCountry],
+  const { focus, changeNation } = useMapFocus(
+    engine,
+    select,
+    cameras.close,
+    setCountry,
+    countryByIso,
   );
 
   return (
@@ -321,10 +319,7 @@ export default function GlobePage() {
             <BritishGridTool grid={britishGrid} engine={engine} />
           </ControlPanel>
           <ControlPanel side="left" label="CCTV" icon="camera">
-            <p className="p-3 text-sm text-muted">
-              Public CCTV integration is planned. Camera locations and previews are not available
-              yet.
-            </p>
+            <CameraPanel cameras={cameras} onSelect={focusCamera} />
           </ControlPanel>
         </GlobeControls>
       )}
@@ -332,19 +327,27 @@ export default function GlobePage() {
       {supported && !opsRoom && !measurement.picking && (
         <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
       )}
-      {!opsRoom && !measurement.picking && (
-        <SelectedMapDetails
-          selected={selected}
-          storySize={storySize}
-          details={details}
-          events={pickableEvents}
-          cells={jamCells}
-          updatedAt={jamUpdatedAt}
-          interference={interference}
-          onSelect={choose}
-          onClose={close}
-        />
-      )}
+      {!opsRoom &&
+        !measurement.picking &&
+        (cameras.selected ? (
+          <CameraInspector
+            key={cameras.selected.id}
+            camera={cameras.selected}
+            onClose={cameras.close}
+          />
+        ) : (
+          <SelectedMapDetails
+            selected={selected}
+            storySize={storySize}
+            details={details}
+            events={pickableEvents}
+            cells={jamCells}
+            updatedAt={jamUpdatedAt}
+            interference={interference}
+            onSelect={choose}
+            onClose={close}
+          />
+        ))}
     </div>
   );
 }

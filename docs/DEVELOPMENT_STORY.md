@@ -2549,3 +2549,12 @@ authorisation or credential handling was introduced. CCTV remains unconnected.
 Final regression: 1,135 tests passed across 225 files. Coverage: 95.21%
 statements, 90.09% branches, 93.59% functions and 96.57% lines. Existing
 coverage thresholds remain unchanged. Build retains its bundle-size warning.
+
+
+8 September camera delivery: implemented an authenticated, bounded public camera
+catalogue for TfL, Hong Kong Transport Department and Fintraffic. Added optional
+camera markers, searchable provider filters, selection halos and requested
+snapshot previews on globe/map. Actual provider images and both projection
+clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
+remaining regions/evidence-capture work. This supersedes the earlier CCTV
+unavailable notes above.

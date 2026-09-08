@@ -1196,6 +1196,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cameras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Camera Catalogue */
+        get: operations["camera_catalogue_api_cameras_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tiles/os/{layer}/{z}/{x}/{y}.png": {
         parameters: {
             query?: never;
@@ -3014,6 +3031,63 @@ export interface components {
             jam_red: number;
             /** Jam Updated At */
             jam_updated_at: string | null;
+        };
+        /** CameraCatalogueOut */
+        CameraCatalogueOut: {
+            /** Cameras */
+            cameras: components["schemas"]["CameraOut"][];
+            /** Providers */
+            providers: components["schemas"]["CameraProviderOut"][];
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+        };
+        /** CameraOut */
+        CameraOut: {
+            /** Id */
+            id: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "tfl" | "hongkong" | "fintraffic";
+            /** Title */
+            title: string;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** Snapshot Url */
+            snapshot_url: string;
+            /** Source Url */
+            source_url: string;
+            /** Attribution */
+            attribution: string;
+            /** Captured At */
+            captured_at: string | null;
+        };
+        /** CameraProviderOut */
+        CameraProviderOut: {
+            /**
+             * Id
+             * @enum {string}
+             */
+            id: "tfl" | "hongkong" | "fintraffic";
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "available" | "stale" | "unavailable";
+            /** Count */
+            count: number;
+            /** Fetched At */
+            fetched_at: string | null;
+            /** Message */
+            message: string | null;
         };
         /**
          * CapabilitiesOut
@@ -10882,6 +10956,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CapabilitiesOut"];
+                };
+            };
+        };
+    };
+    camera_catalogue_api_cameras_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CameraCatalogueOut"];
                 };
             };
         };

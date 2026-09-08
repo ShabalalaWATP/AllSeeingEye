@@ -151,3 +151,12 @@ without horizontal scrollbars. The final CSS build and formatting passed.
 Authenticated desktop/mobile screenshots were reviewed, with no remaining
 blocking control-layout findings. New controls use static SVG paths and existing
 authorised data/state; this milestone adds no remote input or privilege boundary.
+
+
+8 September camera delivery: implemented an authenticated, bounded public camera
+catalogue for TfL, Hong Kong Transport Department and Fintraffic. Added optional
+camera markers, searchable provider filters, selection halos and requested
+snapshot previews on globe/map. Actual provider images and both projection
+clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
+remaining regions/evidence-capture work. This supersedes the earlier CCTV
+unavailable notes above.

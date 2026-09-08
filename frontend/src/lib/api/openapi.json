@@ -4337,6 +4337,32 @@
         ]
       }
     },
+    "/api/cameras": {
+      "get": {
+        "tags": [
+          "cameras"
+        ],
+        "summary": "Camera Catalogue",
+        "operationId": "camera_catalogue_api_cameras_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraCatalogueOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/tiles/os/{layer}/{z}/{x}/{y}.png": {
       "get": {
         "tags": [
@@ -9761,6 +9787,165 @@
           "jam_updated_at"
         ],
         "title": "AviationBoardOut"
+      },
+      "CameraCatalogueOut": {
+        "properties": {
+          "cameras": {
+            "items": {
+              "$ref": "#/components/schemas/CameraOut"
+            },
+            "type": "array",
+            "title": "Cameras"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/CameraProviderOut"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fetched At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cameras",
+          "providers",
+          "fetched_at"
+        ],
+        "title": "CameraCatalogueOut"
+      },
+      "CameraOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "tfl",
+              "hongkong",
+              "fintraffic"
+            ],
+            "title": "Provider"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "snapshot_url": {
+            "type": "string",
+            "title": "Snapshot Url"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "captured_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Captured At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "title",
+          "latitude",
+          "longitude",
+          "snapshot_url",
+          "source_url",
+          "attribution",
+          "captured_at"
+        ],
+        "title": "CameraOut"
+      },
+      "CameraProviderOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "tfl",
+              "hongkong",
+              "fintraffic"
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "stale",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "count",
+          "fetched_at",
+          "message"
+        ],
+        "title": "CameraProviderOut"
       },
       "CapabilitiesOut": {
         "properties": {

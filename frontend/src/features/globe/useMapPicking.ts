@@ -10,6 +10,7 @@ export function useMapPicking(
   picking: boolean,
   select: (id: string | null) => void,
   engine: GlobeEngineHandle,
+  onOtherPick?: () => void,
 ) {
   const [details, setDetails] = useState<MapDetails | null>(null);
   const visible = useMemo(
@@ -19,16 +20,18 @@ export function useMapPicking(
   const choose = useCallback(
     (event: LiveEvent | null) => {
       if (!picking) {
+        onOtherPick?.();
         setDetails(null);
         select(event?.id ?? null);
       }
     },
-    [picking, select],
+    [picking, select, onOtherPick],
   );
   const close = useCallback(() => {
+    onOtherPick?.();
     setDetails(null);
     select(null);
-  }, [select]);
+  }, [select, onOtherPick]);
   const onPick = useCallback(
     (event: LiveEvent | null, position?: readonly [number, number]) => {
       if (picking) return;
@@ -63,6 +66,7 @@ export function useMapPicking(
             Math.abs(item.point.lat - event.point.lat) < 1e-8),
       );
       if (members.length > 1 && event.point) {
+        onOtherPick?.();
         select(null);
         setDetails({
           kind: 'cluster',
@@ -78,11 +82,12 @@ export function useMapPicking(
         });
       } else choose(event);
     },
-    [choose, engine, picking, select, visible],
+    [choose, engine, picking, select, visible, onOtherPick],
   );
   const onCluster = useCallback(
     (cluster: Cluster) => {
       if (!picking) {
+        onOtherPick?.();
         select(null);
         setDetails({ kind: 'cluster', cluster });
         engine.flyTo({
@@ -91,16 +96,17 @@ export function useMapPicking(
         });
       }
     },
-    [engine, picking, select],
+    [engine, picking, select, onOtherPick],
   );
   const onJam = useCallback(
     (cell: JamCell) => {
       if (!picking) {
+        onOtherPick?.();
         select(null);
         setDetails({ kind: 'jam', cell });
       }
     },
-    [picking, select],
+    [picking, select, onOtherPick],
   );
   const highlightedId =
     details?.kind === 'cluster' && details.cluster.id.startsWith('overlap:')

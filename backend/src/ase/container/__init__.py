@@ -22,6 +22,7 @@ from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.geo.cameras import OfficialCameraSource
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
 from ase.adapters.links import PublicLinkBuilder
@@ -44,6 +45,7 @@ from ase.adapters.tiles.os_maps import NullTileProvider, OsMapsTileProvider
 from ase.adapters.translate.language import LangidDetector, NullDetector
 from ase.application.auditing import Auditor
 from ase.application.auth.sessions import SessionFactory
+from ase.application.cameras import CameraCatalogueService
 from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
@@ -132,12 +134,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
-        self.footprints = FootprintSearchUseCase(
-            CopernicusFootprintProvider(self.http, self.clock),
-            self.limiter,
-            self.clock,
-            admission=self.source_admission,
-        )
+        self._initialise_map_catalogues()
         self.research = research_service(
             self.http,
             self.clock,
@@ -222,6 +219,22 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
             else NullArchiver()
+        )
+
+    def _initialise_map_catalogues(self) -> None:
+        self.cameras = CameraCatalogueService(
+            (
+                OfficialCameraSource("tfl", self.http),
+                OfficialCameraSource("hongkong", self.http),
+                OfficialCameraSource("fintraffic", self.marine_http),
+            ),
+            self.clock,
+        )
+        self.footprints = FootprintSearchUseCase(
+            CopernicusFootprintProvider(self.http, self.clock),
+            self.limiter,
+            self.clock,
+            admission=self.source_admission,
         )
 
     async def dispose(self) -> None:

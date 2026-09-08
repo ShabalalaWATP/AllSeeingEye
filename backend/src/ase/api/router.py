@@ -17,6 +17,7 @@ from ase.api.routers import (
     annotation_comparisons,
     annotation_monitors,
     auth,
+    cameras,
     capabilities,
     claims,
     countries,
@@ -76,6 +77,7 @@ api_router.include_router(relationships.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
+api_router.include_router(cameras.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
 api_router.include_router(research_inputs.router)

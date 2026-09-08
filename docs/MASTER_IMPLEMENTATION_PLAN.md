@@ -481,3 +481,12 @@ verification of the final presentation changes.
 and CCTV placement, removed the separate observation-filter panel, and unified
 effective observation visibility between settings and quick toggles. Desktop
 and mobile browser checks passed. CCTV provider integration remains outstanding.
+
+
+8 September camera delivery: implemented an authenticated, bounded public camera
+catalogue for TfL, Hong Kong Transport Department and Fintraffic. Added optional
+camera markers, searchable provider filters, selection halos and requested
+snapshot previews on globe/map. Actual provider images and both projection
+clicks were verified. See CAMERA_FEEDS.md for checks, source terms, bounds and
+remaining regions/evidence-capture work. This supersedes the earlier CCTV
+unavailable notes above.
