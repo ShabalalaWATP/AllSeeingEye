@@ -22,7 +22,7 @@ function resync(reason = 'expiry_overflow') {
 
 beforeEach(() => {
   useEventsStore.getState().reset();
-  vi.spyOn(api, 'fetchStats').mockResolvedValue(storeStats);
+  vi.spyOn(api, 'fetchStats').mockResolvedValue({ ...storeStats, per_category: [] });
 });
 
 it('clears stale records immediately, preserves filters and reconciles new deltas', async () => {

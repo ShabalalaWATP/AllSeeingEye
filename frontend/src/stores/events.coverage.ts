@@ -1,7 +1,20 @@
+import { isSatellite, satellitePriority } from '@/lib/satellites';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 export const MARITIME_SNAPSHOT_LIMIT = 1_500;
 export const RESERVED_VESSELS = 1_500;
+export const SATELLITE_SNAPSHOT_LIMIT = 1_500;
+export const RESERVED_SATELLITES = 1_500;
+export const FIRMS_SNAPSHOT_LIMIT = 1_000;
+export const RESERVED_FIRMS = 1_000;
+
+export function isFirms(event: LiveEvent): boolean {
+  return (
+    event.category === 'disaster' &&
+    event.subtype === 'thermal_detection' &&
+    (event.source_id === 'firms' || event.source_id.startsWith('firms_'))
+  );
+}
 
 function observationOrder(a: LiveEvent, b: LiveEvent): number {
   return (
@@ -20,7 +33,7 @@ export function mergeSnapshots(main: LiveEvent[], maritime: LiveEvent[]): Map<st
   return merged;
 }
 
-/** Reserve ship capacity; other records can use every unused reserved place. */
+/** Reserve ships and satellites, favouring specific public catalogues over bulk active data. */
 export function boundedEvents(
   byId: Record<string, LiveEvent>,
   limit: number,
@@ -31,6 +44,14 @@ export function boundedEvents(
   const reserved = events
     .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
     .slice(0, Math.min(RESERVED_VESSELS, limit));
+  const satellites = events
+    .filter(isSatellite)
+    .sort((a, b) => satellitePriority(b) - satellitePriority(a) || observationOrder(b, a))
+    .slice(0, Math.min(RESERVED_SATELLITES, limit - reserved.length));
+  reserved.push(...satellites);
+  reserved.push(
+    ...events.filter(isFirms).slice(0, Math.min(RESERVED_FIRMS, limit - reserved.length)),
+  );
   const ids = new Set(reserved.map((event) => event.id));
   const remaining = events.filter((event) => !ids.has(event.id)).slice(0, limit - reserved.length);
   return Object.fromEntries([...reserved, ...remaining].map((event) => [event.id, event]));

@@ -115,7 +115,7 @@ it('keeps a replacement snapshot when the older maritime request finishes late',
   const pending = pendingMaritime();
   const old = useEventsStore.getState().load();
   await vi.waitFor(() => expect(pending.fetch).toHaveBeenCalledTimes(2));
-  vi.mocked(api.fetchStats).mockResolvedValue(storeStats);
+  vi.mocked(api.fetchStats).mockResolvedValue({ ...storeStats, per_category: [] });
   pending.fetch.mockResolvedValueOnce([liveEvent({ id: 'replacement' })]);
   await useEventsStore.getState().load();
   pending.resolve([vessel('old')]);
@@ -134,4 +134,110 @@ it('discards a maritime snapshot when its pending update journal overflowed', as
   await loading;
   expect(useEventsStore.getState().list).toEqual([]);
   expect(useEventsStore.getState().error).toContain('reconciliation limit');
+});
+
+it('reserves satellites and ships while favouring a specific military catalogue', () => {
+  const ships = Array.from({ length: 1500 }, (_, i) => vessel(`ship-${i}`));
+  const satellites = Array.from({ length: 2000 }, (_, i) =>
+    liveEvent({
+      id: `sat-${i}`,
+      category: 'space',
+      subtype: 'satellite',
+      source_id: 'celestrak_active',
+    }),
+  );
+  const skynet = liveEvent({
+    id: 'skynet',
+    category: 'space',
+    subtype: 'satellite',
+    source_id: 'celestrak_skynet',
+    observed_at: '2026-09-01T00:00:00Z',
+  });
+  const news = Array.from({ length: 5000 }, (_, i) =>
+    liveEvent({ id: `news-${i}`, observed_at: '2026-09-08T00:00:00Z' }),
+  );
+  const bounded = boundedEvents(
+    Object.fromEntries([...ships, ...satellites, skynet, ...news].map((e) => [e.id, e])),
+    5000,
+  );
+  expect(Object.values(bounded).filter((event) => event.category === 'space')).toHaveLength(1500);
+  expect(Object.values(bounded).filter((event) => event.category === 'maritime')).toHaveLength(
+    1500,
+  );
+  expect(bounded.skynet).toBeDefined();
+  expect(Object.keys(bounded)).toHaveLength(5000);
+});
+
+it('requests public military and crewed catalogues separately from the busy active catalogue', async () => {
+  vi.mocked(api.fetchStats).mockResolvedValue({
+    ...storeStats,
+    total: 17000,
+    per_category: [{ category: 'space', count: 17000, oldest: null, newest: null }],
+  });
+  const satellite = liveEvent({ id: 'skynet', category: 'space', subtype: 'satellite' });
+  const fetch = vi
+    .spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([satellite]);
+  await useEventsStore.getState().load();
+  expect(fetch.mock.calls[1]?.[0]).toEqual({ categories: ['space'], limit: 1500 });
+  expect(fetch.mock.calls[2]?.[0]).toEqual({
+    sources: ['celestrak_skynet', 'celestrak_military', 'celestrak_stations'],
+    limit: 1500,
+  });
+  expect(useEventsStore.getState().byId.skynet).toBeDefined();
+});
+
+it('reserves thermal detections alongside ships and satellites when feeds are crowded', () => {
+  const ships = Array.from({ length: 1500 }, (_, i) => vessel(`ship-${i}`));
+  const satellites = Array.from({ length: 1500 }, (_, i) =>
+    liveEvent({ id: `sat-${i}`, category: 'space', subtype: 'satellite' }),
+  );
+  const fires = Array.from({ length: 1100 }, (_, i) =>
+    liveEvent({
+      id: `fire-${i}`,
+      category: 'disaster',
+      subtype: 'thermal_detection',
+      source_id: 'firms_public_noaa20',
+    }),
+  );
+  const news = Array.from({ length: 3000 }, (_, i) =>
+    liveEvent({ id: `news-${i}`, observed_at: '2026-09-08T00:00:00Z' }),
+  );
+  const bounded = Object.values(
+    boundedEvents(
+      Object.fromEntries(
+        [...ships, ...satellites, ...fires, ...news].map((event) => [event.id, event]),
+      ),
+      5000,
+    ),
+  );
+  expect(bounded.filter((event) => event.subtype === 'thermal_detection')).toHaveLength(1000);
+  expect(bounded.filter((event) => event.subtype === 'vessel_position')).toHaveLength(1500);
+  expect(bounded.filter((event) => event.subtype === 'satellite')).toHaveLength(1500);
+  expect(bounded).toHaveLength(5000);
+});
+
+it('loads both keyed and public FIRMS sources when disaster records exist', async () => {
+  vi.mocked(api.fetchStats).mockResolvedValue({
+    ...storeStats,
+    per_category: [{ category: 'disaster', count: 1000, oldest: null, newest: null }],
+  });
+  const fire = liveEvent({
+    id: 'fire',
+    category: 'disaster',
+    subtype: 'thermal_detection',
+    source_id: 'firms_public_noaa20',
+  });
+  const fetch = vi
+    .spyOn(api, 'fetchEvents')
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([fire]);
+  await useEventsStore.getState().load();
+  expect(fetch.mock.calls[1]?.[0]).toEqual({
+    sources: ['firms_viirs_noaa20', 'firms_public_noaa20'],
+    limit: 1000,
+  });
+  expect(useEventsStore.getState().byId.fire).toBeDefined();
 });

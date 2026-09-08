@@ -21,6 +21,7 @@ interface Scene {
   jamCells: readonly JamCell[];
   gridLayers: readonly Layer[];
   cameraLayers: readonly Layer[];
+  infrastructureLayers?: readonly Layer[];
   measured: readonly Layer[];
   supported: boolean;
   terminator: boolean;
@@ -47,6 +48,7 @@ export function useGlobeScene({
   jamCells,
   gridLayers,
   cameraLayers,
+  infrastructureLayers,
   measured,
   supported,
   terminator,
@@ -84,11 +86,22 @@ export function useGlobeScene({
         ...night,
         ...(jam === null ? [] : [jam]),
         ...gridLayers,
+        ...(infrastructureLayers ?? []),
         ...eventLayers,
         ...cameraLayers,
         ...measured,
       ]);
-  }, [engine, eventLayers, jam, night, supported, measured, gridLayers, cameraLayers]);
+  }, [
+    engine,
+    eventLayers,
+    jam,
+    night,
+    supported,
+    measured,
+    gridLayers,
+    cameraLayers,
+    infrastructureLayers,
+  ]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
   useEffect(() => {

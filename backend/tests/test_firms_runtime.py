@@ -104,6 +104,11 @@ async def test_release_guard_rechecks_source_after_initial_admission(
 
 
 async def test_environment_precedence_and_disabled_veto(container, monkeypatch):
+    monkeypatch.setattr(
+        SqlFirmsCredentials,
+        "get",
+        AsyncMock(side_effect=AssertionError("Environment path must not need credential table")),
+    )
     fetch = AsyncMock(return_value=[])
     monkeypatch.setattr(FirmsConnector, "fetch", fetch)
     runtime = ManagedFirmsConnector(

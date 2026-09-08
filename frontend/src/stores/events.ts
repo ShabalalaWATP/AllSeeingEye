@@ -3,7 +3,9 @@
  * the stream, plus which categories are shown and which event is selected.
  */
 import { create } from 'zustand';
-import { boundedEvents, mergeSnapshots, MARITIME_SNAPSHOT_LIMIT } from './events.coverage';
+import { boundedEvents, mergeSnapshots } from './events.coverage';
+
+import { loadCoverageSupplements } from './events.supplements';
 
 import { fetchEvents, fetchStats } from '@/lib/api/events';
 import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
@@ -112,21 +114,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           fetchStats(request.controller.signal),
         ]);
         if (!isCurrent()) return;
-        const maritimeCount =
-          stats.per_category.find((entry) => entry.category === 'maritime')?.count ?? 0;
-        const loadedMaritime = events.filter((event) => event.category === 'maritime').length;
-        let maritime: LiveEvent[] = [];
-        let supplementError: string | null = null;
-        if (maritimeCount > loadedMaritime) {
-          try {
-            maritime = await fetchEvents(
-              { categories: ['maritime'], limit: MARITIME_SNAPSHOT_LIMIT },
-              request.controller.signal,
-            );
-          } catch (caught) {
-            supplementError = `Additional maritime coverage unavailable: ${describeError(caught)}`;
-          }
-        }
+        const supplement = await loadCoverageSupplements(events, stats, request.controller.signal);
         if (!isCurrent()) return;
         if (request.overflow) {
           set({
@@ -136,7 +124,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           });
           return;
         }
-        const merged = mergeSnapshots(events, maritime);
+        const merged = mergeSnapshots(events, supplement.events);
         const snapshotCount = merged.size;
         for (const [id, event] of request.changes) {
           if (event === null) merged.delete(id);
@@ -150,12 +138,10 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           list: toList(capped),
           stats,
           loaded: true,
-          error: supplementError,
+          error: supplement.error,
           snapshotCount,
           snapshotLimited:
-            events.length >= SNAPSHOT_LIMIT ||
-            maritime.length >= MARITIME_SNAPSHOT_LIMIT ||
-            stats.total > snapshotCount,
+            events.length >= SNAPSHOT_LIMIT || supplement.limited || stats.total > snapshotCount,
           mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
           selectedId: selectedId !== null && !(selectedId in capped) ? null : selectedId,
         });

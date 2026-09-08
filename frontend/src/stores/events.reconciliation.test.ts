@@ -14,7 +14,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   useEventsStore.getState().reset();
-  vi.spyOn(api, 'fetchStats').mockResolvedValue(storeStats);
+  vi.spyOn(api, 'fetchStats').mockResolvedValue({ ...storeStats, per_category: [] });
 });
 
 describe('snapshot and stream reconciliation', () => {

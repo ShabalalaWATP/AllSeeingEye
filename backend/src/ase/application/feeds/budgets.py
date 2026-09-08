@@ -9,6 +9,7 @@ from datetime import timedelta
 from ase.domain.events import Category
 
 VESSEL_POSITION_AGE = timedelta(minutes=15)
+SATELLITE_POSITION_AGE = timedelta(minutes=10)
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,7 +25,7 @@ DEFAULT_BUDGETS: Mapping[Category, RetentionBudget] = {
     Category.NEWS: RetentionBudget(timedelta(hours=72), 40_000),
     Category.CONFLICT: RetentionBudget(timedelta(days=30), 30_000),
     Category.SOCIAL: RetentionBudget(timedelta(hours=24), 10_000),
-    Category.SPACE: RetentionBudget(timedelta(days=7), 5_000),
+    Category.SPACE: RetentionBudget(timedelta(days=7), 25_000),
     Category.CYBER: RetentionBudget(timedelta(days=7), 5_000),
     Category.POLITICAL: RetentionBudget(timedelta(days=7), 5_000),
     Category.HUMANITARIAN: RetentionBudget(timedelta(days=7), 5_000),

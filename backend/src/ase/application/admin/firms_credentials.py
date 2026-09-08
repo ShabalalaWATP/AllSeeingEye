@@ -127,7 +127,10 @@ class AdminFirmsCredentials:
 
     async def get(self, claims: AccessClaims) -> FirmsConnectionStatus:
         await self.guard(claims)
-        result = self.status(await self.repository.get(), claims)
+        # Environment credentials are independent of encrypted database storage.
+        # Do not require its newer table to inspect a read-only operator connection.
+        row = FirmsCredential() if self.environment_managed else await self.repository.get()
+        result = self.status(row, claims)
         await self.finish(claims)
         return result
 

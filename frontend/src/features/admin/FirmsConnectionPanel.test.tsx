@@ -72,6 +72,9 @@ async function testDraft() {
 it('tests a masked draft then confirms its exact revision and proof globally, without enabling the source', async () => {
   const { user } = await open();
   expect(
+    screen.getByRole('link', { name: 'Request a free MAP_KEY from NASA FIRMS' }),
+  ).toHaveAttribute('href', 'https://firms.modaps.eosdis.nasa.gov/api/area/');
+  expect(
     screen.getByRole('button', { name: 'Confirm FIRMS connection for everyone' }),
   ).toBeDisabled();
   await testDraft();
@@ -169,7 +172,7 @@ it('keeps environment credentials and encryption-unavailable setup read-only', a
   await open();
   expect(screen.queryByLabelText('NASA FIRMS MAP_KEY')).not.toBeInTheDocument();
   expect(screen.getByText(/environment MAP_KEY takes precedence/)).toBeVisible();
-  expect(screen.getByText(/Encrypted credential storage is unavailable/)).toBeVisible();
+  expect(screen.queryByText(/Encrypted credential storage is unavailable/)).not.toBeInTheDocument();
   expect(screen.getByText('20,40,60,70')).toBeVisible();
   expect(screen.getByRole('button', { name: 'Test current FIRMS connection' })).toBeDisabled();
 });

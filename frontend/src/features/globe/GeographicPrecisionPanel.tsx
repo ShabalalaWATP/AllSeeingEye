@@ -16,8 +16,12 @@ export function GeographicPrecisionPanel({
   const [page, setPage] = useState(0);
   const visible = events.filter((event) => !hidden.includes(event.category));
   const unlocated = visible.filter((event) => !isMappedEvent(event));
+  const propagated = visible.filter(
+    (event) => isMappedEvent(event) && event.subtype === 'satellite',
+  ).length;
   const approximate = visible.filter(
-    (event) => isMappedEvent(event) && event.geo_confidence !== 'exact',
+    (event) =>
+      isMappedEvent(event) && event.subtype !== 'satellite' && event.geo_confidence !== 'exact',
   ).length;
   const pages = Math.max(1, Math.ceil(unlocated.length / PAGE_SIZE));
   const current = Math.min(page, pages - 1);
@@ -28,12 +32,14 @@ export function GeographicPrecisionPanel({
     >
       <h2 className="font-medium">Geographic precision</h2>
       <p className="mt-2 text-muted">
-        Filled markers: source-reported exact positions. Hollow rings: approximate city or
-        administrative locations, not measured uncertainty areas.
+        Satellite positions are propagated estimates. Other filled markers: source-reported
+        positions. Hollow rings: approximate city or administrative locations, not measured
+        uncertainty areas.
       </p>
       <p className="mt-2">
-        {visible.length - unlocated.length - approximate} exact · {approximate} approximate ·{' '}
-        {unlocated.length} not plotted
+        {visible.length - unlocated.length - approximate - propagated} exact · {approximate}{' '}
+        approximate · {unlocated.length} not plotted
+        {propagated > 0 && ` � ${propagated} propagated estimates`}
       </p>
       <details className="mt-2">
         <summary className="cursor-pointer py-2">Not plotted ({unlocated.length})</summary>

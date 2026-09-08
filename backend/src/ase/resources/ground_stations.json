@@ -1,0 +1,252 @@
+[
+  {
+    "id": "goldstone",
+    "name": "Goldstone Deep Space Communications Complex",
+    "operator": "NASA / JPL",
+    "country": "US",
+    "longitude": -116.89,
+    "latitude": 35.43,
+    "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
+    "note": "Approximate complex location, rounded from JPL's public GOLD geodetic site. Not an individual antenna position."
+  },
+  {
+    "id": "madrid-dsn",
+    "name": "Madrid Deep Space Communications Complex",
+    "operator": "NASA / JPL",
+    "country": "ES",
+    "longitude": -4.24,
+    "latitude": 40.5,
+    "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
+    "note": "Approximate Robledo de Chavela locality marker. The complex is outside the town; this is not its surveyed position."
+  },
+  {
+    "id": "canberra-dsn",
+    "name": "Canberra Deep Space Communication Complex",
+    "operator": "NASA / JPL",
+    "country": "AU",
+    "longitude": 148.98,
+    "latitude": -35.4,
+    "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
+    "note": "Approximate Tidbinbilla complex location, rounded from the published JPL site location."
+  },
+  {
+    "id": "new-norcia",
+    "name": "New Norcia deep-space station",
+    "operator": "ESA",
+    "country": "AU",
+    "longitude": 116.22,
+    "latitude": -31.06,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/New_Norcia_-_DSA_1",
+    "note": "Approximate New Norcia town marker. ESA describes the station as about 8 km south of town."
+  },
+  {
+    "id": "cebreros",
+    "name": "Cebreros deep-space station",
+    "operator": "ESA",
+    "country": "ES",
+    "longitude": -4.46,
+    "latitude": 40.46,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/Cebreros_-_DSA_2",
+    "note": "Approximate Cebreros town marker. ESA describes the station as about 12 km east of town."
+  },
+  {
+    "id": "malargue",
+    "name": "Malargüe deep-space station",
+    "operator": "ESA",
+    "country": "AR",
+    "longitude": -69.58,
+    "latitude": -35.48,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/Malarguee_-_DSA_3",
+    "note": "Approximate Malargüe city marker. ESA describes the station as about 30 km south of the city."
+  },
+  {
+    "id": "kiruna-esa",
+    "name": "Kiruna ESTRACK station",
+    "operator": "ESA",
+    "country": "SE",
+    "longitude": 20.23,
+    "latitude": 67.86,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/Kiruna_station",
+    "note": "Approximate Kiruna locality marker, not the Salmijärvi antenna position."
+  },
+  {
+    "id": "kourou-esa",
+    "name": "Kourou ESTRACK station",
+    "operator": "ESA",
+    "country": "GF",
+    "longitude": -52.65,
+    "latitude": 5.16,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/Kourou_station",
+    "note": "Approximate Kourou locality marker, not a surveyed antenna position."
+  },
+  {
+    "id": "santa-maria",
+    "name": "Santa Maria ESTRACK station",
+    "operator": "ESA",
+    "country": "PT",
+    "longitude": -25.1,
+    "latitude": 36.97,
+    "source_url": "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/Santa_Maria_station",
+    "note": "Approximate Santa Maria island marker, not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-esrange",
+    "name": "Esrange Ground Station",
+    "operator": "SSC Space",
+    "country": "SE",
+    "longitude": 21.07,
+    "latitude": 67.88,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-inuvik",
+    "name": "Inuvik Ground Station",
+    "operator": "SSC Space",
+    "country": "CA",
+    "longitude": -133.54,
+    "latitude": 68.32,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-north-pole",
+    "name": "North Pole Ground Station",
+    "operator": "SSC Space",
+    "country": "US",
+    "longitude": -147.5,
+    "latitude": 64.8,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-santiago",
+    "name": "Santiago Ground Station",
+    "operator": "SSC Space",
+    "country": "CL",
+    "longitude": -70.66,
+    "latitude": -33.15,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-siracha",
+    "name": "Siracha Ground Station",
+    "operator": "SSC Space",
+    "country": "TH",
+    "longitude": 100.93,
+    "latitude": 13.1,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-south-point",
+    "name": "South Point Ground Station",
+    "operator": "SSC Space",
+    "country": "US",
+    "longitude": -155.66,
+    "latitude": 19.01,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-western-australia",
+    "name": "Western Australia Space Center",
+    "operator": "SSC Space",
+    "country": "AU",
+    "longitude": 115.35,
+    "latitude": -29.05,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "ssc-clewiston",
+    "name": "Clewiston Ground Station",
+    "operator": "SSC Space",
+    "country": "US",
+    "longitude": -81.05,
+    "latitude": 26.75,
+    "source_url": "https://sscspace.com/services/satellite-ground-stations/our-stations/",
+    "note": "Approximate site location from SSC Space's public two-decimal station directory. Not a surveyed antenna position."
+  },
+  {
+    "id": "svalsat",
+    "name": "Svalbard Satellite Ground Station (SvalSat)",
+    "operator": "KSAT",
+    "country": "SJ",
+    "longitude": 15.65,
+    "latitude": 78.22,
+    "source_url": "https://www.ksat.no/cosa/about-us/",
+    "note": "Approximate Longyearbyen locality marker, not the antenna plateau position."
+  },
+  {
+    "id": "trollsat",
+    "name": "Troll Satellite Ground Station (TrollSat)",
+    "operator": "KSAT",
+    "country": "AQ",
+    "longitude": 2,
+    "latitude": -72,
+    "source_url": "https://www.ksat.no/news/news-archive/2016/troll-station-10-years/",
+    "note": "Coarse regional marker using KSAT's published 72 degrees south, 2 degrees east description. Not a surveyed station position."
+  },
+  {
+    "id": "ksat-punta-arenas",
+    "name": "KSAT Punta Arenas Ground Station",
+    "operator": "KSAT",
+    "country": "CL",
+    "longitude": -70.91,
+    "latitude": -53.16,
+    "source_url": "https://www.ksat.no/news/news-archive/2019/Royal-opening-of-the-Punta-Arenas-Ground-Station/",
+    "note": "Approximate Punta Arenas city marker, not a surveyed station position."
+  },
+  {
+    "id": "usuda",
+    "name": "Usuda Deep Space Center",
+    "operator": "JAXA",
+    "country": "JP",
+    "longitude": 138.48,
+    "latitude": 36.25,
+    "source_url": "https://global.jaxa.jp/about/centers/udsc/index.html",
+    "note": "Approximate Saku city marker. The mountain facility is outside the city centre; this is not its surveyed position."
+  },
+  {
+    "id": "istrac-bengaluru",
+    "name": "ISTRAC Bengaluru ground station",
+    "operator": "ISRO / ISTRAC",
+    "country": "IN",
+    "longitude": 77.59,
+    "latitude": 12.97,
+    "source_url": "https://www.isro.gov.in/ISTRAC.html",
+    "note": "Approximate Bengaluru city marker based on ISRO's published network locality. Not a surveyed facility position."
+  },
+  {
+    "id": "istrac-port-blair",
+    "name": "ISTRAC Port Blair ground station",
+    "operator": "ISRO / ISTRAC",
+    "country": "IN",
+    "longitude": 92.75,
+    "latitude": 11.62,
+    "source_url": "https://www.isro.gov.in/ISTRAC.html",
+    "note": "Approximate Port Blair city marker based on ISRO's published network locality. Not a surveyed facility position."
+  },
+  {
+    "id": "istrac-biak",
+    "name": "ISTRAC Biak ground station",
+    "operator": "ISRO / ISTRAC",
+    "country": "ID",
+    "longitude": 136.08,
+    "latitude": -1.18,
+    "source_url": "https://www.isro.gov.in/ISTRAC.html",
+    "note": "Approximate Biak locality marker based on ISRO's published network locality. Not a surveyed facility position."
+  },
+  {
+    "id": "sansa-hartebeesthoek",
+    "name": "SANSA Hartebeesthoek ground station",
+    "operator": "SANSA",
+    "country": "ZA",
+    "longitude": 27.7,
+    "latitude": -25.88,
+    "source_url": "https://www.sansa.org.za/products-and-services/space-operations/",
+    "note": "Approximate facility location rounded from SANSA's published 25 degrees 53 minutes south, 27 degrees 42 minutes east."
+  }
+]

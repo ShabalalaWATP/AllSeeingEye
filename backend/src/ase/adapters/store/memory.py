@@ -12,6 +12,7 @@ from ase.application.feeds.budgets import (
     RetentionBudget,
     budget_for,
 )
+from ase.application.feeds.position_freshness import satellite_position_expired
 from ase.application.ports.feeds import (
     CategoryStats,
     EventQuery,
@@ -161,7 +162,11 @@ class InMemoryEventStore:
                         event.published_at is None or event.published_at < now - VESSEL_POSITION_AGE
                     )
                 )
-                if event.observed_at < cutoff or stale_position:
+                if (
+                    event.observed_at < cutoff
+                    or stale_position
+                    or satellite_position_expired(event, now)
+                ):
                     expired.append(event_id)
             expired_ids = set(expired)
             remaining = [i for i in ordered if i not in expired_ids]

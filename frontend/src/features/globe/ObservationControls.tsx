@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { isObservationShown, toggleObservationLayer } from './layerVisibility';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
+import { matchesFlightFilter } from './flightFilters';
+import type { FlightFilter } from './flightFilters';
 
 export type ObservationKind = 'aircraft' | 'vessels' | 'firms';
 export type ObservationVisibility = Record<ObservationKind, boolean>;
@@ -25,23 +27,30 @@ export function observationKind(event: LiveEvent): ObservationKind | null {
 export function filterObservations(
   events: readonly LiveEvent[],
   visibility: ObservationVisibility,
+  flightFilter: FlightFilter = 'all',
 ) {
   return events.filter((event) => {
     const kind = observationKind(event);
-    return kind === null || visibility[kind];
+    return (kind === null || visibility[kind]) && matchesFlightFilter(event, flightFilter);
   });
 }
 
 export function useObservationFilters(events: readonly LiveEvent[]) {
+  const [flightFilter, setFlightFilter] = useState<FlightFilter>('all');
   const [visibility, setVisibility] = useState<ObservationVisibility>({
     aircraft: true,
     vessels: true,
     firms: true,
   });
-  const filtered = useMemo(() => filterObservations(events, visibility), [events, visibility]);
+  const filtered = useMemo(
+    () => filterObservations(events, visibility, flightFilter),
+    [events, visibility, flightFilter],
+  );
   return {
     visibility,
     filtered,
+    flightFilter,
+    setFlightFilter,
     toggle: (kind: ObservationKind) =>
       setVisibility((previous) => ({ ...previous, [kind]: !previous[kind] })),
   };

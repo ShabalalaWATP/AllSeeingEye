@@ -130,8 +130,18 @@ def grade_events(events: Sequence[Event], profiles: Mapping[str, SourceProfile])
     review signal intentionally errs on the side of uncertainty. It does not choose
     which headline is true, and absence of a cue does not prove claim agreement.
     """
+    # Repeated sensor labels describe measurements, not matching reported claims.
+    # Pairwise headline clustering would fabricate a topic and allocate millions
+    # of pairs for a routine thermal or satellite catalogue batch.
+    instruments = [
+        event
+        for event in events
+        if (profile := profiles.get(event.source_id)) is not None and profile.instrument
+    ]
+    instrument_ids = {event.id for event in instruments}
+    narrative = [event for event in events if event.id not in instrument_ids]
     graded: list[Graded] = []
-    for story in build_stories(events):
+    for story in [*build_stories(narrative), *([event] for event in instruments)]:
         story_id = story_id_for(story)
         groups = organisation_groups(
             [
@@ -148,7 +158,7 @@ def grade_events(events: Sequence[Event], profiles: Mapping[str, SourceProfile])
         )
         mixed_wording = len({_qualified(event) for event in story}) > 1
         for event in story:
-            credibility, rationale = _grade_single(event, profiles.get(event.source_id), events)
+            credibility, rationale = _grade_single(event, profiles.get(event.source_id), narrative)
             if mixed_wording:
                 credibility = Credibility.CANNOT_BE_JUDGED
                 rationale = (

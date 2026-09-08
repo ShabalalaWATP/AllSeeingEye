@@ -6,14 +6,11 @@ elements are cached for that long while positions are propagated on every poll.
 
 from __future__ import annotations
 
-import math
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sgp4 import omm
-from sgp4.api import Satrec, jday
-
 from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.satellites import SatelliteConnector, subpoint
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -28,23 +25,8 @@ from ase.domain.events import (
 )
 from ase.domain.sources import SourceKind, SourceSpec
 
-EARTH_RADIUS_KM = 6371.0
-ELEMENT_TTL = timedelta(hours=2)
-MAX_OBJECTS = 500
+__all__ = ["KpConnector", "LaunchConnector", "SatelliteConnector", "kp_severity", "subpoint"]
 
-SATELLITES = SourceSpec(
-    id="celestrak_stations",
-    name="Space stations and crewed vehicles (CelesTrak)",
-    organisation="CelesTrak",
-    category=Category.SPACE,
-    kind=SourceKind.API,
-    url="https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json",
-    reliability=Reliability.A,
-    poll_interval=timedelta(minutes=2),
-    licence_note="Free under the CelesTrak usage policy; elements refresh every two hours",
-    homepage="https://celestrak.org/",
-    instrument=True,
-)
 LAUNCHES = SourceSpec(
     id="launch_library",
     name="Upcoming launches (Launch Library 2)",
@@ -72,20 +54,6 @@ KP = SourceSpec(
 )
 
 
-def gmst_degrees(jd: float) -> float:
-    return (280.46061837 + 360.98564736629 * (jd - 2451545.0)) % 360.0
-
-
-def subpoint(r: tuple[float, float, float], when: datetime) -> tuple[Point, float]:
-    """The point beneath a TEME position vector and its altitude in kilometres."""
-    x, y, z = r
-    jd, fr = jday(when.year, when.month, when.day, when.hour, when.minute, when.second)
-    lon = (math.degrees(math.atan2(y, x)) - gmst_degrees(jd + fr) + 540.0) % 360.0 - 180.0
-    lat = math.degrees(math.atan2(z, math.hypot(x, y)))
-    altitude = math.sqrt(x * x + y * y + z * z) - EARTH_RADIUS_KM
-    return Point(lon=lon, lat=lat), altitude
-
-
 def kp_severity(kp: float) -> float:
     if kp >= 7:
         return 0.9
@@ -96,84 +64,6 @@ def kp_severity(kp: float) -> float:
     if kp >= 4:
         return 0.4
     return 0.2
-
-
-class SatelliteConnector:
-    """One moving event per object in a CelesTrak group."""
-
-    def __init__(self, http: FeedHttpClient, clock: Clock, spec: SourceSpec = SATELLITES) -> None:
-        self._http = http
-        self._clock = clock
-        self.spec = spec
-        self._elements: list[dict[str, Any]] = []
-        self._fetched_at: datetime | None = None
-
-    async def fetch(self) -> list[Event]:
-        now = self._clock.now()
-        if self._fetched_at is None or now - self._fetched_at >= ELEMENT_TTL:
-            try:
-                data = await self._http.get_json(self.spec.url, conditional=False)
-            except NotModified:
-                data = self._elements
-            self._elements = (
-                [item for item in data if isinstance(item, dict)][:MAX_OBJECTS]
-                if isinstance(data, list)
-                else []
-            )
-            self._fetched_at = now
-        return [event for fields in self._elements if (event := self._to_event(fields, now))]
-
-    def _to_event(self, fields: dict[str, Any], now: datetime) -> Event | None:
-        norad = str(fields.get("NORAD_CAT_ID") or "")
-        name = str(fields.get("OBJECT_NAME") or norad)
-        if not norad:
-            return None
-        satellite = Satrec()
-        try:
-            omm.initialize(satellite, {k: str(v) for k, v in fields.items()})
-            jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second)
-            error, r, v = satellite.sgp4(jd, fr)
-        except (ValueError, TypeError, KeyError):
-            return None
-        if error != 0:
-            return None
-        try:
-            point, altitude = subpoint(r, now)
-        except ValueError:
-            return None
-        speed = math.sqrt(sum(component * component for component in v))
-        return Event(
-            id=event_id(self.spec.id, norad),
-            source_id=self.spec.id,
-            category=Category.SPACE,
-            subtype="satellite",
-            title=name,
-            summary=(
-                f"Altitude {altitude:.0f} km, {speed:.1f} km/s, propagated from elements of "
-                f"{fields.get('EPOCH')}."
-            ),
-            url=f"https://celestrak.org/satcat/table-satcat.php?CATNR={norad}",
-            published_at=now,
-            observed_at=now,
-            point=point,
-            geo_confidence=GeoConfidence.EXACT,
-            tags=frozenset({"satellite", "stations"}),
-            severity=None,
-            reliability=self.spec.reliability,
-            credibility=Credibility.PROBABLY_TRUE,
-            grade_rationale="Position propagated with SGP4 from published orbital elements",
-            attributes=freeze_attributes(
-                {
-                    "norad_id": norad,
-                    "object_id": fields.get("OBJECT_ID"),
-                    "altitude_km": round(altitude, 1),
-                    "speed_km_s": round(speed, 2),
-                    "epoch": fields.get("EPOCH"),
-                    "inclination_deg": fields.get("INCLINATION"),
-                }
-            ),
-            content_hash=content_hash(norad, f"{point.lon:.2f}", f"{point.lat:.2f}"),
-        )
 
 
 def _when(value: object, fallback: datetime) -> datetime:

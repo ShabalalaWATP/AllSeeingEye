@@ -8098,6 +8098,32 @@
           }
         ]
       }
+    },
+    "/api/map-infrastructure": {
+      "get": {
+        "tags": [
+          "map"
+        ],
+        "summary": "Infrastructure",
+        "operationId": "infrastructure_api_map_infrastructure_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfrastructureOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -9816,6 +9842,58 @@
           "jam_updated_at"
         ],
         "title": "AviationBoardOut"
+      },
+      "CableOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "path": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "maxItems": 512,
+            "title": "Path"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "path",
+          "source_url",
+          "note"
+        ],
+        "title": "CableOut"
       },
       "CameraCatalogueOut": {
         "properties": {
@@ -13780,6 +13858,58 @@
         ],
         "title": "GeoConfidence"
       },
+      "GroundStationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "operator",
+          "country",
+          "longitude",
+          "latitude",
+          "source_url",
+          "note"
+        ],
+        "title": "GroundStationOut"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -14634,6 +14764,47 @@
           "items"
         ],
         "title": "IndicatorsOut"
+      },
+      "InfrastructureOut": {
+        "properties": {
+          "cables": {
+            "items": {
+              "$ref": "#/components/schemas/CableOut"
+            },
+            "type": "array",
+            "maxItems": 3000,
+            "title": "Cables"
+          },
+          "ground_stations": {
+            "items": {
+              "$ref": "#/components/schemas/GroundStationOut"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Ground Stations"
+          },
+          "snapshot_date": {
+            "type": "string",
+            "title": "Snapshot Date"
+          },
+          "cable_attribution": {
+            "type": "string",
+            "title": "Cable Attribution"
+          },
+          "cable_licence_url": {
+            "type": "string",
+            "title": "Cable Licence Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cables",
+          "ground_stations",
+          "snapshot_date",
+          "cable_attribution",
+          "cable_licence_url"
+        ],
+        "title": "InfrastructureOut"
       },
       "InputDeclarationTargetOut": {
         "properties": {

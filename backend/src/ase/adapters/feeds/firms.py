@@ -90,7 +90,7 @@ def _number(value: str) -> float:
     return result
 
 
-def _event(row: dict[str, str], now: datetime) -> Event:
+def parse_firms_row(row: dict[str, str], now: datetime, spec: SourceSpec = SPEC) -> Event:
     point = Point(lon=float(row["longitude"]), lat=float(row["latitude"]))
     if not re.fullmatch(r"\d{1,4}", row["acq_time"], flags=re.ASCII):
         raise ValueError
@@ -122,10 +122,10 @@ def _event(row: dict[str, str], now: datetime) -> Event:
         "fire_radiative_power_mw": _number(row["frp"]),
     }
     identity = f"{timestamp.isoformat()}:{point.lon!r}:{point.lat!r}"
-    identifier = event_id(SPEC.id, identity)
+    identifier = event_id(spec.id, identity)
     return Event(
         id=identifier,
-        source_id=SPEC.id,
+        source_id=spec.id,
         category=Category.DISASTER,
         subtype="thermal_detection",
         title="NOAA-20 VIIRS thermal detection",
@@ -159,7 +159,7 @@ def parse_firms(payload: bytes, now: datetime) -> list[Event]:
                 raise FeedFetchError("FIRMS response exceeds the collection row limit")
             if None in row or any(row.get(name) is None for name in FIELDS):
                 raise ValueError
-            event = _event(row, now)
+            event = parse_firms_row(row, now)
             events[event.id] = event
         return list(events.values())
     except (ValueError, csv.Error, OverflowError):

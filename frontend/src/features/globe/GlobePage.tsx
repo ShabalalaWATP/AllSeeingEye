@@ -1,17 +1,19 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useInfrastructure } from './infrastructure/useInfrastructure';
+import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
+import { InfrastructurePanel } from './infrastructure/InfrastructurePanel';
+import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
 
 import { WebGlFallback } from './WebGlFallback';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
-import type { Camera } from '@/lib/api/cameras';
 import { useCameras } from './cameras/useCameras';
 import { CameraPanel } from './cameras/CameraPanel';
 import { CameraInspector } from './cameras/CameraInspector';
-import { buildCameraLayers } from './cameras/cameraLayers';
+import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
 import { useAuthStore } from '@/stores/auth';
-import { useCapabilitiesStore } from '@/stores/capabilities';
-import { useCountriesStore } from '@/stores/countries';
+import { useMapReferenceData } from './useMapReferenceData';
 import {
   countByCategory,
   filterByCountry,
@@ -41,9 +43,10 @@ import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
 import { useMapMeasurement } from './useMapMeasurement';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 import { useObservationFilters } from './ObservationControls';
+import { useSatelliteFilters } from './useSatelliteFilters';
+import { SatelliteFilterPanel } from './SatelliteFilterPanel';
 import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
-import { isOsLayer } from './engine/baseLayers';
 import { useInterference } from './useInterference';
 import { useGlobeScene } from './useGlobeScene';
 import { useMapPicking } from './useMapPicking';
@@ -100,24 +103,10 @@ export default function GlobePage() {
       }),
     [engine],
   );
-  const osMaps = useCapabilitiesStore((state) => state.osMaps);
-  const capabilitiesLoaded = useCapabilitiesStore((state) => state.loaded);
-  const loadCapabilities = useCapabilitiesStore((state) => state.load);
-  useEffect(() => {
-    void loadCapabilities();
-  }, [loadCapabilities]);
-  useEffect(() => {
-    // A remembered OS layer is meaningless on a server without an OS key.
-    if (capabilitiesLoaded && !osMaps && isOsLayer(baseLayer)) setBaseLayer('dark');
-  }, [baseLayer, capabilitiesLoaded, osMaps, setBaseLayer]);
-
-  const countries = useCountriesStore((state) => state.items);
-  const countryByIso = useCountriesStore((state) => state.byIso);
-  const loadCountries = useCountriesStore((state) => state.load);
-  const countriesError = useCountriesStore((state) => state.error);
-  useEffect(() => {
-    void loadCountries();
-  }, [loadCountries]);
+  const { osMaps, countries, countryByIso, countriesError } = useMapReferenceData(
+    baseLayer,
+    setBaseLayer,
+  );
 
   const hidden = useEventsStore((state) => state.hidden);
   const country = useEventsStore((state) => state.country);
@@ -139,6 +128,7 @@ export default function GlobePage() {
   );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const observations = useObservationFilters(scoped);
+  const satellites = useSatelliteFilters(observations.filtered);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
     () =>
@@ -149,6 +139,13 @@ export default function GlobePage() {
   );
 
   const cameras = useCameras();
+  const infrastructure = useInfrastructure();
+  const closeCamera = cameras.close;
+  const closeInfrastructure = infrastructure.close;
+  const closeCatalogues = useCallback(() => {
+    closeCamera();
+    closeInfrastructure();
+  }, [closeCamera, closeInfrastructure]);
   const {
     details,
     highlightedId,
@@ -159,44 +156,31 @@ export default function GlobePage() {
     onCluster,
     onJam,
   } = useMapPicking(
-    observations.filtered,
+    satellites.filtered,
     hidden,
     measurement.picking,
     select,
     engine,
-    cameras.close,
+    closeCatalogues,
   );
 
-  const selectPublicCamera = cameras.select;
-  const selectCamera = useCallback(
-    (camera: Camera) => {
-      if (measurement.picking) return;
-      close();
-      selectPublicCamera(camera);
-    },
-    [measurement.picking, close, selectPublicCamera],
+  const { focusCamera, cameraLayers } = useCameraSelection(
+    cameras,
+    measurement.picking,
+    close,
+    engine,
+    mode,
   );
-  const focusCamera = useCallback(
-    (camera: Camera) => {
-      selectCamera(camera);
-      if (!measurement.picking)
-        engine.flyTo({ center: [camera.longitude, camera.latitude], zoom: 13 });
-    },
-    [selectCamera, measurement.picking, engine],
-  );
-  const cameraLayers = useMemo(
-    () =>
-      buildCameraLayers(
-        cameras.visible,
-        selectCamera,
-        cameras.selected?.id ?? null,
-        mode === 'globe',
-      ),
-    [cameras.visible, cameras.selected?.id, selectCamera, mode],
+  const { focus: focusInfrastructure, layers: infrastructureLayers } = useInfrastructureSelection(
+    infrastructure,
+    measurement.picking,
+    close,
+    engine,
+    mode,
   );
   useGlobeScene({
     engine,
-    events: observations.filtered,
+    events: satellites.filtered,
     hidden,
     selectedId,
     highlightedId,
@@ -206,6 +190,7 @@ export default function GlobePage() {
     jamCells,
     gridLayers: britishGrid.layers,
     cameraLayers,
+    infrastructureLayers,
     measured,
     supported,
     terminator,
@@ -222,7 +207,7 @@ export default function GlobePage() {
   const { focus, changeNation } = useMapFocus(
     engine,
     select,
-    cameras.close,
+    closeCatalogues,
     setCountry,
     countryByIso,
   );
@@ -253,10 +238,22 @@ export default function GlobePage() {
               counts={counts}
               visibility={observations.visibility}
               onToggle={observations.toggle}
+              flightFilter={observations.flightFilter}
+              onFlightFilter={observations.setFlightFilter}
             />
           }
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
+          <ControlPanel side="left" label="Infrastructure" icon="signal">
+            <InfrastructurePanel state={infrastructure} onSelect={focusInfrastructure} />
+          </ControlPanel>
+          <ControlPanel side="left" label="Satellite filters" icon="filter">
+            <SatelliteFilterPanel
+              group={satellites.group}
+              setGroup={satellites.setGroup}
+              counts={satellites.counts}
+            />
+          </ControlPanel>
           <ControlPanel side="right" label="Map style" icon="layers">
             <BaseLayerToolbar
               initialExpanded
@@ -310,7 +307,7 @@ export default function GlobePage() {
           </ControlPanel>
           <ControlPanel label="Location precision" icon="precision">
             <GeographicPrecisionPanel
-              events={observations.filtered}
+              events={satellites.filtered}
               hidden={hidden}
               onSelect={focus}
             />
@@ -329,7 +326,12 @@ export default function GlobePage() {
       )}
       {!opsRoom &&
         !measurement.picking &&
-        (cameras.selected ? (
+        (infrastructure.selected ? (
+          <InfrastructureInspector
+            selected={infrastructure.selected}
+            onClose={infrastructure.close}
+          />
+        ) : cameras.selected ? (
           <CameraInspector
             key={cameras.selected.id}
             camera={cameras.selected}

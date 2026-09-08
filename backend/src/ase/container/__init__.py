@@ -10,6 +10,7 @@ import asyncio
 import secrets
 from collections.abc import Sequence
 from datetime import timedelta
+from typing import Any
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,6 +27,7 @@ from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
+from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
@@ -167,6 +169,8 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     self.clock,
                     settings.disabled_feed_ids,
                     digitraffic_http=self.marine_http,
+                    public_firms_http=self.public_firms_http,
+                    include_public_firms=not bool(settings.firms_map_key),
                     aisstream_key=settings.aisstream_api_key.get_secret_value()
                     if settings.aisstream_api_key
                     else None,
@@ -226,6 +230,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         )
 
     def _initialise_map_catalogues(self) -> None:
+        self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(
             build_camera_sources(self.camera_http, self.marine_http),
@@ -238,10 +243,14 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             admission=self.source_admission,
         )
 
+    def public_infrastructure(self) -> dict[str, Any]:
+        return public_infrastructure()
+
     async def dispose(self) -> None:
         await self.http.aclose()
         await self.marine_http.aclose()
         await self.camera_http.aclose()
+        await self.public_firms_http.aclose()
         await self._llm_gateway.aclose()
         await self._embedding_gateway.aclose()
         await self.tiles.aclose()

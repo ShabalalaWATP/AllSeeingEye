@@ -26,6 +26,7 @@ from ase.api.routers import (
     footprints,
     health,
     identities,
+    infrastructure,
     map_image,
     map_views,
     me,
@@ -102,3 +103,5 @@ api_router.include_router(admin_llm_discovery.router)
 
 
 api_router.include_router(admin_firms_credentials.router)
+
+api_router.include_router(infrastructure.router)

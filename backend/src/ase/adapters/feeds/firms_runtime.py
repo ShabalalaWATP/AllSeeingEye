@@ -80,7 +80,7 @@ class ManagedFirmsConnector:
         # database lock, including across processes; retain it through publication.
         async with self.sessions() as session:
             await SqlUserRepository(session).lock_administration()
-            row = await SqlFirmsCredentials(session).get()
+            row = None if self._environment_key else await SqlFirmsCredentials(session).get()
             enabled = (await SqlSourceControlRepository(session).all()).get(SPEC.id, True)
             valid = (
                 enabled
@@ -88,7 +88,9 @@ class ManagedFirmsConnector:
                 and (
                     generation == -1
                     if self._environment_key
-                    else bool(row.active_encrypted) and generation == row.active_revision
+                    else row is not None
+                    and bool(row.active_encrypted)
+                    and generation == row.active_revision
                 )
             )
             yield valid

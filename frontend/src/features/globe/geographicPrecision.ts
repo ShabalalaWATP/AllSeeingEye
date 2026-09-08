@@ -14,6 +14,8 @@ export function isMappedEvent(event: LiveEvent): boolean {
 }
 
 export function precisionLabel(event: LiveEvent): string {
+  if (event.subtype === 'satellite' && isMappedEvent(event))
+    return 'Propagated orbital estimate, not an observed position';
   if (event.geo_confidence === 'country') return 'Country only, no incident position';
   if (!isMappedEvent(event)) return 'Location unavailable or precision unknown';
   if (event.geo_confidence === 'city') return 'Approximate city location';

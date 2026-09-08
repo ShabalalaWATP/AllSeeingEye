@@ -9,6 +9,7 @@ import type { Category, LiveEvent, Source, SourceHealth, StoreStats } from './ev
 
 export interface EventsQuery {
   categories?: readonly Category[];
+  sources?: readonly string[];
   bbox?: readonly [number, number, number, number];
   country?: string;
   since?: string;
@@ -20,6 +21,7 @@ export function eventsQueryString(query: EventsQuery): string {
   if (query.categories && query.categories.length > 0) {
     params.set('categories', query.categories.join(','));
   }
+  if (query.sources?.length) params.set('sources', query.sources.join(','));
   if (query.bbox) params.set('bbox', query.bbox.join(','));
   if (query.country) params.set('country', query.country);
   if (query.since) params.set('since', query.since);

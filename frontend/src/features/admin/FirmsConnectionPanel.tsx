@@ -12,7 +12,7 @@ export function FirmsConnectionPanel() {
         <div>
           <h2 className="font-semibold">NASA FIRMS</h2>
           <p className="mt-1 text-xs text-muted">
-            NOAA-20 VIIRS thermal observations · Shared live collection
+            NOAA-20 VIIRS thermal observations · Optional Area API connection
           </p>
         </div>
         <Button variant="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -34,9 +34,22 @@ function FirmsConnectionJourney() {
   return (
     <div className="mt-5 space-y-4" aria-label="FIRMS connection settings">
       <p className="max-w-3xl text-sm text-muted">
-        One connection serves every user and team. Test a private draft, then confirm it for the
-        next scheduled poll. Enabling the source and displaying FIRMS on the map are separate
-        controls.
+        Public NOAA-20 downloads work without a key. This optional Area API connection serves every
+        user and team. Test a private draft, then confirm it for the next scheduled poll. Enabling
+        the source and displaying FIRMS on the map are separate controls.
+      </p>
+      <p className="max-w-3xl text-sm text-muted">
+        Need a key?{' '}
+        <a
+          href="https://firms.modaps.eosdis.nasa.gov/api/area/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent underline underline-offset-4"
+        >
+          Request a free MAP_KEY from NASA FIRMS
+        </a>
+        . NASA sends the key to your email address. Return here to test and confirm it. Turning on
+        the map layer alone does not activate this optional keyed connection.
       </p>
       {connection.error && <Alert tone="error">{connection.error}</Alert>}
       {connection.notice && (
@@ -75,7 +88,11 @@ function FirmsConnectionJourney() {
             <div>
               <dt className="text-xs text-muted">Connection use</dt>
               <dd className="mt-1 font-mono">
-                {status.configured ? 'Next scheduled poll' : 'Awaiting confirmation'}
+                {status.environment_disabled
+                  ? 'Disabled by operator'
+                  : status.configured
+                    ? 'Ready for enabled source polls'
+                    : 'Awaiting a tested connection'}
               </dd>
             </div>
           </dl>
@@ -91,7 +108,7 @@ function FirmsConnectionJourney() {
               operator manages it on the server.
             </p>
           )}
-          {!status.encryption_available && (
+          {!status.encryption_available && status.credential_origin !== 'environment' && (
             <Alert tone="info">
               Encrypted credential storage is unavailable. The operator must configure server-side
               encryption before an administrator can save a MAP_KEY.

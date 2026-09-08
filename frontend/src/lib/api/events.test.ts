@@ -91,3 +91,10 @@ describe('events api', () => {
     expect(reset.source_id).toBe('gdacs rss');
   });
 });
+
+it('encodes selected satellite sources without adding an empty filter', () => {
+  expect(eventsQueryString({ sources: [] })).toBe('');
+  expect(eventsQueryString({ sources: ['celestrak_skynet', 'celestrak_military'] })).toBe(
+    '?sources=celestrak_skynet%2Ccelestrak_military',
+  );
+});

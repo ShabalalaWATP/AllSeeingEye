@@ -32,7 +32,9 @@ function layers() {
     props: { onClick: (info: { object: Camera }) => void };
   }[];
 }
-beforeEach(() => {
+beforeEach(async () => {
+  // Test map interactions independently of the cold lazy-route transform time.
+  await import('./GlobePage');
   FakeMap.reset();
   MapboxOverlay.reset();
   FakeEventStreamClient.reset();

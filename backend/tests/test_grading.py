@@ -131,7 +131,8 @@ def test_disasters_link_by_place_and_time_and_windows_apply() -> None:
     graded = {g.event.id: g for g in grade_events([usgs, gdacs, far], PROFILES)}
     assert graded[usgs.id].credibility is Credibility.PROBABLY_TRUE
     assert "Provisional instrument" in graded[usgs.id].rationale
-    assert "independent sourcing and claim agreement not verified" in graded[usgs.id].rationale
+    assert "not independently verified" in graded[usgs.id].rationale
+    assert graded[usgs.id].story_id != graded[gdacs.id].story_id
     old = news("x", "bbc", "Flooding closes the coast road near Kalamata", minutes=-60 * 72)
     new = news("y", "aljazeera", "Flooding closes the coast road near Kalamata", minutes=0)
     assert len(build_stories([old, new])) == 2

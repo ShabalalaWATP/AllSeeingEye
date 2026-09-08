@@ -2596,3 +2596,67 @@ formatting and architecture contracts passed. Focused ship mirror checks cover
 TypeScript and lint checks passed. Final frontend suite: 1,163 tests across 230 files passed. Coverage is 95.27% statements,
 90.08% branches, 93.78% functions and 96.62% lines, with thresholds unchanged.
 The existing production bundle-size warning remains. No operator database migration.
+
+
+## 8 September 2026: public satellite and infrastructure expansion
+
+Expanded CelesTrak collection to active, public military and Skynet catalogues.
+The active source probe returned 16,510 records. Skynet name lookup returned
+13 matches, with launch hardware excluded from satellite display. Added explicit
+catalogue filters and NORAD deduplication, and reserved browser capacity for
+satellites, ships and FIRMS instead of allowing one busy source to crowd out all
+other observation types. Flight filtering uses explicit provider classification.
+
+Packaged 1,999 OpenStreetMap submarine-cable segments and 25 publicly documented
+ground-station locations. Cable data retains ODbL attribution and source links;
+TeleGeography's separately restricted database was not copied. Coordinates and
+coverage limitations are documented in MAP_INFRASTRUCTURE.md and GROUND_STATIONS.md.
+
+Stored user-supplied development feed credentials in ignored backend configuration.
+A real AISStream collection returned 6,706 fresh vessel positions. The NASA key
+returned 12,741 observations, newest 11:33 UTC. Environment-managed FIRMS no longer
+requires the optional database credential table or encryption key. No operator
+migration was performed. The official no-key NASA download also validated 62,025
+observations, but has a different freshness window from the keyed Area API.
+
+
+Real feed integration exposed quadratic headline clustering of sensor readings.
+A batch of 5,000 identical thermal labels created about 12.5 million candidate
+pairs and stalled the backend. Instrument records now receive individual,
+provisional assessments outside narrative clustering and do not corroborate news.
+The regression test verifies that sensor records never enter that clustering path.
+Three post-fix health requests completed in 0.474, 0.268 and 0.280 seconds; observed
+process memory fell from about 2.4 GB to 333 MB. The running AISStream source
+subsequently published 6,586 vessel positions and reported healthy status.
+
+Satellite positions now expire after ten minutes on server and client. The
+runtime returned 22 crewed/station, 24 public military and 12 Skynet objects.
+The active catalogue returned HTTP 403, with a two-hour retry backoff. Its earlier
+16,510-record successful probe is not current display evidence.
+
+
+Final backend validation: 136 focused feed, grading, expiry, credential, catalogue
+and infrastructure tests passed. Whole-backend Ruff, formatting, mypy and both
+architecture contracts passed. Frontend production build and lint passed; the
+existing large-bundle warning remains. Final authenticated HTTP checks confirmed
+1,999 cable segments, 25 ground stations, and endpoint-capped 2,000-record AIS and
+FIRMS responses with acquisition/observation timestamps. Local ports 5174 and
+8001 responded HTTP 200.
+
+A bounded manual security review checked fixed outbound destinations, DNS/TLS
+pinning, redirect refusal, secret redaction, authenticated snapshot access,
+response/geometry bounds and explicit source-link navigation. It found no further
+blocking issue; this was not a whole-repository scan. A repository-content check
+confirmed neither supplied development key appears in tracked or new files.
+
+Visual browser verification was blocked by the administrator browser-control
+policy. Automated interaction tests cover both projections and selection clearing.
+The pre-existing alerts database-column mismatch remains on the older local
+schema; no migration was run as part of this map milestone.
+
+
+Final frontend gate: 1,187 tests passed across 235 files. Coverage: 95.30%
+statements, 90.16% branches, 93.73% functions and 96.65% lines, without lowering
+thresholds. Added cancellation, late-result, selection, measurement and keyboard
+edge cases. Camera interaction fixtures await the lazy route import before
+asserting map behaviour, removing a cold-transform timing dependency.

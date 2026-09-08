@@ -512,9 +512,32 @@ Details: CAMERA_FEEDS.md, CAMERA_AMERICAS.md, CAMERA_EUROPE.md, CAMERA_WORLD.md.
 - [x] Group the catalogue by topic and add combined geography, language, collection
   and API-key filters with explicit source-discovery metadata.
 - [x] Add Washington DC and lower the map clock strip.
-- [ ] Operator activation: supply ASE_AISSTREAM_API_KEY and verify global delivery.
+- [x] Development activation: supplied AISStream key verified against the real feed;
+  one bounded collection returned 6,706 fresh vessel positions.
 
 See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md for setup and limitations.
 
 - [x] Prevent ship crowd-out with a bounded maritime snapshot and reserved browser
   vessel capacity; preserve cancellation, expiry and partial-failure handling.
+
+
+## Satellite, infrastructure and thermal coverage, 8 September 2026
+
+- [x] Replace stations-only coverage with public active, military and Skynet
+  catalogues; exclude invalid elements and Skynet launch debris.
+- [x] Add explicit catalogue filters, NORAD deduplication and bounded browser
+  reservations for satellites, vessels and FIRMS detections.
+- [x] Add an optional provider-classified military flight filter under Flights.
+- [x] Package 1,999 attributed OSM cable segments and 25 public ground-station
+  locations, with authenticated delivery and approximate-location provenance.
+- [x] Verify development AISStream and NASA FIRMS keys without committing secrets.
+- [x] Make environment FIRMS credentials work without the optional credential
+  management table; add the official public CSV option for no-key deployments.
+- [x] Verify backend feed publication and responsiveness, and map controls in
+  automated interaction tests for both projections.
+- [ ] Recheck the active-satellite feed when CelesTrak stops returning HTTP 403.
+- [ ] Perform a visual GPU check when administrator browser-control policy allows it.
+
+See SATELLITE_COVERAGE.md, MAP_INFRASTRUCTURE.md, GROUND_STATIONS.md and
+FIRMS_OPERATIONS.md. Public military coverage is incomplete. Satellite markers
+are propagated estimates. Cable coverage is a bounded, uneven snapshot.

@@ -19,6 +19,7 @@ from ase.adapters.feeds.digitraffic import DigitrafficConnector
 from ase.adapters.feeds.emsc import EmscConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.firms import FirmsConnector
+from ase.adapters.feeds.firms_public import FirmsPublicConnector
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
@@ -27,7 +28,8 @@ from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
 from ase.adapters.feeds.rss_sources import build_rss_connectors
-from ase.adapters.feeds.space import KpConnector, LaunchConnector, SatelliteConnector
+from ase.adapters.feeds.satellites import SATELLITE_SPECS, SatelliteConnector
+from ase.adapters.feeds.space import KpConnector, LaunchConnector
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
 from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
 from ase.adapters.feeds.usgs import UsgsConnector
@@ -45,6 +47,8 @@ def build_connectors(
     aisstream_key: str | None = None,
     firms_area: str = "world",
     digitraffic_http: FeedHttpClient | None = None,
+    public_firms_http: FeedHttpClient | None = None,
+    include_public_firms: bool = True,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
     connectors: list[FeedConnector] = [
@@ -71,7 +75,7 @@ def build_connectors(
         WhoOutbreakConnector(http, clock),
         IfrcGoConnector(http, clock),
         NavareaConnector(http, clock),
-        SatelliteConnector(http, clock),
+        *[SatelliteConnector(http, clock, spec) for spec in SATELLITE_SPECS],
         LaunchConnector(http, clock),
         KpConnector(http, clock),
         RansomwareConnector(http, clock),
@@ -83,6 +87,8 @@ def build_connectors(
         connectors.append(AisStreamConnector(aisstream_key, clock))
     if firms_key and FirmsConnector.spec.id not in excluded:
         connectors.append(FirmsConnector(http, clock, firms_key, firms_area))
+    elif not firms_key and include_public_firms:
+        connectors.append(FirmsPublicConnector(public_firms_http or http, clock))
     if digitraffic_http is not None and DigitrafficConnector.spec.id not in excluded:
         connectors.append(DigitrafficConnector(digitraffic_http, clock))
     return [connector for connector in connectors if connector.spec.id not in excluded]

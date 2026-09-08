@@ -8,6 +8,9 @@ import { isObservationShown, toggleObservationLayer } from './layerVisibility';
 import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
+import { FlightLayerControl } from './FlightLayerControl';
+import { isMilitaryFlight, matchesFlightFilter } from './flightFilters';
+import type { FlightFilter } from './flightFilters';
 
 function LayerButton({
   label,
@@ -51,11 +54,15 @@ export function MapLayerRail({
   counts,
   visibility,
   onToggle,
+  flightFilter = 'all',
+  onFlightFilter,
 }: {
   events: readonly LiveEvent[];
   counts: Partial<Record<Category, number>>;
   visibility: ObservationVisibility;
   onToggle: (kind: ObservationKind) => void;
+  flightFilter?: FlightFilter;
+  onFlightFilter?: (value: FlightFilter) => void;
 }) {
   const hidden = useEventsStore((state) => state.hidden);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
@@ -67,16 +74,37 @@ export function MapLayerRail({
   ] as const;
   return (
     <>
-      {observations.map(({ kind, label }) => (
-        <LayerButton
-          key={kind}
-          label={label}
-          icon={kind}
-          count={events.filter((event) => observationKind(event) === kind).length}
-          active={isObservationShown(kind, visibility, hidden)}
-          onClick={() => toggleObservationLayer(kind, visibility, hidden, onToggle, toggleCategory)}
-        />
-      ))}
+      {observations.map(({ kind, label }) => {
+        const button = (
+          <LayerButton
+            key={kind}
+            label={label}
+            icon={kind}
+            count={
+              events.filter(
+                (event) =>
+                  observationKind(event) === kind && matchesFlightFilter(event, flightFilter),
+              ).length
+            }
+            active={isObservationShown(kind, visibility, hidden)}
+            onClick={() =>
+              toggleObservationLayer(kind, visibility, hidden, onToggle, toggleCategory)
+            }
+          />
+        );
+        return kind === 'aircraft' && onFlightFilter ? (
+          <FlightLayerControl
+            key={kind}
+            filter={flightFilter}
+            onChange={onFlightFilter}
+            count={events.filter(isMilitaryFlight).length}
+          >
+            {button}
+          </FlightLayerControl>
+        ) : (
+          button
+        );
+      })}
       {(['space', 'disaster', 'conflict', 'news'] as const).map((category) => (
         <LayerButton
           key={category}

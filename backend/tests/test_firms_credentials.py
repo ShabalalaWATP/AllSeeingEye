@@ -174,13 +174,20 @@ async def test_cancelled_test_leaves_no_activation_proof(client, container, admi
         assert (await session.get(FirmsCredentialRow, 1)).tested_at is None
 
 
-async def test_environment_and_encryption_policy(client, container, admin, probe):
+async def test_environment_and_encryption_policy(client, container, admin, probe, monkeypatch):
     actor = await claims_for(client, container, admin)
     container.settings.firms_map_key = SecretStr(KEY)
+    original = SqlFirmsCredentials.get
+    monkeypatch.setattr(
+        SqlFirmsCredentials,
+        "get",
+        AsyncMock(side_effect=AssertionError("Environment status must not need credential table")),
+    )
     status = await call(container, actor, "get")
     assert status.credential_origin == "environment"
     with pytest.raises(InvalidRequest):
         await call(container, actor, "draft", KEY, 0, CONTEXT)
+    monkeypatch.setattr(SqlFirmsCredentials, "get", original)
     container.settings.firms_map_key = None
     container.cipher = type(container.cipher)(None)
     with pytest.raises(InvalidRequest):
