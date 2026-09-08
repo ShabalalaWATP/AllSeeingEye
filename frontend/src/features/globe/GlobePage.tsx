@@ -259,7 +259,7 @@ export default function GlobePage() {
           }
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
-          <ControlPanel side="left" label="Map style" icon="layers">
+          <ControlPanel side="right" label="Map style" icon="layers">
             <BaseLayerToolbar
               initialExpanded
               value={baseLayer}
@@ -317,7 +317,7 @@ export default function GlobePage() {
               onSelect={focus}
             />
           </ControlPanel>
-          <ControlPanel side="left" label="British National Grid" icon="grid">
+          <ControlPanel side="right" label="British National Grid" icon="grid">
             <BritishGridTool grid={britishGrid} engine={engine} />
           </ControlPanel>
           <ControlPanel side="left" label="CCTV" icon="camera">

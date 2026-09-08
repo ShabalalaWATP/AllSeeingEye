@@ -91,3 +91,6 @@ output/playwright/rail-settings-*.png. CCTV is still a planned integration.
 Final regression: 1,135 tests passed across 225 files. Coverage: 95.21%
 statements, 90.09% branches, 93.59% functions and 96.57% lines. Existing
 coverage thresholds remain unchanged. Build retains its bundle-size warning.
+
+Placement correction: Map style and British National Grid now open from the
+right rail. CCTV and Layers and settings remain on the left.
