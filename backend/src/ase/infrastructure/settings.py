@@ -55,6 +55,13 @@ class Settings(BaseSettings):
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
     satellite_cache_dir: Path = Path("data/celestrak")
+    # Fixed monthly baseline. Update only after verifying the next public release.
+    ucdp_candidate_version: str = Field(default="26.0.7", pattern=r"^[0-9]{2}\.0\.([1-9]|1[0-2])$")
+    ucdp_access_token: SecretStr | None = None
+    acled_access_token: SecretStr | None = None
+    reliefweb_appname: str | None = Field(
+        default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{1,99}$"
+    )
     aisstream_api_key: SecretStr | None = None
     firms_map_key: SecretStr | None = None
     firms_area: str = Field(default="world", min_length=1, max_length=100)

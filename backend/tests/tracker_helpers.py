@@ -67,6 +67,7 @@ def conflict_events(now: datetime = NOW) -> list[Event]:
             source_id="gdelt",
             category=Category.CONFLICT,
             title="Clash in Sudan",
+            subtype="fight",
             point=Point(32.5, 15.6),
             country_iso="SD",
             published_at=now,

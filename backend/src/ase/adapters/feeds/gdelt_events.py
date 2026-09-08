@@ -184,12 +184,13 @@ class GdeltEventsConnector:
             observed_at=now,
             point=point,
             geo_confidence=GEO_TYPES.get(row[51], GeoConfidence.COUNTRY),
-            tags=frozenset({subtype, "gdelt", f"cameo_{row[26]}"}),
+            tags=frozenset({subtype, "gdelt", "machine_coded", f"cameo_{row[26]}"}),
             severity=min(1.0, max(0.0, -(goldstein or 0.0) / 10.0)),
             reliability=self.spec.reliability,
-            credibility=Credibility.POSSIBLY_TRUE if sources >= 3 else Credibility.DOUBTFUL,
+            credibility=Credibility.CANNOT_BE_JUDGED,
             grade_rationale=(
                 f"Machine-coded by GDELT from {sources} source(s); "
+                "source counts do not establish independent corroboration; "
                 "the point is the coded action geography, not a verified location"
             ),
             attributes=freeze_attributes(

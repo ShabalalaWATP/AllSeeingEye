@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
-import { InfrastructurePanel } from './infrastructure/InfrastructurePanel';
 import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
 
 import { WebGlFallback } from './WebGlFallback';
@@ -44,7 +43,8 @@ import { useMapMeasurement } from './useMapMeasurement';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
-import { SatelliteFilterPanel } from './SatelliteFilterPanel';
+import { useConflictFilters } from './useConflictFilters';
+import { catalogueControlPanels } from './catalogueControlPanels';
 import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { useInterference } from './useInterference';
@@ -129,6 +129,7 @@ export default function GlobePage() {
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const observations = useObservationFilters(scoped);
   const satellites = useSatelliteFilters(observations.filtered);
+  const conflicts = useConflictFilters(satellites.filtered);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
     () =>
@@ -156,7 +157,7 @@ export default function GlobePage() {
     onCluster,
     onJam,
   } = useMapPicking(
-    satellites.filtered,
+    conflicts.filtered,
     hidden,
     measurement.picking,
     select,
@@ -180,7 +181,7 @@ export default function GlobePage() {
   );
   useGlobeScene({
     engine,
-    events: satellites.filtered,
+    events: conflicts.filtered,
     hidden,
     selectedId,
     highlightedId,
@@ -244,16 +245,7 @@ export default function GlobePage() {
           }
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
-          <ControlPanel side="left" label="Infrastructure" icon="signal">
-            <InfrastructurePanel state={infrastructure} onSelect={focusInfrastructure} />
-          </ControlPanel>
-          <ControlPanel side="left" label="Satellite filters" icon="filter">
-            <SatelliteFilterPanel
-              group={satellites.group}
-              setGroup={satellites.setGroup}
-              counts={satellites.counts}
-            />
-          </ControlPanel>
+          {catalogueControlPanels({ infrastructure, focusInfrastructure, satellites, conflicts })}
           <ControlPanel side="right" label="Map style" icon="layers">
             <BaseLayerToolbar
               initialExpanded
@@ -307,7 +299,7 @@ export default function GlobePage() {
           </ControlPanel>
           <ControlPanel label="Location precision" icon="precision">
             <GeographicPrecisionPanel
-              events={satellites.filtered}
+              events={conflicts.filtered}
               hidden={hidden}
               onSelect={focus}
             />

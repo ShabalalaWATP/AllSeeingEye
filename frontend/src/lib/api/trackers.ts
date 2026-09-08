@@ -47,7 +47,13 @@ export const conflictCardSchema = z.object({
   conflict: conflictSchema,
   activity: activitySchema,
   reporting_7d: z.number().int(),
-  fatalities_7d: z.number().int(),
+  fatalities_7d: z.number().int().nonnegative().nullable().default(null),
+  fatalities_upper_7d: z.number().int().nonnegative().nullable().default(null),
+  fatalities_unknown_incidents: z.number().int().nonnegative().default(0),
+  fatalities_disputed_incidents: z.number().int().nonnegative().default(0),
+  other_activity_7d: z.number().int().nonnegative().default(0),
+  unknown_date_reports: z.number().int().nonnegative().default(0),
+  collapsed_reports_7d: z.number().int().nonnegative().default(0),
   max_severity: z.number().nullable(),
   latest: liveEventSchema.nullable(),
   top: liveEventSchema.nullable(),
@@ -65,8 +71,36 @@ export const conflictDetailSchema = z.object({
   card: conflictCardSchema,
   timeline: z.array(dayBucketSchema),
   events: z.array(liveEventSchema),
+  evidence_groups: z
+    .array(
+      z.object({
+        representative_id: z.string(),
+        report_ids: z.array(z.string()),
+        source_ids: z.array(z.string()),
+        report_count: z.number().int().nonnegative(),
+      }),
+    )
+    .default([]),
 });
 export type ConflictDetail = z.infer<typeof conflictDetailSchema>;
+
+export const conflictSourceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  role: z.string(),
+  status: z.enum(['configured', 'waiting', 'not_configured', 'healthy', 'degraded']),
+  detail: z.string(),
+  dataset_release: z.string().nullable(),
+  last_success: z.string().nullable(),
+});
+export type ConflictSource = z.infer<typeof conflictSourceSchema>;
+
+export async function fetchConflictSources(): Promise<ConflictSource[]> {
+  const page = await apiCall('/api/trackers/conflict-sources', {
+    schema: z.object({ items: z.array(conflictSourceSchema) }),
+  });
+  return page.items;
+}
 
 export async function fetchDisasterBoard(): Promise<HazardCard[]> {
   const page = await apiCall('/api/trackers/disasters', {

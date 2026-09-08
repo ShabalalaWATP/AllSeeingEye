@@ -14,7 +14,7 @@ import json
 import socket
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
@@ -65,8 +65,11 @@ class FeedCredential:
 
     origin: str
     authorization: str = field(repr=False)
+    header_name: Literal["Authorization", "x-ucdp-access-token"] = "Authorization"
 
     def __post_init__(self) -> None:
+        if self.header_name not in ("Authorization", "x-ucdp-access-token"):
+            raise ValueError("Unsupported credential header")
         try:
             parts = urlsplit(self.origin)
             valid = _https_origin(self.origin) is not None and not (
@@ -159,7 +162,10 @@ class FeedHttpClient:
         max_bytes: int = DEFAULT_MAX_BYTES,
         client: httpx.AsyncClient | None = None,
     ) -> None:
-        if client is not None and (client.auth is not None or "authorization" in client.headers):
+        if client is not None and (
+            client.auth is not None
+            or any(name in client.headers for name in ("authorization", "x-ucdp-access-token"))
+        ):
             raise ValueError("Shared feed clients must not carry global authorisation.")
         self._max_bytes = max_bytes
         self._validators: OrderedDict[str, _Validators] = OrderedDict()
@@ -218,7 +224,7 @@ class FeedHttpClient:
             address = await assert_public_host(current)
             headers: dict[str, str] = {
                 "Accept-Encoding": "identity",
-                **({"Authorization": credential.authorization} if credential else {}),
+                **({credential.header_name: credential.authorization} if credential else {}),
             }
             validators = self._validators.get(url) if conditional else None
             if validators is not None:

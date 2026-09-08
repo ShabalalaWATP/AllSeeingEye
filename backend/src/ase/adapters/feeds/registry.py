@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.aisstream import AisStreamConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
+from ase.adapters.feeds.conflict_acled import AcledConnector
+from ase.adapters.feeds.conflict_reliefweb import ReliefWebReportsConnector
+from ase.adapters.feeds.conflict_ucdp import UcdpCandidateConnector
+from ase.adapters.feeds.conflict_ucdp_public import UcdpPublicCandidateConnector
 from ase.adapters.feeds.cyber import IodaConnector, RansomwareConnector
 from ase.adapters.feeds.cyclones import (
     NHC_ATLANTIC,
@@ -52,6 +56,11 @@ def build_connectors(
     include_public_firms: bool = True,
     satellite_cache_dir: Path | None = None,
     satellite_http: FeedHttpClient | None = None,
+    ucdp_candidate_version: str = "26.0.7",
+    ucdp_access_token: str | None = None,
+    acled_access_token: str | None = None,
+    reliefweb_appname: str | None = None,
+    iso3_to_iso2: Mapping[str, str] | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
     connectors: list[FeedConnector] = [
@@ -86,9 +95,23 @@ def build_connectors(
         KpConnector(http, clock),
         RansomwareConnector(http, clock),
         IodaConnector(http, clock),
-        *build_rss_connectors(http, clock),
+        *[
+            connector
+            for connector in build_rss_connectors(http, clock)
+            if not reliefweb_appname or connector.spec.id != "reliefweb_updates"
+        ],
         *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
     ]
+    if "ucdp_candidate" not in excluded:
+        connectors.append(
+            UcdpCandidateConnector(http, clock, ucdp_access_token, ucdp_candidate_version)
+            if ucdp_access_token
+            else UcdpPublicCandidateConnector(http, clock, ucdp_candidate_version)
+        )
+    if acled_access_token and AcledConnector.spec.id not in excluded:
+        connectors.append(AcledConnector(http, clock, acled_access_token))
+    if reliefweb_appname and ReliefWebReportsConnector.spec.id not in excluded:
+        connectors.append(ReliefWebReportsConnector(http, clock, reliefweb_appname, iso3_to_iso2))
     if aisstream_key and AisStreamConnector.spec.id not in excluded:
         connectors.append(AisStreamConnector(aisstream_key, clock))
     if firms_key and FirmsConnector.spec.id not in excluded:

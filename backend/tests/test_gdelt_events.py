@@ -85,7 +85,9 @@ async def test_conflict_rows_become_graded_events() -> None:
     assert fight.point is not None and (fight.point.lat, fight.point.lon) == (49.98, 36.25)
     assert fight.geo_confidence is GeoConfidence.CITY
     assert fight.severity == 1.0
-    assert fight.credibility is Credibility.POSSIBLY_TRUE
+    # Four sources can repeat one account; volume alone proves no independence.
+    assert fight.credibility is Credibility.CANNOT_BE_JUDGED
+    assert "independent" in fight.grade_rationale
     assert fight.published_at == datetime(2026, 9, 5, 1, 15, tzinfo=UTC)
     assert fight.url == "https://example.org/report"
     assert fight.attributes["mentions"] == 12 and fight.attributes["location_fips"] == "UP"
@@ -93,7 +95,7 @@ async def test_conflict_rows_become_graded_events() -> None:
     assert fight.summary is not None and "12 mentions across 4 sources" in fight.summary
     protest = events[1]
     assert protest.subtype == "protest" and protest.severity == 0.65
-    assert protest.credibility is Credibility.DOUBTFUL
+    assert protest.credibility is Credibility.CANNOT_BE_JUDGED
     assert protest.geo_confidence is GeoConfidence.COUNTRY
     assert events[2].url is None
     # The same export is not ingested twice, and a new listing is followed.

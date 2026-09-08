@@ -5786,6 +5786,32 @@
         }
       }
     },
+    "/api/trackers/conflict-sources": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Conflict Sources",
+        "operationId": "conflict_sources_api_trackers_conflict_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictSourcesOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/trackers/disasters": {
       "get": {
         "tags": [
@@ -11891,8 +11917,51 @@
             "title": "Reporting 7D"
           },
           "fatalities_7d": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Fatalities 7D"
+          },
+          "fatalities_upper_7d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fatalities Upper 7D"
+          },
+          "fatalities_unknown_incidents": {
+            "type": "integer",
+            "title": "Fatalities Unknown Incidents",
+            "default": 0
+          },
+          "fatalities_disputed_incidents": {
+            "type": "integer",
+            "title": "Fatalities Disputed Incidents",
+            "default": 0
+          },
+          "other_activity_7d": {
+            "type": "integer",
+            "title": "Other Activity 7D",
+            "default": 0
+          },
+          "unknown_date_reports": {
+            "type": "integer",
+            "title": "Unknown Date Reports",
+            "default": 0
+          },
+          "collapsed_reports_7d": {
+            "type": "integer",
+            "title": "Collapsed Reports 7D",
+            "default": 0
           },
           "max_severity": {
             "anyOf": [
@@ -11956,15 +12025,57 @@
             },
             "type": "array",
             "title": "Events"
+          },
+          "evidence_groups": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictEvidenceGroupOut"
+            },
+            "type": "array",
+            "title": "Evidence Groups"
           }
         },
         "type": "object",
         "required": [
           "card",
           "timeline",
-          "events"
+          "events",
+          "evidence_groups"
         ],
         "title": "ConflictDetailOut"
+      },
+      "ConflictEvidenceGroupOut": {
+        "properties": {
+          "representative_id": {
+            "type": "string",
+            "title": "Representative Id"
+          },
+          "report_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Report Ids"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Ids"
+          },
+          "report_count": {
+            "type": "integer",
+            "title": "Report Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "representative_id",
+          "report_ids",
+          "source_ids",
+          "report_count"
+        ],
+        "title": "ConflictEvidenceGroupOut"
       },
       "ConflictOut": {
         "properties": {
@@ -12025,6 +12136,85 @@
           "summary"
         ],
         "title": "ConflictOut"
+      },
+      "ConflictSourceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "configured",
+              "waiting",
+              "not_configured",
+              "healthy",
+              "degraded"
+            ],
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "dataset_release": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Release"
+          },
+          "last_success": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role",
+          "status",
+          "detail"
+        ],
+        "title": "ConflictSourceOut"
+      },
+      "ConflictSourcesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictSourceOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ConflictSourcesOut"
       },
       "ContinuationTraceOut": {
         "properties": {

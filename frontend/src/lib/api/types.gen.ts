@@ -1657,6 +1657,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trackers/conflict-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conflict Sources */
+        get: operations["conflict_sources_api_trackers_conflict_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trackers/disasters": {
         parameters: {
             query?: never;
@@ -3768,7 +3785,34 @@ export interface components {
             /** Reporting 7D */
             reporting_7d: number;
             /** Fatalities 7D */
-            fatalities_7d: number;
+            fatalities_7d: number | null;
+            /** Fatalities Upper 7D */
+            fatalities_upper_7d?: number | null;
+            /**
+             * Fatalities Unknown Incidents
+             * @default 0
+             */
+            fatalities_unknown_incidents: number;
+            /**
+             * Fatalities Disputed Incidents
+             * @default 0
+             */
+            fatalities_disputed_incidents: number;
+            /**
+             * Other Activity 7D
+             * @default 0
+             */
+            other_activity_7d: number;
+            /**
+             * Unknown Date Reports
+             * @default 0
+             */
+            unknown_date_reports: number;
+            /**
+             * Collapsed Reports 7D
+             * @default 0
+             */
+            collapsed_reports_7d: number;
             /** Max Severity */
             max_severity: number | null;
             latest: components["schemas"]["EventOut"] | null;
@@ -3781,6 +3825,19 @@ export interface components {
             timeline: components["schemas"]["DayBucketOut"][];
             /** Events */
             events: components["schemas"]["EventOut"][];
+            /** Evidence Groups */
+            evidence_groups: components["schemas"]["ConflictEvidenceGroupOut"][];
+        };
+        /** ConflictEvidenceGroupOut */
+        ConflictEvidenceGroupOut: {
+            /** Representative Id */
+            representative_id: string;
+            /** Report Ids */
+            report_ids: string[];
+            /** Source Ids */
+            source_ids: string[];
+            /** Report Count */
+            report_count: number;
         };
         /** ConflictOut */
         ConflictOut: {
@@ -3800,6 +3857,31 @@ export interface components {
             keywords: string[];
             /** Summary */
             summary: string;
+        };
+        /** ConflictSourceOut */
+        ConflictSourceOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "configured" | "waiting" | "not_configured" | "healthy" | "degraded";
+            /** Detail */
+            detail: string;
+            /** Dataset Release */
+            dataset_release?: string | null;
+            /** Last Success */
+            last_success?: string | null;
+        };
+        /** ConflictSourcesOut */
+        ConflictSourcesOut: {
+            /** Items */
+            items: components["schemas"]["ConflictSourceOut"][];
         };
         /** ContinuationTraceOut */
         ContinuationTraceOut: {
@@ -11919,6 +12001,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conflict_sources_api_trackers_conflict_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConflictSourcesOut"];
                 };
             };
         };

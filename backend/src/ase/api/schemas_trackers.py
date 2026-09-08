@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from ase.api.schemas_events import EventOut
 from ase.application.trackers.boards import ConflictDetail, HazardDetail
+from ase.domain.conflict_evidence import evidence_groups
 from ase.domain.events import Event
 from ase.domain.trackers import (
     HAZARD_TITLES,
@@ -122,7 +123,13 @@ class ConflictCardOut(BaseModel):
     conflict: ConflictOut
     activity: ActivityOut
     reporting_7d: int
-    fatalities_7d: int
+    fatalities_7d: int | None
+    fatalities_upper_7d: int | None = None
+    fatalities_unknown_incidents: int = 0
+    fatalities_disputed_incidents: int = 0
+    other_activity_7d: int = 0
+    unknown_date_reports: int = 0
+    collapsed_reports_7d: int = 0
     max_severity: float | None
     latest: EventOut | None
     top: EventOut | None
@@ -134,6 +141,12 @@ class ConflictCardOut(BaseModel):
             activity=ActivityOut.from_activity(card.activity),
             reporting_7d=card.reporting_7d,
             fatalities_7d=card.fatalities_7d,
+            fatalities_upper_7d=card.fatalities_upper_7d,
+            fatalities_unknown_incidents=card.fatalities_unknown_incidents,
+            fatalities_disputed_incidents=card.fatalities_disputed_incidents,
+            other_activity_7d=card.other_activity_7d,
+            unknown_date_reports=card.unknown_date_reports,
+            collapsed_reports_7d=card.collapsed_reports_7d,
             max_severity=card.max_severity,
             latest=_event(card.latest),
             top=_event(card.top),
@@ -144,10 +157,18 @@ class ConflictBoardOut(BaseModel):
     items: list[ConflictCardOut]
 
 
+class ConflictEvidenceGroupOut(BaseModel):
+    representative_id: str
+    report_ids: list[str]
+    source_ids: list[str]
+    report_count: int
+
+
 class ConflictDetailOut(BaseModel):
     card: ConflictCardOut
     timeline: list[DayBucketOut]
     events: list[EventOut]
+    evidence_groups: list[ConflictEvidenceGroupOut]
 
     @classmethod
     def from_detail(cls, detail: ConflictDetail) -> Self:
@@ -155,4 +176,13 @@ class ConflictDetailOut(BaseModel):
             card=ConflictCardOut.from_card(detail.card),
             timeline=[DayBucketOut.from_bucket(bucket) for bucket in detail.timeline],
             events=[EventOut.from_event(event) for event in detail.events],
+            evidence_groups=[
+                ConflictEvidenceGroupOut(
+                    representative_id=group[0].id,
+                    report_ids=[event.id for event in group],
+                    source_ids=sorted({event.source_id for event in group}),
+                    report_count=len(group),
+                )
+                for group in evidence_groups(detail.events)
+            ],
         )

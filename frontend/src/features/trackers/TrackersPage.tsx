@@ -8,6 +8,8 @@ import type { ConflictCard, HazardCard } from '@/lib/api/trackers';
 import { useResource } from '@/lib/hooks/useResource';
 
 import { ActivityCells } from './TrackerParts';
+import { ConflictMetrics, ConflictCoverageNote } from './ConflictMetrics';
+import { ConflictSourceCoverage } from './ConflictSourceCoverage';
 
 const MODULES = [
   {
@@ -43,7 +45,7 @@ function ConflictBoard({ items }: { items: readonly ConflictCard[] }) {
       <thead>
         <tr>
           <Th>Conflict</Th>
-          <Th>Activity</Th>
+          <Th>Reported activity</Th>
           <Th>Reporting</Th>
           <Th>Latest</Th>
         </tr>
@@ -63,15 +65,12 @@ function ConflictBoard({ items }: { items: readonly ConflictCard[] }) {
               </div>
             </Td>
             <Td>
-              <ActivityCells activity={card.activity} />
-              {card.fatalities_7d > 0 && (
-                <div className="font-mono text-xs text-critical">
-                  {card.fatalities_7d} reported deaths / 7 d
-                </div>
-              )}
+              <ConflictMetrics card={card} />
             </Td>
             <Td className="font-mono text-xs text-muted">{card.reporting_7d} items / 7 d</Td>
-            <Td className="text-xs text-muted">{card.latest?.title ?? 'Nothing in the window'}</Td>
+            <Td className="text-xs text-muted">
+              {card.latest?.title ?? 'No reports collected in this window'}
+            </Td>
           </tr>
         ))}
       </tbody>
@@ -132,6 +131,7 @@ export default function TrackersPage() {
       </ul>
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Conflicts</h2>
+        <ConflictCoverageNote />
         {conflicts.error === null ? null : (
           <Alert tone="error">{describeError(conflicts.error)}</Alert>
         )}
@@ -143,6 +143,7 @@ export default function TrackersPage() {
           <ConflictBoard items={conflicts.data} />
         )}
       </div>
+      <ConflictSourceCoverage />
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Disasters</h2>
         {disasters.error === null ? null : (

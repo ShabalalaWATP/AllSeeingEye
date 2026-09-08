@@ -179,6 +179,21 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                         else None
                     ),
                     include_public_firms=not bool(settings.firms_map_key),
+                    ucdp_candidate_version=settings.ucdp_candidate_version,
+                    ucdp_access_token=(
+                        settings.ucdp_access_token.get_secret_value()
+                        if settings.ucdp_access_token
+                        else None
+                    ),
+                    acled_access_token=(
+                        settings.acled_access_token.get_secret_value()
+                        if settings.acled_access_token
+                        else None
+                    ),
+                    reliefweb_appname=settings.reliefweb_appname,
+                    iso3_to_iso2={
+                        country.iso3: country.iso2 for country in self.countries.countries()
+                    },
                     aisstream_key=settings.aisstream_api_key.get_secret_value()
                     if settings.aisstream_api_key
                     else None,

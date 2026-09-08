@@ -2723,3 +2723,31 @@ calls. The empty active cache must wait until the next permitted attempt after
 17:16 UTC (18:16 UK time). Successful active-catalogue population is still open.
 The cache and local diagnostics are ignored by git. This is a scoped code and
 security review, not a repository-wide security scan or a browser/GPU soak test.
+
+
+## 8 September 2026: conflict evidence and coverage
+
+Implemented separate violence/activity classification, conservative evidence
+bundles, occurrence-date counts, unknown/ranged casualty figures, historical map
+filters and authenticated provider coverage. Added public UCDP Candidate with
+optional token API, optional ACLED and approved-appname ReliefWeb integration.
+See [conflict coverage](CONFLICT_COVERAGE.md) for source limits and activation
+gates. Live ACLED and ReliefWeb API activation still require provider access.
+
+
+Validation: 148 focused backend regression tests passed; the additional GDELT
+expectations now explicitly reject article-volume-based credibility. The scoped
+conflict suite passed 89 tests at 97.76% coverage (90% gate unchanged). Full
+backend Ruff, formatting, mypy (701 modules), both import contracts and file-length
+checks passed. Frontend full coverage passed 1,250 tests across 247 files:
+95.41% statements, 90.27% branches, 93.75% functions and 96.74% lines.
+The local API restart loaded 1,814 UCDP historical records with publication dates
+left unknown; API health and ASE frontend returned 200. ACLED and ReliefWeb API
+remain unconfigured. Browser interaction was not verified due to the existing
+local browser-policy block. No database migrations or dependency changes.
+
+Full frontend lint, typecheck and production build passed. The build retains its
+existing large vendor-chunk warning. Additional backend suites passed 40 HTTP/GDELT
+tests and 37 scheduler, map registration and source-control tests. Configured-secret
+matching found no local credential values in the changed code. No remote exists,
+so this milestone is committed locally on main and cannot be pushed.

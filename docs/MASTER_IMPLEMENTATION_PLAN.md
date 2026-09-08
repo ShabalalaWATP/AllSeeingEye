@@ -569,3 +569,13 @@ are propagated estimates. Cable coverage is a bounded, uneven snapshot.
   short runtime checks are not a long-duration soak test.
 
 See PERFORMANCE_REPAIR.md for measurements, tradeoffs and verification limits.
+
+
+## 8 September 2026: conflict evidence and coverage
+
+Implemented separate violence/activity classification, conservative evidence
+bundles, occurrence-date counts, unknown/ranged casualty figures, historical map
+filters and authenticated provider coverage. Added public UCDP Candidate with
+optional token API, optional ACLED and approved-appname ReliefWeb integration.
+See [conflict coverage](CONFLICT_COVERAGE.md) for source limits and activation
+gates. Live ACLED and ReliefWeb API activation still require provider access.

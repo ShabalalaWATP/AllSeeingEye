@@ -7,7 +7,11 @@ import { fetchConflictDetail } from '@/lib/api/trackers';
 import { researchHref } from '@/lib/researchNavigation';
 import { useResource } from '@/lib/hooks/useResource';
 
-import { ActivityCells, BackToTrackers, EventRow, ShowOnGlobe, Timeline } from './TrackerParts';
+import { BackToTrackers, ShowOnGlobe, Timeline } from './TrackerParts';
+import { ConflictMetrics, ConflictCoverageNote } from './ConflictMetrics';
+import { ConflictEvidenceRow } from './ConflictEvidenceRow';
+import { ConflictEvidenceList } from './ConflictEvidenceList';
+import { ConflictSourceCoverage } from './ConflictSourceCoverage';
 
 export default function ConflictPage() {
   const { id = '' } = useParams();
@@ -38,15 +42,10 @@ export default function ConflictPage() {
           {conflict.countries.join(', ')} · {conflict.belligerents.join(' v ')}
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <ActivityCells activity={card.activity} />
+          <ConflictMetrics card={card} />
           <span className="font-mono text-xs text-muted">
             {card.reporting_7d} related items / 7 d
           </span>
-          {card.fatalities_7d > 0 && (
-            <span className="font-mono text-xs text-critical">
-              {card.fatalities_7d} reported deaths / 7 d
-            </span>
-          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <ShowOnGlobe country={conflict.countries[0] ?? null} />
@@ -68,30 +67,26 @@ export default function ConflictPage() {
           </Link>
         </div>
       </header>
+      <ConflictCoverageNote />
       <section aria-label="Conflict events by day" className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold">Fourteen days</h2>
+        <h2 className="text-base font-semibold">Reported violence by occurrence date</h2>
         <Timeline buckets={timeline} label="Conflict events by day" />
       </section>
       {card.top !== null && (
         <section aria-label="Most severe this week" className="flex flex-col gap-1">
           <h2 className="text-base font-semibold">Most severe this week</h2>
-          <ul>
-            <EventRow event={card.top} />
-          </ul>
+          <ConflictEvidenceRow event={card.top} />
         </section>
       )}
       <section aria-label="Latest in the area" className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">Latest in the area</h2>
         {events.length === 0 ? (
-          <p className="text-sm text-muted">Nothing in the retained window.</p>
+          <p className="text-sm text-muted">No reports collected in the retained window.</p>
         ) : (
-          <ul>
-            {events.map((event) => (
-              <EventRow key={event.id} event={event} />
-            ))}
-          </ul>
+          <ConflictEvidenceList events={events} groups={data.evidence_groups} />
         )}
       </section>
+      <ConflictSourceCoverage />
     </article>
   );
 }

@@ -1,4 +1,5 @@
 import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
+import { HistoricalBaselineNote } from '@/components/reports/HistoricalBaselineNote';
 import { Fragment, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
@@ -96,6 +97,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
+        <HistoricalBaselineNote event={event} />
         {event.source_id === 'gdelt_events' && (
           <p className="mt-2 text-xs text-muted">
             Automated news coding, not an independently verified incident. This feed includes

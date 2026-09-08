@@ -135,9 +135,10 @@ async def test_credentials_force_zero_redirects_even_when_caller_requests_more(
     await client.aclose()
 
 
+@pytest.mark.parametrize("header", ["Authorization", "x-ucdp-access-token"])
 @pytest.mark.parametrize("mode", ["body", "json", "http", "transport", "not-modified"])
 async def test_authenticated_errors_never_expose_response_or_request_data(
-    monkeypatch: pytest.MonkeyPatch, mode: str
+    monkeypatch: pytest.MonkeyPatch, mode: str, header: str
 ) -> None:
     async def guard(url: str) -> None:
         pass
@@ -157,7 +158,9 @@ async def test_authenticated_errors_never_expose_response_or_request_data(
         "tests", max_bytes=100, client=httpx.AsyncClient(transport=httpx.MockTransport(response))
     )
     with pytest.raises(FeedFetchError) as error:
-        await client.get_json(f"{ORIGIN}/?private=query", credential=FeedCredential(ORIGIN, AUTH))
+        await client.get_json(
+            f"{ORIGIN}/?private=query", credential=FeedCredential(ORIGIN, AUTH, header_name=header)
+        )
     assert "secret" not in str(error.value) and "private" not in str(error.value)
     await client.aclose()
 
@@ -165,6 +168,7 @@ async def test_authenticated_errors_never_expose_response_or_request_data(
 async def test_authentication_is_not_accepted_on_shared_client() -> None:
     for client in (
         httpx.AsyncClient(headers={"Authorization": AUTH}),
+        httpx.AsyncClient(headers={"x-ucdp-access-token": AUTH}),
         httpx.AsyncClient(auth=("user", "password")),
     ):
         with pytest.raises(ValueError, match="global authorisation"):
@@ -197,3 +201,32 @@ async def test_credentials_ignore_existing_validators_and_do_not_persist_auth(
     assert requests[2].headers["if-none-match"] == "1"
     assert "authorization" not in requests[2].headers
     await client.aclose()
+
+
+async def test_custom_header_stays_request_local():
+    requests = []
+
+    def respond(request):
+        requests.append(request)
+        return httpx.Response(200, json={})
+
+    client = FeedHttpClient(
+        "test", client=httpx.AsyncClient(transport=httpx.MockTransport(respond))
+    )
+    try:
+        credential = FeedCredential(
+            "https://93.184.216.34", AUTH, header_name="x-ucdp-access-token"
+        )
+        await client.get_json("https://93.184.216.34/one", credential=credential)
+        await client.get_json("https://93.184.216.34/two")
+        assert requests[0].headers["x-ucdp-access-token"] == AUTH
+        assert "authorization" not in requests[0].headers
+        assert "x-ucdp-access-token" not in requests[1].headers
+        assert AUTH not in repr(credential)
+    finally:
+        await client.aclose()
+
+
+def test_credential_rejects_arbitrary_header():
+    with pytest.raises(ValueError, match="Unsupported"):
+        FeedCredential(ORIGIN, AUTH, header_name="Host")

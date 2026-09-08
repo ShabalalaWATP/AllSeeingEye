@@ -302,6 +302,7 @@ export const handlers = [
   ),
 
   http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [conflictCard] })),
+  http.get('/api/trackers/conflict-sources', () => HttpResponse.json({ items: [] })),
 
   http.get('/api/trackers/aviation', () => HttpResponse.json(aviationBoard)),
 

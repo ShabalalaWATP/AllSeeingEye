@@ -54,12 +54,19 @@ export const conflictCard: ConflictCard = {
   activity: { last_24h: 2, last_7d: 12, previous_7d: 20, trend: 0.6 },
   reporting_7d: 5,
   fatalities_7d: 4,
+  fatalities_upper_7d: null,
+  fatalities_unknown_incidents: 0,
+  fatalities_disputed_incidents: 0,
+  other_activity_7d: 0,
+  unknown_date_reports: 0,
+  collapsed_reports_7d: 0,
   max_severity: 0.9,
   latest: shelling,
   top: shelling,
 };
 
 export const conflictDetail: ConflictDetail = {
+  evidence_groups: [],
   card: conflictCard,
   timeline: hazardDetail.timeline,
   events: [shelling, liveEvent({ id: 'n1', category: 'news', title: 'Talks in Kyiv', url: null })],

@@ -7,11 +7,18 @@ now against the week before, the worst and the newest event, and where it is hap
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
 
+from ase.domain.conflict_evidence import (
+    casualties,
+    evidence_groups,
+    is_conflict_context,
+    is_violence,
+    occurrence_time,
+)
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import publication_order
 
@@ -128,18 +135,29 @@ class ConflictCard:
     conflict: Conflict
     activity: Activity
     reporting_7d: int
-    fatalities_7d: int
+    fatalities_7d: int | None
     max_severity: float | None
     latest: Event | None
     top: Event | None
+    fatalities_upper_7d: int | None = None
+    fatalities_unknown_incidents: int = 0
+    fatalities_disputed_incidents: int = 0
+    other_activity_7d: int = 0
+    unknown_date_reports: int = 0
+    collapsed_reports_7d: int = 0
 
 
-def activity(events: Iterable[Event], now: datetime) -> Activity:
+def activity(
+    events: Iterable[Event],
+    now: datetime,
+    *,
+    time_of: Callable[[Event], datetime | None] = lambda event: event.published_at,
+) -> Activity:
     day_ago, week_ago, fortnight_ago = now - DAY, now - WEEK, now - 2 * WEEK
     last_24h = last_7d = previous_7d = 0
     for event in events:
-        when = event.published_at
-        if when is None:
+        when = time_of(event)
+        if when is None or when > now:
             continue
         if when >= day_ago:
             last_24h += 1
@@ -151,7 +169,11 @@ def activity(events: Iterable[Event], now: datetime) -> Activity:
 
 
 def timeline(
-    events: Iterable[Event], now: datetime, days: int = TIMELINE_DAYS
+    events: Iterable[Event],
+    now: datetime,
+    days: int = TIMELINE_DAYS,
+    *,
+    time_of: Callable[[Event], datetime | None] = lambda event: event.published_at,
 ) -> tuple[DayBucket, ...]:
     """One bucket per UTC day, oldest first, ending today."""
     today = now.date()
@@ -159,9 +181,10 @@ def timeline(
     counts: Counter[date] = Counter()
     worst: dict[date, float] = {}
     for event in events:
-        if event.published_at is None:
+        when = time_of(event)
+        if when is None or when > now:
             continue
-        day = event.published_at.date()
+        day = when.date()
         if day < first or day > today:
             continue
         counts[day] += 1
@@ -230,36 +253,52 @@ def hazard_cards(events: Sequence[Event], now: datetime) -> tuple[HazardCard, ..
     return tuple(cards)
 
 
-def _fatalities(events: Iterable[Event]) -> int:
-    total = 0
-    for event in events:
-        value = event.attributes.get("fatalities")
-        if isinstance(value, int | float) and not isinstance(value, bool):
-            total += int(value)
-    return total
-
-
 def conflict_card(conflict: Conflict, events: Sequence[Event], now: datetime) -> ConflictCard:
-    """Summarise one conflict from every event in its area (any category, within the window)."""
-    fighting = [event for event in events if event.category is Category.CONFLICT]
-    week = [
-        event
-        for event in fighting
-        if event.published_at is not None and event.published_at >= now - WEEK
+    """Count grouped violence reports by occurrence, with explicit evidence gaps."""
+    groups = evidence_groups(event for event in events if is_violence(event))
+    fighting = [group[0] for group in groups]
+    week_groups = [
+        group
+        for group in groups
+        if (when := occurrence_time(group[0])) is not None and now - WEEK <= when <= now
     ]
-    reporting = [
+    week = [group[0] for group in week_groups]
+    reporting = evidence_groups(
         event
         for event in events
-        if event.category is not Category.CONFLICT
+        if is_conflict_context(event)
         and event.published_at is not None
-        and event.published_at >= now - WEEK
+        and now - WEEK <= event.published_at <= now
+    )
+    deaths = casualties(week_groups)
+    other = [
+        event
+        for event in events
+        if event.category is Category.CONFLICT
+        and not is_violence(event)
+        and (when := occurrence_time(event)) is not None
+        and now - WEEK <= when <= now
     ]
     return ConflictCard(
         conflict=conflict,
-        activity=activity(fighting, now),
+        activity=activity(fighting, now, time_of=occurrence_time),
         reporting_7d=len(reporting),
-        fatalities_7d=_fatalities(week),
+        fatalities_7d=deaths.lower,
         max_severity=_max_severity(week),
-        latest=latest_event(fighting),
+        latest=max(
+            (
+                event
+                for event in fighting
+                if (when := occurrence_time(event)) is not None and when <= now
+            ),
+            key=lambda event: occurrence_time(event) or now,
+            default=None,
+        ),
         top=top_event(week),
+        fatalities_upper_7d=deaths.upper,
+        fatalities_unknown_incidents=deaths.unknown_incidents,
+        fatalities_disputed_incidents=deaths.disputed_incidents,
+        other_activity_7d=len(evidence_groups(other)),
+        unknown_date_reports=sum(occurrence_time(event) is None for event in fighting),
+        collapsed_reports_7d=sum(len(group) - 1 for group in week_groups),
     )

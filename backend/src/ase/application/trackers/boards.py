@@ -8,6 +8,12 @@ from datetime import datetime, timedelta
 from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.trackers import ConflictDirectory
+from ase.domain.conflict_evidence import (
+    evidence_groups,
+    is_conflict_context,
+    is_violence,
+    occurrence_time,
+)
 from ase.domain.errors import NotFound
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
@@ -79,10 +85,12 @@ class TrackerService:
             raise NotFound()
         now = self._clock.now()
         events = self._area_events(conflict, now)
-        fighting = [event for event in events if event.category is Category.CONFLICT]
+        fighting = [
+            group[0] for group in evidence_groups(event for event in events if is_violence(event))
+        ]
         return ConflictDetail(
             card=conflict_card(conflict, events, now),
-            timeline=timeline(fighting, now),
+            timeline=timeline(fighting, now, time_of=occurrence_time),
             events=tuple(events[:DETAIL_EVENTS]),
         )
 
@@ -94,12 +102,41 @@ class TrackerService:
     def _area_events(self, conflict: Conflict, now: datetime) -> list[Event]:
         """Everything inside the box plus everything filed under its countries, newest first."""
         seen: dict[str, Event] = {}
-        queries = [EventQuery(bbox=conflict.bbox, since=now - WINDOW, limit=POOL)]
+        categories = frozenset(
+            {Category.CONFLICT, Category.NEWS, Category.POLITICAL, Category.HUMANITARIAN}
+        )
+        queries = [
+            EventQuery(bbox=conflict.bbox, categories=categories, since=now - WINDOW, limit=POOL)
+        ]
         queries.extend(
-            EventQuery(country_iso=iso, since=now - WINDOW, limit=POOL)
+            EventQuery(country_iso=iso, categories=categories, since=now - WINDOW, limit=POOL)
+            for iso in conflict.countries
+        )
+        # Monthly research releases may have no publication timestamp. Retrieve
+        # them separately; occurrence dates still determine recent activity.
+        queries.append(
+            EventQuery(
+                bbox=conflict.bbox,
+                source_ids=frozenset({"ucdp_candidate", "acled_events"}),
+                limit=POOL,
+            )
+        )
+        queries.extend(
+            EventQuery(
+                country_iso=iso,
+                source_ids=frozenset({"ucdp_candidate", "acled_events"}),
+                limit=POOL,
+            )
             for iso in conflict.countries
         )
         for query in queries:
             for event in self._store.query(query):
-                seen.setdefault(event.id, event)
-        return sorted(seen.values(), key=publication_order, reverse=True)
+                if event.point is not None and not conflict.bbox.contains(event.point):
+                    continue
+                if event.category is Category.CONFLICT or is_conflict_context(event):
+                    seen.setdefault(event.id, event)
+        return sorted(
+            seen.values(),
+            key=lambda event: occurrence_time(event) or publication_order(event),
+            reverse=True,
+        )

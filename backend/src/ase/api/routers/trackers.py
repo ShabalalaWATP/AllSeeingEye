@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from ase.api.deps import ContainerDep, CurrentUser, SessionDep
+from ase.api.routers.conflict_coverage import router as coverage_router
 from ase.api.schemas_aviation import AviationBoardOut, JamCellOut, JamMapOut
 from ase.api.schemas_modules import CyberBoardOut, MaritimeBoardOut, SpaceBoardOut
 from ase.api.schemas_trackers import (
@@ -19,6 +20,7 @@ from ase.application.trackers.aviation import board_with_baselines
 from ase.domain.trackers import Hazard
 
 router = APIRouter(prefix="/trackers", tags=["trackers"])
+router.include_router(coverage_router)
 
 
 @router.get("/disasters")

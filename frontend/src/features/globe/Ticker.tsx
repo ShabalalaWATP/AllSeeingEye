@@ -3,6 +3,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { formatAgo } from '@/lib/format';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
+import { isHistoricalConflict } from '@/lib/conflicts';
 
 export const TICKER_LIMIT = 12;
 
@@ -17,7 +18,7 @@ export interface TickerProps {
 
 /** The strip of latest events along the top of the view. */
 export function Ticker({ events, selectedId, now, onSelect, limit = TICKER_LIMIT }: TickerProps) {
-  const latest = events.slice(0, limit);
+  const latest = events.filter((event) => !isHistoricalConflict(event)).slice(0, limit);
   return (
     <nav
       aria-label="Latest events"
