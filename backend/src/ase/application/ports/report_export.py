@@ -2,8 +2,17 @@
 
 from typing import Protocol
 
+from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import ExportFormat, ReportDocument
 
 
 class ReportRenderer(Protocol):
     def render(self, document: ReportDocument, format: ExportFormat) -> bytes: ...
+
+
+class AsyncReportRenderer(Protocol):
+    async def render(self, document: ReportDocument, format: ExportFormat) -> bytes: ...
+
+
+class RenderCleanupFailed(InvalidRequest):
+    """Descendant termination is unverified; admission must remain quarantined."""

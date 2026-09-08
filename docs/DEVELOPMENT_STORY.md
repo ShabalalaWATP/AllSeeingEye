@@ -2436,3 +2436,16 @@ A guarded exact-version release service now rejects those stale downloads.
 Twenty focused final tests passed, together with targeted static checks and
 independent read-only review. Chromium worker/runtime integration and language
 acceptance remain unfinished; no deployment or PDF support flag changed.
+
+## 8 September 2026: isolated report renderer candidate
+
+- Added an asynchronous renderer boundary while retaining final report-version
+  and session release checks and the existing default PDF/DOCX projections.
+- Optional Linux runtime uses verified executables, namespaces, cgroups and
+  bounded writable tmpfs. Unconfirmed cleanup quarantines capacity and resources.
+- Independent review findings were repaired with regressions. The expanded
+  compatibility/release group passed 55 tests; the final typed-structure group
+  passed 35. Mypy, Ruff, import contracts and all commit hooks passed.
+- Desktop Chrome visual evidence covers a seven-page real report projection,
+  with extraction limitations recorded. No Linux deployment, PDF/UA or
+  native-speaker acceptance is claimed and language flags remain unchanged.

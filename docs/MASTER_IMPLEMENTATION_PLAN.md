@@ -421,3 +421,11 @@ final tests and targeted static checks passed. The accompanying exact-version,
 object and session release repair passed regression and independent review.
 See STRUCTURED_REPORT_HTML.md and security/REPORT_DOCUMENT_RELEASE.md. Browser
 worker integration, visual/native-speaker and accessibility acceptance remain.
+
+8 September isolated renderer candidate: asynchronous export composition and an
+optional bounded Linux Chromium adapter are implemented. Cleanup quarantine,
+typed PDF admission and private tmpfs repairs passed targeted regressions and
+independent review. All configured commit hooks passed. Actual Linux runtime,
+native-speaker, accessibility and faithful extraction acceptance remain open;
+Arabic/Persian PDF capabilities are not enabled. See ISOLATED_REPORT_RENDERER.md
+and REPORT_RENDERING_VISUAL_ACCEPTANCE.md.
