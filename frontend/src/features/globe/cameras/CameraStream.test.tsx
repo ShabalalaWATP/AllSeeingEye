@@ -48,9 +48,63 @@ const camera: Camera = {
 beforeEach(() => {
   vi.clearAllMocks();
   mock.supported = true;
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
   vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => undefined);
 });
+
+it('destroys HLS while hidden and resumes the chosen stream only when visible', async () => {
+  render(<CameraStream camera={camera} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+  await waitFor(() => expect(mock.source).toHaveBeenCalledTimes(1));
+  act(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  expect(mock.destroy).toHaveBeenCalledTimes(1);
+  expect(screen.queryByLabelText('Camera stream: Public webcam')).not.toBeInTheDocument();
+  expect(screen.getByRole('status')).toHaveTextContent('paused');
+  act(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await waitFor(() => expect(mock.source).toHaveBeenCalledTimes(2));
+  fireEvent.click(screen.getByRole('button', { name: 'Stop video' }));
+  act(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  act(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  expect(mock.source).toHaveBeenCalledTimes(2);
+});
+
+it.each(['iframe', 'mjpeg', 'mp4'] as const)(
+  'unmounts %s media while the tab is hidden',
+  (kind) => {
+    const view = render(
+      <CameraStream
+        camera={{
+          ...camera,
+          stream_type: kind,
+          stream_url:
+            kind === 'iframe'
+              ? 'https://www.youtube.com/embed/UemFRPrl1hk'
+              : (camera.stream_url ?? null),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    expect(view.container.querySelector('iframe,img,video')).not.toBeNull();
+    act(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(view.container.querySelector('iframe,img,video')).toBeNull();
+  },
+);
 it('starts HLS only on request, restricts nested requests and destroys it on stop', async () => {
   const user = userEvent.setup();
   render(<CameraStream camera={camera} />);

@@ -55,7 +55,7 @@ export function CoordinateReadout({
       aria-label="Copy coordinates"
       title={bng ? `${BNG_NOTE} Click to copy.` : 'Click to copy'}
       onClick={() => void copy()}
-      className="absolute bottom-24 left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:bottom-24 lg:min-h-0"
+      className="map-coordinate-readout absolute left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:min-h-0"
     >
       {copied ? 'Copied' : text}
       {bng && grid === null && <span className="ml-2 text-muted">Outside BNG extent</span>}

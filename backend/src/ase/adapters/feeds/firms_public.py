@@ -1,5 +1,6 @@
 """NASA's published rolling 24-hour NOAA-20 CSV, available without a MAP_KEY."""
 
+import asyncio
 import csv
 import io
 from dataclasses import replace
@@ -61,4 +62,4 @@ class FirmsPublicConnector:
 
     async def fetch(self) -> list[Event]:
         payload = await self.http.get_bytes(PUBLIC_URL, max_redirects=0)
-        return parse_public_firms(payload, self.clock.now())
+        return await asyncio.to_thread(parse_public_firms, payload, self.clock.now())

@@ -6,9 +6,29 @@ import asyncio
 import contextlib
 from collections.abc import AsyncIterator
 
+from ase.adapters.store.memory import estimate_bytes
 from ase.application.ports.feeds import BusMessage
+from ase.domain.events import Event
 
 _CLOSE = BusMessage("__close__")
+MAX_UPSERT_EVENTS = 500
+# Leave room below the browser's 1 MiB byte cap for JSON escaping and framing.
+MAX_UPSERT_BYTES = 384 * 1024
+
+
+def _oversized_upsert(message: BusMessage) -> bool:
+    events = message.payload.get("events")
+    if message.kind != "event.upsert" or not isinstance(events, list):
+        return False
+    if len(events) > MAX_UPSERT_EVENTS:
+        return True
+    size = 0
+    for event in events:
+        if isinstance(event, Event):
+            size += estimate_bytes(event)
+            if size > MAX_UPSERT_BYTES:
+                return True
+    return False
 
 
 class InMemorySubscription:
@@ -72,7 +92,7 @@ class InMemorySubscription:
 
 
 class InMemoryEventBus:
-    def __init__(self, max_queue: int = 1_000) -> None:
+    def __init__(self, max_queue: int = 128) -> None:
         self._max_queue = max_queue
         self._subscriptions: set[InMemorySubscription] = set()
 
@@ -86,6 +106,10 @@ class InMemoryEventBus:
         return subscription
 
     async def publish(self, message: BusMessage) -> None:
+        # A sensor batch may contain tens of thousands of immutable events. Never
+        # retain or serialise that batch per slow browser: reload its bounded snapshot.
+        if _oversized_upsert(message):
+            message = BusMessage("event.resync", {"reason": "snapshot_required"})
         for subscription in list(self._subscriptions):
             subscription.push(message)
 

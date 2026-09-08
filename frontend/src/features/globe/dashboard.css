@@ -167,8 +167,16 @@
     max-height: calc(100% - 13.25rem);
   }
 }
-.globe-dashboard [aria-label='World clocks'] {
-  bottom: 4.25rem;
+.globe-dashboard .map-world-clocks {
+  bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+}
+.globe-dashboard .map-coordinate-readout {
+  bottom: calc(42px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 639px) {
+  .globe-dashboard .map-coordinate-readout {
+    bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+  }
 }
 .globe-dashboard .maplibregl-ctrl-attrib {
   max-width: min(32rem, calc(100vw - 2rem));
@@ -243,7 +251,6 @@
 
 @media (max-width: 1023px) {
   .globe-dashboard [aria-label='Copy coordinates'] {
-    bottom: 8rem;
     max-width: calc(100% - 7.5rem);
     white-space: normal;
   }

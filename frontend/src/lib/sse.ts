@@ -3,6 +3,8 @@
  * token). Frames are parsed from the byte stream; the connection reconnects with
  * backoff and asks for a fresh token when the server says goodbye.
  */
+import { SseFrameBuffer } from './sseBuffer';
+
 export interface SseMessage {
   event: string;
   data: string;
@@ -104,33 +106,43 @@ export class EventStreamClient {
       });
       if (response.status === 401) return 'unauthorised';
       if (!response.ok || response.body === null) return 'failed';
-      this.attempts = 0;
       this.options.onStatus('live');
-      return await this.consume(response.body);
+      return await this.consume(response.body, controller.signal);
     } catch {
       return this.running ? 'failed' : 'ended';
     } finally {
+      controller.abort();
       this.controller = null;
     }
   }
 
-  private async consume(body: ReadableStream<Uint8Array>): Promise<'ended' | 'bye'> {
+  private async consume(
+    body: ReadableStream<Uint8Array>,
+    signal: AbortSignal,
+  ): Promise<'ended' | 'bye'> {
     const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) return 'ended';
-      buffer += decoder.decode(value, { stream: true });
-      const parsed = parseSseFrames(buffer);
-      buffer = parsed.rest;
-      for (const message of parsed.messages) {
-        if (message.event === 'bye') {
-          await reader.cancel();
-          return 'bye';
+    const buffer = new SseFrameBuffer();
+    const cancel = () => {
+      void reader.cancel().catch(() => undefined);
+    };
+    signal.addEventListener('abort', cancel, { once: true });
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done || signal.aborted || this.stopped()) return 'ended';
+        for (const frame of buffer.push(value)) {
+          for (const message of parseSseFrames(frame).messages) {
+            if (this.stopped()) return 'ended';
+            if (message.event === 'bye') return 'bye';
+            this.attempts = 0;
+            this.options.onMessage(message);
+          }
         }
-        this.options.onMessage(message);
       }
+    } finally {
+      signal.removeEventListener('abort', cancel);
+      await reader.cancel().catch(() => undefined);
+      reader.releaseLock();
     }
   }
 

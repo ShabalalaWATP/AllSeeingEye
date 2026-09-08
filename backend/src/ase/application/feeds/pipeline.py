@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 import unicodedata
 from collections.abc import Sequence
@@ -101,3 +102,19 @@ class Pipeline:
         for stage in self._stages:
             events = stage.process(events)
         return events
+
+    async def run_cooperatively(self, events: list[Event], batch_size: int = 250) -> list[Event]:
+        """Yield between bounded batches so large sensor polls do not monopolise the API.
+
+        Stages operate on independent records. Preserve whole-batch normaliser
+        semantics by retaining the first surviving occurrence across chunks.
+        """
+        result: list[Event] = []
+        seen: set[str] = set()
+        for offset in range(0, len(events), batch_size):
+            for event in self.run(events[offset : offset + batch_size]):
+                if event.id not in seen:
+                    seen.add(event.id)
+                    result.append(event)
+            await asyncio.sleep(0)
+        return result

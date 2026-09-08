@@ -1,7 +1,8 @@
 """Bounded-window text/place clustering for navigation, never corroboration."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from datetime import datetime
+from itertools import chain
 
 from ase.domain.event_similarity import (
     GEO_LINKED_CATEGORIES,
@@ -16,41 +17,34 @@ from ase.domain.event_similarity import (
 )
 from ase.domain.events import Event
 from ase.domain.evidence_time import publication_order
+from ase.domain.similarity_candidates import MAX_CANDIDATES, token_candidate_pairs
 from ase.domain.source_provenance import DisjointGroups
 
 
 def _text_pairs(
     events: Sequence[Event], tokens: Mapping[str, frozenset[str]]
-) -> set[tuple[str, str]]:
-    index: dict[str, list[str]] = {}
-    for event in events:
-        for token in tokens[event.id]:
-            index.setdefault(token, []).append(event.id)
-    shared: dict[tuple[str, str], int] = {}
-    for ids in index.values():
-        for i, left in enumerate(ids):
-            for right in ids[i + 1 :]:
-                pair = (left, right) if left < right else (right, left)
-                shared[pair] = shared.get(pair, 0) + 1
-    by_id = {event.id: event for event in events}
-    pairs: set[tuple[str, str]] = set()
-    for (left, right), count in shared.items():
-        if count < MIN_SHARED_TOKENS:
+) -> Iterator[tuple[str, str]]:
+    # Date order preserves transitive time-window links between exact duplicates.
+    ordered = sorted(events, key=lambda event: (publication_order(event), event.id))
+    words = [tokens[event.id] for event in ordered]
+    for left, right in token_candidate_pairs(words):
+        if len(words[left] & words[right]) < MIN_SHARED_TOKENS:
             continue
-        left_date, right_date = by_id[left].published_at, by_id[right].published_at
-        if left_date is None or right_date is None:
+        first, second = ordered[left], ordered[right]
+        if first.published_at is None or second.published_at is None:
             continue
-        gap = abs(left_date - right_date)
-        if gap <= TEXT_WINDOW and jaccard(tokens[left], tokens[right]) >= STORY_SIMILARITY:
-            pairs.add((left, right))
-    return pairs
+        if (
+            abs(first.published_at - second.published_at) <= TEXT_WINDOW
+            and jaccard(words[left], words[right]) >= STORY_SIMILARITY
+        ):
+            yield first.id, second.id
 
 
-def _geo_pairs(events: Sequence[Event]) -> set[tuple[str, str]]:
+def _geo_pairs(events: Sequence[Event]) -> Iterator[tuple[str, str]]:
     located = [e for e in events if e.point is not None and e.category in GEO_LINKED_CATEGORIES]
-    pairs: set[tuple[str, str]] = set()
+    located.sort(key=lambda event: (publication_order(event), event.id))
     for i, left in enumerate(located):
-        for right in located[i + 1 :]:
+        for right in located[i + 1 : i + 1 + MAX_CANDIDATES]:
             if left.subtype != right.subtype or left.point is None or right.point is None:
                 continue
             if left.published_at is None or right.published_at is None:
@@ -58,15 +52,14 @@ def _geo_pairs(events: Sequence[Event]) -> set[tuple[str, str]]:
             if abs(left.published_at - right.published_at) > GEO_WINDOW:
                 continue
             if distance_km(left.point, right.point) <= GEO_RADIUS_KM:
-                pairs.add((left.id, right.id))
-    return pairs
+                yield left.id, right.id
 
 
 def build_stories(events: Sequence[Event]) -> list[list[Event]]:
     """Groups related topics for navigation, without asserting they report the same claim."""
     tokens = {event.id: title_tokens(event) for event in events}
     groups = DisjointGroups(event.id for event in events)
-    for left, right in _text_pairs(events, tokens) | _geo_pairs(events):
+    for left, right in chain(_text_pairs(events, tokens), _geo_pairs(events)):
         groups.union(left, right)
     members: dict[str, list[Event]] = {}
     for event in events:

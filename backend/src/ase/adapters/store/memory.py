@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable, Mapping
 from datetime import datetime
+from heapq import nlargest
 
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
@@ -26,14 +27,30 @@ from ase.domain.project import project_to_dict
 from ase.domain.source_provenance_records import provenance_size
 
 MAX_PRUNE_IDS = 10_000
-EVENT_OVERHEAD_BYTES = 240
+# Includes the slotted event, dates/point, per-record dict/set index entries,
+# attribute mapping, tag container and short Python string object overhead.
+# Text uses the worst-case four-byte Python Unicode representation.
+EVENT_OVERHEAD_BYTES = 1_024
 
 
 def estimate_bytes(event: Event) -> int:
-    size = EVENT_OVERHEAD_BYTES + len(event.title) + len(event.id)
-    size += len(event.summary or "") + len(event.url or "") + len(event.title_en or "")
-    size += sum(len(key) + len(str(value)) for key, value in event.attributes.items())
-    size += sum(len(tag) for tag in event.tags)
+    text = (
+        event.id,
+        event.source_id,
+        event.subtype,
+        event.title,
+        event.summary,
+        event.url,
+        event.language,
+        event.title_en,
+        event.country_iso,
+        event.grade_rationale,
+        event.story_id,
+        event.content_hash,
+    )
+    size = EVENT_OVERHEAD_BYTES + 4 * sum(len(value or "") for value in text)
+    size += sum(96 + 4 * (len(key) + len(str(value))) for key, value in event.attributes.items())
+    size += sum(64 + 4 * len(tag) for tag in event.tags)
     if event.geometry is not None:
         geometry = event.geometry
         size += len(geometry.source_geometry.encode("utf-8"))
@@ -83,6 +100,7 @@ class InMemoryEventStore:
         self._sizes: dict[str, int] = {}
         self._by_category: dict[Category, set[str]] = {}
         self._by_country: dict[str, set[str]] = {}
+        self._by_source: dict[str, set[str]] = {}
         self._estimated_bytes = 0
         # Evicted between prunes to hold the memory budget; announced at the next prune.
         self._pending_expiry: set[str] = set()
@@ -140,11 +158,9 @@ class InMemoryEventStore:
             ):
                 continue
             matched.append(event)
-        matched.sort(
-            key=lambda e: evidence_order(e, query.time_basis),
-            reverse=True,
+        return nlargest(
+            max(1, query.limit), matched, key=lambda e: evidence_order(e, query.time_basis)
         )
-        return matched[: max(1, query.limit)]
 
     def prune(self, now: datetime) -> PruneResult:
         expired: list[str] = []
@@ -204,6 +220,19 @@ class InMemoryEventStore:
         )
 
     def _candidates(self, query: EventQuery) -> Iterable[str]:
+        if query.source_ids:
+            source_ids: set[str] = set()
+            for source_id in query.source_ids:
+                source_ids.update(self._by_source.get(source_id, ()))
+            return [
+                i
+                for i in source_ids
+                if (not query.categories or self._events[i].category in query.categories)
+                and (
+                    not query.country_iso
+                    or i in self._by_country.get(query.country_iso.upper(), ())
+                )
+            ]
         if query.country_iso:
             ids = self._by_country.get(query.country_iso.upper(), set())
             if query.categories:
@@ -245,6 +274,7 @@ class InMemoryEventStore:
         self._sizes[event.id] = size
         self._estimated_bytes += size
         self._by_category.setdefault(event.category, set()).add(event.id)
+        self._by_source.setdefault(event.source_id, set()).add(event.id)
         if event.country_iso:
             self._by_country.setdefault(event.country_iso.upper(), set()).add(event.id)
 
@@ -254,5 +284,6 @@ class InMemoryEventStore:
             return
         self._estimated_bytes -= self._sizes.pop(event_id, 0)
         self._by_category.get(event.category, set()).discard(event_id)
+        self._by_source.get(event.source_id, set()).discard(event_id)
         if event.country_iso:
             self._by_country.get(event.country_iso.upper(), set()).discard(event_id)

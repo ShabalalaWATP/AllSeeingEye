@@ -2660,3 +2660,35 @@ statements, 90.16% branches, 93.73% functions and 96.65% lines, without lowering
 thresholds. Added cancellation, late-result, selection, measurement and keyboard
 edge cases. Camera interaction fixtures await the lazy route import before
 asserting map behaviour, removing a cold-transform timing dependency.
+
+
+## 8 September 2026: remaining map crashes and resource pressure
+
+Investigated the user's continuing crashes beyond the earlier sensor-grading fix.
+Confirmed oversized stream messages, repeated full browser mirror work, unbounded
+partial-frame accumulation, camera request bursts/cache retention, and remaining
+quadratic narrative candidate allocation. The prior functional tests did not
+establish performance under expanded feed load.
+
+Implemented transport and queue bounds, coalesced updates, bounded snapshots,
+cooperative backend processing, indexed queries, conservative memory estimates,
+and bounded approximate topic candidates. Incoming instruments still receive
+individual assessments. Hidden tabs stop map feeds and camera playback; camera
+requests run four at once and evicted data cannot remain in a second catalogue.
+Map canvases, tile caches and overlap picking have explicit work limits. Normal
+bulk refreshes preserve current map selection while canonical data is loading.
+
+Removed CSS overrides that held clocks and coordinates too high above the map
+bottom. PERFORMANCE_REPAIR.md records measured improvements and tradeoffs. The
+backend was restarted only after verifying its ASE command and port 8001; no
+operator migration or credential change was performed. Live AIS and FIRMS remain
+populated. Backend regression suite: 158 passed; Ruff, formatting, mypy and
+architecture contracts passed. Frontend build and lint passed.
+
+
+Final frontend gate: 1,210 tests passed across 239 files. Coverage is 95.36%
+statements, 90.19% branches, 93.70% functions and 96.71% lines. The regression test
+for live map interactions awaits the deliberate batching interval and expiry.
+Thresholds were unchanged. Staged whitespace and supplied-key checks passed;
+secrets remain in ignored local configuration. Visual GPU and long-duration soak
+verification remain explicitly unclaimed.

@@ -4,18 +4,22 @@
  * asks the auth store for a fresh one when the server closes the stream.
  */
 import { useEffect } from 'react';
+import { usePageVisible } from '@/components/brand/useMotionPreferences';
 
 import { EventStreamClient } from '@/lib/sse';
 import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import { useEventsStore } from '@/stores/events';
+import { EventUpdateBatch } from '@/stores/events.stream';
 
 export const STREAM_URL = '/api/stream';
 
 export function useLiveEvents(enabled = true): void {
+  const visible = usePageVisible();
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !visible) return;
     const events = useEventsStore.getState();
+    const batch = new EventUpdateBatch(useEventsStore.getState);
     void events.load();
     const client = new EventStreamClient({
       url: STREAM_URL,
@@ -26,11 +30,12 @@ export function useLiveEvents(enabled = true): void {
       },
       onMessage: (message) => {
         if (message.event === 'access.changed') invalidateWorkspaceAccess();
-        useEventsStore.getState().handleStreamMessage(message);
+        batch.receive(message);
       },
       onStatus: (status) => {
         useEventsStore.getState().setStatus(status);
         if (status === 'live') {
+          batch.flush();
           // The stream does not replay missed changes. Take a snapshot after the
           // subscription opens, including reconnects and normal token renewal.
           void useEventsStore.getState().load();
@@ -40,7 +45,8 @@ export function useLiveEvents(enabled = true): void {
     client.start();
     return () => {
       client.stop();
+      batch.clear();
       useEventsStore.getState().cancelLoad();
     };
-  }, [enabled]);
+  }, [enabled, visible]);
 }

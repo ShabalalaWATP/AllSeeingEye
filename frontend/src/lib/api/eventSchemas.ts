@@ -118,4 +118,6 @@ export const streamUpsertSchema = z.object({
   events: z.array(liveEventSchema),
 });
 export const streamExpireSchema = z.object({ ids: z.array(z.string()), count: z.number().int() });
-export const streamResyncSchema = z.object({ reason: z.enum(['expiry_overflow', 'stream_gap']) });
+export const streamResyncSchema = z.object({
+  reason: z.enum(['expiry_overflow', 'stream_gap', 'snapshot_required']),
+});

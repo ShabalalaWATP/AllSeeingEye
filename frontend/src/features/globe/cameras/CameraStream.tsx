@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Camera } from '@/lib/api/cameras';
 import { isCameraStreamUrl } from '@/lib/api/cameras';
+import { usePageVisible } from '@/components/brand/useMotionPreferences';
 
 /** The player exists only after an explicit request, and releases streams on close. */
 export function CameraStream({ camera }: { camera: Camera }) {
   const [playing, setPlaying] = useState(false);
+  const visible = usePageVisible();
   const safe = isCameraStreamUrl(camera.stream_url, camera.stream_type === 'iframe');
   if (!safe || !camera.stream_url) return null;
   return (
@@ -20,8 +22,14 @@ export function CameraStream({ camera }: { camera: Camera }) {
       >
         {playing ? 'Stop video' : 'Play video'}
       </button>
-      {playing && (
-        <Player url={camera.stream_url} kind={camera.stream_type ?? 'mp4'} title={camera.title} />
+      {playing && !visible && <p role="status">Video paused while this tab is hidden.</p>}
+      {playing && visible && (
+        <Player
+          key={`${camera.id}:${camera.stream_url}`}
+          url={camera.stream_url}
+          kind={camera.stream_type ?? 'mp4'}
+          title={camera.title}
+        />
       )}
     </section>
   );

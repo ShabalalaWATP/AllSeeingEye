@@ -28,7 +28,7 @@ export function WorldClocks() {
   return (
     <section
       aria-label="World clocks"
-      className="pointer-events-none absolute inset-x-3 bottom-6 z-10 flex justify-center"
+      className="map-world-clocks pointer-events-none absolute inset-x-3 z-10 flex justify-center"
     >
       <dl className="pointer-events-auto grid grid-cols-5 gap-x-2 rounded-sm bg-black/75 px-2 py-1.5 text-center text-[9px] sm:px-3 sm:text-[10px] text-muted backdrop-blur-sm sm:gap-x-6">
         {WORLD_CLOCKS.map((clock, index) => (

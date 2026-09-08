@@ -1,5 +1,6 @@
 """Bounded NOAA-20 VIIRS thermal observations from NASA FIRMS, never inferred attacks."""
 
+import asyncio
 import csv
 import io
 import math
@@ -179,4 +180,4 @@ class FirmsConnector:
 
     async def fetch(self) -> list[Event]:
         payload = await self._http.get_secret_bytes(self._target)
-        return parse_firms(payload, self._clock.now())
+        return await asyncio.to_thread(parse_firms, payload, self._clock.now())

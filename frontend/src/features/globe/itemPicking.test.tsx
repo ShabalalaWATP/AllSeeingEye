@@ -160,7 +160,7 @@ it.each([true, false])(
         x: 100,
         y: 100,
         radius: 4,
-        depth: 64,
+        depth: 8,
       });
   },
 );

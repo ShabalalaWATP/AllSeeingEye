@@ -41,3 +41,25 @@ it('resnapshots after initial subscription, reconnect and token renewal and canc
   unmount();
   expect(cancel).toHaveBeenCalledOnce();
 });
+
+it('disconnects hidden tabs and takes a fresh authenticated snapshot on return', () => {
+  FakeEventStreamClient.reset();
+  const load = vi.spyOn(useEventsStore.getState(), 'load').mockResolvedValue();
+  const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+  const { unmount } = renderHook(() => useLiveEvents());
+  const first = FakeEventStreamClient.instances[0]!;
+  act(() => {
+    visibility.mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  expect(first.stop).toHaveBeenCalledOnce();
+  act(() => {
+    visibility.mockReturnValue('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  expect(FakeEventStreamClient.instances).toHaveLength(2);
+  expect(load).toHaveBeenCalledTimes(2);
+  unmount();
+  visibility.mockRestore();
+  load.mockRestore();
+});

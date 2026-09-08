@@ -80,6 +80,8 @@ function without(
 }
 
 export const useEventsStore = create<EventsState>()((set, get) => {
+  let resyncRequested = false;
+  const needsResync = () => resyncRequested;
   let pending: {
     controller: AbortController;
     changes: Map<string, LiveEvent | null>;
@@ -99,6 +101,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     ...initialEventsState,
 
     load: async () => {
+      resyncRequested = false;
       pending?.controller.abort();
       const request = {
         controller: new AbortController(),
@@ -116,6 +119,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         if (!isCurrent()) return;
         const supplement = await loadCoverageSupplements(events, stats, request.controller.signal);
         if (!isCurrent()) return;
+        if (needsResync()) return;
         if (request.overflow) {
           set({
             error:
@@ -155,11 +159,13 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         if (pending === request) {
           pending = null;
           set({ loading: false });
+          if (needsResync()) void get().load();
         }
       }
     },
 
     cancelLoad: () => {
+      resyncRequested = false;
       pending?.controller.abort();
       pending = null;
       set({ loading: false });
@@ -185,6 +191,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     applyExpire: (ids) => {
       if (ids.length === 0) return;
       for (const id of ids) record(id, null);
+      if (!ids.some((id) => id in get().byId)) return;
       const byId = without(get().byId, ids);
       const selectedId = get().selectedId;
       set({
@@ -207,21 +214,27 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       } else if (message.event === 'event.expire') {
         const parsed = streamExpireSchema.safeParse(payload);
         if (parsed.success) get().applyExpire(parsed.data.ids);
-      } else if (
-        message.event === 'event.resync' &&
-        streamResyncSchema.safeParse(payload).success
-      ) {
+      } else if (message.event === 'event.resync') {
+        const parsed = streamResyncSchema.safeParse(payload);
+        if (!parsed.success) return;
+        if (parsed.data.reason !== 'snapshot_required')
+          set({
+            byId: {},
+            list: [],
+            selectedId: null,
+            stats: null,
+            loaded: false,
+            snapshotCount: null,
+            snapshotLimited: false,
+            mirrorCapped: false,
+          });
+        if (pending) {
+          // Several bulk feeds can finish together. Finish this bounded snapshot,
+          // then reconcile once more instead of repeatedly aborting useful work.
+          resyncRequested = true;
+          return;
+        }
         get().cancelLoad();
-        set({
-          byId: {},
-          list: [],
-          selectedId: null,
-          stats: null,
-          loaded: false,
-          snapshotCount: null,
-          snapshotLimited: false,
-          mirrorCapped: false,
-        });
         void get().load();
       }
     },
@@ -251,6 +264,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
 
     reset: () => {
+      resyncRequested = false;
       pending?.controller.abort();
       pending = null;
       set({ ...initialEventsState });

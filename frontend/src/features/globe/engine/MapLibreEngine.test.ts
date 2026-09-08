@@ -20,6 +20,16 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     MapboxOverlay.reset();
   });
 
+  it('bounds both framebuffer resolutions and the tile cache on high-DPI monitors', () => {
+    const ratio = vi.spyOn(window, 'devicePixelRatio', 'get').mockReturnValue(3);
+    const engine = createMapLibreEngine();
+    engine.mount(document.createElement('div'));
+    expect(FakeMap.instances[0]!.options).toMatchObject({ pixelRatio: 1.5, maxTileCacheSize: 128 });
+    expect(MapboxOverlay.instances[0]!.props.useDevicePixels).toBe(1.5);
+    engine.destroy();
+    ratio.mockRestore();
+  });
+
   it('mounts once, applies the projection after the style loads, flies and subscribes', () => {
     const engine = createMapLibreEngine();
     const container = document.createElement('div');
@@ -45,7 +55,7 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     expect(map.setProjection).not.toHaveBeenCalled();
     // The deck.gl overlay is attached as a control and receives the data layers.
     const overlay = MapboxOverlay.instances[0]!;
-    expect(overlay.props).toEqual({ interleaved: false, layers: [] });
+    expect(overlay.props).toMatchObject({ interleaved: false, layers: [], useDevicePixels: 1 });
     expect(map.addControl).toHaveBeenCalledWith(overlay);
     const layer = { id: 'events-disaster' };
     engine.setLayers([layer]);

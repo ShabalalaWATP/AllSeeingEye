@@ -541,3 +541,24 @@ See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md for setup and limitati
 See SATELLITE_COVERAGE.md, MAP_INFRASTRUCTURE.md, GROUND_STATIONS.md and
 FIRMS_OPERATIONS.md. Public military coverage is incomplete. Satellite markers
 are propagated estimates. Cable coverage is a bounded, uneven snapshot.
+
+
+## Map stability and efficiency, 8 September 2026
+
+- [x] Move clocks and coordinate readout to the bottom safe area.
+- [x] Bound stream publication, subscriber queues and browser frame parsing.
+- [x] Coalesce browser updates and refresh requests without dropping expiry or
+  authorisation barriers; retain selection during normal bulk refreshes.
+- [x] Pause hidden-tab feeds and camera playback; bound camera downloads/cache.
+- [x] Cap map pixel ratio, tile cache and overlapping-object picking work.
+- [x] Yield large backend batches, index source queries and account for retained
+  object overhead in the store budget.
+- [x] Bound narrative similarity work and grade incoming instrument batches
+  independently of the narrative context limit.
+- [x] Verify synthetic work bounds and populated authenticated live snapshots.
+- [x] Complete final frontend coverage gate (1,210 tests, 90.19% branches) and
+  prepare the checked repair on main.
+- [ ] Validate GPU behaviour visually when administrator browser policy permits;
+  short runtime checks are not a long-duration soak test.
+
+See PERFORMANCE_REPAIR.md for measurements, tradeoffs and verification limits.

@@ -120,7 +120,7 @@ describe('GlobePage', () => {
     await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
-    expect(screen.getByRole('switch', { name: 'Disasters 2' })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Disasters 2' })).toBeInTheDocument();
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getAllByRole('button')[0]).toHaveTextContent('Flash flood in Valencia');
 
@@ -150,7 +150,11 @@ describe('GlobePage', () => {
         id: null,
       });
     });
-    expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('complementary', { name: 'Event details' }),
+      ).not.toBeInTheDocument(),
+    );
     expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
 
     unmount();

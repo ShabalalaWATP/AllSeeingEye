@@ -76,7 +76,7 @@ def serialise(message: BusMessage, wanted: frozenset[Category]) -> dict[str, Any
         return {"ids": id_list, "count": len(id_list)}
     if message.kind == "event.resync":
         reason = message.payload.get("reason")
-        if reason in ("expiry_overflow", "stream_gap"):
+        if reason in ("expiry_overflow", "stream_gap", "snapshot_required"):
             return {"reason": reason}
     if message.kind == "alert":
         alert = message.payload.get("alert")
@@ -163,7 +163,7 @@ async def stream(
                     continue
                 payload = await _authorised_payload(message, wanted, claims, container)
                 if payload is not None:
-                    yield {"event": message.kind, "data": json.dumps(payload)}
+                    yield {"event": message.kind, "data": json.dumps(payload, ensure_ascii=False)}
         finally:
             subscription.close()
             container.streams.release(user.id)

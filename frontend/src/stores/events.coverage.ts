@@ -40,13 +40,25 @@ export function boundedEvents(
 ): Record<string, LiveEvent> {
   const events = Object.values(byId);
   if (events.length <= limit) return byId;
-  events.sort((a, b) => observationOrder(b, a) || a.id.localeCompare(b.id));
+  // Parse each timestamp once, not at every comparison of a full sensor mirror.
+  const times = new Map(
+    events.map((event) => [
+      event,
+      [Date.parse(event.observed_at), Date.parse(event.published_at ?? event.observed_at)] as const,
+    ]),
+  );
+  const newestFirst = (a: LiveEvent, b: LiveEvent) => {
+    const left = times.get(a) ?? [0, 0];
+    const right = times.get(b) ?? [0, 0];
+    return right[0] - left[0] || right[1] - left[1] || a.id.localeCompare(b.id);
+  };
+  events.sort(newestFirst);
   const reserved = events
     .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
     .slice(0, Math.min(RESERVED_VESSELS, limit));
   const satellites = events
     .filter(isSatellite)
-    .sort((a, b) => satellitePriority(b) - satellitePriority(a) || observationOrder(b, a))
+    .sort((a, b) => satellitePriority(b) - satellitePriority(a) || newestFirst(a, b))
     .slice(0, Math.min(RESERVED_SATELLITES, limit - reserved.length));
   reserved.push(...satellites);
   reserved.push(

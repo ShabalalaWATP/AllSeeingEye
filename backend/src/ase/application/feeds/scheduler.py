@@ -167,7 +167,7 @@ class FeedScheduler:
     ) -> PollOutcome:
         """No external requests here; caller retains the shared admission/release guard."""
         source_id = connector.spec.id
-        events = self._pipeline.run(raw)
+        events = await self._pipeline.run_cooperatively(raw)
         result = self._store.upsert(events)
         finished = self._clock.now()
         latency_ms = (finished - started).total_seconds() * 1000

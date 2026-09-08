@@ -4,6 +4,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 
 from ase.domain.event_similarity import COPY_SIMILARITY, jaccard, text_tokens
+from ase.domain.similarity_candidates import token_candidate_pairs
 from ase.domain.source_ratings import SourceRating, unassessed_source_rating
 
 
@@ -64,17 +65,28 @@ def organisation_groups(items: Sequence[ProvenanceItem]) -> OrganisationGroups:
     by_organisation: dict[str | None, str] = {}
     tokens = {item.id: text_tokens(item.title) for item in items}
     possible_copies = False
-    for index, item in enumerate(items):
+    by_content: dict[str, ProvenanceItem] = {}
+    for item in items:
         organisation = item.organisation or None
         if organisation in by_organisation:
             groups.union(item.id, by_organisation[organisation])
         else:
             by_organisation[organisation] = item.id
-        for other in items[:index]:
-            same_content = bool(item.content_hash) and item.content_hash == other.content_hash
-            if same_content or jaccard(tokens[item.id], tokens[other.id]) >= COPY_SIMILARITY:
+        if item.content_hash:
+            other = by_content.get(item.content_hash)
+            if other is not None:
                 groups.union(item.id, other.id)
                 possible_copies = possible_copies or organisation != (other.organisation or None)
+            by_content[item.content_hash] = item
+    ordered = sorted(items, key=lambda item: item.id)
+    words = [tokens[item.id] for item in ordered]
+    for left, right in token_candidate_pairs(words):
+        item, other = ordered[left], ordered[right]
+        if jaccard(words[left], words[right]) >= COPY_SIMILARITY:
+            groups.union(item.id, other.id)
+            possible_copies = possible_copies or (item.organisation or None) != (
+                other.organisation or None
+            )
     group_of = {item.id: groups.find(item.id) for item in items}
     return OrganisationGroups(
         group_of=group_of,

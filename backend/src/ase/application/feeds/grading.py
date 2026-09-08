@@ -11,7 +11,9 @@ from ase.domain.grading import SourceProfile, cutoff_for, grade_events
 from ase.domain.source_ratings import unassessed_source_rating
 from ase.domain.sources import SourceSpec
 
-MAX_POOL = 5_000
+# Live grading is approximate context, not archival claim verification. Bound
+# downstream context comparisons independently of the much larger sensor store.
+MAX_POOL = 1_000
 
 
 def profiles_from_specs(specs: Sequence[SourceSpec]) -> dict[str, SourceProfile]:
@@ -41,12 +43,28 @@ class GradingService:
     def regrade(self, events: Sequence[Event]) -> list[Event]:
         """Regrades every category the batch touched; returns the events whose grade changed."""
         changed: list[Event] = []
+        instruments = [
+            event
+            for event in events
+            if (profile := self._profiles.get(event.source_id)) is not None and profile.instrument
+        ]
+        # Instrument grading is independent of narrative context. Do not leave
+        # most of a large sensor batch ungraded because the topic window is full.
+        for graded in grade_events(instruments, self._profiles):
+            if graded.changed:
+                changed.append(graded.apply())
         since = cutoff_for(self._clock.now())
         for category in sorted({event.category for event in events}, key=lambda c: c.value):
             pool = self._store.query(
                 EventQuery(categories=frozenset({category}), since=since, limit=MAX_POOL)
             )
-            for graded in grade_events(pool, self._profiles):
+            narrative = [
+                event
+                for event in pool
+                if (profile := self._profiles.get(event.source_id)) is None
+                or not profile.instrument
+            ]
+            for graded in grade_events(narrative, self._profiles):
                 if graded.changed:
                     changed.append(graded.apply())
         if changed:

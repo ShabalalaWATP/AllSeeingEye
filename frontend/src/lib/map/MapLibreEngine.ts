@@ -73,6 +73,9 @@ export class MapLibreEngine implements MapEngine {
       maxZoom: CAMERA_MAX_ZOOM,
       minPitch: 0,
       maxPitch: CAMERA_MAX_PITCH,
+      // Two WebGL canvases at native 3x DPR need nine times the framebuffer memory.
+      pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+      maxTileCacheSize: 128,
       ...(this.options.captureEnabled
         ? {
             interactive: false,
@@ -86,6 +89,7 @@ export class MapLibreEngine implements MapEngine {
     this.overlay = new MapboxOverlay({
       interleaved: false,
       layers: [],
+      useDevicePixels: Math.min(window.devicePixelRatio || 1, 1.5),
       ...(this.options.captureEnabled
         ? {
             useDevicePixels: 1,
@@ -194,7 +198,7 @@ export class MapLibreEngine implements MapEngine {
     if (!Number.isFinite(x) || !Number.isFinite(y) || this.options.captureEnabled) return [];
     return (
       this.overlay
-        ?.pickMultipleObjects({ x, y, radius: 4, depth: 64 })
+        ?.pickMultipleObjects({ x, y, radius: 4, depth: 8 })
         .map((hit) => hit.object as unknown) ?? []
     );
   }
@@ -306,12 +310,18 @@ export class MapLibreEngine implements MapEngine {
   }
 
   destroy(): void {
+    const removedMap = this.map;
     this.captureAbort?.abort();
     this.revision += 1;
     this.spinning = false;
     this.map?.remove();
     this.map = null;
     this.overlay = null;
+    this.layers = [];
+    if (import.meta.env.DEV) {
+      const debug = window as unknown as { __aseMap?: MapLibreMap };
+      if (debug.__aseMap === removedMap) delete debug.__aseMap;
+    }
     this.styleReady = false;
   }
 

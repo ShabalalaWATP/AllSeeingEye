@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import csv
 import io
 import math
@@ -127,9 +128,12 @@ class SatelliteConnector:
                 else []
             )
             self._fetched_at = now
-        events = {
-            event.id: event for fields in self._elements if (event := self._to_event(fields, now))
-        }
+        events: dict[str, Event] = {}
+        for index, fields in enumerate(self._elements):
+            if event := self._to_event(fields, now):
+                events[event.id] = event
+            if (index + 1) % 250 == 0:
+                await asyncio.sleep(0)
         return list(events.values())
 
     def _to_event(self, fields: dict[str, Any], now: datetime) -> Event | None:
