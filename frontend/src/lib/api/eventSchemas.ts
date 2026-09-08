@@ -3,6 +3,8 @@
  * derived from the backend's EventOut, StoreStatsOut and SourceOut models.
  */
 import { z } from 'zod';
+import type { components } from './types.gen';
+import { sourceDateSchema, textTransformationSchema } from './sourceProvenance';
 
 export const categorySchema = z.enum([
   'news',
@@ -25,6 +27,8 @@ export const pointSchema = z.object({ lon: z.number(), lat: z.number() });
 const scalarSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
 export const liveEventSchema = z.object({
+  transformations: z.array(textTransformationSchema).default([]),
+  source_dates: z.array(sourceDateSchema).default([]),
   id: z.string(),
   source_id: z.string(),
   category: categorySchema,
@@ -48,7 +52,7 @@ export const liveEventSchema = z.object({
   story_id: z.string().nullable(),
   attributes: z.record(z.string(), scalarSchema),
 });
-export type LiveEvent = z.infer<typeof liveEventSchema>;
+export type LiveEvent = components['schemas']['EventOut'];
 
 export const eventsResponseSchema = z.object({
   items: z.array(liveEventSchema),

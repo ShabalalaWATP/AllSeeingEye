@@ -131,6 +131,7 @@ class CollectionAttempt:
     purpose: str = "baseline"
     candidate_id: str | None = None
     registry_lookup: RegistryLookup | None = None
+    query_variant: QueryVariant | None = None
 
     def __post_init__(self) -> None:
         validate_task_receipt(self.task_id, self.purpose, self.candidate_id)

@@ -32,6 +32,11 @@ from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_bod
 from ase.domain.research_context import ResearchContext
 from ase.domain.research_context_records import context_to_dict
 from ase.domain.research_records import ResearchReceipt, research_to_dict
+from ase.domain.source_provenance_records import (
+    dates_from_list,
+    provenance_to_dict,
+    transformations_from_list,
+)
 from ase.domain.source_rating_records import source_rating_from_dict, source_rating_to_dict
 from ase.domain.validation import Finding, Severity
 
@@ -213,6 +218,12 @@ def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
         data["source_rating"] = source_rating_to_dict(item.source_rating)
         data["attributes"] = evidence_attributes_to_list(item.attributes)
         # Omit absent additions: saved map revisions hash the historical wire shape.
+        data.pop("transformations")
+        data.pop("source_dates")
+        if item.transformations:
+            data["transformations"] = [provenance_to_dict(row) for row in item.transformations]
+        if item.source_dates:
+            data["source_dates"] = [provenance_to_dict(row) for row in item.source_dates]
         data.pop("geometry")
         data.pop("observation")
         data.pop("project")
@@ -265,6 +276,8 @@ def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...
             geometry=geometry_from_dict(row.get("geometry")),
             observation=observation_from_dict(row.get("observation")),
             project=project_from_dict(row.get("project")),
+            transformations=transformations_from_list(row.get("transformations", ())),
+            source_dates=dates_from_list(row.get("source_dates", ())),
         )
         for row in rows
     )

@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ase.api.schemas_research_plan import ResearchPlanOut
+from ase.api.schemas_research_plan import QueryVariantIn, ResearchPlanOut
 from ase.domain.registry_identifiers import RegistryLookup
 from ase.domain.research import CollectionStatus
 
@@ -23,6 +23,7 @@ class CollectionAttemptOut(BaseModel):
     purpose: Literal["baseline", "challenge", "disambiguation"] = "baseline"
     candidate_id: str | None = None
     registry_lookup: RegistryLookup | None = None
+    query_variant: QueryVariantIn | None = None
 
 
 class CollectionPassOut(BaseModel):

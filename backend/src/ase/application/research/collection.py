@@ -141,6 +141,7 @@ class ResearchCollector:
                 purpose=task.purpose,
                 candidate_id=task.candidate_id,
                 registry_lookup=task.registry_lookup,
+                query_variant=task.query_variant,
             )
             attempts.append(attempt)
             if progress is not None:

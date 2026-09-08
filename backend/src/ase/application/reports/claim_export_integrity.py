@@ -2,18 +2,18 @@
 
 import hashlib
 import json
-from dataclasses import asdict
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from uuid import UUID
 
+from ase.domain.canonical_provenance import canonical_snapshot
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_records import ReportRecord, ReportVersion
 
 
 def export_content_digest(record: ReportRecord, version: ReportVersion) -> str:
     def convert(value: object) -> str:
-        if isinstance(value, datetime):
+        if isinstance(value, datetime | date):
             return value.isoformat()
         if isinstance(value, UUID):
             return str(value)
@@ -27,7 +27,9 @@ def export_content_digest(record: ReportRecord, version: ReportVersion) -> str:
     digest = hashlib.sha256()
     size = 0
     try:
-        for part in encoder.iterencode({"record": asdict(record), "version": asdict(version)}):
+        for part in encoder.iterencode(
+            {"record": canonical_snapshot(record), "version": canonical_snapshot(version)}
+        ):
             encoded = part.encode("utf-8")
             size += len(encoded)
             if size > 16 * 1024 * 1024:

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryVariantSchema } from '@/lib/api/sourceProvenance';
 import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 import { candidateHypothesisSchema, plannedQueryTaskSchema } from '@/lib/api/researchPlan';
@@ -21,9 +22,7 @@ const savedScope = z.object({
   research_terms: z.array(z.string()).nullable().optional(),
   research_candidate_hypotheses: z.array(candidateHypothesisSchema).max(8).optional(),
   research_planned_tasks: z.array(plannedQueryTaskSchema).max(8).optional(),
-  research_query_variants: z
-    .array(z.object({ language: z.string(), terms: z.array(z.string()) }))
-    .optional(),
+  research_query_variants: z.array(queryVariantSchema).optional(),
   research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']).optional(),
   research_subject: z.string().nullable().optional(),
 });

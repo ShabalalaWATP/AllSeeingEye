@@ -134,7 +134,12 @@ def _evidence(doc: DocumentBuilder, items: Sequence[EvidenceItem]) -> None:
             doc.add(f"Translation (unverified): {item.title_en}")
         if item.summary:
             doc.add(f"Source snippet: {item.summary}")
-        doc.add("\n".join(evidence_metadata(item)), BlockKind.METADATA)
+        metadata = evidence_metadata(item)
+        if item.transformations or item.source_dates:
+            for line in metadata:
+                doc.add(line, BlockKind.METADATA)
+        else:
+            doc.add("\n".join(metadata), BlockKind.METADATA)
         for name, value in (("Source URL", item.url), ("Archive URL", item.archive_url)):
             if value:
                 doc.add(

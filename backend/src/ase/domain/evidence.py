@@ -18,8 +18,11 @@ from ase.domain.evidence_geometry import EvidenceGeometry
 from ase.domain.judgement_assessment import evidence_confidence_ceiling
 from ase.domain.observation import ObservationMetadata
 from ase.domain.project import ProjectMetadata
+from ase.domain.source_dates import SourceDate
 from ase.domain.source_provenance import ProvenanceItem, organisation_groups
+from ase.domain.source_provenance_records import validate_provenance
 from ase.domain.source_ratings import SourceRating
+from ase.domain.text_transformations import TextTransformation
 
 # Phrases that read as instructions to the model rather than as reporting.
 INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
@@ -86,6 +89,11 @@ class EvidenceItem:
     geometry: EvidenceGeometry | None = None
     observation: ObservationMetadata | None = None
     project: ProjectMetadata | None = None
+    transformations: tuple[TextTransformation, ...] = ()
+    source_dates: tuple[SourceDate, ...] = ()
+
+    def __post_init__(self) -> None:
+        validate_provenance(self.transformations, self.source_dates)
 
     @classmethod
     def from_event(
@@ -135,6 +143,8 @@ class EvidenceItem:
             geometry=event.geometry,
             observation=event.observation,
             project=event.project,
+            transformations=event.transformations,
+            source_dates=event.source_dates,
         )
 
 

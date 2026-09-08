@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/Button';
 import { TextAreaField } from '@/components/ui/Field';
 import { useLanguageCatalogue } from '@/lib/hooks/useLanguageCatalogue';
 import type { ResearchPlanState } from './useResearchPlan';
+import { QueryVariantDetails } from '@/components/reports/QueryVariantDetails';
 import { RegistryLookupDetails } from '@/components/reports/RegistryLookupDetails';
 import { PlannedTasksEditor } from './PlannedTasksEditor';
+import { QueryVariantsEditor } from './QueryVariantsEditor';
 
 export function ResearchPlanEditor({
   plan,
@@ -75,28 +77,12 @@ export function ResearchPlanEditor({
               supply exact terms to review the queries in advance.
             </p>
           )}
-          <details className="space-y-3">
-            <summary className="cursor-pointer text-sm">Language-specific search terms</summary>
-            <p className="text-xs text-muted">
-              {area
-                ? 'Enter your own language-specific terms where a spatial provider supports them. Area collection does not automatically translate or replan queries.'
-                : 'Enter your own terms in each language. These are operator-supplied text, not automatic translations. For blank non-English fields, the run can make one translation call using your configured AI connection (up to 30 seconds). If unavailable or invalid, original terms are used. Translations and their status are saved for review.'}
-            </p>
-            {languages.map((language) => (
-              <TextAreaField
-                key={language}
-                label={`Search terms: ${languageName(language)}`}
-                dir="auto"
-                value={plan.variantText[language] ?? ''}
-                rows={2}
-                maxLength={1012}
-                hint="One phrase per line, up to 12."
-                onChange={(event) =>
-                  plan.setVariantText((current) => ({ ...current, [language]: event.target.value }))
-                }
-              />
-            ))}
-          </details>
+          <QueryVariantsEditor
+            plan={plan}
+            languages={languages}
+            languageName={languageName}
+            area={area}
+          />
           <PlannedTasksEditor
             value={plan.tasks}
             sources={sources.map((source) => ({
@@ -179,6 +165,7 @@ export function ResearchPlanEditor({
                           : ''}
                       </p>
                     )}
+                    {task.query_variant && <QueryVariantDetails value={task.query_variant} />}
                     {task.registry_lookup && <RegistryLookupDetails value={task.registry_lookup} />}
                     <p className="break-words text-muted">
                       {task.terms.length

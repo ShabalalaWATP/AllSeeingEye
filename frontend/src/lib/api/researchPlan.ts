@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryVariantSchema } from './sourceProvenance';
 
 import { apiCall } from './client';
 import type { components } from './types.gen';
@@ -68,6 +69,7 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
       supported: z.boolean(),
       language: z.string().nullable(),
       query_language: z.string().nullable().default(null),
+      query_variant: queryVariantSchema.nullable().default(null),
       terms: z.array(z.string()),
       provenance: z.string(),
       temporal_scope: z.string(),
@@ -89,7 +91,7 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
       languages: z.array(z.string()),
       model: z.string(),
       status: z.enum(['completed', 'failed', 'unavailable']),
-      variants: z.array(z.object({ language: z.string(), terms: z.array(z.string()) })),
+      variants: z.array(queryVariantSchema),
     })
     .nullable()
     .default(null),

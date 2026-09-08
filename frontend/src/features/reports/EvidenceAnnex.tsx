@@ -1,3 +1,4 @@
+import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
 import { EvidenceProjectDetails } from '@/components/maps/EvidenceProjectDetails';
 import type { ReactNode } from 'react';
 
@@ -40,7 +41,12 @@ function EvidenceDetails({
         <span className="ml-2 inline-grid w-[calc(100%-2rem)] grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 align-top">
           <span className="font-mono text-xs text-ember">{item.label}</span>
           <span className="min-w-0">
-            <span className="block font-medium [overflow-wrap:anywhere]">{item.title}</span>
+            <span
+              dir="auto"
+              className="block whitespace-pre-wrap font-medium [overflow-wrap:anywhere]"
+            >
+              {item.title}
+            </span>
             <span className="mt-1 block text-xs text-muted [overflow-wrap:anywhere]">
               {item.source_name} ·{' '}
               {item.observation
@@ -55,15 +61,20 @@ function EvidenceDetails({
         {item.title_en && (
           <div>
             <h3 className="text-xs font-medium text-muted">Translation (unverified)</h3>
-            <p className="mt-1 text-sm [overflow-wrap:anywhere]">{item.title_en}</p>
+            <p dir="auto" className="mt-1 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">
+              {item.title_en}
+            </p>
           </div>
         )}
         {item.summary && (
           <div>
             <h3 className="text-xs font-medium text-muted">Original source snippet</h3>
-            <p className="mt-1 text-sm [overflow-wrap:anywhere]">{item.summary}</p>
+            <p dir="auto" className="mt-1 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">
+              {item.summary}
+            </p>
           </div>
         )}
+        <SourceProvenanceDetails transformations={item.transformations} dates={item.source_dates} />
         <EvidenceProjectDetails item={item} />
         <EvidenceObservationDetails item={item} />
         <dl className="grid min-w-0 gap-x-8 gap-y-4 sm:grid-cols-2">

@@ -5,12 +5,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ase.application.feeds.health import SourceHealth, SourceStatus
 from ase.application.ports.feeds import StoreStats
 from ase.domain.events import Category, Event, GeoConfidence, JsonScalar, Reliability
+from ase.domain.source_dates import SourceDate
 from ase.domain.sources import SourceKind, SourceSpec
+from ase.domain.text_transformations import TextTransformation
 
 
 class PointOut(BaseModel):
@@ -41,6 +43,8 @@ class EventOut(BaseModel):
     grade_rationale: str
     story_id: str | None
     attributes: dict[str, JsonScalar]
+    transformations: list[TextTransformation] = Field(default_factory=list)
+    source_dates: list[SourceDate] = Field(default_factory=list)
 
     @classmethod
     def from_event(cls, event: Event) -> Self:
@@ -67,6 +71,8 @@ class EventOut(BaseModel):
             grade_rationale=event.grade_rationale,
             story_id=event.story_id,
             attributes=dict(event.attributes),
+            transformations=list(event.transformations),
+            source_dates=list(event.source_dates),
         )
 
 

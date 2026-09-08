@@ -104,6 +104,8 @@ export const report: Report = {
     ],
     evidence: [
       {
+        transformations: [],
+        source_dates: [],
         label: 'E1',
         event_id: 'e1',
         source_id: 'bbc_world',
@@ -120,6 +122,8 @@ export const report: Report = {
         archive_url: 'https://web.archive.org/web/20260905000000/https://example.org/e1',
       },
       {
+        transformations: [],
+        source_dates: [],
         label: 'E2',
         event_id: 'e2',
         source_id: 'tass_en',

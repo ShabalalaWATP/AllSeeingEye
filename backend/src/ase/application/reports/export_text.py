@@ -11,6 +11,7 @@ from typing import Any, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from ase.application.reports.observation_text import observation_lines
+from ase.application.reports.source_provenance_text import source_provenance_lines
 from ase.domain.evidence import EvidenceItem
 from ase.domain.reports import ReportStatus
 
@@ -109,6 +110,7 @@ def evidence_metadata(item: EvidenceItem) -> tuple[str, ...]:
         f"Event ID: {item.event_id}",
         f"Content hash: {item.content_hash or 'unknown'}",
         *observation_lines(item),
+        *source_provenance_lines(item),
     )
 
 

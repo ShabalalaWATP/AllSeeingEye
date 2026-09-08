@@ -13,6 +13,7 @@ from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import ReportLanguage
 from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.project_time import MAX_PROJECT_INTERVAL
+from ase.domain.query_variant_records import required_variant, validate_variant_anchors
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_plan import QueryVariant
 from ase.domain.research_tasks import (
@@ -69,6 +70,7 @@ class ReportRequest:
         )
 
     def __post_init__(self) -> None:
+        validate_variant_anchors(self.research_query_variants, self.research_terms)
         if any(row.origin != "operator" for row in self.research_candidate_hypotheses) or any(
             row.origin != "operator" for row in self.research_planned_tasks
         ):
@@ -172,8 +174,7 @@ class ReportRequest:
             if scope.get("research_terms") is not None
             else None,
             research_query_variants=tuple(
-                QueryVariant(row["language"], tuple(row["terms"]))
-                for row in scope.get("research_query_variants", [])
+                required_variant(row) for row in scope.get("research_query_variants", [])
             ),
             research_candidate_hypotheses=tuple(
                 candidate_from_dict(row) for row in scope.get("research_candidate_hypotheses", ())

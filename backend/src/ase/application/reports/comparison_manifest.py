@@ -2,19 +2,19 @@
 
 import hashlib
 import json
-from dataclasses import asdict
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from uuid import UUID
 
 from ase.domain.annotation_comparison import AnnotationComparison
+from ase.domain.canonical_provenance import canonical_snapshot
 from ase.domain.errors import InvalidRequest
 
 MAX_COMPARISON_BYTES = 8 * 1024 * 1024
 
 
 def _convert(value: object) -> str:
-    if isinstance(value, datetime):
+    if isinstance(value, datetime | date):
         return value.isoformat()
     if isinstance(value, UUID):
         return str(value)
@@ -24,7 +24,7 @@ def _convert(value: object) -> str:
 
 
 def comparison_json(value: AnnotationComparison, *, for_digest: bool = False) -> bytes:
-    payload = asdict(value)
+    payload = canonical_snapshot(value)
     if for_digest:
         payload.pop("generated_at")
         payload.pop("comparison_sha256")

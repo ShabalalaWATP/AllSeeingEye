@@ -24,6 +24,11 @@ class QueryVariantIn(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     language: str = Field(min_length=2, max_length=16)
     terms: list[str] = Field(min_length=1, max_length=12)
+    kind: Literal["translation", "transliteration"] = "translation"
+    original_terms: list[str] = Field(default_factory=list, max_length=12)
+    source_script: str | None = Field(default=None, pattern=r"^[A-Z][a-z]{3}$")
+    target_script: str | None = Field(default=None, pattern=r"^[A-Z][a-z]{3}$")
+    method: str | None = Field(default=None, min_length=1, max_length=120)
 
     @model_validator(mode="after")
     def bounded(self) -> Self:
@@ -31,7 +36,15 @@ class QueryVariantIn(BaseModel):
         return self
 
     def to_domain(self) -> QueryVariant:
-        return QueryVariant(self.language, tuple(self.terms))
+        return QueryVariant(
+            self.language,
+            tuple(self.terms),
+            self.kind,
+            tuple(self.original_terms),
+            self.source_script,
+            self.target_script,
+            self.method,
+        )
 
 
 class ResearchPlanIn(BaseModel):
@@ -64,6 +77,9 @@ class ResearchPlanIn(BaseModel):
     def to_query(self) -> ResearchQuery:
         if sum(map(len, self.terms)) > 1000:
             raise ValueError("Provide at most 1000 combined search-term characters")
+        for variant in self.query_variants:
+            if variant.original_terms and variant.original_terms != self.terms:
+                raise ValueError("Transliteration must reference the exact original query terms")
         return ResearchQuery(
             question=self.question,
             time_basis=self.time_basis,
@@ -93,6 +109,7 @@ class ResearchTaskOut(BaseModel):
     provenance: str
     temporal_scope: str
     query_language: str | None = None
+    query_variant: QueryVariantIn | None = None
     spatial_supported: bool = False
     spatial_scope: str = UNKNOWN_SPATIAL_SCOPE
     task_id: str | None = None

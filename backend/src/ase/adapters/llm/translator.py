@@ -10,7 +10,7 @@ from ase.adapters.security.cipher import CipherUnavailable
 from ase.application.feeds.pipeline import clean_text
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
-from ase.application.ports.translate import TranslatorUnavailable
+from ase.application.ports.translate import TranslatedText, TranslatorUnavailable
 from ase.domain.events import MAX_TITLE
 from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole, LlmUsage
 
@@ -92,6 +92,11 @@ class LlmTranslator:
         self._clock = clock
 
     async def translate(self, items: Sequence[tuple[str, str]]) -> list[str | None]:
+        return [row.text if row else None for row in await self.translate_traced(items)]
+
+    async def translate_traced(
+        self, items: Sequence[tuple[str, str]]
+    ) -> list[TranslatedText | None]:
         if not items:
             return []
         if len(items) > MAX_BATCH or any(len(text) > MAX_TITLE for text, _ in items):
@@ -114,10 +119,12 @@ class LlmTranslator:
             latency_ms=0.0,
         )
         translated: list[str | None] = [None] * len(items)
+        actual_model: str | None = None
         try:
             result = await self._gateway.complete(
                 profile.base_url, key, profile.model, translation_request(items, profile)
             )
+            actual_model = result.model
             usage.latency_ms = result.latency_ms
             usage.prompt_tokens = result.prompt_tokens
             usage.completion_tokens = result.completion_tokens
@@ -131,4 +138,9 @@ class LlmTranslator:
         except (ValueError, RecursionError):
             usage.error = "The model returned an invalid translation response."
         await self._record_usage(usage)
-        return translated
+        return [
+            TranslatedText(text, actual_model or profile.model, profile.id, str(profile.provider))
+            if text
+            else None
+            for text in translated
+        ]

@@ -1,3 +1,4 @@
+import { QueryVariantDetails } from '@/components/reports/QueryVariantDetails';
 import { RegistryLookupDetails } from '@/components/reports/RegistryLookupDetails';
 import type { ResearchReceipt } from '@/lib/api/reportResearch';
 import { formatUtc } from '@/lib/format';
@@ -147,6 +148,7 @@ function CollectionAttempts({ attempts }: { attempts: ResearchReceipt['attempts'
               {attempt.task_id ? ` · ${attempt.task_id}` : ''}
             </p>
           )}
+          {attempt.query_variant && <QueryVariantDetails value={attempt.query_variant} />}
           {attempt.registry_lookup && <RegistryLookupDetails value={attempt.registry_lookup} />}
           <p className="mt-1 text-xs text-muted">{attempt.explanation}</p>
         </li>

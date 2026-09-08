@@ -3,18 +3,88 @@
 import asyncio
 from collections.abc import Coroutine
 from typing import Annotated, Any
+from uuid import UUID
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.errors import PayloadTooLarge
+from ase.api.schemas_input_declarations import (
+    InputDeclarationsIn,
+    InputDeclarationTargetOut,
+    InputDeclarationTargetsOut,
+)
 from ase.api.schemas_research_inputs import ResearchInputOut
-from ase.api.session_guard import validate_request_session
-from ase.application.ports.research_inputs import MAX_INPUT_BYTES, ResearchInputReceipt
+from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.application.ports.research_inputs import MAX_INPUT_BYTES
 from ase.domain.errors import InvalidRequest
 
 router = APIRouter(prefix="/research/inputs", tags=["research"])
 BODY_TIMEOUT_SECONDS = 30
+
+
+@router.get("/{input_id}/declaration-targets")
+async def declaration_targets(
+    input_id: UUID,
+    user: CurrentUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+    response: Response,
+) -> InputDeclarationTargetsOut:
+    async def before_release() -> None:
+        await validate_request_session(container, claims)
+
+    stored = await container.import_research_input(session).declaration_targets(
+        user,
+        input_id,
+        before_release=before_release,
+    )
+    validate_request_expiry(container, claims)
+    response.headers["Cache-Control"] = "private, no-store"
+    return InputDeclarationTargetsOut(
+        input_id=input_id,
+        sha256=stored.receipt.sha256,
+        expires_at=stored.receipt.expires_at,
+        targets=[
+            InputDeclarationTargetOut(
+                event_id=event.id,
+                content_hash=event.content_hash,
+                title=event.title,
+                summary=event.summary,
+                language=event.language,
+                transformations=list(event.transformations),
+                source_dates=list(event.source_dates),
+            )
+            for event in stored.events
+        ],
+    )
+
+
+@router.post("/{input_id}/declarations", status_code=201)
+async def declare_input(
+    input_id: UUID,
+    body: InputDeclarationsIn,
+    user: CurrentUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+) -> ResearchInputOut:
+    service = container.import_research_input(session)
+
+    async def before_retain() -> None:
+        await validate_request_session(container, claims)
+
+    try:
+        declarations = tuple(row.to_domain() for row in body.declarations)
+    except ValueError as exc:
+        raise InvalidRequest(str(exc)) from None
+    receipt = await service.declare(
+        user, input_id, body.sha256, declarations, before_retain=before_retain
+    )
+    released = await service.declaration_targets(user, receipt.id, before_release=before_retain)
+    validate_request_expiry(container, claims)
+    return ResearchInputOut.from_receipt(released.receipt, released.frames)
 
 
 async def _wait_for_disconnect(request: Request) -> None:
@@ -22,9 +92,7 @@ async def _wait_for_disconnect(request: Request) -> None:
         pass
 
 
-async def _complete_connected(
-    request: Request, operation: Coroutine[Any, Any, ResearchInputReceipt]
-) -> ResearchInputReceipt:
+async def _complete_connected[T](request: Request, operation: Coroutine[Any, Any, T]) -> T:
     """ASGI does not cancel a handler automatically when the client abandons a parsed body."""
     work = asyncio.create_task(operation)
     disconnected = asyncio.create_task(_wait_for_disconnect(request))

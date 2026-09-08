@@ -4,9 +4,9 @@ import asyncio
 import re
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime
-from typing import Any
+from typing import Any, Protocol
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, NotModified
 from ase.domain.events import (
     Category,
     Credibility,
@@ -20,6 +20,12 @@ from ase.domain.events import (
 from ase.domain.research import CollectionAttempt, CollectionStatus, ResearchBatch
 
 MAX_RESULTS = 20
+
+
+class JsonReader(Protocol):
+    async def get_json(
+        self, url: str, *, conditional: bool = True, max_redirects: int = 3
+    ) -> Any: ...
 
 
 def text(value: Any, limit: int = 300) -> str:
@@ -60,7 +66,7 @@ def receipt(
 
 
 async def collect_json(
-    http: FeedHttpClient,
+    http: JsonReader,
     source_id: str,
     name: str,
     url: str,

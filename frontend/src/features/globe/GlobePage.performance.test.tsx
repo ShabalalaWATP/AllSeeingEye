@@ -1,3 +1,5 @@
+// Load the real route after Vitest hoists its mocks, outside timed layer assertions.
+import './GlobePage';
 import { act, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

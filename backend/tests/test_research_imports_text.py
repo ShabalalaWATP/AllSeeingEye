@@ -103,7 +103,8 @@ def test_import_events_are_unassessed_private_passages_with_capture_time() -> No
     assert event.grade == "F6"
     assert event.url is None and event.point is None
     assert event.language == "und"
-    assert event.published_at == captured_at == event.observed_at
+    assert event.published_at is None
+    assert event.observed_at == captured_at
     assert event.attributes["timestamp_basis"] == "capture time; original publication time unknown"
     assert event.attributes["source_reference"] == "line 1"
     assert event.attributes["original_sha256"] == result.sha256

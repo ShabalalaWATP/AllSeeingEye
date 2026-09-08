@@ -4777,6 +4777,112 @@
         }
       }
     },
+    "/api/research/inputs/{input_id}/declaration-targets": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Declaration Targets",
+        "operationId": "declaration_targets_api_research_inputs__input_id__declaration_targets_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputDeclarationTargetsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/inputs/{input_id}/declarations": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Declare Input",
+        "operationId": "declare_input_api_research_inputs__input_id__declarations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputDeclarationsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchInputOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/research/inputs": {
       "post": {
         "tags": [
@@ -4832,6 +4938,146 @@
                 "type": "string",
                 "format": "binary",
                 "maxLength": 8388608
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/sec/filings": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "List Filings",
+        "operationId": "list_filings_api_research_sec_filings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecFilingsSearchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecFilingsPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/research/sec/filings/{selection_id}/import": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Import Filing",
+        "operationId": "import_filing_api_research_sec_filings__selection_id__import_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "selection_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Selection Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchInputOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/sec/filings/{selection_id}/original": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Original Filing",
+        "operationId": "original_filing_api_research_sec_filings__selection_id__original_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "selection_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Selection Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -10855,6 +11101,16 @@
                 "type": "null"
               }
             ]
+          },
+          "query_variant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QueryVariantIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -12097,6 +12353,20 @@
             },
             "type": "object",
             "title": "Attributes"
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/TextTransformation"
+            },
+            "type": "array",
+            "title": "Transformations"
+          },
+          "source_dates": {
+            "items": {
+              "$ref": "#/components/schemas/SourceDate"
+            },
+            "type": "array",
+            "title": "Source Dates"
           }
         },
         "type": "object",
@@ -12709,6 +12979,22 @@
                 "type": "null"
               }
             ]
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/TextTransformation"
+            },
+            "type": "array",
+            "title": "Transformations",
+            "default": []
+          },
+          "source_dates": {
+            "items": {
+              "$ref": "#/components/schemas/SourceDate"
+            },
+            "type": "array",
+            "title": "Source Dates",
+            "default": []
           }
         },
         "type": "object",
@@ -14088,6 +14374,292 @@
           "items"
         ],
         "title": "IndicatorsOut"
+      },
+      "InputDeclarationTargetOut": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/TextTransformation"
+            },
+            "type": "array",
+            "title": "Transformations"
+          },
+          "source_dates": {
+            "items": {
+              "$ref": "#/components/schemas/SourceDate"
+            },
+            "type": "array",
+            "title": "Source Dates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "content_hash",
+          "title",
+          "summary",
+          "language",
+          "transformations",
+          "source_dates"
+        ],
+        "title": "InputDeclarationTargetOut"
+      },
+      "InputDeclarationTargetsOut": {
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Input Id"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/InputDeclarationTargetOut"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Targets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "input_id",
+          "sha256",
+          "expires_at",
+          "targets"
+        ],
+        "title": "InputDeclarationTargetsOut"
+      },
+      "InputDeclarationsIn": {
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "declarations": {
+            "items": {
+              "$ref": "#/components/schemas/InputPassageDeclarationIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Declarations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sha256",
+          "declarations"
+        ],
+        "title": "InputDeclarationsIn"
+      },
+      "InputPassageDeclarationIn": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Event Id"
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Content Hash"
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/InputTextTransformationIn"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Transformations"
+          },
+          "source_dates": {
+            "items": {
+              "$ref": "#/components/schemas/InputSourceDateIn"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Source Dates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "content_hash"
+        ],
+        "title": "InputPassageDeclarationIn"
+      },
+      "InputSourceDateIn": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "raw_text": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Raw Text"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "publication",
+              "occurrence",
+              "record_validity",
+              "modification",
+              "unspecified"
+            ],
+            "title": "Role"
+          },
+          "calendar": {
+            "type": "string",
+            "enum": [
+              "gregorian",
+              "solar_hijri_icu33",
+              "unknown"
+            ],
+            "title": "Calendar"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "raw_text",
+          "role",
+          "calendar"
+        ],
+        "title": "InputSourceDateIn"
+      },
+      "InputTextTransformationIn": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "original_text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Original Text"
+          },
+          "transformed_text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Transformed Text"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "translation",
+              "transliteration"
+            ],
+            "title": "Kind"
+          },
+          "source_language": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Source Language"
+          },
+          "target_language": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Target Language"
+          },
+          "source_script": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][a-z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Script"
+          },
+          "target_script": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][a-z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Script"
+          },
+          "method": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Method"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "original_text",
+          "transformed_text",
+          "kind",
+          "source_language",
+          "target_language",
+          "method"
+        ],
+        "title": "InputTextTransformationIn"
       },
       "JamCellOut": {
         "properties": {
@@ -17910,6 +18482,60 @@
             "maxItems": 12,
             "minItems": 1,
             "title": "Terms"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "translation",
+              "transliteration"
+            ],
+            "title": "Kind",
+            "default": "translation"
+          },
+          "original_terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Original Terms"
+          },
+          "source_script": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][a-z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Script"
+          },
+          "target_script": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z][a-z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Script"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
           }
         },
         "type": "object",
@@ -19486,6 +20112,20 @@
                 "type": "null"
               }
             ]
+          },
+          "transformations": {
+            "items": {
+              "$ref": "#/components/schemas/TextTransformation"
+            },
+            "type": "array",
+            "title": "Transformations"
+          },
+          "source_dates": {
+            "items": {
+              "$ref": "#/components/schemas/SourceDate"
+            },
+            "type": "array",
+            "title": "Source Dates"
           }
         },
         "type": "object",
@@ -20513,6 +21153,18 @@
             "maxItems": 20,
             "title": "Limitations"
           },
+          "parent_input_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Input Id"
+          },
           "previews": {
             "items": {
               "$ref": "#/components/schemas/ResearchInputPreviewOut"
@@ -21406,6 +22058,16 @@
             ],
             "title": "Query Language"
           },
+          "query_variant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QueryVariantIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "spatial_supported": {
             "type": "boolean",
             "title": "Spatial Supported",
@@ -22124,6 +22786,150 @@
         ],
         "title": "SearchEditionOut"
       },
+      "SecFilingChoiceOut": {
+        "properties": {
+          "selection_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Selection Id"
+          },
+          "cik": {
+            "type": "string",
+            "title": "Cik"
+          },
+          "accession": {
+            "type": "string",
+            "title": "Accession"
+          },
+          "primary_document": {
+            "type": "string",
+            "title": "Primary Document"
+          },
+          "form": {
+            "type": "string",
+            "title": "Form"
+          },
+          "filing_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Filing Date"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selection_id",
+          "cik",
+          "accession",
+          "primary_document",
+          "form",
+          "filing_date",
+          "company_name",
+          "expires_at"
+        ],
+        "title": "SecFilingChoiceOut"
+      },
+      "SecFilingsPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SecFilingChoiceOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "archive_page": {
+            "type": "integer",
+            "title": "Archive Page"
+          },
+          "archive_pages": {
+            "type": "integer",
+            "title": "Archive Pages"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "archive_page",
+          "archive_pages",
+          "offset",
+          "next_offset",
+          "limitations"
+        ],
+        "title": "SecFilingsPageOut"
+      },
+      "SecFilingsSearchIn": {
+        "properties": {
+          "cik": {
+            "type": "string",
+            "pattern": "^[0-9]{1,10}$",
+            "title": "Cik"
+          },
+          "since": {
+            "type": "string",
+            "format": "date",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date",
+            "title": "Until"
+          },
+          "archive_page": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Archive Page",
+            "default": 0
+          },
+          "offset": {
+            "type": "integer",
+            "multipleOf": 20.0,
+            "maximum": 9980.0,
+            "minimum": 0.0,
+            "title": "Offset",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cik",
+          "since",
+          "until"
+        ],
+        "title": "SecFilingsSearchIn"
+      },
       "SetPasswordIn": {
         "properties": {
           "token": {
@@ -22416,6 +23222,138 @@
           "enabled"
         ],
         "title": "SourceActivationIn"
+      },
+      "SourceDate": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "raw_text": {
+            "type": "string",
+            "title": "Raw Text"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "publication",
+              "occurrence",
+              "record_validity",
+              "modification",
+              "unspecified"
+            ],
+            "title": "Role"
+          },
+          "calendar": {
+            "type": "string",
+            "enum": [
+              "gregorian",
+              "solar_hijri_icu33",
+              "unknown"
+            ],
+            "title": "Calendar"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "source_spec",
+              "source_metadata"
+            ],
+            "title": "Basis"
+          },
+          "precision": {
+            "type": "string",
+            "enum": [
+              "instant",
+              "day",
+              "unknown"
+            ],
+            "title": "Precision"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "resolved",
+              "ambiguous",
+              "unsupported",
+              "invalid"
+            ],
+            "title": "Status"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "day_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Start"
+          },
+          "day_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day End"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "raw_text",
+          "role",
+          "calendar",
+          "basis",
+          "precision",
+          "status",
+          "method"
+        ],
+        "title": "SourceDate"
       },
       "SourceGeometryOut": {
         "properties": {
@@ -23209,6 +24147,152 @@
           "items"
         ],
         "title": "TemplatesOut"
+      },
+      "TextTransformation": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary"
+            ],
+            "title": "Field"
+          },
+          "original_text": {
+            "type": "string",
+            "title": "Original Text"
+          },
+          "transformed_text": {
+            "type": "string",
+            "title": "Transformed Text"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "translation",
+              "transliteration"
+            ],
+            "title": "Kind"
+          },
+          "source_language": {
+            "type": "string",
+            "title": "Source Language"
+          },
+          "target_language": {
+            "type": "string",
+            "title": "Target Language"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "source",
+              "machine"
+            ],
+            "title": "Origin"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "source_script": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Script"
+          },
+          "target_script": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Script"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "review_status": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "operator_declared"
+            ],
+            "title": "Review Status",
+            "default": "unreviewed"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations",
+            "default": []
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "original_text",
+          "transformed_text",
+          "kind",
+          "source_language",
+          "target_language",
+          "origin",
+          "method"
+        ],
+        "title": "TextTransformation"
       },
       "TokenResponse": {
         "properties": {

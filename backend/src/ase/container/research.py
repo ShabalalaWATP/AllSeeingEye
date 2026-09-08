@@ -31,6 +31,7 @@ from ase.adapters.research_records.designations import DesignationProvider
 from ase.adapters.research_records.domains import DnsResearchProvider, RdapResearchProvider
 from ase.adapters.research_records.gleif import GleifParentProvider, GleifProfileProvider
 from ase.adapters.research_records.ooni import OoniAggregateProvider
+from ase.adapters.research_records.sec_client import SecClient
 from ase.adapters.research_subjects.parliament import ParliamentQuestionsProvider
 from ase.adapters.research_subjects.scholarly import CrossrefProvider, OpenAlexProvider
 from ase.adapters.research_subjects.world_bank import WorldBankProvider
@@ -50,6 +51,7 @@ def research_service(
     disabled: tuple[str, ...] = (),
     *,
     admission: SourceAdmission | None = None,
+    sec_client: SecClient | None = None,
     ooni_noncommercial_use_acknowledged: bool = False,
     uksl_snapshot_path: str | None = None,
     ofac_sdn_snapshot_path: str | None = None,
@@ -58,6 +60,7 @@ def research_service(
     companies_house_key: str | None = None,
     certificate_transparency_key: str | None = None,
 ) -> ResearchCollectionService:
+    sec_client = sec_client or SecClient(http)
     # Preserve the credential-specific rolling request allowance across research runs.
     registry_client = CompaniesHouseClient(http, clock, companies_house_key)
     companies_house = CompaniesHouseProvider(
@@ -89,8 +92,8 @@ def research_service(
         if query.focus == ResearchFocus.COMPANY:
             selected.extend(
                 (
-                    SecSubmissionsProvider(http, clock),
-                    SecCompanyDirectoryProvider(http, clock),
+                    SecSubmissionsProvider(http, clock, client=sec_client),
+                    SecCompanyDirectoryProvider(http, clock, client=sec_client),
                     companies_house,
                     CompaniesHouseOfficersProvider(registry_client, clock),
                     CompaniesHousePscProvider(registry_client, clock),

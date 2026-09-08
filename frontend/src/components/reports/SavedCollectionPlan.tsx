@@ -1,3 +1,4 @@
+import { QueryVariantDetails } from './QueryVariantDetails';
 import { RegistryLookupDetails } from './RegistryLookupDetails';
 import { registryLabels } from '@/lib/api/registryRouting';
 import type { ResearchPlan } from '@/lib/api/researchPlan';
@@ -123,6 +124,7 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
                 {task.task_id ? ` · ${task.task_id}` : ''}
               </p>
             )}
+            {task.query_variant && <QueryVariantDetails value={task.query_variant} />}
             {task.registry_lookup && (
               <RegistryLookupDetails
                 value={task.registry_lookup}

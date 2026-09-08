@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from ase.application.reports.observation_text import observation_lines
+from ase.application.reports.source_provenance_text import source_provenance_prompt
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.doctrine import YARDSTICK
@@ -81,6 +82,7 @@ def evidence_block(item: EvidenceItem) -> str:
         if item.observation or item.geometry or item.project
         else ""
     )
+    provenance += source_provenance_prompt(item)
     if item.geo_confidence:
         provenance += f" Location precision: {item.geo_confidence}."
     provenance += (

@@ -1,3 +1,4 @@
+import { SourceProvenanceDetails } from '@/components/reports/SourceProvenanceDetails';
 import { Fragment, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 
@@ -135,6 +136,10 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         {event.summary !== null && (
           <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
         )}
+        <SourceProvenanceDetails
+          transformations={event.transformations}
+          dates={event.source_dates}
+        />
         {attributes.length > 0 && (
           <dl className={`mt-3 ${dl}`}>
             {attributes.map(([key, value]) => (
