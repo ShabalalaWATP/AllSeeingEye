@@ -25,6 +25,7 @@ class Settings(BaseSettings):
         env_prefix="ASE_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
+    report_pdf_runtime: str | None = Field(default=None, max_length=4096)
     env: Environment = Environment.DEV
     database_url: str = "sqlite+aiosqlite:///./data/ase.db"
     jwt_secret: SecretStr | None = None

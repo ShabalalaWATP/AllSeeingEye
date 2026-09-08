@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 import structlog
@@ -18,7 +19,6 @@ from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.reports.claim_evidence_package import SelectedClaimPackageRenderer
-from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
 from ase.adapters.reports.map_image import SavedMapImageRenderer
 from ase.application.access import AccessPolicy
@@ -48,6 +48,7 @@ from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_image import ExportMapImage
 from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
+from ase.container.report_renderer import build_report_renderer
 from ase.container.research import private_research_store
 from ase.domain.report_records import ReportVersion
 
@@ -65,6 +66,7 @@ if TYPE_CHECKING:
     from ase.application.ports.feeds import EventBus
     from ase.application.ports.geo import CountryDirectory
     from ase.application.ports.llm import LlmGateway, SecretCipher
+    from ase.application.ports.report_export import AsyncReportRenderer
     from ase.application.ports.research import ResearchCollection
     from ase.application.ports.research_inputs import ResearchInputStore
     from ase.application.ports.services import Clock, RateLimiter
@@ -263,8 +265,12 @@ class ReportWiring:
             r.uow,
         )
 
+    @cached_property
+    def report_renderer(self) -> AsyncReportRenderer:
+        return build_report_renderer(self.settings.report_pdf_runtime)
+
     def export_report(self, session: AsyncSession) -> ExportReportUseCase:
-        return ExportReportUseCase(self.get_report(session), ReportDocumentRenderer())
+        return ExportReportUseCase(self.get_report(session), self.report_renderer)
 
     def original_assets(self, session: AsyncSession) -> OriginalAssets:
         r = self.repositories(session)

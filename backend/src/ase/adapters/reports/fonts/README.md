@@ -33,3 +33,13 @@ The PDF renderer does not implement Arabic shaping or bidirectional layout. Unsu
 characters remain explicit `[U+XXXX]` markers and trigger a notice. The DOCX
 export retains the original characters, with display depending on the reader's
 fonts and layout engine. Do not describe this change as full Unicode support.
+
+
+## Noto Sans Arabic 2.013
+
+Unmodified regular and bold fonts are used only by the optional isolated print-HTML adapter. They were copied from the verified local shaping proof and retain the accompanying `OFL-NotoArabic.txt` licence. Runtime SHA-256 checks are recorded in `print_html.py`:
+
+- Regular: `7ed3fe069312aceac454f17cf613a30f95271d6ed7ce58005ed4d016bd3823d7`
+- Bold: `5ccd1a8914f7c7e8aa8050f2c7c37b10fc5e855f06583c2a2248a436aad3fc0f`
+
+Adding these assets does not change language capability flags or establish PDF text-extraction/accessibility acceptance.

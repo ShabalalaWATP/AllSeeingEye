@@ -13,6 +13,7 @@ from docx import Document
 from pypdf import PdfReader
 
 from ase.adapters.reports import documents
+from ase.adapters.reports.async_documents import AsyncReportDocumentRenderer
 from ase.adapters.reports.documents import ReportDocumentRenderer
 from ase.application.reports.comparison import compare_versions
 from ase.application.reports.document import (
@@ -208,7 +209,7 @@ async def test_use_cases_reuse_authorised_reader_and_reject_bad_version_numbers(
     record, version = document_records()
     reader = AsyncMock()
     reader.execute.return_value = (record, version)
-    exporter = ExportReportUseCase(reader, ReportDocumentRenderer())
+    exporter = ExportReportUseCase(reader, AsyncReportDocumentRenderer())
     result = await exporter.execute(user, record.id, ExportFormat.DOCX, 1)
     assert result.filename == f"report-{record.id}-v1.docx"
     assert result.content.startswith(b"PK")

@@ -2451,3 +2451,16 @@ acceptance passed 1,064 tests across 210 files, with zero skips, 95.12% statemen
 90.23% branch, 93.69% function and 96.49% line coverage. Types, lint and production
 build passed. Full backend acceptance remains running, so integration on main is
 still pending. No live provider, operator database or deployment was changed.
+
+## 8 September 2026: isolated report renderer candidate
+
+- Added an asynchronous renderer boundary while retaining final report-version
+  and session release checks and the existing default PDF/DOCX projections.
+- Optional Linux runtime uses verified executables, namespaces, cgroups and
+  bounded writable tmpfs. Unconfirmed cleanup quarantines capacity and resources.
+- Independent review findings were repaired with regressions. The expanded
+  compatibility/release group passed 55 tests; the final typed-structure group
+  passed 35. Mypy, Ruff, import contracts and all commit hooks passed.
+- Desktop Chrome visual evidence covers a seven-page real report projection,
+  with extraction limitations recorded. No Linux deployment, PDF/UA or
+  native-speaker acceptance is claimed and language flags remain unchanged.

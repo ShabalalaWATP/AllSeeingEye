@@ -438,3 +438,11 @@ passed 3,470 tests with 84 skips and 94.94% coverage. Its frontend passed 1,088
 tests and the unchanged coverage gates, types, lint and build. This establishes
 this feature snapshot's local acceptance; later source/retention/version changes
 remain separate. See SEC_SOURCE_PROVENANCE_INTEGRATION.md for evidence and limits.
+
+8 September isolated renderer candidate: asynchronous export composition and an
+optional bounded Linux Chromium adapter are implemented. Cleanup quarantine,
+typed PDF admission and private tmpfs repairs passed targeted regressions and
+independent review. All configured commit hooks passed. Actual Linux runtime,
+native-speaker, accessibility and faithful extraction acceptance remain open;
+Arabic/Persian PDF capabilities are not enabled. See ISOLATED_REPORT_RENDERER.md
+and REPORT_RENDERING_VISUAL_ACCEPTANCE.md.
