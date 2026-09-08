@@ -246,7 +246,7 @@ describe('question-led research', () => {
       'page',
     );
     expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
-    await user.click(within(nav).getByRole('button', { name: /Globe/ }));
+    await user.click(within(nav).getByRole('link', { name: 'Map' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/'));
   });
 

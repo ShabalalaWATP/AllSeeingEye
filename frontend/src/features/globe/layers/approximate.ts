@@ -3,7 +3,7 @@ import type { Layer } from '@deck.gl/core';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { CATEGORY_STYLES } from '@/lib/categories';
 
-/** Hollow screen-sized rings denote approximation, never a claimed ground radius. */
+/** Screen-sized rings with a subtle pickable interior denote approximation, never a claimed ground radius. */
 export function buildApproximateLayer(
   events: readonly LiveEvent[],
   onPick: (event: LiveEvent | null, position?: readonly [number, number]) => void,
@@ -14,7 +14,8 @@ export function buildApproximateLayer(
     id: 'approximate-events',
     data: events,
     pickable: true,
-    filled: false,
+    filled: true,
+    getFillColor: (event) => [...CATEGORY_STYLES[event.category].colour, 24],
     stroked: true,
     radiusUnits: 'pixels',
     lineWidthUnits: 'pixels',

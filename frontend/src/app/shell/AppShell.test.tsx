@@ -48,24 +48,19 @@ describe('AppShell', () => {
     expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
   });
 
-  it('switches between globe and map with the rail and the G and M keys', async () => {
+  it('uses one Map destination while preserving the projection and keyboard controls', async () => {
     const { user } = renderApp('/', 'user');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    const globe = within(nav).getByRole('button', { name: /^Globe/ });
-    const map = within(nav).getByRole('button', { name: /^Map/ });
-    expect(globe).toHaveAttribute('aria-pressed', 'true');
-
+    const map = within(nav).getByRole('link', { name: 'Map' });
+    expect(map).toHaveAttribute('aria-current', 'page');
+    expect(within(nav).queryByText('Globe')).not.toBeInTheDocument();
+    await user.click(map);
+    expect(useGlobeStore.getState().mode).toBe('globe');
     await user.keyboard('m');
     expect(useGlobeStore.getState().mode).toBe('map');
-    expect(map).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText('Map', { selector: 'p' })).toBeInTheDocument();
-
-    await user.keyboard('G');
-    expect(useGlobeStore.getState().mode).toBe('globe');
-
     await user.click(map);
     expect(useGlobeStore.getState().mode).toBe('map');
-    await user.click(globe);
+    await user.keyboard('G');
     expect(useGlobeStore.getState().mode).toBe('globe');
   });
 
@@ -83,15 +78,15 @@ describe('AppShell', () => {
     expect(useGlobeStore.getState().mode).toBe('globe');
   });
 
-  it('navigates home when a rail mode button is used from another page', async () => {
+  it('returns to the map workspace without changing the chosen projection', async () => {
     const { user, router } = renderApp('/reports', 'admin');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
     expect(screen.getByText('Reports', { selector: 'p' })).toBeInTheDocument();
-    await user.click(within(nav).getByRole('button', { name: /^Map/ }));
+    await user.click(within(nav).getByRole('link', { name: 'Map' }));
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/');
     });
-    expect(useGlobeStore.getState().mode).toBe('map');
+    expect(useGlobeStore.getState().mode).toBe('globe');
   });
 
   it('logs out and returns to the login page', async () => {

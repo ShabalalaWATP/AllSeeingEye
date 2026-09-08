@@ -200,3 +200,33 @@ it('expands a cluster obscured by a sampled aircraft using only current visible 
     }),
   ).toBeVisible();
 });
+
+it.each(['aviation', 'maritime', 'conflict'] as const)(
+  'shows a selection halo for a %s item and clears it when details close',
+  async (category) => {
+    const { user } = renderApp('/', 'user');
+    await waitFor(() => expect(layer('events-disaster')).toBeDefined());
+    const event = liveEvent({
+      id: 'selected-object',
+      category,
+      subtype: category === 'maritime' ? 'vessel_position' : 'event',
+      geo_confidence: category === 'conflict' ? 'city' : 'exact',
+      point: { lon: 23, lat: 15 },
+      published_at: new Date().toISOString(),
+    });
+    act(() => useEventsStore.getState().applyUpsert([event]));
+    await act(() =>
+      layer(category === 'conflict' ? 'approximate-events' : 'event-icons')!.props.onClick({
+        object: event,
+      }),
+    );
+    expect(layer('selected-event-halo')?.props.data).toEqual([event]);
+    await user.click(
+      within(screen.getByRole('complementary', { name: 'Event details' })).getByRole('button', {
+        name: 'Close',
+      }),
+    );
+    expect(layer('selected-event-halo')).toBeUndefined();
+    expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
+  },
+);

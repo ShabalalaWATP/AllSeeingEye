@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BNG_NOTE, formatBritishGrid } from '@/lib/map/britishGrid';
 
 import type { CursorPosition } from './engine/MapEngine';
 import type { GlobeEngineHandle } from './useGlobeEngine';
@@ -13,7 +14,13 @@ export function formatCoordinate(position: CursorPosition): string {
  * The cursor's position in WGS84, kept after the pointer leaves the map so the value
  * can be clicked and copied.
  */
-export function CoordinateReadout({ engine }: { engine: GlobeEngineHandle }) {
+export function CoordinateReadout({
+  engine,
+  bng = false,
+}: {
+  engine: GlobeEngineHandle;
+  bng?: boolean;
+}) {
   const [position, setPosition] = useState<CursorPosition | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -30,7 +37,8 @@ export function CoordinateReadout({ engine }: { engine: GlobeEngineHandle }) {
   }, [copied]);
 
   if (position === null) return null;
-  const text = formatCoordinate(position);
+  const grid = bng ? formatBritishGrid(position) : null;
+  const text = grid ?? formatCoordinate(position);
 
   const copy = async () => {
     try {
@@ -45,11 +53,12 @@ export function CoordinateReadout({ engine }: { engine: GlobeEngineHandle }) {
     <button
       type="button"
       aria-label="Copy coordinates"
-      title="Click to copy"
+      title={bng ? `${BNG_NOTE} Click to copy.` : 'Click to copy'}
       onClick={() => void copy()}
       className="absolute bottom-24 left-1/2 z-10 min-h-11 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-md border border-line bg-surface/90 px-2 py-1 font-mono text-[11px] whitespace-nowrap text-muted backdrop-blur hover:text-text lg:bottom-24 lg:min-h-0"
     >
       {copied ? 'Copied' : text}
+      {bng && grid === null && <span className="ml-2 text-muted">Outside BNG extent</span>}
     </button>
   );
 }

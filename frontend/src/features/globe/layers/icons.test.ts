@@ -125,6 +125,6 @@ it.each([
     }).find((item) => item.id === 'event-icons');
     expect(layer?.props).toMatchObject({ billboard });
     expect(props(layer ?? null).getAngle(event)).toBe(angle);
-    if (!billboard) expect(layer?.props).toMatchObject({ parameters: { frontFace: 'cw' } });
+    if (!billboard) expect(layer?.props).toMatchObject({ parameters: { 2886: 2304 } });
   },
 );

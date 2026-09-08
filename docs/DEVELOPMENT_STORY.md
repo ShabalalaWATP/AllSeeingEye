@@ -2511,3 +2511,20 @@ Focused controls/navigation/measurement checks, types, lint and build passed.
 Authenticated browser checks verified default closed panels, single-click map
 styles, Escape/focus restoration, layer switches and actual measurement with
 closed panels. Full regression results are recorded in the map interface plan.
+
+
+## 8 September 2026: map usability and grid corrections
+
+Operator feedback exposed weak icon labels, missing grid functionality and
+hollow-circle picking. Added recognisable control shapes and unclipped labels,
+a visible style control, a single sidebar Map destination and clear selection
+halos with dismissal. GDELT markers are labelled Conflict & unrest with their
+automated coding and approximate-geography caveat.
+
+Implemented bounded BNG lines/readout with a pinned, verified Proj4js dependency
+and OS's approximate transformation. Fixed disabled-grid layer churn and the
+legacy WebGL front-face enum. Actual app and local renderer checks cover grid,
+selection, headings, far-side culling and mobile layout. The full frontend suite
+passed 1,129 tests; final icon/spacing changes passed focused checks and build.
+Production dependency audit found no known vulnerabilities. See
+MAP_INTERACTION_CORRECTIONS.md for exact evidence and limitations.

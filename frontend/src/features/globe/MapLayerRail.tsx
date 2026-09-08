@@ -4,6 +4,7 @@ import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import { observationKind } from './ObservationControls';
 import type { ObservationKind, ObservationVisibility } from './ObservationControls';
+import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
 
@@ -21,23 +22,26 @@ function LayerButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={active}
-      aria-label={count === undefined ? `${label} ${active ? 'on' : 'off'}` : `${label} ${count}`}
-      title={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
-      className="map-icon-button"
-      onClick={onClick}
+    <MapControlLabel
+      label={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
     >
-      <MapControlIcon name={icon} />
-      {count !== undefined && count > 0 && (
-        <span aria-hidden="true" className="map-layer-count">
-          {count > 999 ? '999+' : count}
-        </span>
-      )}
-      <span className="map-icon-tooltip">{label}</span>
-    </button>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={active}
+        aria-label={count === undefined ? `${label} ${active ? 'on' : 'off'}` : `${label} ${count}`}
+        title={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
+        className="map-icon-button"
+        onClick={onClick}
+      >
+        <MapControlIcon name={icon} />
+        {count !== undefined && count > 0 && (
+          <span aria-hidden="true" className="map-layer-count">
+            {count > 999 ? '999+' : count}
+          </span>
+        )}
+      </button>
+    </MapControlLabel>
   );
 }
 

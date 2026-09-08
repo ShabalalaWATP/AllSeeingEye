@@ -25,7 +25,7 @@ it.each([0, 6])('separates approximate locations from exact clustering at zoom %
   });
   const approximate = layers.find((layer) => layer.id === 'approximate-events')!;
   expect(approximate.props.data).toEqual([city]);
-  expect(approximate.props).toMatchObject({ filled: false, stroked: true, radiusUnits: 'pixels' });
+  expect(approximate.props).toMatchObject({ filled: true, stroked: true, radiusUnits: 'pixels' });
   const allData = layers.flatMap((layer) => Array.from(layer.props.data as unknown[]));
   expect(allData).not.toContain(country);
   expect(allData).not.toContain(unknown);

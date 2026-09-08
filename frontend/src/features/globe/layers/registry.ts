@@ -9,6 +9,7 @@ import { CATEGORY_STYLES } from '@/lib/categories';
 
 import { isMappedEvent } from '../geographicPrecision';
 import { buildApproximateLayer } from './approximate';
+import { buildSelectionLayer } from './selection';
 
 import { CLUSTER_ZOOM, buildClusterLayers, cellSizeFor, clusterEvents } from './clusters';
 import type { Cluster } from './clusters';
@@ -126,5 +127,7 @@ export function buildEventLayers(
   );
   const icons = buildIconLayer(loose, onPick, selectedId, Boolean(view?.globe && view.zoom <= 12));
   if (icons !== null) layers.push(icons);
+  const selected = visible.find((event) => event.id === selectedId);
+  if (selected) layers.push(buildSelectionLayer(selected));
   return layers;
 }

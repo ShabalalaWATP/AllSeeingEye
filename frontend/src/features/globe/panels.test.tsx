@@ -48,6 +48,20 @@ describe('EventInspector keyboard dismissal', () => {
   });
 });
 
+it('explains automated conflict and unrest coding without labelling it verified', () => {
+  render(
+    <EventInspector
+      event={liveEvent({ source_id: 'gdelt_events', category: 'conflict', subtype: 'protest' })}
+      onClose={vi.fn()}
+    />,
+  );
+  expect(screen.getByText('Conflict & unrest')).toBeInTheDocument();
+  expect(
+    screen.getByText(/Automated news coding, not an independently verified incident/),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/not a conflict boundary/)).toBeInTheDocument();
+});
+
 describe('LayerPanel', () => {
   it('lists every category with its count, reports the budget and toggles', async () => {
     const onToggle = vi.fn();

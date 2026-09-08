@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MapControlLabel } from './MapControlLabel';
 import type { GlobeEngineHandle } from './useGlobeEngine';
 
 /** Small explicit controls for operators who cannot use map gestures. */
@@ -55,53 +56,56 @@ export function MapNavigationTools({
           ['home', 'Reset world view', 'M21 12a9 9 0 1 1-3-6.7M21 3v6h-6'],
         ] as const
       ).map(([kind, label, path]) => (
-        <button
-          key={kind}
-          type="button"
-          aria-label={label}
-          title={label}
-          disabled={!enabled}
-          onClick={() => move(kind)}
-          className={buttonClass}
-        >
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <MapControlLabel key={kind} label={label}>
+          <button
+            type="button"
+            aria-label={label}
+            title={label}
+            disabled={!enabled}
+            onClick={() => move(kind)}
+            className={buttonClass}
           >
-            <path d={path} />
-          </svg>
-        </button>
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d={path} />
+            </svg>
+          </button>
+        </MapControlLabel>
       ))}
       {document.fullscreenEnabled && (
-        <button
-          type="button"
-          aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          aria-pressed={fullscreen}
-          onClick={() => {
-            void toggleFullscreen();
-          }}
-          className={buttonClass}
-        >
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
+        <MapControlLabel label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+          <button
+            type="button"
+            aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            aria-pressed={fullscreen}
+            onClick={() => {
+              void toggleFullscreen();
+            }}
+            className={buttonClass}
           >
-            <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
-          </svg>
-        </button>
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
+              <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
+            </svg>
+          </button>
+        </MapControlLabel>
       )}
       {error && (
         <p

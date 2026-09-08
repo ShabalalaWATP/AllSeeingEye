@@ -107,13 +107,7 @@
   background: #11161a;
   border-radius: 3px;
 }
-.map-icon-tooltip {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
+
 .map-tool-panel {
   position: absolute;
   z-index: 13;
@@ -199,5 +193,48 @@
   .globe-dashboard:has(> aside[aria-label='Map details'])
     :is(.map-layer-rail, .map-tool-rail, .map-tool-panel) {
     display: none;
+  }
+}
+
+.map-labelled-control {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+.map-control-label {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 90px));
+  padding: 7px 10px;
+  border: 1px solid #ffffff30;
+  border-radius: 6px;
+  background: #101419;
+  color: #f1f5f9;
+  font:
+    12px/1.4 Inter,
+    sans-serif;
+  box-shadow: 0 3px 12px #0007;
+}
+.map-style-button {
+  height: 56px;
+  flex-direction: column;
+  gap: 3px;
+}
+.map-style-label {
+  font-size: 9px;
+  line-height: 1.1;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #e5e7eb;
+}
+
+@media (max-width: 1023px) {
+  .globe-dashboard [aria-label='Copy coordinates'] {
+    bottom: 8rem;
+    max-width: calc(100% - 7.5rem);
+    white-space: normal;
   }
 }

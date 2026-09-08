@@ -467,3 +467,12 @@ measurement result that remains visible while picking with the panel closed.
 The actual authenticated mobile layout and interaction checks supplement the
 earlier isolated renderer tests. CCTV remains planned. See
 OSIRIS_MAP_INTERFACE_PLAN.md for verification and remaining source work.
+
+
+8 September map corrections: completed recognisable control icons, visible
+hover/focus labels and explicit style access; unified sidebar Map destination;
+fixed approximate-circle centre picking and selection highlighting; clarified
+Conflict & unrest coding; added bounded BNG grid and approximate coordinates.
+Full frontend regression passed 1,129 tests and unchanged coverage gates.
+See MAP_INTERACTION_CORRECTIONS.md for browser evidence, projection limits and
+verification of the final presentation changes.

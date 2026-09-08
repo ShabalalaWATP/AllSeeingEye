@@ -31,7 +31,7 @@ describe('layer registry', () => {
       liveEvent({ id: 'd', category: 'space', point: { lon: 3, lat: 4 } }),
     ];
     const layers = buildEventLayers(events, ['disaster'], onPick, 'd');
-    expect(layers.map((layer) => layer.id)).toEqual(['events-space']);
+    expect(layers.map((layer) => layer.id)).toEqual(['events-space', 'selected-event-halo']);
     const layer = layers[0]!;
     const props = layer.props as unknown as {
       data: unknown[];
@@ -52,3 +52,28 @@ describe('layer registry', () => {
     expect(onPick).toHaveBeenLastCalledWith(null);
   });
 });
+
+it.each(['aviation', 'maritime', 'conflict', 'news'] as const)(
+  'keeps an explicit selection halo for %s even inside a low-zoom cluster',
+  (category) => {
+    const events = ['first', 'chosen', 'third'].map((id) =>
+      liveEvent({
+        id,
+        category,
+        point: { lon: 1, lat: 1 },
+        subtype: category === 'maritime' ? 'vessel_position' : 'event',
+        geo_confidence: category === 'conflict' ? 'city' : 'exact',
+      }),
+    );
+    const view = { zoom: 0, onCluster: vi.fn() };
+    const selected = buildEventLayers(events, [], vi.fn(), 'chosen', view);
+    const halo = selected.find((layer) => layer.id === 'selected-event-halo');
+    expect(halo?.props).toMatchObject({ data: [events[1]], pickable: false, stroked: true });
+    expect(
+      buildEventLayers(events, [], vi.fn(), null, view).some(
+        (layer) => layer.id === 'selected-event-halo',
+      ),
+    ).toBe(false);
+    expect(buildEventLayers(events, [category], vi.fn(), 'chosen', view)).toHaveLength(0);
+  },
+);

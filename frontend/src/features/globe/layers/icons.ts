@@ -13,6 +13,14 @@ export type IconKind = 'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'v
 
 const ICON_SIZE = 64;
 
+// deck 9.3 routes named parameters through both luma's modern and legacy GL
+// setters. A string frontFace reaches raw gl.frontFace and becomes enum 0.
+// The numeric GL_FRONT_FACE key targets only the legacy WebGL setter. This
+// renderer uses WebGL, and keeps the globe's existing back-face culling.
+const GLOBE_WINDING: NonNullable<Layer['props']['parameters']> & Record<number, number> = {
+  2886: 2304, // GL_FRONT_FACE: GL_CW
+};
+
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
   vessel_unknown:
@@ -82,7 +90,7 @@ export function buildIconLayer(
     // GlobeView culls back faces. Tangent icons hide the far hemisphere; their
     // Y-flipped SVG quads need clockwise winding and a 180-degree ENU correction.
     billboard: !globe,
-    ...(globe ? { parameters: { frontFace: 'cw' as const } } : {}),
+    ...(globe ? { parameters: GLOBE_WINDING } : {}),
     getPosition: (event) => [event.point?.lon ?? 0, event.point?.lat ?? 0],
     getIcon: (event) => ({
       url: DATA_URIS[iconFor(event) ?? 'aircraft'],

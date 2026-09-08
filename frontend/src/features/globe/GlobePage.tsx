@@ -1,7 +1,7 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert } from '@/components/ui/Alert';
+import { WebGlFallback } from './WebGlFallback';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { zoomForBounds } from '@/lib/api/geo';
@@ -23,7 +23,9 @@ import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
 import { isMappedEvent } from './geographicPrecision';
 import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
-import { EventInspector } from './EventInspector';
+import { SelectedMapDetails } from './SelectedMapDetails';
+import { useBritishGrid } from './useBritishGrid';
+import { BritishGridTool } from './BritishGridTool';
 import { ControlPanel, GlobeControls } from './GlobeControls';
 import { MeasurementReadout } from './MeasurementReadout';
 import { MapLayerRail } from './MapLayerRail';
@@ -42,7 +44,6 @@ import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
 import { useInterference } from './useInterference';
-import { MapDetailsInspector } from './MapDetailsInspector';
 import { useMapPicking } from './useMapPicking';
 
 import { clusteringZoomFor } from './layers/clusters';
@@ -83,6 +84,7 @@ export default function GlobePage() {
     lite,
     createEngine,
   });
+  const britishGrid = useBritishGrid(engine);
   useLiveEvents();
   const measurement = useMapMeasurement(engine, supported && !opsRoom);
   const measured = useMemo(
@@ -148,6 +150,7 @@ export default function GlobePage() {
 
   const {
     details,
+    highlightedId,
     visible: pickableEvents,
     choose,
     close,
@@ -159,13 +162,23 @@ export default function GlobePage() {
   const eventLayers = useMemo(
     () =>
       supported
-        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId, {
+        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId ?? highlightedId, {
             zoom,
             onCluster,
             globe: mode === 'globe',
           })
         : [],
-    [hidden, onCluster, onPick, observations.filtered, selectedId, supported, zoom, mode],
+    [
+      hidden,
+      onCluster,
+      onPick,
+      observations.filtered,
+      selectedId,
+      supported,
+      zoom,
+      mode,
+      highlightedId,
+    ],
   );
   const night = useMemo(
     () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),
@@ -177,8 +190,14 @@ export default function GlobePage() {
   );
   useEffect(() => {
     if (supported)
-      engine.setLayers([...night, ...(jam === null ? [] : [jam]), ...eventLayers, ...measured]);
-  }, [engine, eventLayers, jam, night, supported, measured]);
+      engine.setLayers([
+        ...night,
+        ...(jam === null ? [] : [jam]),
+        ...britishGrid.layers,
+        ...eventLayers,
+        ...measured,
+      ]);
+  }, [engine, eventLayers, jam, night, supported, measured, britishGrid.layers]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.
   useEffect(() => {
@@ -211,8 +230,6 @@ export default function GlobePage() {
   );
 
   return (
-    // Fills the shell's relative <main> directly: a percentage height would collapse
-    // because the main area takes its height from flex, not from an explicit value.
     <div className="globe-dashboard absolute inset-0 bg-ground">
       {supported ? (
         <div
@@ -225,12 +242,7 @@ export default function GlobePage() {
           className="h-full w-full"
         />
       ) : (
-        <div className="flex h-full items-center justify-center p-6">
-          <Alert tone="warning" title="WebGL2 is required" className="max-w-md">
-            The globe needs WebGL2, which this browser or device does not provide. Enable hardware
-            acceleration or use a current version of Chrome, Edge, Firefox or Safari.
-          </Alert>
-        </div>
+        <WebGlFallback />
       )}
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
@@ -308,6 +320,9 @@ export default function GlobePage() {
               onSelect={focus}
             />
           </ControlPanel>
+          <ControlPanel label="British National Grid" icon="grid">
+            <BritishGridTool grid={britishGrid} engine={engine} />
+          </ControlPanel>
           <ControlPanel label="CCTV" icon="camera">
             <p className="p-3 text-sm text-muted">
               Public CCTV integration is planned. Camera locations and previews are not available
@@ -317,28 +332,21 @@ export default function GlobePage() {
         </GlobeControls>
       )}
       <MeasurementReadout value={measurement} />
-      {supported && !opsRoom && !measurement.picking && <CoordinateReadout engine={engine} />}
-      {selected === null &&
-        details &&
-        !opsRoom &&
-        !measurement.picking &&
-        (details.kind !== 'jam' || interference) && (
-          <MapDetailsInspector
-            key={
-              details.kind === 'cluster'
-                ? details.cluster.id
-                : `${details.cell.lon}:${details.cell.lat}`
-            }
-            details={details}
-            events={pickableEvents}
-            cells={jamCells}
-            updatedAt={jamUpdatedAt}
-            onSelect={choose}
-            onClose={close}
-          />
-        )}
-      {selected !== null && !opsRoom && !measurement.picking && (
-        <EventInspector event={selected} storySize={storySize} onClose={close} />
+      {supported && !opsRoom && !measurement.picking && (
+        <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
+      )}
+      {!opsRoom && !measurement.picking && (
+        <SelectedMapDetails
+          selected={selected}
+          storySize={storySize}
+          details={details}
+          events={pickableEvents}
+          cells={jamCells}
+          updatedAt={jamUpdatedAt}
+          interference={interference}
+          onSelect={choose}
+          onClose={close}
+        />
       )}
     </div>
   );

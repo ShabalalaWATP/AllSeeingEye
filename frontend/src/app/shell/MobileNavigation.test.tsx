@@ -73,8 +73,8 @@ describe('mobile navigation', () => {
     });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open navigation' }));
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Map/ }));
-    expect(useGlobeStore.getState().mode).toBe('map');
+    await user.click(within(screen.getByRole('dialog')).getByRole('link', { name: 'Map' }));
+    expect(useGlobeStore.getState().mode).toBe('globe');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

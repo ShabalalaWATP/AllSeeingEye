@@ -102,5 +102,9 @@ export function useMapPicking(
     },
     [picking, select],
   );
-  return { details, visible, choose, close, onPick, onCluster, onJam };
+  const highlightedId =
+    details?.kind === 'cluster' && details.cluster.id.startsWith('overlap:')
+      ? details.cluster.id.slice('overlap:'.length)
+      : null;
+  return { details, visible, choose, close, onPick, onCluster, onJam, highlightedId };
 }

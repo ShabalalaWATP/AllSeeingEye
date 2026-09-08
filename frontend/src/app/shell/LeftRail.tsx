@@ -6,38 +6,10 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { selectIsAdmin, useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
 
-import { useViewNavigation } from './useViewNavigation';
-
 const itemClass =
   'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors';
 const idleClass = 'text-muted hover:bg-surface-2 hover:text-text';
 const activeClass = 'bg-surface-2 text-text';
-
-function RailButton({
-  active,
-  onClick,
-  shortcut,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  shortcut: string;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`${itemClass} ${active ? activeClass : idleClass}`}
-    >
-      <span>{children}</span>
-      <kbd className="font-mono text-[10px] text-muted" aria-label={`Shortcut ${shortcut}`}>
-        {shortcut}
-      </kbd>
-    </button>
-  );
-}
 
 function RailLink({
   to,
@@ -66,7 +38,6 @@ export function LeftRail({
   mobile?: boolean;
   onNavigate?: () => void;
 }) {
-  const { mode, onGlobePage, showGlobe, showMap } = useViewNavigation();
   const isAdmin = useAuthStore(selectIsAdmin);
   const lite = useGlobeStore((state) => state.lite);
 
@@ -79,26 +50,9 @@ export function LeftRail({
         <Wordmark className="min-w-0 leading-snug" />
       </Link>
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 pb-4">
-        <RailButton
-          active={onGlobePage && mode === 'globe'}
-          onClick={() => {
-            showGlobe();
-            onNavigate?.();
-          }}
-          shortcut="G"
-        >
-          Globe
-        </RailButton>
-        <RailButton
-          active={onGlobePage && mode === 'map'}
-          onClick={() => {
-            showMap();
-            onNavigate?.();
-          }}
-          shortcut="M"
-        >
+        <RailLink to="/" onNavigate={onNavigate}>
           Map
-        </RailButton>
+        </RailLink>
         <RailLink to="/trackers" onNavigate={onNavigate}>
           Trackers
         </RailLink>

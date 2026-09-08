@@ -1,5 +1,6 @@
 import { Children, isValidElement, useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
 
@@ -51,22 +52,23 @@ export function GlobeControls({
       </div>
       <div className="map-tool-rail" role="group" aria-label="Map tools">
         {panels.map(({ props }) => (
-          <button
-            key={props.label}
-            type="button"
-            className="map-icon-button"
-            aria-label={props.label}
-            title={props.label}
-            aria-expanded={active === props.label}
-            aria-controls={active === props.label ? id : undefined}
-            onClick={(event) => {
-              opener.current = event.currentTarget;
-              setActive(active === props.label ? null : props.label);
-            }}
-          >
-            <MapControlIcon name={props.icon} />
-            <span className="map-icon-tooltip">{props.label}</span>
-          </button>
+          <MapControlLabel key={props.label} label={props.label}>
+            <button
+              type="button"
+              className={`map-icon-button ${props.label === 'Map style' ? 'map-style-button' : ''}`}
+              aria-label={props.label}
+              title={props.label}
+              aria-expanded={active === props.label}
+              aria-controls={active === props.label ? id : undefined}
+              onClick={(event) => {
+                opener.current = event.currentTarget;
+                setActive(active === props.label ? null : props.label);
+              }}
+            >
+              <MapControlIcon name={props.icon} />
+              {props.label === 'Map style' && <span className="map-style-label">Map style</span>}
+            </button>
+          </MapControlLabel>
         ))}
         {navigation}
       </div>

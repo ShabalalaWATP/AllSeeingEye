@@ -96,6 +96,13 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
+        {event.source_id === 'gdelt_events' && (
+          <p className="mt-2 text-xs text-muted">
+            Automated news coding, not an independently verified incident. This feed includes
+            protests, shows of force and coercion as well as violence. The ring marks an approximate
+            reference location, not a conflict boundary.
+          </p>
+        )}
         {event.title_en !== null && event.title_en !== event.title && (
           <p className="mt-1 text-muted">{event.title_en}</p>
         )}

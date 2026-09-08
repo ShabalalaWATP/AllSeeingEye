@@ -10,7 +10,7 @@ export interface CategoryStyle {
 
 export const CATEGORY_STYLES: Record<Category, CategoryStyle> = {
   disaster: { label: 'Disasters', colour: [255, 111, 55], css: '#ff6f37', order: 0 },
-  conflict: { label: 'Conflict', colour: [255, 90, 90], css: '#ff5a5a', order: 1 },
+  conflict: { label: 'Conflict & unrest', colour: [255, 90, 90], css: '#ff5a5a', order: 1 },
   news: { label: 'News', colour: [233, 228, 220], css: '#e9e4dc', order: 2 },
   aviation: { label: 'Aviation', colour: [245, 181, 63], css: '#f5b53f', order: 3 },
   maritime: { label: 'Maritime', colour: [92, 211, 155], css: '#5cd39b', order: 4 },
