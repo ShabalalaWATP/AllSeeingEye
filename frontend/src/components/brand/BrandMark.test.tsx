@@ -10,7 +10,7 @@ describe('BrandMark', () => {
   it('runs the eye with a fixed pupil at 24 fps on the page ground', () => {
     render(<BrandMark />);
     const mark = screen.getByRole('img', { name: 'The All Seeing Eye' });
-    expect(mark).toHaveStyle({ width: '40px', height: '40px' });
+    expect(mark).toHaveStyle({ width: '56px', height: '40px' });
     const eye = screen.getByTestId('evil-eye');
     expect(eye).toHaveAttribute('data-pupil-follow', '0');
     expect(eye).toHaveAttribute('data-max-fps', '24');

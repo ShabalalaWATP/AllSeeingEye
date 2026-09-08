@@ -25,10 +25,11 @@ export function BrandMark({ size = 40, decorative = false, still = false }: Bran
       role={decorative ? undefined : 'img'}
       aria-label={decorative ? undefined : BRAND_NAME}
       aria-hidden={decorative ? true : undefined}
-      className="shrink-0 overflow-hidden rounded-full"
-      style={{ width: size, height: size }}
+      className="shrink-0"
+      style={{ width: size * 1.4, height: size }}
     >
       <EvilEye
+        scale={0.6}
         pupilFollow={0}
         backgroundColor={BRAND_GROUND}
         maxFps={reducedMotion ? 1 : 24}
