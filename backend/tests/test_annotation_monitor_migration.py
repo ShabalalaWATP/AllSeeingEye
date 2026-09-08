@@ -50,6 +50,18 @@ def prepared(tmp_path):
     return config, database, owner
 
 
+def metadata_0030():
+    # Compare the historical0030 contract, before inventory mode and creation events.
+    metadata = sa.MetaData()
+    for table in Base.metadata.sorted_tables:
+        table.to_metadata(metadata)
+    monitors = metadata.tables["annotation_monitors"]
+    for name in ("mode", "inventory_overflow"):
+        monitors._columns.remove(monitors.c[name])
+    metadata.tables["annotation_revision_outbox"].c.previous_revision_id.nullable = False
+    return metadata
+
+
 def test_upgrade_preserves_old_origins_acknowledgements_and_matches_current_metadata(tmp_path):
     config, database, _ = prepared(tmp_path)
     with closing(sqlite3.connect(database)) as connection:
@@ -70,7 +82,7 @@ def test_upgrade_preserves_old_origins_acknowledgements_and_matches_current_meta
                     )
                 },
             )
-            assert compare_metadata(context, Base.metadata) == []
+            assert compare_metadata(context, metadata_0030()) == []
     finally:
         engine.dispose()
     command.downgrade(config, "0029")

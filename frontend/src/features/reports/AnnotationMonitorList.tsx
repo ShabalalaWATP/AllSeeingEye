@@ -55,7 +55,10 @@ export function AnnotationMonitorList({
                     {item.name}
                   </Link>
                   <p className="text-xs text-muted">
-                    Version {item.version_number}; {item.status}; checkpoint{' '}
+                    {item.mode === 'report_inventory'
+                      ? 'Whole saved report inventory'
+                      : 'Selected annotations'}
+                    ; version {item.version_number}; {item.status}; checkpoint{' '}
                     {item.checkpoint_number}; notifications {item.notify_on_change ? 'on' : 'off'}.
                   </p>
                   {item.unavailable_reason && (

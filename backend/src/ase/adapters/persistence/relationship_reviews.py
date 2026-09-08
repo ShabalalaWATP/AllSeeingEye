@@ -192,6 +192,14 @@ class SqlRelationshipReviewRepository:
         await self.session.flush()
         self.session.add(row)
         await self.session.flush()
+        await enqueue_revision(
+            self.session,
+            "relationship",
+            revision.relationship_id,
+            None,
+            revision.id,
+            revision.created_at,
+        )
 
     async def append(self, revision: RelationshipReviewRevision, base_revision_id: UUID) -> bool:
         if revision.previous_id != base_revision_id or revision.id == base_revision_id:

@@ -8311,6 +8311,15 @@
             "type": "boolean",
             "title": "Notify On Change",
             "default": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "selected_roots",
+              "report_inventory"
+            ],
+            "title": "Mode",
+            "default": "selected_roots"
           }
         },
         "additionalProperties": false,
@@ -8324,6 +8333,15 @@
       },
       "AnnotationMonitorOut": {
         "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "selected_roots",
+              "report_inventory"
+            ],
+            "title": "Mode",
+            "default": "selected_roots"
+          },
           "id": {
             "type": "string",
             "format": "uuid",

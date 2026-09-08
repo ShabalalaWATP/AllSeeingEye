@@ -6,6 +6,10 @@ from typing import Literal
 from uuid import UUID
 
 from ase.domain.annotation_comparison import AnnotationKind
+from ase.domain.errors import Conflict, InvalidRequest
+
+MonitorMode = Literal["selected_roots", "report_inventory"]
+MAX_MONITOR_PENDING_EVENTS = 2000
 
 MonitorStatus = Literal["active", "paused", "unavailable"]
 MonitorAction = Literal["configure", "pause", "resume_catch_up", "resume_rebaseline"]
@@ -41,6 +45,7 @@ class AnnotationMonitor:
     watches: tuple[WatchedRevision, ...]
     created_at: datetime
     updated_at: datetime
+    mode: MonitorMode = "selected_roots"
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,7 +54,7 @@ class RevisionObservation:
     monitor_id: UUID
     kind: AnnotationKind
     root_id: UUID
-    previous_revision_id: UUID
+    previous_revision_id: UUID | None
     revision_id: UUID
     created_at: datetime
 
@@ -69,3 +74,11 @@ class AnnotationTransition:
     configuration_revision: int
     notification_categories: tuple[AnnotationKind, ...]
     notify_on_change: bool
+
+
+class InventoryCapacityUnavailable(InvalidRequest):
+    """A bounded subscription cannot retain the complete inventory."""
+
+
+class InventoryHistoryGap(Conflict):
+    """An inventory root lacks its required retained creation event."""

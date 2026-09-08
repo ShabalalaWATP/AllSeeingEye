@@ -16,6 +16,10 @@ class AnnotationMonitorRow(Base):
     team_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True, index=True)
     report_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     version_number: Mapped[int] = mapped_column(Integer)
+    mode: Mapped[str] = mapped_column(
+        String(24), default="selected_roots", server_default="selected_roots"
+    )
+    inventory_overflow: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     name: Mapped[str] = mapped_column(String(120))
     categories: Mapped[list[str]] = mapped_column(JSON)
     notify_on_change: Mapped[bool] = mapped_column(Boolean)
@@ -50,7 +54,7 @@ class AnnotationOutboxRow(Base):
     monitor_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("annotation_monitors.id"), index=True)
     kind: Mapped[str] = mapped_column(String(16))
     root_id: Mapped[UUID] = mapped_column(Uuid)
-    previous_revision_id: Mapped[UUID] = mapped_column(Uuid)
+    previous_revision_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     revision_id: Mapped[UUID] = mapped_column(Uuid)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
 

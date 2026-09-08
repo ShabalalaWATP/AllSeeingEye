@@ -8,7 +8,9 @@ export function MonitorCategoryFields({
   value,
   available,
   onChange,
+  inventory = false,
 }: {
+  inventory?: boolean;
   value: AnnotationKind[];
   available: AnnotationKind[];
   onChange: (value: AnnotationKind[]) => void;
@@ -32,13 +34,24 @@ export function MonitorCategoryFields({
               )
             }
           />
-          {monitorCategoryLabels[kind]}
+          {inventory
+            ? (
+                {
+                  claim: 'Claims',
+                  identity: 'Identity reviews',
+                  relationship: 'Organisation relationships',
+                } as const
+              )[kind]
+            : monitorCategoryLabels[kind]}
         </label>
       ))}
       <p className="text-xs text-muted">
         This monitor is pinned to one frozen report version. New evidence and confidence changes are
-        observed independently by research schedules. New versions and new annotation roots are not
-        added automatically.
+        observed independently by research schedules. New report versions are not added
+        automatically.{' '}
+        {inventory
+          ? 'New annotation roots in this saved version are enrolled automatically, up to 20 in total across all three kinds. Categories control alerts, not which roots are enrolled.'
+          : 'New annotation roots are not added automatically.'}
       </p>
     </fieldset>
   );

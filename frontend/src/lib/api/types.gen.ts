@@ -2495,9 +2495,21 @@ export interface components {
              * @default false
              */
             notify_on_change: boolean;
+            /**
+             * Mode
+             * @default selected_roots
+             * @enum {string}
+             */
+            mode: "selected_roots" | "report_inventory";
         };
         /** AnnotationMonitorOut */
         AnnotationMonitorOut: {
+            /**
+             * Mode
+             * @default selected_roots
+             * @enum {string}
+             */
+            mode: "selected_roots" | "report_inventory";
             /**
              * Id
              * Format: uuid

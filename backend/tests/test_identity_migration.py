@@ -13,7 +13,6 @@ from alembic.migration import MigrationContext
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ase.adapters.persistence.base import Base
-from ase.adapters.persistence.claims import SqlClaimRepository
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.application.research.map_view_evidence import evidence_digest
 from ase.domain.claim_revisions import (
@@ -23,6 +22,7 @@ from ase.domain.claim_revisions import (
     ClaimReviewState,
     revise_claim,
 )
+from legacy_annotation_history import seed_initial
 from report_documents_helpers import document_records
 from test_mfa_migration import prepare
 
@@ -52,7 +52,7 @@ async def populate_history(database, identity):
     try:
         async with async_sessionmaker(engine)() as session:
             await SqlReportRepository(session).add(report, version)
-            await SqlClaimRepository(session).create(revision, evidence_digest(version))
+            await seed_initial(session, revision, evidence_digest(version))
             await session.commit()
     finally:
         await engine.dispose()

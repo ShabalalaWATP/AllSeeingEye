@@ -18,7 +18,7 @@ from ase.domain.annotation_comparison import (
     ComparisonSide,
 )
 from ase.domain.annotation_deltas import annotation_deltas, annotation_rows, evidence_deltas
-from ase.domain.annotation_monitoring import AnnotationMonitor, WatchedRevision
+from ase.domain.annotation_monitoring import AnnotationMonitor, MonitorMode, WatchedRevision
 from ase.domain.confidence_comparison import confidence_deltas
 from ase.domain.errors import Conflict, InvalidRequest
 
@@ -41,7 +41,10 @@ def watches_from_selection(value: ComparisonSelection) -> tuple[WatchedRevision,
 
 
 def validate_options(
-    name: str, categories: tuple[AnnotationKind, ...], watches: tuple[WatchedRevision, ...]
+    name: str,
+    categories: tuple[AnnotationKind, ...],
+    watches: tuple[WatchedRevision, ...],
+    mode: MonitorMode = "selected_roots",
 ) -> None:
     if not name.strip() or len(name) > 120 or any(ord(c) < 32 for c in name):
         raise InvalidRequest("Choose a bounded monitor name without control characters.")
@@ -49,7 +52,11 @@ def validate_options(
         not categories
         or len(categories) > 3
         or len(set(categories)) != len(categories)
-        or not set(categories).issubset({w.kind for w in watches})
+        or not set(categories).issubset(
+            {"claim", "identity", "relationship"}
+            if mode == "report_inventory"
+            else {w.kind for w in watches}
+        )
     ):
         raise InvalidRequest("Choose applicable watched annotation categories once each.")
 

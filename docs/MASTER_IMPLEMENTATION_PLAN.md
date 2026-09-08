@@ -4,17 +4,39 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+8 September parallel implementation: source language/date provenance is present
+on `codex/source-language-date-provenance`; 1,034 frontend tests and its unchanged
+coverage gates passed, while full backend acceptance remains active. SEC filing
+discovery/import is present on `codex/sec-filing-research`; its frontend passed
+1,026 tests, and the session-release repair passed 92 focused backend cases and
+independent re-review. Canonical source-date validation and typed provenance
+integration remain required before combined acceptance. FIRMS administrator
+connectivity is now being implemented on `codex/firms-admin-connectivity`, with
+encrypted draft/test/confirm and next-poll activation. These isolated branches
+are not yet integrated or deployed and do not complete the wider expansion.
+
 8 September continuation: exact candidate registry routing is integrated on main
 at `ebc1cfe` (feature `84f3a58`): explicit LEI/CIK/UK company identifiers,
 operator-grounded model choices, selected-provider execution and frozen receipts.
 Acceptance passed 191 backend cases, 983 frontend cases and subsequent targeted
 repairs; independent reviews and repository hooks passed. Standalone selected-root
-monitoring is ready for integration after 99 local backend cases, ten PostgreSQL
+monitoring is integrated at `0c91741` after 99 local backend cases, ten PostgreSQL
 concurrency cases, six PostgreSQL migration cases and 1,003 frontend cases.
 Its final hooks passed. The prior combined comparison backend tree passed
-3,195 tests, 39 skips, no warnings and 95.20% coverage. A new combined acceptance
-run is required after both features and the HTTP response-order repair are merged.
-Whole-inventory/new-root and cross-version monitoring remain required follow-ons.
+3,195 tests, 39 skips, no warnings and 95.20% coverage. New combined backend
+acceptance passed on `0c91741`: 3,278 passed, 55 skipped, 95.06% coverage,
+including both features and the HTTP response-order repair. Its frontend passed
+1,009 tests in 196 files (95.08%
+statements, 90.11% branches, 93.52% functions, 96.43% lines), and its production
+build passed.
+Whole-inventory/new-root monitoring is implemented separately under
+[its acceptance plan](ANNOTATION_INVENTORY_MONITORING_PLAN.md): 87 local backend,
+24 PostgreSQL and 1,018 frontend cases passed, together with static checks and
+repository hooks. Full isolated backend acceptance subsequently passed 3,291
+tests, with 70 skips and 95.05% coverage. Integration verification follows.
+Cross-version
+monitoring remains required after that delivery; its explicit report and scheduled
+research origins are specified in [CROSS_VERSION_MONITORING_PLAN.md](CROSS_VERSION_MONITORING_PLAN.md).
 See [ANNOTATION_MONITORING_IMPLEMENTATION.md](ANNOTATION_MONITORING_IMPLEMENTATION.md)
 and [CANDIDATE_REGISTRY_ROUTING_PLAN.md](CANDIDATE_REGISTRY_ROUTING_PLAN.md).
 

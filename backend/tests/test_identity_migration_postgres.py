@@ -15,6 +15,7 @@ from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepos
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.domain.identity_review import revise_identity_decision
 from ase.infrastructure.migrations import alembic_config
+from legacy_annotation_history import seed_initial
 from report_documents_helpers import document_records
 from test_identity_review import arguments
 from test_llm_connections_migration import _database
@@ -74,7 +75,7 @@ def test_postgres_identity_upgrade_and_retained_history_refusal(tmp_path):
                 await asyncio.to_thread(command.upgrade, config, "0026")
                 revision = revise_identity_decision(**{**args, "revision_id": uuid4()})
                 async with async_sessionmaker(engine)() as session:
-                    await SqlIdentityDecisionRepository(session).create(revision, "a" * 64)
+                    await seed_initial(session, revision, "a" * 64)
                     await session.commit()
                 with pytest.raises(RuntimeError, match="Identity history remains"):
                     await asyncio.to_thread(command.downgrade, config, "0025")

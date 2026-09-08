@@ -2,6 +2,8 @@
 
 from dataclasses import replace
 
+import pytest
+
 from annotation_monitor_helpers import correct
 from ase.adapters.persistence.claims import SqlClaimRepository
 from ase.adapters.persistence.identity_decisions import SqlIdentityDecisionRepository
@@ -28,8 +30,9 @@ from test_relationship_review import arguments as relationship_arguments
 from test_saved_map_views import claims_for
 
 
+@pytest.mark.parametrize("inventory", [False, True])
 async def test_all_three_actual_revision_mutations_are_queued_and_observed_independently(
-    client, container, user
+    client, container, user, inventory
 ):
     actor = await claims_for(client, container, user)
     report, version = document_records(user.id)
@@ -85,14 +88,25 @@ async def test_all_three_actual_revision_mutations_are_queued_and_observed_indep
     )
     async with container.session_factory() as session:
         await container.repositories(session).reports.add(report, version)
+        if inventory:
+            await session.commit()
+            monitor = await container.annotation_monitors(session).create(
+                actor,
+                "New roots",
+                ComparisonSelection(report.id, 1),
+                ("claim", "identity", "relationship"),
+                True,
+                "report_inventory",
+            )
         digest = evidence_digest(version)
         await SqlClaimRepository(session).create(claim, digest)
         await SqlIdentityDecisionRepository(session).create(identity, digest)
         await SqlRelationshipReviewRepository(session).create(relationship, digest)
         await session.commit()
-        monitor = await container.annotation_monitors(session).create(
-            actor, "Mixed watch", selection, ("claim", "identity", "relationship"), True
-        )
+        if not inventory:
+            monitor = await container.annotation_monitors(session).create(
+                actor, "Mixed watch", selection, ("claim", "identity", "relationship"), True
+            )
     await correct(container, actor, claim)
     async with container.session_factory() as session:
         await container.report_identities(session).update(
@@ -111,14 +125,14 @@ async def test_all_three_actual_revision_mutations_are_queued_and_observed_indep
             ),
             CONTEXT,
         )
-    for _ in range(3):
+    for _ in range(6 if inventory else 3):
         assert await tick(container, monitor.id)
     assert not await tick(container, monitor.id)
     async with container.session_factory() as session:
         rows, total = await container.annotation_monitors(session).repository.history(
             monitor.id, 20, 0
         )
-        assert total == 3 and {row.changed_categories for row in rows} == {
+        assert total == (6 if inventory else 3) and {row.changed_categories for row in rows} == {
             ("claim",),
             ("identity",),
             ("relationship",),

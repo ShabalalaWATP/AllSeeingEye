@@ -25,6 +25,7 @@ from ase.domain.annotation_monitoring import (
     MAX_MONITORS_PER_SCOPE,
     AnnotationMonitor,
     MonitorAction,
+    MonitorMode,
 )
 from ase.domain.errors import Conflict, InvalidRequest, NotFound
 
@@ -78,9 +79,18 @@ class AnnotationMonitors:
         selection: ComparisonSelection,
         categories: tuple[AnnotationKind, ...],
         notify: bool,
+        mode: MonitorMode = "selected_roots",
     ) -> AnnotationMonitor:
-        watches = watches_from_selection(selection)
-        validate_options(name, categories, watches)
+        if mode not in {"selected_roots", "report_inventory"}:
+            raise InvalidRequest("Choose a supported immutable monitor mode.")
+        if mode == "report_inventory" and (
+            selection.revisions or selection.identity_revisions or selection.relationship_revisions
+        ):
+            raise InvalidRequest(
+                "Inventory monitoring resolves every root on the server; leave selections empty."
+            )
+        watches = watches_from_selection(selection) if mode == "selected_roots" else ()
+        validate_options(name, categories, watches, mode)
         try:
             access = await self.selector.claims._context(actor)
             report = await self.selector.claims._report(access, selection.report_id)
@@ -106,8 +116,17 @@ class AnnotationMonitors:
                 watches,
                 now,
                 now,
+                mode,
             )
             await self.budget(value, 1, creating=True)
+            if mode == "report_inventory":
+                watches = await self.repository.inventory(value)
+                if len(watches) > 20:
+                    raise InvalidRequest(
+                        "This report version exceeds the twenty-root inventory limit. "
+                        "Choose selected annotations instead."
+                    )
+                value = replace(value, watches=watches)
             side, latest = await resolve_side(self.selector, access, value, latest=True)
             if latest != watches:
                 raise Conflict("A selected root has a newer revision. Refresh the selection.")
@@ -179,7 +198,7 @@ class AnnotationMonitors:
                     categories=categories if categories is not None else value.categories,
                     notify_on_change=notify if notify is not None else value.notify_on_change,
                 )
-                validate_options(value.name, value.categories, value.watches)
+                validate_options(value.name, value.categories, value.watches, value.mode)
                 if (value.categories, value.notify_on_change) != (
                     previous.categories,
                     previous.notify_on_change,

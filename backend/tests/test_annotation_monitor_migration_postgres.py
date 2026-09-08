@@ -95,7 +95,15 @@ def schema_parity(connection):
             )
         },
     )
-    assert compare_metadata(context, Base.metadata) == []
+    # Historical0030 must be compared with its own schema, before inventory0031.
+    historical = sa.MetaData()
+    for table in Base.metadata.sorted_tables:
+        table.to_metadata(historical)
+    monitors = historical.tables["annotation_monitors"]
+    for name in ("mode", "inventory_overflow"):
+        monitors._columns.remove(monitors.c[name])
+    historical.tables["annotation_revision_outbox"].c.previous_revision_id.nullable = False
+    assert compare_metadata(context, historical) == []
     inspector = sa.inspect(connection)
     assert "ck_alerts_one_origin" in {
         row["name"] for row in inspector.get_check_constraints("alerts")

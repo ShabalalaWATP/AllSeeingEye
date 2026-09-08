@@ -9,6 +9,7 @@ from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.annotation_inventory import inventory, pending_inventory
 from ase.adapters.persistence.annotation_monitor_codec import (
     checked_payload,
     checked_transition,
@@ -33,6 +34,7 @@ from ase.domain.annotation_comparison import AnnotationKind
 from ase.domain.annotation_monitoring import (
     AnnotationMonitor,
     AnnotationTransition,
+    MonitorMode,
     MonitorStatus,
     RevisionObservation,
     WatchedRevision,
@@ -62,6 +64,14 @@ def _transition(row: TransitionRow) -> AnnotationTransition:
 class SqlAnnotationMonitorRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def inventory(self, monitor: AnnotationMonitor) -> tuple[WatchedRevision, ...]:
+        return await inventory(self.session, monitor)
+
+    async def pending_inventory(
+        self, monitor: AnnotationMonitor
+    ) -> tuple[bool, tuple[WatchedRevision, ...]]:
+        return await pending_inventory(self.session, monitor)
 
     async def get(self, monitor_id: UUID) -> AnnotationMonitor | None:
         row = await self.session.get(MonitorRow, monitor_id, populate_existing=True)
@@ -93,6 +103,7 @@ class SqlAnnotationMonitorRepository:
             ),
             row.created_at,
             row.updated_at,
+            cast(MonitorMode, row.mode),
         )
 
     async def page(
@@ -244,16 +255,15 @@ class SqlAnnotationMonitorRepository:
                 checkpoint_bytes=len(payload),
             )
         )
-        for watch in value.watches:
-            await self.session.execute(
-                update(WatchRow)
-                .where(
-                    WatchRow.monitor_id == value.id,
-                    WatchRow.kind == watch.kind,
-                    WatchRow.root_id == watch.root_id,
+        await self.session.execute(delete(WatchRow).where(WatchRow.monitor_id == value.id))
+        self.session.add_all(
+            [
+                WatchRow(
+                    monitor_id=value.id, kind=w.kind, root_id=w.root_id, revision_id=w.revision_id
                 )
-                .values(revision_id=watch.revision_id)
-            )
+                for w in value.watches
+            ]
+        )
         self.session.add(
             TransitionRow(
                 **asdict(transition),
@@ -263,6 +273,9 @@ class SqlAnnotationMonitorRepository:
             )
         )
         if reset:
+            await self.session.execute(
+                update(MonitorRow).where(MonitorRow.id == value.id).values(inventory_overflow=False)
+            )
             await self.session.execute(delete(OutboxRow).where(OutboxRow.monitor_id == value.id))
         elif event_id is not None:
             await self.session.execute(
