@@ -2692,3 +2692,34 @@ for live map interactions awaits the deliberate batching interval and expiry.
 Thresholds were unchanged. Staged whitespace and supplied-key checks passed;
 secrets remain in ignored local configuration. Visual GPU and long-duration soak
 verification remain explicitly unclaimed.
+
+
+## 8 September 2026: CelesTrak restart-safe retrieval
+
+The user's GP documentation link identified the active catalogue's one-download-
+per-update rule. A single guarded live diagnostic confirmed the documented
+unchanged-data HTTP 403. The former in-memory-only cache lost the accepted
+orbital download on restart, leaving the application unable to use it again.
+
+Added a bounded orbital-input cache, persisted pre-request cooldown reservations,
+provider-specific unchanged-data handling, explicit access-refusal pauses and
+administrator reset. Cached predictions retain original epoch/download provenance
+and show degraded diagnostics after real refresh failures. Waiting polls no longer
+trip the failure breaker. Position time participates in satellite change hashes,
+so stationary Skynet positions refresh correctly.
+
+Focused independent review found cancellation/write ordering, malformed warm-cache
+replacement and retiring-task shutdown issues. Regression fixes preserve the
+original cancellation even if a disk write also fails. Deterministic checks cover
+restart reuse, request limits, cache corruption/size limits, source binding,
+orbital expiry, API authorisation and secret redaction. 184 distinct backend tests
+passed. Satellite-module branch-inclusive coverage is 98.37%; Ruff, formatting,
+strict mypy and two import contracts passed. No dependencies or migrations added.
+
+The API was restarted on port 8001 and the frontend remains on 5174. Authenticated
+snapshots showed 22 station objects, 24 public military catalogue objects and
+12 Skynet objects; fresh instances loaded the same disk cache with zero network
+calls. The empty active cache must wait until the next permitted attempt after
+17:16 UTC (18:16 UK time). Successful active-catalogue population is still open.
+The cache and local diagnostics are ignored by git. This is a scoped code and
+security review, not a repository-wide security scan or a browser/GPU soak test.

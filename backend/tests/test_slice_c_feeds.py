@@ -5,7 +5,10 @@ from __future__ import annotations
 import copy
 from datetime import UTC, datetime
 
+import pytest
+
 from ase.adapters.feeds.cyber import IodaConnector, RansomwareConnector, _country_of
+from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.navarea import NavareaConnector, issued, kind_of, positions
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.space import (
@@ -70,10 +73,8 @@ async def test_satellites_are_propagated_and_elements_cached() -> None:
     assert len(again) == 2 and len(http.requests) == 1  # elements reused within two hours
     point, height = subpoint((7000.0, 0.0, 0.0), NOW)
     assert round(height) == 629 and point.lat == 0.0
-    assert (
+    with pytest.raises(FeedFetchError, match="missing orbital fields"):
         await SatelliteConnector(FakeHttp({"gp.php": [{"OBJECT_NAME": "junk"}]}), clock()).fetch()
-        == []
-    )
 
 
 async def test_launches_and_the_k_index() -> None:

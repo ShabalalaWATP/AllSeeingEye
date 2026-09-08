@@ -57,16 +57,40 @@ class HealthRegistry:
         return sorted(self._entries.values(), key=lambda entry: entry.source_id)
 
     def record_success(
-        self, source_id: str, items: int, latency_ms: float, now: datetime, interval: timedelta
+        self,
+        source_id: str,
+        items: int,
+        latency_ms: float,
+        now: datetime,
+        interval: timedelta,
+        *,
+        warning: str | None = None,
     ) -> SourceHealth:
         entry = self.get(source_id)
-        entry.status = SourceStatus.HEALTHY
+        entry.status = SourceStatus.DEGRADED if warning else SourceStatus.HEALTHY
+        if warning:
+            entry.last_error, entry.last_error_at = warning[:300], now
         entry.last_success = now
         entry.consecutive_failures = 0
         entry.items_last_poll = items
         entry.last_latency_ms = latency_ms
         entry.polls += 1
         entry.next_poll_at = now + interval
+        return entry
+
+    def record_deferred(
+        self,
+        source_id: str,
+        error: str,
+        now: datetime,
+        retry_at: datetime,
+    ) -> SourceHealth:
+        """A deliberate wait is not another failed upstream request."""
+        entry = self.get(source_id)
+        entry.status = SourceStatus.DEGRADED
+        entry.last_error, entry.last_error_at = error[:300], now
+        entry.next_poll_at = retry_at
+        entry.polls += 1
         return entry
 
     def record_failure(self, source_id: str, error: str, now: datetime) -> SourceHealth:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from pathlib import Path
 
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
@@ -49,6 +50,8 @@ def build_connectors(
     digitraffic_http: FeedHttpClient | None = None,
     public_firms_http: FeedHttpClient | None = None,
     include_public_firms: bool = True,
+    satellite_cache_dir: Path | None = None,
+    satellite_http: FeedHttpClient | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
     connectors: list[FeedConnector] = [
@@ -75,7 +78,10 @@ def build_connectors(
         WhoOutbreakConnector(http, clock),
         IfrcGoConnector(http, clock),
         NavareaConnector(http, clock),
-        *[SatelliteConnector(http, clock, spec) for spec in SATELLITE_SPECS],
+        *[
+            SatelliteConnector(satellite_http or http, clock, spec, cache_dir=satellite_cache_dir)
+            for spec in SATELLITE_SPECS
+        ],
         LaunchConnector(http, clock),
         KpConnector(http, clock),
         RansomwareConnector(http, clock),

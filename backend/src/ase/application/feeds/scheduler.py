@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.ports import Clock
+from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector, FeedDeferred
 from ase.application.ports.feed_release import FeedUnavailable, GuardedFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
@@ -60,6 +61,7 @@ class FeedScheduler:
         self._grader = grader
         self._admission = admission
         self._tasks: dict[str, asyncio.Task[None]] = {}
+        self._retiring_tasks: set[asyncio.Task[None]] = set()
         self._prune_task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
 
@@ -79,7 +81,7 @@ class FeedScheduler:
 
     async def stop(self) -> None:
         self._stopping.set()
-        tasks = [*self._tasks.values()]
+        tasks = [*self._tasks.values(), *self._retiring_tasks]
         if self._prune_task is not None:
             tasks.append(self._prune_task)
         for task in tasks:
@@ -89,6 +91,7 @@ class FeedScheduler:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
         self._tasks.clear()
+        self._retiring_tasks.clear()
         self._prune_task = None
 
     def resume(self, source_id: str) -> None:
@@ -98,6 +101,13 @@ class FeedScheduler:
             raise NotFound()
         self._health.reset(source_id)
         task = self._tasks.get(source_id)
+        if isinstance(connector, DiagnosticFeedConnector):
+            connector.request_retry()
+            if task is not None:
+                task.cancel()
+                self._retiring_tasks.add(task)
+                task.add_done_callback(self._retiring_tasks.discard)
+                task = None
         if self.running and (task is None or task.done()):
             self._tasks[source_id] = asyncio.create_task(self._run_connector(connector))
 
@@ -127,8 +137,14 @@ class FeedScheduler:
                     async with connector.release_guard(batch.generation) as current:
                         if not current:
                             raise FeedUnavailable("Connection changed before publication.")
-                        return await self._publish(connector, raw, started)
-                return await self._publish(connector, raw, started)
+                        outcome = await self._publish(connector, raw, started)
+                else:
+                    outcome = await self._publish(connector, raw, started)
+                return outcome
+        except FeedDeferred as exc:
+            entry = self._health.record_deferred(source_id, str(exc), started, exc.retry_at)
+            await self._bus.publish(BusMessage("source.health", {"health": entry}))
+            return PollOutcome(source_id, ok=False, error=entry.last_error)
         except FeedUnavailable as exc:
             return PollOutcome(source_id, ok=False, error=str(exc))
         except Exception as exc:
@@ -172,7 +188,12 @@ class FeedScheduler:
         finished = self._clock.now()
         latency_ms = (finished - started).total_seconds() * 1000
         entry = self._health.record_success(
-            source_id, len(events), latency_ms, finished, connector.spec.poll_interval
+            source_id,
+            len(events),
+            latency_ms,
+            finished,
+            connector.spec.poll_interval,
+            warning=connector.warning if isinstance(connector, DiagnosticFeedConnector) else None,
         )
         if result.changed_ids:
             changed = set(result.changed_ids)

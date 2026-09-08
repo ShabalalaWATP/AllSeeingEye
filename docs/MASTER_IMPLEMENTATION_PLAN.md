@@ -535,7 +535,14 @@ See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md for setup and limitati
   management table; add the official public CSV option for no-key deployments.
 - [x] Verify backend feed publication and responsiveness, and map controls in
   automated interaction tests for both projections.
-- [ ] Recheck the active-satellite feed when CelesTrak stops returning HTTP 403.
+- [x] Diagnose the active-catalogue 403 as CelesTrak's unchanged-data response;
+  implement bounded restart-safe orbital caching, request reservations,
+  differentiated unchanged/access-error handling and cache-backed predictions.
+- [x] Keep geostationary prediction timestamps current even when rounded positions
+  are unchanged; retain visible degraded diagnostics and administrator reset.
+- [ ] Observe the active catalogue populated after the next permitted provider
+  update. The initial empty cache is waiting; do not count the earlier successful
+  download as current running-app coverage.
 - [ ] Perform a visual GPU check when administrator browser-control policy allows it.
 
 See SATELLITE_COVERAGE.md, MAP_INFRASTRUCTURE.md, GROUND_STATIONS.md and

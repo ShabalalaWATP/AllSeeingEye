@@ -60,7 +60,7 @@ async def test_csv_is_bounded_before_propagation(monkeypatch: pytest.MonkeyPatch
 
 
 async def test_invalid_csv_is_a_fetch_error_not_empty_success() -> None:
-    with pytest.raises(ValueError, match="missing orbital fields"):
+    with pytest.raises(FeedFetchError, match="missing orbital fields"):
         await SatelliteConnector(
             FakeHttp({"gp.php": "<html>Unavailable</html>"}),
             FakeClock(NOW),

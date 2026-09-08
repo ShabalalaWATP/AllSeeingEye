@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 from enum import StrEnum
+from pathlib import Path
 from typing import Literal, Self
 
 from pydantic import EmailStr, Field, PrivateAttr, SecretStr, model_validator
@@ -53,6 +54,7 @@ class Settings(BaseSettings):
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
+    satellite_cache_dir: Path = Path("data/celestrak")
     aisstream_api_key: SecretStr | None = None
     firms_map_key: SecretStr | None = None
     firms_area: str = Field(default="world", min_length=1, max_length=100)

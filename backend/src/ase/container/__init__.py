@@ -23,6 +23,7 @@ from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.feeds.satellite_http import SatelliteHttpClient
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
@@ -129,9 +130,10 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         self.pipeline = Pipeline(
             [Normaliser(), LanguageStage(detector), CountryStage(self.countries, self.countries)]
         )
-        self.http, self.marine_http = (
+        self.http, self.marine_http, self.satellite_http = (
             FeedHttpClient(settings.feeds_user_agent),
             DigitrafficHttpClient("TheAllSeeingEye/0.1"),
+            SatelliteHttpClient(settings.feeds_user_agent),
         )
         self.initialise_sec_filings()
         self.source_admission = SqlSourceAdmission(
@@ -170,6 +172,12 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     settings.disabled_feed_ids,
                     digitraffic_http=self.marine_http,
                     public_firms_http=self.public_firms_http,
+                    satellite_http=self.satellite_http,
+                    satellite_cache_dir=(
+                        settings.satellite_cache_dir
+                        if settings.env is not Environment.TEST
+                        else None
+                    ),
                     include_public_firms=not bool(settings.firms_map_key),
                     aisstream_key=settings.aisstream_api_key.get_secret_value()
                     if settings.aisstream_api_key
@@ -248,6 +256,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
 
     async def dispose(self) -> None:
         await self.http.aclose()
+        await self.satellite_http.aclose()
         await self.marine_http.aclose()
         await self.camera_http.aclose()
         await self.public_firms_http.aclose()

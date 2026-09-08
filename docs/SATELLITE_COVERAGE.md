@@ -15,7 +15,10 @@ A public probe on 8 September 2026 returned 16,510 rows from the active CSV (2,4
 
 Positions are SGP4 predictions from public mean orbital elements. They are not live sensor observations. The existing spherical Earth subpoint conversion is retained, so latitude and altitude are approximate; this is a general visualisation rather than a precision orbit determination or pass-planning tool.
 
-Each event includes NORAD ID, original element epoch, prediction time, epoch age in hours, catalogue group and an explicit `position_kind=propagated`. Elements older than three days are marked stale. Elements older than fourteen days, more than one day in the future, invalid records and propagation failures do not produce positions. Element downloads are cached for two hours and positions are recalculated on each two-minute poll. A failed download remains a source failure; the adapter does not invent fresh positions from a failed response.
+Each event includes NORAD ID, original element epoch, prediction time, epoch age in hours, catalogue group and an explicit `position_kind=propagated`. Elements older than three days are marked stale. Elements older than fourteen days, more than one day in the future, invalid records and propagation failures do not produce positions. Element downloads are cached for two hours and positions are recalculated on each two-minute poll. A failed refresh retains previously usable elements and reports degraded source
+health while computing clearly labelled new predictions from those same elements.
+It preserves the original element epoch and download timestamp. It never treats
+an error response as new orbital data.
 
 A `military_public_catalogue` flag means the source published the object in its military group or the object has a Skynet family name. `affiliation_basis` records that distinction. This is not a comprehensive classification of military, commercial or dual-use assets. It does not infer operational tasking or the position of undisclosed spacecraft. Different source groups overlap; map rendering should deduplicate by `norad_id`, preferring the specific military or Skynet record.
 
@@ -50,3 +53,65 @@ expired positions on its existing maintenance cadence; the browser hides expired
 predictions on its thirty-second clock even if the live connection is lost.
 Precision labels explicitly identify propagated orbital estimates. These rules
 avoid presenting a seven-day retained SPACE event as a current satellite position.
+
+
+## 8 September 2026: restart and provider-limit repair
+
+CelesTrak's current GP documentation enforces one download per update for the
+active catalogue. A guarded live probe returned HTTP 403 with the documented
+unchanged-data response, confirming that this was a duplicate-download refusal.
+The earlier successful download had been held only in memory and lost on restart.
+CSV/JSON already support the expanded catalogue IDs; reverting to TLE would not
+resolve the fault.
+
+The application now stores the latest orbital inputs and next permitted request
+in `ASE_SATELLITE_CACHE_DIR` (default `data/celestrak`, relative to the API working
+directory). Downloads reserve the two-hour interval before network I/O. Restarts,
+manual tests and interrupted downloads preserve that reservation. Parsing and
+atomic disk replacement run outside the event loop. Cancellation waits for an
+outstanding write; shutdown also awaits retiring source tasks.
+
+The cache contains four fixed source files, each at most 12 MiB and 20,000 rows.
+Only named orbital fields and scalar values are retained. Temporary replacement
+files add at most one further bounded file per writing source. Wrong-source,
+oversized or damaged files cause a conservative two-hour wait, with a diagnostic.
+The cache is local, ignored by git, outside the database and outside the web root.
+It is not an event archive. Use one feed worker per directory, consistent with
+the application's supported topology; it is not an interprocess request broker.
+
+The documented unchanged-data 403 reuses a warm cache, or waits two hours when
+there is no local copy. Other 403/404 responses pause downloads across restarts.
+An administrator can use **Administration → Sources → Reset** after reviewing
+the provider response. Reset still respects the minimum two-hour interval.
+Transient failures use the same bounded cooldown. Cache-backed predictions can
+continue during a pause until their underlying elements exceed fourteen days;
+source health remains degraded for a real refresh failure. Waiting polls do not
+accumulate fictitious upstream failures or trip the circuit breaker.
+
+Each prediction exposes `elements_downloaded_at` and `element_refresh_failed` in
+addition to its orbital epoch and prediction time. Prediction time is included
+in its change hash, so nearly stationary geostationary satellites keep fresh
+position timestamps rather than disappearing after ten minutes. A malformed
+replacement catalogue cannot erase a usable warm cache.
+
+The active catalogue needs the next permitted provider update before the initial
+empty cache can be populated. No satellite positions were fabricated or imported
+from a historical download and presented as current. Runtime status below will
+record the observed outcome independently of deterministic test results.
+
+
+Runtime verification at 15:28 UTC on 8 September: frontend 5174, API health and
+mock-user login returned HTTP 200. Authenticated snapshots held 22 station
+objects, 24 public military catalogue objects and 12 Skynet objects, with download
+provenance. Fresh connector instances reproduced those counts directly from disk
+while a test transport rejected every possible network call. The active cache
+remains empty with its next permitted attempt at 17:16 UTC (18:16 UK time).
+This is a scheduled retry time, not a guarantee of provider availability.
+
+Verification: 184 distinct backend regression tests passed, including source
+admission, administrator reset, credential redaction, HTTP bounds and scheduler
+behaviour. Satellite-module coverage is 98.37%, including branches. Ruff,
+formatting, strict mypy and both architecture contracts passed. No frontend code,
+provider credentials, database schema or dependency versions changed. Browser
+visual verification and successful live active-catalogue population remain
+unclaimed.

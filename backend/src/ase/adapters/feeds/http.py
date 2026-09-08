@@ -30,6 +30,14 @@ class FeedFetchError(Exception):
     """Any failure fetching a feed; the message is safe to show to an administrator."""
 
 
+class FeedHttpStatusError(FeedFetchError):
+    """HTTP status without exposing an untrusted response body."""
+
+    def __init__(self, status_code: int, url: str) -> None:
+        super().__init__(f"HTTP {status_code} from {url}")
+        self.status_code = status_code
+
+
 class NotModified(Exception):
     """The upstream answered 304: nothing new since the last poll (an outcome, not a fault)."""
 
@@ -233,7 +241,7 @@ class FeedHttpClient:
                         current = urljoin(current, location)
                         continue
                     if response.status_code >= 400:
-                        raise FeedFetchError(f"HTTP {response.status_code} from {current}")
+                        raise await self._status_error(response, current)
                     body = await self._read_bounded(response)
             except httpx.HTTPError as exc:
                 raise FeedFetchError(f"{type(exc).__name__}: {exc}") from exc
@@ -247,6 +255,9 @@ class FeedHttpClient:
                     self._validators.popitem(last=False)
             return body
         raise FeedFetchError("Too many redirects")
+
+    async def _status_error(self, response: httpx.Response, url: str) -> FeedFetchError:
+        return FeedHttpStatusError(response.status_code, url)
 
     async def get_json(
         self,

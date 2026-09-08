@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import asyncio
-import csv
-import io
 import math
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from itertools import islice
+from pathlib import Path
 from typing import Any
 
 from sgp4 import omm
 from sgp4.api import Satrec, jday
 
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.satellite_cache import ELEMENT_TTL, MAX_OBJECTS  # noqa: F401
+from ase.adapters.feeds.satellite_elements import SatelliteElements
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -30,8 +30,6 @@ from ase.domain.events import (
 from ase.domain.sources import SourceKind, SourceSpec
 
 EARTH_RADIUS_KM = 6371.0
-ELEMENT_TTL = timedelta(hours=2)
-MAX_OBJECTS = 20_000
 MAX_ELEMENT_AGE = timedelta(days=14)
 STALE_ELEMENT_AGE = timedelta(days=3)
 
@@ -94,47 +92,46 @@ def subpoint(r: tuple[float, float, float], when: datetime) -> tuple[Point, floa
 class SatelliteConnector:
     """One moving event per object in a CelesTrak group."""
 
-    def __init__(self, http: FeedHttpClient, clock: Clock, spec: SourceSpec = SATELLITES) -> None:
-        self._http = http
-        self._clock = clock
-        self.spec = spec
-        self._elements: list[dict[str, Any]] = []
-        self._fetched_at: datetime | None = None
-        self._retry_at: datetime | None = None
+    def __init__(
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        spec: SourceSpec = SATELLITES,
+        *,
+        cache_dir: Path | None = None,
+    ) -> None:
+        self._clock, self.spec = clock, spec
+        self._catalogue = SatelliteElements(http, spec, cache_dir, self._has_usable_elements)
+        self._lock = asyncio.Lock()
+        self._position_warning: str | None = None
+
+    @property
+    def warning(self) -> str | None:
+        return self._position_warning or self._catalogue.state.error
+
+    def request_retry(self) -> None:
+        self._catalogue.retry_requested = True
+
+    def _has_usable_elements(self, rows: list[dict[str, Any]], now: datetime) -> bool:
+        return any(self._to_event(row, now) is not None for row in rows)
 
     async def fetch(self) -> list[Event]:
-        now = self._clock.now()
-        if self._retry_at is not None and now < self._retry_at:
-            raise FeedFetchError("CelesTrak retrieval failed; waiting two hours before retrying")
-        if self._fetched_at is None or now - self._fetched_at >= ELEMENT_TTL:
-            try:
-                if "FORMAT=csv" in self.spec.url:
-                    text = await self._http.get_text(self.spec.url, conditional=False)
-                    reader = csv.DictReader(io.StringIO(text))
-                    if not reader.fieldnames or "NORAD_CAT_ID" not in reader.fieldnames:
-                        raise ValueError("Satellite catalogue is missing orbital fields")
-                    data = list(islice(reader, MAX_OBJECTS))
-                else:
-                    data = await self._http.get_json(self.spec.url, conditional=False)
-            except NotModified:
-                data = self._elements
-            except FeedFetchError:
-                self._retry_at = now + ELEMENT_TTL
-                raise
-            self._retry_at = None
-            self._elements = (
-                [item for item in data if isinstance(item, dict)][:MAX_OBJECTS]
-                if isinstance(data, list)
-                else []
-            )
-            self._fetched_at = now
-        events: dict[str, Event] = {}
-        for index, fields in enumerate(self._elements):
-            if event := self._to_event(fields, now):
-                events[event.id] = event
-            if (index + 1) % 250 == 0:
-                await asyncio.sleep(0)
-        return list(events.values())
+        async with self._lock:
+            now = self._clock.now()
+            self._position_warning = None
+            await self._catalogue.refresh(now)
+            self._catalogue.require_available(now)
+            events: dict[str, Event] = {}
+            for index, fields in enumerate(self._catalogue.state.rows):
+                if event := self._to_event(fields, now):
+                    events[event.id] = event
+                if (index + 1) % 250 == 0:
+                    await asyncio.sleep(0)
+            if not events:
+                self._position_warning = (
+                    "No usable positions: orbital elements are invalid or expired"
+                )
+            return list(events.values())
 
     def _to_event(self, fields: dict[str, Any], now: datetime) -> Event | None:
         norad = str(fields.get("NORAD_CAT_ID") or "")
@@ -215,6 +212,12 @@ class SatelliteConnector:
                     "inclination_deg": fields.get("INCLINATION"),
                     "catalogue_group": group,
                     "position_kind": "propagated",
+                    "elements_downloaded_at": (
+                        self._catalogue.state.fetched_at.isoformat()
+                        if self._catalogue.state.fetched_at
+                        else None
+                    ),
+                    "element_refresh_failed": self._catalogue.state.error is not None,
                     "position_at": now.isoformat(),
                     "epoch_age_hours": round((now - epoch).total_seconds() / 3600, 2),
                     "is_stale": stale,
@@ -228,5 +231,12 @@ class SatelliteConnector:
                     ),
                 }
             ),
-            content_hash=content_hash(norad, f"{point.lon:.2f}", f"{point.lat:.2f}"),
+            content_hash=content_hash(
+                norad,
+                now.isoformat(),
+                epoch.isoformat(),
+                f"{point.lon:.2f}",
+                f"{point.lat:.2f}",
+                self.warning or "",
+            ),
         )

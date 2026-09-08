@@ -16,6 +16,10 @@ in [the Phase 6 security review](security/PHASE6_ASVS_REVIEW.md).
 3. **Cache, do not hoard.** Raw live events are never written to the database or a
    restart snapshot. Reports preserve their frozen evidence; configuration,
    accounts, operational records and small hourly aggregates are durable.
+   CelesTrak GP orbital inputs have a bounded replace-in-place disk cache because
+   the provider allows one download per update. Four fixed files, each at most
+   12 MiB, hold inputs and request cooldowns, never rendered positions or history.
+   The single API worker recomputes positions and applies orbital-age limits.
 4. **Treat content as data.** External text, model output and imported content are
    bounded and validated. The browser renders structured text, never source HTML.
 5. **One local application.** One API process runs collectors and background work,
