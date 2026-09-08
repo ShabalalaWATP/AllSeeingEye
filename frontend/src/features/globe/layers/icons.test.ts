@@ -4,6 +4,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { liveEvent } from '@/test/fixtures';
 
 import { buildIconLayer, iconFor } from './icons';
+import { buildEventLayers } from './registry';
 
 type Accessor<T> = (event: LiveEvent) => T;
 
@@ -92,3 +93,38 @@ describe('icon layer accessors', () => {
     expect(onPick).toHaveBeenLastCalledWith(null);
   });
 });
+
+it('supplies intrinsic SVG dimensions so browsers can decode icon bitmaps', () => {
+  const event = liveEvent({ category: 'aviation', point: { lon: 0, lat: 0 } });
+  const url = props(buildIconLayer([event], vi.fn(), null)).getIcon(event).url;
+  const svg = new DOMParser().parseFromString(
+    decodeURIComponent(url.slice(url.indexOf(',') + 1)),
+    'image/svg+xml',
+  ).documentElement;
+  expect(svg.getAttribute('width')).toBe('64');
+  expect(svg.getAttribute('height')).toBe('64');
+  expect(svg.getAttribute('viewBox')).toBe('0 0 64 64');
+});
+
+it.each([
+  [true, 4, false, 90],
+  [false, 4, true, -90],
+  [true, 13, true, -90],
+] as const)(
+  'preserves heading and hemisphere treatment for globe=%s zoom=%s',
+  (globe, zoom, billboard, angle) => {
+    const event = liveEvent({
+      category: 'aviation',
+      point: { lon: 0, lat: 0 },
+      attributes: { track_deg: 90 },
+    });
+    const layer = buildEventLayers([event], [], vi.fn(), null, {
+      zoom,
+      globe,
+      onCluster: vi.fn(),
+    }).find((item) => item.id === 'event-icons');
+    expect(layer?.props).toMatchObject({ billboard });
+    expect(props(layer ?? null).getAngle(event)).toBe(angle);
+    if (!billboard) expect(layer?.props).toMatchObject({ parameters: { frontFace: 'cw' } });
+  },
+);

@@ -2479,3 +2479,19 @@ Recorded camera, transport and other source opportunities with live/static and
 licence distinctions. Browser policy verification prevented opening its live
 demo; no alternative route was used to access that demo. Camera integration is
 a follow-up, while clickable layer/cluster/geometry improvements are underway.
+
+
+## 8 September 2026: inspectable map objects and globe icons
+
+Added overlap and cluster-member selection, current interference-cell details,
+and attributed report-overlay/imagery inspection with keyboard controls. Review
+repaired stale cell statistics, adjusted-percentage wording and obscured cluster
+members. Real Chromium GPU checks exposed missing SVG dimensions and globe icon
+winding/orientation defects; both were repaired with regression coverage.
+
+Both projections now pass actual point, geometry and transport selection checks,
+with correct north/east headings and hidden far-side icons. The full frontend
+suite passed 1,101 tests before the final narrow fixes; final focused verification
+passed 39 tests, strict types, lint and production build. Provider access and the
+full authenticated dashboard were outside the isolated GPU fixture's scope.
+Camera source integration remains planned in OSIRIS_MAP_INTERFACE_PLAN.md.

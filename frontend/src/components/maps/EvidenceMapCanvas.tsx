@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import type { EvidenceItem } from '@/lib/api/reports';
 import { createMapLibreEngine } from '@/lib/map/MapLibreEngine';
 import type { MapBounds, MapCamera, MapEngine, Projection } from '@/lib/map/MapEngine';
@@ -10,6 +10,7 @@ import type { LocalCollection, LocalOverlay, Position } from '@/lib/map/geoJsonT
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
 import { hasEvidencePoint, hasLegacyEvidencePoint } from './evidenceGeometry';
 import { geometryBounds } from '@/lib/map/geometryBounds';
+import { MapObjectDetails, type MapObjectSelection } from './MapObjectDetails';
 import { evidenceMapLayers } from './evidenceMapLayers';
 
 export default function EvidenceMapCanvas({
@@ -59,6 +60,10 @@ export default function EvidenceMapCanvas({
 }) {
   const container = useRef<HTMLDivElement>(null);
   const engine = useRef<MapEngine | null>(null);
+  const [objectDetails, setObjectDetails] = useState<
+    (MapObjectSelection & { selectedAtPick: string | null }) | null
+  >(null);
+  const closeObject = useCallback(() => setObjectDetails(null), []);
   const [mapError, setMapError] = useState(false);
   const initial = useRef({ camera, projection, basemap });
   const supportsPoint = legacyDisplay ? hasLegacyEvidencePoint : hasEvidencePoint;
@@ -154,7 +159,13 @@ export default function EvidenceMapCanvas({
         selected,
         areaMode,
         measurementMode,
-        onSelect,
+        onSelect: (label) => {
+          setObjectDetails(null);
+          onSelect(label);
+        },
+        onInspect: captureEnabled
+          ? undefined
+          : (value) => setObjectDetails({ ...value, selectedAtPick: selected }),
         legacyDisplay,
       }),
     );
@@ -172,6 +183,7 @@ export default function EvidenceMapCanvas({
     sourceGeometry,
     supportsPoint,
     legacyDisplay,
+    captureEnabled,
   ]);
   useEffect(() => {
     if (focusRequest) focusSelection();
@@ -197,6 +209,17 @@ export default function EvidenceMapCanvas({
         className={captureEnabled ? undefined : 'h-96 w-full'}
         style={captureEnabled ? { width: 1200, height: 800, pointerEvents: 'none' } : undefined}
       />
+      {!captureEnabled &&
+        !areaMode &&
+        !measurementMode &&
+        objectDetails?.selectedAtPick === selected &&
+        [
+          ...overlays.flatMap((overlay) => overlay.display.features),
+          ...(aoi?.features ?? []),
+          ...(footprints?.features ?? []),
+        ].includes(objectDetails.feature) && (
+          <MapObjectDetails value={objectDetails} onClose={closeObject} />
+        )}
     </>
   );
 }

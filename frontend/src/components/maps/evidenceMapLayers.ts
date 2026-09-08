@@ -5,6 +5,8 @@ import type { MapState } from '@/lib/api/mapViews';
 import type { LocalCollection, LocalOverlay } from '@/lib/map/geoJsonTypes';
 import { geometryIsPolar } from '@/lib/map/localGeoJson';
 import { hasEvidencePoint, hasLegacyEvidencePoint } from './evidenceGeometry';
+import type { MapObjectSelection } from './MapObjectDetails';
+import type { LocalFeature } from '@/lib/map/geoJsonTypes';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 
 export function evidenceMapLayers({
@@ -20,6 +22,7 @@ export function evidenceMapLayers({
   measurementMode,
   onSelect,
   legacyDisplay,
+  onInspect,
 }: {
   evidence: readonly EvidenceItem[];
   overlays: LocalOverlay[];
@@ -33,12 +36,19 @@ export function evidenceMapLayers({
   measurementMode: boolean;
   onSelect: (label: string) => void;
   legacyDisplay: boolean;
+  onInspect?: ((value: MapObjectSelection) => void) | undefined;
 }): Layer[] {
   const supportsPoint = legacyDisplay ? hasLegacyEvidencePoint : hasEvidencePoint;
   const located = evidence.filter(
     (item) =>
       supportsPoint(item) && (projection === 'globe' || Math.abs(item.lat ?? 0) <= 85.05112878),
   );
+  const inspect = (title: string, notes: string[]) => (info: { object?: LocalFeature }) => {
+    if (!areaMode && !measurementMode && info.object)
+      onInspect?.({ feature: info.object, title, notes });
+    return true;
+  };
+  const pickable = !!onInspect && !areaMode && !measurementMode;
   const imported: Layer[] = overlays.map(
     (overlay, index) =>
       new GeoJsonLayer<{ label: string }>({
@@ -49,7 +59,13 @@ export function evidenceMapLayers({
             (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
           ),
         },
-        pickable: false,
+        pickable,
+        onClick: inspect('Local overlay', [
+          `Source: ${overlay.source || 'Not recorded'}`,
+          `Dataset date: ${overlay.datasetDate || 'Not recorded'}`,
+          `Attribution: ${overlay.attribution || 'Not recorded'}`,
+          `Declared precision: ${overlay.precision}. Display geometry may be simplified; it is not a measured uncertainty boundary.`,
+        ]),
         stroked: true,
         filled: overlay.precision === 'exact',
         getFillColor: [80, 200, 195, 40],
@@ -70,7 +86,10 @@ export function evidenceMapLayers({
             (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
           ),
         },
-        pickable: false,
+        pickable,
+        onClick: inspect('Research area', [
+          'Operator-selected area of interest, not an observed event boundary.',
+        ]),
         stroked: true,
         filled: false,
         getLineColor: [255, 255, 255, 220],
@@ -88,7 +107,11 @@ export function evidenceMapLayers({
               (feature) => projection === 'globe' || !geometryIsPolar(feature.geometry),
             ),
           },
-          pickable: false,
+          pickable,
+          onClick: inspect('Satellite catalogue footprint', [
+            'Acquisition catalogue geometry, not the satellite location or proof that an event is visible in an image.',
+            'Temporary catalogue selection; it is not a saved source-version receipt.',
+          ]),
           stroked: true,
           filled: false,
           getLineColor: [182, 130, 255, 240],

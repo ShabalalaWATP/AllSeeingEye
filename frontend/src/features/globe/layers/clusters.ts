@@ -21,6 +21,7 @@ export interface Cluster {
   lat: number;
   count: number;
   maxSeverity: number;
+  members?: readonly LiveEvent[];
 }
 
 export interface Clustered {
@@ -90,6 +91,7 @@ export function clusterEvents(events: readonly LiveEvent[], cellDegrees: number)
       lon: Math.abs(longitude) > 180 - 1e-10 ? -180 : longitude,
       lat: Math.atan2(cell.z, horizontal) / radians,
       count,
+      members: cell.members,
       maxSeverity: Math.max(...cell.members.map((event) => event.severity ?? 0)),
     });
   }

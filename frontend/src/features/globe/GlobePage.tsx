@@ -44,10 +44,10 @@ import './dashboard.css';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { isOsLayer } from './engine/baseLayers';
 import { buildEventLayers } from './layers/registry';
-import { fetchJamMap } from '@/lib/api/aviation';
-import type { JamCell } from '@/lib/api/aviation';
+import { useInterference } from './useInterference';
+import { MapDetailsInspector } from './MapDetailsInspector';
+import { useMapPicking } from './useMapPicking';
 
-import type { Cluster } from './layers/clusters';
 import { clusteringZoomFor } from './layers/clusters';
 import { buildJamLayer } from './layers/jamming';
 import { buildTerminatorLayer } from './layers/terminator';
@@ -57,8 +57,6 @@ import { hasWebGl2 } from './webgl';
 
 /** Zoom used when the user focuses an event from a list. */
 export const FOCUS_ZOOM = 4;
-/** How often the interference cells are refreshed while the layer is on. */
-const JAM_REFRESH_MS = 5 * 60_000;
 
 // Only our own tile proxy ever sees the session token; the engine checks the origin.
 const createEngine = () =>
@@ -78,25 +76,7 @@ export default function GlobePage() {
   const opsRoom = useGlobeStore((state) => state.opsRoom);
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
-  const [jamCells, setJamCells] = useState<JamCell[]>([]);
-  useEffect(() => {
-    if (!interference) return;
-    let cancelled = false;
-    const load = () => {
-      fetchJamMap().then(
-        (map) => {
-          if (!cancelled) setJamCells(map.cells);
-        },
-        () => undefined,
-      );
-    };
-    load();
-    const timer = window.setInterval(load, JAM_REFRESH_MS);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [interference]);
+  const { cells: jamCells, updated_at: jamUpdatedAt } = useInterference(interference);
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
   const engine = useGlobeEngine(containerRef, {
@@ -121,17 +101,6 @@ export default function GlobePage() {
       }),
     [engine],
   );
-  const onCluster = useCallback(
-    (cluster: Cluster) => {
-      if (measurement.picking) return;
-      engine.flyTo({
-        center: [cluster.lon, cluster.lat],
-        zoom: Math.min(FOCUS_ZOOM, engine.getZoom() + 2.5),
-      });
-    },
-    [engine, measurement.picking],
-  );
-
   const osMaps = useCapabilitiesStore((state) => state.osMaps);
   const capabilitiesLoaded = useCapabilitiesStore((state) => state.loaded);
   const loadCapabilities = useCapabilitiesStore((state) => state.load);
@@ -180,28 +149,34 @@ export default function GlobePage() {
     [list, selected],
   );
 
-  const onPick = useCallback(
-    (event: LiveEvent | null) => {
-      if (measurement.picking) return;
-      select(event?.id ?? null);
-    },
-    [select, measurement.picking],
-  );
+  const {
+    details,
+    visible: pickableEvents,
+    choose,
+    close,
+    onPick,
+    onCluster,
+    onJam,
+  } = useMapPicking(observations.filtered, hidden, measurement.picking, select, engine);
 
   const eventLayers = useMemo(
     () =>
       supported
-        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId, { zoom, onCluster })
+        ? buildEventLayers(observations.filtered, hidden, onPick, selectedId, {
+            zoom,
+            onCluster,
+            globe: mode === 'globe',
+          })
         : [],
-    [hidden, onCluster, onPick, observations.filtered, selectedId, supported, zoom],
+    [hidden, onCluster, onPick, observations.filtered, selectedId, supported, zoom, mode],
   );
   const night = useMemo(
     () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),
     [lite, now, supported, terminator],
   );
   const jam = useMemo(
-    () => (supported && interference ? buildJamLayer(jamCells) : null),
-    [interference, jamCells, supported],
+    () => (supported && interference ? buildJamLayer(jamCells, onJam) : null),
+    [interference, jamCells, supported, onJam],
   );
   useEffect(() => {
     if (supported)
@@ -237,10 +212,6 @@ export default function GlobePage() {
     },
     [countryByIso, engine, setCountry],
   );
-
-  const close = useCallback(() => {
-    select(null);
-  }, [select]);
 
   return (
     // Fills the shell's relative <main> directly: a percentage height would collapse
@@ -319,12 +290,31 @@ export default function GlobePage() {
         <button
           type="button"
           onClick={() => measurement.setPicking(false)}
-          className="absolute bottom-40 left-1/2 z-10 -translate-x-1/2 rounded border border-cyan bg-ground px-3 py-2 text-xs text-cyan"
+          className="absolute bottom-24 left-1/2 z-10 -translate-x-1/2 rounded border border-cyan bg-ground px-3 py-2 text-xs text-cyan"
         >
           {measurement.points.length}/32 points · Stop measuring
         </button>
       )}
       {supported && !opsRoom && !measurement.picking && <CoordinateReadout engine={engine} />}
+      {selected === null &&
+        details &&
+        !opsRoom &&
+        !measurement.picking &&
+        (details.kind !== 'jam' || interference) && (
+          <MapDetailsInspector
+            key={
+              details.kind === 'cluster'
+                ? details.cluster.id
+                : `${details.cell.lon}:${details.cell.lat}`
+            }
+            details={details}
+            events={pickableEvents}
+            cells={jamCells}
+            updatedAt={jamUpdatedAt}
+            onSelect={choose}
+            onClose={close}
+          />
+        )}
       {selected !== null && !opsRoom && !measurement.picking && (
         <EventInspector event={selected} storySize={storySize} onClose={close} />
       )}

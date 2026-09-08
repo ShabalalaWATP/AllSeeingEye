@@ -454,4 +454,8 @@ Moscow, Beijing), and inspectable data objects on both projections. The source
 comparison and camera/transport follow-up sequence are in
 OSIRIS_MAP_INTERFACE_PLAN.md. Public-camera feeds are planned, not implemented.
 Current clock changes passed seasonal-offset checks and isolated desktop/mobile
-visual inspection; map interaction repairs and final acceptance are in progress.
+visual inspection. Map interactions, overlap selection and report geometry details
+are implemented. Real local GPU checks passed in both projections, including
+transport headings and far-side occlusion. The 1,101-test frontend suite preceded
+final narrow repairs; those passed 39 focused tests, types, lint and build.
+Camera catalogue and live-provider acceptance remain separate follow-up work.

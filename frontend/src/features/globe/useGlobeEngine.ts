@@ -22,6 +22,7 @@ export interface GlobeEngineHandle {
   setLayers: (layers: readonly DataLayer[]) => void;
   flyTo: (target: FlyToTarget) => void;
   getZoom: () => number;
+  pickObjectsAt?: (x: number, y: number) => readonly unknown[];
   spin: (enabled: boolean) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
   onCursor: (handler: CursorHandler) => () => void;
@@ -108,6 +109,10 @@ export function useGlobeEngine(
     engineRef.current?.flyTo(target);
   }, []);
 
+  const pickObjectsAt = useCallback(
+    (x: number, y: number) => engineRef.current?.pickObjectsAt?.(x, y) ?? [],
+    [],
+  );
   const getZoom = useCallback(() => engineRef.current?.getZoom() ?? 0, []);
 
   const spin = useCallback((enabled: boolean) => {
@@ -136,7 +141,7 @@ export function useGlobeEngine(
   }, []);
 
   return useMemo(
-    () => ({ setLayers, flyTo, getZoom, spin, onCursor, onView, onClick }),
-    [setLayers, flyTo, getZoom, spin, onCursor, onView, onClick],
+    () => ({ setLayers, flyTo, getZoom, spin, onCursor, onView, onClick, pickObjectsAt }),
+    [setLayers, flyTo, getZoom, spin, onCursor, onView, onClick, pickObjectsAt],
   );
 }

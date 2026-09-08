@@ -5,6 +5,7 @@ export class MapboxOverlay {
   static instances: MapboxOverlay[] = [];
 
   props: Record<string, unknown>;
+  readonly pickMultipleObjects = vi.fn<(options: unknown) => { object: unknown }[]>(() => []);
   readonly setProps = vi.fn((props: Record<string, unknown>) => {
     this.props = { ...this.props, ...props };
   });

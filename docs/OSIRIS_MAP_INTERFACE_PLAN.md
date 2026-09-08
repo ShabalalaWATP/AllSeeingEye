@@ -21,8 +21,8 @@ Decorative basemaps and the day/night shading are context, not evidence objects.
 
 ## Source comparison
 
-Read-only reference: [OSIRIS](https://github.com/simplifaisoul/osiris), commit
-`fac8d1b`. Its demo could not be opened because browser policy verification was
+Read-only reference: [OSIRIS at the reviewed revision](https://github.com/simplifaisoul/osiris/tree/fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8).
+Its demo could not be opened because browser policy verification was
 unavailable. This review used repository source, not a live UI acceptance run.
 
 | Family | Existing app and next useful work |
@@ -83,10 +83,31 @@ Provider rules to implement and verify:
 - [x] Four requested clocks only, desktop/mobile fit and seasonal-offset checks.
   Seven focused clock/control cases passed. Actual component screenshots were
   inspected at 390 × 844 and 1440 × 900 using the project's Tailwind styles.
-- [ ] Clickable event markers, clusters and interference cells on both projections.
-- [ ] Report-map overlays, AOIs and imagery footprints reveal attributed details.
-- [ ] Keyboard-accessible inspector controls and useful empty/stale states.
+- [x] Clickable event markers, clusters and interference cells on both projections.
+- [x] Report-map overlays, AOIs and imagery footprints reveal attributed details.
+- [x] Keyboard-accessible inspector controls and useful empty/stale states.
 - No synthetic transport positions, invented camera timestamps or unverified
   live-video claims. Camera/provider additions remain pending implementation.
 - Real GPU projection checks and camera playback/provider acceptance are separate
   from mocked layer tests and isolated clock-component visual checks.
+
+### Completed map interaction verification
+
+Event overlap selection includes obscured cluster members. Interference details
+refresh with the selected cell and label the provider's adjusted percentage.
+Report overlays and imagery footprints have attributed details. Drawing,
+measurement and capture retain their selection guards.
+
+Real shared-renderer checks on local fixtures passed in globe and Mercator:
+point overlaps, interference cells, AOI geometry, aircraft, vessels and thermal
+icons. Aircraft and vessel headings were visually checked north/east. Far-side
+globe icons remain hidden. SVG intrinsic dimensions and globe-specific icon
+orientation were repaired after real browser failures. No global culling override
+was used. This checks the actual renderer and selection hook, not live provider
+coverage or the complete authenticated dashboard.
+
+The frontend suite passed 1,101 tests across 217 files before the final narrow
+cluster/icon fixes (95.26% statements, 90.12% branches, 93.83% functions, 96.63%
+lines). Final changes passed 39 focused tests, strict types, lint and production
+build. Independent interaction review and actual GPU acceptance passed. No
+camera catalogue or new transport-provider connection is enabled by this change.

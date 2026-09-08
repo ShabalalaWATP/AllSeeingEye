@@ -23,13 +23,20 @@ export function cellPolygon(cell: JamCell): [number, number][] {
 }
 
 /** Only amber and red cells are drawn; green cells would cover the sky in noise. */
-export function buildJamLayer(cells: readonly JamCell[]): Layer | null {
+export function buildJamLayer(
+  cells: readonly JamCell[],
+  onPick?: (cell: JamCell) => void,
+): Layer | null {
   const flagged = cells.filter((cell) => cell.level !== 'green');
   if (flagged.length === 0) return null;
   return new SolidPolygonLayer<JamCell>({
     id: 'gnss-interference',
     data: flagged,
-    pickable: false,
+    pickable: onPick !== undefined,
+    onClick: (info: { object?: JamCell }) => {
+      if (info.object) onPick?.(info.object);
+      return true;
+    },
     getPolygon: (cell) => cellPolygon(cell),
     getFillColor: (cell) => (cell.level === 'red' ? RED : AMBER),
   });

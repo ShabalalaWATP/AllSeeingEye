@@ -6,7 +6,7 @@ import { CATEGORY_STYLES } from '@/lib/categories';
 /** Hollow screen-sized rings denote approximation, never a claimed ground radius. */
 export function buildApproximateLayer(
   events: readonly LiveEvent[],
-  onPick: (event: LiveEvent | null) => void,
+  onPick: (event: LiveEvent | null, position?: readonly [number, number]) => void,
   selectedId: string | null,
 ): Layer | null {
   if (!events.length) return null;
@@ -26,8 +26,10 @@ export function buildApproximateLayer(
         ? [255, 255, 255, 255]
         : [...CATEGORY_STYLES[event.category].colour, 220],
     updateTriggers: { getRadius: [selectedId], getLineColor: [selectedId] },
-    onClick: (info: { object?: LiveEvent }) => {
-      onPick(info.object ?? null);
+    onClick: (info: { object?: LiveEvent; x?: number; y?: number }) => {
+      if (typeof info.x === 'number' && typeof info.y === 'number')
+        onPick(info.object ?? null, [info.x, info.y]);
+      else onPick(info.object ?? null);
       return true;
     },
   });

@@ -33,7 +33,7 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
   (Object.keys(SHAPES) as IconKind[]).map((kind) => [
     kind,
     `data:image/svg+xml;utf8,${encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${String(ICON_SIZE)} ${String(ICON_SIZE)}">${SHAPES[kind]}</svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${String(ICON_SIZE)}" height="${String(ICON_SIZE)}" viewBox="0 0 ${String(ICON_SIZE)} ${String(ICON_SIZE)}">${SHAPES[kind]}</svg>`,
     )}`,
   ]),
 ) as Record<IconKind, string>;
@@ -61,13 +61,16 @@ export function headingOf(event: LiveEvent): number {
 
 export interface IconPick {
   object?: LiveEvent;
+  x?: number;
+  y?: number;
 }
 
 /** One icon layer for every iconed event that is located and not hidden. */
 export function buildIconLayer(
   events: readonly LiveEvent[],
-  onPick: (event: LiveEvent | null) => void,
+  onPick: (event: LiveEvent | null, position?: readonly [number, number]) => void,
   selectedId: string | null,
+  globe = false,
 ): Layer | null {
   const data = events.filter((event) => event.point !== null && iconFor(event) !== null);
   if (data.length === 0) return null;
@@ -76,6 +79,10 @@ export function buildIconLayer(
     data,
     pickable: true,
     sizeUnits: 'pixels',
+    // GlobeView culls back faces. Tangent icons hide the far hemisphere; their
+    // Y-flipped SVG quads need clockwise winding and a 180-degree ENU correction.
+    billboard: !globe,
+    ...(globe ? { parameters: { frontFace: 'cw' as const } } : {}),
     getPosition: (event) => [event.point?.lon ?? 0, event.point?.lat ?? 0],
     getIcon: (event) => ({
       url: DATA_URIS[iconFor(event) ?? 'aircraft'],
@@ -90,10 +97,13 @@ export function buildIconLayer(
         : [...CATEGORY_STYLES[event.category].colour, 235],
     // deck.gl rotates anticlockwise; a track is clockwise from north.
     getAngle: (event) =>
-      ['aircraft', 'vessel'].includes(iconFor(event) ?? '') ? -headingOf(event) : 0,
-    updateTriggers: { getSize: [selectedId] },
+      (globe ? 180 : 0) +
+      (['aircraft', 'vessel'].includes(iconFor(event) ?? '') ? -headingOf(event) : 0),
+    updateTriggers: { getSize: [selectedId], getAngle: [globe] },
     onClick: (info: IconPick) => {
-      onPick(info.object ?? null);
+      if (typeof info.x === 'number' && typeof info.y === 'number')
+        onPick(info.object ?? null, [info.x, info.y]);
+      else onPick(info.object ?? null);
       return true;
     },
   });

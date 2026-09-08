@@ -190,6 +190,15 @@ export class MapLibreEngine implements MapEngine {
     else this.map?.flyTo({ center: target.center, zoom: target.zoom });
   }
 
+  pickObjectsAt(x: number, y: number): readonly unknown[] {
+    if (!Number.isFinite(x) || !Number.isFinite(y) || this.options.captureEnabled) return [];
+    return (
+      this.overlay
+        ?.pickMultipleObjects({ x, y, radius: 4, depth: 64 })
+        .map((hit) => hit.object as unknown) ?? []
+    );
+  }
+
   getZoom(): number {
     return this.map?.getZoom() ?? 0;
   }

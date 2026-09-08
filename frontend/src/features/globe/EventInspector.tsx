@@ -59,7 +59,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
     <aside
       aria-label="Event details"
       // Stops above the map attribution, which must stay visible (OpenFreeMap licence).
-      className="absolute top-32 right-3 bottom-40 z-10 flex w-[calc(100%-1.5rem)] flex-col rounded-md border border-line bg-surface/95 backdrop-blur sm:w-80 lg:top-16 lg:bottom-40"
+      className="absolute top-32 right-3 bottom-24 z-10 flex w-[calc(100%-1.5rem)] flex-col rounded-md border border-line bg-surface/95 backdrop-blur sm:w-80 lg:top-16 lg:bottom-24"
     >
       <div className="flex items-start justify-between gap-2 border-b border-line p-3">
         <div className="flex flex-wrap items-center gap-1.5">

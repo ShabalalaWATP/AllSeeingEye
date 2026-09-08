@@ -25,17 +25,20 @@ export function radiusFor(event: LiveEvent): number {
 
 export interface PickInfo {
   object?: LiveEvent;
+  x?: number;
+  y?: number;
 }
 
 /** The camera's zoom and what to do when a cluster is picked; absent means no clustering. */
 export interface LayerView {
+  globe?: boolean;
   zoom: number;
   onCluster: (cluster: Cluster) => void;
 }
 
 function scatterLayers(
   events: readonly LiveEvent[],
-  onPick: (event: LiveEvent | null) => void,
+  onPick: (event: LiveEvent | null, position?: readonly [number, number]) => void,
   selectedId: string | null,
 ): Layer[] {
   const byCategory = new Map<Category, LiveEvent[]>();
@@ -64,7 +67,9 @@ function scatterLayers(
         getLineColor: [selectedId],
       },
       onClick: (info: PickInfo) => {
-        onPick(info.object ?? null);
+        if (typeof info.x === 'number' && typeof info.y === 'number')
+          onPick(info.object ?? null, [info.x, info.y]);
+        else onPick(info.object ?? null);
         return true;
       },
     });
@@ -79,7 +84,7 @@ function scatterLayers(
 export function buildEventLayers(
   events: readonly LiveEvent[],
   hidden: readonly Category[],
-  onPick: (event: LiveEvent | null) => void,
+  onPick: (event: LiveEvent | null, position?: readonly [number, number]) => void,
   selectedId: string | null,
   view?: LayerView,
 ): Layer[] {
@@ -119,7 +124,7 @@ export function buildEventLayers(
       selectedId,
     ),
   );
-  const icons = buildIconLayer(loose, onPick, selectedId);
+  const icons = buildIconLayer(loose, onPick, selectedId, Boolean(view?.globe && view.zoom <= 12));
   if (icons !== null) layers.push(icons);
   return layers;
 }

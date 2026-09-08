@@ -67,6 +67,7 @@ export interface MapEngine {
   spin(enabled: boolean): void;
   /** The camera's current zoom level, 0 when nothing is mounted. */
   getZoom(): number;
+  pickObjectsAt?(x: number, y: number): readonly unknown[];
   /** Null before mount or after destruction; returns an independent camera snapshot. */
   getCamera(): MapCamera | null;
   /** Immediate, stops idle spin; invalid values throw RangeError, unmounted calls do nothing. */
