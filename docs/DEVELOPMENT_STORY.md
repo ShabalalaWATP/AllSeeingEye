@@ -2426,3 +2426,13 @@ Ten independent PostgreSQL concurrency cases and eight SQLite/PostgreSQL
 migration cases passed separately. Generation checks prevent old requests from
 publishing observations or changing the health of a replacement connection.
 No actual NASA key, operator database, remote push or deployment was involved.
+
+## 8 September: structured report text and document release
+
+Added immutable directional inline runs and an inert semantic HTML projection,
+keeping current plain-text exports compatible. Actual-render tests reproduced
+session expiry/logout and later object-access changes before document release.
+A guarded exact-version release service now rejects those stale downloads.
+Twenty focused final tests passed, together with targeted static checks and
+independent read-only review. Chromium worker/runtime integration and language
+acceptance remain unfinished; no deployment or PDF support flag changed.

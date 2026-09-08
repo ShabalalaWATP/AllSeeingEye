@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Literal
+from uuid import UUID
 
 
 class ExportFormat(StrEnum):
@@ -20,9 +22,32 @@ class BlockKind(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class DocumentInline:
+    """A semantic text run, never markup or a live link."""
+
+    text: str
+    direction: Literal["auto", "ltr", "rtl"] = "auto"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.text, str) or self.direction not in {"auto", "ltr", "rtl"}:
+            raise ValueError("Invalid document inline text or direction")
+
+
+@dataclass(frozen=True, slots=True)
 class DocumentBlock:
     kind: BlockKind
     text: str
+    inlines: tuple[DocumentInline, ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.inlines, tuple)
+            or len(self.inlines) > 256
+            or any(not isinstance(run, DocumentInline) for run in self.inlines)
+        ):
+            raise ValueError("Provide at most 256 immutable document inlines")
+        if self.inlines and "".join(run.text for run in self.inlines) != self.text:
+            raise ValueError("Document inlines must preserve the plain-text projection")
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +63,8 @@ class ReportFile:
     content: bytes
     media_type: str
     filename: str
+    report_version_id: UUID | None = None
+    version_number: int | None = None
 
 
 class ChangeKind(StrEnum):

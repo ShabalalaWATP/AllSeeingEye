@@ -9,6 +9,7 @@ from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_claim_export import ClaimPackageIn
 from ase.api.schemas_report_documents import ReportComparisonOut
 from ase.api.session_guard import validate_request_session
+from ase.application.reports.document_release import release_document
 from ase.domain.report_documents import ExportFormat
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -101,11 +102,24 @@ async def export_report(
     report_id: UUID,
     format: ExportFormat,
     user: CurrentUser,
+    claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
 ) -> Response:
     result = await container.export_report(session).execute(user, report_id, format, version)
+    repositories = container.repositories(session)
+    await release_document(
+        claims,
+        report_id,
+        result,
+        users=repositories.users,
+        refresh=repositories.refresh_tokens,
+        reports=repositories.reports,
+        access=container.access_policy(session),
+        clock=container.clock,
+        uow=repositories.uow,
+    )
     return Response(
         result.content,
         media_type=result.media_type,

@@ -412,3 +412,12 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 
 See RESEARCH_EXPANSION_OPERATIONS.md for behaviour, deployment requirements and
 remaining limits. Migrations 0022/0023 have not been applied to operator data.
+
+8 September structured report export: an additive inline-text model and bounded,
+escaped semantic HTML adapter preserve typed citations and identifiers without
+rewriting arbitrary prose. Existing PDF/DOCX projections remain supported; no
+browser runtime or Arabic/Persian PDF capability was enabled. Twenty focused
+final tests and targeted static checks passed. The accompanying exact-version,
+object and session release repair passed regression and independent review.
+See STRUCTURED_REPORT_HTML.md and security/REPORT_DOCUMENT_RELEASE.md. Browser
+worker integration, visual/native-speaker and accessibility acceptance remain.

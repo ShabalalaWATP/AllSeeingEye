@@ -12,6 +12,7 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from ase.application.reports.observation_text import observation_lines
 from ase.domain.evidence import EvidenceItem
+from ase.domain.report_documents import DocumentInline
 from ase.domain.reports import ReportStatus
 
 _MARKUP = re.compile(r"([\\`*_{}\[\]|#!~@])")
@@ -89,27 +90,43 @@ def timestamp(value: datetime | None) -> str:
     return value.astimezone(UTC).isoformat()
 
 
-def evidence_metadata(item: EvidenceItem) -> tuple[str, ...]:
+def evidence_metadata_runs(item: EvidenceItem) -> tuple[tuple[DocumentInline, ...], ...]:
+    """Keep typed identifiers separate; do not recognise tokens inside arbitrary prose."""
+
+    def field(label: str, value: str) -> tuple[DocumentInline, ...]:
+        return (DocumentInline(label), DocumentInline(value, "ltr"))
+
+    def prose(text: str) -> tuple[DocumentInline, ...]:
+        return (DocumentInline(text),)
+
     coordinates = "unknown" if item.lon is None or item.lat is None else f"{item.lon}, {item.lat}"
     return (
-        f"Published: {timestamp(item.published_at)}",
-        f"Observed: {timestamp(item.observed_at)}",
-        f"Captured: {timestamp(item.captured_at)}",
-        f"Language: {item.language or 'unknown'}",
-        f"Source ID: {item.source_id}",
-        f"Declared organisation: {item.independence_key or 'unknown'}; "
-        "independent sourcing not verified",
-        f"Reliability: {item.reliability}; credibility: {item.credibility}",
-        f"Grade rationale: {item.grade_rationale or 'Not provided.'}",
-        f"Category: {item.category}; country: {item.country_iso or 'unknown'}",
-        f"Location precision: {item.geo_confidence or 'unknown'}; "
-        f"coordinates (longitude, latitude): {coordinates}",
-        f"Instrument: {'yes' if item.instrument else 'no'}",
-        f"Topic cluster: {item.story_id or 'unknown'}; grouping is not corroboration",
-        f"Event ID: {item.event_id}",
-        f"Content hash: {item.content_hash or 'unknown'}",
-        *observation_lines(item),
+        field("Published: ", timestamp(item.published_at)),
+        field("Observed: ", timestamp(item.observed_at)),
+        field("Captured: ", timestamp(item.captured_at)),
+        field("Language: ", item.language or "unknown"),
+        field("Source ID: ", item.source_id),
+        prose(
+            f"Declared organisation: {item.independence_key or 'unknown'}; "
+            "independent sourcing not verified"
+        ),
+        prose(f"Reliability: {item.reliability}; credibility: {item.credibility}"),
+        prose(f"Grade rationale: {item.grade_rationale or 'Not provided.'}"),
+        prose(f"Category: {item.category}; country: {item.country_iso or 'unknown'}"),
+        prose(
+            f"Location precision: {item.geo_confidence or 'unknown'}; "
+            f"coordinates (longitude, latitude): {coordinates}"
+        ),
+        prose(f"Instrument: {'yes' if item.instrument else 'no'}"),
+        prose(f"Topic cluster: {item.story_id or 'unknown'}; grouping is not corroboration"),
+        field("Event ID: ", item.event_id),
+        field("Content hash: ", item.content_hash or "unknown"),
+        *(prose(line) for line in observation_lines(item)),
     )
+
+
+def evidence_metadata(item: EvidenceItem) -> tuple[str, ...]:
+    return tuple("".join(run.text for run in row) for row in evidence_metadata_runs(item))
 
 
 def review_notice(status: ReportStatus | None) -> str:

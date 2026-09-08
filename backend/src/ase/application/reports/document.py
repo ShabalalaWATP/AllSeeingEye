@@ -9,13 +9,13 @@ from ase.application.reports.assessment_export import assessment_sections
 from ase.application.reports.challenge_export import challenge_sections
 from ase.application.reports.citation_export import citation_sections
 from ase.application.reports.context_export import context_sections
-from ase.application.reports.export_text import evidence_metadata, review_notice, safe_url
+from ase.application.reports.export_text import evidence_metadata_runs, review_notice, safe_url
 from ase.application.reports.frozen_header import frozen_period_line
 from ase.application.reports.research_export import research_sections
 from ase.domain.doctrine import term_for
 from ase.domain.errors import InvalidRequest
 from ase.domain.evidence import EvidenceItem
-from ase.domain.report_documents import BlockKind, DocumentBlock, ReportDocument
+from ase.domain.report_documents import BlockKind, DocumentBlock, DocumentInline, ReportDocument
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.reports import ReportBody, ReportStatus
 
@@ -38,23 +38,36 @@ class DocumentBuilder:
             or len(self.blocks) >= MAX_BLOCKS
         ):
             raise InvalidRequest("This report exceeds the document export size limit.")
-        # XML 1.0 forbids control characters; preserve valid Unicode and line breaks.
-        clean = "".join(
-            c
-            for c in text
-            if c in "\n\t"
-            or 32 <= ord(c) <= 0xD7FF
-            or 0xE000 <= ord(c) <= 0xFFFD
-            or 0x10000 <= ord(c) <= 0x10FFFF
-        )
-        self.blocks.append(DocumentBlock(kind, clean))
+        self.blocks.append(DocumentBlock(kind, _clean(text)))
+
+    def inline(self, runs: tuple[DocumentInline, ...], kind: BlockKind = BlockKind.TEXT) -> None:
+        text = "".join(run.text for run in runs)
+        self.add(text, kind)
+        cleaned = tuple(DocumentInline(_clean(run.text), run.direction) for run in runs)
+        self.blocks[-1] = DocumentBlock(kind, self.blocks[-1].text, cleaned)
+
+    def cited(self, text: str, labels: Sequence[str], suffix: str = "") -> None:
+        runs = [DocumentInline(text)]
+        if labels:
+            runs.extend((DocumentInline(" "), DocumentInline(f"[{', '.join(labels)}]", "ltr")))
+        if suffix:
+            runs.append(DocumentInline(suffix, "ltr"))
+        self.inline(tuple(runs))
 
     def heading(self, text: str) -> None:
         self.add(text, BlockKind.HEADING)
 
 
-def _cites(labels: Sequence[str]) -> str:
-    return f" [{', '.join(labels)}]" if labels else ""
+def _clean(text: str) -> str:
+    # Preserve the existing XML-compatible plain-text projection for PDF and DOCX.
+    return "".join(
+        c
+        for c in text
+        if c in "\n\t"
+        or 32 <= ord(c) <= 0xD7FF
+        or 0xE000 <= ord(c) <= 0xFFFD
+        or 0x10000 <= ord(c) <= 0x10FFFF
+    )
 
 
 def _judgements(doc: DocumentBuilder, body: ReportBody) -> None:
@@ -62,8 +75,8 @@ def _judgements(doc: DocumentBuilder, body: ReportBody) -> None:
     if not body.key_judgements:
         doc.add("No key judgements were produced.")
     for judgement in body.key_judgements:
-        doc.add(judgement.id, BlockKind.SUBHEADING)
-        doc.add(judgement.statement + _cites(judgement.supporting_evidence))
+        doc.inline((DocumentInline(judgement.id, "ltr"),), BlockKind.SUBHEADING)
+        doc.cited(judgement.statement, judgement.supporting_evidence)
         doc.add(
             f"Probability: {term_for(judgement.probability)}. "
             f"Confidence: {judgement.confidence.value}. {judgement.confidence_statement}"
@@ -87,12 +100,12 @@ def _body(doc: DocumentBuilder, body: ReportBody) -> None:
             doc.add(theme.theme, BlockKind.SUBHEADING)
             for item in theme.items:
                 grade = f" ({item.grade})" if item.grade else ""
-                doc.add(item.text + _cites(item.evidence) + grade)
+                doc.cited(item.text, item.evidence, grade)
     if body.assessment:
         doc.heading("Assessment")
         for section in body.assessment:
             doc.add(section.heading, BlockKind.SUBHEADING)
-            doc.add(section.text + _cites(section.evidence))
+            doc.cited(section.text, section.evidence)
     if body.assumptions:
         doc.heading("Assumptions")
         for assumption in body.assumptions:
@@ -101,7 +114,7 @@ def _body(doc: DocumentBuilder, body: ReportBody) -> None:
     if body.alternative_hypotheses:
         doc.heading("Alternative hypotheses")
         for alternative in body.alternative_hypotheses:
-            doc.add(alternative.text + _cites(alternative.evidence))
+            doc.cited(alternative.text, alternative.evidence)
             doc.add(f"Why less likely: {alternative.why_less_likely}")
     _closing(doc, body)
 
@@ -128,17 +141,38 @@ def _evidence(doc: DocumentBuilder, items: Sequence[EvidenceItem]) -> None:
     if not items:
         doc.add("No frozen evidence.")
     for item in items:
-        doc.add(f"{item.label} | {item.grade} | {item.source_name}", BlockKind.SUBHEADING)
+        doc.inline(
+            (
+                DocumentInline(item.label, "ltr"),
+                DocumentInline(" | "),
+                DocumentInline(item.grade, "ltr"),
+                DocumentInline(" | "),
+                DocumentInline(item.source_name),
+            ),
+            BlockKind.SUBHEADING,
+        )
         doc.add(f"Original title: {item.title}")
         if item.title_en:
             doc.add(f"Translation (unverified): {item.title_en}")
         if item.summary:
             doc.add(f"Source snippet: {item.summary}")
-        doc.add("\n".join(evidence_metadata(item)), BlockKind.METADATA)
+        metadata = evidence_metadata_runs(item)
+        doc.inline(
+            tuple(
+                run
+                for index, row in enumerate(metadata)
+                for run in ((DocumentInline("\n"),) if index else ()) + row
+            ),
+            BlockKind.METADATA,
+        )
         for name, value in (("Source URL", item.url), ("Archive URL", item.archive_url)):
             if value:
-                doc.add(
-                    f"{name}: {safe_url(value) or 'Unavailable (unsafe URL)'}", BlockKind.METADATA
+                doc.inline(
+                    (
+                        DocumentInline(f"{name}: "),
+                        DocumentInline(safe_url(value) or "Unavailable (unsafe URL)", "ltr"),
+                    ),
+                    BlockKind.METADATA,
                 )
         if item.flags:
             doc.add(f"Flags: {'; '.join(item.flags)}", BlockKind.WARNING)
@@ -150,8 +184,8 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
     doc = DocumentBuilder()
     reference = f"Report {record.id} | version {version.number}"
     doc.add(record.title, BlockKind.TITLE)
-    doc.add(reference, BlockKind.METADATA)
-    doc.add(frozen_period_line(record, version), BlockKind.METADATA)
+    doc.inline((DocumentInline(reference, "ltr"),), BlockKind.METADATA)
+    doc.inline((DocumentInline(frozen_period_line(record, version), "ltr"),), BlockKind.METADATA)
     if record.scope:
         doc.add(f"Scope: {json.dumps(dict(record.scope), sort_keys=True)}", BlockKind.METADATA)
     doc.add(
@@ -180,9 +214,7 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
     if version.advocacy is not None and version.challenge is None:
         advocacy = version.advocacy
         doc.heading("Devil's advocacy")
-        doc.add(
-            f"Contrarian view on {advocacy.target}: {advocacy.argument}" + _cites(advocacy.evidence)
-        )
+        doc.cited(f"Contrarian view on {advocacy.target}: {advocacy.argument}", advocacy.evidence)
         doc.add(advocacy.rationale or "No rationale provided.")
         doc.add(
             f"Confidence before: {advocacy.confidence_before or 'unchanged'}; "
