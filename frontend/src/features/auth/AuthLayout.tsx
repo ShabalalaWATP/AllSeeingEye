@@ -19,7 +19,7 @@ export function AuthLayout() {
           <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
             <EvilEye
               backgroundColor="#060606"
-              scale={0.72}
+              scale={0.9}
               maxFps={reducedMotion ? 1 : 24}
               flameSpeed={reducedMotion ? 0 : 1}
               pupilFollow={reducedMotion ? 0 : 1}
