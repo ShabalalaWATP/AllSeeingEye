@@ -25,6 +25,7 @@ const selection = z.object({
     .default([]),
 });
 export const annotationMonitorSchema = z.object({
+  mode: z.enum(['selected_roots', 'report_inventory']).default('selected_roots'),
   id: z.string(),
   created_by: z.string(),
   team_id: z.string().nullable(),

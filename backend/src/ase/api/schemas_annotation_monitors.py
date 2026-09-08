@@ -13,6 +13,7 @@ from ase.domain.annotation_monitoring import (
     AnnotationMonitor,
     AnnotationTransition,
     MonitorAction,
+    MonitorMode,
     MonitorStatus,
 )
 
@@ -23,6 +24,7 @@ class AnnotationMonitorCreateIn(BaseModel):
     selection: ComparisonSelectionIn
     categories: list[AnnotationKind] = Field(min_length=1, max_length=3)
     notify_on_change: bool = False
+    mode: MonitorMode = "selected_roots"
 
 
 class AnnotationMonitorUpdateIn(BaseModel):
@@ -47,6 +49,7 @@ class AnnotationMonitorUpdateIn(BaseModel):
 
 
 class AnnotationMonitorOut(BaseModel):
+    mode: MonitorMode = "selected_roots"
     id: UUID
     created_by: UUID
     team_id: UUID | None

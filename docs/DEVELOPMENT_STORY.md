@@ -2378,10 +2378,40 @@ Local acceptance reached 99 cases; independent PostgreSQL concurrency and migrat
 groups passed ten and six cases respectively. The frontend passed 1,003 cases,
 then twelve scope-clarity copy tests. Review found and repaired an avoidable
 post-guard asynchronous response window; six deletion/expiry regressions passed.
-Final hooks passed; combined integration remains pending at this entry.
+Final hooks passed; combined integration is committed on main at `0c91741`.
+The integrated production build passed. Frontend coverage passed 1,009 tests in
+196 files: 95.08% statements, 90.11% branches, 93.52% functions and 96.43% lines.
+The full backend run subsequently passed on the unchanged integrated tree:
+3,278 passed, 55 skipped, 95.06% coverage in 5,249.57 seconds. This validates
+the registry/selected-root integration at `0c91741`, not the later isolated
+inventory, provenance or SEC branches.
 
 The preceding main comparison acceptance passed 3,195 backend cases with 39 skips,
 no warnings and 95.20% coverage in 3,126.76 seconds. That result predates the new
 registry/monitor integration and does not replace its combined regression run.
 No remote push, operator migration or deployment occurred. Newly created annotation
 inventory monitoring, cross-version monitoring and wider expansion work remain open.
+
+Report inventory implementation has started on a separate checkout from that
+integration. The explicit contract and acceptance checklist are recorded in
+ANNOTATION_INVENTORY_MONITORING_PLAN.md. It preserves selected-root semantics,
+allows an empty inventory baseline and requires bounded creation-event delivery
+with explicit capacity failures. No implementation acceptance is claimed yet.
+
+Inventory monitoring subsequently passed 87 unique local backend cases, 24
+PostgreSQL cases and 1,018 frontend cases (90.18% branch coverage). Review found
+and repaired unavailable-state history access. Historical migration setups now
+write their historical schema explicitly, preserving their original assertions
+and Unicode payloads. Backend static checks, frontend lint/type/build and all
+repository hooks passed. Full isolated backend acceptance subsequently passed
+3,291 tests, with 70 skips and 95.05% coverage in 5,563.32 seconds. Source and
+tests remained frozen throughout. Feature `3ef66e9` was integrated with no runtime
+tree changes; only integration status documentation changed. No operator
+database or deployment was changed.
+
+In a second isolated checkout, source language/date provenance implementation has
+started under SOURCE_LANGUAGE_DATE_PROVENANCE_PLAN.md. It requires actual
+operator-supplied transliteration execution, declared-calendar conversion,
+original-date retention and historical digest compatibility. Calendar conventions
+and independent fixtures must be verified before converter acceptance. This work
+does not change the main tree undergoing backend regression checks.

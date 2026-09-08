@@ -36,7 +36,12 @@ async def create_monitor(
 ) -> AnnotationMonitorOut:
     await validate_request_session(container, claims)
     result = await container.annotation_monitors(session).create(
-        claims, body.name, body.selection.to_domain(), tuple(body.categories), body.notify_on_change
+        claims,
+        body.name,
+        body.selection.to_domain(),
+        tuple(body.categories),
+        body.notify_on_change,
+        body.mode,
     )
     validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"

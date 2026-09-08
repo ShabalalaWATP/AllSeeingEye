@@ -3,7 +3,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
 import { createAnnotationMonitor } from '@/lib/api/annotationMonitors';
-import type { AnnotationMonitor } from '@/lib/api/annotationMonitors';
+import type { AnnotationMonitor, MonitorCreate } from '@/lib/api/annotationMonitors';
 import { describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { ComparisonRevisionPicker } from './ComparisonRevisionPicker';
@@ -20,6 +20,8 @@ export function AnnotationMonitorCreate({
   version: number;
   onCreated: (monitor: AnnotationMonitor) => void;
 }) {
+  const [mode, setMode] = useState<NonNullable<MonitorCreate['mode']>>('selected_roots');
+  const inventoryMode = mode === 'report_inventory';
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<ComparisonAnnotation[]>([]);
   const [categories, setCategories] = useState<AnnotationKind[]>([]);
@@ -28,7 +30,9 @@ export function AnnotationMonitorCreate({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const request = useScopedRequest();
-  const available = [...new Set(selected.map(annotationKind))];
+  const available: AnnotationKind[] = inventoryMode
+    ? ['claim', 'identity', 'relationship']
+    : [...new Set(selected.map(annotationKind))];
   const choose = (next: ComparisonAnnotation[]) => {
     setSelected(next);
     setCategories((previous) =>
@@ -36,15 +40,20 @@ export function AnnotationMonitorCreate({
     );
   };
   const save = async () => {
-    if (busy || !name.trim() || !selected.length || !categories.length) return;
+    if (busy || !name.trim() || (!inventoryMode && !selected.length) || !categories.length) return;
     const signal = request();
     setBusy(true);
     setError(null);
     try {
       const monitor = await createAnnotationMonitor(
         {
+          mode,
           name: name.trim(),
-          selection: toComparisonSelection({ reportId, version, annotations: selected }),
+          selection: toComparisonSelection({
+            reportId,
+            version,
+            annotations: inventoryMode ? [] : selected,
+          }),
           categories,
           notify_on_change: notify,
         },
@@ -69,9 +78,9 @@ export function AnnotationMonitorCreate({
     >
       <h3 className="font-medium">Choose what to monitor, version {version}</h3>
       <p className="text-sm text-muted">
-        This is opt-in monitoring of selected annotation roots. Creation establishes a silent
-        baseline, with no initial alert. Source assertions remain separate from operator
-        assessments.
+        Choose selected annotations or the whole annotation inventory of this exact saved report
+        version. Creation establishes a silent baseline, with no initial alert. The monitoring mode
+        cannot be changed later. Source assertions remain separate from operator assessments.
       </p>
       <fieldset disabled={busy} className="space-y-4">
         <TextField
@@ -81,15 +90,61 @@ export function AnnotationMonitorCreate({
           required
           onChange={(event) => setName(event.target.value)}
         />
-        <ComparisonRevisionPicker
-          key={inventory}
-          latestOnly
-          reportId={reportId}
-          version={version}
-          selected={selected}
-          onChange={choose}
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">What should this monitor watch?</legend>
+          <label className="flex gap-2 text-sm">
+            <input
+              type="radio"
+              name="monitor-mode"
+              checked={!inventoryMode}
+              onChange={() => {
+                setMode('selected_roots');
+                setSelected([]);
+                setCategories([]);
+                setError(null);
+              }}
+            />
+            Selected annotations
+          </label>
+          <label className="flex gap-2 text-sm">
+            <input
+              type="radio"
+              name="monitor-mode"
+              checked={inventoryMode}
+              onChange={() => {
+                setMode('report_inventory');
+                setSelected([]);
+                setCategories([]);
+                setError(null);
+              }}
+            />
+            Whole saved report inventory
+          </label>
+        </fieldset>
+        {inventoryMode ? (
+          <p className="text-sm text-muted">
+            Watch all current and future claims, identity reviews and organisation relationships in
+            version {version}, including when there are no annotations yet. Creation captures the
+            whole current inventory in one baseline. Up to 20 annotations in total can be monitored.
+            If the inventory grows beyond 20, monitoring becomes unavailable and retains its
+            previous baseline; nothing is silently truncated.
+          </p>
+        ) : (
+          <ComparisonRevisionPicker
+            key={inventory}
+            latestOnly
+            reportId={reportId}
+            version={version}
+            selected={selected}
+            onChange={choose}
+          />
+        )}
+        <MonitorCategoryFields
+          inventory={inventoryMode}
+          available={available}
+          value={categories}
+          onChange={setCategories}
         />
-        <MonitorCategoryFields available={available} value={categories} onChange={setCategories} />
         <label className="flex gap-2 text-sm">
           <input
             type="checkbox"
@@ -102,7 +157,10 @@ export function AnnotationMonitorCreate({
           Alerts follow this report's access scope. Team workspace alerts are shared with authorised
           team members.
         </p>
-        <Button type="submit" disabled={!name.trim() || !selected.length || !categories.length}>
+        <Button
+          type="submit"
+          disabled={!name.trim() || (!inventoryMode && !selected.length) || !categories.length}
+        >
           Create silent baseline
         </Button>
       </fieldset>
@@ -110,8 +168,9 @@ export function AnnotationMonitorCreate({
         <>
           <Alert tone="error">{describeError(error)}</Alert>
           <p className="text-xs text-muted">
-            A selected revision may have changed. Refresh the inventory and choose current revisions
-            before trying again.
+            {inventoryMode
+              ? 'Check the report remains accessible and contains no more than 20 annotation roots. No partial inventory baseline is created.'
+              : 'A selected revision may have changed. Refresh the inventory and choose current revisions before trying again.'}
           </p>
           <Button
             variant="secondary"
@@ -123,7 +182,9 @@ export function AnnotationMonitorCreate({
               setError(null);
             }}
           >
-            Refresh inventory and clear selections
+            {inventoryMode
+              ? 'Clear inventory choices and retry'
+              : 'Refresh inventory and clear selections'}
           </Button>
         </>
       )}

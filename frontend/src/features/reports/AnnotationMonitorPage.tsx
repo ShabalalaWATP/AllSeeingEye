@@ -86,6 +86,13 @@ function Contents({ id }: { id: string }) {
       {monitor && (
         <>
           <p className="text-sm">
+            Monitoring mode:{' '}
+            {monitor.mode === 'report_inventory'
+              ? 'Whole saved report inventory'
+              : 'Selected annotations'}
+            . This mode is fixed for this monitor.
+          </p>
+          <p className="text-sm">
             Status: {monitor.status}. Checkpoint {monitor.checkpoint_number}. Updated{' '}
             {monitor.updated_at}.
           </p>
@@ -103,9 +110,19 @@ function Contents({ id }: { id: string }) {
             <MonitorRemoval busy={busy || conflict} onRemove={() => void remove()} />
           )}
           <details>
-            <summary>Exact watched roots and checkpoint revisions</summary>
+            <summary>Exact watched annotations and checkpoint revisions</summary>
             <p className="text-xs text-muted">
-              New roots are not enrolled automatically. Checkpoint ID {monitor.checkpoint_id}.
+              This checkpoint contains{' '}
+              {monitor.selection.revisions.length +
+                monitor.selection.identity_revisions.length +
+                monitor.selection.relationship_revisions.length}{' '}
+              of at most 20 annotations.
+            </p>
+            <p className="text-xs text-muted">
+              {monitor.mode === 'report_inventory'
+                ? 'New roots in this exact saved version are enrolled automatically, up to 20 across claims, identity reviews and relationships. This list is the last valid checkpoint inventory, not a live completeness guarantee.'
+                : 'New roots are not enrolled automatically.'}{' '}
+              Checkpoint ID {monitor.checkpoint_id}.
             </p>
             <ul className="space-y-1 text-xs [overflow-wrap:anywhere]">
               {monitor.selection.revisions.map((item) => (
@@ -125,59 +142,61 @@ function Contents({ id }: { id: string }) {
               ))}
             </ul>
           </details>
-          {monitor.status === 'unavailable' ? (
+          {monitor.status === 'unavailable' && (
             <Alert tone="warning">
               Unavailable:{' '}
               {monitor.unavailable_reason ?? 'The stored inputs cannot currently be accessed.'} No
-              unchanged result is inferred.
+              unchanged result is inferred.{' '}
+              {monitor.mode === 'report_inventory' &&
+                'Inventory monitors stop at the 20-root capacity rather than silently truncating. The last valid checkpoint and authorised history are retained. Recovery rechecks current scope, retained inputs and the complete inventory; a fresh baseline cannot bypass capacity.'}
             </Alert>
-          ) : (
-            <>
-              {workspaces.canManage(monitor) && (
-                <div key={`configuration:${monitor.revision}`} className="space-y-4">
-                  <MonitorConfiguration
-                    monitor={monitor}
-                    busy={busy || conflict}
-                    onSave={(body) => void update(body)}
-                  />
-                  {monitor.status === 'active' ? (
-                    <Button
-                      variant="secondary"
-                      disabled={busy || conflict}
-                      onClick={() =>
-                        void update({
-                          expected_revision: monitor.revision,
-                          action: 'pause',
-                          rebaseline: false,
-                        })
-                      }
-                    >
-                      Pause monitoring
-                    </Button>
-                  ) : (
-                    <MonitorResumeControls
-                      busy={busy || conflict}
-                      onCatchUp={() =>
-                        void update({
-                          expected_revision: monitor.revision,
-                          action: 'resume_catch_up',
-                          rebaseline: false,
-                        })
-                      }
-                      onFreshBaseline={() =>
-                        void update({
-                          expected_revision: monitor.revision,
-                          action: 'resume_rebaseline',
-                          rebaseline: false,
-                        })
-                      }
-                    />
-                  )}
-                </div>
-              )}
-              <MonitorTransitionHistory key={`history:${monitor.revision}`} id={id} />
-            </>
           )}
+          <>
+            {workspaces.canManage(monitor) && (
+              <div key={`configuration:${monitor.revision}`} className="space-y-4">
+                <MonitorConfiguration
+                  monitor={monitor}
+                  busy={busy || conflict}
+                  onSave={(body) => void update(body)}
+                />
+                {monitor.status !== 'paused' && (
+                  <Button
+                    variant="secondary"
+                    disabled={busy || conflict}
+                    onClick={() =>
+                      void update({
+                        expected_revision: monitor.revision,
+                        action: 'pause',
+                        rebaseline: false,
+                      })
+                    }
+                  >
+                    Pause monitoring
+                  </Button>
+                )}
+                {monitor.status !== 'active' && (
+                  <MonitorResumeControls
+                    busy={busy || conflict}
+                    onCatchUp={() =>
+                      void update({
+                        expected_revision: monitor.revision,
+                        action: 'resume_catch_up',
+                        rebaseline: false,
+                      })
+                    }
+                    onFreshBaseline={() =>
+                      void update({
+                        expected_revision: monitor.revision,
+                        action: 'resume_rebaseline',
+                        rebaseline: false,
+                      })
+                    }
+                  />
+                )}
+              </div>
+            )}
+            <MonitorTransitionHistory key={`history:${monitor.revision}`} id={id} />
+          </>
         </>
       )}
     </main>

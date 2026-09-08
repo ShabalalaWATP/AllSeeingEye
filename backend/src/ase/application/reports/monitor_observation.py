@@ -16,11 +16,14 @@ from ase.application.reports.monitor_comparisons import (
     meaningful_categories,
     resolve_side,
 )
+from ase.application.reports.monitor_inventory import complete_inventory, next_watches
 from ase.domain.annotation_comparison import AnnotationComparison
 from ase.domain.annotation_monitoring import (
     MAX_TRANSITIONS,
     AnnotationMonitor,
     AnnotationTransition,
+    InventoryCapacityUnavailable,
+    InventoryHistoryGap,
 )
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.warning import Alert
@@ -74,7 +77,7 @@ async def _advance(
             id=alert_id,
             indicator_id=None,
             fired_at=transition.recorded_at,
-            title="Selected annotation review changed",
+            title="Annotation review changed",
             summary="A watched annotation has a new retained review transition.",
             count=len(changed),
             threshold=1,
@@ -105,7 +108,13 @@ async def rebaseline(
     before, _ = await resolve_side(service.selector, access, previous)
     if before != retained.after:
         raise Conflict("The last valid checkpoint inputs are no longer available.")
-    after, watches = await resolve_side(service.selector, access, previous, latest=True)
+    target = previous
+    if previous.mode == "report_inventory":
+        watches = await service.repository.inventory(previous)
+        if len(watches) > 20:
+            raise InvalidRequest("The report version exceeds the twenty-root inventory limit.")
+        target = replace(previous, watches=watches)
+    after, watches = await resolve_side(service.selector, access, target, latest=True)
     await _capacity(service, previous)
     comparison = build_observation(retained.after, after, actor_id, service.clock.now())
     return await _advance(
@@ -130,6 +139,7 @@ async def observe(service: AnnotationMonitors, monitor_id: object) -> bool:
             before, _ = await resolve_side(service.selector, access, previous)
             if before != retained.after:
                 raise Conflict("The retained checkpoint inputs changed.")
+            await complete_inventory(service, previous)
             event = await service.repository.next_event(previous.id)
             if event is None:
                 # Detect a lost/out-of-band queue before calling the observation unchanged.
@@ -151,15 +161,7 @@ async def observe(service: AnnotationMonitors, monitor_id: object) -> bool:
                     )
                 await service.selector.uow.commit()
                 return False
-            matches = [
-                w for w in previous.watches if w.kind == event.kind and w.root_id == event.root_id
-            ]
-            if len(matches) != 1 or matches[0].revision_id != event.previous_revision_id:
-                raise Conflict("The next observed revision does not follow the exact checkpoint.")
-            watches = tuple(
-                replace(w, revision_id=event.revision_id) if w == matches[0] else w
-                for w in previous.watches
-            )
+            watches = await next_watches(service, access, previous, event)
             value = replace(
                 previous,
                 watches=watches,
@@ -176,12 +178,22 @@ async def observe(service: AnnotationMonitors, monitor_id: object) -> bool:
             await _advance(service, previous, value, comparison, event.id)
             await service.selector.uow.commit()
             return True
-        except (Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated, ValueError):
+        except (Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated, ValueError) as exc:
             # Private errors and source excerpts never enter status, logs or shared alerts.
             reason = (
                 "Current authority, retained inputs or storage capacity is unavailable. "
                 "The last valid checkpoint is preserved."
             )
+            if isinstance(exc, InventoryCapacityUnavailable):
+                reason = (
+                    "Inventory capacity reached (20 roots or 2,000 pending events). "
+                    "The last valid checkpoint and pending history are preserved."
+                )
+            elif isinstance(exc, InventoryHistoryGap):
+                reason = (
+                    "Inventory creation history is incomplete. The last valid checkpoint is "
+                    "preserved; an explicit fresh baseline is required to skip the gap."
+                )
             if previous.status != "unavailable" or previous.unavailable_reason != reason:
                 await service.repository.save(
                     replace(

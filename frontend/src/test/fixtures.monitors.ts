@@ -2,6 +2,7 @@ import type { AnnotationMonitor, MonitorTransition } from '@/lib/api/annotationM
 import { plainUser, report } from './fixtures';
 import { annotationComparison, comparisonClaimAfter } from './fixtures.comparisons';
 export const annotationMonitor: AnnotationMonitor = {
+  mode: 'selected_roots',
   id: 'monitor-1',
   created_by: plainUser.id,
   team_id: null,

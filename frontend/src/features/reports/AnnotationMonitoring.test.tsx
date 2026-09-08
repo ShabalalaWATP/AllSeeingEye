@@ -48,6 +48,7 @@ it('creates only explicitly selected current roots with notifications off and a 
   await waitFor(() => expect(created).toHaveBeenCalledOnce());
   expect(bodies).toEqual([
     {
+      mode: 'selected_roots',
       name: 'Correction watch',
       selection: {
         report_id: report.report.id,
@@ -138,8 +139,8 @@ it('shows unavailable state without treating a failed observation as unchanged',
   });
   renderApp('/annotation-monitors/monitor-1', 'user');
   await screen.findByText(/Retained inputs are unavailable/);
-  expect(screen.queryByRole('button', { name: 'Pause monitoring' })).not.toBeInTheDocument();
-  expect(screen.queryByRole('region', { name: 'Recorded transitions' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Pause monitoring' })).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Recorded transitions' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Remove monitor and history' })).toBeInTheDocument();
 });
 it('requires permanent-removal confirmation, allows cancellation and sends the exact CAS token', async () => {

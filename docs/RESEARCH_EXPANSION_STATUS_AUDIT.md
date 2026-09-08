@@ -17,8 +17,15 @@ gate has been accepted. The full objective remains unfinished.
   `ebc1cfe` after 191 backend/983 frontend passes and targeted follow-up repairs.
   Standalone selected-root monitoring passed 99 local backend, ten PostgreSQL
   concurrency, six PostgreSQL migration and 1,003 frontend cases, with twelve
-  affected copy tests afterwards. Final monitoring hooks/integration and combined
-  acceptance remain pending. These supersede older pending-check notes below.
+  affected copy tests afterwards. Hooks passed and integration is committed at
+  `0c91741`. The combined frontend passed 1,009 tests in 196 files, with 95.08%
+  statements, 90.11% branches, 93.52% functions and 96.43% lines. Its production
+  build passed. Combined backend acceptance finished with 3,278 passed,
+  55 skipped and 95.06% coverage. These supersede older pending-check notes below.
+  Report-wide inventory monitoring is integrated from `3ef66e9`, with full backend
+  acceptance passed (3,291 tests, 70 skips, 95.05% coverage) and 1,018 frontend
+  passes. The merged runtime tree matches the accepted feature tree;
+  cross-version monitoring remains open.
 
 - Exact annotation comparison and frozen confidence explanations are integrated
   on main at `d37f723`. The accepted frontend tree passed 978 tests in 185 files

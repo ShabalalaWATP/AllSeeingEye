@@ -12,11 +12,11 @@ from alembic.migration import MigrationContext
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ase.adapters.persistence.base import Base
-from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
 from ase.adapters.persistence.reports import SqlReportRepository
 from ase.application.research.map_view_evidence import evidence_digest
 from ase.domain.relationship_review import revise_relationship_review
 from ase.infrastructure.migrations import alembic_config
+from legacy_annotation_history import seed_initial
 from report_documents_helpers import document_records
 from test_llm_connections_migration import _seed
 from test_relationship_review import arguments
@@ -136,9 +136,7 @@ async def test_postgres_downgrade_refuses_retained_history_without_writes(
         revision = revise_relationship_review(**{**values, "actor_id": owner})
         async with async_sessionmaker(engine)() as session:
             await SqlReportRepository(session).add(report, version)
-            await SqlRelationshipReviewRepository(session).create(
-                revision, evidence_digest(version)
-            )
+            await seed_initial(session, revision, evidence_digest(version))
             await session.commit()
         async with engine.begin() as connection:
             if retained == "root":

@@ -17,10 +17,12 @@ export function MonitorConfiguration({
   const [categories, setCategories] = useState(monitor.categories);
   const [notify, setNotify] = useState(monitor.notify_on_change);
   const [rebaseline, setRebaseline] = useState(false);
-  const available: AnnotationKind[] = [];
-  if (monitor.selection.revisions?.length) available.push('claim');
-  if (monitor.selection.identity_revisions?.length) available.push('identity');
-  if (monitor.selection.relationship_revisions?.length) available.push('relationship');
+  const inventory = monitor.mode === 'report_inventory';
+  const available: AnnotationKind[] = inventory ? ['claim', 'identity', 'relationship'] : [];
+  if (!inventory && monitor.selection.revisions?.length) available.push('claim');
+  if (!inventory && monitor.selection.identity_revisions?.length) available.push('identity');
+  if (!inventory && monitor.selection.relationship_revisions?.length)
+    available.push('relationship');
   const policyChanged =
     notify !== monitor.notify_on_change ||
     categories.length !== monitor.categories.length ||
@@ -52,6 +54,7 @@ export function MonitorConfiguration({
           onChange={(event) => setName(event.target.value)}
         />
         <MonitorCategoryFields
+          inventory={inventory}
           available={available}
           value={categories}
           onChange={(value) => {

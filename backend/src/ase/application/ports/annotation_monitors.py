@@ -9,6 +9,7 @@ from ase.domain.annotation_monitoring import (
     AnnotationMonitor,
     AnnotationTransition,
     RevisionObservation,
+    WatchedRevision,
 )
 from ase.domain.warning import Alert
 
@@ -18,6 +19,11 @@ class ComparisonCodec(Protocol):
 
 
 class AnnotationMonitorRepository(Protocol):
+    async def inventory(self, monitor: AnnotationMonitor) -> tuple[WatchedRevision, ...]: ...
+    async def pending_inventory(
+        self, monitor: AnnotationMonitor
+    ) -> tuple[bool, tuple[WatchedRevision, ...]]: ...
+
     async def delete(self, monitor_id: UUID, expected_revision: int) -> bool: ...
 
     async def get(self, monitor_id: UUID) -> AnnotationMonitor | None: ...

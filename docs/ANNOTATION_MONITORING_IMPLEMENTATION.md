@@ -1,7 +1,10 @@
 # Standalone annotation monitoring
 
-Status, 8 September 2026: implemented in the isolated monitoring checkout;
-local, PostgreSQL and repository checks passed; integration remains open. The broader
+Status, 8 September 2026: integrated on main at `0c91741` with registry routing;
+local, PostgreSQL and repository checks passed; combined backend acceptance passed
+3,278 tests, with 55 skips and 95.06% coverage. The integrated frontend passed
+1,009 tests with 90.11%
+branch coverage, and the production build passed on that tree. The broader
 requirements are preserved in ANNOTATION_COMPARISON_PLAN.md.
 
 ## Operator workflow
@@ -11,6 +14,36 @@ claim, identity or organisation-review roots. The selection must contain their
 current revisions when saved. Give it a name and choose applicable notification
 categories. Creation captures the baseline silently; notifications are opt-in.
 A selected-root monitor does not automatically discover new annotations.
+
+### Whole-report inventory mode
+
+Integrated from `3ef66e9`: full backend acceptance passed 3,291 tests, with
+70 skips and 95.05% coverage; 24 independent PostgreSQL cases and 1,018 frontend
+tests also passed. The merged runtime tree is identical to that accepted tree.
+
+The new creation flow also offers all annotations on one saved report version.
+It can start with no annotations and follows new claim, identity and organisation
+review roots as they are added. The server captures the complete current baseline;
+notification categories remain available even before that category has a root.
+The mode cannot be changed after creation. It does not follow new report versions.
+
+The twenty-root limit applies across all three kinds, including withdrawn roots.
+A report already above that limit cannot start an inventory monitor; select
+specific annotations instead. Adding a twenty-first root to an already monitored
+report succeeds, but monitoring becomes unavailable for capacity. The last valid
+checkpoint and retained history remain available under current access checks.
+
+At most 2,000 pending events are retained per inventory monitor. An overflow flag
+stops further queue growth. This is separate from the retained-transition limit.
+Paused monitors retain pending events within that bound. A capacity or history-gap
+message does not mean nothing changed. Explicit recovery is validated by the
+server; a fresh baseline acknowledges skipped intermediate differences. An
+oversized inventory cannot be recovered by silently selecting only some roots.
+
+History remains accessible from the unavailable monitor page, including exact
+comparison export. Each request rechecks current access and retained integrity.
+Recovery controls do not bypass those checks. Migration 0031 adds the mode and
+overflow state, preserving old monitors as selected-root subscriptions.
 
 Open the monitor to see its status and retained transition history. Each
 transition preserves the exact before/after revisions, evidence, frozen assessment
@@ -90,5 +123,8 @@ inventory/cross-version monitoring and independent human evaluation remain open.
 Local tests are not evidence of those release gates.
 
 All repository hooks passed, including Gitleaks, Ruff/format, file-length
-checks and full frontend lint/type checks. Final combined acceptance follows
-integration with registry routing.
+checks and full frontend lint/type checks. Combined acceptance with registry
+routing at `0c91741` passed 3,278 backend tests, with 55 skips and 95.06% coverage,
+and 1,009 frontend tests, with 90.11% branch coverage. The production build passed.
+Report-wide inventory work is tracked in
+[the inventory plan](ANNOTATION_INVENTORY_MONITORING_PLAN.md).

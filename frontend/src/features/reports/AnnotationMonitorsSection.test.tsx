@@ -35,18 +35,14 @@ it('opens opt-in report controls, cancels private drafts and refreshes the scope
     </MemoryRouter>,
   );
   expect(queries).toHaveLength(0);
-  await userEvent.click(screen.getByRole('button', { name: 'Monitor selected annotations' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Monitor annotations' }));
   await screen.findByText(/No monitors in this selection/);
   expect(new URL(queries[0]!).searchParams.get('version_number')).toBe('1');
-  await userEvent.click(
-    screen.getByRole('button', { name: 'Choose annotations for a new monitor' }),
-  );
+  await userEvent.click(screen.getByRole('button', { name: 'Create an annotation monitor' }));
   await userEvent.type(screen.getByLabelText('Monitor name'), 'Cancelled private draft');
   await userEvent.click(screen.getByRole('button', { name: 'Cancel monitor creation' }));
   expect(screen.queryByLabelText('Monitor name')).not.toBeInTheDocument();
-  await userEvent.click(
-    screen.getByRole('button', { name: 'Choose annotations for a new monitor' }),
-  );
+  await userEvent.click(screen.getByRole('button', { name: 'Create an annotation monitor' }));
   expect(screen.getByLabelText('Monitor name')).toHaveValue('');
   await userEvent.type(screen.getByLabelText('Monitor name'), 'Watch');
   await userEvent.click(await screen.findByRole('checkbox', { name: /Select revision 2/ }));
@@ -66,9 +62,9 @@ it('does not expose creation to a read-only report viewer', async () => {
       <AnnotationMonitorsSection reportId={report.report.id} version={1} canCreate={false} />
     </MemoryRouter>,
   );
-  await userEvent.click(screen.getByRole('button', { name: 'Monitor selected annotations' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Monitor annotations' }));
   await screen.findByText(/No monitors in this selection/);
   expect(
-    screen.queryByRole('button', { name: 'Choose annotations for a new monitor' }),
+    screen.queryByRole('button', { name: 'Create an annotation monitor' }),
   ).not.toBeInTheDocument();
 });

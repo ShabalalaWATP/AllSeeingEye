@@ -19,13 +19,13 @@ function Contents({
   return (
     <section className="space-y-3 border-t border-line pt-4">
       <Button variant="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
-        Monitor selected annotations
+        Monitor annotations
       </Button>
       {open && (
         <>
           <p className="text-sm text-muted">
-            Watch corrections without regenerating this report. Monitoring stays pinned to this
-            version and your explicitly selected roots.
+            Watch corrections without regenerating this report. Choose selected annotations or the
+            whole inventory of this saved version. Monitoring stays pinned to this version.
           </p>
           <Link to="/annotation-monitors" className="text-sm text-ember underline">
             All annotation monitors
@@ -33,7 +33,7 @@ function Contents({
           <AnnotationMonitorList key={refresh} scope={{ reportId, version }} />
           {canCreate && (
             <Button variant="secondary" onClick={() => setCreating(!creating)}>
-              {creating ? 'Cancel monitor creation' : 'Choose annotations for a new monitor'}
+              {creating ? 'Cancel monitor creation' : 'Create an annotation monitor'}
             </Button>
           )}
           {canCreate && creating && (

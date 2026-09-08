@@ -76,9 +76,11 @@ async def retained_transition(
                 or snapshot.version_number != monitor.version_number
             ):
                 raise Conflict("The retained transition has a different report anchor.")
-            if {(w.kind, w.root_id) for w in _watches(snapshot)} != {
-                (w.kind, w.root_id) for w in monitor.watches
-            }:
+            historical = {(w.kind, w.root_id) for w in _watches(snapshot)}
+            enrolled = {(w.kind, w.root_id) for w in monitor.watches}
+            if (
+                monitor.mode == "selected_roots" and historical != enrolled
+            ) or not historical.issubset(enrolled):
                 raise Conflict("The retained transition has a different watched selection.")
             actual, _ = await resolve_side(
                 service.selector, access, replace(monitor, watches=_watches(snapshot))
