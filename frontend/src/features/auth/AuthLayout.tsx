@@ -15,22 +15,23 @@ export function AuthLayout() {
       <section className="auth-brand" aria-label="The All Seeing Eye">
         <div className="auth-grid" aria-hidden="true" />
         <p className="auth-eyebrow">Open-source intelligence</p>
-        <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
-          <EvilEye
-            backgroundColor="#060606"
-            scale={0.4}
-            maxFps={reducedMotion ? 1 : 24}
-            flameSpeed={reducedMotion ? 0 : 1}
-            pupilFollow={reducedMotion ? 0 : 1}
-            paused={!visible}
-          />
-        </div>
-        <div className="auth-brand-copy">
-          <p className="auth-brand-name">
-            The All <br />
-            Seeing Eye<span>.</span>
-          </p>
-          <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
+        <div className="auth-identity">
+          <div className="auth-eye" aria-hidden="true" data-testid="auth-backdrop">
+            <EvilEye
+              backgroundColor="#060606"
+              scale={0.46}
+              maxFps={reducedMotion ? 1 : 24}
+              flameSpeed={reducedMotion ? 0 : 1}
+              pupilFollow={reducedMotion ? 0 : 1}
+              paused={!visible}
+            />
+          </div>
+          <div className="auth-brand-copy">
+            <p className="auth-brand-name">
+              The All Seeing Eye<span>.</span>
+            </p>
+            <p className="auth-brand-description">AI-assisted OSINT collection and analysis.</p>
+          </div>
         </div>
         <div className="auth-brand-footer" aria-hidden="true">
           <span>ASE / RESEARCH</span>
