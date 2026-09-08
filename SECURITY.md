@@ -13,7 +13,7 @@ The All Seeing Eye is a private, self-hosted hobby application. It is built on t
 - Authorisation enforced in the application layer with object-level checks (for example an administrator cannot demote or deactivate their own account).
 - Security headers on every API response, `Cache-Control: no-store` on auth and admin routes, interactive API docs only in development.
 - An append-only audit log of authentication and administration events.
-- Secrets only from the environment; structured logs redact anything that looks like a credential.
+- Server root secrets come from the environment. Model and FIRMS credentials may be stored encrypted under `ASE_ENCRYPTION_KEY`; APIs never return existing keys. FIRMS environment credentials take precedence over database configuration. Structured logs redact credentials, and secret-bearing FIRMS transport diagnostics are suppressed at their boundary.
 - Locked dependencies audited in CI (`pip-audit`, `pnpm audit`, `bandit`, `gitleaks`); containers run as a non-root user with a read-only filesystem.
 
 ## Reporting a vulnerability

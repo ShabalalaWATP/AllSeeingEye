@@ -10,6 +10,11 @@ from uuid import UUID
 
 class AuditAction(StrEnum):
     SOURCE_ACTIVATION_CHANGED = "source_activation_changed"
+    FIRMS_DRAFT_SAVED = "firms.draft_saved"
+    FIRMS_TEST_STARTED = "firms.test_started"
+    FIRMS_TESTED = "firms.tested"
+    FIRMS_CONFIRMED = "firms.confirmed"
+    FIRMS_CLEARED = "firms.cleared"
     SOURCE_TESTED = "source_tested"
     SOURCE_RESET = "source_reset"
     LOGIN_SUCCEEDED = "login_succeeded"

@@ -16,10 +16,11 @@ from ase.application.ports import (
     UnitOfWork,
     UserRepository,
 )
+from ase.application.ports.feed_release import GuardedFeedConnector
 from ase.application.ports.feeds import FeedConnector
 from ase.application.ports.source_controls import SourceAdmission, SourceControlRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import InvalidRequest, NotFound, RateLimited
+from ase.domain.errors import InvalidRequest, NotFound, RateLimited, Unauthenticated
 from ase.domain.source_controls import source_control_keys
 from ase.domain.sources import SourceSpec
 
@@ -159,9 +160,15 @@ class AdminSourceControls:
             if retry is not None:
                 raise RateLimited(retry)
         await self._uow.commit()
+        generation: int | None = None
         try:
             async with asyncio.timeout(20):
-                events = await connector.fetch()
+                if isinstance(connector, GuardedFeedConnector):
+                    generation = await connector.current_generation()
+                    batch = await connector.fetch_batch()
+                    events, generation = batch.events, batch.generation
+                else:
+                    events = await connector.fetch()
             result = SourceTestResult(
                 True,
                 min(len(events), 1000),
@@ -188,4 +195,20 @@ class AdminSourceControls:
             details={"ok": result.ok, "fetched": result.fetched},
         )
         await self._uow.commit()
+        if isinstance(connector, GuardedFeedConnector) and generation is not None:
+            async with self._admission.guard(), connector.release_guard(generation) as current:
+                if not current:
+                    result = SourceTestResult(
+                        False,
+                        0,
+                        False,
+                        "The source connection changed during the test. Test it again.",
+                    )
+        # Guard cleanup itself awaits database commit/close. Validate private result
+        # authority after that cleanup, then check expiry synchronously before return.
+        require_admin(
+            await validate_current_session(claims, self._users, self._refresh, self._clock)
+        )
+        if claims.expires_at <= self._clock.now():
+            raise Unauthenticated()
         return result

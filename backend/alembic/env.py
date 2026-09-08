@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     claim_models,
+    firms_credentials,
     identity_models,
     llm_bindings,
     map_view_models,

@@ -6,12 +6,16 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
+from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.llm.router import RoutingLlmGateway
+from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.admin.audit import ListAuditUseCase
+from ase.application.admin.firms_credentials import AdminFirmsCredentials
 from ase.application.admin.llm import (
     CreateLlmProfileUseCase,
     DeleteLlmProfileUseCase,
@@ -47,6 +51,7 @@ if TYPE_CHECKING:
 
 class AdminWiring:
     if TYPE_CHECKING:
+        http: FeedHttpClient
         cipher: SecretCipher
         clock: Clock
         llm: LlmGateway
@@ -71,6 +76,24 @@ class AdminWiring:
         self._llm_gateway = RoutingLlmGateway(OpenAiCompatibleGateway(), BedrockConverseGateway())
         self.llm = self._llm_gateway
         self.model_discovery = self._llm_gateway
+
+    def admin_firms_credentials(self, session: AsyncSession) -> AdminFirmsCredentials:
+        r = self.repositories(session)
+        return AdminFirmsCredentials(
+            r.users,
+            r.refresh_tokens,
+            SqlFirmsCredentials(session),
+            self.cipher,
+            FirmsConnectionProbe(self.http, self.clock),
+            self.clock,
+            self.limiter,
+            self._auditor(r),
+            r.uow,
+            lambda: self.scheduler.resume("firms_viirs_noaa20"),
+            area=self.settings.firms_area,
+            environment_managed=bool(self.settings.firms_map_key),
+            environment_disabled="firms_viirs_noaa20" in self.settings.disabled_feed_ids,
+        )
 
     def list_requests(self, session: AsyncSession) -> ListRequestsUseCase:
         return ListRequestsUseCase(self.repositories(session).requests)
