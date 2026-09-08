@@ -2229,6 +2229,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/sources/firms_viirs_noaa20/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_admin_sources_firms_viirs_noaa20_connection_get"];
+        put?: never;
+        post?: never;
+        /** Clear */
+        delete: operations["clear_api_admin_sources_firms_viirs_noaa20_connection_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sources/firms_viirs_noaa20/connection/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Draft */
+        put: operations["draft_api_admin_sources_firms_viirs_noaa20_connection_draft_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sources/firms_viirs_noaa20/connection/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test */
+        post: operations["test_api_admin_sources_firms_viirs_noaa20_connection_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/sources/firms_viirs_noaa20/connection/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["confirm_api_admin_sources_firms_viirs_noaa20_connection_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3939,6 +4008,68 @@ export interface components {
          * @enum {string}
          */
         ExportFormat: "pdf" | "docx";
+        /** FirmsConfirmIn */
+        FirmsConfirmIn: {
+            /** Expected Revision */
+            expected_revision: number;
+            /** Test Generation */
+            test_generation: number;
+        };
+        /** FirmsConnectionOut */
+        FirmsConnectionOut: {
+            /** Revision */
+            revision: number;
+            /** Active Revision */
+            active_revision: number;
+            /** Configured */
+            configured: boolean;
+            /**
+             * Credential Origin
+             * @enum {string}
+             */
+            credential_origin: "environment" | "database" | "none";
+            /** Environment Disabled */
+            environment_disabled: boolean;
+            /** Encryption Available */
+            encryption_available: boolean;
+            /** Area */
+            area: string;
+            /** Draft Present */
+            draft_present: boolean;
+            /** Draft Expires At */
+            draft_expires_at: string | null;
+            /** Tested At */
+            tested_at: string | null;
+            /** Test Generation */
+            test_generation: number;
+            /** Test Ok */
+            test_ok: boolean;
+        };
+        /** FirmsConnectionTestOut */
+        FirmsConnectionTestOut: {
+            status: components["schemas"]["FirmsConnectionOut"];
+            /** Ok */
+            ok: boolean;
+            /** Fetched */
+            fetched: number;
+            /** Message */
+            message: string;
+        };
+        /** FirmsDraftIn */
+        FirmsDraftIn: {
+            /** Expected Revision */
+            expected_revision: number;
+            /**
+             * Api Key
+             * Format: password
+             */
+            api_key: string;
+        };
+        /** FirmsRevisionIn */
+        FirmsRevisionIn: {
+            /** Expected Revision */
+            expected_revision: number;
+        };
         /** FootprintCollectionOut */
         FootprintCollectionOut: {
             /**
@@ -12454,6 +12585,158 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LlmModelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_admin_sources_firms_viirs_noaa20_connection_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirmsConnectionOut"];
+                };
+            };
+        };
+    };
+    clear_api_admin_sources_firms_viirs_noaa20_connection_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirmsRevisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirmsConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_api_admin_sources_firms_viirs_noaa20_connection_draft_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirmsDraftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirmsConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_api_admin_sources_firms_viirs_noaa20_connection_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirmsRevisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirmsConnectionTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_api_admin_sources_firms_viirs_noaa20_connection_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirmsConfirmIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirmsConnectionOut"];
                 };
             };
             /** @description Validation Error */

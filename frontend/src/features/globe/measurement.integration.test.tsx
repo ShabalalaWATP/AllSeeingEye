@@ -4,6 +4,8 @@ import { renderApp } from '@/test/render';
 import { mockWebGl2 } from '@/test/env';
 import { FakeMap } from '@/test/fakeMap';
 import { MapboxOverlay } from '@/test/fakeDeck';
+// Load the real route after Vitest hoists its mocks, outside timed UI assertions.
+import './GlobePage';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/mapbox', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));

@@ -18,6 +18,7 @@ from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.adsb_watch import load_watch_areas
 from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
+from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
@@ -160,16 +161,25 @@ class Container(FeatureWiring, ResearchInputWiring, AdminWiring, AuthWiring):
         self.connectors: list[FeedConnector] = (
             list(connectors)
             if connectors is not None
-            else build_connectors(
-                self.http,
-                self.clock,
-                settings.disabled_feed_ids,
-                firms_key=settings.firms_map_key.get_secret_value()
-                if settings.firms_map_key
-                else None,
-                firms_area=settings.firms_area,
-                digitraffic_http=self.marine_http,
-            )
+            else [
+                *build_connectors(
+                    self.http,
+                    self.clock,
+                    settings.disabled_feed_ids,
+                    digitraffic_http=self.marine_http,
+                ),
+                ManagedFirmsConnector(
+                    self.session_factory,
+                    self.http,
+                    self.clock,
+                    self.cipher,
+                    environment_key=settings.firms_map_key.get_secret_value()
+                    if settings.firms_map_key
+                    else None,
+                    area=settings.firms_area,
+                    disabled="firms_viirs_noaa20" in settings.disabled_feed_ids,
+                ),
+            ]
         )
         watchlists = GoogleNewsWatchlistConnector(
             self.http, self.clock, SqlWatchlistPlanStore(self.session_factory)

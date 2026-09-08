@@ -8,6 +8,7 @@ import { describeError } from '@/lib/api/errors';
 import { useNow } from '@/lib/hooks/useNow';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 
+import { FirmsConnectionPanel } from './FirmsConnectionPanel';
 import { SourceRow } from './SourceRow';
 
 /** "29 sources: 27 healthy, 1 degraded, 1 idle" without the zero counts. */
@@ -44,9 +45,10 @@ export default function AdminSourcesPage() {
       </div>
       <p className="text-sm text-muted">
         Control collection across live feeds and on-demand research. Connection tests fetch a
-        bounded sample without publishing or saving records. API keys remain configured by the
-        operator.
+        bounded sample without publishing or saving records. Manage NASA FIRMS credentials below;
+        other source credentials remain operator configured.
       </p>
+      <FirmsConnectionPanel key={key} />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
       {data === null ? (
         loading ? (

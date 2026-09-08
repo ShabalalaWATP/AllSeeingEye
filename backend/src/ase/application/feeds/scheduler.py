@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.ports import Clock
+from ase.application.ports.feed_release import FeedUnavailable, GuardedFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.errors import NotFound
@@ -103,22 +104,63 @@ class FeedScheduler:
     async def poll_once(self, connector: FeedConnector) -> PollOutcome:
         source_id = connector.spec.id
         started = self._clock.now()
+        generation: int | None = None
         try:
             if self._admission is not None and not await self._admission.enabled(source_id):
-                return PollOutcome(source_id, ok=False, error="Disabled by administrator.")
+                raise FeedUnavailable("Disabled by administrator.")
             async with asyncio.timeout(self._fetch_timeout.total_seconds()):
-                raw = await connector.fetch()
+                if isinstance(connector, GuardedFeedConnector):
+                    generation = await connector.current_generation()
+                batch = (
+                    await connector.fetch_batch()
+                    if isinstance(connector, GuardedFeedConnector)
+                    else None
+                )
+                raw = batch.events if batch is not None else await connector.fetch()
             guard = self._admission.guard() if self._admission else contextlib.nullcontext()
             async with guard:
                 if self._admission is not None and not await self._admission.enabled(source_id):
                     return PollOutcome(
                         source_id, ok=False, error="Disabled before results were admitted."
                     )
+                if batch is not None and isinstance(connector, GuardedFeedConnector):
+                    async with connector.release_guard(batch.generation) as current:
+                        if not current:
+                            raise FeedUnavailable("Connection changed before publication.")
+                        return await self._publish(connector, raw, started)
                 return await self._publish(connector, raw, started)
+        except FeedUnavailable as exc:
+            return PollOutcome(source_id, ok=False, error=str(exc))
         except Exception as exc:
-            entry = self._health.record_failure(source_id, f"{type(exc).__name__}: {exc}", started)
-            await self._bus.publish(BusMessage("source.health", {"health": entry}))
-            return PollOutcome(source_id, ok=False, error=entry.last_error)
+            if isinstance(connector, GuardedFeedConnector):
+                return await self._guarded_failure(connector, generation, started)
+            return await self._failure(source_id, f"{type(exc).__name__}: {exc}", started)
+
+    async def _guarded_failure(
+        self, connector: GuardedFeedConnector, generation: int | None, started: datetime
+    ) -> PollOutcome:
+        source_id = connector.spec.id
+        if generation is None:
+            return PollOutcome(source_id, ok=False, error="Connection configuration unavailable.")
+        try:
+            guard = self._admission.guard() if self._admission else contextlib.nullcontext()
+            async with guard, connector.release_guard(generation) as current:
+                if not current:
+                    return PollOutcome(
+                        source_id, ok=False, error="Connection changed before publication."
+                    )
+                return await self._failure(
+                    source_id, "The configured source could not be fetched.", started
+                )
+        except Exception:
+            # Unverifiable authority is not evidence of upstream failure. Keep the
+            # loop alive without publishing health under an unknown configuration.
+            return PollOutcome(source_id, ok=False, error="Connection verification unavailable.")
+
+    async def _failure(self, source_id: str, error: str, started: datetime) -> PollOutcome:
+        entry = self._health.record_failure(source_id, error, started)
+        await self._bus.publish(BusMessage("source.health", {"health": entry}))
+        return PollOutcome(source_id, ok=False, error=entry.last_error)
 
     async def _publish(
         self, connector: FeedConnector, raw: list[Event], started: datetime

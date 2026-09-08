@@ -7589,6 +7589,214 @@
           }
         ]
       }
+    },
+    "/api/admin/sources/firms_viirs_noaa20/connection": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_admin_sources_firms_viirs_noaa20_connection_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirmsConnectionOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Clear",
+        "operationId": "clear_api_admin_sources_firms_viirs_noaa20_connection_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirmsRevisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirmsConnectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/sources/firms_viirs_noaa20/connection/draft": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Draft",
+        "operationId": "draft_api_admin_sources_firms_viirs_noaa20_connection_draft_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirmsDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirmsConnectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/sources/firms_viirs_noaa20/connection/test": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Test",
+        "operationId": "test_api_admin_sources_firms_viirs_noaa20_connection_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirmsRevisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirmsConnectionTestOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/sources/firms_viirs_noaa20/connection/confirm": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Confirm",
+        "operationId": "confirm_api_admin_sources_firms_viirs_noaa20_connection_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirmsConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirmsConnectionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -12543,6 +12751,182 @@
           "docx"
         ],
         "title": "ExportFormat"
+      },
+      "FirmsConfirmIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "test_generation": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Test Generation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "test_generation"
+        ],
+        "title": "FirmsConfirmIn"
+      },
+      "FirmsConnectionOut": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "active_revision": {
+            "type": "integer",
+            "title": "Active Revision"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "credential_origin": {
+            "type": "string",
+            "enum": [
+              "environment",
+              "database",
+              "none"
+            ],
+            "title": "Credential Origin"
+          },
+          "environment_disabled": {
+            "type": "boolean",
+            "title": "Environment Disabled"
+          },
+          "encryption_available": {
+            "type": "boolean",
+            "title": "Encryption Available"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "draft_present": {
+            "type": "boolean",
+            "title": "Draft Present"
+          },
+          "draft_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Expires At"
+          },
+          "tested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested At"
+          },
+          "test_generation": {
+            "type": "integer",
+            "title": "Test Generation"
+          },
+          "test_ok": {
+            "type": "boolean",
+            "title": "Test Ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "active_revision",
+          "configured",
+          "credential_origin",
+          "environment_disabled",
+          "encryption_available",
+          "area",
+          "draft_present",
+          "draft_expires_at",
+          "tested_at",
+          "test_generation",
+          "test_ok"
+        ],
+        "title": "FirmsConnectionOut"
+      },
+      "FirmsConnectionTestOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FirmsConnectionOut"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "fetched": {
+            "type": "integer",
+            "title": "Fetched"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "ok",
+          "fetched",
+          "message"
+        ],
+        "title": "FirmsConnectionTestOut"
+      },
+      "FirmsDraftIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "api_key": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 16,
+            "format": "password",
+            "title": "Api Key",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "api_key"
+        ],
+        "title": "FirmsDraftIn"
+      },
+      "FirmsRevisionIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision"
+        ],
+        "title": "FirmsRevisionIn"
       },
       "FootprintCollectionOut": {
         "properties": {

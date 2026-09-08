@@ -6,20 +6,40 @@ registry and bounded live store. Both dashboard projections recognise the
 `thermal_detection` subtype, draw a sensor symbol and honour the FIRMS switch.
 The switch changes display only. No key or operational connection is bundled.
 
-## Server setup
+## Administrator setup
 
-1. Obtain a free MAP_KEY from the [official NASA Area API page](https://firms.modaps.eosdis.nasa.gov/api/area/).
-2. Set `ASE_FIRMS_MAP_KEY` in the deployment's private environment or secret store.
-   Do not put the key in chat, browser code, screenshots or version control.
-3. Optionally set `ASE_FIRMS_AREA` to `west,south,east,north`, for example
-   `20,40,60,70`. The default is `world`. Dateline-wrapping boxes are rejected;
-   multiple-region collection is not implemented in this connector.
-4. Restart the backend and check the source in Administration. Existing source
-   enable/disable and circuit-breaker reset controls apply. Adding its ID to
-   `ASE_FEEDS_DISABLED` excludes it at startup.
+1. Obtain a MAP_KEY through the official NASA registration workflow. This editor
+   does not create an account or perform registration.
+2. Configure `ASE_ENCRYPTION_KEY` on the server and retain it separately for
+   recovery. Database credentials use the same Fernet boundary as model secrets.
+3. Open Administration > Sources > FIRMS connection. Save a draft key, test that
+   exact draft, then confirm the successful connection. Keys are never read back.
+   A draft and its successful test proof are valid for 15 minutes. Editing or
+   retesting invalidates old proof; activation is tied to the current administrator
+   session. Testing fetches a bounded sample without saving or publishing records.
+4. Confirmed database credentials take effect on the next poll without restarting
+   the backend. Source enable/disable remains separate. In-flight results and
+   failure health updates are discarded if the active credential generation or
+   source admission changed before publication.
+5. Removing the connection clears the database active and draft key. It does not
+   erase existing observations or their frozen report copies.
 
-This milestone uses server configuration. A dedicated administrator credential
-editor and connection-test workflow for non-LLM sources remains future work.
+Run the normal database migration procedure through migration 0032 before using
+this release. The migration follows inventory migration 0031. Downgrade refuses
+while retained FIRMS configuration exists; do not delete operator configuration
+simply to force a downgrade.
+
+`ASE_FIRMS_MAP_KEY` remains supported and takes precedence over database keys.
+When present, the panel displays an environment-managed connection and refuses
+key mutation. It never copies the environment key into the database or silently
+replaces it. Environment changes still require the deployment's normal restart.
+
+`ASE_FIRMS_AREA` remains server configuration: `world` or
+`west,south,east,north`, for example `20,40,60,70`. Dateline-wrapping boxes are
+rejected; multiple-region collection is not implemented. The configured area is
+bound to a draft's test validity. Adding `firms_viirs_noaa20` to
+`ASE_FEEDS_DISABLED` is an operator veto over testing, confirmation and polling.
+The display filter changes rendering only, not collection authority.
 
 ## Bounds and interpretation
 

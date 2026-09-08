@@ -4,6 +4,17 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+8 September FIRMS acceptance: encrypted administrator draft/test/confirm,
+next-poll activation and generation-guarded source publication passed full
+backend acceptance (3,328 passed, 84 skipped, 95.05% coverage) on the accepted
+inventory base. Frontend acceptance passed 1,042 tests with 90.31% branch
+coverage, plus type checking, lint and build. Ten independent PostgreSQL
+concurrency cases and eight SQLite/PostgreSQL migration cases passed separately.
+Final repository hooks and configured Bandit passed. Migration 0032 is accepted
+on disposable databases only; actual NASA connectivity and operator migration
+remain unverified. See [FIRMS_ADMIN_CONNECTIVITY_PLAN.md](FIRMS_ADMIN_CONNECTIVITY_PLAN.md).
+The historical entries below preserve earlier implementation status.
+
 8 September parallel implementation: source language/date provenance is present
 on `codex/source-language-date-provenance`; 1,034 frontend tests and its unchanged
 coverage gates passed, while full backend acceptance remains active. SEC filing

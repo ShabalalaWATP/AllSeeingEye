@@ -2415,3 +2415,14 @@ operator-supplied transliteration execution, declared-calendar conversion,
 original-date retention and historical digest compatibility. Calendar conventions
 and independent fixtures must be verified before converter acceptance. This work
 does not change the main tree undergoing backend regression checks.
+
+## 8 September 2026: FIRMS administrator connectivity acceptance
+
+Encrypted draft/test/confirm and next-poll activation passed full backend
+acceptance: 3,328 passed, 84 skipped, 95.05% coverage in 6,522.28 seconds.
+The source and tests were frozen throughout. Frontend acceptance passed 1,042
+cases with 90.31% branch coverage; lint, types, build and repository hooks passed.
+Ten independent PostgreSQL concurrency cases and eight SQLite/PostgreSQL
+migration cases passed separately. Generation checks prevent old requests from
+publishing observations or changing the health of a replacement connection.
+No actual NASA key, operator database, remote push or deployment was involved.

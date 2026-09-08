@@ -1,5 +1,5 @@
 import { act, screen, waitFor } from '@testing-library/react';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
@@ -9,6 +9,8 @@ import { FakeMap } from '@/test/fakeMap';
 import { FakeEventStreamClient } from '@/test/fakeStream';
 import { liveEvent } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
+// Load the real route after Vitest hoists its mocks, outside timed layer assertions.
+import './GlobePage';
 
 const clock = vi.hoisted(() => ({ now: Date.UTC(2026, 8, 6) }));
 vi.mock('@/lib/hooks/useNow', () => ({ useNow: () => clock.now }));
@@ -36,11 +38,6 @@ async function mount() {
 }
 
 describe('globe rendering and motion', () => {
-  beforeAll(async () => {
-    // Measure layer behaviour after loading, not the lazy module transform on a cold worker.
-    await import('./GlobePage');
-  });
-
   beforeEach(() => {
     FakeMap.reset();
     MapboxOverlay.reset();
