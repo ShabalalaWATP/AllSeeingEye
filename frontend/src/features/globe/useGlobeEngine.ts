@@ -8,6 +8,7 @@ import type {
   DataLayer,
   FlyToTarget,
   MapEngine,
+  MapCamera,
   MapEngineFactory,
   Projection,
 } from './engine/MapEngine';
@@ -22,6 +23,8 @@ export interface GlobeEngineHandle {
   setLayers: (layers: readonly DataLayer[]) => void;
   flyTo: (target: FlyToTarget) => void;
   getZoom: () => number;
+  getCamera?: () => MapCamera | null;
+  restoreCamera?: (camera: MapCamera) => void;
   pickObjectsAt?: (x: number, y: number) => readonly unknown[];
   spin: (enabled: boolean) => void;
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
@@ -113,6 +116,10 @@ export function useGlobeEngine(
     (x: number, y: number) => engineRef.current?.pickObjectsAt?.(x, y) ?? [],
     [],
   );
+  const getCamera = useCallback(() => engineRef.current?.getCamera() ?? null, []);
+  const restoreCamera = useCallback((camera: MapCamera) => {
+    engineRef.current?.restoreCamera(camera);
+  }, []);
   const getZoom = useCallback(() => engineRef.current?.getZoom() ?? 0, []);
 
   const spin = useCallback((enabled: boolean) => {
@@ -141,7 +148,29 @@ export function useGlobeEngine(
   }, []);
 
   return useMemo(
-    () => ({ setLayers, flyTo, getZoom, spin, onCursor, onView, onClick, pickObjectsAt }),
-    [setLayers, flyTo, getZoom, spin, onCursor, onView, onClick, pickObjectsAt],
+    () => ({
+      setLayers,
+      flyTo,
+      getZoom,
+      spin,
+      onCursor,
+      onView,
+      onClick,
+      pickObjectsAt,
+      getCamera,
+      restoreCamera,
+    }),
+    [
+      setLayers,
+      flyTo,
+      getZoom,
+      spin,
+      onCursor,
+      onView,
+      onClick,
+      pickObjectsAt,
+      getCamera,
+      restoreCamera,
+    ],
   );
 }

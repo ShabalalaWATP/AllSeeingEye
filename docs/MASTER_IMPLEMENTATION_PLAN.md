@@ -459,3 +459,11 @@ are implemented. Real local GPU checks passed in both projections, including
 transport headings and far-side occlusion. The 1,101-test frontend suite preceded
 final narrow repairs; those passed 39 focused tests, types, lint and build.
 Camera catalogue and live-provider acceptance remain separate follow-up work.
+
+
+8 September compact-control follow-up: replaced the persistent desktop column
+with layer/tool icon rails and on-demand panels. Added navigation controls and a
+measurement result that remains visible while picking with the panel closed.
+The actual authenticated mobile layout and interaction checks supplement the
+earlier isolated renderer tests. CCTV remains planned. See
+OSIRIS_MAP_INTERFACE_PLAN.md for verification and remaining source work.

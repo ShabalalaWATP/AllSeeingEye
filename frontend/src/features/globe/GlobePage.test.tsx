@@ -77,8 +77,10 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close tool' }));
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getAllByRole('button')).toHaveLength(2);
     await waitFor(() => {
@@ -115,7 +117,9 @@ describe('GlobePage', () => {
         id: null,
       });
     });
+    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
+    await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(screen.getByRole('switch', { name: 'Disasters 2' })).toBeInTheDocument();
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getAllByRole('button')[0]).toHaveTextContent('Flash flood in Valencia');
@@ -163,7 +167,7 @@ describe('GlobePage', () => {
     act(() => {
       map.fire('style.load');
     });
-    await user.click(screen.getByRole('button', { name: 'Map style: Dark' }));
+    await user.click(screen.getByRole('button', { name: 'Map style' }));
     const group = screen.getByRole('group', { name: 'Base layer' });
     expect(within(group).getByRole('radio', { name: 'OS Road' })).toBeDisabled();
     await user.click(within(group).getByRole('radio', { name: 'Satellite' }));
@@ -194,7 +198,7 @@ describe('GlobePage', () => {
       ),
     );
     const { user } = renderApp('/', 'user');
-    await user.click(await screen.findByRole('button', { name: 'Map style: Dark' }));
+    await user.click(await screen.findByRole('button', { name: 'Map style' }));
     const osRoad = screen.getByRole('radio', { name: 'OS Road' });
     await waitFor(() => expect(osRoad).toBeEnabled());
     await waitFor(() => {
@@ -214,6 +218,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     await screen.findByRole('switch', { name: 'Disasters 1' });
+    await user.click(screen.getByRole('button', { name: 'Find nation' }));
     const picker = await screen.findByRole('combobox', { name: 'Nation filter' });
     await user.type(picker, 'Ukraine');
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [31.2, 48.4], zoom: 4 });
@@ -250,6 +255,7 @@ describe('GlobePage', () => {
     await user.click(screen.getByRole('switch', { name: 'Day and night off' }));
     expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
 
+    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     await user.click(screen.getByRole('switch', { name: 'Lite mode off' }));
     expect(useGlobeStore.getState().lite).toBe(true);
     expect(overlayLayerIds()).toEqual(['events-disaster']);

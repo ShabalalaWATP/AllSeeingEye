@@ -59,7 +59,9 @@ export function MapMeasurementPanel({
       >
         {value.picking ? 'Stop picking points' : 'Pick points on map'}
       </button>
-      {value.picking && <p>Click empty map space. On small screens, close Map controls first.</p>}
+      {value.picking && (
+        <p>Click empty map space. Close this tool panel to expose more of the map.</p>
+      )}
       <form
         onSubmit={(event) => {
           event.preventDefault();

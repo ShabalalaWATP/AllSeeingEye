@@ -1,10 +1,4 @@
-/**
- * The root view: a full-bleed 3D globe (default) with an explicit Map mode
- * toggle, live event markers, the day and night terminator, base layers, the
- * nation filter, layer panel, country panel, ticker, inspector and coordinate
- * readout. When WebGL2 is unavailable the engine is not mounted and the page
- * explains why; the panels still work from the event mirror.
- */
+/** Full-canvas globe with on-demand layer and measurement tools. */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
@@ -30,7 +24,10 @@ import { isMappedEvent } from './geographicPrecision';
 import { CoordinateReadout } from './CoordinateReadout';
 import { CountryPanel } from './CountryPanel';
 import { EventInspector } from './EventInspector';
-import { GlobeControls } from './GlobeControls';
+import { ControlPanel, GlobeControls } from './GlobeControls';
+import { MeasurementReadout } from './MeasurementReadout';
+import { MapLayerRail } from './MapLayerRail';
+import { MapNavigationTools } from './MapNavigationTools';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
 import { NationFilter } from './NationFilter';
@@ -239,62 +236,87 @@ export default function GlobePage() {
       <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       <WorldClocks />
       {!opsRoom && (
-        <GlobeControls>
-          <BaseLayerToolbar value={baseLayer} osAvailable={osMaps} onChange={setBaseLayer} />
-          <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
-          <ObservationControls
-            events={scoped}
-            visibility={observations.visibility}
-            hidden={hidden}
-            onToggle={observations.toggle}
-          />
-          <NationFilter
-            countries={countries}
-            value={country}
-            onChange={changeNation}
-            error={countriesError}
-          />
-          <LayerPanel
-            counts={counts}
-            hidden={hidden}
-            stats={stats}
-            status={status}
-            error={error}
-            terminator={terminator}
-            lite={lite}
-            windowHours={windowHours}
-            onWindow={setWindow}
-            onToggle={toggleCategory}
-            onToggleTerminator={toggleTerminator}
-            onToggleLite={toggleLite}
-            interference={interference}
-            onToggleInterference={toggleInterference}
-          />
-          <GeographicPrecisionPanel
-            events={observations.filtered}
-            hidden={hidden}
-            onSelect={focus}
-          />
-          {nation !== null && (
-            <CountryPanel
-              country={nation}
+        <GlobeControls
+          layers={
+            <MapLayerRail
               events={scoped}
-              selectedId={selectedId}
-              now={now}
+              counts={counts}
+              visibility={observations.visibility}
+              onToggle={observations.toggle}
+            />
+          }
+          navigation={<MapNavigationTools engine={engine} enabled={supported} />}
+        >
+          <ControlPanel label="Map style" icon="layers">
+            <BaseLayerToolbar
+              initialExpanded
+              value={baseLayer}
+              osAvailable={osMaps}
+              onChange={setBaseLayer}
+            />
+          </ControlPanel>
+          <ControlPanel label="Measure distance and area" icon="measure">
+            <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
+          </ControlPanel>
+          <ControlPanel label="Observation filters" icon="filter">
+            <ObservationControls
+              events={scoped}
+              visibility={observations.visibility}
+              hidden={hidden}
+              onToggle={observations.toggle}
+            />
+          </ControlPanel>
+          <ControlPanel label="Find nation" icon="nation">
+            <NationFilter
+              countries={countries}
+              value={country}
+              onChange={changeNation}
+              error={countriesError}
+            />
+            {nation !== null && (
+              <CountryPanel
+                country={nation}
+                events={scoped}
+                selectedId={selectedId}
+                now={now}
+                onSelect={focus}
+              />
+            )}
+          </ControlPanel>
+          <ControlPanel label="Layers and settings" icon="settings">
+            <LayerPanel
+              counts={counts}
+              hidden={hidden}
+              stats={stats}
+              status={status}
+              error={error}
+              terminator={terminator}
+              lite={lite}
+              windowHours={windowHours}
+              onWindow={setWindow}
+              onToggle={toggleCategory}
+              onToggleTerminator={toggleTerminator}
+              onToggleLite={toggleLite}
+              interference={interference}
+              onToggleInterference={toggleInterference}
+            />
+          </ControlPanel>
+          <ControlPanel label="Location precision" icon="precision">
+            <GeographicPrecisionPanel
+              events={observations.filtered}
+              hidden={hidden}
               onSelect={focus}
             />
-          )}
+          </ControlPanel>
+          <ControlPanel label="CCTV" icon="camera">
+            <p className="p-3 text-sm text-muted">
+              Public CCTV integration is planned. Camera locations and previews are not available
+              yet.
+            </p>
+          </ControlPanel>
         </GlobeControls>
       )}
-      {measurement.picking && (
-        <button
-          type="button"
-          onClick={() => measurement.setPicking(false)}
-          className="absolute bottom-24 left-1/2 z-10 -translate-x-1/2 rounded border border-cyan bg-ground px-3 py-2 text-xs text-cyan"
-        >
-          {measurement.points.length}/32 points · Stop measuring
-        </button>
-      )}
+      <MeasurementReadout value={measurement} />
       {supported && !opsRoom && !measurement.picking && <CoordinateReadout engine={engine} />}
       {selected === null &&
         details &&

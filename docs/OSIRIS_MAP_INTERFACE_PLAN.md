@@ -111,3 +111,43 @@ cluster/icon fixes (95.26% statements, 90.12% branches, 93.83% functions, 96.63%
 lines). Final changes passed 39 focused tests, strict types, lint and production
 build. Independent interaction review and actual GPU acceptance passed. No
 camera catalogue or new transport-provider connection is enabled by this change.
+
+
+## 8 September follow-up: compact controls
+
+The user's screenshot exposed a persistent desktop control column that still
+covered the working map. Replace it with narrow layer and tool rails. The initial
+view must have no expanded map-style, measurement or source-information block.
+Layer switches expose state and loaded counts; the complete settings remain
+available on demand. Only one tool panel opens at once, with explicit close,
+Escape and focus restoration. Non-modal panels preserve map gestures.
+
+Direct controls cover flights, vessels, FIRMS, satellites, disasters, conflict,
+news, day/night and GNSS. Tools cover map style, distance/area measurement,
+observation filtering, country lookup, scope/settings and location precision.
+Navigation adds bounded zoom, north-up reset, world reset and fullscreen where
+supported. CCTV remains an explicitly unavailable entry until a camera catalogue
+is implemented; no synthetic cameras or invented stream status are introduced.
+
+Acceptance must cover the authenticated running app at desktop and narrow mobile
+widths, including closing the measurement panel and continuing to pick points.
+
+
+Compact-control regression run: 1,110 tests across 219 files passed, with 95.24%
+statement, 90.07% branch, 93.76% function and 96.62% line coverage. Thresholds
+were unchanged. Types, lint and production build passed. The subsequent
+short-screen inspector/rail CSS adjustment has separate browser verification.
+Authenticated Chromium checks cover the actual app at desktop/mobile sizes,
+including live layer switches and geodesic measurement with its panel closed.
+The run observed an existing WebGL front-face warning, also present in the
+baseline; this control-layout work does not establish warning-free rendering.
+No authentication, provider credentials, API contracts or database schema changed.
+
+
+Final CSS acceptance passed at 1,024 × 600 and 390 × 600: event inspectors
+and tool close buttons remain actionable; mobile inspection temporarily hides
+rails and restores them on close. Vertical rail scrolling reaches lower controls
+without horizontal scrollbars. The final CSS build and formatting passed.
+Authenticated desktop/mobile screenshots were reviewed, with no remaining
+blocking control-layout findings. New controls use static SVG paths and existing
+authorised data/state; this milestone adds no remote input or privilege boundary.

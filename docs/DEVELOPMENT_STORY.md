@@ -2495,3 +2495,19 @@ suite passed 1,101 tests before the final narrow fixes; final focused verificati
 passed 39 tests, strict types, lint and production build. Provider access and the
 full authenticated dashboard were outside the isolated GPU fixture's scope.
 Camera source integration remains planned in OSIRIS_MAP_INTERFACE_PLAN.md.
+
+
+## 8 September 2026: map layer and tool rails
+
+User screenshots showed the desktop control column still occupied too much of
+the map. Replaced it with compact layer switches and one on-demand tool panel.
+Added explicit zoom, north-up, world-view and supported-browser fullscreen
+controls using the existing engine boundary. Distance/area picking remains
+active when its panel closes and its result stays visible in a small readout.
+Mobile spacing separates the ticker, rails, clocks and provider attribution.
+CCTV is labelled as planned, with no simulated camera data or new provider calls.
+
+Focused controls/navigation/measurement checks, types, lint and build passed.
+Authenticated browser checks verified default closed panels, single-click map
+styles, Escape/focus restoration, layer switches and actual measurement with
+closed panels. Full regression results are recorded in the map interface plan.

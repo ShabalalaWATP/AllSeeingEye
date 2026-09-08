@@ -1,123 +1,51 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
+import { ControlPanel, GlobeControls } from './GlobeControls';
 
-import { GlobeControls } from './GlobeControls';
-
-let compact = false;
-let media: EventTarget;
-
-beforeEach(() => {
-  media = new EventTarget();
-  Object.defineProperty(media, 'matches', { get: () => compact });
-  vi.spyOn(window, 'matchMedia').mockReturnValue(media as MediaQueryList);
-  // jsdom has no top layer. Browser checks verify native focus trapping and inertness.
-  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
-    configurable: true,
-    value: function (this: HTMLDialogElement) {
-      this.open = true;
-      this.querySelector<HTMLElement>('button')?.focus();
-    },
-  });
-  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
-    configurable: true,
-    value: function (this: HTMLDialogElement) {
-      this.open = false;
-    },
-  });
+function Fixture({ action = () => undefined }: { action?: () => void }) {
+  return (
+    <GlobeControls layers={<button>Flight layer</button>}>
+      <ControlPanel label="Map style" icon="layers">
+        <button onClick={action}>Choose layer</button>
+      </ControlPanel>
+      <ControlPanel label="Measure" icon="measure">
+        <button>Pick points</button>
+      </ControlPanel>
+    </GlobeControls>
+  );
+}
+it('starts closed at every viewport and leaves only compact controls', () => {
+  render(<Fixture />);
+  expect(screen.getByRole('button', { name: 'Flight layer' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Map style' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
 });
-
-afterEach(() => {
-  compact = false;
-  vi.restoreAllMocks();
-  Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
-  Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
+it('opens one tool at a time, supports interaction and restores focus on Escape', async () => {
+  const user = userEvent.setup();
+  const action = vi.fn();
+  render(<Fixture action={action} />);
+  await user.click(screen.getByRole('button', { name: 'Map style' }));
+  expect(screen.getByRole('button', { name: 'Close tool' })).toHaveFocus();
+  await user.click(screen.getByRole('button', { name: 'Choose layer' }));
+  expect(action).toHaveBeenCalledOnce();
+  await user.click(screen.getByRole('button', { name: 'Measure' }));
+  expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Pick points' })).toBeInTheDocument();
+  await user.keyboard('{Escape}');
+  expect(screen.queryByRole('button', { name: 'Pick points' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Measure' })).toHaveFocus();
 });
-
-describe('responsive globe controls', () => {
-  it('keeps one persistent control panel on desktop', () => {
-    render(
-      <GlobeControls>
-        <button>Choose layer</button>
-      </GlobeControls>,
-    );
-    expect(screen.getAllByRole('button', { name: 'Choose layer' })).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: 'Map controls' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('starts closed on mobile and returns focus after native Escape cancellation', async () => {
-    compact = true;
-    const user = userEvent.setup();
-    render(
-      <GlobeControls>
-        <button>Choose layer</button>
-      </GlobeControls>,
-    );
-    const trigger = screen.getByRole('button', { name: 'Map controls' });
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
-    await user.click(trigger);
-    const dialog = screen.getByRole('dialog', { name: 'Map controls' });
-    expect(within(dialog).getByRole('button', { name: 'Close controls' })).toHaveFocus();
-    expect(within(dialog).getByRole('button', { name: 'Choose layer' })).toBeInTheDocument();
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    fireEvent(dialog, new Event('cancel', { cancelable: true }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    await waitFor(() => expect(trigger).toHaveFocus());
-  });
-
-  it('allows control interaction and an explicit touch-friendly close action', async () => {
-    compact = true;
-    const selectLayer = vi.fn();
-    const user = userEvent.setup();
-    render(
-      <GlobeControls>
-        <button onClick={selectLayer}>Choose layer</button>
-      </GlobeControls>,
-    );
-    await user.click(screen.getByRole('button', { name: 'Map controls' }));
-    await user.click(screen.getByRole('button', { name: 'Choose layer' }));
-    expect(selectLayer).toHaveBeenCalledOnce();
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Close controls' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('dismisses the sheet when resized to desktop and returns to a closed mobile state', async () => {
-    compact = true;
-    const user = userEvent.setup();
-    render(
-      <GlobeControls>
-        <button>Choose layer</button>
-      </GlobeControls>,
-    );
-    await user.click(screen.getByRole('button', { name: 'Map controls' }));
-    act(() => {
-      compact = false;
-      media.dispatchEvent(new Event('change'));
-    });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Choose layer' })).toHaveLength(1);
-    act(() => {
-      compact = true;
-      media.dispatchEvent(new Event('change'));
-    });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Map controls' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-  });
-
-  it('falls back to desktop controls if media queries are unavailable', () => {
-    Reflect.deleteProperty(window, 'matchMedia');
-    render(
-      <GlobeControls>
-        <button>Choose layer</button>
-      </GlobeControls>,
-    );
-    expect(screen.getByRole('button', { name: 'Choose layer' })).toBeInTheDocument();
-  });
+it('closes through the explicit control or the same rail button', async () => {
+  const user = userEvent.setup();
+  render(<Fixture />);
+  await user.click(screen.getByRole('button', { name: 'Map style' }));
+  await user.click(screen.getByRole('button', { name: 'Close tool' }));
+  expect(screen.getByRole('button', { name: 'Map style' })).toHaveFocus();
+  await user.click(screen.getByRole('button', { name: 'Map style' }));
+  await user.click(screen.getByRole('button', { name: 'Map style' }));
+  expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
 });

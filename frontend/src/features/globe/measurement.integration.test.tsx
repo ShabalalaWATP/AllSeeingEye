@@ -17,7 +17,8 @@ it('keeps typed measurement available while disabling picking without WebGL', as
   FakeMap.reset();
   MapboxOverlay.reset();
   mockWebGl2(false);
-  renderApp('/', 'user');
+  const { user } = renderApp('/', 'user');
+  await user.click(await screen.findByRole('button', { name: 'Measure distance and area' }));
   expect(await screen.findByRole('button', { name: 'Pick points on map' })).toBeDisabled();
   expect(screen.getByLabelText('Longitude')).toBeEnabled();
 });
@@ -27,17 +28,23 @@ it('picks only when enabled, preserves vertices across projection changes and cl
   MapboxOverlay.reset();
   mockWebGl2(true);
   const { user } = renderApp('/', 'user');
-  const panel = await screen.findByRole('region', { name: 'Map measurement' });
+  await user.click(await screen.findByRole('button', { name: 'Measure distance and area' }));
+  let panel = await screen.findByRole('region', { name: 'Map measurement' });
   await waitFor(() => expect(FakeMap.instances).toHaveLength(1));
   const map = FakeMap.instances[0]!;
   act(() => map.fire('click', { lngLat: { lng: 0, lat: 0 } }));
   expect(within(panel).getByText('0/32 points')).toBeInTheDocument();
   await user.click(within(panel).getByRole('button', { name: 'Pick points on map' }));
+  await user.click(screen.getByRole('button', { name: 'Close tool' }));
+  expect(screen.queryByRole('region', { name: 'Map measurement' })).not.toBeInTheDocument();
   act(() => {
     map.fire('click', { lngLat: { lng: 0, lat: 0 } });
     map.fire('click', { lngLat: { lng: 1, lat: 0 } });
     map.fire('click', { lngLat: { lng: NaN, lat: 0 } });
   });
+  expect(screen.getByRole('button', { name: /Stop measuring/ })).toHaveTextContent('111.319 km');
+  await user.click(screen.getByRole('button', { name: 'Measure distance and area' }));
+  panel = screen.getByRole('region', { name: 'Map measurement' });
   expect(within(panel).getByLabelText('Measurement result')).toHaveTextContent('111.319 km');
   await user.click(
     within(screen.getByRole('group', { name: 'View mode' })).getByRole('button', { name: 'Map' }),

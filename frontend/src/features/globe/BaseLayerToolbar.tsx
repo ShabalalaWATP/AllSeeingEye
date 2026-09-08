@@ -7,14 +7,20 @@ import { BASE_LAYER_OPTIONS } from './engine/baseLayers';
 
 export interface BaseLayerToolbarProps {
   value: BaseLayer;
+  initialExpanded?: boolean;
   /** Whether the server proxies Ordnance Survey tiles (it needs a key). */
   osAvailable: boolean;
   onChange: (layer: BaseLayer) => void;
 }
 
 /** A compact disclosure keeps the globe clear while making every map choice discoverable. */
-export function BaseLayerToolbar({ value, osAvailable, onChange }: BaseLayerToolbarProps) {
-  const [open, setOpen] = useState(false);
+export function BaseLayerToolbar({
+  value,
+  osAvailable,
+  onChange,
+  initialExpanded = false,
+}: BaseLayerToolbarProps) {
+  const [open, setOpen] = useState(initialExpanded);
   const panelId = useId();
   const hintId = useId();
   const osHintId = useId();
