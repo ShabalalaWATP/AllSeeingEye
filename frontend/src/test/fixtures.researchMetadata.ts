@@ -8,6 +8,13 @@ export const sourceContext: components['schemas']['SourceSummaryOut'] = {
   category: 'news',
   language: 'en',
   reliability: 'B',
+  coverage_scope: 'global',
+  coverage_countries: [],
+  coverage_regions: [],
+  coverage_note: 'International reporting focus.',
+  kind: 'rss',
+  requires_key: false,
+  collection_mode: 'scheduled',
   rating: {
     policy_version: 'qa-editorial-v1',
     status: 'editorial',

@@ -1,3 +1,4 @@
+import { MARITIME_SNAPSHOT_LIMIT, RESERVED_VESSELS } from '@/stores/events.coverage';
 import { MAX_CLIENT_EVENTS, SNAPSHOT_LIMIT, useEventsStore } from '@/stores/events';
 
 /** Browser coverage differs from the server's retained feed window. */
@@ -21,13 +22,23 @@ export function LiveCoverage({ filteredCount }: { filteredCount: number }) {
         Snapshot limit {SNAPSHOT_LIMIT.toLocaleString('en-GB')}; browser limit{' '}
         {MAX_CLIENT_EVENTS.toLocaleString('en-GB')}.
       </p>
+      <p>
+        When maritime coverage is missing, up to {MARITIME_SNAPSHOT_LIMIT.toLocaleString('en-GB')}{' '}
+        extra maritime records load. Up to {RESERVED_VESSELS.toLocaleString('en-GB')} ship positions
+        have reserved browser space.
+      </p>
       {snapshotCount !== null && (
         <p>
           Last snapshot: {snapshotCount.toLocaleString('en-GB')} records.
           {limited ? ' Partial feed coverage.' : ''}
         </p>
       )}
-      {capped && <p>Browser limit reached. Older observed records have been omitted.</p>}
+      {capped && (
+        <p>
+          Browser limit reached. Some records have been omitted; ship positions receive reserved
+          capacity.
+        </p>
+      )}
       <p>Layer counts describe loaded records, not independent sources or complete coverage.</p>
       <button
         type="button"

@@ -167,6 +167,9 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     self.clock,
                     settings.disabled_feed_ids,
                     digitraffic_http=self.marine_http,
+                    aisstream_key=settings.aisstream_api_key.get_secret_value()
+                    if settings.aisstream_api_key
+                    else None,
                 ),
                 ManagedFirmsConnector(
                     self.session_factory,

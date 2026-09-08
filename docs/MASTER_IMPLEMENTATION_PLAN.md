@@ -503,3 +503,18 @@ unavailable notes above.
   access become available. Source-group coverage is not universal camera availability.
 
 Details: CAMERA_FEEDS.md, CAMERA_AMERICAS.md, CAMERA_EUROPE.md, CAMERA_WORLD.md.
+
+## Ship coverage and catalogue browsing, 8 September 2026
+
+- [x] Investigate current vessel source coverage with a live provider probe.
+- [x] Add optional AISStream global position adapter with bounded, authenticated
+  server-side collection and explicit coverage limitations.
+- [x] Group the catalogue by topic and add combined geography, language, collection
+  and API-key filters with explicit source-discovery metadata.
+- [x] Add Washington DC and lower the map clock strip.
+- [ ] Operator activation: supply ASE_AISSTREAM_API_KEY and verify global delivery.
+
+See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md for setup and limitations.
+
+- [x] Prevent ship crowd-out with a bounded maritime snapshot and reserved browser
+  vessel capacity; preserve cancellation, expiry and partial-failure handling.

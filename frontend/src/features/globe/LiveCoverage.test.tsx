@@ -16,7 +16,7 @@ it('distinguishes loaded, filtered and capped snapshot coverage and offers a res
   ).toBeVisible();
   expect(screen.getByText('Snapshot limit 2,000; browser limit 5,000.')).toBeVisible();
   expect(screen.getByText('Last snapshot: 2,000 records. Partial feed coverage.')).toBeVisible();
-  expect(screen.getByText(/Older observed records have been omitted/)).toBeVisible();
+  expect(screen.getByText(/ship positions receive reserved capacity/)).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Reload live events' }));
   expect(load).toHaveBeenCalledOnce();
   act(() => useEventsStore.setState({ loading: true }));

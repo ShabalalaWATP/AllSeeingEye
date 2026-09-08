@@ -7976,6 +7976,25 @@ export interface components {
             language: string;
             reliability: components["schemas"]["Reliability"];
             rating: components["schemas"]["SourceRatingOut"];
+            kind: components["schemas"]["SourceKind"];
+            /** Requires Key */
+            requires_key: boolean;
+            /**
+             * Collection Mode
+             * @enum {string}
+             */
+            collection_mode: "on_demand" | "scheduled";
+            /**
+             * Coverage Scope
+             * @enum {string}
+             */
+            coverage_scope: "global" | "regional" | "unspecified";
+            /** Coverage Countries */
+            coverage_countries: string[];
+            /** Coverage Regions */
+            coverage_regions: string[];
+            /** Coverage Note */
+            coverage_note: string;
         };
         /** SourceTestOut */
         SourceTestOut: {

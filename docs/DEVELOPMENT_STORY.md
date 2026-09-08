@@ -2575,3 +2575,24 @@ See CAMERA_FEEDS.md and the three regional inventories for source limitations,
 MIT attribution and verification evidence. No operator database migration.
 Final frontend gate: 1,152 tests passed, 95.26% statements and 90.07% branches.
 Production build and dependency audit passed; existing bundle warning remains.
+
+## 8 September 2026: ship coverage, source browsing and clocks
+
+Investigated sparse vessels: live Fintraffic probes confirm a healthy regional
+Finnish/Baltic feed, not global coverage. Added optional server-side AISStream
+collection with timestamp validation, bounded transport, credential redaction and
+source provenance. Activation requires ASE_AISSTREAM_API_KEY; no global delivery
+was claimed without one. Researched BarentsWatch and NOAA alternatives.
+
+Reworked the catalogue into topic groups with combined country/region, language,
+collection and API-key filters. Coverage metadata is explicit, with worldwide and
+unspecified entries kept distinct. Public API excludes secrets and operator URLs.
+Added Washington DC with daylight-saving-aware time and moved clocks down 12px.
+See MARITIME_COVERAGE.md and SOURCE_CATALOGUE_BROWSING.md.
+
+Validation: 70 backend integration tests passed; whole-backend mypy, Ruff,
+formatting and architecture contracts passed. Focused ship mirror checks cover
+27 tests, including cancellation, expiry and capacity. Production frontend build,
+TypeScript and lint checks passed. Final frontend suite: 1,163 tests across 230 files passed. Coverage is 95.27% statements,
+90.08% branches, 93.78% functions and 96.62% lines, with thresholds unchanged.
+The existing production bundle-size warning remains. No operator database migration.

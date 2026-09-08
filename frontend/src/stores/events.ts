@@ -3,6 +3,7 @@
  * the stream, plus which categories are shown and which event is selected.
  */
 import { create } from 'zustand';
+import { boundedEvents, mergeSnapshots, MARITIME_SNAPSHOT_LIMIT } from './events.coverage';
 
 import { fetchEvents, fetchStats } from '@/lib/api/events';
 import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
@@ -68,14 +69,6 @@ function toList(byId: Record<string, LiveEvent>): LiveEvent[] {
   );
 }
 
-/** Drops the oldest observed events once the client mirror exceeds its cap. */
-function bounded(byId: Record<string, LiveEvent>): Record<string, LiveEvent> {
-  const entries = Object.entries(byId);
-  if (entries.length <= MAX_CLIENT_EVENTS) return byId;
-  entries.sort(([, a], [, b]) => a.observed_at.localeCompare(b.observed_at));
-  return Object.fromEntries(entries.slice(entries.length - MAX_CLIENT_EVENTS));
-}
-
 function without(
   byId: Record<string, LiveEvent>,
   ids: readonly string[],
@@ -111,13 +104,30 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         overflow: false,
       };
       pending = request;
+      const isCurrent = () => pending === request && !request.controller.signal.aborted;
       set({ loading: true, error: null });
       try {
         const [events, stats] = await Promise.all([
           fetchEvents({ limit: SNAPSHOT_LIMIT }, request.controller.signal),
           fetchStats(request.controller.signal),
         ]);
-        if (pending !== request || request.controller.signal.aborted) return;
+        if (!isCurrent()) return;
+        const maritimeCount =
+          stats.per_category.find((entry) => entry.category === 'maritime')?.count ?? 0;
+        const loadedMaritime = events.filter((event) => event.category === 'maritime').length;
+        let maritime: LiveEvent[] = [];
+        let supplementError: string | null = null;
+        if (maritimeCount > loadedMaritime) {
+          try {
+            maritime = await fetchEvents(
+              { categories: ['maritime'], limit: MARITIME_SNAPSHOT_LIMIT },
+              request.controller.signal,
+            );
+          } catch (caught) {
+            supplementError = `Additional maritime coverage unavailable: ${describeError(caught)}`;
+          }
+        }
+        if (!isCurrent()) return;
         if (request.overflow) {
           set({
             error:
@@ -126,22 +136,26 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           });
           return;
         }
-        const merged = new Map(events.map((event) => [event.id, event]));
+        const merged = mergeSnapshots(events, maritime);
+        const snapshotCount = merged.size;
         for (const [id, event] of request.changes) {
           if (event === null) merged.delete(id);
           else merged.set(id, event);
         }
         const byId = Object.fromEntries(merged);
-        const capped = bounded(byId);
+        const capped = boundedEvents(byId, MAX_CLIENT_EVENTS);
         const selectedId = get().selectedId;
         set({
           byId: capped,
           list: toList(capped),
           stats,
           loaded: true,
-          error: null,
-          snapshotCount: events.length,
-          snapshotLimited: events.length >= SNAPSHOT_LIMIT || stats.total > events.length,
+          error: supplementError,
+          snapshotCount,
+          snapshotLimited:
+            events.length >= SNAPSHOT_LIMIT ||
+            maritime.length >= MARITIME_SNAPSHOT_LIMIT ||
+            stats.total > snapshotCount,
           mirrorCapped: Object.keys(byId).length > MAX_CLIENT_EVENTS,
           selectedId: selectedId !== null && !(selectedId in capped) ? null : selectedId,
         });
@@ -172,7 +186,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         merged[event.id] = event;
         record(event.id, event);
       }
-      const byId = bounded(merged);
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS);
       const selectedId = get().selectedId;
       set({
         byId,

@@ -138,6 +138,13 @@ async def test_api_combines_live_and_research_without_urls_or_secrets(
             "language",
             "reliability",
             "rating",
+            "kind",
+            "requires_key",
+            "collection_mode",
+            "coverage_scope",
+            "coverage_countries",
+            "coverage_regions",
+            "coverage_note",
         }
     assert next(item for item in items if item["id"] == "research_media")["rating"]["basis"]
 

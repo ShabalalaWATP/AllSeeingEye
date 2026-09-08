@@ -26,6 +26,13 @@ export const sourceSummarySchema = z.object({
   language: z.string(),
   reliability: z.enum(['A', 'B', 'C', 'D', 'E', 'F']),
   rating: sourceRatingSchema,
+  coverage_scope: z.enum(['global', 'regional', 'unspecified']).default('unspecified'),
+  coverage_countries: z.array(z.string()).default([]),
+  coverage_regions: z.array(z.string()).default([]),
+  coverage_note: z.string().default('Coverage has not been specified.'),
+  kind: z.enum(['api', 'rss', 'geojson', 'websocket']).default('api'),
+  requires_key: z.boolean().default(false),
+  collection_mode: z.enum(['on_demand', 'scheduled']).default('scheduled'),
 }) satisfies z.ZodType<components['schemas']['SourceSummaryOut']>;
 
 export async function fetchSourceCatalogue() {
@@ -34,3 +41,5 @@ export async function fetchSourceCatalogue() {
   });
   return response.items;
 }
+
+export type CatalogueSource = z.infer<typeof sourceSummarySchema>;

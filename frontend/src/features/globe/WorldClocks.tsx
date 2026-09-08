@@ -5,6 +5,7 @@ export const WORLD_CLOCKS = [
   { city: 'Kyiv', zone: 'Europe/Kyiv' },
   { city: 'Moscow', zone: 'Europe/Moscow' },
   { city: 'Beijing', zone: 'Asia/Shanghai' },
+  { city: 'Washington DC', zone: 'America/New_York' },
 ] as const;
 
 const formatters = WORLD_CLOCKS.map(({ zone }) => ({
@@ -27,9 +28,9 @@ export function WorldClocks() {
   return (
     <section
       aria-label="World clocks"
-      className="pointer-events-none absolute inset-x-3 bottom-9 z-10 flex justify-center"
+      className="pointer-events-none absolute inset-x-3 bottom-6 z-10 flex justify-center"
     >
-      <dl className="pointer-events-auto grid grid-cols-4 gap-x-4 rounded-sm bg-black/75 px-3 py-1.5 text-[10px] text-muted backdrop-blur-sm sm:gap-x-6">
+      <dl className="pointer-events-auto grid grid-cols-5 gap-x-2 rounded-sm bg-black/75 px-2 py-1.5 text-center text-[9px] sm:px-3 sm:text-[10px] text-muted backdrop-blur-sm sm:gap-x-6">
         {WORLD_CLOCKS.map((clock, index) => (
           <div key={clock.zone} className="flex flex-col items-center gap-0.5 sm:flex-row sm:gap-2">
             <dt>{clock.city}</dt>
@@ -38,7 +39,7 @@ export function WorldClocks() {
                 dateTime={new Date(now).toISOString()}
                 title={`${formatters[index]?.date.format(now)} · ${clock.zone}`}
                 aria-label={`${clock.city}: ${formatters[index]?.time.format(now)}, ${formatters[index]?.date.format(now)}`}
-                className="font-mono text-xs text-text/85 tabular-nums"
+                className="font-mono text-[11px] sm:text-xs text-text/85 tabular-nums"
               >
                 {formatters[index]?.time.format(now)}
               </time>

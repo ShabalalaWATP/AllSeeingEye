@@ -96,10 +96,11 @@ export function ObservationControls({
         </div>
       ))}
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
-        Regional ADS-B and Finnish-waterway AIS coverage. FIRMS requires a server key. Switches
-        control display only; zero loaded records does not prove no activity. Vessel symbols expire
-        on the next cleanup after 15 minutes without a fresh record. A side-view boat means
-        direction is unknown.
+        Regional ADS-B, Finnish-waterway AIS and optional AISStream coverage. Global ship positions
+        require an administrator to configure an AISStream key; receiver coverage still varies.
+        FIRMS requires a server key. Switches control display only; zero loaded records does not
+        prove no activity. Vessel symbols expire on the next cleanup after 15 minutes without a
+        fresh record. A side-view boat means direction is unknown.
       </p>
       <p className="mt-2 text-[10px] leading-relaxed text-muted">
         AIS:{' '}

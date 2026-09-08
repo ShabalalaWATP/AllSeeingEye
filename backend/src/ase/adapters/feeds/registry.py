@@ -6,6 +6,7 @@ from collections.abc import Iterable
 
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
+from ase.adapters.feeds.aisstream import AisStreamConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.cyber import IodaConnector, RansomwareConnector
 from ase.adapters.feeds.cyclones import (
@@ -41,6 +42,7 @@ def build_connectors(
     disabled: Iterable[str] = (),
     *,
     firms_key: str | None = None,
+    aisstream_key: str | None = None,
     firms_area: str = "world",
     digitraffic_http: FeedHttpClient | None = None,
 ) -> list[FeedConnector]:
@@ -77,6 +79,8 @@ def build_connectors(
         *build_rss_connectors(http, clock),
         *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
     ]
+    if aisstream_key and AisStreamConnector.spec.id not in excluded:
+        connectors.append(AisStreamConnector(aisstream_key, clock))
     if firms_key and FirmsConnector.spec.id not in excluded:
         connectors.append(FirmsConnector(http, clock, firms_key, firms_area))
     if digitraffic_http is not None and DigitrafficConnector.spec.id not in excluded:

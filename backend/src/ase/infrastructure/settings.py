@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
     feeds_disabled: str = ""
+    aisstream_api_key: SecretStr | None = None
     firms_map_key: SecretStr | None = None
     firms_area: str = Field(default="world", min_length=1, max_length=100)
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)

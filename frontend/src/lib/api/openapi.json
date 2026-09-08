@@ -24054,6 +24054,48 @@
           },
           "rating": {
             "$ref": "#/components/schemas/SourceRatingOut"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          },
+          "requires_key": {
+            "type": "boolean",
+            "title": "Requires Key"
+          },
+          "collection_mode": {
+            "type": "string",
+            "enum": [
+              "on_demand",
+              "scheduled"
+            ],
+            "title": "Collection Mode"
+          },
+          "coverage_scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "regional",
+              "unspecified"
+            ],
+            "title": "Coverage Scope"
+          },
+          "coverage_countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Coverage Countries"
+          },
+          "coverage_regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Coverage Regions"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
           }
         },
         "type": "object",
@@ -24065,7 +24107,14 @@
           "category",
           "language",
           "reliability",
-          "rating"
+          "rating",
+          "kind",
+          "requires_key",
+          "collection_mode",
+          "coverage_scope",
+          "coverage_countries",
+          "coverage_regions",
+          "coverage_note"
         ],
         "title": "SourceSummaryOut"
       },
