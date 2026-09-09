@@ -2,7 +2,7 @@
 
 import json
 import math
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.secret_urls import SecretFeedUrl
@@ -115,6 +115,8 @@ class ValhallaRoutingGateway:
             "shape_format": "polyline6",
         }
         target = SecretFeedUrl(
-            ORIGIN, ORIGIN + "/route?" + urlencode({"json": json.dumps(request)})
+            # The provider decodes percent escapes, not '+' form-encoded spaces.
+            ORIGIN,
+            ORIGIN + "/route?" + urlencode({"json": json.dumps(request)}, quote_via=quote),
         )
         return parse_route(await self._http.get_secret_bytes(target), mode, len(waypoints))

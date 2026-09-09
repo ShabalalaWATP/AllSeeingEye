@@ -3,7 +3,7 @@
 import asyncio
 import json
 from unittest.mock import AsyncMock, Mock
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 from uuid import uuid4
 
 import pytest
@@ -73,6 +73,8 @@ async def test_fixed_origin_costing_protected_transport_and_no_retry():
         and url.path == "/route"
     )
     assert "0.01" not in repr(target)
+    # Valhalla decodes percent escapes, but does not translate form-style '+' spaces.
+    assert json.loads(unquote(url.query.removeprefix("json=")))["costing"] == "bicycle"
     decoded = json.loads(parse_qs(url.query)["json"][0])
     assert decoded["costing"] == "bicycle" and decoded["shape_format"] == "polyline6"
     assert decoded["locations"][1] == {"lat": 0.01, "lon": 0.01, "type": "break"}
