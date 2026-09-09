@@ -1,7 +1,7 @@
 /**
  * View state for the root page: the 3D globe (default) or the flat Mercator map, plus
- * the display preferences that survive a reload (base layer, terminator, lite mode).
- * The view mode is deliberately not persisted: every session starts on the globe.
+ * the display preferences that survive a reload (base layer and lite mode).
+ * Data overlays and the view mode reset each session: only conflicts start visible.
  */
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -39,7 +39,7 @@ export const useGlobeStore = create<GlobeState>()(
     (set) => ({
       mode: 'globe',
       baseLayer: 'dark',
-      terminator: true,
+      terminator: false,
       lite: false,
       interference: false,
       opsRoom: false,
@@ -70,10 +70,32 @@ export const useGlobeStore = create<GlobeState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         baseLayer: state.baseLayer,
-        terminator: state.terminator,
         lite: state.lite,
-        interference: state.interference,
       }),
+      // Older installations persisted overlays. Do not restore those switches on reload.
+      merge: (saved, current) => {
+        const preferences = saved as Partial<GlobeState> | null;
+        const validLayers: BaseLayer[] = [
+          'dark',
+          'streets',
+          'light',
+          'satellite',
+          'hybrid',
+          'os_road',
+          'os_outdoor',
+          'os_light',
+        ];
+        return {
+          ...current,
+          baseLayer:
+            preferences?.baseLayer && validLayers.includes(preferences.baseLayer)
+              ? preferences.baseLayer
+              : current.baseLayer,
+          lite: typeof preferences?.lite === 'boolean' ? preferences.lite : current.lite,
+          terminator: false,
+          interference: false,
+        };
+      },
     },
   ),
 );

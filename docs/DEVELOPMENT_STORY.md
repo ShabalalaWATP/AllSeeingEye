@@ -2963,3 +2963,49 @@ no live elevation-accuracy or reception claim follows from that probe. The
 frontend on port 5174 returned 200. Interactive browser/GPU validation remains
 blocked by the existing policy. Existing large vendor-chunk warnings remain. See
 [map tools and layers](MAP_TOOLS_AND_LAYERS.md) for model and provider limits.
+
+## 9 September 2026, conflict overview and routing repair
+
+Configured the supplied operator email in the ignored backend environment and
+restarted the local ASE API. A live public-route probe exposed another fault:
+Valhalla rejects form-style `+` spaces in its JSON query. A failing regression
+test reproduced the parse error before changing to percent encoding. The
+protected adapter then returned a London walking route with 1.1 km, 114 geometry
+points and 24 directions. Existing fixed-origin, no-redirect, rate, payload and
+coordinate-log protections remain intact. The API returned healthy/ready and
+the frontend on port 5174 returned 200.
+
+Only conflicts now start visible on a fresh page load. Other categories and
+overlays are off, including previously persisted GNSS and day/night preferences.
+Basemap and lite-mode preferences remain saved. Existing tests explicitly enable
+the layers they exercise; a new startup regression checks the actual defaults.
+
+Reviewed OSIRIS source at `11ecf488253c202714ab11709750b651c765e07b`.
+Its regional overview combines curated anchors with RSS keyword matching;
+some news dots use synthetic offsets and retrieval time. ASE now presents its
+own curated regions with red war and amber tension symbols, region search and
+nation/classification filters. Selection shows a halo, name and broad research
+outline, plus seven-day retained evidence counts and an existing timeline link.
+It preserves individual report coordinates and dates and makes the distinction
+between regional context and incident evidence explicit. No OSIRIS code was copied.
+
+Region rendering is capped at 100 catalogue entries. Only a selected region gets
+a name and outline; refresh is manual, with no new background polling. Account
+or workspace changes abort requests and mask stale results. Drawing and
+measurement retain click ownership. Inspector composition is extracted from
+the globe page, and selecting another object or closing details clears the halo.
+The new inspector scrolls within the available height on smaller screens.
+
+Updated the conflict controls, map-tools documentation and implementation plans.
+Interactive browser/GPU acceptance remains blocked by the existing browser policy.
+
+Validation passed 1,524 frontend tests, with one existing skip, and 59 focused
+backend tests covering routing, conflict evidence/coverage and protected URL
+handling. Frontend coverage measured 95.45% statements, 90.26% branches, 93.50%
+functions and 96.71% lines. Full frontend lint, types and production build, scoped
+backend Ruff/mypy/Bandit, changed-file formatting and whitespace checks passed.
+File-length checks passed with the existing 380-line MapLibre engine warning.
+Final review removed a redundant catalogue-dismiss callback; targeted selection
+checks and a fresh build validate that cleanup. Existing vendor-size warnings
+remain. No dependency, schema, credential rotation or external publication change
+was made; the operator email remains outside version control.

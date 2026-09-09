@@ -39,6 +39,8 @@ async function mount() {
 
 describe('globe rendering and motion', () => {
   beforeEach(() => {
+    useEventsStore.setState({ hidden: [] });
+    useGlobeStore.setState({ terminator: true });
     FakeMap.reset();
     MapboxOverlay.reset();
     FakeEventStreamClient.reset();

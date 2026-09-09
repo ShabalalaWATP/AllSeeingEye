@@ -726,3 +726,24 @@ See [map tools and layers](MAP_TOOLS_AND_LAYERS.md) and
 groundwave assumes homogeneous smooth Earth. Skywave has no live ionospheric
 input, forecast or reception guarantee. OS tile and route-provider configuration
 requirements from the earlier milestone remain in force.
+
+## Conflict overview and routing repair, 9 September 2026
+
+- [x] Configure the supplied operator contact in the ignored development environment.
+- [x] Reproduce and fix Valhalla HTTP 400 caused by form-encoded JSON spaces.
+- [x] Verify a public London walking route through the existing protected adapter;
+  restart ASE on port 8001 and check health/readiness and frontend port 5174.
+- [x] Default all overlays off except conflicts, ignoring older saved GNSS/day-night toggles.
+- [x] Review OSIRIS conflict sources and renderer at a pinned current revision.
+- [x] Add a searchable regional overview, curated war/tension distinction, selected
+  outline/halo and existing evidence/timeline links on globe and map.
+- [x] Preserve report coordinates, dates, grouping and source precision; add no fabricated incident locations.
+- [x] Bound region rendering and cancel requests across access changes; avoid new polling.
+- [x] Complete full frontend verification: 1,524 tests passed (one existing skip),
+  95.45% statements and 90.26% branches; lint, types, build and file-length checks passed.
+- [x] Pass 59 focused backend routing, conflict-evidence/coverage and protected-URL
+  tests, plus scoped Ruff, mypy and Bandit checks.
+- [ ] Interactive browser/GPU acceptance, blocked by the existing browser policy.
+
+Source findings and limits are recorded in [OSIRIS interface plan](OSIRIS_MAP_INTERFACE_PLAN.md)
+and [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).

@@ -57,6 +57,8 @@ it('opens Space, Natural hazards and Conflict filters beneath their left categor
     'data-side',
     'left',
   );
+  expect(screen.getByRole('region', { name: 'Conflict map controls' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Report filters' }));
   expect(screen.getByRole('region', { name: 'Conflict report filters' })).toBeVisible();
 });
 

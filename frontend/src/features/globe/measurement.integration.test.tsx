@@ -4,6 +4,7 @@ import { renderApp } from '@/test/render';
 import { mockWebGl2 } from '@/test/env';
 import { FakeMap } from '@/test/fakeMap';
 import { MapboxOverlay } from '@/test/fakeDeck';
+import { useEventsStore } from '@/stores/events';
 // Load the real route after Vitest hoists its mocks, outside timed UI assertions.
 import './GlobePage';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
@@ -23,6 +24,7 @@ it('keeps typed measurement available while disabling picking without WebGL', as
 });
 
 it('picks only when enabled, preserves vertices across projection changes and clears its layers', async () => {
+  useEventsStore.setState({ hidden: [] });
   FakeMap.reset();
   MapboxOverlay.reset();
   mockWebGl2(true);
@@ -34,6 +36,15 @@ it('picks only when enabled, preserves vertices across projection changes and cl
   act(() => map.fire('click', { lngLat: { lng: 0, lat: 0 } }));
   expect(within(panel).getByText('0/32 points')).toBeInTheDocument();
   await user.click(within(panel).getByRole('button', { name: 'Pick points on map' }));
+  await waitFor(() => {
+    const layers = MapboxOverlay.instances[0]!.props.layers as {
+      id: string;
+      props: { pickable: boolean };
+    }[];
+    expect(layers.find((layer) => layer.id === 'conflict-region-markers')?.props.pickable).toBe(
+      false,
+    );
+  });
   await user.click(screen.getByRole('button', { name: 'Close tool' }));
   expect(screen.queryByRole('region', { name: 'Map measurement' })).not.toBeInTheDocument();
   act(() => {

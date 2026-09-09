@@ -4,6 +4,15 @@ Updated 9 September 2026.
 
 ## Operator controls
 
+On a fresh page load or reload, only Conflict & unrest is visible. Flights, ships,
+FIRMS, space, hazards, news and other topics start hidden; CCTV, infrastructure,
+GNSS, BNG and day/night shading also start off. Older saved day/night and GNSS
+preferences no longer reactivate those layers. Basemap and lite-mode preferences
+remain saved. Operators can enable other layers for the current session.
+
+Conflict controls now include a searchable regional overview alongside individual
+report filters. See [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
+
 - Space is one left-rail category. Its filter disclosure contains the existing
   satellite catalogue choices. There is no separate satellite-filter rail icon.
 - Conflict reports have a crossed-swords symbol and filters for reported type,
@@ -161,6 +170,15 @@ Media remains selection-driven and this redesign adds no polling or new camera
 providers. Source coverage and provider availability are not expanded by styling.
 
 ## Routing configuration and limits
+
+The local development contact was configured in the ignored backend environment
+on 9 September 2026 using the operator-provided email. The API was restarted.
+The Valhalla request now uses percent-encoded JSON spaces: form-style `+` spaces
+caused the public service to return HTTP 400. The protected HTTP transport,
+fixed host, coordinate-log redaction, byte bounds and rate limits are unchanged.
+A single public London walking-route probe through the application adapter
+returned 1.1 km, 114 geometry points and 24 instructions. This verifies that
+request path, not route safety, terrain accuracy or uninterrupted availability.
 
 The right-hand Route planner accepts two to eight stops and supports driving,
 walking and cycling. Addresses and places are the default input: enter a search,

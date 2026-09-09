@@ -94,6 +94,7 @@ describe('events store', () => {
   });
 
   it('hides categories and reports status', () => {
+    useEventsStore.setState({ hidden: [] });
     useEventsStore.getState().applyUpsert([liveEvent(), liveEvent({ id: 'k', category: 'cyber' })]);
     useEventsStore.getState().toggleCategory('cyber');
     expect(selectVisibleEvents(useEventsStore.getState()).map((e) => e.id)).toEqual(['e1']);
@@ -106,6 +107,7 @@ describe('events store', () => {
   });
 
   it('scopes the mirror to one nation before the category switches apply', () => {
+    useEventsStore.setState({ hidden: [] });
     const german = liveEvent({ id: 'de', country_iso: 'DE' });
     const british = liveEvent({ id: 'gb', country_iso: 'GB', category: 'cyber' });
     const nowhere = liveEvent({ id: 'no', country_iso: null });

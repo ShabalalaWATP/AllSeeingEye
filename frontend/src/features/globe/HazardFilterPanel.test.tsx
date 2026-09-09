@@ -45,6 +45,7 @@ it('exposes truthful type labels, counts and magnitude controls without hiding o
 });
 
 it('clears excluded hazard selections and preserves other selections and layer switches', () => {
+  useEventsStore.setState({ hidden: [] });
   useEventsStore.getState().applyUpsert(events);
   useEventsStore.getState().select('quake');
   useEventsStore.getState().toggleCategory('disaster');

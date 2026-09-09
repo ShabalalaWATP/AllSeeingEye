@@ -59,6 +59,7 @@ it.each(['globe', 'map'] as const)(
       expect(conflictIds()).toEqual(expect.arrayContaining(['fight', 'protest'])),
     );
     await user.click(screen.getByRole('button', { name: 'Conflict report filters' }));
+    await user.click(screen.getByRole('button', { name: 'Report filters' }));
     await user.click(screen.getByRole('radio', { name: /Protests and riots/ }));
     await waitFor(() => expect(conflictIds()).toEqual(['protest']));
     expect(useEventsStore.getState().selectedId).toBeNull();

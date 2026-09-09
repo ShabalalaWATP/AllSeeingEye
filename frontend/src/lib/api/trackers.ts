@@ -115,9 +115,10 @@ export async function fetchDisasterDetail(hazard: string): Promise<HazardDetail>
   });
 }
 
-export async function fetchConflictBoard(): Promise<ConflictCard[]> {
+export async function fetchConflictBoard(signal?: AbortSignal): Promise<ConflictCard[]> {
   const page = await apiCall('/api/trackers/conflicts', {
     schema: z.object({ items: z.array(conflictCardSchema) }),
+    ...(signal ? { signal } : {}),
   });
   return page.items;
 }

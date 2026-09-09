@@ -2,12 +2,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
-import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
+import { useConflictRegions } from './useConflictRegions';
+import { useConflictRegionSelection } from './useConflictRegionSelection';
+import { GlobeInspectors } from './GlobeInspectors';
 
 import { MapCanvas } from './MapCanvas';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useCameras } from './cameras/useCameras';
-import { CameraInspector } from './cameras/CameraInspector';
 import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
 import { useMapReferenceData } from './useMapReferenceData';
@@ -21,7 +22,6 @@ import {
 import { useGlobeStore } from '@/stores/globe';
 
 import { CoordinateReadout } from './CoordinateReadout';
-import { SelectedMapDetails } from './SelectedMapDetails';
 import { useBritishGrid } from './useBritishGrid';
 import { ControlPanel, GlobeControls } from './GlobeControls';
 import { MeasurementReadout } from './MeasurementReadout';
@@ -99,6 +99,7 @@ export default function GlobePage() {
 
   const hidden = useEventsStore((state) => state.hidden);
   const country = useEventsStore((state) => state.country);
+  const regions = useConflictRegions(supported && !hidden.includes('conflict'), country);
   const selectedId = useEventsStore((state) => state.selectedId);
   const selected = useEventsStore(selectSelectedEvent);
   const stats = useEventsStore((state) => state.stats);
@@ -134,10 +135,12 @@ export default function GlobePage() {
   const infrastructure = useInfrastructure();
   const closeCamera = cameras.close;
   const closeInfrastructure = infrastructure.close;
+  const closeRegion = regions.close;
   const closeCatalogues = useCallback(() => {
     closeCamera();
     closeInfrastructure();
-  }, [closeCamera, closeInfrastructure]);
+    closeRegion();
+  }, [closeCamera, closeInfrastructure, closeRegion]);
   const {
     details,
     highlightedId,
@@ -148,6 +151,14 @@ export default function GlobePage() {
     onCluster,
     onJam,
   } = useMapPicking(quality.filtered, hidden, tools.picking, select, engine, closeCatalogues);
+  const regionSelection = useConflictRegionSelection(
+    regions,
+    !hidden.includes('conflict'),
+    tools.picking,
+    close,
+    engine,
+    mode,
+  );
 
   const { focusCamera, cameraLayers } = useCameraSelection(
     cameras,
@@ -185,6 +196,7 @@ export default function GlobePage() {
     gridLayers: britishGrid.layers,
     cameraLayers,
     infrastructureLayers,
+    conflictRegionLayers: regionSelection.layers,
     measured: tools.layers,
     supported,
     terminator,
@@ -238,6 +250,7 @@ export default function GlobePage() {
             focusInfrastructure,
             satellites,
             conflicts,
+            conflictOverview: { regions, onSelect: regionSelection.focus },
             hazards,
             gnss: {
               enabled: interference,
@@ -301,33 +314,24 @@ export default function GlobePage() {
       {supported && !opsRoom && !tools.picking && (
         <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
       )}
-      {!opsRoom &&
-        !tools.picking &&
-        (infrastructure.selected ? (
-          <InfrastructureInspector
-            selected={infrastructure.selected}
-            data={infrastructure.data}
-            onClose={infrastructure.close}
-          />
-        ) : cameras.selected ? (
-          <CameraInspector
-            key={cameras.selected.id}
-            camera={cameras.selected}
-            onClose={cameras.close}
-          />
-        ) : (
-          <SelectedMapDetails
-            selected={selected}
-            storySize={storySize}
-            details={details}
-            events={pickableEvents}
-            cells={gnssFilters.filtered}
-            updatedAt={gnss.updated_at}
-            interference={interference}
-            onSelect={choose}
-            onClose={close}
-          />
-        ))}
+      {!opsRoom && !tools.picking && (
+        <GlobeInspectors
+          regions={regions}
+          infrastructure={infrastructure}
+          cameras={cameras}
+          eventDetails={{
+            selected,
+            storySize,
+            details,
+            events: pickableEvents,
+            cells: gnssFilters.filtered,
+            updatedAt: gnss.updated_at,
+            interference,
+            onSelect: choose,
+            onClose: close,
+          }}
+        />
+      )}
     </div>
   );
 }

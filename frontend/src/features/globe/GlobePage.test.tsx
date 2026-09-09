@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
+import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import { mockWebGl2 } from '@/test/env';
 import { MapboxOverlay } from '@/test/fakeDeck';
@@ -30,6 +31,11 @@ function overlayLayerIds(): string[] {
 
 describe('GlobePage', () => {
   beforeEach(() => {
+    // These engine/event tests exercise explicitly enabled layers. Startup defaults
+    // and regional catalogue selection are covered by conflictRegions.map.test.tsx.
+    useEventsStore.setState({ hidden: [] });
+    useGlobeStore.setState({ terminator: true });
+    server.use(http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [] })));
     FakeMap.reset();
     MapboxOverlay.reset();
     FakeEventStreamClient.reset();

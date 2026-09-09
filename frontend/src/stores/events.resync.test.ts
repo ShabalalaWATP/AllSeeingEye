@@ -26,6 +26,7 @@ beforeEach(() => {
 });
 
 it('clears stale records immediately, preserves filters and reconciles new deltas', async () => {
+  useEventsStore.setState({ hidden: [] });
   const snapshot = deferred<LiveEvent[]>();
   vi.spyOn(api, 'fetchEvents').mockReturnValue(snapshot.promise);
   const store = useEventsStore.getState();

@@ -1,5 +1,31 @@
 # Conflict report display filters
 
+## Regional overview, 9 September 2026
+
+Conflict controls now open a regional overview, with a separate Report filters
+view for individual source records. War regions use red crossed-swords symbols;
+tension areas use amber. These are curated catalogue classifications, not current
+independent assessments. Region search matches names, country codes and parties;
+the main nation filter also applies. Selecting a symbol or list entry locates
+the area, shows its name, adds a cyan halo and draws its broad catalogue outline.
+Closing details, selecting another object or changing the region filters clears
+the highlight. Symbols stop accepting picks during drawing or measurement.
+
+The inspector links to the existing conflict evidence and timeline. Counts use
+the tracker's retained seven-day evidence groups, including related reporting,
+and are not total attacks, independent corroboration or a completeness claim.
+Report filters apply to individual points; they do not recalculate this summary.
+The region centre and outline are locators, not incident coordinates, frontlines
+or controlled territory. Original source report positions and dates are retained.
+
+The overview fetches the existing authenticated tracker endpoint once when the
+category is enabled, with manual refresh. It adds no feed polling loop or new
+event store. Requests are aborted and snapshots masked on account/access changes.
+At most 100 valid catalogue regions are drawn. Only the selected name and outline
+are displayed to limit clutter.
+
+## Individual reports
+
 The map conflict controls support loaded-report text search, provider selection
 and source-labelled location precision alongside incident type and the optional
 historical baseline. All search words must appear across the report title,

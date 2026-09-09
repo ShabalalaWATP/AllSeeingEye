@@ -1,5 +1,32 @@
 # Map interface and source improvements
 
+## Conflict overview delivery, 9 September 2026
+
+- [x] Only conflicts enabled by default, including migration of old overlay preferences.
+- [x] Regional map symbols, classification/search/nation filters, shared inspector,
+  selected halo/outline and evidence/timeline navigation on globe and flat map.
+- [x] Preserve source report coordinates and dates; distinguish regional context
+  from incidents and frontlines. No random offsets or synthetic event coordinates.
+- [x] Existing tracker snapshots with manual refresh, cancellation and bounded rendering.
+- [x] Configure the supplied development routing contact and repair Valhalla JSON
+  query encoding. Verify a public landmark route through the protected adapter.
+- [ ] Interactive browser/GPU acceptance remains blocked by the existing browser policy.
+
+Rechecked OSIRIS commit `11ecf488253c202714ab11709750b651c765e07b`.
+Its [conflicts route](https://github.com/simplifaisoul/osiris/blob/11ecf488253c202714ab11709750b651c765e07b/src/app/api/conflicts/route.ts)
+combines 15 curated region anchors with keyword-matched BBC World, Al Jazeera and
+New York Times World RSS. Some report dots use synthetic offsets around regional
+centres and retrieval time rather than an incident's occurrence time. Comments
+mention GDELT, but that function is RSS-backed. A separate
+[GDELT export route](https://github.com/simplifaisoul/osiris/blob/11ecf488253c202714ab11709750b651c765e07b/src/app/api/gdelt-events/route.ts)
+does fetch machine-coded events. The
+[map renderer](https://github.com/simplifaisoul/osiris/blob/11ecf488253c202714ab11709750b651c765e07b/src/components/OsirisMap.tsx)
+provides coloured regional markers and click details. ASE adopts that regional
+overview concept using its own catalogue and evidence tracker, with explicit
+provenance limits. No OSIRIS source code was copied and no new source is claimed.
+
+The earlier plan and acceptance history below are retained as dated context.
+
 8 September 2026. User direction: use OSIRIS as a reference for a cleaner,
 minimalist map interface. Keep London, Kyiv, Moscow and Beijing as quiet clocks.
 Every displayed data object must open useful details on both globe and flat map.

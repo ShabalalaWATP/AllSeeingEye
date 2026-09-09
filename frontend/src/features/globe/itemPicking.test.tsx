@@ -18,6 +18,7 @@ beforeAll(async () => {
   await import('./GlobePage');
 });
 beforeEach(() => {
+  useEventsStore.setState({ hidden: [] });
   FakeMap.reset();
   MapboxOverlay.reset();
   FakeEventStreamClient.reset();

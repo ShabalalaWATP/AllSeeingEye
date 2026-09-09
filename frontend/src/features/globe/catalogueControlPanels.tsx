@@ -6,7 +6,7 @@ import type { useHazardFilters } from './useHazardFilters';
 import { ControlPanel } from './GlobeControls';
 import { InfrastructurePanel } from './infrastructure/InfrastructurePanel';
 import { SatelliteFilterPanel } from './SatelliteFilterPanel';
-import { ConflictFilterPanel } from './ConflictFilterPanel';
+import { ConflictOverviewPanel } from './ConflictOverviewPanel';
 import { HazardFilterPanel } from './HazardFilterPanel';
 import { GnssPanel } from './GnssPanel';
 import type { ComponentProps } from 'react';
@@ -17,6 +17,7 @@ export function catalogueControlPanels({
   focusInfrastructure,
   satellites,
   conflicts,
+  conflictOverview,
   hazards,
   gnss,
 }: {
@@ -24,6 +25,7 @@ export function catalogueControlPanels({
   focusInfrastructure: ReturnType<typeof useInfrastructureSelection>['focus'];
   satellites: ReturnType<typeof useSatelliteFilters>;
   conflicts: ReturnType<typeof useConflictFilters>;
+  conflictOverview: Omit<ComponentProps<typeof ConflictOverviewPanel>, 'reports'>;
   hazards: ReturnType<typeof useHazardFilters>;
   gnss: ComponentProps<typeof GnssPanel>;
 }) {
@@ -45,7 +47,7 @@ export function catalogueControlPanels({
       icon="conflict"
       entry={false}
     >
-      <ConflictFilterPanel {...conflicts} />
+      <ConflictOverviewPanel {...conflictOverview} reports={conflicts} />
     </ControlPanel>,
     <ControlPanel key="hazards" side="left" label="Natural hazards" icon="disaster" entry={false}>
       <HazardFilterPanel {...hazards} />

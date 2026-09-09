@@ -33,6 +33,7 @@ function layers() {
   }[];
 }
 beforeEach(async () => {
+  useEventsStore.setState({ hidden: [] });
   // Test map interactions independently of the cold lazy-route transform time.
   await import('./GlobePage');
   FakeMap.reset();

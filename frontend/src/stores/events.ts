@@ -12,6 +12,7 @@ import { loadCoverageSupplements } from './events.supplements';
 import { fetchEvents, fetchStats } from '@/lib/api/events';
 import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
 import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import { ORDERED_CATEGORIES } from '@/lib/categories';
 import { describeError } from '@/lib/api/errors';
 import type { SseMessage, StreamStatus } from '@/lib/sse';
 
@@ -55,7 +56,7 @@ export interface EventsState {
 export const initialEventsState = {
   byId: {} as Record<string, LiveEvent>,
   list: [] as LiveEvent[],
-  hidden: [] as Category[],
+  hidden: ORDERED_CATEGORIES.filter((category) => category !== 'conflict'),
   country: null as string | null,
   coverageBounds: null as CoverageBounds | null,
   windowHours: null as number | null,

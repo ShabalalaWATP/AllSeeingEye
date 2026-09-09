@@ -54,7 +54,7 @@ afterEach(() => {
   useGlobeStore.setState({
     mode: 'globe',
     baseLayer: 'dark',
-    terminator: true,
+    terminator: false,
     lite: false,
     interference: false,
   });

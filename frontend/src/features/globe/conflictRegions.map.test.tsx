@@ -1,0 +1,148 @@
+import { act, screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { renderApp } from '@/test/render';
+import { server } from '@/test/server';
+import { mockWebGl2 } from '@/test/env';
+import { conflictCard } from '@/test/fixtures.trackers';
+import { FakeMap } from '@/test/fakeMap';
+import { MapboxOverlay } from '@/test/fakeDeck';
+import { FakeEventStreamClient } from '@/test/fakeStream';
+import { useEventsStore } from '@/stores/events';
+import { useGlobeStore } from '@/stores/globe';
+import { ORDERED_CATEGORIES } from '@/lib/categories';
+import type { ConflictRegion } from './conflictRegions';
+
+vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
+vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
+vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
+import './GlobePage';
+
+beforeEach(() => {
+  FakeMap.reset();
+  MapboxOverlay.reset();
+  FakeEventStreamClient.reset();
+  mockWebGl2(true);
+});
+
+interface TestLayer {
+  id: string;
+  props: { data: unknown[]; onClick: (info: { object: unknown }) => boolean; pickable: boolean };
+}
+function layers() {
+  return MapboxOverlay.instances[0]?.props.layers as TestLayer[] | undefined;
+}
+function layer(id: string) {
+  return layers()?.find((item) => item.id === id);
+}
+
+it('starts with only conflicts visible, without GNSS, cameras, infrastructure or day/night overlays', async () => {
+  const { user } = renderApp('/', 'user');
+  await waitFor(() => expect(layer('conflict-region-markers')?.props.data).toHaveLength(1));
+  expect(useEventsStore.getState().hidden).toEqual(
+    ORDERED_CATEGORIES.filter((category) => category !== 'conflict'),
+  );
+  expect(useGlobeStore.getState()).toMatchObject({ terminator: false, interference: false });
+  for (const toggle of screen.getAllByRole('switch')) {
+    expect(toggle).toHaveAttribute(
+      'aria-checked',
+      toggle.getAttribute('aria-label')?.startsWith('Conflict') ? 'true' : 'false',
+    );
+  }
+  expect(layers()!.every((item) => item.id.startsWith('conflict-region-'))).toBe(true);
+  await user.click(screen.getByRole('button', { name: 'Topics & time' }));
+  for (const toggle of within(screen.getByRole('region', { name: 'Topics & time' })).getAllByRole(
+    'switch',
+  )) {
+    expect(toggle).toHaveAttribute(
+      'aria-checked',
+      toggle.textContent.includes('Conflict') ? 'true' : 'false',
+    );
+  }
+});
+
+it.each(['globe', 'map'] as const)(
+  'selects regional markers on the %s, locates from the list and clears highlighting on close or event selection',
+  async (mode) => {
+    useGlobeStore.setState({ mode });
+    server.use(
+      http.get('/api/events', () => HttpResponse.json({ items: [conflictCard.latest], count: 1 })),
+    );
+    const { user } = renderApp('/', 'user');
+    await waitFor(() => expect(layer('conflict-region-markers')?.props.data).toHaveLength(1));
+    const region = layer('conflict-region-markers')!.props.data[0] as ConflictRegion;
+    act(() => {
+      layer('conflict-region-markers')!.props.onClick({ object: region });
+    });
+    const inspector = screen.getByRole('complementary', { name: 'Conflict region details' });
+    expect(within(inspector).getByText('War region (curated)')).toBeInTheDocument();
+    expect(within(inspector).getByText(/not a frontline/)).toBeInTheDocument();
+    expect(within(inspector).getByText('Shelling in Kharkiv')).toBeInTheDocument();
+    expect(within(inspector).getByRole('link', { name: /Open evidence/ })).toHaveAttribute(
+      'href',
+      '/trackers/conflicts/ukraine',
+    );
+    expect(layer('conflict-region-selection')!.props.data).toHaveLength(1);
+    expect(FakeMap.instances[0]!.flyTo).toHaveBeenLastCalledWith(
+      expect.objectContaining({ center: [31.5, 48.25] }),
+    );
+    await user.click(
+      within(inspector).getByRole('button', { name: 'Close conflict region details' }),
+    );
+    expect(layer('conflict-region-selection')!.props.data).toEqual([]);
+    await user.click(screen.getByRole('button', { name: 'Conflict report filters' }));
+    await user.click(screen.getByRole('button', { name: /Russia's war in Ukraine/ }));
+    expect(layer('conflict-region-selection')!.props.data).toHaveLength(1);
+    await user.keyboard('{Escape}');
+    // First Escape closes the controls; dismiss the inspector explicitly if still open.
+    const dismiss = screen.queryByRole('button', { name: 'Close conflict region details' });
+    if (dismiss) await user.click(dismiss);
+    expect(layer('conflict-region-selection')!.props.data).toEqual([]);
+    act(() => {
+      layer('conflict-region-markers')!.props.onClick({ object: region });
+    });
+    await waitFor(() => expect(layer('events-conflict')).toBeDefined());
+    act(() => {
+      layer('events-conflict')!.props.onClick({ object: conflictCard.latest });
+    });
+    expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
+    expect(layer('conflict-region-selection')!.props.data).toEqual([]);
+    expect(layer('events-conflict')!.props.data).toEqual([conflictCard.latest]);
+  },
+);
+
+it('provides region search, classification, hide and retry controls independently of report filters', async () => {
+  const fetch = vi.fn();
+  server.use(
+    http.get('/api/trackers/conflicts', () => {
+      fetch();
+      return HttpResponse.json({ error: { code: 'offline', message: 'offline' } }, { status: 503 });
+    }),
+  );
+  const { user } = renderApp('/', 'user');
+  await user.click(await screen.findByRole('button', { name: 'Conflict report filters' }));
+  await screen.findByRole('alert');
+  expect(screen.getByText(/Region overview unavailable/)).toBeInTheDocument();
+  server.use(
+    http.get('/api/trackers/conflicts', () => {
+      fetch();
+      return HttpResponse.json({ items: [conflictCard] });
+    }),
+  );
+  await user.click(screen.getByRole('button', { name: 'Refresh region overview' }));
+  await screen.findByRole('button', { name: /Russia's war in Ukraine/ });
+  await user.type(screen.getByRole('searchbox', { name: 'Find a conflict region' }), 'missing');
+  expect(screen.getByText(/No regions match/)).toBeInTheDocument();
+  await user.clear(screen.getByRole('searchbox', { name: 'Find a conflict region' }));
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Region classification' }),
+    'tension',
+  );
+  expect(screen.getByText(/No regions match/)).toBeInTheDocument();
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Region classification' }), 'war');
+  await user.click(screen.getByRole('checkbox', { name: 'Show regional overview markers' }));
+  expect(layer('conflict-region-markers')).toBeUndefined();
+  await user.click(screen.getByRole('checkbox', { name: 'Show regional overview markers' }));
+  expect(layer('conflict-region-markers')).toBeDefined();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});

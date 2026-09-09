@@ -69,7 +69,7 @@ describe('CoordinateReadout', () => {
 });
 
 describe('display preferences', () => {
-  it('persists the base layer, terminator and lite mode but not the view mode', () => {
+  it('persists the base layer and lite mode without restoring overlays or the view mode', () => {
     useGlobeStore.getState().setBaseLayer('hybrid');
     useGlobeStore.getState().toggleTerminator();
     useGlobeStore.getState().toggleLite();
@@ -79,9 +79,7 @@ describe('display preferences', () => {
     };
     expect(stored.state).toEqual({
       baseLayer: 'hybrid',
-      terminator: false,
       lite: true,
-      interference: false,
     });
   });
 

@@ -60,6 +60,7 @@ const pick = (id: string, object: unknown) => {
   act(() => onClick({ object }));
 };
 beforeEach(async () => {
+  useEventsStore.setState({ hidden: [] });
   // Resolve the lazy route before asserting UI behaviour, independently of chunk compilation time.
   await import('../GlobePage');
   FakeMap.reset();
