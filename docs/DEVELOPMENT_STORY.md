@@ -3136,3 +3136,31 @@ the render-view hook was refined. Frontend lint, typecheck, production build,
 changed-file Prettier, file-length and whitespace checks passed. Existing large
 vendor-chunk and 380-line MapLibre warnings remain. Backend tests were not rerun
 because no backend code changed. Delivery is on local `main`, with no Git remote.
+
+## 9 September 2026: combined fire reports and FIRMS observations
+
+Added a Fires choice under Natural hazards, combining existing EONET/GDACS wildfire
+reports with FIRMS heat detections. Indented type choices preserve the ability to
+inspect either alone. Wildfire reports now use an orange flame, including reports
+with approximate locations; FIRMS keeps its separate sensor icon. Source types,
+location-quality rings, selection, clustering and map/globe projection are retained.
+The combined count is a count of records, not unique or independently confirmed
+fires. The panel explains the distinction and the absence of a fire perimeter.
+
+Verified that OSIRIS already sources its Fires response from NASA FIRMS. Reused
+ASE's existing NOAA-20/NOAA-21, EONET and GDACS collection instead of adding another
+copy of the feed. Corrected outdated copy claiming FIRMS always needs a server key:
+the existing public NASA connectors also supply observations. No new backend code,
+request loop, dependency, credential or default-visible layer was introduced.
+Updated FIRMS operations and map-tools documentation with source references.
+
+Three new regressions first failed before implementation. The final focused suite
+passed 56 tests across ten files, including actual dashboard composition with a
+mocked renderer in both map and globe modes. These check that choosing Fires keeps
+hidden layers off, disabling FIRMS preserves wildfire reports, disabling Natural
+hazards hides both, aircraft remain visible, and excluded hazard selections clear.
+Independent static correctness/security review found no actionable regression.
+No new coverage measurement, backend test run or live GPU acceptance is claimed.
+Frontend lint, typecheck, production build, changed-file formatting, whitespace
+and file-length checks passed. Existing vendor-chunk and MapLibre length warnings
+remain. Work is on local `main`; no Git remote is configured.

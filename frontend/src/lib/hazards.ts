@@ -6,6 +6,7 @@ export const HAZARD_GROUPS = [
   { value: 'weather', label: 'Severe weather / cyclones' },
   { value: 'flood', label: 'Floods' },
   { value: 'volcano', label: 'Volcanoes' },
+  { value: 'fires', label: 'Fires' },
   { value: 'wildfire', label: 'Wildfire alerts' },
   { value: 'thermal', label: 'Satellite thermal detections' },
   { value: 'tsunami', label: 'Tsunamis' },
@@ -15,6 +16,7 @@ export const HAZARD_GROUPS = [
   { value: 'other', label: 'Other / unclassified' },
 ] as const;
 export type HazardGroup = (typeof HAZARD_GROUPS)[number]['value'];
+export type HazardKind = Exclude<HazardGroup, 'all' | 'fires'>;
 export type HazardWindow = 'all' | '24' | '72' | '168';
 export type HazardAlert = 'all' | 'orange_red' | 'red';
 export interface HazardOptions {
@@ -32,7 +34,7 @@ export const DEFAULT_HAZARD_OPTIONS: HazardOptions = {
   includeUnknown: true,
 };
 
-export function hazardKind(event: LiveEvent): HazardGroup | null {
+export function hazardKind(event: LiveEvent): HazardKind | null {
   if (event.category !== 'disaster') return null;
   // Exact adapter output aliases: EONET plural category IDs are snake-cased,
   // while GDACS/USGS/GVP/cyclone feeds use singular event subtypes.
@@ -70,10 +72,17 @@ export function hazardKind(event: LiveEvent): HazardGroup | null {
   }
 }
 
+/** Composite display groups do not change a source's event classification. */
+export function matchesHazardGroup(event: LiveEvent, group: HazardGroup): boolean {
+  const kind = hazardKind(event);
+  if (kind === null || group === 'all') return true;
+  return group === 'fires' ? kind === 'wildfire' || kind === 'thermal' : group === kind;
+}
+
 export function matchesHazard(event: LiveEvent, options: HazardOptions, now: number): boolean {
   const kind = hazardKind(event);
   if (kind === null) return true;
-  if (options.group !== 'all' && options.group !== kind) return false;
+  if (!matchesHazardGroup(event, options.group)) return false;
   if (options.hours !== 'all') {
     const timestamp = event.published_at ? Date.parse(event.published_at) : NaN;
     if (!Number.isFinite(timestamp)) {
@@ -106,6 +115,7 @@ export function countHazards(events: LiveEvent[]): Record<HazardGroup, number> {
     if (kind !== null) {
       counts.all++;
       counts[kind]++;
+      if (kind === 'wildfire' || kind === 'thermal') counts.fires++;
     }
   }
   return counts;

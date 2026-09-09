@@ -1,5 +1,38 @@
 # NASA FIRMS thermal observations
 
+## Combined Fires view, 9 September 2026
+
+Enable **Natural hazards** in the left rail and open its filters. **Fires** shows
+both wildfire reports and satellite thermal detections. The indented **Wildfire
+alerts** and **Satellite thermal detections** choices narrow that combined view.
+The FIRMS switch remains a control for thermal observations only. Turning it off
+leaves wildfire reports eligible; turning Natural hazards off hides both.
+Selecting a filter never changes those switches or the conflict-only startup.
+
+Reported wildfires from NASA EONET and GDACS use an orange flame. FIRMS pixels
+retain a sensor symbol, original measurements and acquisition dates. Approximate
+wildfire locations retain their location-quality ring; country-only records do
+not acquire map coordinates. Markers use the shared map/globe renderer, with
+ordinary clustering, picking and selection behaviour.
+
+Counts describe loaded records after the existing scope, time and observation
+filters. The combined count includes each record once, but multiple records can
+still describe the same fire. Nearby FIRMS pixels are not independent reports or
+evidence of a wildfire's cause. No perimeter is inferred from joining detections.
+
+The current [OSIRIS fires route](https://github.com/simplifaisoul/osiris/blob/master/src/app/api/fires/route.ts)
+already consumes public NASA FIRMS CSV, trying Suomi NPP VIIRS before MODIS, and
+adds EONET volcanoes. ASE reuses its existing NOAA-20/NOAA-21 FIRMS, EONET and GDACS
+connectors without an extra provider proxy, collection loop or new credential.
+Volcano reports stay in their own hazard group. NASA's [FIRMS guidance](https://www.earthdata.nasa.gov/data/tools/firms/faq)
+explains that hotspots can include industrial and volcanic heat and recommends
+transitioning from Suomi NPP to NOAA-20/21 ahead of the 1 November 2026 retirement.
+[EONET's API](https://eonet.gsfc.nasa.gov/docs/v3) supplies curated wildfire events
+with references to its upstream sources.
+
+This change improves the display of already collected records. It does not add
+new satellite observations, a live perimeter service or guaranteed fire coverage.
+
 ## Worldwide sensor coverage
 
 The adapters support both NOAA-20 and NOAA-21, with separate `firms_viirs_noaa20`

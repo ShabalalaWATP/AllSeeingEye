@@ -20,13 +20,22 @@ import {
 } from '@/lib/traffic';
 
 export type IconKind =
-  'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'volcano' | 'thermal' | ConflictKind;
+  | 'aircraft'
+  | 'vessel'
+  | 'vessel_unknown'
+  | 'cyclone'
+  | 'volcano'
+  | 'wildfire'
+  | 'thermal'
+  | ConflictKind;
 
 const ICON_SIZE = 64;
 
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
   ...CONFLICT_ICON_SHAPES,
+  wildfire:
+    '<path d="M34 4c3 16-13 19-9 30 5-2 9-7 10-12 9 7 15 15 15 23a18 18 0 0 1-36 0c0-10 8-17 7-27 4 3 5 6 6 8C35 17 29 12 34 4Z" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>',
   vessel_unknown:
     '<path fill="#fff" d="M5 34h54l-9 16H17zM16 22h32v10H16zM27 12h10v8H27z"/><path d="M8 56h48" stroke="#fff" stroke-width="3"/>',
   thermal:
@@ -53,6 +62,8 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
 /** Which icon, if any, an event should be drawn with. */
 export function iconFor(event: LiveEvent): IconKind | null {
   if (event.category === 'conflict') return conflictKind(event);
+  if (event.category === 'disaster' && ['wildfire', 'wildfires'].includes(event.subtype))
+    return 'wildfire';
   if (event.category === 'disaster' && event.subtype === 'thermal_detection') return 'thermal';
   if (event.category === 'maritime' && event.subtype === 'vessel_position') {
     return typeof event.attributes.track_deg === 'number' &&
@@ -106,6 +117,7 @@ export function buildIconLayer(
     }),
     getSize: (event) => (event.id === selectedId ? 30 : 22),
     getColor: (event) => {
+      if (iconFor(event) === 'wildfire') return [251, 146, 60, 245];
       const kind = conflictKind(event);
       return kind
         ? [...CONFLICT_SYMBOLS[kind].colour, 245]

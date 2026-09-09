@@ -21,7 +21,11 @@ report filters. See [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
 - Natural hazards have their own category disclosure with hazard type, acquisition
   or report time, explicit earthquake magnitude and GDACS impact-level filters.
   Unknown measurements can be retained; magnitudes are not inferred from another
-  provider's severity scale. FIRMS thermal detections remain distinct from fires.
+  provider's severity scale. **Fires** combines reported wildfires and satellite
+  heat detections, with nested choices for each. Orange flame symbols identify
+  wildfire reports; FIRMS retains its sensor symbol and independent display switch.
+  Choosing Fires leaves hidden layers off and does not equate detections with
+  independently confirmed fires. See [FIRMS operations](FIRMS_OPERATIONS.md).
 - Infrastructure adds an independent, default-off nuclear power-plant layer with
   searchable entries, clickable radiation markers and selection highlights.
 - GNSS is the first category switch, with a permanent caption. Topics & time
