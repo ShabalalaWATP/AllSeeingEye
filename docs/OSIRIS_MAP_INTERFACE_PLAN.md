@@ -1,5 +1,15 @@
 # Map interface and source improvements
 
+## Dashboard feature review, 9 September 2026
+
+The [current feature and filter review](OSIRIS_DASHBOARD_FEATURE_REVIEW.md)
+compares actual ASE code with OSIRIS `11ecf488`. Proposed next work is consistent
+category panels and visible filter scope, followed by dashboard area research,
+saved views, selected-object watch panels and carefully bounded new map datasets.
+This is a prioritised proposal, not completed runtime work. Existing layer controls,
+report-associated saved maps and NOAA/other feed ingestion are explicitly retained
+in the comparison rather than presented as missing features.
+
 ## Conflict overview delivery, 9 September 2026
 
 - [x] Only conflicts enabled by default, including migration of old overlay preferences.

@@ -3080,3 +3080,19 @@ passed; existing vendor-chunk warnings remain. Independent read-only review of t
 source facts and implementation found no unresolved issue. Updated radio reference,
 map-tools and map-interface plan documentation. Interactive/GPU acceptance remains
 unavailable under the existing browser policy; no live-radio validation is claimed.
+
+## 9 September 2026: dashboard feature and filter comparison
+
+Reviewed current ASE dashboard components and OSIRIS master `11ecf488`, including
+category flyouts, flight watch, area changes, place dossiers and public GIS import.
+The new dashboard review separates existing functionality, missing dashboard
+connections and new provider work. Proposed order: consistent filter scope and
+inspectors, area research/saved views, then bounded new layers and actual history.
+Existing NOAA, navigation-warning and outage ingestion should be surfaced before
+duplicating adapters. The review also records source-quality issues in OSIRIS's
+OpenAQ and space-weather implementations, checked against provider documentation.
+
+This delivery changes documentation only. Read-only code/source review and
+whitespace checks were performed; no application tests, live-dashboard acceptance,
+new provider connection or feature implementation is claimed. The demo fetch timed
+out and the existing local browser policy remains a visual-acceptance limitation.
