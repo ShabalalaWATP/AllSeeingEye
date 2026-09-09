@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     # Feeds: on by default outside tests; polite identification is mandatory for most APIs.
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
+    conflict_screening_enabled: bool = True
+    conflict_screening_calls_per_hour: int = Field(default=6, ge=1, le=30)
     feeds_disabled: str = ""
     satellite_cache_dir: Path = Path("data/celestrak")
     # Fixed monthly baseline. Update only after verifying the next public release.

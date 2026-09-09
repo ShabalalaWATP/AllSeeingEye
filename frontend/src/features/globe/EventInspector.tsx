@@ -11,6 +11,7 @@ import { formatUtc } from '@/lib/format';
 import { isHttpUrl } from '@/lib/urls';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
+import { ConflictScreeningDetails } from './ConflictScreeningDetails';
 
 export interface EventInspectorProps {
   event: LiveEvent;
@@ -54,7 +55,11 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
   }, [onClose]);
   const style = CATEGORY_STYLES[event.category];
   const attributes = Object.entries(event.attributes).filter(
-    ([, value]) => value !== null && value !== '',
+    ([key, value]) =>
+      !key.startsWith('conflict_screening') &&
+      key !== 'conflict_relevance' &&
+      value !== null &&
+      value !== '',
   );
   return (
     <aside
@@ -98,6 +103,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
         <HistoricalBaselineNote event={event} />
+        <ConflictScreeningDetails event={event} />
         {event.source_id === 'gdelt_events' && (
           <p className="mt-2 text-xs text-muted">
             Automated news coding, not an independently verified incident. This feed includes

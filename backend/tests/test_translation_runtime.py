@@ -143,6 +143,7 @@ async def test_lifespan_controls_translation_before_disposal(app: FastAPI, monke
         "schedule_runner",
         "social_monitor",
         "translation_queue",
+        "conflict_screening",
     ]
     mocks = []
     for name in jobs:

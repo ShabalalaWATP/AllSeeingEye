@@ -134,7 +134,13 @@ class InMemoryEventStore:
                     current = self._events.get(event.id)
                     if current is not None and current.content_hash == event.content_hash:
                         self._remove(event.id)
-                        self._insert(event)
+                        self._insert(
+                            current.with_changes(
+                                credibility=event.credibility,
+                                grade_rationale=event.grade_rationale,
+                                story_id=event.story_id,
+                            )
+                        )
                 await asyncio.sleep(0)
         finally:
             self._capture_evictions()

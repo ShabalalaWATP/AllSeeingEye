@@ -9,6 +9,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+from ase.domain.conflict_relevance import (
+    INCIDENT_RELEVANCE,
+    is_admitted_conflict,
+    screened_relevance,
+)
 from ase.domain.events import Category, Event
 
 VIOLENCE_TYPES = frozenset(
@@ -34,10 +39,20 @@ _DATED_SOURCES = frozenset({"gdelt_events", "ucdp_candidate", "acled_events"})
 
 
 def is_violence(event: Event) -> bool:
-    return event.category is Category.CONFLICT and event.subtype in VIOLENCE_TYPES
+    relevance = screened_relevance(event)
+    return (
+        is_admitted_conflict(event)
+        and event.subtype in VIOLENCE_TYPES
+        and relevance in (None, "armed_conflict")
+    )
 
 
 def is_conflict_context(event: Event) -> bool:
+    if event.category not in CONTEXT_CATEGORIES | {Category.CONFLICT}:
+        return False
+    relevance = screened_relevance(event)
+    if relevance is not None:
+        return relevance in INCIDENT_RELEVANCE | {"context"}
     return event.category in CONTEXT_CATEGORIES and (
         bool(_CONTEXT.search(f"{event.title_en or event.title} {event.summary or ''}"))
     )

@@ -26,6 +26,12 @@ are displayed to limit clutter.
 
 ## Individual reports
 
+Unreviewed machine-coded reports are hidden by default. **Unreviewed media signals**
+is a separate opt-in for pending/uncertain reports. Assessed unrelated/context-only
+records remain excluded. Screened civil unrest and military activity use their own
+filters even when the provider labelled them as fighting. Details retain original
+type and show the reason/quotation. Relevance is not verified incident attribution.
+
 The map conflict controls support loaded-report text search, provider selection
 and source-labelled location precision alongside incident type and the optional
 historical baseline. All search words must appear across the report title,

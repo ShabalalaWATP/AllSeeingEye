@@ -1,4 +1,5 @@
 import type { LiveEvent } from './api/eventSchemas';
+import { matchesConflictReview } from './conflictReview';
 
 export type ConflictKind =
   | 'armed_clashes'
@@ -38,19 +39,32 @@ const kinds: Readonly<Record<string, ConflictKind>> = {
   assault: 'other',
 };
 
-/** Provider event types describe reports, not independent confirmation of an armed conflict. */
-export function conflictKind(event: Pick<LiveEvent, 'category' | 'subtype'>): ConflictKind | null {
+type ConflictTypeEvent = Pick<LiveEvent, 'category' | 'subtype'> &
+  Partial<Pick<LiveEvent, 'attributes'>>;
+
+/** Screening controls relevance; provider detail can refine an armed-conflict report's type. */
+export function conflictKind(event: ConflictTypeEvent): ConflictKind | null {
   if (event.category !== 'conflict') return null;
+  const relevance =
+    event.attributes?.conflict_screening === 'llm' ? event.attributes.conflict_relevance : null;
+  if (relevance === 'civil_unrest') return 'protests';
+  if (relevance === 'military_activity') return 'military_activity';
   const subtype = event.subtype.toLowerCase().trim().replace(/[ -]+/g, '_');
-  return Object.hasOwn(kinds, subtype) ? (kinds[subtype] ?? 'other') : 'other';
+  const kind = Object.hasOwn(kinds, subtype) ? (kinds[subtype] ?? 'other') : 'other';
+  if (
+    relevance === 'armed_conflict' &&
+    (kind === 'other' || kind === 'protests' || kind === 'military_activity')
+  )
+    return 'organised_violence';
+  return kind;
 }
 
-export function conflictReportLabel(event: Pick<LiveEvent, 'category' | 'subtype'>): string {
+export function conflictReportLabel(event: ConflictTypeEvent): string {
   const kind = conflictKind(event);
   return CONFLICT_GROUPS.find((group) => group.value === kind)?.label ?? 'Other report';
 }
 
-/** Keep unrelated overlays intact and retain all reports until the operator narrows the view. */
+/** Monthly research records remain an explicit opt-in, independent of media screening. */
 export function isHistoricalConflict(event: LiveEvent): boolean {
   return (
     event.category === 'conflict' &&
@@ -63,10 +77,20 @@ export function filterConflictReports(
   events: LiveEvent[],
   group: ConflictGroup,
   includeHistorical = false,
+  includeUnreviewed = false,
 ): LiveEvent[] {
-  if (group === 'all' && (includeHistorical || !events.some(isHistoricalConflict))) return events;
+  if (
+    group === 'all' &&
+    events.every(
+      (event) =>
+        (includeHistorical || !isHistoricalConflict(event)) &&
+        matchesConflictReview(event, includeUnreviewed),
+    )
+  )
+    return events;
   return events.filter((event) => {
     if (!includeHistorical && isHistoricalConflict(event)) return false;
+    if (!matchesConflictReview(event, includeUnreviewed)) return false;
     const kind = conflictKind(event);
     return group === 'all' || kind === null || kind === group;
   });

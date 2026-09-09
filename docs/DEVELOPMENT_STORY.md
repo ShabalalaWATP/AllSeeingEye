@@ -3009,3 +3009,50 @@ Final review removed a redundant catalogue-dismiss callback; targeted selection
 checks and a fresh build validate that cleanup. Existing vendor-size warnings
 remain. No dependency, schema, credential rotation or external publication change
 was made; the operator email remains outside version control.
+
+## 9 September 2026: conflict relevance screening
+
+Investigated an industrial-accident sentencing article shown as a conflict. Broad
+GDELT/CAMEO categories admitted legal action and ordinary violence without topic
+review; adapter-generated descriptions were not original article headlines.
+Unreviewed machine-coded points are now hidden by default, with an explicit
+investigation opt-in. Shared tracker counts apply the same admission rule.
+
+Added a bounded global-model worker using actual RSS text and exact source-URL
+joins, with explicit uncertain/unrelated/context decisions. It retains source
+grades and precision, requires supporting quotations for positive relevance and
+displays its basis separately. Cooperative reads, six default calls/hour and a
+4,000-output-token ceiling keep processing away from map interaction. Grading
+now merges only its fields so delayed results cannot overwrite screening.
+
+Read-only review found and corrected stale URL joins, missed re-screening after
+model changes and exercises/protests counted as violence. Provider/profile
+provenance and generation/source checks are retained. No further actionable
+finding remained in that review. Scoped Bandit found no issue; no dependencies,
+database migrations, credential changes or private evidence inputs were added.
+
+The OSIRIS audit found curated regions plus three keyword-matched RSS sources,
+not LLM verification. All 29 configured ASE non-social RSS feeds returned parseable
+entries in bounded live probes. Source volume is not corroboration; approved ACLED
+access and a multilingual quality benchmark remain next priorities. Details are
+in [conflict relevance screening](CONFLICT_RELEVANCE_SCREENING.md); coverage,
+display-filter and implementation-plan documentation was updated.
+
+Validation: 106 screening/domain/runtime tests passed with 97.72% combined
+statement/branch coverage of the new screening application package. Another
+60 related store, scheduler, source-control and conflict regressions passed;
+12 final coverage-endpoint tests also passed. Full frontend: 1,545 passed, one
+existing skip; 95.46% statements, 90.34% branches, 93.51% functions, 96.72% lines.
+Two old map fixtures were updated to represent reviewed GDELT reports after the
+first full run correctly rejected their unreviewed markers. The repeated full
+run passed. Scoped backend coverage explicitly clears inherited global coverage
+options; the initial import-instrumentation failure was not an application failure.
+
+Full Ruff/formatting, mypy (746 source files), frontend lint/types/build, changed
+Prettier formatting, both architecture contracts and whitespace checks passed.
+File length passes with the existing 380-line MapLibre warning. Existing large
+vendor-chunk build warnings remain. The local ASE API was restarted on 8001;
+health/readiness and the 5174 login returned HTTP 200. No usable global assessment
+model is currently assigned, so no real-model classification quality is claimed.
+The existing browser policy still prevents interactive/GPU acceptance. Work is
+on local `main`; no Git remote is configured.

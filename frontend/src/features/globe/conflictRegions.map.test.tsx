@@ -65,8 +65,12 @@ it.each(['globe', 'map'] as const)(
   'selects regional markers on the %s, locates from the list and clears highlighting on close or event selection',
   async (mode) => {
     useGlobeStore.setState({ mode });
+    const reviewedReport = {
+      ...conflictCard.latest!,
+      attributes: { conflict_screening: 'llm', conflict_relevance: 'armed_conflict' },
+    };
     server.use(
-      http.get('/api/events', () => HttpResponse.json({ items: [conflictCard.latest], count: 1 })),
+      http.get('/api/events', () => HttpResponse.json({ items: [reviewedReport], count: 1 })),
     );
     const { user } = renderApp('/', 'user');
     await waitFor(() => expect(layer('conflict-region-markers')?.props.data).toHaveLength(1));
@@ -103,11 +107,11 @@ it.each(['globe', 'map'] as const)(
     });
     await waitFor(() => expect(layer('events-conflict')).toBeDefined());
     act(() => {
-      layer('events-conflict')!.props.onClick({ object: conflictCard.latest });
+      layer('events-conflict')!.props.onClick({ object: reviewedReport });
     });
     expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
     expect(layer('conflict-region-selection')!.props.data).toEqual([]);
-    expect(layer('events-conflict')!.props.data).toEqual([conflictCard.latest]);
+    expect(layer('events-conflict')!.props.data).toEqual([reviewedReport]);
   },
 );
 

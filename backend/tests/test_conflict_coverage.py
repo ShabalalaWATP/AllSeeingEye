@@ -2,12 +2,36 @@
 
 from datetime import timedelta
 
+import pytest
+
 from ase.adapters.feeds.conflict_acled import AcledConnector
+from ase.api.routers.conflict_coverage import screening_status
 from ase.application.feeds.health import SourceStatus
 from ase.domain.events import Category, Point
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from test_conflict_sources import Http, acled
+
+
+@pytest.mark.parametrize(
+    ("state", "expected"),
+    [
+        ("disabled", "not_configured"),
+        ("no_global_model", "not_configured"),
+        ("model_error", "degraded"),
+        ("unavailable", "degraded"),
+        ("ready", "healthy"),
+        ("budget_exhausted", "waiting"),
+        ("waiting_for_source_text", "waiting"),
+        ("model_changed", "waiting"),
+        ("private upstream error", "waiting"),
+    ],
+)
+def test_screening_status_uses_safe_public_descriptions(state, expected):
+    result = screening_status(state)
+    assert result.id == "conflict_screening" and result.status == expected
+    assert "private upstream error" not in result.detail
+    assert result.last_success is None
 
 
 async def test_coverage_requires_login_and_shows_safe_provider_health(client, container, user):
@@ -23,6 +47,7 @@ async def test_coverage_requires_login_and_shows_safe_provider_health(client, co
     assert rows["ucdp_candidate"]["dataset_release"] == "26.0.7"
     assert rows["acled_events"]["status"] == "not_configured"
     assert rows["reliefweb_reports"]["status"] == "not_configured"
+    assert rows["conflict_screening"]["status"] == "waiting"
     assert "secret-token" not in response.text and "upstream-private-url" not in response.text
     health.status = SourceStatus.HEALTHY
     response = await client.get("/api/trackers/conflict-sources", headers=bearer(token))

@@ -9,6 +9,9 @@ export function ConflictFilterPanel({
   includeHistorical,
   setIncludeHistorical,
   historicalCount,
+  includeUnreviewed = false,
+  setIncludeUnreviewed,
+  unreviewedCount = 0,
   query = '',
   setQuery,
   source = 'all',
@@ -23,6 +26,9 @@ export function ConflictFilterPanel({
   includeHistorical: boolean;
   setIncludeHistorical: (value: boolean) => void;
   historicalCount: number;
+  includeUnreviewed?: boolean;
+  setIncludeUnreviewed?: (value: boolean) => void;
+  unreviewedCount?: number;
   query?: string;
   setQuery?: (value: string) => void;
   source?: string;
@@ -34,6 +40,24 @@ export function ConflictFilterPanel({
   const id = useId();
   return (
     <section aria-label="Conflict report filters" className="space-y-3 p-3">
+      {setIncludeUnreviewed && (
+        <div className="space-y-2 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3">
+          <label className="flex min-h-10 items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={includeUnreviewed}
+              onChange={(event) => setIncludeUnreviewed(event.target.checked)}
+              className="accent-amber-400"
+            />
+            <span>Unreviewed media signals ({unreviewedCount.toLocaleString()} loaded)</span>
+          </label>
+          <p className="text-[11px] leading-relaxed text-muted">
+            Off by default. Automated news coding can mistake court cases or accidents for conflict.
+            Titles may be machine-generated; matched source text may be unavailable. This includes
+            pending or uncertain screening, but never reports assessed as unrelated or context only.
+          </p>
+        </div>
+      )}
       <label className="flex min-h-10 items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs">
         <input
           type="checkbox"
@@ -128,13 +152,14 @@ export function ConflictFilterPanel({
         ))}
       </fieldset>
       <p className="text-[11px] leading-relaxed text-muted">
-        Counts follow the active search, source, location, nation and time filters. They are loaded
+        Counts follow screening, search, source, location, nation and time filters. They are loaded
         reports, not verified conflicts or unique incidents. Several sources may report the same
         event.
       </p>
       <p className="text-[11px] leading-relaxed text-muted">
-        Types come from the source. Protests, force movements and other incidents do not establish
-        armed conflict. The main conflict layer switch still controls visibility.
+        Types follow relevance screening where available; original provider types remain in details.
+        Protests, force movements and other incidents do not establish armed conflict. The main
+        conflict layer switch still controls visibility.
       </p>
     </section>
   );

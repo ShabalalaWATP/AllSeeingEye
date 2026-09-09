@@ -19,6 +19,7 @@ from ase.domain.conflict_evidence import (
     is_violence,
     occurrence_time,
 )
+from ase.domain.conflict_relevance import is_admitted_conflict
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import publication_order
 
@@ -274,7 +275,7 @@ def conflict_card(conflict: Conflict, events: Sequence[Event], now: datetime) ->
     other = [
         event
         for event in events
-        if event.category is Category.CONFLICT
+        if is_admitted_conflict(event)
         and not is_violence(event)
         and (when := occurrence_time(event)) is not None
         and now - WEEK <= when <= now

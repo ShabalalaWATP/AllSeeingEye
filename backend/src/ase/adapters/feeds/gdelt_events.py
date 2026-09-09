@@ -2,8 +2,9 @@
 
 The GEO and DOC APIs are rate limited or unavailable, so this connector follows
 `lastupdate.txt` to the newest `export.CSV.zip`, keeps only the CAMEO root codes for
-protest, force posture, coercion, assault, fighting and mass violence, and grades
-every row C with credibility set by how many sources GDELT saw.
+protest, force posture, coercion, assault, fighting and mass violence. These are
+unreviewed media signals, not confirmed conflict incidents. Source counts do not
+establish credibility or relevance; source-text screening is a separate stage.
 """
 
 from __future__ import annotations
@@ -30,7 +31,7 @@ from ase.domain.sources import SourceKind, SourceSpec
 
 SPEC = SourceSpec(
     id="gdelt_events",
-    name="GDELT 2.0 events (protest and conflict codes)",
+    name="GDELT 2.0 media signals (unreviewed)",
     organisation="The GDELT Project",
     category=Category.CONFLICT,
     kind=SourceKind.API,

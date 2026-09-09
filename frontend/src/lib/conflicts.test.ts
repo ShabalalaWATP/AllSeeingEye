@@ -66,3 +66,71 @@ it('keeps non-conflict overlays intact, counts reports once and preserves stable
     other: 0,
   });
 });
+
+it('uses screened relevance for map groups and counts while preserving source metadata', () => {
+  const base = liveEvent({ category: 'conflict', subtype: 'fight', source_id: 'gdelt_events' });
+  const unrest = liveEvent({
+    ...base,
+    id: 'unrest',
+    attributes: { conflict_screening: 'llm', conflict_relevance: 'civil_unrest' },
+  });
+  const military = liveEvent({
+    ...base,
+    id: 'military',
+    attributes: { conflict_screening: 'llm', conflict_relevance: 'military_activity' },
+  });
+  const armed = liveEvent({
+    ...base,
+    id: 'armed',
+    attributes: { conflict_screening: 'llm', conflict_relevance: 'armed_conflict' },
+  });
+  const events = [unrest, military, armed];
+  expect(filterConflictReports(events, 'armed_clashes')).toEqual([armed]);
+  expect(filterConflictReports(events, 'protests')).toEqual([unrest]);
+  expect(filterConflictReports(events, 'military_activity')).toEqual([military]);
+  expect(countConflictReports(events)).toMatchObject({
+    all: 3,
+    armed_clashes: 1,
+    protests: 1,
+    military_activity: 1,
+  });
+  expect(conflictReportLabel(unrest)).toBe('Protests and riots');
+  expect(conflictReportLabel(military)).toBe('Military activity');
+  expect(events.every((event) => event.subtype === 'fight' && event.grade === base.grade)).toBe(
+    true,
+  );
+});
+
+it.each(['unknown', 'force_posture', 'protest', 'coercion'])(
+  'uses unspecified organised violence for screened armed conflict with provider subtype %s',
+  (subtype) => {
+    const event = liveEvent({
+      category: 'conflict',
+      subtype,
+      attributes: { conflict_screening: 'llm', conflict_relevance: 'armed_conflict' },
+    });
+    expect(conflictKind(event)).toBe('organised_violence');
+  },
+);
+
+it('does not infer reviewed relevance from unassessed attributes or remove narrow input compatibility', () => {
+  expect(conflictKind({ category: 'conflict', subtype: 'fight' })).toBe('armed_clashes');
+  expect(
+    conflictKind(
+      liveEvent({
+        category: 'conflict',
+        subtype: 'fight',
+        attributes: { conflict_relevance: 'military_activity' },
+      }),
+    ),
+  ).toBe('armed_clashes');
+  expect(
+    conflictKind(
+      liveEvent({
+        category: 'news',
+        subtype: 'fight',
+        attributes: { conflict_screening: 'llm', conflict_relevance: 'civil_unrest' },
+      }),
+    ),
+  ).toBeNull();
+});

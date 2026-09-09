@@ -67,3 +67,44 @@ it.each(['globe', 'map'] as const)(
     await waitFor(() => expect(conflictIds()).toEqual([]));
   },
 );
+
+it.each(['globe', 'map'] as const)(
+  'requires an explicit opt-in for unreviewed media markers in %s and removes rejected updates',
+  async (mode) => {
+    useGlobeStore.setState({ mode });
+    const { user } = renderApp('/', 'user');
+    await waitFor(() => expect(useEventsStore.getState().loaded).toBe(true));
+    const signal = liveEvent({
+      id: 'raw-signal',
+      source_id: 'gdelt_events',
+      category: 'conflict',
+      subtype: 'fight',
+      point: { lon: 20, lat: 10 },
+    });
+    act(() => useEventsStore.getState().applyUpsert([signal]));
+    expect(conflictIds()).not.toContain('raw-signal');
+    await user.click(screen.getByRole('button', { name: 'Conflict report filters' }));
+    await user.click(screen.getByRole('button', { name: 'Report filters' }));
+    const toggle = screen.getByRole('checkbox', { name: 'Unreviewed media signals (1 loaded)' });
+    expect(toggle).not.toBeChecked();
+    await user.click(toggle);
+    await waitFor(() => expect(conflictIds()).toContain('raw-signal'));
+    act(() => useEventsStore.getState().select('raw-signal'));
+    expect(screen.getByText('Unreviewed media signal')).toBeVisible();
+    act(() =>
+      useEventsStore.getState().applyUpsert([
+        liveEvent({
+          ...signal,
+          attributes: {
+            conflict_screening: 'llm',
+            conflict_relevance: 'unrelated',
+            conflict_screening_reason: 'A construction accident, not armed conflict.',
+          },
+        }),
+      ]),
+    );
+    await waitFor(() => expect(conflictIds()).not.toContain('raw-signal'));
+    expect(useEventsStore.getState().selectedId).toBeNull();
+    expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
+  },
+);

@@ -52,11 +52,13 @@ export function ConflictSourceCoverage() {
               <p className="text-muted">
                 {source.role} · {source.detail}
               </p>
-              <p className="font-mono text-[10px] text-muted">
-                {source.dataset_release ? `Dataset ${source.dataset_release} · ` : ''}Last
-                successful collection:{' '}
-                {source.last_success ? formatUtc(source.last_success) : 'Not yet recorded'}
-              </p>
+              {source.id !== 'conflict_screening' && (
+                <p className="font-mono text-[10px] text-muted">
+                  {source.dataset_release ? `Dataset ${source.dataset_release} · ` : ''}Last
+                  successful collection:{' '}
+                  {source.last_success ? formatUtc(source.last_success) : 'Not yet recorded'}
+                </p>
+              )}
             </li>
           ))}
         </ul>

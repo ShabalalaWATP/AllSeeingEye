@@ -17,8 +17,8 @@ DESCRIPTIONS = (
         "gdelt_events",
         "GDELT events",
         "Early reporting",
-        "Machine-coded media reports; latest export is bounded. Source counts do not "
-        "establish independent confirmation.",
+        "Machine-coded media signals, hidden from the map by default until screened. "
+        "Requires matching source text for AI review. Source counts are not confirmation.",
     ),
     (
         "ucdp_candidate",
@@ -72,6 +72,49 @@ class ConflictSourcesOut(BaseModel):
     items: list[ConflictSourceOut]
 
 
+def screening_status(state: str) -> ConflictSourceOut:
+    descriptions = {
+        "disabled": "Automatic relevance screening is disabled by the administrator.",
+        "no_global_model": (
+            "An administrator needs to connect a global assessment model. "
+            "Unreviewed signals stay hidden by default."
+        ),
+        "model_error": (
+            "The model check failed. Unreviewed signals stay hidden; a bounded retry will follow."
+        ),
+        "unavailable": "Screening is temporarily unavailable. Unreviewed signals stay hidden.",
+        "waiting_for_source_text": (
+            "Waiting for eligible source headlines and summaries. GDELT signals require a "
+            "matching collected source URL."
+        ),
+        "budget_exhausted": (
+            "The hourly screening allowance is used. Cached decisions remain available; "
+            "new calls resume next hour."
+        ),
+        "model_changed": (
+            "The global model changed during screening. Results from that call were discarded."
+        ),
+        "ready": (
+            "Screening is running in bounded batches using the global model. "
+            "Relevance does not verify truth, dates or locations."
+        ),
+    }
+    status: Literal["configured", "waiting", "not_configured", "healthy", "degraded"] = "waiting"
+    if state in {"disabled", "no_global_model"}:
+        status = "not_configured"
+    elif state in {"model_error", "unavailable"}:
+        status = "degraded"
+    elif state == "ready":
+        status = "healthy"
+    return ConflictSourceOut(
+        id="conflict_screening",
+        name="AI relevance screening",
+        role="Topic classification",
+        status=status,
+        detail=descriptions.get(state, "Waiting for the next bounded screening cycle."),
+    )
+
+
 @router.get("/conflict-sources")
 async def conflict_sources(user: CurrentUser, container: ContainerDep) -> ConflictSourcesOut:
     specs = {connector.spec.id: connector.spec for connector in container.connectors}
@@ -109,4 +152,5 @@ async def conflict_sources(user: CurrentUser, container: ContainerDep) -> Confli
                 last_success=entry.last_success if entry else None,
             )
         )
+    items.append(screening_status(container.conflict_screening.state))
     return ConflictSourcesOut(items=items)

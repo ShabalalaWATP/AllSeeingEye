@@ -80,6 +80,7 @@ from ase.application.terrain import TerrainSampler
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.admin import AdminWiring
 from ase.container.auth import AuthWiring
+from ase.container.conflict_screening import build_conflict_screening
 from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
 from ase.container.repositories import Repositories as Repositories
@@ -259,15 +260,19 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         self.notifier: AlertNotifier = (
             WebhookNotifier(webhook, settings.feeds_user_agent) if webhook else NullNotifier()
         )
-        self.evaluator = self.build_evaluator()
-        self.schedule_runner = self.build_schedule_runner()
-        self.translation_queue = self.build_translation_queue()
-        self.social_monitor = self.build_social_monitor()
+        self._initialise_background_jobs()
         self.archiver: Archiver = (
             WaybackArchiver(settings.feeds_user_agent)
             if settings.archive_enabled
             else NullArchiver()
         )
+
+    def _initialise_background_jobs(self) -> None:
+        self.evaluator = self.build_evaluator()
+        self.schedule_runner = self.build_schedule_runner()
+        self.translation_queue = self.build_translation_queue()
+        self.conflict_screening = build_conflict_screening(self)
+        self.social_monitor = self.build_social_monitor()
 
     def _initialise_map_catalogues(self) -> None:
         self.groundwave_study = GroundwaveStudy(NtiaGroundwaveSolver(), self.limiter)

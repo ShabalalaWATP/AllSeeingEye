@@ -14,6 +14,7 @@ from ase.domain.conflict_evidence import (
     is_violence,
     occurrence_time,
 )
+from ase.domain.conflict_relevance import is_admitted_conflict
 from ase.domain.errors import NotFound
 from ase.domain.events import Category, Event
 from ase.domain.evidence_time import publication_order
@@ -133,7 +134,7 @@ class TrackerService:
             for event in self._store.query(query):
                 if event.point is not None and not conflict.bbox.contains(event.point):
                     continue
-                if event.category is Category.CONFLICT or is_conflict_context(event):
+                if is_admitted_conflict(event) or is_conflict_context(event):
                     seen.setdefault(event.id, event)
         return sorted(
             seen.values(),

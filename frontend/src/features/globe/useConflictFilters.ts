@@ -12,10 +12,12 @@ import {
   type ConflictPrecision,
 } from '@/lib/conflictDisplayFilters';
 import { useEventsStore } from '@/stores/events';
+import { isUnreviewedConflictSignal } from '@/lib/conflictReview';
 
 export function useConflictFilters(events: LiveEvent[]) {
   const [group, setGroup] = useState<ConflictGroup>('all');
   const [includeHistorical, setIncludeHistorical] = useState(false);
+  const [includeUnreviewed, setIncludeUnreviewed] = useState(false);
   const [query, setQuery] = useState('');
   const [source, setSource] = useState('all');
   const [precision, setPrecision] = useState<ConflictPrecision>('all');
@@ -25,12 +27,16 @@ export function useConflictFilters(events: LiveEvent[]) {
     [events, query, source, precision],
   );
   const scoped = useMemo(
-    () => filterConflictReports(searched, 'all', includeHistorical),
-    [searched, includeHistorical],
+    () => filterConflictReports(searched, 'all', includeHistorical, includeUnreviewed),
+    [searched, includeHistorical, includeUnreviewed],
   );
-  const filtered = useMemo(() => filterConflictReports(scoped, group, true), [scoped, group]);
+  const filtered = useMemo(
+    () => filterConflictReports(scoped, group, true, includeUnreviewed),
+    [scoped, group, includeUnreviewed],
+  );
   const counts = useMemo(() => countConflictReports(scoped), [scoped]);
   const historicalCount = useMemo(() => events.filter(isHistoricalConflict).length, [events]);
+  const unreviewedCount = useMemo(() => events.filter(isUnreviewedConflictSignal).length, [events]);
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);
   useEffect(() => {
@@ -46,6 +52,9 @@ export function useConflictFilters(events: LiveEvent[]) {
     includeHistorical,
     setIncludeHistorical,
     historicalCount,
+    includeUnreviewed,
+    setIncludeUnreviewed,
+    unreviewedCount,
     query,
     setQuery,
     source,

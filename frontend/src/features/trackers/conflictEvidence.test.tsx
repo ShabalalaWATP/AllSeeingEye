@@ -138,6 +138,15 @@ it('shows configured collection coverage without implying unavailable sources ha
             dataset_release: null,
             last_success: null,
           },
+          {
+            id: 'conflict_screening',
+            name: 'AI conflict relevance screening',
+            role: 'Relevance screening',
+            status: 'waiting',
+            detail: 'Waiting for matched source text. Unreviewed signals remain hidden by default.',
+            dataset_release: null,
+            last_success: null,
+          },
         ],
       }),
     ),
@@ -148,6 +157,9 @@ it('shows configured collection coverage without implying unavailable sources ha
   expect(within(panel).getByText('Healthy')).toBeInTheDocument();
   expect(within(panel).getByText('Not configured')).toBeInTheDocument();
   expect(within(panel).getByText(/Dataset 25.1/)).toBeInTheDocument();
+  const screening = within(panel).getByText('AI conflict relevance screening').closest('li');
+  expect(screening).toHaveTextContent('Waiting for matched source text');
+  expect(screening).not.toHaveTextContent('Last successful collection');
   expect(screen.getByText(/No reports collected does not establish absence/)).toBeInTheDocument();
 });
 

@@ -18,6 +18,11 @@ Companion specifications:
 
 ## 1. Outcome and boundaries
 
+Delivered on 9 September: [conflict relevance screening](CONFLICT_RELEVANCE_SCREENING.md),
+default-hidden unreviewed machine signals, shared tracker admission and bounded
+global-model processing. Live model classification quality and multilingual recall
+remain acceptance gates; no usable global model is currently assigned locally.
+
 An operator can ask a question about an event, organisation, claim or place,
 obtain relevant public records and reporting, inspect supporting and contrary
 evidence, and receive a report with a reproducible map and clear limitations.

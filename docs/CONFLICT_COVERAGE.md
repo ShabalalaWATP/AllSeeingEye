@@ -1,6 +1,10 @@
 # Conflict evidence and source coverage
 
-Updated 8 September 2026.
+Updated 9 September 2026.
+
+Machine-coded signals now require relevance screening for default incident display
+and tracker counts. See [screening and source audit](CONFLICT_RELEVANCE_SCREENING.md)
+for model setup, worker bounds, source-text requirements and the OSIRIS comparison.
 
 ## Delivered behaviour
 

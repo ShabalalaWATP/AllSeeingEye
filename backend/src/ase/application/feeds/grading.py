@@ -72,7 +72,7 @@ class GradingService:
             await self._store.put_grades_cooperatively(changed)
         elif changed:
             self._store.put(changed)
-        return changed
+        return [current for event in changed if (current := self._store.get(event.id)) is not None]
 
     def _batches(self, events: Sequence[Event]) -> Iterator[list[Event]]:
         instruments = [

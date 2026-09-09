@@ -33,7 +33,10 @@ def test_new_reporting_of_old_event_does_not_create_recent_fighting():
 
 
 def test_missing_machine_event_date_is_unknown_not_today():
-    event = report(source_id="gdelt_events")
+    event = report(
+        source_id="gdelt_events",
+        attributes={"conflict_screening": "llm", "conflict_relevance": "armed_conflict"},
+    )
     card = conflict_card(UKRAINE, [event], NOW)
     assert card.activity.last_7d == 0
     assert card.unknown_date_reports == 1
