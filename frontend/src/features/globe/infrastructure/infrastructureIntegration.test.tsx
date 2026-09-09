@@ -11,7 +11,7 @@ import { server } from '@/test/server';
 import { liveEvent } from '@/test/fixtures';
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
-import type { GroundStation, Cable } from '@/lib/api/infrastructure';
+import type { GroundStation, Cable, NuclearFacility } from '@/lib/api/infrastructure';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
@@ -37,6 +37,21 @@ const cable: Cable = {
   source_url: 'https://www.openstreetmap.org/way/1',
   note: 'Approximate incomplete route.',
 };
+const nuclear: NuclearFacility = {
+  id: 'nuclear',
+  name: 'Historical nuclear plant',
+  country: 'United Kingdom',
+  country_code: 'GBR',
+  longitude: -2,
+  latitude: 54,
+  capacity_mw: 1200,
+  capacity_year: 2017,
+  operator: null,
+  source_name: 'WRI',
+  source_url: 'https://datasets.wri.org/',
+  geolocation_source: 'Public inventory',
+  note: 'Historical location.',
+};
 const layers = () => (MapboxOverlay.instances[0]?.props.layers ?? []) as Layer[];
 const pick = (id: string, object: unknown) => {
   const layer = layers().find((value) => value.id === id);
@@ -59,6 +74,11 @@ beforeEach(async () => {
         snapshot_date: '2026-09-08',
         cable_attribution: 'OpenStreetMap contributors',
         cable_licence_url: 'https://opendatacommons.org/licenses/odbl/',
+        nuclear_facilities: [nuclear],
+        nuclear_attribution: 'WRI historical inventory',
+        nuclear_licence_url: 'https://creativecommons.org/licenses/by/4.0/',
+        nuclear_dataset_version: '1.3.0',
+        nuclear_snapshot_date: '2026-09-09',
       }),
     ),
   );
@@ -77,6 +97,17 @@ it.each(['globe', 'map'] as const)(
     expect(layers().find((layer) => layer.id === 'undersea-cables')?.props.wrapLongitude).toBe(
       true,
     );
+    await user.click(screen.getByRole('switch', { name: 'Nuclear power facilities' }));
+    await waitFor(() =>
+      expect(layers().some((layer) => layer.id === 'nuclear-facilities')).toBe(true),
+    );
+    pick('nuclear-facilities', nuclear);
+    expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(
+      nuclear.name,
+    );
+    expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
+    expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(false);
     pick('satellite-ground-stations', station);
     expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(
       station.name,

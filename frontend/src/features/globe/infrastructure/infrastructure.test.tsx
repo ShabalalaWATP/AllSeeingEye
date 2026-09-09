@@ -38,6 +38,11 @@ const data: Infrastructure = {
   snapshot_date: '2026-09-08',
   cable_attribution: 'OpenStreetMap contributors',
   cable_licence_url: 'https://opendatacommons.org/licenses/odbl/',
+  nuclear_facilities: [],
+  nuclear_attribution: 'WRI historical inventory',
+  nuclear_licence_url: 'https://creativecommons.org/licenses/by/4.0/',
+  nuclear_dataset_version: '1.3.0',
+  nuclear_snapshot_date: '2026-09-09',
 };
 const cableFixture = data.cables[0]!;
 const stationFixture = data.ground_stations[0]!;

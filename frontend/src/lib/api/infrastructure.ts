@@ -3,6 +3,7 @@ import { apiCall } from './client';
 import type { components } from './types.gen';
 
 export type Cable = components['schemas']['CableOut'];
+export type NuclearFacility = components['schemas']['NuclearFacilityOut'];
 export type GroundStation = components['schemas']['GroundStationOut'];
 export type Infrastructure = components['schemas']['InfrastructureOut'];
 const publicLink = z.url().refine((value) => {
@@ -42,6 +43,29 @@ export const infrastructureSchema = z.object({
       }),
     )
     .max(100),
+  nuclear_facilities: z
+    .array(
+      z.object({
+        id: text,
+        name: text,
+        country: text,
+        country_code: z.string().regex(/^[A-Z]{3}$/),
+        longitude,
+        latitude,
+        capacity_mw: z.number().min(0).max(100000).nullable(),
+        capacity_year: z.number().int().min(1900).max(2099).nullable(),
+        operator: text.nullable(),
+        source_name: text,
+        source_url: publicLink,
+        geolocation_source: text,
+        note: text,
+      }),
+    )
+    .max(1000),
+  nuclear_attribution: text,
+  nuclear_licence_url: publicLink,
+  nuclear_dataset_version: text,
+  nuclear_snapshot_date: text,
   snapshot_date: text,
   cable_attribution: text,
   cable_licence_url: publicLink,

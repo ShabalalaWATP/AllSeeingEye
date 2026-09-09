@@ -3,21 +3,25 @@ import {
   fetchInfrastructure,
   type Infrastructure,
   type Cable,
+  type NuclearFacility,
   type GroundStation,
 } from '@/lib/api/infrastructure';
 
 export type InfrastructureSelection =
-  { kind: 'cable'; item: Cable } | { kind: 'station'; item: GroundStation };
+  | { kind: 'cable'; item: Cable }
+  | { kind: 'station'; item: GroundStation }
+  | { kind: 'nuclear'; item: NuclearFacility };
 
 export function useInfrastructure() {
   const [cablesEnabled, setCablesEnabled] = useState(false);
   const [stationsEnabled, setStationsEnabled] = useState(false);
+  const [nuclearEnabled, setNuclearEnabled] = useState(false);
   const [data, setData] = useState<Infrastructure | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const [selection, setSelection] = useState<InfrastructureSelection | null>(null);
-  const enabled = cablesEnabled || stationsEnabled;
+  const enabled = cablesEnabled || stationsEnabled || nuclearEnabled;
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
@@ -45,7 +49,8 @@ export function useInfrastructure() {
   const selected =
     selection &&
     ((selection.kind === 'cable' && cablesEnabled) ||
-      (selection.kind === 'station' && stationsEnabled))
+      (selection.kind === 'station' && stationsEnabled) ||
+      (selection.kind === 'nuclear' && nuclearEnabled))
       ? selection
       : null;
   return {
@@ -54,6 +59,7 @@ export function useInfrastructure() {
     error,
     cablesEnabled,
     stationsEnabled,
+    nuclearEnabled,
     selected,
     close,
     select: useCallback((value: InfrastructureSelection) => setSelection(value), []),
@@ -66,6 +72,11 @@ export function useInfrastructure() {
       setSelection(null);
       if (!enabled) setLoading(true);
       setStationsEnabled(!stationsEnabled);
+    },
+    toggleNuclear: () => {
+      setSelection(null);
+      if (!enabled) setLoading(true);
+      setNuclearEnabled(!nuclearEnabled);
     },
     retry: () => {
       setLoading(enabled);

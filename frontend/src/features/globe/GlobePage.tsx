@@ -7,7 +7,6 @@ import { InfrastructureInspector } from './infrastructure/InfrastructureInspecto
 import { MapCanvas } from './MapCanvas';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useCameras } from './cameras/useCameras';
-import { CameraPanel } from './cameras/CameraPanel';
 import { CameraInspector } from './cameras/CameraInspector';
 import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
@@ -21,28 +20,28 @@ import {
 } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 
-import { BaseLayerToolbar } from './BaseLayerToolbar';
-import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
 import { CoordinateReadout } from './CoordinateReadout';
-import { CountryPanel } from './CountryPanel';
 import { SelectedMapDetails } from './SelectedMapDetails';
 import { useBritishGrid } from './useBritishGrid';
-import { BritishGridTool } from './BritishGridTool';
 import { ControlPanel, GlobeControls } from './GlobeControls';
 import { MeasurementReadout } from './MeasurementReadout';
 import { MapLayerRail } from './MapLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
-import { NationFilter } from './NationFilter';
 import { Ticker } from './Ticker';
 import { WorldClocks } from './WorldClocks';
 import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
-import { useMapMeasurement } from './useMapMeasurement';
-import { measurementLayers } from '@/lib/map/measurementLayers';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
 import { useConflictFilters } from './useConflictFilters';
+import { useHazardFilters } from './useHazardFilters';
+import { useMapWorkspaceTools } from './useMapWorkspaceTools';
+import { MapDrawingPanel } from './MapDrawingPanel';
+import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
+import { RoutePlannerPanel } from '@/components/maps/RoutePlannerPanel';
+import { measure } from '@/lib/map/measurements';
+import { mapReferencePanels } from './MapReferencePanels';
 import { catalogueControlPanels } from './catalogueControlPanels';
 import './dashboard.css';
 import { createEngine } from './globeEngineFactory';
@@ -87,11 +86,8 @@ export default function GlobePage() {
   const britishGrid = useBritishGrid(engine);
   useLiveEvents();
   useViewportCoverage(engine, supported && visible);
-  const measurement = useMapMeasurement(engine, supported && !opsRoom);
-  const measured = useMemo(
-    () => measurementLayers(measurement.points, measurement.mode, mode === 'map'),
-    [measurement.points, measurement.mode, mode],
-  );
+  const tools = useMapWorkspaceTools(engine, supported && !opsRoom, mode);
+  const { measurement } = tools;
   const now = useNow();
   const [zoom, setZoom] = useState(1.5);
   useEffect(
@@ -127,7 +123,8 @@ export default function GlobePage() {
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
   const observations = useObservationFilters(scoped);
   const satellites = useSatelliteFilters(observations.filtered);
-  const conflicts = useConflictFilters(satellites.filtered);
+  const hazards = useHazardFilters(satellites.filtered);
+  const conflicts = useConflictFilters(hazards.filtered);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
     () =>
@@ -154,18 +151,11 @@ export default function GlobePage() {
     onPick,
     onCluster,
     onJam,
-  } = useMapPicking(
-    conflicts.filtered,
-    hidden,
-    measurement.picking,
-    select,
-    engine,
-    closeCatalogues,
-  );
+  } = useMapPicking(conflicts.filtered, hidden, tools.picking, select, engine, closeCatalogues);
 
   const { focusCamera, cameraLayers } = useCameraSelection(
     cameras,
-    measurement.picking,
+    tools.picking,
     close,
     engine,
     mode,
@@ -180,7 +170,7 @@ export default function GlobePage() {
   );
   const { focus: focusInfrastructure, layers: infrastructureLayers } = useInfrastructureSelection(
     infrastructure,
-    measurement.picking,
+    tools.picking,
     close,
     engine,
     mode,
@@ -198,7 +188,7 @@ export default function GlobePage() {
     gridLayers: britishGrid.layers,
     cameraLayers,
     infrastructureLayers,
-    measured,
+    measured: tools.layers,
     supported,
     terminator,
     lite,
@@ -227,8 +217,11 @@ export default function GlobePage() {
       <WorldClocks />
       {!opsRoom && (
         <GlobeControls
-          layers={
+          onActiveChange={tools.activatePanel}
+          layers={(openPanel, activePanel) => (
             <MapLayerRail
+              openPanel={openPanel}
+              activePanel={activePanel}
               events={scoped}
               counts={counts}
               visibility={observations.visibility}
@@ -236,41 +229,59 @@ export default function GlobePage() {
               flightFilter={observations.flightFilter}
               onFlightFilter={observations.setFlightFilter}
               onTrafficSelect={selectTraffic}
-              selectionDisabled={measurement.picking}
+              selectionDisabled={tools.picking}
               vesselFilter={observations.vesselFilter}
               onVesselFilter={observations.setVesselFilter}
             />
-          }
+          )}
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
-          {catalogueControlPanels({ infrastructure, focusInfrastructure, satellites, conflicts })}
-          <ControlPanel side="right" label="Map style" icon="layers">
-            <BaseLayerToolbar
-              initialExpanded
-              value={baseLayer}
-              osAvailable={osMaps}
-              onChange={setBaseLayer}
+          {catalogueControlPanels({
+            infrastructure,
+            focusInfrastructure,
+            satellites,
+            conflicts,
+            hazards,
+          })}
+          {mapReferencePanels({
+            base: {
+              initialExpanded: true,
+              value: baseLayer,
+              osAvailable: osMaps,
+              onChange: setBaseLayer,
+            },
+            nation: { countries, value: country, onChange: changeNation, error: countriesError },
+            country: nation
+              ? { country: nation, events: scoped, selectedId, now, onSelect: focus }
+              : null,
+            precision: { events: conflicts.filtered, hidden, onSelect: focus },
+            grid: { grid: britishGrid, engine },
+            cameras: { cameras, onSelect: focusCamera },
+          })}
+          <ControlPanel side="right" label="Draw on map" icon="draw">
+            <MapDrawingPanel value={tools.drawing} />
+          </ControlPanel>
+          <ControlPanel side="right" label="Route planner" icon="route">
+            <RoutePlannerPanel
+              onRouteChange={tools.setRoute}
+              {...(measurement.points.length >= 2
+                ? {
+                    initialWaypoints: measurement.points
+                      .slice(0, 8)
+                      .map(([lon, lat]) => ({ lon, lat })),
+                  }
+                : {})}
+            />
+          </ControlPanel>
+          <ControlPanel side="right" label="RF link calculator" icon="rf">
+            <RfCalculatorPanel
+              {...(measurement.mode === 'distance' && measurement.points.length === 2
+                ? { measuredDistanceKm: measure(measurement.points, 'distance').metres / 1000 }
+                : {})}
             />
           </ControlPanel>
           <ControlPanel label="Measure distance and area" icon="measure">
             <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
-          </ControlPanel>
-          <ControlPanel label="Find nation" icon="nation">
-            <NationFilter
-              countries={countries}
-              value={country}
-              onChange={changeNation}
-              error={countriesError}
-            />
-            {nation !== null && (
-              <CountryPanel
-                country={nation}
-                events={scoped}
-                selectedId={selectedId}
-                now={now}
-                onSelect={focus}
-              />
-            )}
           </ControlPanel>
           <ControlPanel side="left" label="Layers and settings" icon="settings">
             <LayerPanel
@@ -295,30 +306,18 @@ export default function GlobePage() {
               onToggleInterference={toggleInterference}
             />
           </ControlPanel>
-          <ControlPanel label="Location precision" icon="precision">
-            <GeographicPrecisionPanel
-              events={conflicts.filtered}
-              hidden={hidden}
-              onSelect={focus}
-            />
-          </ControlPanel>
-          <ControlPanel side="right" label="British National Grid" icon="grid">
-            <BritishGridTool grid={britishGrid} engine={engine} />
-          </ControlPanel>
-          <ControlPanel side="left" label="CCTV" icon="camera">
-            <CameraPanel cameras={cameras} onSelect={focusCamera} />
-          </ControlPanel>
         </GlobeControls>
       )}
       <MeasurementReadout value={measurement} />
-      {supported && !opsRoom && !measurement.picking && (
+      {supported && !opsRoom && !tools.picking && (
         <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
       )}
       {!opsRoom &&
-        !measurement.picking &&
+        !tools.picking &&
         (infrastructure.selected ? (
           <InfrastructureInspector
             selected={infrastructure.selected}
+            data={infrastructure.data}
             onClose={infrastructure.close}
           />
         ) : cameras.selected ? (

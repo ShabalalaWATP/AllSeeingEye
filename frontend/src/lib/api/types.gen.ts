@@ -38,6 +38,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/navigation/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_navigation_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/navigation/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate Route */
+        post: operations["calculate_route_api_navigation_route_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -4865,6 +4899,16 @@ export interface components {
             cable_attribution: string;
             /** Cable Licence Url */
             cable_licence_url: string;
+            /** Nuclear Facilities */
+            nuclear_facilities: components["schemas"]["NuclearFacilityOut"][];
+            /** Nuclear Attribution */
+            nuclear_attribution: string;
+            /** Nuclear Licence Url */
+            nuclear_licence_url: string;
+            /** Nuclear Dataset Version */
+            nuclear_dataset_version: string;
+            /** Nuclear Snapshot Date */
+            nuclear_snapshot_date: string;
         };
         /** InputDeclarationTargetOut */
         InputDeclarationTargetOut: {
@@ -5875,6 +5919,98 @@ export interface components {
             binding_user_id?: string | null;
             /** Profiles */
             profiles: components["schemas"]["RoutedModelOut"][];
+        };
+        /** NavigationCapabilitiesOut */
+        NavigationCapabilitiesOut: {
+            /**
+             * Provider
+             * @default FOSSGIS Valhalla
+             */
+            provider: string;
+            /** Operator Contact */
+            operator_contact: string;
+            /** Available */
+            available: boolean;
+            /** Configuration Message */
+            configuration_message?: string | null;
+            /**
+             * Privacy
+             * @default Calculate route sends the entered coordinates to FOSSGIS, which may log requests.
+             */
+            privacy: string;
+        };
+        /** NavigationRouteOut */
+        NavigationRouteOut: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "driving" | "walking" | "cycling";
+            /** Distance Km */
+            distance_km: number;
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Coordinates */
+            coordinates: [
+                number,
+                number
+            ][];
+            /** Steps */
+            steps: components["schemas"]["NavigationStepOut"][];
+            /**
+             * Provider
+             * @default FOSSGIS Valhalla
+             * @constant
+             */
+            provider: "FOSSGIS Valhalla";
+            /**
+             * Attribution
+             * @default Data © OpenStreetMap contributors (ODbL). Routing: FOSSGIS Valhalla.
+             */
+            attribution: string;
+            /**
+             * Limitations
+             * @default Planning estimate only. Road access, closures, conditions and travel times may be wrong. Verify locally before travelling.
+             */
+            limitations: string;
+        };
+        /** NavigationStepOut */
+        NavigationStepOut: {
+            /** Instruction */
+            instruction: string;
+            /** Distance Km */
+            distance_km: number;
+            /** Duration Seconds */
+            duration_seconds: number;
+        };
+        /** NuclearFacilityOut */
+        NuclearFacilityOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Country */
+            country: string;
+            /** Country Code */
+            country_code: string;
+            /** Longitude */
+            longitude: number;
+            /** Latitude */
+            latitude: number;
+            /** Capacity Mw */
+            capacity_mw: number | null;
+            /** Capacity Year */
+            capacity_year: number | null;
+            /** Operator */
+            operator: string | null;
+            /** Source Name */
+            source_name: string;
+            /** Source Url */
+            source_url: string;
+            /** Geolocation Source */
+            geolocation_source: string;
+            /** Note */
+            note: string;
         };
         /** ObservationMetadata */
         ObservationMetadata: {
@@ -8478,6 +8614,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadyOut"];
+                };
+            };
+        };
+    };
+    capabilities_api_navigation_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationCapabilitiesOut"];
+                };
+            };
+        };
+    };
+    calculate_route_api_navigation_route_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Mode
+                     * @enum {string}
+                     */
+                    mode: "driving" | "walking" | "cycling";
+                    /** Waypoints */
+                    waypoints: {
+                        /** Lat */
+                        lat: number;
+                        /** Lon */
+                        lon: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationRouteOut"];
                 };
             };
         };

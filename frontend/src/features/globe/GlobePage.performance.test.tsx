@@ -34,7 +34,7 @@ function layer(id: string): TestLayer | undefined {
 
 async function mount() {
   const view = renderApp('/', 'user');
-  await screen.findByRole('switch', { name: 'Disasters 1' });
+  await screen.findByRole('switch', { name: 'Natural hazards 1' });
   await waitFor(() => expect(layer('events-disaster')).toBeDefined());
   return view;
 }

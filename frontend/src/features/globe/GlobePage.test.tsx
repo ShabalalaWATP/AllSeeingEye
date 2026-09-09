@@ -76,7 +76,7 @@ describe('GlobePage', () => {
   it('loads events into the panel, the ticker and one layer per located category', async () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
-    expect(await screen.findByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
@@ -87,8 +87,8 @@ describe('GlobePage', () => {
       expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
     });
 
-    await user.click(screen.getByRole('switch', { name: 'Disasters 1' }));
-    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toHaveAttribute(
+    await user.click(screen.getByRole('switch', { name: 'Natural hazards 1' }));
+    expect(screen.getByRole('switch', { name: 'Natural hazards 1' })).toHaveAttribute(
       'aria-checked',
       'false',
     );
@@ -98,7 +98,7 @@ describe('GlobePage', () => {
   it('streams new events, opens the inspector on pick and focuses from the ticker', async () => {
     mockWebGl2(true);
     const { user, unmount } = renderApp('/', 'user');
-    await screen.findByRole('switch', { name: 'Disasters 1' });
+    await screen.findByRole('switch', { name: 'Natural hazards 1' });
     const client = FakeEventStreamClient.instances[0]!;
     expect(client.start).toHaveBeenCalledTimes(1);
     await expect(client.options.getToken(false)).resolves.toBe(USER_TOKEN);
@@ -120,7 +120,7 @@ describe('GlobePage', () => {
     await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
-    expect(await screen.findByRole('switch', { name: 'Disasters 2' })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getAllByRole('button')[0]).toHaveTextContent('Flash flood in Valencia');
 
@@ -155,7 +155,7 @@ describe('GlobePage', () => {
         screen.queryByRole('complementary', { name: 'Event details' }),
       ).not.toBeInTheDocument(),
     );
-    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
 
     unmount();
     expect(client.stop).toHaveBeenCalledTimes(1);
@@ -221,7 +221,7 @@ describe('GlobePage', () => {
   it('filters the globe to one nation and flies there', async () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
-    await screen.findByRole('switch', { name: 'Disasters 1' });
+    await screen.findByRole('switch', { name: 'Natural hazards 1' });
     await user.click(screen.getByRole('button', { name: 'Find nation' }));
     const picker = await screen.findByRole('combobox', { name: 'Nation filter' });
     await user.type(picker, 'Ukraine');
@@ -230,14 +230,14 @@ describe('GlobePage', () => {
     expect(
       within(panel).getByText('Nothing in the live tier for this nation.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: 'Disasters 0' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Natural hazards 0' })).toBeInTheDocument();
     expect(overlayLayerIds()).toEqual(['terminator']);
     const strip = screen.getByRole('navigation', { name: 'Latest events' });
     expect(within(strip).getByText('Waiting for events')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Clear nation filter' }));
     expect(screen.queryByRole('region', { name: 'Ukraine panel' })).not.toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
     expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
   });
 
@@ -280,7 +280,7 @@ describe('GlobePage', () => {
   it('asks the session for a fresh token when the stream says so', async () => {
     mockWebGl2(true);
     renderApp('/', 'user');
-    await screen.findByRole('switch', { name: 'Disasters 1' });
+    await screen.findByRole('switch', { name: 'Natural hazards 1' });
     const client = FakeEventStreamClient.instances[0]!;
     // No CSRF cookie in this test, so the refresh fails and the session is dropped.
     await expect(client.options.getToken(true)).resolves.toBeNull();
@@ -303,7 +303,7 @@ describe('GlobePage', () => {
     expect(await screen.findByText('WebGL2 is required')).toBeInTheDocument();
     expect(screen.queryByTestId('map-container')).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'View mode' })).toBeInTheDocument();
-    expect(await screen.findByRole('switch', { name: 'Disasters 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
     expect(FakeMap.instances).toHaveLength(0);
     expect(MapboxOverlay.instances).toHaveLength(0);
   });

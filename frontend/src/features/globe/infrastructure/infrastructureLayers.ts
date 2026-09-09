@@ -1,6 +1,7 @@
 import { IconLayer, PathLayer, ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Cable, GroundStation } from '@/lib/api/infrastructure';
+import { nuclearLayers } from './nuclearLayers';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 
 const DISH = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13a28 28 0 0 0 39 39L12 13ZM32 35 45 22M26 48l-5 12h30M42 8a17 17 0 0 1 14 14M42 18a7 7 0 0 1 4 4"/></g></svg>')}`;
@@ -9,7 +10,9 @@ const GLOBE_WINDING: NonNullable<Layer['props']['parameters']> & Record<number, 
 };
 
 export function buildInfrastructureLayers(
-  state: Pick<InfrastructureState, 'data' | 'cablesEnabled' | 'stationsEnabled' | 'selected'>,
+  state: Pick<InfrastructureState, 'data' | 'cablesEnabled' | 'stationsEnabled' | 'selected'> & {
+    nuclearEnabled?: boolean;
+  },
   onSelect: (selection: InfrastructureSelection) => void,
   globe = false,
 ): Layer[] {
@@ -81,5 +84,7 @@ export function buildInfrastructureLayers(
         }),
       );
   }
+  if (state.nuclearEnabled)
+    layers.push(...nuclearLayers(state.data.nuclear_facilities, state.selected, onSelect, globe));
   return layers;
 }

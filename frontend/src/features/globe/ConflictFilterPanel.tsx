@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import type { ConflictPrecision, ConflictSourceChoice } from '@/lib/conflictDisplayFilters';
 import { CONFLICT_GROUPS, type ConflictGroup } from '@/lib/conflicts';
 
 export function ConflictFilterPanel({
@@ -8,6 +9,13 @@ export function ConflictFilterPanel({
   includeHistorical,
   setIncludeHistorical,
   historicalCount,
+  query = '',
+  setQuery,
+  source = 'all',
+  setSource,
+  precision = 'all',
+  setPrecision,
+  sourceOptions = [],
 }: {
   group: ConflictGroup;
   setGroup: (value: ConflictGroup) => void;
@@ -15,6 +23,13 @@ export function ConflictFilterPanel({
   includeHistorical: boolean;
   setIncludeHistorical: (value: boolean) => void;
   historicalCount: number;
+  query?: string;
+  setQuery?: (value: string) => void;
+  source?: string;
+  setSource?: (value: string) => void;
+  precision?: ConflictPrecision;
+  setPrecision?: (value: ConflictPrecision) => void;
+  sourceOptions?: ConflictSourceChoice[];
 }) {
   const id = useId();
   return (
@@ -33,6 +48,59 @@ export function ConflictFilterPanel({
         historical baseline does not make these reports live incidents; release and occurrence dates
         appear in details.
       </p>
+      {setQuery && (
+        <label className="block text-xs text-muted">
+          Search loaded reports
+          <input
+            type="search"
+            maxLength={200}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Place, topic or report text"
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+          />
+        </label>
+      )}
+      {setSource && (
+        <label className="block text-xs text-muted">
+          Report source
+          <select
+            value={source}
+            onChange={(event) => setSource(event.target.value)}
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+          >
+            <option value="all">All loaded sources</option>
+            {source !== 'all' && !sourceOptions.some((choice) => choice.value === source) && (
+              <option value={source}>{source} (no records loaded)</option>
+            )}
+            {sourceOptions.map((choice) => (
+              <option key={choice.value} value={choice.value}>
+                {choice.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {setPrecision && (
+        <label className="block text-xs text-muted">
+          Location precision
+          <select
+            value={precision}
+            onChange={(event) => setPrecision(event.target.value as ConflictPrecision)}
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+          >
+            <option value="all">All, including unknown locations</option>
+            <option value="exact">Source-labelled exact points</option>
+            <option value="approximate">Approximate city / region / country</option>
+          </select>
+        </label>
+      )}
+      {setPrecision && (
+        <p className="text-[11px] leading-relaxed text-muted">
+          Precision reflects the source's location label, not independent verification. Approximate
+          locations can be city, region or country centres. Unlocated reports appear only under All.
+        </p>
+      )}
       <fieldset className="space-y-1">
         <legend className="mb-2 text-xs text-muted">
           Choose which reported incidents appear on the map.
@@ -60,8 +128,9 @@ export function ConflictFilterPanel({
         ))}
       </fieldset>
       <p className="text-[11px] leading-relaxed text-muted">
-        Counts are loaded reports in the selected nation and time window, not verified conflicts or
-        unique incidents. Several sources may report the same event.
+        Counts follow the active search, source, location, nation and time filters. They are loaded
+        reports, not verified conflicts or unique incidents. Several sources may report the same
+        event.
       </p>
       <p className="text-[11px] leading-relaxed text-muted">
         Types come from the source. Protests, force movements and other incidents do not establish

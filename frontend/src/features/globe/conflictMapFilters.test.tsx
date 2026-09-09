@@ -13,6 +13,9 @@ vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
+// Resolve the lazy route before timed UI assertions, including on a cold test worker.
+import './GlobePage';
+
 beforeEach(() => {
   FakeMap.reset();
   MapboxOverlay.reset();
@@ -36,22 +39,20 @@ it.each(['globe', 'map'] as const)(
     const { user } = renderApp('/', 'user');
     await waitFor(() => expect(useEventsStore.getState().loaded).toBe(true));
     act(() => {
-      useEventsStore
-        .getState()
-        .applyUpsert([
-          liveEvent({
-            id: 'fight',
-            category: 'conflict',
-            subtype: 'fight',
-            point: { lon: 20, lat: 10 },
-          }),
-          liveEvent({
-            id: 'protest',
-            category: 'conflict',
-            subtype: 'protest',
-            point: { lon: 50, lat: 20 },
-          }),
-        ]);
+      useEventsStore.getState().applyUpsert([
+        liveEvent({
+          id: 'fight',
+          category: 'conflict',
+          subtype: 'fight',
+          point: { lon: 20, lat: 10 },
+        }),
+        liveEvent({
+          id: 'protest',
+          category: 'conflict',
+          subtype: 'protest',
+          point: { lon: 50, lat: 20 },
+        }),
+      ]);
       useEventsStore.getState().select('fight');
     });
     await waitFor(() =>

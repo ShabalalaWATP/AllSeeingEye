@@ -9,6 +9,7 @@ interface PanelProps {
   icon: ControlIcon;
   side?: 'left' | 'right';
   children: ReactNode;
+  entry?: boolean;
 }
 export function ControlPanel({ children }: PanelProps) {
   return children;
@@ -19,20 +20,34 @@ export function GlobeControls({
   children,
   layers,
   navigation,
+  onActiveChange,
 }: {
   children: ReactNode;
-  layers: ReactNode;
+  layers:
+    | ReactNode
+    | ((
+        open: (label: string, button: HTMLButtonElement) => void,
+        active: string | null,
+      ) => ReactNode);
   navigation?: ReactNode;
+  onActiveChange?: (label: string | null) => void;
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const changed = useRef(onActiveChange);
+  useEffect(() => {
+    changed.current = onActiveChange;
+  });
+  useEffect(() => {
+    changed.current?.(active);
+  }, [active]);
   const id = useId();
-  const opener = useRef<HTMLButtonElement | null>(null);
+  const [opener, setOpener] = useState<HTMLButtonElement | null>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const panels = Children.toArray(children).filter(isValidElement<PanelProps>);
   const selected = panels.find((panel) => panel.props.label === active);
   const close = () => {
     setActive(null);
-    opener.current?.focus();
+    opener?.focus();
   };
   useEffect(() => {
     if (!active) return;
@@ -40,15 +55,15 @@ export function GlobeControls({
     const dismiss = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !event.defaultPrevented) {
         setActive(null);
-        opener.current?.focus();
+        opener?.focus();
       }
     };
     document.addEventListener('keydown', dismiss);
     return () => document.removeEventListener('keydown', dismiss);
-  }, [active]);
+  }, [active, opener]);
   const panelButtons = (side: 'left' | 'right') =>
     panels
-      .filter((panel) => (panel.props.side ?? 'right') === side)
+      .filter((panel) => panel.props.entry !== false && (panel.props.side ?? 'right') === side)
       .map(({ props }) => (
         <MapControlLabel key={props.label} label={props.label}>
           <button
@@ -59,7 +74,7 @@ export function GlobeControls({
             aria-expanded={active === props.label}
             aria-controls={active === props.label ? id : undefined}
             onClick={(event) => {
-              opener.current = event.currentTarget;
+              setOpener(event.currentTarget);
               setActive(active === props.label ? null : props.label);
             }}
           >
@@ -73,7 +88,12 @@ export function GlobeControls({
       <div className="map-layer-rail" role="group" aria-label="Map layers">
         {panelButtons('left')}
         <div className="map-rail-divider" />
-        {layers}
+        {typeof layers === 'function'
+          ? layers((label, button) => {
+              setOpener(button);
+              setActive(active === label ? null : label);
+            }, active)
+          : layers}
       </div>
       <div className="map-tool-rail" role="group" aria-label="Map tools">
         {panelButtons('right')}

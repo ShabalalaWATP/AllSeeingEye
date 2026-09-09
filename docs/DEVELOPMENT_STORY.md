@@ -2807,3 +2807,15 @@ Final live checks also identified and fixed FIRMS UTC-midnight gaps and a measur
 61.74-second response exceeding the former deadline. Both NASA sensors loaded
 successfully after the fixes, alongside other categories at 339.1 MiB estimated
 store use within the 512 MiB budget. See the worldwide coverage validation record.
+
+
+## 9 September 2026: map categories and planning tools
+
+Implemented category-attached Space, conflict and natural-hazard filters;
+historical WRI nuclear power-plant infrastructure; bounded drawing tools;
+explicit-request Valhalla routing and an idealised RF link calculator. Reused
+existing hazard sources after comparing OSIRIS, preserving source distinctions,
+selection behaviour and map memory limits. See [map tools and layers](MAP_TOOLS_AND_LAYERS.md)
+for source provenance, limitations, validation and routing contact requirements.
+Live routing awaits a real operator contact; no production deployment or new
+provider account was performed.

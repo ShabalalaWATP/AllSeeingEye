@@ -25,21 +25,21 @@ export function useInfrastructureSelection(
       if (picking) return;
       choose(value);
       const point: [number, number] | undefined =
-        value.kind === 'station' ? [value.item.longitude, value.item.latitude] : value.item.path[0];
+        value.kind !== 'cable' ? [value.item.longitude, value.item.latitude] : value.item.path[0];
       if (point)
-        engine.flyTo({ center: [point[0], point[1]], zoom: value.kind === 'station' ? 8 : 4 });
+        engine.flyTo({ center: [point[0], point[1]], zoom: value.kind !== 'cable' ? 8 : 4 });
     },
     [choose, engine, picking],
   );
-  const { data, cablesEnabled, stationsEnabled, selected } = state;
+  const { data, cablesEnabled, stationsEnabled, nuclearEnabled, selected } = state;
   const layers = useMemo(
     () =>
       buildInfrastructureLayers(
-        { data, cablesEnabled, stationsEnabled, selected },
+        { data, cablesEnabled, stationsEnabled, nuclearEnabled, selected },
         choose,
         mode === 'globe',
       ),
-    [data, cablesEnabled, stationsEnabled, selected, choose, mode],
+    [data, cablesEnabled, stationsEnabled, nuclearEnabled, selected, choose, mode],
   );
   return { layers, focus };
 }

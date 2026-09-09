@@ -16,7 +16,11 @@ export type ControlIcon =
   | 'settings'
   | 'precision'
   | 'grid'
-  | 'close';
+  | 'close'
+  | 'draw'
+  | 'route'
+  | 'rf'
+  | 'infrastructure';
 const paths: Record<ControlIcon, string> = {
   aircraft:
     'M12 2c1 0 1.5 1 1.5 2v4l7.5 5v2l-7.5-2v5l2.5 2v1l-4-1-4 1v-1l2.5-2v-5L3 15v-2l7.5-5V4c0-1 .5-2 1.5-2Z',
@@ -25,7 +29,7 @@ const paths: Record<ControlIcon, string> = {
   camera: 'm3 4 17 5-3 8-14-4V4Zm14 13 4 1 2-5-4-1M8 15v5H3m0-3v6',
   space: 'm9 9 6 6 4-4-6-6-4 4Zm-6 3 5 5-3 3-5-5 3-3Zm13-12 5 5-3 3-5-5 3-3ZM8 16l-4 4M16 16l4 4',
   disaster: 'm12 3 10 18H2L12 3Zm0 6v5m0 3v1',
-  conflict: 'm5 3 16 16-2 2L3 5V3h2Zm14 0h2v2l-7 7M3 21l7-7M3 16l5 5m8-18 5 5',
+  conflict: 'm3 3 5 1 11 11-4 4L4 8 3 3Zm18 0-5 1-4 4m-3 5-4 4m-3-3 7 7m5-7 7 7M3 21l3-3m12 0 3 3',
   news: 'M4 3h16v18H4V3Zm4 4h8M8 11h8m-8 4h3m2 0h3',
   night: 'M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z',
   signal: 'M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M12 11v2',
@@ -37,6 +41,11 @@ const paths: Record<ControlIcon, string> = {
   precision: 'M12 2v4m0 12v4M2 12h4m12 0h4M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0Zm-7-1v2',
   grid: 'M3 3h18v18H3V3Zm6 0v18m6-18v18M3 9h18M3 15h18',
   close: 'm6 6 12 12M6 18 18 6',
+  draw: 'm15 3 6 6-12 12H3v-6L15 3Zm-3 3 6 6M3 15l6 6',
+  route: 'M5 4a2 2 0 1 0 0 .1M19 20a2 2 0 1 0 0 .1M5 7v4h10a4 4 0 0 1 0 8h-2',
+  rf: 'M12 12v9M7 21h10M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M4 4a12 12 0 0 0 0 16M20 4a12 12 0 0 1 0 16',
+  infrastructure:
+    'M3 21V9h7v12M10 21V3h7v18M17 21v-8h4v8M5 12h3m-3 4h3m4-10h3m-3 4h3m-3 4h3M1 21h22',
 };
 export function MapControlIcon({ name }: { name: ControlIcon }) {
   return (

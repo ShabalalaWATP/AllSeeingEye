@@ -1,12 +1,15 @@
 import { useEffect, useRef } from 'react';
+import type { Infrastructure } from '@/lib/api/infrastructure';
 import type { InfrastructureSelection } from './useInfrastructure';
 
 export function InfrastructureInspector({
   selected,
   onClose,
+  data,
 }: {
   selected: InfrastructureSelection;
   onClose: () => void;
+  data?: Infrastructure | null;
 }) {
   const close = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -32,7 +35,11 @@ export function InfrastructureInspector({
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-cyan">
-            {selected.kind === 'station' ? 'Satellite ground station' : 'Undersea cable segment'}
+            {selected.kind === 'nuclear'
+              ? 'Historical nuclear power facility'
+              : selected.kind === 'station'
+                ? 'Satellite ground station'
+                : 'Undersea cable segment'}
           </p>
           <h2 className="mt-1 text-sm font-medium">{selected.item.name}</h2>
         </div>
@@ -51,14 +58,50 @@ export function InfrastructureInspector({
           {selected.item.operator} · {selected.item.country}
         </p>
       )}
+      {selected.kind === 'nuclear' && (
+        <div className="mt-3 space-y-2 text-xs text-muted">
+          <p>
+            {selected.item.country} ({selected.item.country_code}) ·{' '}
+            {selected.item.operator ?? 'Operator not recorded'}
+          </p>
+          <p>
+            Recorded capacity:{' '}
+            {selected.item.capacity_mw === null
+              ? 'Unknown'
+              : `${selected.item.capacity_mw.toLocaleString()} MW`}
+            {selected.item.capacity_year ? ` (${selected.item.capacity_year})` : ' (year unknown)'}.
+            This is historical capacity, not current output.
+          </p>
+          <p>
+            Inventory source: {selected.item.source_name}. Geolocation:{' '}
+            {selected.item.geolocation_source}.
+          </p>
+          {data && (
+            <p>
+              {data.nuclear_attribution} · Version {data.nuclear_dataset_version}, downloaded{' '}
+              {data.nuclear_snapshot_date}.{' '}
+              <a
+                href={data.nuclear_licence_url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Inventory licence
+              </a>
+            </p>
+          )}
+        </div>
+      )}
       <p className="mt-3 text-xs font-medium text-cyan">
-        Approximate {selected.kind === 'station' ? 'location' : 'route'}
+        Approximate {selected.kind !== 'cable' ? 'location' : 'route'}
       </p>
       <p className="mt-2 text-xs leading-relaxed text-muted">{selected.item.note}</p>
       <p className="mt-2 text-xs leading-relaxed text-muted">
-        {selected.kind === 'station'
-          ? 'A public site or locality marker does not indicate current communications or activity.'
-          : 'This segment is an incomplete map record, not proof of its condition, exact seabed route or operational status.'}
+        {selected.kind === 'nuclear'
+          ? 'This historical power-plant record does not establish current operating status, reactor activity or a radiation hazard.'
+          : selected.kind === 'station'
+            ? 'A public site or locality marker does not indicate current communications or activity.'
+            : 'This segment is an incomplete map record, not proof of its condition, exact seabed route or operational status.'}
       </p>
       <a
         className="mt-3 inline-block text-xs text-cyan underline"

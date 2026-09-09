@@ -31,6 +31,7 @@ from ase.api.routers import (
     map_views,
     me,
     mfa,
+    navigation,
     original_assets,
     profile,
     recovery,
@@ -56,6 +57,7 @@ from ase.api.routers import (
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(navigation.router)
 api_router.include_router(auth.router)
 api_router.include_router(totp.router)
 api_router.include_router(mfa.router)
