@@ -9,11 +9,8 @@ import { liveEvent, storeStats } from '@/test/fixtures';
 
 import { EventInspector, isHttpUrl, sourceLabel } from './EventInspector';
 import { LayerPanel, formatBudget } from './LayerPanel';
-import { Ticker } from './Ticker';
 
 const render = (ui: ReactElement) => renderUi(ui, { wrapper: MemoryRouter });
-
-const NOW = Date.UTC(2026, 8, 5, 3, 0, 0);
 
 describe('EventInspector keyboard dismissal', () => {
   it('focuses its close action, dismisses on Escape and restores the opening control', async () => {
@@ -172,34 +169,6 @@ describe('EventInspector', () => {
     expect(isHttpUrl('not a url')).toBe(false);
     expect(isHttpUrl(null)).toBe(false);
     expect(sourceLabel('nasa_eonet')).toBe('nasa eonet');
-  });
-});
-
-describe('Ticker', () => {
-  it('shows the newest events up to the limit with relative ages and selection', async () => {
-    const onSelect = vi.fn();
-    const events = [
-      liveEvent({ id: 'a', title: 'Newest', published_at: '2026-09-05T02:58:00Z' }),
-      liveEvent({ id: 'b', title: 'Older', published_at: '2026-09-04T00:00:00Z' }),
-      liveEvent({ id: 'c', title: 'Hidden by limit' }),
-    ];
-    render(<Ticker events={events} selectedId="b" now={NOW} onSelect={onSelect} limit={2} />);
-    const strip = screen.getByRole('navigation', { name: 'Latest events' });
-    const buttons = within(strip).getAllByRole('button');
-    expect(buttons).toHaveLength(2);
-    expect(buttons[0]).toHaveTextContent('Newest');
-    expect(buttons[0]).toHaveTextContent('2m ago');
-    expect(buttons[0]).toHaveAttribute('aria-pressed', 'false');
-    expect(buttons[1]).toHaveTextContent('1d ago');
-    expect(buttons[1]).toHaveAttribute('aria-pressed', 'true');
-    expect(within(strip).queryByText('Hidden by limit')).not.toBeInTheDocument();
-    await userEvent.click(buttons[0]!);
-    expect(onSelect).toHaveBeenCalledWith(events[0]);
-  });
-
-  it('explains when nothing has arrived yet', () => {
-    render(<Ticker events={[]} selectedId={null} now={NOW} onSelect={vi.fn()} />);
-    expect(screen.getByText('Waiting for events')).toBeInTheDocument();
   });
 });
 

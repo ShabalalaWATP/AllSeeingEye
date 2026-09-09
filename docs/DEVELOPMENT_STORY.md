@@ -2905,3 +2905,12 @@ previews retain unrelated layer/data identities. Interactive browser/GPU
 inspection remains blocked by the existing administrator policy. See
 [map tools and layers](MAP_TOOLS_AND_LAYERS.md) for implementation limits and
 [GNSS controls](GNSS_AND_MAP_CONTROLS.md) for the revised control layout.
+
+## 9 September 2026: quieter dashboard and additional world clocks
+
+Added Seoul and Sydney to the bottom clocks, using IANA time zones so Sydney's
+seasonal offset is automatic. Seven clocks wrap onto two rows on smaller screens,
+with coordinate readout clearance. Removed the top event ticker and its reserved
+mobile space. Event selection remains available through the map and record lists.
+The focused clock, dashboard and inspector suite passed 21 tests, including winter
+and summer clock offsets. This change adds no provider requests or permissions.

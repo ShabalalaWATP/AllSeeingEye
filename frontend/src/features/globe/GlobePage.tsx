@@ -29,7 +29,6 @@ import { MapLayerRail } from './MapLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
 import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
-import { Ticker } from './Ticker';
 import { WorldClocks } from './WorldClocks';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
@@ -211,7 +210,6 @@ export default function GlobePage() {
     <div className="globe-dashboard absolute inset-0 bg-ground">
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
-      <Ticker events={scoped} selectedId={selectedId} now={now} onSelect={focus} />
       <WorldClocks />
       {!opsRoom && (
         <GlobeControls

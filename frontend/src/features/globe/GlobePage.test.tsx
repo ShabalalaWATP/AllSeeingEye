@@ -73,7 +73,7 @@ describe('GlobePage', () => {
     expect(map.setProjection).toHaveBeenLastCalledWith({ type: 'globe' });
   });
 
-  it('loads events into the panel, the ticker and one layer per located category', async () => {
+  it('loads events into panels and map layers without an updates ticker', async () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
@@ -81,8 +81,7 @@ describe('GlobePage', () => {
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
-    const strip = screen.getByRole('navigation', { name: 'Latest events' });
-    expect(within(strip).getAllByRole('button')).toHaveLength(2);
+    expect(screen.queryByRole('navigation', { name: 'Latest events' })).not.toBeInTheDocument();
     await waitFor(() => {
       expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
     });
@@ -95,7 +94,7 @@ describe('GlobePage', () => {
     expect(overlayLayerIds()).toEqual(['terminator']);
   });
 
-  it('streams new events, opens the inspector on pick and focuses from the ticker', async () => {
+  it('streams new events, opens the inspector on pick and focuses from location records', async () => {
     mockWebGl2(true);
     const { user, unmount } = renderApp('/', 'user');
     await screen.findByRole('switch', { name: 'Natural hazards 1' });
@@ -121,8 +120,6 @@ describe('GlobePage', () => {
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();
-    const strip = screen.getByRole('navigation', { name: 'Latest events' });
-    expect(within(strip).getAllByRole('button')[0]).toHaveTextContent('Flash flood in Valencia');
 
     const layers = MapboxOverlay.instances[0]!.props.layers as PickableLayer[];
     const disasters = layers.find((layer) => layer.id === 'events-disaster')!;
@@ -136,7 +133,8 @@ describe('GlobePage', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary', { name: 'Event details' })).not.toBeInTheDocument();
 
-    await user.click(within(strip).getByRole('button', { name: /^Flash flood in Valencia/ }));
+    await user.click(screen.getByRole('button', { name: 'Location quality' }));
+    await user.click(screen.getByRole('button', { name: /^Flash flood in Valencia/ }));
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({
       center: [-0.38, 39.47],
       zoom: FOCUS_ZOOM,
@@ -232,8 +230,6 @@ describe('GlobePage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Natural hazards 0' })).toBeInTheDocument();
     expect(overlayLayerIds()).toEqual(['terminator']);
-    const strip = screen.getByRole('navigation', { name: 'Latest events' });
-    expect(within(strip).getByText('Waiting for events')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Clear nation filter' }));
     expect(screen.queryByRole('region', { name: 'Ukraine panel' })).not.toBeInTheDocument();
@@ -264,8 +260,8 @@ describe('GlobePage', () => {
     expect(useGlobeStore.getState().lite).toBe(true);
     expect(overlayLayerIds()).toEqual(['events-disaster']);
     expect(map.setSky).toHaveBeenLastCalledWith(expect.objectContaining({ 'atmosphere-blend': 0 }));
-    const strip = screen.getByRole('navigation', { name: 'Latest events' });
-    await user.click(within(strip).getAllByRole('button')[0]!);
+    await user.click(screen.getByRole('button', { name: 'Location quality' }));
+    await user.click(screen.getByRole('button', { name: /^M4.2 near Somewhere/ }));
     expect(map.jumpTo).toHaveBeenCalledWith({ center: [10, 50], zoom: FOCUS_ZOOM });
     expect(map.flyTo).not.toHaveBeenCalled();
 
