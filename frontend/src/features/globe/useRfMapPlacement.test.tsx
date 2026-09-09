@@ -48,6 +48,9 @@ function Harness({ open, engine }: { open: boolean; engine: GlobeEngineHandle })
 it('keeps the selected radio preset and its map estimate when reopening the tool', () => {
   const { engine, click } = fakeEngine();
   const { rerender } = render(<Harness open engine={engine} />);
+  fireEvent.change(screen.getByRole('combobox', { name: 'Propagation model' }), {
+    target: { value: 'free-space' },
+  });
   fireEvent.change(screen.getByRole('combobox', { name: 'Radio preset' }), {
     target: { value: 'marine' },
   });
@@ -78,6 +81,9 @@ it.each(['access', 'account'] as const)(
     useAuthStore.setState({ user: plainUser, status: 'authenticated' });
     const { engine, click } = fakeEngine();
     render(<Harness open engine={engine} />);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Propagation model' }), {
+      target: { value: 'free-space' },
+    });
     fireEvent.change(screen.getByRole('combobox', { name: 'Radio preset' }), {
       target: { value: 'wifi24' },
     });
@@ -90,7 +96,7 @@ it.each(['access', 'account'] as const)(
     });
     expect(screen.getByRole('combobox', { name: 'Radio preset' })).toHaveValue('custom');
     expect(screen.getByLabelText('Frequency (MHz)')).toHaveValue(900);
-    expect(screen.getByRole('button', { name: 'Show estimate on map' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeDisabled();
     expect(screen.getByLabelText('Map estimate radius')).toHaveTextContent('none');
   },
 );
@@ -98,6 +104,9 @@ it.each(['access', 'account'] as const)(
 it('removes the receiver and obsolete link while keeping the transmitter and radio draft', () => {
   const { engine, click } = fakeEngine();
   render(<Harness open engine={engine} />);
+  fireEvent.change(screen.getByRole('combobox', { name: 'Propagation model' }), {
+    target: { value: 'free-space' },
+  });
   fireEvent.click(screen.getByRole('button', { name: 'Place transmitter' }));
   act(() => click(0, 51));
   fireEvent.click(screen.getByRole('button', { name: 'Add receiver' }));

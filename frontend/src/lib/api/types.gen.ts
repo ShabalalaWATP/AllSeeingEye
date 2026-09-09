@@ -89,6 +89,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/terrain/elevations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Elevations */
+        post: operations["elevations_api_terrain_elevations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/radio/groundwave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Groundwave */
+        post: operations["groundwave_api_radio_groundwave_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -4577,6 +4611,49 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** GroundwaveOut */
+        GroundwaveOut: {
+            /**
+             * Status
+             * @default calculated
+             * @constant
+             */
+            status: "calculated";
+            /**
+             * Model
+             * @default NTIA LFMF 1.1 (P.368-10)
+             * @constant
+             */
+            model: "NTIA LFMF 1.1 (P.368-10)";
+            /** Samples */
+            samples: components["schemas"]["GroundwaveSampleOut"][];
+            /**
+             * Source Url
+             * @default https://github.com/NTIA/LFMF/tree/v1.1
+             */
+            source_url: string;
+            /**
+             * Limitations
+             * @default Vertical polarisation over homogeneous smooth Earth, 1.6 to 30 MHz, 0 to 50 m antenna heights above ground. Samples begin at 1 km and end at the requested distance, at most 200 km. Does not model irregular terrain, buildings, vegetation, mixed land/sea paths, skywave or changing ground conditions. Native reference field uses specified antenna-input power and the model's 4.77 dBi transmitting antenna, without user gains/losses. Received power applies user gains and combined system loss to native basic transmission loss. A sensitivity crossing is an assumed homogeneous-ground contour, not a measured or guaranteed service boundary.
+             */
+            limitations: string;
+        };
+        /** GroundwaveSampleOut */
+        GroundwaveSampleOut: {
+            /** Distance Km */
+            distance_km: number;
+            /** Basic Transmission Loss Db */
+            basic_transmission_loss_db: number;
+            /** Native Reference Field Dbuv M */
+            native_reference_field_dbuv_m: number;
+            /** Received Power Dbm */
+            received_power_dbm: number;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "flat_earth" | "residue_series";
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -8432,6 +8509,40 @@ export interface components {
             /** Items */
             items: components["schemas"]["TemplateOut"][];
         };
+        /** TerrainElevationsOut */
+        TerrainElevationsOut: {
+            /** Elevations M */
+            elevations_m: number[];
+            /**
+             * Zoom
+             * @default 10
+             * @constant
+             */
+            zoom: 10;
+            /** Resolution M */
+            resolution_m: number;
+            /**
+             * Provider
+             * @default Mapzen Terrain Tiles
+             * @constant
+             */
+            provider: "Mapzen Terrain Tiles";
+            /**
+             * Attribution
+             * @default Mapzen Terrain Tiles. ArcticDEM: DigitalGlobe imagery, NSF awards 1043681, 1559691, 1542736. Australia: © Commonwealth of Australia (Geoscience Australia) 2017. Austria: © offene Daten Österreichs, Digitales Geländemodell (DGM) Österreich. Canada: contains information licensed under the Open Government Licence, Canada. Europe: produced using Copernicus data and information funded by the European Union, EU-DEM layers. ETOPO1: U.S. National Oceanic and Atmospheric Administration. Mexico: INEGI, Continental relief, 2016. New Zealand: Copyright 2011 Crown copyright, Land Information New Zealand and the New Zealand Government, all rights reserved. Norway: © Kartverket. United Kingdom: © Environment Agency copyright and/or database right 2015, all rights reserved. 3DEP, GMTED2010 and SRTM: U.S. Geological Survey.
+             */
+            attribution: string;
+            /**
+             * Attribution Url
+             * @default https://github.com/tilezen/joerd/blob/master/docs/attribution.md
+             */
+            attribution_url: string;
+            /**
+             * Limitations
+             * @default Nearest-pixel source elevations in metres, including negative terrain/bathymetry; not ellipsoid or water-surface heights. Nominal pixel spacing is not source accuracy. Historical mixed-resolution terrain can miss buildings, vegetation and small obstacles. No survey-grade vertical datum or current ground conditions are guaranteed.
+             */
+            limitations: string;
+        };
         /** TextTransformation */
         TextTransformation: {
             /**
@@ -8729,6 +8840,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NavigationRouteOut"];
+                };
+            };
+        };
+    };
+    elevations_api_terrain_elevations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Positions */
+                    positions: {
+                        /** Lon */
+                        lon: number;
+                        /** Lat */
+                        lat: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TerrainElevationsOut"];
+                };
+            };
+        };
+    };
+    groundwave_api_radio_groundwave_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Frequency Mhz */
+                    frequency_mhz: number;
+                    /** Tx Power W */
+                    tx_power_w: number;
+                    /**
+                     * Tx Height M
+                     * @description Antenna height above local ground, not sea level.
+                     */
+                    tx_height_m: number;
+                    /**
+                     * Rx Height M
+                     * @description Antenna height above local ground, not sea level.
+                     */
+                    rx_height_m: number;
+                    /** Conductivity Sm */
+                    conductivity_sm: number;
+                    /** Relative Permittivity */
+                    relative_permittivity: number;
+                    /**
+                     * Surface Refractivity
+                     * @default 301
+                     */
+                    surface_refractivity?: number;
+                    /**
+                     * Tx Gain Dbi
+                     * @default 0
+                     */
+                    tx_gain_dbi?: number;
+                    /**
+                     * Rx Gain Dbi
+                     * @default 0
+                     */
+                    rx_gain_dbi?: number;
+                    /**
+                     * System Loss Db
+                     * @default 0
+                     */
+                    system_loss_db?: number;
+                    /**
+                     * Max Distance Km
+                     * @default 200
+                     */
+                    max_distance_km?: number;
+                    /**
+                     * Sample Count
+                     * @default 48
+                     */
+                    sample_count?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroundwaveOut"];
                 };
             };
         };

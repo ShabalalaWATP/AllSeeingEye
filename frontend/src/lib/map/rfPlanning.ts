@@ -1,4 +1,4 @@
-/** Free-space link budget, ITU-R P.525. No terrain or interference model. */
+/** Free-space link budget, ITU-R P.525. No terrain, groundwave or skywave model. */
 export interface RfInputs {
   distanceKm: number;
   frequencyMHz: number;
@@ -18,7 +18,7 @@ export const RF_FIELDS: readonly {
   max: number;
 }[] = [
   { key: 'distanceKm', label: 'Path length (km)', min: 0.001, max: 2000 },
-  { key: 'frequencyMHz', label: 'Frequency (MHz)', min: 30, max: 100000 },
+  { key: 'frequencyMHz', label: 'Frequency (MHz)', min: 1.6, max: 100000 },
   { key: 'transmitDbm', label: 'Transmit power (dBm)', min: -100, max: 100 },
   { key: 'transmitGainDbi', label: 'Transmit gain (dBi)', min: -30, max: 80 },
   { key: 'receiveGainDbi', label: 'Receive gain (dBi)', min: -30, max: 80 },

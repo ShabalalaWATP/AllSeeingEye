@@ -1,6 +1,17 @@
+import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
-import { RfCalculatorPanel } from './RfCalculatorPanel';
+import type { RfDraft } from '@/lib/map/rfDraft';
+import { createRfDraft } from '@/lib/map/rfDraft';
+import { RfCalculatorPanel as Calculator } from './RfCalculatorPanel';
+import type { RfCalculatorPanelProps } from './RfCalculatorPanel';
+function RfCalculatorPanel(props: RfCalculatorPanelProps) {
+  const [draft, setDraft] = useState<RfDraft>(() => ({
+    ...createRfDraft(),
+    propagation: 'free-space' as const,
+  }));
+  return <Calculator {...props} draft={draft} onDraftChange={setDraft} />;
+}
 
 it('uses a supplied measurement explicitly and hides results for incomplete inputs', () => {
   render(<RfCalculatorPanel measuredDistanceKm={20} />);
@@ -76,4 +87,80 @@ it('uses the geodesic transmitter-to-receiver distance and prevents zero-radius 
   });
   expect(screen.getByRole('button', { name: 'Show estimate on map' })).toBeDisabled();
   expect(screen.getByRole('status')).toHaveTextContent('below 1 metre');
+});
+
+it('defaults to terrain, uses watts and requires explicit valid analysis', () => {
+  const change = vi.fn();
+  render(<Calculator origin={[0, 51]} onAnalysisChange={change} />);
+  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('terrain');
+  expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeEnabled();
+  fireEvent.change(screen.getByLabelText('Transmit power (W)'), { target: { value: '20' } });
+  expect(screen.getByLabelText('Transmit power (dBm)')).toHaveValue(30 + 10 * Math.log10(20));
+  expect(change).toHaveBeenLastCalledWith(null);
+  fireEvent.change(screen.getByLabelText('Transmit power (W)'), { target: { value: '' } });
+  expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeDisabled();
+});
+it('preserves custom model environment when changing a radio preset and honours its HF suggestion', () => {
+  function Panel() {
+    const [draft, setDraft] = useState<RfDraft>(() => ({
+      ...createRfDraft(),
+      environment: { ...createRfDraft().environment!, conductivitySm: '0.02' },
+    }));
+    return <Calculator draft={draft} onDraftChange={setDraft} />;
+  }
+  render(<Panel />);
+  fireEvent.change(screen.getByRole('combobox', { name: 'Radio preset' }), {
+    target: { value: 'hf-portable' },
+  });
+  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('hf-groundwave');
+  expect(screen.getByLabelText('Ground conductivity (S/m)')).toHaveValue(0.02);
+  expect(screen.getByLabelText('Transmit power (W)')).toHaveValue(20);
+});
+
+it('does not apply a receive budget or unused radio-field validation to skywave', () => {
+  const draft = createRfDraft();
+  draft.propagation = 'hf-skywave';
+  draft.values.frequencyMHz = '7';
+  draft.values.transmitDbm = '';
+  draft.values.distanceKm = '';
+  render(<Calculator draft={draft} origin={[0, 51]} />);
+  expect(screen.getByRole('button', { name: 'Calculate skywave scenario' })).toBeEnabled();
+  expect(screen.queryByLabelText('Transmit power (W)')).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('Path length (km)')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
+});
+
+it.each(['terrain', 'hf-groundwave'] as const)(
+  'ignores an unused blank path length for %s',
+  (propagation) => {
+    const draft = createRfDraft();
+    draft.propagation = propagation;
+    draft.values.distanceKm = '';
+    if (propagation === 'hf-groundwave') draft.values.frequencyMHz = '7';
+    render(<Calculator draft={draft} origin={[0, 51]} />);
+    expect(screen.queryByLabelText('Path length (km)')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: propagation === 'terrain' ? 'Analyse terrain' : 'Analyse HF groundwave',
+      }),
+    ).toBeEnabled();
+  },
+);
+it('moves HF to terrain for VHF presets, preserves an explicit free-space choice and applies NVIS angles', () => {
+  render(<Calculator />);
+  const choose = (id: string) =>
+    fireEvent.change(screen.getByRole('combobox', { name: 'Radio preset' }), {
+      target: { value: id },
+    });
+  choose('hf-nvis');
+  expect(screen.getByLabelText('Minimum launch elevation (degrees)')).toHaveValue(60);
+  expect(screen.getByLabelText('Maximum launch elevation (degrees)')).toHaveValue(90);
+  choose('marine');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('terrain');
+  fireEvent.change(screen.getByLabelText('Propagation model'), { target: { value: 'free-space' } });
+  choose('hf-portable');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('free-space');
+  choose('custom');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('free-space');
 });

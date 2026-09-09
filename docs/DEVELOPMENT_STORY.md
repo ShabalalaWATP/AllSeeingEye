@@ -2914,3 +2914,52 @@ with coordinate readout clearance. Removed the top event ticker and its reserved
 mobile space. Event selection remains available through the map and record lists.
 The focused clock, dashboard and inspector suite passed 21 tests, including winter
 and summer clock offsets. This change adds no provider requests or permissions.
+
+## 9 September 2026: terrain and HF radio studies, clearer catalogues
+
+Extended the RF tool with Terrain-aware VHF/UHF, HF groundwave and HF skywave
+scenario modes while retaining a separate free-space reference. Explicit terrain
+sampling adds source ground elevation to antenna height above ground and shows
+a bounded path profile or sampled radial screen. It preserves missing and negative
+heights and explains coarse DEM, single-edge diffraction and clearance limits.
+This is not a dense propagation raster or measured communications coverage.
+
+HF groundwave now runs the official NTIA LFMF 1.1 native library locally, pinned
+through `proplib-lfmf==1.1.0`. It accepts ground electrical properties and antenna
+AGL heights and returns a bounded distance curve. Native reference field and
+user-adjusted received power are separate to avoid silently applying the native
+model's fixed antenna gains. Authentication, finite input limits, one worker,
+per-user limits and capacity retention after timeout/cancellation bound the work.
+The retained NTIA licence and reference values are documented in
+[HF groundwave model](HF_GROUNDWAVE_MODEL.md).
+
+HF skywave is a user-defined virtual-layer/launch-angle scenario, without a live
+ionosphere feed, forecast or received-power prediction. New HF examples and a
+Bowman band reference distinguish public manufacturer/family evidence from
+illustrative power and antenna settings. No verified Bowman variant power table
+or operational frequencies are claimed.
+
+Fixed infrastructure catalogue parsing when historical WRI attribution URLs use
+HTTP. The source-reference field accepts HTTP/HTTPS without broadening media
+fetches or other catalogue links. Infrastructure access is rechecked and browser
+state cleared on access changes. Refined infrastructure and CCTV switches,
+search, provider/media labels, selected states and empty/error messages without
+adding polling, providers or background camera playback.
+
+Focused backend validation passed 25 terrain tests (98.03% scoped coverage) and
+21 groundwave tests (100% scoped statement/branch coverage), including five
+published NTIA vectors. Groundwave static/security checks, full backend types
+and architecture contracts passed. Final combined validation passed 49 backend
+tests and 1,513 frontend tests (one existing skip), with frontend coverage of
+95.40% statements, 90.21% branches, 93.42% functions and 96.67% lines. Full lint,
+types, build, changed-file formatting, whitespace and file-length checks passed.
+The initial full run caught two camera tests still using the removed updates
+bar; both now exercise selection through the mocked map. Review also corrected
+stuck cancellation state, unused field validation and RF preset transitions.
+
+The restarted ASE API returned healthy/ready responses and rejected anonymous
+requests to both new endpoints. A public London terrain tile decoded successfully;
+no live elevation-accuracy or reception claim follows from that probe. The
+frontend on port 5174 returned 200. Interactive browser/GPU validation remains
+blocked by the existing policy. Existing large vendor-chunk warnings remain. See
+[map tools and layers](MAP_TOOLS_AND_LAYERS.md) for model and provider limits.

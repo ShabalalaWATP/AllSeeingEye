@@ -111,6 +111,9 @@ it('renders a circle and link from RF positions, then clears stale output when p
   expect(result.current.layers.some((layer) => layer.id.startsWith('rf-'))).toBe(false);
   act(() => result.current.rf.setEstimate(estimate));
   render(<RfCalculatorPanel origin={[0, 51]} onOverlayChange={result.current.rf.setEstimate} />);
+  fireEvent.change(screen.getByRole('combobox', { name: 'Propagation model' }), {
+    target: { value: 'free-space' },
+  });
   fireEvent.change(screen.getByLabelText('Frequency (MHz)'), { target: { value: '150' } });
   expect(result.current.rf.estimate).toBeNull();
   expect(result.current.layers.some((layer) => layer.id.startsWith('rf-'))).toBe(false);

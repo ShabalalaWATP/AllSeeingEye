@@ -700,3 +700,29 @@ this change does not infer confirmed jamming from aircraft accuracy alone.
 See [map layers and planning tools](MAP_TOOLS_AND_LAYERS.md) and
 [GNSS and map controls](GNSS_AND_MAP_CONTROLS.md). No terrain RF model,
 unlimited sketch store or guaranteed third-party service availability is claimed.
+
+## 9 September 2026: terrain, HF radio models and catalogue follow-up
+
+This milestone extends the earlier free-space-only RF implementation above.
+
+- [x] Add an authenticated, explicit, bounded terrain-elevation sampling endpoint.
+- [x] Combine source ground elevations with antenna heights above ground, preserving missing and negative DEM values.
+- [x] Add bounded VHF/UHF terrain profiles and sampled radial clearance screens with stated diffraction and resolution limits.
+- [x] Retain free-space reference separately from terrain, HF groundwave and HF skywave scenario modes.
+- [x] Integrate pinned official NTIA LFMF 1.1 for homogeneous HF groundwave curves, with correct antenna reference normalisation.
+- [x] Validate native solver against published NTIA vectors and preserve worker capacity after timeout or cancellation.
+- [x] Add illustrative HF presets and public Bowman band/family references without inventing verified variant power settings.
+- [x] Add explicit virtual-layer HF skywave scenarios, labelled as geometry assumptions rather than forecasts or received-signal predictions.
+- [x] Repair infrastructure payload rejection caused by historical HTTP attribution URLs, retaining constrained links and access checks.
+- [x] Improve infrastructure/CCTV switches, search, source/media labels and empty/error states without new polling or providers.
+- [x] Record focused terrain and groundwave backend validation and licence/provenance.
+- [x] Complete final combined frontend/API integration: 1,513 frontend tests (95.40% statements, 90.21% branches), 49 focused backend tests, build, lint, types and scoped security checks.
+- [x] Restart the local ASE service; verify health/readiness, protected endpoint registration and a public terrain tile transport/decode probe.
+- [ ] Verify the authenticated interactive terrain request flow when browser policy permits.
+- [ ] Complete interactive browser/GPU verification when the existing policy permits.
+
+See [map tools and layers](MAP_TOOLS_AND_LAYERS.md) and
+[HF groundwave model](HF_GROUNDWAVE_MODEL.md). Terrain screening is coarse and
+groundwave assumes homogeneous smooth Earth. Skywave has no live ionospheric
+input, forecast or reception guarantee. OS tile and route-provider configuration
+requirements from the earlier milestone remain in force.

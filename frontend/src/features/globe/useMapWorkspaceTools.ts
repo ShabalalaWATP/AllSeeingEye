@@ -5,6 +5,9 @@ import type { NavigationRoute } from '@/lib/api/navigation';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 import { drawingLayers } from '@/lib/map/drawingLayers';
 import { rfMapLayers } from '@/lib/map/rfMap';
+import { rfTerrainLayers } from '@/lib/map/rfTerrainLayers';
+import { hfGroundwaveLayers } from '@/lib/map/hfGroundwaveMap';
+import { hfSkywaveLayers } from '@/lib/map/hfSkywaveLayers';
 import { useRoutePlannerState } from '@/components/maps/useRoutePlannerState';
 import { useRfMapPlacement } from './useRfMapPlacement';
 import { useMapDrawing } from './useMapDrawing';
@@ -47,6 +50,13 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     [drawing.points, drawing.mode, drawing.displayedAnchors, mode],
   );
   const radio = useMemo(() => rfMapLayers(rf.estimate, mode === 'map'), [rf.estimate, mode]);
+  const propagation = useMemo(() => {
+    const analysis = rf.analysis;
+    if (analysis?.kind === 'terrain') return rfTerrainLayers(analysis.terrain, mode === 'map');
+    if (analysis?.kind === 'hf-groundwave') return hfGroundwaveLayers(analysis, mode === 'map');
+    if (analysis?.kind === 'hf-skywave') return hfSkywaveLayers(analysis.estimate, mode === 'map');
+    return [];
+  }, [rf.analysis, mode]);
   const routed = useMemo(
     () =>
       route
@@ -66,8 +76,8 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     [route, mode],
   );
   const layers = useMemo(
-    () => [...measured, ...drawn, ...radio, ...routed],
-    [measured, drawn, radio, routed],
+    () => [...measured, ...drawn, ...radio, ...propagation, ...routed],
+    [measured, drawn, radio, propagation, routed],
   );
   return {
     measurement: {

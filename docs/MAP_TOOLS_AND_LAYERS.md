@@ -70,31 +70,95 @@ Escape finishes measurement; Backspace removes the last point, except while
 editing form fields. The on-map readout exposes stop and undo actions. The
 32-point bound and WGS84 surface-distance/net-area semantics remain unchanged.
 
-The RF calculator accepts antenna heights, frequency, transmit power, gains,
-losses, sensitivity and distance. It reports free-space path loss, receive level,
-sensitivity margin, ideal sensitivity-limited range, standard-refraction radio
-horizon and midpoint first Fresnel-zone radius. A two-point map measurement can
-supply the link distance. Multi-leg path lengths are not treated as a radio link.
+The RF calculator now separates three propagation choices from the free-space
+reference: Terrain-aware VHF/UHF, HF groundwave and HF skywave scenario. The
+operator chooses a model, editable equipment inputs and environmental assumptions,
+places the transmitter and optional receiver, and explicitly calculates a result.
+Changing inputs or positions invalidates the previous result. No extra polling
+or calculation on every keystroke is introduced.
 
-Nine illustrative presets supplement Custom: UHF handheld, VHF mobile/base,
-marine VHF, airband VHF, UHF repeater, telemetry/LoRa, 2.4 GHz Wi-Fi, directional
-5.8 GHz Wi-Fi and 6 GHz microwave. These are editable planning inputs, not
-certified equipment specifications or permissions to transmit.
+The free-space reference retains ideal path loss, receive level, sensitivity
+margin, standard-refraction radio horizon and first Fresnel-zone radius. Its
+outline uses the smaller ideal sensitivity distance and radio horizon and remains
+an unfilled distance reference, not a directional antenna beam or coverage claim.
+See [ITU-R P.525](https://www.itu.int/rec/R-REC-P.525/en).
 
-Place transmitter and optional receiver points on the map, then select Show
-estimate on map. A purple geodesic outline shows the smaller of the ideal
-sensitivity-limited distance and standard-refraction radio horizon; an optional
-path joins the two sites. The outline has 73 sampled points, is not filled as a
-coverage area, and is labelled as an estimate without a terrain model. Flat-map
-geometry is clipped at the Web Mercator latitude limit. For directional radios,
-the circle is a distance reference, not the antenna beam. Changing inputs or
-positions clears the previous estimate until explicitly shown again.
+### Terrain-aware VHF/UHF
 
-Formula references: [ITU-R P.525](https://www.itu.int/rec/R-REC-P.525/en) and
-[NPS radio-horizon teaching material](https://www.oc.nps.edu/NWDC_EM_Course/course_materials/module3_1.html).
-No terrain, buildings, vegetation, diffraction, weather, interference or fade
-margin is modelled. Ideal range and positive margin do not establish usable
-coverage, Fresnel clearance or safe operational communications.
+Terrain analysis uses explicitly requested Mapzen Terrain Tiles in Terrarium
+format, sampled at zoom 10. It adds each antenna's above-ground height to its
+sampled source elevation. Elevation above sea level and antenna height above
+ground are displayed separately; changing an antenna's height does not change
+the underlying ground elevation.
+
+A two-site study samples up to 129 points along a path of at most 200 km and
+shows a terrain profile. With only a transmitter, the study screens 24 bearings
+with 17 outward steps, at most 409 positions within a 50 km radius. These are
+coarse samples, not a dense coverage raster. The screen uses standard k=4/3
+Earth curvature, 60% first Fresnel clearance and free-space loss plus a single
+dominant sampled knife-edge diffraction term. It is not a complete ITM or
+ITU-R P.526 implementation. A radial stops at the first sampled obstruction,
+clearance restriction, negative link margin or missing point; unfilled gaps
+between bearings are unassessed.
+
+The authenticated `POST /api/terrain/elevations` bounds intake to 64 KiB, at most
+1,000 positions and 64 unique tiles. There are at most two active requests, six
+requests per user per minute and twelve shared provider requests per minute.
+Fixed provider origins, bounded image decoding and session revalidation protect
+the request path. Missing elevations cause an explicit unavailable result,
+never substituted flat ground. Negative elevations remain negative, including
+possible bathymetry; a water-surface model is not inferred. Source attribution,
+nominal resolution and mixed historical DEM limitations accompany results.
+
+Terrain sampling does not account for trees, buildings, weather, interference,
+antenna patterns or fading. A sampled clearance pass is not reliable reception.
+Provider details: [Mapzen terrain sources](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
+
+### HF models and equipment references
+
+HF groundwave calls the official, pinned NTIA LFMF 1.1 native solver through the
+authenticated `POST /api/radio/groundwave`. The application supports 1.6 to 30 MHz,
+0 to 50 m antenna heights above ground and operator-entered conductivity,
+permittivity and refractivity. Its bounded curve reports basic transmission loss,
+native reference field and received power with the user's gains and losses.
+The map contour assumes homogeneous smooth Earth. It is independent of terrain
+screening and is not measured reception. See [HF groundwave model](HF_GROUNDWAVE_MODEL.md)
+for normalisation, reference vectors, licence, capacity and limits.
+
+HF skywave is an operator-defined single-hop geometry scenario using assumed
+foF2, virtual-layer height and launch-angle limits. Inner and outer map rings
+describe that scenario and its simplified frequency gate. There is no live
+ionospheric feed, forecast, received-signal calculation, absorption model or
+real ray tracing. Transmit power and mast height alone do not determine launch
+angles or the rings. The UI explicitly distinguishes this from groundwave.
+
+Presets retain common VHF/UHF, marine, airband, telemetry and Wi-Fi examples,
+and add illustrative HF and public equipment references. The Bowman entry cites
+a manufacturer's 30 to 88 MHz compatible antenna band, not verified variant
+power levels or operational network settings. Public references to the PRC325
+HF manpack and HF/VHF/UHF family do not establish a variant-specific datasheet.
+The separate Harris RF-5800H-MP entry identifies its archived manufacturer
+datasheet and distinguishes its published specifications from selected planning
+values. All presets remain editable. None authorises transmission or establishes
+safe operational communications.
+
+### Infrastructure and CCTV catalogue usability
+
+Historical WRI source URLs can use HTTP. The frontend previously required HTTPS
+for every source-reference field, rejecting the complete infrastructure payload
+when one historical URL did not qualify. That field now accepts valid HTTP or
+HTTPS source references while still rejecting credentials, explicit ports and
+other schemes. These are outbound attribution links, not app-fetched media.
+Other catalogue URL requirements are retained. Requests and loaded infrastructure
+state are cleared on account/workspace access changes; the API rechecks session
+access before returning a catalogue.
+
+Infrastructure controls and CCTV source groups use clearer switches, spacing,
+search prompts and empty/error states. Camera rows identify provider, available
+snapshot/video/provider-page media, approximate positions and current selection.
+Searching returns the list to its first page; lists remain bounded and scrollable.
+Media remains selection-driven and this redesign adds no polling or new camera
+providers. Source coverage and provider availability are not expanded by styling.
 
 ## Routing configuration and limits
 
@@ -225,7 +289,35 @@ Final combined verification on 9 September 2026:
   not part of the changed-file formatting check.
 
 Live OS tile delivery still needs a configured key. Route calculation still
-needs the operator contact described above. RF estimates do not model terrain
-or establish actual reception. Interactive browser/GPU validation remains blocked
+needs the operator contact described above. This earlier validation covered the
+free-space RF reference; the terrain/HF follow-up is recorded below. No RF mode
+establishes actual reception. Interactive browser/GPU validation remains blocked
 by the existing administrator policy; tests using a mocked map engine are not an
 observed usability or graphics-driver soak test.
+
+## Terrain, HF and catalogue follow-up validation
+
+The final frontend suite passed 1,513 tests, with one existing skipped test:
+95.40% statements, 90.21% branches, 93.42% functions and 96.67% lines. Both map
+projections are covered with a mocked engine. Regression checks include stale
+analysis cancellation, A-to-B-to-A input changes, preset transitions, DEM plus
+AGL heights, bounded HF interpolation and camera/infrastructure selection after
+removing the updates bar. Full ESLint, TypeScript and production build passed.
+Existing large vendor-chunk warnings remain.
+
+The combined backend run passed 49 terrain, groundwave and infrastructure tests.
+Separately measured terrain coverage was 98.03%; groundwave coverage was 100%
+for statements and branches, including five published NTIA reference vectors.
+Scoped Ruff, Bandit, full backend mypy and both architecture contracts passed.
+Changed-file formatting, whitespace and file-length checks passed. Review checked
+bounded native work, fixed terrain destinations, request/session cancellation,
+source-link handling and numerical assumptions. No configured secret values
+were found in the proposed files.
+
+A public London terrain tile downloaded and decoded successfully. This verifies
+provider transport and decoding, not elevation accuracy. After restarting the
+local ASE API, health/readiness returned 200 and both new protected endpoints
+returned 401 without authentication. The frontend on port 5174 returned 200.
+An authenticated interactive terrain flow and GPU/visual acceptance remain
+unverified because the existing administrator browser-control policy blocks
+interactive checks. Automated tests do not establish measured RF reception.

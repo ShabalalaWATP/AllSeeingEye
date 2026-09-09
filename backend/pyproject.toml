@@ -32,6 +32,7 @@ dependencies = [
     "pillow>=12.3.0",
     "tzdata>=2026.3",
     "shapely>=2.1.2,<3",
+    "proplib-lfmf==1.1.0",
 ]
 
 [project.scripts]

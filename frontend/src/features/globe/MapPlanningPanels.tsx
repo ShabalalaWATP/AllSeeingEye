@@ -31,6 +31,8 @@ export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>
         picking={tools.rf.picking}
         onPick={tools.rf.setPicking}
         onOverlayChange={tools.rf.setEstimate}
+        analysis={tools.rf.analysis}
+        onAnalysisChange={tools.rf.setAnalysis}
         draft={tools.rf.draft}
         onDraftChange={tools.rf.setDraft}
         onClearReceiver={tools.rf.clearReceiver}

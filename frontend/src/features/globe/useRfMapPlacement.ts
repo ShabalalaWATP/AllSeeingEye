@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Position } from '@/lib/map/geoJsonTypes';
 import type { RfMapEstimate } from '@/lib/map/rfMap';
+import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 import { createRfDraft } from '@/lib/map/rfDraft';
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { measurementPoint } from '@/lib/map/measurements';
@@ -14,6 +15,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
   const [receiver, setReceiver] = useState<Position | null>(null);
   const [picking, setPicking] = useState<'origin' | 'receiver' | null>(null);
   const [estimate, setEstimate] = useState<RfMapEstimate | null>(null);
+  const [analysis, setAnalysis] = useState<RfAnalysis | null>(null);
   const [draft, setDraft] = useState(() => createRfDraft());
   useEffect(() => {
     const clear = () => {
@@ -21,6 +23,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
       setReceiver(null);
       setPicking(null);
       setEstimate(null);
+      setAnalysis(null);
       setDraft(createRfDraft());
     };
     const offAccess = subscribeWorkspaceAccess(clear);
@@ -41,6 +44,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
           if (picking === 'origin') setOrigin(point);
           else setReceiver(point);
           setEstimate(null);
+          setAnalysis(null);
           setPicking(null);
         } catch {
           /* Invalid globe-sky clicks leave placement armed. */
@@ -62,15 +66,25 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
     picking: enabled ? picking : null,
     setPicking,
     estimate,
-    setEstimate,
+    setEstimate: (next: RfMapEstimate | null) => {
+      setEstimate(next);
+      if (next) setAnalysis(null);
+    },
+    analysis,
+    setAnalysis: (next: RfAnalysis | null) => {
+      setAnalysis(next);
+      if (next) setEstimate(null);
+    },
     draft,
     setDraft: (next: RfDraft) => {
       setDraft(next);
       setEstimate(null);
+      setAnalysis(null);
     },
     clearReceiver: () => {
       setReceiver(null);
       setEstimate(null);
+      setAnalysis(null);
       setPicking(null);
     },
   };

@@ -34,6 +34,7 @@ from ase.api.routers import (
     navigation,
     original_assets,
     profile,
+    radio,
     recovery,
     relationships,
     report_documents,
@@ -49,6 +50,7 @@ from ase.api.routers import (
     sources,
     stream,
     teams,
+    terrain,
     tiles,
     totp,
     trackers,
@@ -58,6 +60,8 @@ from ase.api.routers import (
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)
+api_router.include_router(terrain.router)
+api_router.include_router(radio.router)
 api_router.include_router(auth.router)
 api_router.include_router(totp.router)
 api_router.include_router(mfa.router)

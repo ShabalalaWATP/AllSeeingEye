@@ -208,6 +208,206 @@
         ]
       }
     },
+    "/api/terrain/elevations": {
+      "post": {
+        "tags": [
+          "terrain"
+        ],
+        "summary": "Elevations",
+        "operationId": "elevations_api_terrain_elevations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "positions": {
+                    "items": {
+                      "properties": {
+                        "lon": {
+                          "type": "number",
+                          "maximum": 180.0,
+                          "minimum": -180.0,
+                          "title": "Lon"
+                        },
+                        "lat": {
+                          "type": "number",
+                          "maximum": 85.05112878,
+                          "minimum": -85.05112878,
+                          "title": "Lat"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "lon",
+                        "lat"
+                      ],
+                      "title": "TerrainPositionIn"
+                    },
+                    "type": "array",
+                    "maxItems": 1000,
+                    "minItems": 1,
+                    "title": "Positions"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "positions"
+                ],
+                "title": "TerrainElevationsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerrainElevationsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/radio/groundwave": {
+      "post": {
+        "tags": [
+          "radio"
+        ],
+        "summary": "Groundwave",
+        "operationId": "groundwave_api_radio_groundwave_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "frequency_mhz": {
+                    "type": "number",
+                    "maximum": 30.0,
+                    "minimum": 1.6,
+                    "title": "Frequency Mhz"
+                  },
+                  "tx_power_w": {
+                    "type": "number",
+                    "maximum": 100000.0,
+                    "minimum": 0.001,
+                    "title": "Tx Power W"
+                  },
+                  "tx_height_m": {
+                    "type": "number",
+                    "maximum": 50.0,
+                    "minimum": 0.0,
+                    "title": "Tx Height M",
+                    "description": "Antenna height above local ground, not sea level."
+                  },
+                  "rx_height_m": {
+                    "type": "number",
+                    "maximum": 50.0,
+                    "minimum": 0.0,
+                    "title": "Rx Height M",
+                    "description": "Antenna height above local ground, not sea level."
+                  },
+                  "conductivity_sm": {
+                    "type": "number",
+                    "maximum": 10.0,
+                    "minimum": 1e-05,
+                    "title": "Conductivity Sm"
+                  },
+                  "relative_permittivity": {
+                    "type": "number",
+                    "maximum": 100.0,
+                    "minimum": 1.0,
+                    "title": "Relative Permittivity"
+                  },
+                  "surface_refractivity": {
+                    "type": "number",
+                    "maximum": 400.0,
+                    "minimum": 250.0,
+                    "title": "Surface Refractivity",
+                    "default": 301
+                  },
+                  "tx_gain_dbi": {
+                    "type": "number",
+                    "maximum": 30.0,
+                    "minimum": -30.0,
+                    "title": "Tx Gain Dbi",
+                    "default": 0
+                  },
+                  "rx_gain_dbi": {
+                    "type": "number",
+                    "maximum": 30.0,
+                    "minimum": -30.0,
+                    "title": "Rx Gain Dbi",
+                    "default": 0
+                  },
+                  "system_loss_db": {
+                    "type": "number",
+                    "maximum": 120.0,
+                    "minimum": 0.0,
+                    "title": "System Loss Db",
+                    "default": 0
+                  },
+                  "max_distance_km": {
+                    "type": "number",
+                    "maximum": 200.0,
+                    "minimum": 2.0,
+                    "title": "Max Distance Km",
+                    "default": 200
+                  },
+                  "sample_count": {
+                    "type": "integer",
+                    "maximum": 64.0,
+                    "minimum": 2.0,
+                    "title": "Sample Count",
+                    "default": 48
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "frequency_mhz",
+                  "tx_power_w",
+                  "tx_height_m",
+                  "rx_height_m",
+                  "conductivity_sm",
+                  "relative_permittivity"
+                ],
+                "title": "GroundwaveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroundwaveOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/auth/login": {
       "post": {
         "tags": [
@@ -14305,6 +14505,83 @@
         ],
         "title": "GroundStationOut"
       },
+      "GroundwaveOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "calculated",
+            "title": "Status",
+            "default": "calculated"
+          },
+          "model": {
+            "type": "string",
+            "const": "NTIA LFMF 1.1 (P.368-10)",
+            "title": "Model",
+            "default": "NTIA LFMF 1.1 (P.368-10)"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/GroundwaveSampleOut"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 2,
+            "title": "Samples"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url",
+            "default": "https://github.com/NTIA/LFMF/tree/v1.1"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations",
+            "default": "Vertical polarisation over homogeneous smooth Earth, 1.6 to 30 MHz, 0 to 50 m antenna heights above ground. Samples begin at 1 km and end at the requested distance, at most 200 km. Does not model irregular terrain, buildings, vegetation, mixed land/sea paths, skywave or changing ground conditions. Native reference field uses specified antenna-input power and the model's 4.77 dBi transmitting antenna, without user gains/losses. Received power applies user gains and combined system loss to native basic transmission loss. A sensitivity crossing is an assumed homogeneous-ground contour, not a measured or guaranteed service boundary."
+          }
+        },
+        "type": "object",
+        "required": [
+          "samples"
+        ],
+        "title": "GroundwaveOut"
+      },
+      "GroundwaveSampleOut": {
+        "properties": {
+          "distance_km": {
+            "type": "number",
+            "title": "Distance Km"
+          },
+          "basic_transmission_loss_db": {
+            "type": "number",
+            "title": "Basic Transmission Loss Db"
+          },
+          "native_reference_field_dbuv_m": {
+            "type": "number",
+            "title": "Native Reference Field Dbuv M"
+          },
+          "received_power_dbm": {
+            "type": "number",
+            "title": "Received Power Dbm"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "flat_earth",
+              "residue_series"
+            ],
+            "title": "Method"
+          }
+        },
+        "type": "object",
+        "required": [
+          "distance_km",
+          "basic_transmission_loss_db",
+          "native_reference_field_dbuv_m",
+          "received_power_dbm",
+          "method"
+        ],
+        "title": "GroundwaveSampleOut"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -25337,6 +25614,60 @@
           "items"
         ],
         "title": "TemplatesOut"
+      },
+      "TerrainElevationsOut": {
+        "properties": {
+          "elevations_m": {
+            "items": {
+              "type": "number",
+              "maximum": 10000.0,
+              "minimum": -12000.0
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Elevations M"
+          },
+          "zoom": {
+            "type": "integer",
+            "const": 10,
+            "title": "Zoom",
+            "default": 10
+          },
+          "resolution_m": {
+            "type": "number",
+            "maximum": 153.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Resolution M"
+          },
+          "provider": {
+            "type": "string",
+            "const": "Mapzen Terrain Tiles",
+            "title": "Provider",
+            "default": "Mapzen Terrain Tiles"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution",
+            "default": "Mapzen Terrain Tiles. ArcticDEM: DigitalGlobe imagery, NSF awards 1043681, 1559691, 1542736. Australia: \u00a9 Commonwealth of Australia (Geoscience Australia) 2017. Austria: \u00a9 offene Daten \u00d6sterreichs, Digitales Gel\u00e4ndemodell (DGM) \u00d6sterreich. Canada: contains information licensed under the Open Government Licence, Canada. Europe: produced using Copernicus data and information funded by the European Union, EU-DEM layers. ETOPO1: U.S. National Oceanic and Atmospheric Administration. Mexico: INEGI, Continental relief, 2016. New Zealand: Copyright 2011 Crown copyright, Land Information New Zealand and the New Zealand Government, all rights reserved. Norway: \u00a9 Kartverket. United Kingdom: \u00a9 Environment Agency copyright and/or database right 2015, all rights reserved. 3DEP, GMTED2010 and SRTM: U.S. Geological Survey."
+          },
+          "attribution_url": {
+            "type": "string",
+            "title": "Attribution Url",
+            "default": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations",
+            "default": "Nearest-pixel source elevations in metres, including negative terrain/bathymetry; not ellipsoid or water-surface heights. Nominal pixel spacing is not source accuracy. Historical mixed-resolution terrain can miss buildings, vegetation and small obstacles. No survey-grade vertical datum or current ground conditions are guaranteed."
+          }
+        },
+        "type": "object",
+        "required": [
+          "elevations_m",
+          "resolution_m"
+        ],
+        "title": "TerrainElevationsOut"
       },
       "TextTransformation": {
         "properties": {

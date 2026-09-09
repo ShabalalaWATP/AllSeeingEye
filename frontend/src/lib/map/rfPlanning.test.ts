@@ -10,6 +10,13 @@ it('matches the free-space equation and preserves signed link margin', () => {
   expect(weaker.marginDb).toBeLessThan(0);
 });
 
+it('allows HF in the free-space baseline without adding a groundwave or skywave prediction', () => {
+  const result = calculateRf({ ...DEFAULT_RF_INPUTS, frequencyMHz: 1.6 });
+  expect(Number.isFinite(result.freeSpaceLossDb)).toBe(true);
+  expect(() => calculateRf({ ...DEFAULT_RF_INPUTS, frequencyMHz: 1.59 })).toThrow(/Frequency/);
+  expect(result.horizonKm).toBe(calculateRf(DEFAULT_RF_INPUTS).horizonKm);
+});
+
 it('increases path loss by6dB when distance doubles and flags beyond-horizon paths', () => {
   const a = calculateRf(DEFAULT_RF_INPUTS);
   const b = calculateRf({ ...DEFAULT_RF_INPUTS, distanceKm: 20 });
