@@ -141,15 +141,13 @@ ionospheric feed, forecast, received-signal calculation, absorption model or
 real ray tracing. Transmit power and mast height alone do not determine launch
 angles or the rings. The UI explicitly distinguishes this from groundwave.
 
-Presets retain common VHF/UHF, marine, airband, telemetry and Wi-Fi examples,
-and add illustrative HF and public equipment references. The Bowman entry cites
-a manufacturer's 30 to 88 MHz compatible antenna band, not verified variant
-power levels or operational network settings. Public references to the PRC325
-HF manpack and HF/VHF/UHF family do not establish a variant-specific datasheet.
-The separate Harris RF-5800H-MP entry identifies its archived manufacturer
-datasheet and distinguishes its published specifications from selected planning
-values. All presets remain editable. None authorises transmission or establishes
-safe operational communications.
+The grouped catalogue now has 25 choices, including four Bowman scenarios,
+AN/PRC-150(C), PRC-152A, PRC-117G, Thales PRC-148, SINCGARS RT-1702 and the existing
+RF-5800H-MP. General VHF/UHF, marine, airband, telemetry and Wi-Fi examples remain.
+Bowman frequency/power selections are labelled assumptions; manufacturer-backed
+equipment entries show published bands and mode-specific output ratings separately
+from editable planning inputs. See [radio presets](RADIO_PRESETS.md) for exact
+choices, references and validation. All presets remain editable and range is an estimate.
 
 ### Infrastructure and CCTV catalogue usability
 

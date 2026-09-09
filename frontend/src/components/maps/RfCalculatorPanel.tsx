@@ -11,6 +11,7 @@ import { RfPowerInput } from './RfPowerInput';
 import { RfPositions } from './RfPositions';
 import { RfModelControls, rfEnvironmentValid } from './RfModelControls';
 import { RfReferences } from './RfReferences';
+import { RfPresetSelect } from './RfPresetSelect';
 import { useRfAnalysis } from './useRfAnalysis';
 import { RfAnalysisResults } from './RfAnalysisResults';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
@@ -126,43 +127,25 @@ export function RfCalculatorPanel({
         </p>
       </header>
       <RfModelControls draft={currentDraft} onChange={update} />
-      <label className="block text-muted">
-        Radio preset
-        <select
-          value={presetId}
-          onChange={(event) => {
-            const selected = RF_PRESETS.find((item) => item.id === event.target.value);
-            if (selected) {
-              update({
-                ...currentDraft,
-                values: createRfDraft(selected.values, selected.id).values,
-                presetId: selected.id,
-                propagation:
-                  selected.id === 'custom' || mode === 'free-space'
-                    ? mode
-                    : (selected.propagation ??
-                      (selected.values.frequencyMHz >= 30 ? 'terrain' : mode)),
-                environment: {
-                  ...RF_ENVIRONMENT_DEFAULTS,
-                  ...currentDraft.environment,
-                  ...selected.environment,
-                },
-              });
-            }
-          }}
-          className="mt-1 min-h-10 w-full rounded border border-line bg-ground px-2 text-text"
-        >
-          {RF_PRESETS.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <p className="text-muted">
-        {preset?.note} Presets are illustrative, not equipment specifications or permission to
-        transmit.
-      </p>
+      <RfPresetSelect
+        presetId={presetId}
+        onSelect={(selected) => {
+          update({
+            ...currentDraft,
+            values: createRfDraft(selected.values, selected.id).values,
+            presetId: selected.id,
+            propagation:
+              selected.id === 'custom' || mode === 'free-space'
+                ? mode
+                : (selected.propagation ?? (selected.values.frequencyMHz >= 30 ? 'terrain' : mode)),
+            environment: {
+              ...RF_ENVIRONMENT_DEFAULTS,
+              ...currentDraft.environment,
+              ...selected.environment,
+            },
+          });
+        }}
+      />
       <RfPositions
         origin={origin}
         receiver={receiver}

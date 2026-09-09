@@ -3056,3 +3056,27 @@ health/readiness and the 5174 login returned HTTP 200. No usable global assessme
 model is currently assigned, so no real-model classification quality is claimed.
 The existing browser policy still prevents interactive/GPU acceptance. Work is
 on local `main`; no Git remote is configured.
+
+## 9 September 2026: Bowman and common military radio presets
+
+Expanded the RF catalogue from one Bowman band example to four explicit Bowman
+scenarios: VHF manpack, VHF vehicle, PRC325 HF groundwave and PRC325 HF/NVIS.
+Public primary sources establish the relevant families/bands but do not verify
+variant power settings, so Bowman numerical choices remain labelled assumptions.
+Added manufacturer-backed AN/PRC-150(C), PRC-152A, PRC-117G, Thales PRC-148 JEM/MBITR
+and SINCGARS RT-1702 choices. Presets distinguish PEP/FM, narrowband/wideband,
+satellite burst and external-amplifier ratings. No operational networks are inferred.
+
+The 25-entry chooser groups Bowman, other military and general radios and exposes
+published band/output data where available. Existing IDs and editable values remain.
+Catalogue files are split by responsibility; chooser extraction keeps the calculator
+focused on analysis. Changes clear prior map/analysis results and keep the existing
+HF/terrain model-selection and environmental-edit behaviour. No model, endpoint,
+dependency, credential or database changes were made.
+
+Validation passed 59 focused tests and a 22-test scoped coverage run. Chooser coverage
+is 100% statements/lines/functions and 90% branches. Typecheck and production build
+passed; existing vendor-chunk warnings remain. Independent read-only review of the
+source facts and implementation found no unresolved issue. Updated radio reference,
+map-tools and map-interface plan documentation. Interactive/GPU acceptance remains
+unavailable under the existing browser policy; no live-radio validation is claimed.

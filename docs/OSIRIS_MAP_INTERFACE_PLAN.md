@@ -195,3 +195,11 @@ entries. Additional regions load on demand; unsupported or blocked sources remai
 explicitly unavailable. HLS, iframe, MJPEG and MP4 players start on request, with
 external provider fallbacks and approximate-coordinate labels. Burgas HLS playback
 was verified in the browser. See CAMERA_FEEDS.md for limits and regional inventories.
+
+## Radio preset expansion delivered, 9 September 2026
+
+The RF planner now groups four Bowman planning scenarios, nine other military
+equipment choices and the retained general examples. Public mode-specific powers
+remain distinct from illustrative settings. Selection preserves the existing
+analysis models and clears stale estimates. See [radio presets](RADIO_PRESETS.md)
+for the catalogue, primary references, checks and outstanding interactive acceptance.
