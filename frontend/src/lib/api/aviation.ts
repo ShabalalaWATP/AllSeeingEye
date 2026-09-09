@@ -42,13 +42,14 @@ export const jamCellSchema = z.object({
   good: z.number().int(),
   bad: z.number().int(),
   percent_bad: z.number(),
-  level: z.string(),
+  level: z.enum(['green', 'amber', 'red']),
 });
 export type JamCell = z.infer<typeof jamCellSchema>;
 
 export const jamMapSchema = z.object({
   cells: z.array(jamCellSchema),
   updated_at: z.string().nullable(),
+  limited: z.boolean().optional(),
 });
 export type JamMap = z.infer<typeof jamMapSchema>;
 
@@ -56,6 +57,9 @@ export function fetchAviationBoard(): Promise<AviationBoard> {
   return apiCall('/api/trackers/aviation', { schema: aviationBoardSchema });
 }
 
-export function fetchJamMap(): Promise<JamMap> {
-  return apiCall('/api/trackers/aviation/jamming', { schema: jamMapSchema });
+export function fetchJamMap(signal?: AbortSignal): Promise<JamMap> {
+  return apiCall('/api/trackers/aviation/jamming', {
+    schema: jamMapSchema,
+    ...(signal ? { signal } : {}),
+  });
 }

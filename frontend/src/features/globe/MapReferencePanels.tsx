@@ -6,10 +6,12 @@ import { CountryPanel } from './CountryPanel';
 import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
 import { BritishGridTool } from './BritishGridTool';
 import { CameraPanel } from './cameras/CameraPanel';
+import { MapDisplaySettings } from './MapDisplaySettings';
 
 /** Direct panel elements allow the rail to maintain one active inspector. */
 export function mapReferencePanels(props: {
   base: ComponentProps<typeof BaseLayerToolbar>;
+  display: ComponentProps<typeof MapDisplaySettings>;
   nation: ComponentProps<typeof NationFilter>;
   country: ComponentProps<typeof CountryPanel> | null;
   precision: ComponentProps<typeof GeographicPrecisionPanel>;
@@ -19,6 +21,7 @@ export function mapReferencePanels(props: {
   return [
     <ControlPanel key="style" side="right" label="Map style" icon="layers">
       <BaseLayerToolbar {...props.base} />
+      <MapDisplaySettings {...props.display} />
     </ControlPanel>,
     <ControlPanel key="nation" label="Find nation" icon="nation">
       <NationFilter {...props.nation} />

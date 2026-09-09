@@ -101,7 +101,7 @@ def test_jam_map_counts_bad_aircraft_per_cell_over_a_rolling_day() -> None:
     jam.observe(fleet(NOW + timedelta(hours=1)), NOW + timedelta(hours=1))
     assert jam.cells()[0].good == 8
     jam.observe([], NOW + timedelta(hours=26))
-    assert jam.cells() == [] and jam.updated_at == NOW + timedelta(hours=26)
+    assert jam.cells() == [] and jam.updated_at == NOW + timedelta(hours=1)
     assert is_bad(aircraft("x", lon=0, lat=0, nac_p=None)) is None
     assert military_by_country(fleet()) == {"UA": 6}  # the emergency and area aircraft are civil
 
@@ -180,8 +180,10 @@ async def test_aviation_board_and_jamming_api(
     jamming = await client.get("/api/trackers/aviation/jamming", headers=bearer(token))
     assert jamming.status_code == 200
     cells = jamming.json()["cells"]
+    assert jamming.json()["limited"] is False
     assert len(cells) == 1 and cells[0]["level"] == "red" and cells[0]["percent_bad"] == 16.7
     assert (await client.get("/api/trackers/aviation")).status_code == 401
+    assert (await client.get("/api/trackers/aviation/jamming")).status_code == 401
 
 
 async def test_aviation_report_carries_the_board_as_background(

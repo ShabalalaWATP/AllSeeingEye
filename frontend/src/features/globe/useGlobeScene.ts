@@ -19,6 +19,7 @@ interface Scene {
   onCluster: (cluster: Cluster) => void;
   onJam: (cell: JamCell) => void;
   jamCells: readonly JamCell[];
+  jamSelection?: JamCell | null;
   gridLayers: readonly Layer[];
   cameraLayers: readonly Layer[];
   infrastructureLayers?: readonly Layer[];
@@ -46,6 +47,7 @@ export function useGlobeScene({
   onCluster,
   onJam,
   jamCells,
+  jamSelection = null,
   gridLayers,
   cameraLayers,
   infrastructureLayers,
@@ -77,8 +79,8 @@ export function useGlobeScene({
     [lite, now, supported, terminator],
   );
   const jam = useMemo(
-    () => (supported && interference ? buildJamLayer(jamCells, onJam) : null),
-    [interference, jamCells, supported, onJam],
+    () => (supported && interference ? buildJamLayer(jamCells, onJam, jamSelection) : null),
+    [interference, jamCells, supported, onJam, jamSelection],
   );
   useEffect(() => {
     if (supported)

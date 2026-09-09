@@ -24,12 +24,14 @@ function LayerButton({
   active,
   count,
   onClick,
+  caption,
 }: {
   label: string;
   icon: ControlIcon;
   active: boolean;
   count?: number;
   onClick: () => void;
+  caption?: string;
 }) {
   return (
     <MapControlLabel
@@ -41,10 +43,11 @@ function LayerButton({
         aria-checked={active}
         aria-label={count === undefined ? `${label} ${active ? 'on' : 'off'}` : `${label} ${count}`}
         title={`${label}: ${active ? 'shown' : 'hidden'}${count === undefined ? '' : ` · ${count} loaded`}`}
-        className="map-icon-button"
+        className={`map-icon-button ${caption ? 'map-style-button' : ''}`}
         onClick={onClick}
       >
         <MapControlIcon name={icon} />
+        {caption && <span className="map-style-label">{caption}</span>}
         {count !== undefined && count > 0 && (
           <span aria-hidden="true" className="map-layer-count">
             {compactCount.format(count)}
@@ -68,6 +71,7 @@ export function MapLayerRail({
   selectionDisabled = false,
   openPanel,
   activePanel,
+  gnssCount = 0,
 }: {
   events: readonly LiveEvent[];
   counts: Partial<Record<Category, number>>;
@@ -78,6 +82,7 @@ export function MapLayerRail({
   selectionDisabled?: boolean;
   openPanel?: (label: string, button: HTMLButtonElement) => void;
   activePanel?: string | null;
+  gnssCount?: number;
   flightFilter?: FlightFilter;
   onFlightFilter?: (value: FlightFilter) => void;
   onTrafficSelect?: (event: LiveEvent) => void;
@@ -85,7 +90,8 @@ export function MapLayerRail({
   const hidden = useEventsStore((state) => state.hidden);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
   const stats = useEventsStore((state) => state.stats);
-  const { terminator, toggleTerminator, interference, toggleInterference } = useGlobeStore();
+  const interference = useGlobeStore((state) => state.interference);
+  const toggleInterference = useGlobeStore((state) => state.toggleInterference);
   const observations = [
     { kind: 'aircraft', label: 'Flights' },
     { kind: 'vessels', label: 'Boats' },
@@ -200,18 +206,27 @@ export function MapLayerRail({
           )}
         </div>
       ))}
-      <LayerButton
-        label="Day and night"
-        icon="night"
-        active={terminator}
-        onClick={toggleTerminator}
-      />
-      <LayerButton
-        label="GNSS interference"
-        icon="signal"
-        active={interference}
-        onClick={toggleInterference}
-      />
+      <div className="flex flex-col items-center">
+        <LayerButton
+          label="GNSS interference"
+          caption="GNSS"
+          icon="gnss"
+          count={gnssCount}
+          active={interference}
+          onClick={toggleInterference}
+        />
+        {openPanel && (
+          <button
+            type="button"
+            aria-label="GNSS filters"
+            aria-expanded={activePanel === 'GNSS interference'}
+            className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
+            onClick={(event) => openPanel('GNSS interference', event.currentTarget)}
+          >
+            FILTERS <span aria-hidden="true"> ›</span>
+          </button>
+        )}
+      </div>
     </>
   );
 }

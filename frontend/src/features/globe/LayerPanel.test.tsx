@@ -1,51 +1,35 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
-import { liveEvent } from '@/test/fixtures';
 import { LayerPanel } from './LayerPanel';
 
-it('exposes effective subgroup state and routes settings to their controls', async () => {
+it('owns additional topics and the shared time window without repeating category or appearance switches', async () => {
   const toggleCategory = vi.fn();
-  const toggleObservation = vi.fn();
-  const toggleLite = vi.fn();
-  const toggleGnss = vi.fn();
   const changeWindow = vi.fn();
-  render(
-    <LayerPanel
-      counts={{ disaster: 1 }}
-      hidden={['disaster']}
-      stats={null}
-      status="live"
-      error={null}
-      terminator={false}
-      lite={false}
-      interference={false}
-      windowHours={null}
-      onWindow={changeWindow}
-      onToggle={toggleCategory}
-      onToggleTerminator={vi.fn()}
-      onToggleLite={toggleLite}
-      onToggleInterference={toggleGnss}
-      observations={{
-        events: [
-          liveEvent({ category: 'disaster', subtype: 'thermal_detection', source_id: 'firms' }),
-        ],
-        visibility: { aircraft: true, vessels: true, firms: true },
-        onToggle: toggleObservation,
-      }}
-    />,
-  );
+  const props = {
+    counts: { cyber: 7 },
+    hidden: [],
+    stats: null,
+    status: 'live' as const,
+    error: null,
+    onWindow: changeWindow,
+    onToggle: toggleCategory,
+  };
+  const { rerender } = render(<LayerPanel {...props} windowHours={null} />);
   const user = userEvent.setup();
-  const firms = screen.getByRole('switch', { name: 'FIRMS thermal detections' });
-  expect(firms).not.toBeChecked();
-  expect(screen.getByText(/1 loaded in this scope/)).toHaveTextContent('category hidden');
-  await user.click(firms);
-  expect(toggleCategory).toHaveBeenCalledExactlyOnceWith('disaster');
-  expect(toggleObservation).not.toHaveBeenCalled();
-  await user.click(screen.getByRole('switch', { name: 'Lite mode off' }));
-  expect(toggleLite).toHaveBeenCalledOnce();
-  await user.click(screen.getByRole('switch', { name: 'GNSS interference off' }));
-  expect(toggleGnss).toHaveBeenCalledOnce();
+  expect(screen.getAllByRole('switch')).toHaveLength(5);
+  expect(
+    screen.queryByRole('switch', { name: /FIRMS|Flights|Boats|GNSS|Day and night|graphics/ }),
+  ).not.toBeInTheDocument();
+  await user.click(screen.getByRole('switch', { name: 'Cyber 7' }));
+  expect(toggleCategory).toHaveBeenCalledExactlyOnceWith('cyber');
+  expect(screen.getByRole('button', { name: 'Clear time filter' })).toBeDisabled();
   await user.click(screen.getByRole('radio', { name: '6 h' }));
   expect(changeWindow).toHaveBeenCalledExactlyOnceWith(6);
+  rerender(<LayerPanel {...props} windowHours={6} />);
+  await user.click(screen.getByRole('button', { name: 'Clear time filter' }));
+  expect(changeWindow).toHaveBeenLastCalledWith(null);
+  expect(screen.getByRole('button', { name: 'Reload live events' })).not.toBeVisible();
+  await user.click(screen.getByText('Connection and coverage'));
+  expect(screen.getByRole('button', { name: 'Reload live events' })).toBeVisible();
 });

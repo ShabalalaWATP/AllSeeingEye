@@ -21,6 +21,10 @@ export function HazardFilterPanel({
     'mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main';
   return (
     <section aria-label="Natural hazard filters" className="space-y-3 p-3">
+      <p className="text-xs text-muted">
+        Natural hazards includes FIRMS detections. The FIRMS switch controls that subset; the
+        Natural hazards switch controls the whole group.
+      </p>
       <fieldset className="space-y-1">
         <legend className="mb-2 text-xs text-muted">Natural hazards and sensor observations</legend>
         {HAZARD_GROUPS.map((choice) => (

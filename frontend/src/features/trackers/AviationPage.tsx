@@ -109,15 +109,19 @@ export default function AviationPage() {
           <Stat label="PIA" value={data.pia} />
           <Stat label="Emergencies" value={data.emergencies.length} />
           <Stat
-            label="Jam cells"
+            label="GNSS accuracy cells"
             value={`${String(data.jam_red)} red, ${String(data.jam_amber)} amber`}
           />
         </div>
         {data.jam_updated_at !== null && (
           <p className="font-mono text-xs text-muted">
-            Interference map updated {formatUtc(data.jam_updated_at)}
+            Latest aircraft accuracy observation {formatUtc(data.jam_updated_at)}
           </p>
         )}
+        <p className="text-xs text-muted">
+          GNSS counts use a bounded sample of aircraft accuracy reports. They do not confirm
+          jamming. Open GNSS on the map for coverage and filters.
+        </p>
         <div className="flex flex-wrap gap-2">
           <ShowOnGlobe country={null} />
           <Link

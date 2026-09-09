@@ -2843,3 +2843,33 @@ was 91.85%. Production build, type checks, formatting, architecture and scoped
 security checks passed. A 45-second concurrent API check completed all 15 event
 requests and 167 health probes successfully at roughly 65,000 retained records.
 No database migration, production deployment or remote push was performed.
+
+## 9 September 2026: GNSS category and map control ownership
+
+Added a dedicated GNSS rail switch and filters panel with bounded cell lists,
+locating and selection highlights. Removed duplicate switches from Layers and
+settings, replacing it with Map filters for additional topics and the shared
+event window. Connection diagnostics expand on demand. Day/night and reduced
+graphics now live with basemap choices on the right; BNG remains a separate
+right-hand tool.
+
+Review found inaccurate hourly resampling, conflicting good/bad assignments and
+early bucket expiry in the existing GNSS aggregate. Regression tests reproduced
+these before the fixes. Added timestamp validation, UTC buckets, explicit
+assignment limits and partial-coverage metadata. Browser snapshots carry their
+retrieval time, display stale/error states and expire after fifteen minutes.
+The feature describes navigation accuracy anomalies without claiming confirmed
+jamming, spoofing or emitter positions.
+
+The local backend was restarted. Health, readiness and the frontend login route
+returned 200; unauthenticated GNSS requests returned 401. See
+[GNSS and map controls](GNSS_AND_MAP_CONTROLS.md) for methodology and validation.
+
+Validation passed 1,365 frontend tests (95.37% statements, 90.38% branches),
+eighteen final focused map tests and seventeen backend regressions (94.20%
+coverage across the affected domain/application modules). Build, lint, types,
+architecture, file-length, changed-file formatting and scoped security checks
+passed. The full formatter still flags three unchanged files, listed in the
+feature notes. Browser/GPU inspection remains blocked by the existing policy.
+No provider account, dependency, migration, production deployment or remote
+push was added.

@@ -14,15 +14,9 @@ function Controls() {
       stats={null}
       status="live"
       error={null}
-      terminator
-      lite={false}
       windowHours={hours}
       onWindow={setHours}
       onToggle={() => undefined}
-      onToggleTerminator={() => undefined}
-      onToggleLite={() => undefined}
-      interference={false}
-      onToggleInterference={() => undefined}
     />
   );
 }
@@ -42,7 +36,7 @@ it('uses one tab stop and native arrow selection for the time window', async () 
   await user.keyboard('{ArrowUp}');
   expect(screen.getByRole('radio', { name: '7 d' })).toBeChecked();
   await user.tab();
-  expect(screen.getByRole('switch', { name: 'Day and night on' })).toHaveFocus();
+  expect(screen.getByText('Connection and coverage')).toHaveFocus();
   await user.tab({ shift: true });
   expect(screen.getByRole('radio', { name: '7 d' })).toHaveFocus();
 });

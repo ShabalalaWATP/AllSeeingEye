@@ -77,7 +77,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
+    await user.click(screen.getByRole('button', { name: 'Map filters' }));
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
@@ -117,7 +117,7 @@ describe('GlobePage', () => {
         id: null,
       });
     });
-    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
+    await user.click(screen.getByRole('button', { name: 'Map filters' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();
@@ -254,13 +254,13 @@ describe('GlobePage', () => {
     expect(map.setSky).toHaveBeenLastCalledWith(
       expect.objectContaining({ 'atmosphere-blend': expect.any(Array) }),
     );
-    await user.click(screen.getByRole('switch', { name: 'Day and night on' }));
+    await user.click(screen.getByRole('button', { name: 'Map style' }));
+    await user.click(screen.getByRole('switch', { name: 'Day and night' }));
     expect(overlayLayerIds()).toEqual(['events-disaster']);
-    await user.click(screen.getByRole('switch', { name: 'Day and night off' }));
+    await user.click(screen.getByRole('switch', { name: 'Day and night' }));
     expect(overlayLayerIds()).toEqual(['terminator', 'events-disaster']);
 
-    await user.click(screen.getByRole('button', { name: 'Layers and settings' }));
-    await user.click(screen.getByRole('switch', { name: 'Lite mode off' }));
+    await user.click(screen.getByRole('switch', { name: 'Reduce graphics load' }));
     expect(useGlobeStore.getState().lite).toBe(true);
     expect(overlayLayerIds()).toEqual(['events-disaster']);
     expect(map.setSky).toHaveBeenLastCalledWith(expect.objectContaining({ 'atmosphere-blend': 0 }));

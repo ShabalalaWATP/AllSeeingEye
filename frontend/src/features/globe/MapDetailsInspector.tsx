@@ -73,7 +73,9 @@ export function MapDetailsInspector({
       <div className="mt-4 space-y-3 overflow-y-auto text-sm">
         {details.kind === 'jam' ? (
           !cell ? (
-            <p role="status">This GNSS cell is no longer flagged in the current observations.</p>
+            <p role="status">
+              This GNSS cell is no longer visible with the current filters or observations.
+            </p>
           ) : (
             <>
               <p>Poor position accuracy reports, not confirmation of intentional interference.</p>
@@ -90,11 +92,11 @@ export function MapDetailsInspector({
                 <dd>{cell.percent_bad}%</dd>
                 <dt>Flag</dt>
                 <dd>{cell.level}</dd>
-                <dt>Updated</dt>
+                <dt>Latest observation across all GNSS cells</dt>
                 <dd>{updatedAt ? formatUtc(updatedAt) : 'Not recorded'}</dd>
               </dl>
               <p className="text-xs text-muted">
-                Counts are aircraft-per-cell-per-hour observations over a rolling 24 hours, not
+                Counts are aircraft-per-cell-per-hour observations over approximately 24 hours, not
                 unique aircraft. The adjusted share subtracts one poor observation before dividing
                 by all observations. The square is an aggregation cell, not a measured interference
                 boundary or an emitter location.

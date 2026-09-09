@@ -5032,6 +5032,11 @@ export interface components {
             cells: components["schemas"]["JamCellOut"][];
             /** Updated At */
             updated_at: string | null;
+            /**
+             * Limited
+             * @default false
+             */
+            limited: boolean;
         };
         JsonValue: unknown;
         /** JudgementAssessment */

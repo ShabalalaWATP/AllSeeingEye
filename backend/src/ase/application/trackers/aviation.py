@@ -178,7 +178,7 @@ class AviationService:
             )
             for area in self._areas
         )
-        cells = self._jam.cells()
+        cells = self.jam_cells()
         emergencies = sorted(
             tagged(events, "emergency"), key=lambda e: (-(e.severity or 0), e.title)
         )
@@ -196,6 +196,7 @@ class AviationService:
         )
 
     def jam_cells(self) -> list[JamCell]:
+        self._jam.prune(self._clock.now())
         return self._jam.cells()
 
 

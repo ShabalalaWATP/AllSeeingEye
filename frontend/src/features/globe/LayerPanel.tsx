@@ -1,34 +1,22 @@
 import { useId } from 'react';
 import { LiveCoverage } from './LiveCoverage';
-import { ObservationControls } from './ObservationControls';
-import type { ObservationKind, ObservationVisibility } from './ObservationControls';
-
-import type { Category, LiveEvent, StoreStats } from '@/lib/api/eventSchemas';
+import type { Category, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
 
 import { ConnectionStatus } from './ConnectionStatus';
-import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
+import { CATEGORY_STYLES } from '@/lib/categories';
+
+const OTHER_TOPICS = ['cyber', 'social', 'political', 'humanitarian', 'economic'] as const;
 
 export interface LayerPanelProps {
-  observations?: {
-    events: readonly LiveEvent[];
-    visibility: ObservationVisibility;
-    onToggle: (kind: ObservationKind) => void;
-  };
   counts: Partial<Record<Category, number>>;
   hidden: readonly Category[];
   stats: StoreStats | null;
   status: StreamStatus;
   error: string | null;
-  terminator: boolean;
-  lite: boolean;
   windowHours: number | null;
   onWindow: (hours: number | null) => void;
   onToggle: (category: Category) => void;
-  onToggleTerminator: () => void;
-  onToggleLite: () => void;
-  interference: boolean;
-  onToggleInterference: () => void;
 }
 
 const MEBIBYTE = 1_048_576;
@@ -49,64 +37,34 @@ export function formatBudget(stats: StoreStats): string {
   return `${stats.total} events, ${used} of ${budget} MB`;
 }
 
-/** Per-category visibility switches with live counts, plus the store budget line. */
-function Toggle({
-  label,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onToggle}
-      className={`flex min-h-11 w-full items-center justify-between rounded px-1.5 py-1 text-left text-sm hover:bg-surface-2 lg:min-h-0 ${
-        checked ? 'text-text' : 'text-muted'
-      }`}
-    >
-      <span>{label}</span>{' '}
-      <span className="font-mono text-[11px] uppercase text-muted">{checked ? 'on' : 'off'}</span>
-    </button>
-  );
-}
-
+/** Shared event filters and additional topics; each main layer keeps its own controls. */
 export function LayerPanel({
-  observations,
   counts,
   hidden,
   stats,
   status,
   error,
-  terminator,
-  lite,
   windowHours,
   onWindow,
   onToggle,
-  onToggleTerminator,
-  onToggleLite,
-  interference,
-  onToggleInterference,
 }: LayerPanelProps) {
   const windowName = useId();
   return (
     <section
-      aria-label="Layers"
+      aria-label="Event filters and coverage"
       className="shrink-0 rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
     >
       <div className="mb-1 flex items-center justify-between px-1">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Layers</h2>
+        <h3 className="text-sm font-medium">Live event filters</h3>
         <ConnectionStatus status={status} />
       </div>
       <p className="mb-2 px-1 text-xs text-muted">
-        Choose the categories and observation overlays shown on the map.
+        Use the left rail to switch each main layer on or off. Its Filters button opens options for
+        that layer. Map appearance is under Map style on the right.
       </p>
-      <ul className="space-y-0.5">
-        {ORDERED_CATEGORIES.map((category) => {
+      <h3 className="px-1 py-2 text-xs font-medium">Other topics</h3>
+      <ul className="space-y-0.5" aria-label="Additional event topics">
+        {OTHER_TOPICS.map((category) => {
           const style = CATEGORY_STYLES[category];
           const shown = !hidden.includes(category);
           return (
@@ -127,7 +85,10 @@ export function LayerPanel({
                   className="inline-block h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: style.css, opacity: shown ? 1 : 0.3 }}
                 />
-                <span className="flex-1">{style.label}</span>{' '}
+                <span className="flex-1">{style.label}</span>
+                <span aria-hidden="true" className="text-[10px] text-muted">
+                  {shown ? 'On' : 'Off'}
+                </span>{' '}
                 <span className="font-mono text-xs text-muted tabular-nums">
                   {counts[category] ?? 0}
                 </span>
@@ -136,10 +97,21 @@ export function LayerPanel({
           );
         })}
       </ul>
-      {observations && (
-        <ObservationControls {...observations} hidden={hidden} onToggleCategory={onToggle} />
-      )}
-      <h3 className="mt-3 px-1 text-xs font-medium">Time window</h3>
+      <div className="mt-3 flex items-center justify-between px-1">
+        <h3 className="text-xs font-medium">Event time window</h3>
+        <button
+          type="button"
+          disabled={windowHours === null}
+          onClick={() => onWindow(null)}
+          className="min-h-9 text-xs text-cyan disabled:opacity-40"
+        >
+          Clear time filter
+        </button>
+      </div>
+      <p className="px-1 text-xs text-muted">
+        Applies to live events across categories. Category filters narrow this further. GNSS, CCTV
+        and infrastructure use their own coverage.
+      </p>
       <div
         role="radiogroup"
         aria-label="Time window"
@@ -163,20 +135,19 @@ export function LayerPanel({
           </label>
         ))}
       </div>
-      <div className="mt-1 border-t border-line pt-1">
-        <h3 className="px-1 py-2 text-xs font-medium">Map display</h3>
-        <Toggle label="Day and night" checked={terminator} onToggle={onToggleTerminator} />
-        <Toggle label="Lite mode" checked={lite} onToggle={onToggleLite} />
-        <Toggle label="GNSS interference" checked={interference} onToggle={onToggleInterference} />
-      </div>
-      {stats !== null && (
-        <p className="mt-1 px-1 font-mono text-[11px] text-muted">
-          Server at last snapshot: <span>{formatBudget(stats)}</span>
-        </p>
-      )}
-      <LiveCoverage
-        filteredCount={Object.values(counts).reduce((total, count) => total + count, 0)}
-      />
+      <details className="mt-3 border-t border-line px-1 pt-1 text-xs">
+        <summary className="min-h-9 cursor-pointer py-2 font-medium">
+          Connection and coverage
+        </summary>
+        {stats !== null && (
+          <p className="mt-1 font-mono text-[11px] text-muted">
+            Retained on server: <span>{formatBudget(stats)}</span>
+          </p>
+        )}
+        <LiveCoverage
+          filteredCount={Object.values(counts).reduce((total, count) => total + count, 0)}
+        />
+      </details>
       {error !== null && (
         <p role="alert" className="mt-1 px-1 text-xs text-critical">
           {error}

@@ -8,6 +8,8 @@ import { InfrastructurePanel } from './infrastructure/InfrastructurePanel';
 import { SatelliteFilterPanel } from './SatelliteFilterPanel';
 import { ConflictFilterPanel } from './ConflictFilterPanel';
 import { HazardFilterPanel } from './HazardFilterPanel';
+import { GnssPanel } from './GnssPanel';
+import type { ComponentProps } from 'react';
 
 /** Category panels are opened beneath their switches, not duplicated on the rail. */
 export function catalogueControlPanels({
@@ -16,14 +18,19 @@ export function catalogueControlPanels({
   satellites,
   conflicts,
   hazards,
+  gnss,
 }: {
   infrastructure: ReturnType<typeof useInfrastructure>;
   focusInfrastructure: ReturnType<typeof useInfrastructureSelection>['focus'];
   satellites: ReturnType<typeof useSatelliteFilters>;
   conflicts: ReturnType<typeof useConflictFilters>;
   hazards: ReturnType<typeof useHazardFilters>;
+  gnss: ComponentProps<typeof GnssPanel>;
 }) {
   return [
+    <ControlPanel key="gnss" side="left" label="GNSS interference" icon="gnss" entry={false}>
+      <GnssPanel {...gnss} />
+    </ControlPanel>,
     <ControlPanel key="infrastructure" side="left" label="Infrastructure" icon="infrastructure">
       <InfrastructurePanel state={infrastructure} onSelect={focusInfrastructure} />
     </ControlPanel>,

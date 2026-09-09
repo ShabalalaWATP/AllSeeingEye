@@ -31,21 +31,18 @@ import { LayerPanel } from './LayerPanel';
 import { ModeToolbar } from './ModeToolbar';
 import { Ticker } from './Ticker';
 import { WorldClocks } from './WorldClocks';
-import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
 import { useConflictFilters } from './useConflictFilters';
 import { useHazardFilters } from './useHazardFilters';
 import { useMapWorkspaceTools } from './useMapWorkspaceTools';
-import { MapDrawingPanel } from './MapDrawingPanel';
-import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
-import { RoutePlannerPanel } from '@/components/maps/RoutePlannerPanel';
-import { measure } from '@/lib/map/measurements';
+import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
 import { catalogueControlPanels } from './catalogueControlPanels';
 import './dashboard.css';
 import { createEngine } from './globeEngineFactory';
 import { useInterference } from './useInterference';
+import { useGnssFilters } from './useGnssFilters';
 import { useGlobeScene } from './useGlobeScene';
 import { useMapPicking } from './useMapPicking';
 import { useTrafficSelection } from './useTrafficSelection';
@@ -69,11 +66,10 @@ export default function GlobePage() {
   const lite = useGlobeStore((state) => state.lite);
   const toggleLite = useGlobeStore((state) => state.toggleLite);
   const interference = useGlobeStore((state) => state.interference);
-  const toggleInterference = useGlobeStore((state) => state.toggleInterference);
   const opsRoom = useGlobeStore((state) => state.opsRoom);
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
-  const { cells: jamCells, updated_at: jamUpdatedAt } = useInterference(interference);
+  const gnss = useInterference(interference && visible);
   const [supported] = useState(() => hasWebGl2());
   const containerRef = useRef<HTMLDivElement>(null);
   const engine = useGlobeEngine(containerRef, {
@@ -89,6 +85,7 @@ export default function GlobePage() {
   const tools = useMapWorkspaceTools(engine, supported && !opsRoom, mode);
   const { measurement } = tools;
   const now = useNow();
+  const gnssFilters = useGnssFilters(gnss.cells, gnss.receivedAt, now);
   const [zoom, setZoom] = useState(1.5);
   useEffect(
     () =>
@@ -184,7 +181,8 @@ export default function GlobePage() {
     onPick,
     onCluster,
     onJam,
-    jamCells,
+    jamCells: gnssFilters.filtered,
+    jamSelection: details?.kind === 'jam' ? details.cell : null,
     gridLayers: britishGrid.layers,
     cameraLayers,
     infrastructureLayers,
@@ -222,6 +220,7 @@ export default function GlobePage() {
             <MapLayerRail
               openPanel={openPanel}
               activePanel={activePanel}
+              gnssCount={gnssFilters.filtered.length}
               events={scoped}
               counts={counts}
               visibility={observations.visibility}
@@ -242,8 +241,26 @@ export default function GlobePage() {
             satellites,
             conflicts,
             hazards,
+            gnss: {
+              enabled: interference,
+              data: gnss,
+              filters: gnssFilters,
+              selected: details?.kind === 'jam' ? details.cell : null,
+              selectionDisabled: tools.picking,
+              onSelect: (cell) => {
+                if (tools.picking) return;
+                onJam(cell);
+                engine.flyTo({ center: [cell.lon, cell.lat], zoom: 6 });
+              },
+            },
           })}
           {mapReferencePanels({
+            display: {
+              terminator,
+              lite,
+              onToggleTerminator: toggleTerminator,
+              onToggleLite: toggleLite,
+            },
             base: {
               initialExpanded: true,
               value: baseLayer,
@@ -258,52 +275,17 @@ export default function GlobePage() {
             grid: { grid: britishGrid, engine },
             cameras: { cameras, onSelect: focusCamera },
           })}
-          <ControlPanel side="right" label="Draw on map" icon="draw">
-            <MapDrawingPanel value={tools.drawing} />
-          </ControlPanel>
-          <ControlPanel side="right" label="Route planner" icon="route">
-            <RoutePlannerPanel
-              onRouteChange={tools.setRoute}
-              {...(measurement.points.length >= 2
-                ? {
-                    initialWaypoints: measurement.points
-                      .slice(0, 8)
-                      .map(([lon, lat]) => ({ lon, lat })),
-                  }
-                : {})}
-            />
-          </ControlPanel>
-          <ControlPanel side="right" label="RF link calculator" icon="rf">
-            <RfCalculatorPanel
-              {...(measurement.mode === 'distance' && measurement.points.length === 2
-                ? { measuredDistanceKm: measure(measurement.points, 'distance').metres / 1000 }
-                : {})}
-            />
-          </ControlPanel>
-          <ControlPanel label="Measure distance and area" icon="measure">
-            <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
-          </ControlPanel>
-          <ControlPanel side="left" label="Layers and settings" icon="settings">
+          {mapPlanningPanels(tools)}
+          <ControlPanel side="left" label="Map filters" icon="filter">
             <LayerPanel
-              observations={{
-                events: scoped,
-                visibility: observations.visibility,
-                onToggle: observations.toggle,
-              }}
               counts={counts}
               hidden={hidden}
               stats={stats}
               status={status}
               error={error}
-              terminator={terminator}
-              lite={lite}
               windowHours={windowHours}
               onWindow={setWindow}
               onToggle={toggleCategory}
-              onToggleTerminator={toggleTerminator}
-              onToggleLite={toggleLite}
-              interference={interference}
-              onToggleInterference={toggleInterference}
             />
           </ControlPanel>
         </GlobeControls>
@@ -332,8 +314,8 @@ export default function GlobePage() {
             storySize={storySize}
             details={details}
             events={pickableEvents}
-            cells={jamCells}
-            updatedAt={jamUpdatedAt}
+            cells={gnssFilters.filtered}
+            updatedAt={gnss.updated_at}
             interference={interference}
             onSelect={choose}
             onClose={close}

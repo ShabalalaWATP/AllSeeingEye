@@ -663,3 +663,20 @@ provider account was performed.
 See [performance repair](PERFORMANCE_REPAIR.md) and its linked audits. These
 changes preserve feeds and geographic coverage. CPU benchmarks and API probes
 do not establish visual frame rates or eliminate every possible driver failure.
+
+## 9 September 2026: independent GNSS category and clearer map controls
+
+- [x] Add a labelled GNSS category with its own filters, list and map selection.
+- [x] Show accuracy indicators with source, coverage and interpretation limits.
+- [x] Remove duplicate category and appearance switches from the shared panel.
+- [x] Keep shared time/additional-topic filters on the left and map appearance on the right.
+- [x] Correct observation-time counting, UTC hour retention and good/bad precedence.
+- [x] Bound GNSS memory, disclose partial aggregates and expire stale browser snapshots.
+- [x] Pass full frontend coverage, backend regressions, API authentication, lint, types and build.
+- [x] Restart the local ASE backend and verify health/readiness.
+- [ ] Complete interactive browser/GPU verification when policy permits.
+
+See [GNSS and map controls](GNSS_AND_MAP_CONTROLS.md) for the control layout,
+method, limitations and validation record. Official interference advisories and
+independently sourced spoofing classifications remain possible future inputs;
+this change does not infer confirmed jamming from aircraft accuracy alone.

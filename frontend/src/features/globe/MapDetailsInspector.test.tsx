@@ -32,6 +32,8 @@ it('resolves current GNSS observations and explicitly reports a removed cell', (
   expect(screen.getByText('5 poor; 8 good')).toBeVisible();
   expect(screen.queryByText('2 poor; 8 good')).not.toBeInTheDocument();
   rerender(<MapDetailsInspector {...props} cells={[]} updatedAt="2026-09-08T13:00:00Z" />);
-  expect(screen.getByRole('status')).toHaveTextContent('no longer flagged');
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'no longer visible with the current filters or observations',
+  );
   expect(screen.queryByText('5 poor; 8 good')).not.toBeInTheDocument();
 });

@@ -63,11 +63,9 @@ it('explains automated conflict and unrest coding without labelling it verified'
 });
 
 describe('LayerPanel', () => {
-  it('lists every category with its count, reports the budget and toggles', async () => {
+  it('lists additional topics with counts and reports the live connection and budget', async () => {
     const onToggle = vi.fn();
     const onWindow = vi.fn();
-    const onToggleTerminator = vi.fn();
-    const onToggleLite = vi.fn();
     render(
       <LayerPanel
         counts={{ disaster: 3 }}
@@ -75,35 +73,13 @@ describe('LayerPanel', () => {
         stats={storeStats}
         status="live"
         error={null}
-        terminator
-        lite={false}
         windowHours={null}
         onWindow={onWindow}
         onToggle={onToggle}
-        onToggleTerminator={onToggleTerminator}
-        onToggleLite={onToggleLite}
-        interference={false}
-        onToggleInterference={vi.fn()}
       />,
     );
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(14);
-    expect(screen.getByRole('switch', { name: 'Day and night on' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
-    expect(screen.getByRole('switch', { name: 'Lite mode off' })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
-    await userEvent.click(screen.getByRole('switch', { name: 'Day and night on' }));
-    expect(onToggleTerminator).toHaveBeenCalledTimes(1);
-    await userEvent.click(screen.getByRole('switch', { name: 'Lite mode off' }));
-    expect(onToggleLite).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('switch', { name: 'Disasters 3' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(switches).toHaveLength(5);
     expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveAttribute(
       'aria-checked',
       'false',
@@ -122,15 +98,9 @@ describe('LayerPanel', () => {
         stats={null}
         status="offline"
         error="Down."
-        terminator={false}
-        lite
         windowHours={24}
         onWindow={vi.fn()}
         onToggle={vi.fn()}
-        onToggleTerminator={vi.fn()}
-        onToggleLite={vi.fn()}
-        interference={false}
-        onToggleInterference={vi.fn()}
       />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Down.');

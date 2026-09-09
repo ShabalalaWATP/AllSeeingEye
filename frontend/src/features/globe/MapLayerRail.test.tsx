@@ -36,13 +36,9 @@ it('reports loaded counts and separately toggles categories and context layers',
   expect(screen.getByRole('switch', { name: 'Flights 1' })).toHaveAttribute('aria-checked', 'true');
   await user.click(screen.getByRole('switch', { name: 'News 2' }));
   expect(screen.getByRole('switch', { name: 'News 2' })).toHaveAttribute('aria-checked', 'false');
-  await user.click(screen.getByRole('switch', { name: /Day and night/ }));
-  expect(screen.getByRole('switch', { name: 'Day and night off' })).toHaveAttribute(
-    'aria-checked',
-    'false',
-  );
+  expect(screen.queryByRole('switch', { name: /Day and night/ })).not.toBeInTheDocument();
   await user.click(screen.getByRole('switch', { name: /GNSS interference/ }));
-  expect(screen.getByRole('switch', { name: 'GNSS interference on' })).toHaveAttribute(
+  expect(screen.getByRole('switch', { name: 'GNSS interference 0' })).toHaveAttribute(
     'aria-checked',
     'true',
   );

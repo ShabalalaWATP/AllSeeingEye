@@ -90,3 +90,4 @@ class JamCellOut(BaseModel):
 class JamMapOut(BaseModel):
     cells: list[JamCellOut]
     updated_at: datetime | None
+    limited: bool = False

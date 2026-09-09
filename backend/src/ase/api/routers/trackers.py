@@ -52,6 +52,7 @@ async def jamming(user: CurrentUser, container: ContainerDep) -> JamMapOut:
     return JamMapOut(
         cells=[JamCellOut.from_cell(cell) for cell in service.jam_cells()],
         updated_at=container.jam.updated_at,
+        limited=container.jam.limited,
     )
 
 

@@ -15526,6 +15526,11 @@
               }
             ],
             "title": "Updated At"
+          },
+          "limited": {
+            "type": "boolean",
+            "title": "Limited",
+            "default": false
           }
         },
         "type": "object",

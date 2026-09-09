@@ -68,7 +68,7 @@ export function GlobeControls({
         <MapControlLabel key={props.label} label={props.label}>
           <button
             type="button"
-            className={`map-icon-button ${props.label === 'Map style' ? 'map-style-button' : ''}`}
+            className={`map-icon-button ${['Map style', 'Map filters'].includes(props.label) ? 'map-style-button' : ''}`}
             aria-label={props.label}
             title={props.label}
             aria-expanded={active === props.label}
@@ -80,6 +80,7 @@ export function GlobeControls({
           >
             <MapControlIcon name={props.icon} />
             {props.label === 'Map style' && <span className="map-style-label">Map style</span>}
+            {props.label === 'Map filters' && <span className="map-style-label">Filters</span>}
           </button>
         </MapControlLabel>
       ));
