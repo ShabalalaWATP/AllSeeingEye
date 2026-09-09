@@ -116,14 +116,14 @@ it.each(['globe', 'map'] as const)(
     await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
     expect(layers().some((layer) => layer.id === 'selected-ground-station-halo')).toBe(false);
     pick('satellite-ground-stations', station);
-    act(() =>
-      useEventsStore
-        .getState()
-        .applyUpsert([
-          liveEvent({ id: 'infra-other', category: 'news', title: 'Other infrastructure event' }),
-        ]),
-    );
-    await user.click(screen.getByRole('button', { name: /Other infrastructure event/ }));
+    const other = liveEvent({
+      id: 'infra-other',
+      category: 'news',
+      title: 'Other infrastructure event',
+      point: { lon: 12.345, lat: 56.789 },
+    });
+    act(() => useEventsStore.getState().applyUpsert([other]));
+    pick('events-news', other);
     expect(layers().some((layer) => layer.id === 'selected-ground-station-halo')).toBe(false);
     expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
     pick('undersea-cables', cable);

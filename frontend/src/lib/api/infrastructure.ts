@@ -10,6 +10,11 @@ const publicLink = z.url().refine((value) => {
   const url = new URL(value);
   return url.protocol === 'https:' && !url.username && !url.password && !url.port;
 });
+// Preserve historical dataset references. These links are never fetched by the app.
+const historicalSourceLink = z.url().refine((value) => {
+  const url = new URL(value);
+  return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && !url.port;
+});
 const longitude = z.number().min(-180).max(180);
 const latitude = z.number().min(-90).max(90);
 const text = z.string().max(2000);
@@ -56,7 +61,7 @@ export const infrastructureSchema = z.object({
         capacity_year: z.number().int().min(1900).max(2099).nullable(),
         operator: text.nullable(),
         source_name: text,
-        source_url: publicLink,
+        source_url: historicalSourceLink,
         geolocation_source: text,
         note: text,
       }),

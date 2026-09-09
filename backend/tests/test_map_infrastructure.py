@@ -1,5 +1,7 @@
 """The map exposes bounded, attributed public snapshots only after authentication."""
 
+from datetime import timedelta
+
 from httpx import AsyncClient
 
 from ase.adapters.geo.infrastructure import public_infrastructure
@@ -37,3 +39,20 @@ async def test_snapshot_requires_login(client: AsyncClient, user: User) -> None:
     assert len(payload["cables"]) >= 1000
     assert payload["ground_stations"]
     assert "api_key" not in response.text
+
+
+async def test_expiry_during_catalogue_construction_refuses_release(
+    client, container, user, monkeypatch
+):
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    original = container.public_infrastructure
+
+    def expired():
+        data = original()
+        container.clock.advance(timedelta(hours=24))
+        return data
+
+    monkeypatch.setattr(container, "public_infrastructure", expired)
+    response = await client.get("/api/map-infrastructure", headers=bearer(token))
+    assert response.status_code == 401
+    assert "nuclear_facilities" not in response.text

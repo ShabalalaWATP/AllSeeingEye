@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MapControlIcon } from '../MapControlIcon';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 
 export function InfrastructurePanel({
@@ -26,20 +27,34 @@ export function InfrastructurePanel({
       .includes(query.trim().toLowerCase()),
   );
   return (
-    <section aria-label="Map infrastructure">
+    <section aria-label="Map infrastructure" className="space-y-3 p-1">
+      <h3 className="text-sm font-medium">Infrastructure layers</h3>
       <p className="mb-3 text-xs leading-relaxed text-muted">
         Public infrastructure, with approximate routes and locations. Select a line or site icon on
         the map for its source.
       </p>
       {[
-        { label: 'Undersea cables', enabled: state.cablesEnabled, toggle: state.toggleCables },
+        {
+          label: 'Undersea cables',
+          icon: 'route' as const,
+          description: 'Approximate public route segments',
+          count: state.data?.cables.length,
+          enabled: state.cablesEnabled,
+          toggle: state.toggleCables,
+        },
         {
           label: 'Satellite ground stations',
+          icon: 'space' as const,
+          description: 'Public station locations',
+          count: state.data?.ground_stations.length,
           enabled: state.stationsEnabled,
           toggle: state.toggleStations,
         },
         {
           label: 'Nuclear power facilities',
+          icon: 'infrastructure' as const,
+          description: 'Historical power-plant inventory',
+          count: state.data?.nuclear_facilities.length,
           enabled: state.nuclearEnabled,
           toggle: state.toggleNuclear,
         },
@@ -51,13 +66,28 @@ export function InfrastructurePanel({
           aria-label={choice.label}
           aria-checked={choice.enabled}
           onClick={choice.toggle}
-          className="flex min-h-11 w-full items-center justify-between text-sm"
+          className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line px-3 py-3 text-left text-sm transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-cyan"
         >
-          <span>
-            {choice.label === 'Nuclear power facilities' && <span aria-hidden="true">☢ </span>}
-            {choice.label}
+          <span className="text-cyan">
+            <MapControlIcon name={choice.icon} />
           </span>
-          <span className="text-cyan">{choice.enabled ? 'ON' : 'OFF'}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-medium">{choice.label}</span>
+            <span className="mt-1 block text-[11px] leading-relaxed text-muted">
+              {choice.description}
+              {choice.count !== undefined
+                ? ` / ${choice.count.toLocaleString('en-GB')} loaded`
+                : ''}
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${choice.enabled ? 'bg-cyan/70' : 'bg-white/15'}`}
+          >
+            <span
+              className={`h-4 w-4 rounded-full bg-white transition-transform ${choice.enabled ? 'translate-x-4' : ''}`}
+            />
+          </span>
         </button>
       ))}
       {state.nuclearEnabled && (
@@ -91,6 +121,7 @@ export function InfrastructurePanel({
             Find infrastructure
             <input
               type="search"
+              maxLength={200}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Name, operator or country code"
@@ -106,7 +137,7 @@ export function InfrastructurePanel({
                   aria-pressed={
                     state.selected?.kind === value.kind && state.selected.item.id === value.item.id
                   }
-                  className="w-full border-t border-line py-2 text-left text-xs hover:text-cyan"
+                  className="min-h-14 w-full border-b border-line px-2 py-3 text-left text-xs hover:bg-white/5 aria-pressed:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-cyan"
                 >
                   <span className="block">{value.item.name}</span>
                   <span className="text-[10px] text-muted">

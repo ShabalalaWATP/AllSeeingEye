@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import {
   fetchInfrastructure,
   type Infrastructure,
@@ -7,12 +7,25 @@ import {
   type GroundStation,
 } from '@/lib/api/infrastructure';
 
+import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
+import { useAuthStore } from '@/stores/auth';
+import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
+
 export type InfrastructureSelection =
   | { kind: 'cable'; item: Cable }
   | { kind: 'station'; item: GroundStation }
   | { kind: 'nuclear'; item: NuclearFacility };
 
 export function useInfrastructure() {
+  const authority = useAuthStore(
+    (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
+  );
+  const accessRevision = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
+  const scope = `${authority}:${accessRevision}`;
+  const anonymous = authority.startsWith('anonymous:');
+  const request = useScopedRequest();
+  const [dataScope, setDataScope] = useState<string | null>(null);
+
   const [cablesEnabled, setCablesEnabled] = useState(false);
   const [stationsEnabled, setStationsEnabled] = useState(false);
   const [nuclearEnabled, setNuclearEnabled] = useState(false);
@@ -20,49 +33,58 @@ export function useInfrastructure() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
-  const [selection, setSelection] = useState<InfrastructureSelection | null>(null);
+  const [selection, setSelection] = useState<{
+    scope: string;
+    value: InfrastructureSelection;
+  } | null>(null);
   const enabled = cablesEnabled || stationsEnabled || nuclearEnabled;
   useEffect(() => {
-    if (!enabled) return;
-    const controller = new AbortController();
+    if (!enabled || anonymous) return;
+    const signal = request();
     let current = true;
-    void fetchInfrastructure(controller.signal)
+    void fetchInfrastructure(signal)
       .then((value) => {
-        if (current) {
+        if (current && !signal.aborted) {
           setData(value);
+          setDataScope(scope);
           setError(null);
           setLoading(false);
         }
       })
       .catch(() => {
-        if (current) {
+        if (current && !signal.aborted) {
+          setData(null);
+          setDataScope(scope);
           setError('Infrastructure could not be loaded. Retry to reconnect.');
           setLoading(false);
         }
       });
     return () => {
       current = false;
-      controller.abort();
+      request();
     };
-  }, [enabled, revision]);
+  }, [enabled, revision, scope, anonymous, request]);
   const close = useCallback(() => setSelection(null), []);
   const selected =
-    selection &&
-    ((selection.kind === 'cable' && cablesEnabled) ||
-      (selection.kind === 'station' && stationsEnabled) ||
-      (selection.kind === 'nuclear' && nuclearEnabled))
-      ? selection
+    selection?.scope === scope &&
+    ((selection.value.kind === 'cable' && cablesEnabled) ||
+      (selection.value.kind === 'station' && stationsEnabled) ||
+      (selection.value.kind === 'nuclear' && nuclearEnabled))
+      ? selection.value
       : null;
   return {
-    data,
-    loading: loading && enabled,
-    error,
+    data: dataScope === scope ? data : null,
+    loading: !anonymous && enabled && (loading || dataScope !== scope),
+    error: dataScope === scope ? error : null,
     cablesEnabled,
     stationsEnabled,
     nuclearEnabled,
     selected,
     close,
-    select: useCallback((value: InfrastructureSelection) => setSelection(value), []),
+    select: useCallback(
+      (value: InfrastructureSelection) => setSelection({ scope, value }),
+      [scope],
+    ),
     toggleCables: () => {
       setSelection(null);
       if (!enabled) setLoading(true);

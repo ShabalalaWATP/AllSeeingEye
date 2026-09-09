@@ -84,6 +84,8 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
       <label className="block">
         Find a country, region or provider
         <input
+          type="search"
+          placeholder="Country, region or provider"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           maxLength={100}
@@ -93,6 +95,11 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
       <p className="text-muted">
         {providers.length} supported sources. Enable a region below to load it.
       </p>
+      {!providers.length && !cameras.loading && (
+        <p role="status" className="rounded border border-line p-3 text-muted">
+          No source catalogue is available. Refresh the catalogue to try again.
+        </p>
+      )}
       <div className="max-h-72 overflow-y-auto">
         {Object.entries(groups).map(([name, ids]) => {
           const rows = providers.filter(
@@ -108,9 +115,9 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
             <details
               key={name}
               open={term || selected > 0 ? true : undefined}
-              className="border-t border-line py-2"
+              className="border-t border-line py-3"
             >
-              <summary className="cursor-pointer py-2 text-cyan">
+              <summary className="cursor-pointer py-2 font-medium text-cyan">
                 {name}{' '}
                 <span className="text-muted">
                   {selected}/{rows.length} enabled
@@ -143,18 +150,23 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
                 </button>
               </div>
               {rows.map((provider) => (
-                <div key={provider.id} className="border-t border-line py-2">
+                <div key={provider.id} className="border-t border-line py-3">
                   <button
                     type="button"
                     role="switch"
                     aria-label={provider.name}
                     aria-checked={cameras.providers[provider.id] ?? false}
                     onClick={() => cameras.toggleProvider(provider.id)}
-                    className="min-h-11 w-full text-left"
+                    className="flex min-h-11 w-full items-center gap-3 text-left font-medium focus-visible:outline-2 focus-visible:outline-cyan"
                   >
-                    {provider.name}{' '}
-                    <span className="float-right">
-                      {cameras.providers[provider.id] ? 'ON' : 'OFF'}
+                    <span className="flex-1">{provider.name}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${cameras.providers[provider.id] ? 'bg-cyan/70' : 'bg-white/15'}`}
+                    >
+                      <span
+                        className={`h-4 w-4 rounded-full bg-white transition-transform ${cameras.providers[provider.id] ? 'translate-x-4' : ''}`}
+                      />
                     </span>
                   </button>
                   <p className="text-muted">

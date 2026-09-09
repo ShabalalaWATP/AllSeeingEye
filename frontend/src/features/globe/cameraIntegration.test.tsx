@@ -29,7 +29,7 @@ const camera: Camera = {
 function layers() {
   return (MapboxOverlay.instances[0]?.props.layers ?? []) as {
     id: string;
-    props: { onClick: (info: { object: Camera }) => void };
+    props: { onClick: (info: { object: unknown }) => void };
   }[];
 }
 beforeEach(async () => {
@@ -85,15 +85,18 @@ it.each(['globe', 'map'] as const)(
     expect(layers().find((item) => item.id === 'selected-camera-halo')).toBeUndefined();
     await user.click(screen.getByRole('button', { name: camera.title }));
     expect(layers().find((item) => item.id === 'selected-camera-halo')).toBeDefined();
-    act(() => {
-      const event = liveEvent({
-        id: 'camera-switch-event',
-        category: 'news',
-        title: 'Other map record',
-      });
-      useEventsStore.getState().applyUpsert([event]);
+    const event = liveEvent({
+      id: 'camera-switch-event',
+      category: 'news',
+      title: 'Other map record',
+      point: { lon: 12.345, lat: 56.789 },
     });
-    await user.click(screen.getByRole('button', { name: /Other map record/ }));
+    act(() => useEventsStore.getState().applyUpsert([event]));
+    act(() =>
+      layers()
+        .find((item) => item.id === 'events-news')!
+        .props.onClick({ object: event }),
+    );
     expect(layers().find((item) => item.id === 'selected-camera-halo')).toBeUndefined();
     expect(screen.getByRole('complementary', { name: 'Event details' })).toHaveTextContent(
       'Other map record',

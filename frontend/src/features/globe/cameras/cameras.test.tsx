@@ -213,9 +213,9 @@ it('browses all overlapping facilities using the paginated list and provider swi
   await user.click(screen.getByRole('button', { name: 'Road 50' }));
   expect(select).toHaveBeenCalledWith(expect.objectContaining({ id: '50' }));
   await user.click(screen.getByRole('button', { name: 'Previous cameras' }));
-  await user.type(screen.getByRole('textbox', { name: 'Find a camera' }), 'Road 0');
+  await user.type(screen.getByRole('searchbox', { name: 'Find a camera' }), 'Road 0');
   await user.click(screen.getByRole('switch', { name: 'London' }));
-  expect(screen.getByText('0 cameras in enabled catalogues')).toBeInTheDocument();
+  expect(screen.getByText('0 matching cameras in enabled catalogues')).toBeInTheDocument();
 });
 
 it('builds clickable camera icons with a separate selection halo on both projections', () => {
@@ -281,10 +281,10 @@ it('discovers dormant providers by country and enables a region on demand', asyn
   const user = userEvent.setup();
   render(<Harness />);
   await user.click(screen.getByRole('switch', { name: /Show public cameras/ }));
-  await screen.findByRole('textbox', { name: 'Find a country, region or provider' });
+  await screen.findByRole('searchbox', { name: 'Find a country, region or provider' });
   await waitFor(() => expect(requested).toEqual(['tfl', 'hongkong', 'fintraffic']));
   await user.type(
-    screen.getByRole('textbox', { name: 'Find a country, region or provider' }),
+    screen.getByRole('searchbox', { name: 'Find a country, region or provider' }),
     'poland',
   );
   await user.click(screen.getByRole('button', { name: 'Enable UK and Europe' }));
