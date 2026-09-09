@@ -2,12 +2,9 @@ import { IconLayer, PathLayer, ScatterplotLayer, TextLayer } from '@deck.gl/laye
 import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { ConflictRegion } from '../conflictRegions';
 import type { Position } from '@/lib/map/geoJsonTypes';
+import { CONFLICT_REGION_MARKERS } from '../conflictRegionSymbols';
+import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
-const marker =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="m3 3 5 1 11 11-4 4L4 8 3 3Zm18 0-5 1-4 4m-3 5-4 4m-3-3 7 7m5-7 7 7M3 21l3-3m12 0 3 3" stroke="white" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>',
-  );
 const colour = (region: ConflictRegion): [number, number, number, number] =>
   region.card.conflict.status === 'war' ? [255, 106, 106, 245] : [249, 190, 84, 245];
 
@@ -21,6 +18,10 @@ export function conflictRegionLayers(
 ): Layer[] {
   if (!regions.length) return [];
   const selectedData = selected ? [selected] : [];
+  const selectRegion = ({ object }: PickingInfo<ConflictRegion>) => {
+    if (object) onSelect(object);
+    return true;
+  };
   const outline: Position[][] = selected
     ? (() => {
         const [w, s, e, n] = selected.bounds;
@@ -59,23 +60,47 @@ export function conflictRegionLayers(
       wrapLongitude: flat,
       pickable: false,
     }),
+    new ScatterplotLayer<ConflictRegion>({
+      id: 'conflict-region-badges',
+      data: regions,
+      getPosition: (item) => item.centre,
+      getRadius: 18,
+      radiusUnits: 'pixels',
+      filled: true,
+      stroked: true,
+      getFillColor: [10, 14, 21, 240],
+      getLineColor: colour,
+      getLineWidth: 1,
+      lineWidthUnits: 'pixels',
+      pickable,
+      onClick: selectRegion,
+    }),
     new IconLayer<ConflictRegion>({
       id: 'conflict-region-markers',
       data: regions,
+      billboard: flat,
+      parameters: SYMBOL_WINDING,
+      getAngle: flat ? 0 : 180,
       getPosition: (item) => item.centre,
-      getIcon: () => ({ url: marker, width: 32, height: 32, mask: true }),
+      getIcon: (item) => ({
+        url: CONFLICT_REGION_MARKERS[item.card.conflict.status === 'war' ? 'war' : 'tension'],
+        width: 64,
+        height: 64,
+        mask: true,
+      }),
       getColor: colour,
-      getSize: 27,
+      getSize: (item) => (item.card.conflict.id === selected?.card.conflict.id ? 31 : 27),
       sizeUnits: 'pixels',
+      updateTriggers: { getSize: [selected?.card.conflict.id] },
       pickable,
-      onClick: ({ object }: PickingInfo<ConflictRegion>) => {
-        if (object) onSelect(object);
-        return true;
-      },
+      onClick: selectRegion,
     }),
     new TextLayer<ConflictRegion>({
       id: 'conflict-region-labels',
       data: selectedData,
+      billboard: flat,
+      parameters: SYMBOL_WINDING,
+      getAngle: flat ? 0 : 180,
       getPosition: (item) => item.centre,
       getText: (item) => item.card.conflict.name,
       getSize: 11,

@@ -61,8 +61,9 @@ it('shows a selected outline and halo, with static icons and no hit targets duri
   const pick = vi.fn();
   expect(conflictRegionLayers([], null, pick, false)).toEqual([]);
   const layers = conflictRegionLayers(regions, regions[0]!, pick, true);
-  expect(layers[0]!.props.data).toEqual(regions);
-  expect(layers[1]!.props.data).toEqual([
+  const layer = (id: string) => layers.find((item) => item.id === id)!;
+  expect(layer('conflict-region-selection').props.data).toEqual(regions);
+  expect(layer('conflict-region-context').props.data).toEqual([
     [
       [22, 44],
       [41, 44],
@@ -71,7 +72,7 @@ it('shows a selected outline and halo, with static icons and no hit targets duri
       [22, 44],
     ],
   ]);
-  const markers = layers[2]!.props as unknown as {
+  const markers = layer('conflict-region-markers').props as unknown as {
     pickable: boolean;
     onClick: (info: { object?: unknown }) => boolean;
   };
@@ -79,13 +80,12 @@ it('shows a selected outline and halo, with static icons and no hit targets duri
   markers.onClick({});
   expect(pick).toHaveBeenCalledExactlyOnceWith(regions[0]);
   const inactive = conflictRegionLayers(regions, null, pick, false, false);
-  expect(inactive[0]!.props.data).toEqual([]);
-  expect(inactive[1]!.props.data).toEqual([]);
-  expect(inactive[2]!.props.pickable).toBe(false);
-  const icon = layers[2]!.props as unknown as {
+  expect(inactive.every((item) => !item.props.pickable)).toBe(true);
+  const icon = layer('conflict-region-markers').props as unknown as {
     getPosition: (region: ConflictRegion) => Position;
     getColor: (region: ConflictRegion) => number[];
-    getIcon: () => { url: string };
+    getIcon: (region: ConflictRegion) => { url: string };
+    getSize: (region: ConflictRegion) => number;
   };
   expect(icon.getPosition(regions[0]!)).toEqual([31.5, 48.25]);
   expect(icon.getColor(regions[0]!)).toEqual([255, 106, 106, 245]);
@@ -93,16 +93,34 @@ it('shows a selected outline and halo, with static icons and no hit targets duri
     { ...conflictCard, conflict: { ...conflictCard.conflict, status: 'tension' } },
   ])[0]!;
   expect(icon.getColor(tension)).toEqual([249, 190, 84, 245]);
-  expect(icon.getIcon().url).toMatch(/^data:image\/svg\+xml,/);
-  const label = layers[3]!.props as unknown as {
+  expect(icon.getIcon(regions[0]!).url).toMatch(/^data:image\/svg\+xml,/);
+  expect(icon.getIcon(tension).url).not.toBe(icon.getIcon(regions[0]!).url);
+  expect(icon.getSize(regions[0]!)).toBe(31);
+  const unselected = inactive.find((item) => item.id === 'conflict-region-markers')!
+    .props as unknown as typeof icon;
+  expect(unselected.getSize(regions[0]!)).toBe(27);
+  const badge = layer('conflict-region-badges').props as unknown as {
+    getPosition: (region: ConflictRegion) => Position;
+    getLineColor: (region: ConflictRegion) => number[];
+    onClick: (info: { object?: unknown }) => boolean;
+  };
+  expect(badge.getPosition(regions[0]!)).toEqual(icon.getPosition(regions[0]!));
+  expect(badge.getLineColor(regions[0]!)).toEqual(icon.getColor(regions[0]!));
+  badge.onClick({ object: regions[0] });
+  expect(pick).toHaveBeenCalledTimes(2);
+  const label = layer('conflict-region-labels').props as unknown as {
     getText: (region: ConflictRegion) => string;
     getPosition: (region: ConflictRegion) => Position;
   };
   expect(label.getText(regions[0]!)).toBe(conflictCard.conflict.name);
   expect(label.getPosition(regions[0]!)).toEqual(icon.getPosition(regions[0]!));
-  const halo = layers[0]!.props as unknown as { getPosition: (region: ConflictRegion) => Position };
+  const halo = layer('conflict-region-selection').props as unknown as {
+    getPosition: (region: ConflictRegion) => Position;
+  };
   expect(halo.getPosition(regions[0]!)).toEqual(icon.getPosition(regions[0]!));
-  const path = layers[1]!.props as unknown as { getPath: (points: Position[]) => Position[] };
+  const path = layer('conflict-region-context').props as unknown as {
+    getPath: (points: Position[]) => Position[];
+  };
   expect(
     path.getPath([
       [22, 44],

@@ -1,3 +1,5 @@
+import { CONFLICT_SYMBOLS } from '@/lib/conflictSymbols';
+
 export type ControlIcon =
   | 'aircraft'
   | 'vessels'
@@ -31,7 +33,7 @@ const paths: Record<ControlIcon, string> = {
   camera: 'm3 4 17 5-3 8-14-4V4Zm14 13 4 1 2-5-4-1M8 15v5H3m0-3v6',
   space: 'm9 9 6 6 4-4-6-6-4 4Zm-6 3 5 5-3 3-5-5 3-3Zm13-12 5 5-3 3-5-5 3-3ZM8 16l-4 4M16 16l4 4',
   disaster: 'm12 3 10 18H2L12 3Zm0 6v5m0 3v1',
-  conflict: 'm3 3 5 1 11 11-4 4L4 8 3 3Zm18 0-5 1-4 4m-3 5-4 4m-3-3 7 7m5-7 7 7M3 21l3-3m12 0 3 3',
+  conflict: CONFLICT_SYMBOLS.armed_clashes.path,
   news: 'M4 3h16v18H4V3Zm4 4h8M8 11h8m-8 4h3m2 0h3',
   night: 'M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z',
   signal: 'M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M12 11v2',

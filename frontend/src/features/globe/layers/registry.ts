@@ -128,7 +128,18 @@ export function buildEventLayers(
       selectedId,
     ),
   );
-  const icons = buildIconLayer(loose, onPick, selectedId, Boolean(view?.globe && view.zoom <= 12));
+  // Approximate conflict reports retain their location ring and gain a type symbol.
+  // They do not enter the exact-point cluster path or acquire more precise geography.
+  const iconEvents = [
+    ...loose,
+    ...visible.filter((event) => event.category === 'conflict' && event.geo_confidence !== 'exact'),
+  ];
+  const icons = buildIconLayer(
+    iconEvents,
+    onPick,
+    selectedId,
+    Boolean(view?.globe && view.zoom <= 12),
+  );
   if (icons !== null) layers.push(icons);
   const selected = visible.find((event) => event.id === selectedId);
   if (selected) layers.push(buildSelectionLayer(selected));

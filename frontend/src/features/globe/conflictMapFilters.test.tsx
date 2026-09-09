@@ -25,10 +25,12 @@ beforeEach(() => {
 
 function conflictIds() {
   const layers = MapboxOverlay.instances[0]?.props.layers as
-    { id: string; props: { data: { id: string }[] } }[] | undefined;
+    { id: string; props: { data: { id: string; category: string }[] } }[] | undefined;
   return (
-    layers?.find((layer) => layer.id === 'events-conflict')?.props.data.map((event) => event.id) ??
-    []
+    layers
+      ?.find((layer) => layer.id === 'event-icons')
+      ?.props.data.filter((event) => event.category === 'conflict')
+      .map((event) => event.id) ?? []
   );
 }
 
@@ -60,7 +62,7 @@ it.each(['globe', 'map'] as const)(
     );
     await user.click(screen.getByRole('button', { name: 'Conflict report filters' }));
     await user.click(screen.getByRole('button', { name: 'Report filters' }));
-    await user.click(screen.getByRole('radio', { name: /Protests and riots/ }));
+    await user.click(screen.getByRole('radio', { name: /Protests \/ demonstrations/ }));
     await waitFor(() => expect(conflictIds()).toEqual(['protest']));
     expect(useEventsStore.getState().selectedId).toBeNull();
     await user.click(screen.getByRole('switch', { name: /Conflict.*unrest/ }));

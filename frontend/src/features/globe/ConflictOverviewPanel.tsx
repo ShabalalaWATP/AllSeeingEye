@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ConflictFilterPanel } from './ConflictFilterPanel';
+import { FrontlineSourcesPanel } from './FrontlineSourcesPanel';
 import type { useConflictFilters } from './useConflictFilters';
 import type { useConflictRegions } from './useConflictRegions';
 import { regionLabel, type ConflictRegion, type RegionStatus } from './conflictRegions';
@@ -13,27 +14,33 @@ export function ConflictOverviewPanel({
   reports: ReturnType<typeof useConflictFilters>;
   onSelect: (region: ConflictRegion) => void;
 }) {
-  const [tab, setTab] = useState<'regions' | 'reports'>('regions');
+  const [tab, setTab] = useState<'regions' | 'reports' | 'frontlines'>('regions');
   return (
     <section aria-label="Conflict map controls">
       <div
-        className="grid grid-cols-2 gap-1 border-b border-line p-2"
+        className="grid grid-cols-3 gap-1 border-b border-line p-2"
         role="group"
         aria-label="Conflict view"
       >
-        {(['regions', 'reports'] as const).map((value) => (
+        {(['regions', 'reports', 'frontlines'] as const).map((value) => (
           <button
             key={value}
             type="button"
             aria-pressed={tab === value}
             onClick={() => setTab(value)}
-            className="min-h-10 rounded px-3 text-xs capitalize text-muted aria-pressed:bg-cyan/10 aria-pressed:text-cyan"
+            className="min-h-10 rounded px-1 text-xs text-muted aria-pressed:bg-cyan/10 aria-pressed:text-cyan"
           >
-            {value === 'regions' ? 'Region overview' : 'Report filters'}
+            {value === 'regions'
+              ? 'Region overview'
+              : value === 'reports'
+                ? 'Report filters'
+                : 'Frontlines'}
           </button>
         ))}
       </div>
-      {tab === 'reports' ? (
+      {tab === 'frontlines' ? (
+        <FrontlineSourcesPanel />
+      ) : tab === 'reports' ? (
         <ConflictFilterPanel {...reports} />
       ) : (
         <div className="space-y-3 p-3 text-xs">

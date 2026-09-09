@@ -12,6 +12,8 @@ import { isHttpUrl } from '@/lib/urls';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
 import { ConflictScreeningDetails } from './ConflictScreeningDetails';
+import { conflictKind, conflictReportLabel } from '@/lib/conflicts';
+import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
 
 export interface EventInspectorProps {
   event: LiveEvent;
@@ -54,6 +56,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
   const style = CATEGORY_STYLES[event.category];
+  const kind = conflictKind(event);
   const attributes = Object.entries(event.attributes).filter(
     ([key, value]) =>
       !key.startsWith('conflict_screening') &&
@@ -102,6 +105,12 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto break-words p-3 text-sm">
         <h2 className="text-base leading-snug font-semibold text-text">{event.title}</h2>
+        {kind && (
+          <p className="mt-2 flex items-center gap-2 text-xs text-text">
+            <ConflictSymbol kind={kind} />
+            {conflictReportLabel(event)}
+          </p>
+        )}
         <HistoricalBaselineNote event={event} />
         <ConflictScreeningDetails event={event} />
         {event.source_id === 'gdelt_events' && (

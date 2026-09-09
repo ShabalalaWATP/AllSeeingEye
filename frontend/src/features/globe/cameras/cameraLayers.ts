@@ -4,11 +4,9 @@ import type { Camera } from '@/lib/api/cameras';
 import type { MapBounds } from '@/lib/map/MapEngine';
 import { clusterCameras, type CameraCluster } from './cameraClusters';
 import { clusterRadius } from '../layers/clusters';
+import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
 const ICON = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g fill="none" stroke="white" stroke-width="5" stroke-linejoin="round"><path d="m8 15 34-6 12 24-34 7zM25 40v11H9M8 44v14M43 15l10-2 6 13-7 3"/><circle cx="39" cy="25" r="5"/></g></svg>')}`;
-const GLOBE_WINDING: NonNullable<Layer['props']['parameters']> & Record<number, number> = {
-  2886: 2304,
-};
 
 /** Public facilities are separate from the timestamped event store. */
 export function buildCameraLayers(
@@ -29,7 +27,7 @@ export function buildCameraLayers(
       data: loose,
       pickable: true,
       billboard: !globe,
-      ...(globe ? { parameters: GLOBE_WINDING } : {}),
+      parameters: SYMBOL_WINDING,
       getPosition: (camera) => [camera.longitude, camera.latitude],
       getIcon: () => ({ url: ICON, width: 64, height: 64, mask: true }),
       sizeUnits: 'pixels',
@@ -67,7 +65,7 @@ export function buildCameraLayers(
         data: clusters,
         pickable: false,
         billboard: !globe,
-        ...(globe ? { parameters: GLOBE_WINDING } : {}),
+        parameters: SYMBOL_WINDING,
         getPosition: (cluster) => [cluster.longitude, cluster.latitude],
         getText: (cluster) => String(cluster.count),
         getSize: 12,

@@ -1,5 +1,14 @@
 # Map interface and source improvements
 
+## Conflict globe and unrest correction, 9 September 2026
+
+The [frontline and unrest note](FRONTLINES_AND_UNREST.md) records the regional-icon
+projection repair, shared war/tension/event symbols and separate protest, riot and
+unspecified-unrest filters. Existing review exclusions and location precision remain.
+A Frontlines tab lists verified public source/access options. No automatic boundary
+feed is connected: the researched providers require consent, approved API access
+or a restricted purpose. Source geometry has not been copied into the app.
+
 ## Dashboard feature review, 9 September 2026
 
 The [current feature and filter review](OSIRIS_DASHBOARD_FEATURE_REVIEW.md)

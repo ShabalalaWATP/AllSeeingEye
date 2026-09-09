@@ -35,6 +35,7 @@ interface Scene {
   now: number;
   zoom: number;
   mode: ViewMode;
+  symbolMode: ViewMode;
 }
 
 /** Compose catalogue, event and contextual layers through one engine owner. */
@@ -64,6 +65,7 @@ export function useGlobeScene({
   now,
   zoom,
   mode,
+  symbolMode,
 }: Scene) {
   const eventLayers = useMemo(
     () =>
@@ -71,10 +73,10 @@ export function useGlobeScene({
         ? buildEventLayers(events, hidden, onPick, selectedId ?? highlightedId, {
             zoom,
             onCluster,
-            globe: mode === 'globe',
+            globe: symbolMode === 'globe',
           })
         : [],
-    [hidden, onCluster, onPick, events, selectedId, supported, zoom, mode, highlightedId],
+    [hidden, onCluster, onPick, events, selectedId, supported, zoom, symbolMode, highlightedId],
   );
   const night = useMemo(
     () => (supported && terminator && !lite ? [buildTerminatorLayer(new Date(now))] : []),

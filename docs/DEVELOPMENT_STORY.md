@@ -3096,3 +3096,43 @@ This delivery changes documentation only. Read-only code/source review and
 whitespace checks were performed; no application tests, live-dashboard acceptance,
 new provider connection or feature implementation is claimed. The demo fetch timed
 out and the existing local browser policy remains a visual-acceptance limitation.
+
+## 9 September 2026: globe conflicts, unrest symbols and frontline access
+
+Repaired conflict region icons and selected labels that were culled on the globe.
+They now use the existing tangent orientation and clockwise winding. A separate
+render-view subscription follows the Mercator transition above zoom 12 while
+preserving coarse clustering bands, so ordinary camera movement does not rebuild
+the dashboard. Shared event, camera and infrastructure symbols retain the correct
+orientation at close zoom. Dark badges, crossed swords and larger selected glyphs
+improve regional marker contrast; closing the inspector removes selection cues.
+
+Report filters, inspectors and map icons now share distinct symbols for clashes,
+strikes, civilian harm, protests, riots, unspecified unrest and military activity.
+Explicit provider riot types are preserved. Exact GDELT violent-protest codes can
+refine an admitted protest report; broad LLM unrest labels do not establish violence.
+Existing relevance, historical and unreviewed-report gates remain in place, as do
+approximate-location rings and bounded clustering. No collection loop, backend
+contract, model request, credential or dependency was added.
+
+Researched ISW/CTP, DeepState, OCHA, Liveuamap and War Mapper, including OSIRIS's
+DeepState proxy. The new Frontlines tab provides official access options and states
+that no boundary feed is connected. Available geometry has provider permissions
+or restricted-use conditions; no unrestricted worldwide frontline API was verified.
+An updating layer remains dependent on approved access. No access request or other
+external message was sent. Details and the future adapter contract are recorded in
+[frontlines and unrest](FRONTLINES_AND_UNREST.md); the map interface plan is updated.
+
+Independent implementation and source review checked projection changes, screening
+gates, cluster selection, cached static SVGs and fixed external links. It identified
+the close-zoom projection issue and a cluster-test gap, both repaired before final
+validation. No full security scan or live GPU acceptance is claimed; the existing
+browser policy still prevents interactive verification.
+
+Full frontend validation passed: 310 test files, 1,587 tests and one existing skip.
+Coverage is 95.45% statements, 90.38% branches, 93.51% functions and 96.71% lines,
+meeting all existing gates. A final 16-test projection/marker run also passed after
+the render-view hook was refined. Frontend lint, typecheck, production build,
+changed-file Prettier, file-length and whitespace checks passed. Existing large
+vendor-chunk and 380-line MapLibre warnings remain. Backend tests were not rerun
+because no backend code changed. Delivery is on local `main`, with no Git remote.

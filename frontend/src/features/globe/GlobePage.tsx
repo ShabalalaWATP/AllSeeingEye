@@ -1,5 +1,5 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
 import { useConflictRegions } from './useConflictRegions';
@@ -47,7 +47,7 @@ import { useGlobeScene } from './useGlobeScene';
 import { useMapPicking } from './useMapPicking';
 import { useTrafficSelection } from './useTrafficSelection';
 
-import { clusteringZoomFor } from './layers/clusters';
+import { useMapRenderView } from './useMapRenderView';
 import { useGlobeEngine } from './useGlobeEngine';
 import { useViewportCoverage } from './useViewportCoverage';
 import { useLiveEvents } from './useLiveEvents';
@@ -86,14 +86,7 @@ export default function GlobePage() {
   const { measurement } = tools;
   const now = useNow();
   const gnssFilters = useGnssFilters(gnss.cells, gnss.receivedAt, now);
-  const [zoom, setZoom] = useState(1.5);
-  useEffect(
-    () =>
-      engine.onView((view) => {
-        setZoom(clusteringZoomFor(view.zoom));
-      }),
-    [engine],
-  );
+  const { zoom, symbolMode } = useMapRenderView(engine, mode);
   const { osMaps, osLoading, osError, recheckOs, countries, countryByIso, countriesError } =
     useMapReferenceData(baseLayer, setBaseLayer);
 
@@ -157,7 +150,7 @@ export default function GlobePage() {
     tools.picking,
     close,
     engine,
-    mode,
+    symbolMode,
   );
 
   const { focusCamera, cameraLayers } = useCameraSelection(
@@ -165,7 +158,7 @@ export default function GlobePage() {
     tools.picking,
     close,
     engine,
-    mode,
+    symbolMode,
   );
   const selectTraffic = useTrafficSelection(
     engine,
@@ -180,7 +173,7 @@ export default function GlobePage() {
     tools.picking,
     close,
     engine,
-    mode,
+    symbolMode,
   );
   useGlobeScene({
     engine,
@@ -208,6 +201,7 @@ export default function GlobePage() {
     now,
     zoom,
     mode,
+    symbolMode,
   });
 
   const { focus, changeNation } = useMapFocus(

@@ -1,14 +1,17 @@
 /**
- * Icons for the kinds of event a dot does not describe: aircraft with their heading,
- * tropical cyclones and volcanoes. Everything else stays a severity-sized point.
+ * Shared symbols for traffic, selected hazards and conflict report types.
+ * Aircraft and vessels use their reported heading where available.
  */
 import { IconLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import { sameLayerRows } from '@/lib/map/sameLayerRows';
+import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
+import { conflictKind, type ConflictKind } from '@/lib/conflicts';
+import { CONFLICT_ICON_SHAPES, CONFLICT_SYMBOLS } from '@/lib/conflictSymbols';
 import {
   isMilitaryAircraft,
   isMilitaryVessel,
@@ -16,20 +19,14 @@ import {
   MILITARY_VESSEL_COLOUR,
 } from '@/lib/traffic';
 
-export type IconKind = 'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'volcano' | 'thermal';
+export type IconKind =
+  'aircraft' | 'vessel' | 'vessel_unknown' | 'cyclone' | 'volcano' | 'thermal' | ConflictKind;
 
 const ICON_SIZE = 64;
 
-// deck 9.3 routes named parameters through both luma's modern and legacy GL
-// setters. A string frontFace reaches raw gl.frontFace and becomes enum 0.
-// The numeric GL_FRONT_FACE key targets only the legacy WebGL setter. This
-// renderer uses WebGL, and keeps the globe's existing back-face culling.
-const GLOBE_WINDING: NonNullable<Layer['props']['parameters']> & Record<number, number> = {
-  2886: 2304, // GL_FRONT_FACE: GL_CW
-};
-
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
+  ...CONFLICT_ICON_SHAPES,
   vessel_unknown:
     '<path fill="#fff" d="M5 34h54l-9 16H17zM16 22h32v10H16zM27 12h10v8H27z"/><path d="M8 56h48" stroke="#fff" stroke-width="3"/>',
   thermal:
@@ -55,6 +52,7 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
 
 /** Which icon, if any, an event should be drawn with. */
 export function iconFor(event: LiveEvent): IconKind | null {
+  if (event.category === 'conflict') return conflictKind(event);
   if (event.category === 'disaster' && event.subtype === 'thermal_detection') return 'thermal';
   if (event.category === 'maritime' && event.subtype === 'vessel_position') {
     return typeof event.attributes.track_deg === 'number' &&
@@ -98,7 +96,7 @@ export function buildIconLayer(
     // GlobeView culls back faces. Tangent icons hide the far hemisphere; their
     // Y-flipped SVG quads need clockwise winding and a 180-degree ENU correction.
     billboard: !globe,
-    ...(globe ? { parameters: GLOBE_WINDING } : {}),
+    parameters: SYMBOL_WINDING,
     getPosition: (event) => [event.point?.lon ?? 0, event.point?.lat ?? 0],
     getIcon: (event) => ({
       url: DATA_URIS[iconFor(event) ?? 'aircraft'],
@@ -107,14 +105,18 @@ export function buildIconLayer(
       mask: true,
     }),
     getSize: (event) => (event.id === selectedId ? 30 : 22),
-    getColor: (event) =>
-      event.subtype === 'emergency'
-        ? [255, 90, 90, 255]
-        : isMilitaryAircraft(event)
-          ? MILITARY_AIRCRAFT_COLOUR
-          : isMilitaryVessel(event)
-            ? MILITARY_VESSEL_COLOUR
-            : [...CATEGORY_STYLES[event.category].colour, 235],
+    getColor: (event) => {
+      const kind = conflictKind(event);
+      return kind
+        ? [...CONFLICT_SYMBOLS[kind].colour, 245]
+        : event.subtype === 'emergency'
+          ? [255, 90, 90, 255]
+          : isMilitaryAircraft(event)
+            ? MILITARY_AIRCRAFT_COLOUR
+            : isMilitaryVessel(event)
+              ? MILITARY_VESSEL_COLOUR
+              : [...CATEGORY_STYLES[event.category].colour, 235];
+    },
     // deck.gl rotates anticlockwise; a track is clockwise from north.
     getAngle: (event) =>
       (globe ? 180 : 0) +

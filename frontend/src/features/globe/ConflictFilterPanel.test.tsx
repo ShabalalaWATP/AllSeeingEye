@@ -25,7 +25,9 @@ it('lets operators choose report types with loaded counts and truthful language'
   }
   render(<Harness />);
   expect(screen.getByRole('radio', { name: /All loaded reports 2 loaded reports/ })).toBeChecked();
-  fireEvent.click(screen.getByRole('radio', { name: /Protests and riots 1 loaded reports/ }));
+  fireEvent.click(
+    screen.getByRole('radio', { name: 'Protests / demonstrations 1 loaded reports' }),
+  );
   expect(screen.getByLabelText('Shown IDs')).toHaveTextContent('protest,plane');
   expect(screen.getByText(/not verified conflicts or unique incidents/)).toBeInTheDocument();
   expect(screen.getByText(/do not establish armed conflict/)).toBeInTheDocument();

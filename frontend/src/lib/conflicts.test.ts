@@ -28,7 +28,9 @@ it.each([
   ['violence_against_civilians', 'civilian_harm'],
   ['mass_violence', 'civilian_harm'],
   ['protest', 'protests'],
-  ['riot', 'protests'],
+  ['riot', 'riots'],
+  ['violent_demonstration', 'riots'],
+  ['mob_violence', 'riots'],
   ['force_posture', 'military_activity'],
   ['coercion', 'other'],
   ['assault', 'other'],
@@ -53,13 +55,15 @@ it('keeps non-conflict overlays intact, counts reports once and preserves stable
   expect(filterConflictReports(events, 'armed_clashes')).toEqual([clash, plane]);
   expect(filterConflictReports(events, 'protests')).toEqual([protest, plane]);
   expect(conflictKind(plane)).toBeNull();
-  expect(conflictReportLabel(protest)).toBe('Protests and riots');
+  expect(conflictReportLabel(protest)).toBe('Protests / demonstrations');
   expect(conflictReportLabel(plane)).toBe('Other report');
   expect(countConflictReports(events)).toEqual({
     all: 2,
     armed_clashes: 1,
     organised_violence: 0,
     protests: 1,
+    riots: 0,
+    unrest: 0,
     strikes: 0,
     civilian_harm: 0,
     military_activity: 0,
@@ -86,22 +90,22 @@ it('uses screened relevance for map groups and counts while preserving source me
   });
   const events = [unrest, military, armed];
   expect(filterConflictReports(events, 'armed_clashes')).toEqual([armed]);
-  expect(filterConflictReports(events, 'protests')).toEqual([unrest]);
+  expect(filterConflictReports(events, 'unrest')).toEqual([unrest]);
   expect(filterConflictReports(events, 'military_activity')).toEqual([military]);
   expect(countConflictReports(events)).toMatchObject({
     all: 3,
     armed_clashes: 1,
-    protests: 1,
+    unrest: 1,
     military_activity: 1,
   });
-  expect(conflictReportLabel(unrest)).toBe('Protests and riots');
+  expect(conflictReportLabel(unrest)).toBe('Unrest (type unspecified)');
   expect(conflictReportLabel(military)).toBe('Military activity');
   expect(events.every((event) => event.subtype === 'fight' && event.grade === base.grade)).toBe(
     true,
   );
 });
 
-it.each(['unknown', 'force_posture', 'protest', 'coercion'])(
+it.each(['unknown', 'force_posture', 'protest', 'riot', 'coercion'])(
   'uses unspecified organised violence for screened armed conflict with provider subtype %s',
   (subtype) => {
     const event = liveEvent({

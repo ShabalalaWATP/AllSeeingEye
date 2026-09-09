@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
 import type { ConflictPrecision, ConflictSourceChoice } from '@/lib/conflictDisplayFilters';
 import { CONFLICT_GROUPS, type ConflictGroup } from '@/lib/conflicts';
 
@@ -143,7 +144,15 @@ export function ConflictFilterPanel({
               onChange={() => setGroup(choice.value)}
               className="accent-cyan"
             />
-            <span className="flex-1">{choice.label}</span>
+            {choice.value !== 'all' && <ConflictSymbol kind={choice.value} />}
+            <span className="flex-1">
+              <span className="block">{choice.label}</span>
+              {choice.note && (
+                <span className="mt-1 block text-[10px] leading-relaxed text-muted">
+                  {choice.note}
+                </span>
+              )}
+            </span>
             <span className="font-mono tabular-nums">
               {counts[choice.value].toLocaleString()}
               <span className="sr-only"> loaded reports</span>
@@ -160,6 +169,10 @@ export function ConflictFilterPanel({
         Types follow relevance screening where available; original provider types remain in details.
         Protests, force movements and other incidents do not establish armed conflict. The main
         conflict layer switch still controls visibility.
+      </p>
+      <p className="text-[11px] leading-relaxed text-muted">
+        Symbols match individual map reports. Outlined rings indicate approximate locations. At
+        wider zoom levels, clusters can group several reports; zoom in to see their types.
       </p>
     </section>
   );

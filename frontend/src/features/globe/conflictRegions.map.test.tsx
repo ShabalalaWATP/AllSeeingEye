@@ -12,6 +12,7 @@ import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import { ORDERED_CATEGORIES } from '@/lib/categories';
 import type { ConflictRegion } from './conflictRegions';
+import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
@@ -105,13 +106,13 @@ it.each(['globe', 'map'] as const)(
     act(() => {
       layer('conflict-region-markers')!.props.onClick({ object: region });
     });
-    await waitFor(() => expect(layer('events-conflict')).toBeDefined());
+    await waitFor(() => expect(layer('event-icons')).toBeDefined());
     act(() => {
-      layer('events-conflict')!.props.onClick({ object: reviewedReport });
+      layer('event-icons')!.props.onClick({ object: reviewedReport });
     });
     expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();
     expect(layer('conflict-region-selection')!.props.data).toEqual([]);
-    expect(layer('events-conflict')!.props.data).toEqual([reviewedReport]);
+    expect(layer('event-icons')!.props.data).toEqual([reviewedReport]);
   },
 );
 
@@ -149,4 +150,49 @@ it('provides region search, classification, hide and retry controls independentl
   await user.click(screen.getByRole('checkbox', { name: 'Show regional overview markers' }));
   expect(layer('conflict-region-markers')).toBeDefined();
   expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('changes region and event symbol projection at actual zoom 12 without using clustering zoom', async () => {
+  const report = {
+    ...conflictCard.latest!,
+    attributes: { conflict_screening: 'llm', conflict_relevance: 'armed_conflict' },
+  };
+  server.use(http.get('/api/events', () => HttpResponse.json({ items: [report], count: 1 })));
+  renderApp('/', 'user');
+  await waitFor(() => expect(layer('event-icons')).toBeDefined());
+  await waitFor(() => expect(layer('conflict-region-markers')?.props.data).toHaveLength(1));
+  act(() => {
+    layer('conflict-region-markers')!.props.onClick({
+      object: layer('conflict-region-markers')!.props.data[0],
+    });
+  });
+  const map = FakeMap.instances[0]!;
+  const zoom = vi.spyOn(map, 'getZoom');
+  const move = (value: number) => {
+    zoom.mockReturnValue(value);
+    act(() => map.fire('move'));
+  };
+  const expectGlobe = (globe: boolean) => {
+    for (const id of ['conflict-region-markers', 'conflict-region-labels', 'event-icons']) {
+      expect(layer(id)!.props).toMatchObject({ parameters: { 2886: 2304 } });
+      const props = layer(id)!.props as unknown as {
+        billboard: boolean;
+        getAngle: number | ((event: LiveEvent) => number);
+      };
+      expect(props.billboard).toBe(!globe);
+      expect(typeof props.getAngle === 'function' ? props.getAngle(report) : props.getAngle).toBe(
+        globe ? 180 : 0,
+      );
+    }
+  };
+  move(12);
+  expectGlobe(true);
+  move(12.01);
+  expectGlobe(false);
+  move(11.9);
+  expectGlobe(true);
+  act(() => useGlobeStore.getState().setMode('map'));
+  expectGlobe(false);
+  act(() => useGlobeStore.getState().setMode('globe'));
+  expectGlobe(true);
 });
