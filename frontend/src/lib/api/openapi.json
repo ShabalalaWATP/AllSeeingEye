@@ -47,6 +47,59 @@
         }
       }
     },
+    "/api/navigation/places": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Search Places",
+        "operationId": "search_places_api_navigation_places_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 3,
+                    "title": "Query"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "query"
+                ],
+                "title": "NavigationPlaceSearchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NavigationPlaceOut"
+                  },
+                  "type": "array",
+                  "title": "Response Search Places Api Navigation Places Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/navigation/capabilities": {
       "get": {
         "tags": [
@@ -17943,6 +17996,35 @@
           "available"
         ],
         "title": "NavigationCapabilitiesOut"
+      },
+      "NavigationPlaceOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "lat",
+          "lon"
+        ],
+        "title": "NavigationPlaceOut"
       },
       "NavigationRouteOut": {
         "properties": {

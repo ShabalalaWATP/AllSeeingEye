@@ -40,6 +40,32 @@ export function useMapMeasurement(engine: Pick<GlobeEngineHandle, 'onClick'>, en
       }),
     [engine, picking, enabled],
   );
+  useEffect(() => {
+    if (!picking || !enabled) return;
+    const shortcut = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        event.isComposing ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        (target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]')))
+      )
+        return;
+      if (event.key === 'Escape' || event.key === 'Enter') {
+        event.preventDefault();
+        setPicking(false);
+      } else if (event.key === 'Backspace') {
+        event.preventDefault();
+        setPoints((previous) => previous.slice(0, -1));
+        setError(null);
+      }
+    };
+    window.addEventListener('keydown', shortcut);
+    return () => window.removeEventListener('keydown', shortcut);
+  }, [picking, enabled]);
   const result = useMemo(() => measurementText(points, mode), [points, mode]);
   return {
     points,

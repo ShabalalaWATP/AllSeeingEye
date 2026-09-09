@@ -59,6 +59,7 @@ it('saves original typed coordinates without derived totals and reopens the same
   const view = mount();
   const user = userEvent.setup();
   expect(screen.getByRole('button', { name: 'Pick points on map' })).toBeDisabled();
+  await user.click(screen.getByText('Enter coordinates manually'));
   for (const [lon, lat] of measurement.points) {
     fireEvent.change(screen.getByLabelText('Longitude'), { target: { value: lon } });
     fireEvent.change(screen.getByLabelText('Latitude'), { target: { value: lat } });

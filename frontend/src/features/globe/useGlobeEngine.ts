@@ -12,6 +12,8 @@ import type {
   MapBounds,
   MapEngineFactory,
   Projection,
+  SketchMode,
+  SketchDragHandler,
 } from './engine/MapEngine';
 import { createMapLibreEngine } from './engine/MapLibreEngine';
 import { useMapRecovery } from './useMapRecovery';
@@ -36,6 +38,8 @@ export interface GlobeEngineHandle {
   /** Subscribes to cursor positions; safe to call before the engine has mounted. */
   onCursor: (handler: CursorHandler) => () => void;
   onClick: (handler: CursorHandler) => () => void;
+  onDrag?: (handler: SketchDragHandler) => () => void;
+  setSketchMode?: (mode: SketchMode) => void;
   /** Subscribes to camera moves with the zoom after each; safe before the engine mounts. */
   onView: (handler: ViewHandler) => () => void;
 }
@@ -63,6 +67,8 @@ export function useGlobeEngine(
   const engineRef = useRef<MapEngine | null>(null);
   const cursorHandlers = useRef(new Set<CursorHandler>());
   const clickHandlers = useRef(new Set<CursorHandler>());
+  const dragHandlers = useRef(new Set<SketchDragHandler>());
+  const sketchMode = useRef<SketchMode>('navigate');
   const viewHandlers = useRef(new Set<ViewHandler>());
   const latestLayers = useRef<readonly DataLayer[]>([]);
   const spinning = useRef(false);
@@ -91,6 +97,10 @@ export function useGlobeEngine(
     }
     engine.setLayers(latestLayers.current);
     engine.spin(spinning.current);
+    engine.setSketchMode?.(sketchMode.current);
+    const offDrag = engine.onDrag?.((event) => {
+      for (const handler of dragHandlers.current) handler(event);
+    });
     const offCursor = engine.onCursor((position) => {
       for (const handler of cursorHandlers.current) handler(position);
     });
@@ -110,6 +120,7 @@ export function useGlobeEngine(
       offClick();
       offCursor();
       engine.destroy();
+      offDrag?.();
       engineRef.current = null;
     };
   }, [containerRef, factory, enabled, revision, onRenderStatus, restoreReloadCamera]);
@@ -170,6 +181,16 @@ export function useGlobeEngine(
       clickHandlers.current.delete(handler);
     };
   }, []);
+  const onDrag = useCallback((handler: SketchDragHandler) => {
+    dragHandlers.current.add(handler);
+    return () => {
+      dragHandlers.current.delete(handler);
+    };
+  }, []);
+  const setSketchMode = useCallback((mode: SketchMode) => {
+    sketchMode.current = mode;
+    engineRef.current?.setSketchMode?.(mode);
+  }, []);
 
   return useMemo(
     () => ({
@@ -182,6 +203,8 @@ export function useGlobeEngine(
       onCursor,
       onView,
       onClick,
+      onDrag,
+      setSketchMode,
       pickObjectsAt,
       getCamera,
       getViewportBounds,
@@ -197,6 +220,8 @@ export function useGlobeEngine(
       onCursor,
       onView,
       onClick,
+      onDrag,
+      setSketchMode,
       pickObjectsAt,
       getCamera,
       getViewportBounds,

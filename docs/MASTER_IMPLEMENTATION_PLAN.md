@@ -680,3 +680,23 @@ See [GNSS and map controls](GNSS_AND_MAP_CONTROLS.md) for the control layout,
 method, limitations and validation record. Official interference advisories and
 independently sourced spoofing classifications remain possible future inputs;
 this change does not infer confirmed jamming from aircraft accuracy alone.
+
+
+## 9 September 2026: map-tool usability follow-up
+
+- [x] Promote GNSS to the first visible category and prevent rail-button shrinking.
+- [x] Rename the shared panel Topics & time and explain its scope and reset actions.
+- [x] Make Location quality filter actual event markers, with explained classes and inspectable unplotted records.
+- [x] Add drag creation and movement for the bounded local sketch, preserving cancellation and input ownership.
+- [x] Improve measurement controls, numbered points and finish/undo keyboard shortcuts.
+- [x] Add explicit Photon address search and result selection, optional coordinate entry and reverse stops.
+- [x] Add nine illustrative RF presets and a bounded ideal-range outline/optional site-to-site path.
+- [x] Explain unavailable OS styles and expose capability rechecking without claiming successful tile delivery.
+- [x] Record final combined tests, static analysis and security verification for this follow-up.
+- [ ] Verify live OS tiles after an operator supplies a suitable server-side key.
+- [ ] Verify live routing after a valid public operator contact is configured.
+- [ ] Complete interactive browser/GPU verification when the existing policy permits.
+
+See [map layers and planning tools](MAP_TOOLS_AND_LAYERS.md) and
+[GNSS and map controls](GNSS_AND_MAP_CONTROLS.md). No terrain RF model,
+unlimited sketch store or guaranteed third-party service availability is claimed.

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -45,6 +45,44 @@ describe('BaseLayerToolbar', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('radio', { name: 'Streets' })).toBeEnabled();
     expect(screen.getByRole('radio', { name: 'Light' })).toBeEnabled();
+    expect(screen.getByText('Connection required')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('How to enable OS maps'));
+    expect(screen.getByText('ASE_OS_MAPS_KEY')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'OS Data Hub setup guide' })).toHaveAttribute(
+      'href',
+      'https://docs.os.uk/os-apis/accessing-os-apis/os-maps-api/getting-started',
+    );
+  });
+
+  it('distinguishes a failed check from missing configuration and supports retry', async () => {
+    const retry = vi.fn();
+    const { rerender } = render(
+      <BaseLayerToolbar
+        value="dark"
+        initialExpanded
+        osAvailable={false}
+        osError="Unavailable"
+        onCheckOs={retry}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Configuration check failed');
+    expect(screen.queryByText('Connection required')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Check configuration again' }));
+    expect(retry).toHaveBeenCalledOnce();
+    rerender(
+      <BaseLayerToolbar
+        value="dark"
+        initialExpanded
+        osAvailable={false}
+        osChecking
+        onCheckOs={retry}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('Checking');
+    expect(screen.getByRole('button', { name: 'Check configuration again' })).toBeDisabled();
+    expect(screen.queryByText('How to enable OS maps')).not.toBeInTheDocument();
   });
 
   it('enables the OS styles with honest coverage when the server can proxy them', async () => {
@@ -55,6 +93,7 @@ describe('BaseLayerToolbar', () => {
     expect(screen.getByText('Great Britain · zoom 7–16')).toBeInTheDocument();
     expect(screen.getByText(/Zoom into Great Britain/)).toBeInTheDocument();
     expect(screen.queryByText(/OS maps are unavailable/)).not.toBeInTheDocument();
+    expect(screen.getByText(/does not test tile delivery/)).toBeInTheDocument();
   });
 
   it('supports native arrow selection and Escape returns focus to the trigger', async () => {
@@ -98,7 +137,7 @@ describe('capabilities store', () => {
     useCapabilitiesStore.setState({ ...initialCapabilitiesState });
   });
 
-  it('loads once and keeps the defaults when the request fails', async () => {
+  it('loads once, preserves failure state and allows a retry after failure', async () => {
     let requests = 0;
     server.use(
       http.get('/api/capabilities', () => {
@@ -118,6 +157,53 @@ describe('capabilities store', () => {
       ),
     );
     await useCapabilitiesStore.getState().load();
-    expect(useCapabilitiesStore.getState()).toMatchObject({ osMaps: false, loaded: true });
+    expect(useCapabilitiesStore.getState()).toMatchObject({
+      osMaps: false,
+      loaded: false,
+      loading: false,
+    });
+    expect(useCapabilitiesStore.getState().error).toBeTruthy();
+    server.use(
+      http.get('/api/capabilities', () =>
+        HttpResponse.json({ os_maps: true, os_layers: ['Road_3857'] }),
+      ),
+    );
+    await useCapabilitiesStore.getState().load();
+    expect(useCapabilitiesStore.getState()).toMatchObject({
+      osMaps: true,
+      loaded: true,
+      loading: false,
+      error: null,
+    });
+  });
+
+  it('refreshes a previously unconfigured server and does not overlap requests', async () => {
+    await useCapabilitiesStore.getState().load();
+    expect(useCapabilitiesStore.getState().osMaps).toBe(false);
+    let release!: () => void;
+    let requests = 0;
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.get('/api/capabilities', async () => {
+        requests += 1;
+        await barrier;
+        return HttpResponse.json({ os_maps: true, os_layers: ['Road_3857'] });
+      }),
+    );
+    const pending = useCapabilitiesStore.getState().load(true);
+    await waitFor(() => expect(requests).toBe(1));
+    await useCapabilitiesStore.getState().load(true);
+    expect(useCapabilitiesStore.getState().loading).toBe(true);
+    expect(requests).toBe(1);
+    release();
+    await pending;
+    expect(useCapabilitiesStore.getState()).toMatchObject({
+      osMaps: true,
+      loaded: true,
+      loading: false,
+      error: null,
+    });
   });
 });

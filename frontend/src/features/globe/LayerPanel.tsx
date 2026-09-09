@@ -51,18 +51,32 @@ export function LayerPanel({
   const windowName = useId();
   return (
     <section
-      aria-label="Event filters and coverage"
+      aria-label="Topics and time controls"
       className="shrink-0 rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
     >
       <div className="mb-1 flex items-center justify-between px-1">
-        <h3 className="text-sm font-medium">Live event filters</h3>
+        <h3 className="text-sm font-medium">Topics &amp; time</h3>
         <ConnectionStatus status={status} />
       </div>
       <p className="mb-2 px-1 text-xs text-muted">
         Use the left rail to switch each main layer on or off. Its Filters button opens options for
         that layer. Map appearance is under Map style on the right.
       </p>
-      <h3 className="px-1 py-2 text-xs font-medium">Other topics</h3>
+      <div className="flex items-center justify-between px-1">
+        <h3 className="py-2 text-xs font-medium">Additional topics</h3>
+        <button
+          type="button"
+          className="min-h-9 text-xs text-cyan disabled:opacity-40"
+          disabled={!OTHER_TOPICS.some((topic) => hidden.includes(topic))}
+          onClick={() =>
+            OTHER_TOPICS.filter((topic) => hidden.includes(topic)).forEach((topic) =>
+              onToggle(topic),
+            )
+          }
+        >
+          Show all topics
+        </button>
+      </div>
       <ul className="space-y-0.5" aria-label="Additional event topics">
         {OTHER_TOPICS.map((category) => {
           const style = CATEGORY_STYLES[category];
@@ -109,8 +123,8 @@ export function LayerPanel({
         </button>
       </div>
       <p className="px-1 text-xs text-muted">
-        Applies to live events across categories. Category filters narrow this further. GNSS, CCTV
-        and infrastructure use their own coverage.
+        Applies to live events across categories. Layer and topic switches narrow this further.
+        GNSS, CCTV and infrastructure use their own coverage.
       </p>
       <div
         role="radiogroup"

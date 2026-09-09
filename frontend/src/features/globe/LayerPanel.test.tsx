@@ -33,3 +33,24 @@ it('owns additional topics and the shared time window without repeating category
   await user.click(screen.getByText('Connection and coverage'));
   expect(screen.getByRole('button', { name: 'Reload live events' })).toBeVisible();
 });
+
+it('restores only hidden additional topics without changing main layers or time', async () => {
+  const toggle = vi.fn();
+  const window = vi.fn();
+  const user = userEvent.setup();
+  render(
+    <LayerPanel
+      counts={{}}
+      hidden={['cyber', 'political', 'aviation']}
+      stats={null}
+      status="live"
+      error={null}
+      windowHours={6}
+      onWindow={window}
+      onToggle={toggle}
+    />,
+  );
+  await user.click(screen.getByRole('button', { name: 'Show all topics' }));
+  expect(toggle.mock.calls).toEqual([['cyber'], ['political']]);
+  expect(window).not.toHaveBeenCalled();
+});

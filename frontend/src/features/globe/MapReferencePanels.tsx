@@ -27,7 +27,12 @@ export function mapReferencePanels(props: {
       <NationFilter {...props.nation} />
       {props.country && <CountryPanel {...props.country} />}
     </ControlPanel>,
-    <ControlPanel key="precision" label="Location precision" icon="precision">
+    <ControlPanel
+      key="precision"
+      label="Location quality"
+      caption={props.precision.filter === 'all' ? 'Quality' : 'Filtered'}
+      icon="precision"
+    >
       <GeographicPrecisionPanel {...props.precision} />
     </ControlPanel>,
     <ControlPanel key="grid" side="right" label="British National Grid" icon="grid">

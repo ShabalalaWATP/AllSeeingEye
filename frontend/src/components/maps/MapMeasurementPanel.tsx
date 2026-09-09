@@ -45,7 +45,7 @@ export function MapMeasurementPanel({
       </label>
       <output
         aria-label="Measurement result"
-        className="block font-mono text-cyan"
+        className="my-3 block break-words font-mono text-2xl font-medium text-cyan"
         aria-live="polite"
       >
         {value.result}
@@ -57,56 +57,14 @@ export function MapMeasurementPanel({
         onClick={() => value.setPicking(!value.picking)}
         className="my-2 min-h-11 w-full rounded border border-line p-2 hover:bg-surface-2"
       >
-        {value.picking ? 'Stop picking points' : 'Pick points on map'}
+        {value.picking ? 'Finish measuring' : 'Pick points on map'}
       </button>
       {value.picking && (
-        <p>Click empty map space. Close this tool panel to expose more of the map.</p>
+        <p>
+          Click anywhere on the map, including markers, to add numbered points. You can close this
+          panel while measuring. Enter or Escape finishes; Backspace undoes the last point.
+        </p>
       )}
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          value.add(
-            longitude.trim() ? Number(longitude) : NaN,
-            latitude.trim() ? Number(latitude) : NaN,
-          );
-        }}
-        className="mt-2 space-y-2"
-      >
-        <label className="block">
-          Longitude
-          <input
-            value={longitude}
-            onChange={(event) => setLongitude(event.target.value)}
-            type="number"
-            min="-180"
-            max="180"
-            step="any"
-            required
-            className="w-full rounded border border-line bg-ground p-2"
-          />
-        </label>
-        <label className="block">
-          Latitude
-          <input
-            value={latitude}
-            onChange={(event) => setLatitude(event.target.value)}
-            type="number"
-            min="-90"
-            max="90"
-            step="any"
-            required
-            className="w-full rounded border border-line bg-ground p-2"
-          />
-        </label>
-        <button
-          disabled={value.points.length >= 32}
-          className="min-h-11 rounded border border-line px-2 disabled:opacity-50"
-        >
-          Add coordinate
-        </button>
-      </form>
-      {value.error && <p role="alert">{value.error}</p>}
-      <p className="my-2">{value.points.length}/32 points</p>
       <div className="flex gap-2">
         <button
           type="button"
@@ -124,6 +82,55 @@ export function MapMeasurementPanel({
           Clear measure
         </button>
       </div>
+      <details className="mt-3">
+        <summary className="min-h-9 cursor-pointer py-2">Enter coordinates manually</summary>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            value.add(
+              longitude.trim() ? Number(longitude) : NaN,
+              latitude.trim() ? Number(latitude) : NaN,
+            );
+          }}
+          className="mt-2 space-y-2"
+        >
+          <label className="block">
+            Longitude
+            <input
+              value={longitude}
+              onChange={(event) => setLongitude(event.target.value)}
+              type="number"
+              min="-180"
+              max="180"
+              step="any"
+              required
+              className="w-full rounded border border-line bg-ground p-2"
+            />
+          </label>
+          <label className="block">
+            Latitude
+            <input
+              value={latitude}
+              onChange={(event) => setLatitude(event.target.value)}
+              type="number"
+              min="-90"
+              max="90"
+              step="any"
+              required
+              className="w-full rounded border border-line bg-ground p-2"
+            />
+          </label>
+          <button
+            disabled={value.points.length >= 32}
+            className="min-h-11 rounded border border-line px-2 disabled:opacity-50"
+          >
+            Add coordinate
+          </button>
+        </form>
+      </details>
+      {value.error && <p role="alert">{value.error}</p>}
+      <p className="my-2">{value.points.length}/32 points</p>
+
       <details className="mt-2">
         <summary>Coordinates</summary>
         <ol>

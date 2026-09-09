@@ -14,6 +14,8 @@ it('supports typed area vertices, undo, clear and clearing draft coordinates on 
   const user = userEvent.setup();
   render(<Panel />);
   const add = async (lon: string, lat: string) => {
+    if (!screen.getByText('Enter coordinates manually').closest('details')?.open)
+      await user.click(screen.getByText('Enter coordinates manually'));
     await user.clear(screen.getByLabelText('Longitude'));
     await user.type(screen.getByLabelText('Longitude'), lon);
     await user.clear(screen.getByLabelText('Latitude'));

@@ -57,15 +57,21 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  width: 46px;
+  width: 52px;
   max-height: calc(100% - 10rem);
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #77818d #080a0d;
+  overscroll-behavior-y: contain;
   border-radius: 12px;
   background: #080a0de8;
   border: 1px solid #ffffff12;
   padding: 3px 0;
+}
+.map-layer-rail > *,
+.map-tool-rail > * {
+  flex-shrink: 0;
 }
 .map-layer-rail {
   left: 12px;

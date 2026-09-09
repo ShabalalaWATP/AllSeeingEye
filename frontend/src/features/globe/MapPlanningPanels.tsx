@@ -10,25 +10,37 @@ import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
 export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>) {
   const { measurement } = tools;
   return [
-    <ControlPanel key="drawing" side="right" label="Draw on map" icon="draw">
+    <ControlPanel key="drawing" side="right" label="Draw on map" caption="Draw" icon="draw">
       <MapDrawingPanel value={tools.drawing} />
     </ControlPanel>,
     <ControlPanel key="route" side="right" label="Route planner" icon="route">
       <RoutePlannerPanel
         onRouteChange={tools.setRoute}
+        draft={tools.routePlanner.draft}
+        onDraftChange={tools.routePlanner.setDraft}
+        result={tools.routePlanner.route}
         {...(measurement.points.length >= 2
           ? { initialWaypoints: measurement.points.slice(0, 8).map(([lon, lat]) => ({ lon, lat })) }
           : {})}
       />
     </ControlPanel>,
-    <ControlPanel key="rf" side="right" label="RF link calculator" icon="rf">
+    <ControlPanel key="rf" side="right" label="RF link calculator" caption="RF" icon="rf">
       <RfCalculatorPanel
+        origin={tools.rf.origin}
+        receiver={tools.rf.receiver}
+        picking={tools.rf.picking}
+        onPick={tools.rf.setPicking}
+        onOverlayChange={tools.rf.setEstimate}
+        draft={tools.rf.draft}
+        onDraftChange={tools.rf.setDraft}
+        onClearReceiver={tools.rf.clearReceiver}
+        overlayVisible={tools.rf.estimate !== null}
         {...(measurement.mode === 'distance' && measurement.points.length === 2
           ? { measuredDistanceKm: measure(measurement.points, 'distance').metres / 1000 }
           : {})}
       />
     </ControlPanel>,
-    <ControlPanel key="measure" label="Measure distance and area" icon="measure">
+    <ControlPanel key="measure" label="Measure distance and area" caption="Measure" icon="measure">
       <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
     </ControlPanel>,
   ];

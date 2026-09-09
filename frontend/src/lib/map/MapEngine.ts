@@ -16,6 +16,13 @@ export interface CursorPosition {
 }
 
 export type CursorHandler = (position: CursorPosition) => void;
+export type SketchMode = 'navigate' | 'points' | 'drag';
+export interface SketchDrag {
+  phase: 'start' | 'move' | 'end' | 'cancel';
+  start: CursorPosition;
+  current: CursorPosition;
+}
+export type SketchDragHandler = (event: SketchDrag) => void;
 
 export interface FlyToTarget {
   /** [longitude, latitude] */
@@ -66,6 +73,8 @@ export interface MapEngine {
   setLite(lite: boolean): void;
   /** Subscribes to cursor positions over the map and returns the unsubscribe function. */
   onCursor(handler: CursorHandler): () => void;
+  onDrag?(handler: SketchDragHandler): () => void;
+  setSketchMode?(mode: SketchMode): void;
   flyTo(target: FlyToTarget): void;
   /** Slowly turns the globe while enabled (the ops-room idle motion); off stops the camera. */
   spin(enabled: boolean): void;

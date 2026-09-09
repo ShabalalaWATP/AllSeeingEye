@@ -10,9 +10,6 @@ vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
 
-// Load the real route after Vitest hoists its mocks, outside timed UI assertions.
-import './GlobePage';
-
 it('keeps typed measurement available while disabling picking without WebGL', async () => {
   FakeMap.reset();
   MapboxOverlay.reset();
@@ -20,6 +17,8 @@ it('keeps typed measurement available while disabling picking without WebGL', as
   const { user } = renderApp('/', 'user');
   await user.click(await screen.findByRole('button', { name: 'Measure distance and area' }));
   expect(await screen.findByRole('button', { name: 'Pick points on map' })).toBeDisabled();
+  await user.click(screen.getByText('Enter coordinates manually'));
+  expect(screen.getByLabelText('Longitude')).toBeVisible();
   expect(screen.getByLabelText('Longitude')).toBeEnabled();
 });
 
@@ -42,7 +41,10 @@ it('picks only when enabled, preserves vertices across projection changes and cl
     map.fire('click', { lngLat: { lng: 1, lat: 0 } });
     map.fire('click', { lngLat: { lng: NaN, lat: 0 } });
   });
-  expect(screen.getByRole('button', { name: /Stop measuring/ })).toHaveTextContent('111.319 km');
+  const readout = screen.getByRole('region', { name: 'Active measurement' });
+  expect(readout).toHaveTextContent('111.319 km');
+  expect(within(readout).getByRole('button', { name: 'Finish measuring' })).toBeVisible();
+  expect(within(readout).getByRole('button', { name: 'Undo point' })).toBeEnabled();
   await user.click(screen.getByRole('button', { name: 'Measure distance and area' }));
   panel = screen.getByRole('region', { name: 'Map measurement' });
   expect(within(panel).getByLabelText('Measurement result')).toHaveTextContent('111.319 km');

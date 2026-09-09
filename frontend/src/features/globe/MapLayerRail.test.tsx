@@ -43,3 +43,22 @@ it('reports loaded counts and separately toggles categories and context layers',
     'true',
   );
 });
+
+it('places the captioned GNSS control before traffic and opens its dedicated filters', async () => {
+  const open = vi.fn();
+  const user = userEvent.setup();
+  render(
+    <MapLayerRail
+      events={[]}
+      counts={{}}
+      visibility={{ aircraft: true, vessels: true, firms: true }}
+      onToggle={vi.fn()}
+      openPanel={open}
+      gnssCount={3}
+    />,
+  );
+  expect(screen.getAllByRole('switch')[0]).toHaveAccessibleName('GNSS interference 3');
+  expect(screen.getByText('GNSS')).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'GNSS filters' }));
+  expect(open).toHaveBeenCalledWith('GNSS interference', expect.any(HTMLButtonElement));
+});

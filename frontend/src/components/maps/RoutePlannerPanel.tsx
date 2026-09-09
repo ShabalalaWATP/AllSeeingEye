@@ -12,10 +12,16 @@ import { describeError } from '@/lib/api/errors';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
+import { RouteWaypoint } from './RouteWaypoint';
+import { createRouteDraft } from './useRoutePlannerState';
+import type { RoutePlannerDraft } from './useRoutePlannerState';
 
 export interface RoutePlannerPanelProps {
   onRouteChange: (route: NavigationRoute | null) => void;
   initialWaypoints?: NavigationRequest['waypoints'];
+  draft?: RoutePlannerDraft | null;
+  onDraftChange?: (draft: RoutePlannerDraft) => void;
+  result?: NavigationRoute | null;
 }
 
 /** Private route state remounts on an account or workspace authority change. */
@@ -26,27 +32,37 @@ export function RoutePlannerPanel(props: RoutePlannerPanelProps) {
   return <Planner key={`${status}:${user?.id}:${user?.role}:${revision}`} {...props} />;
 }
 
-function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
+function Planner({
+  onRouteChange,
+  initialWaypoints,
+  draft: savedDraft,
+  onDraftChange,
+  result,
+}: RoutePlannerPanelProps) {
   const request = useScopedRequest();
   const capabilityRequest = useScopedRequest();
   const changed = useRef(onRouteChange);
   useEffect(() => {
     changed.current = onRouteChange;
   }, [onRouteChange]);
-  const [waypoints, setWaypoints] = useState(() =>
-    (
-      initialWaypoints ?? [
-        { lat: 0, lon: 0 },
-        { lat: 0, lon: 0 },
-      ]
-    ).map((point) => ({
-      lat: initialWaypoints ? String(point.lat) : '',
-      lon: initialWaypoints ? String(point.lon) : '',
-    })),
-  );
-  const [mode, setMode] = useState<NavigationRequest['mode']>('driving');
+  const [localDraft, setLocalDraft] = useState(() => createRouteDraft(initialWaypoints));
+  const draft = savedDraft ?? localDraft;
+  const { waypoints, inputMode, mode } = draft;
+  const nextWaypointId = useRef(Math.max(8, ...waypoints.map((point) => point.id + 1)));
+  const controlled = onDraftChange !== undefined;
+  function updateDraft(patch: Partial<RoutePlannerDraft>) {
+    const next = { ...draft, ...patch };
+    setLocalDraft(next);
+    onDraftChange?.(next);
+  }
+  const setWaypoints = (
+    change: (rows: RoutePlannerDraft['waypoints']) => RoutePlannerDraft['waypoints'],
+  ) => updateDraft({ waypoints: change(waypoints) });
+  const setMode = (mode: RoutePlannerDraft['mode']) => updateDraft({ mode });
+  const setInputMode = (inputMode: RoutePlannerDraft['inputMode']) => updateDraft({ inputMode });
   const [capabilities, setCapabilities] = useState<NavigationCapabilities | null>(null);
-  const [route, setRoute] = useState<NavigationRoute | null>(null);
+  const [localRoute, setRoute] = useState<NavigationRoute | null>(null);
+  const route = result === undefined ? localRoute : result;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -58,8 +74,10 @@ function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
       .catch((reason: unknown) => {
         if (!signal.aborted) setError(describeError(reason));
       });
-    return () => changed.current(null);
-  }, [capabilityRequest]);
+    return () => {
+      if (!controlled) changed.current(null);
+    };
+  }, [capabilityRequest, controlled]);
 
   function clearResult() {
     request();
@@ -71,6 +89,7 @@ function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
 
   async function calculate() {
     clearResult();
+    onDraftChange?.(draft);
     const points = waypoints.map((point) => ({ lat: Number(point.lat), lon: Number(point.lon) }));
     if (
       waypoints.some((point) => !point.lat.trim() || !point.lon.trim()) ||
@@ -82,7 +101,11 @@ function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
           Math.abs(point.lon) > 180,
       )
     ) {
-      setError('Enter valid latitude and longitude for every waypoint.');
+      setError(
+        inputMode === 'address'
+          ? 'Search and select a match for every stop, or choose Coordinates.'
+          : 'Enter valid latitude and longitude for every waypoint.',
+      );
       return;
     }
     const signal = request();
@@ -104,7 +127,7 @@ function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
       <div>
         <h2 className="font-semibold">Route planner</h2>
         <p className="mt-1 text-xs text-muted">
-          Plan a journey between coordinates. This is an estimate, not live navigation.
+          Search for your start and destination, choose each match, then calculate your route.
         </p>
       </div>
       <label className="block space-y-1">
@@ -123,59 +146,67 @@ function Planner({ onRouteChange, initialWaypoints }: RoutePlannerPanelProps) {
           <option value="cycling">Cycling</option>
         </select>
       </label>
+      <label className="block space-y-1 text-xs">
+        <span>Enter stops using</span>
+        <select
+          aria-label="Enter stops using"
+          value={inputMode}
+          onChange={(event) => setInputMode(event.target.value as typeof inputMode)}
+          className="w-full rounded border border-line bg-surface-2 p-2"
+        >
+          <option value="address">Addresses and places</option>
+          <option value="coordinates">Coordinates</option>
+        </select>
+      </label>
+      {inputMode === 'address' && (
+        <p className="text-xs text-muted">
+          Search sends the entered place to Photon (komoot). Only press Search for public locations;
+          avoid confidential addresses. Nothing is sent while typing.
+        </p>
+      )}
       {waypoints.map((point, index) => (
-        <fieldset key={index} className="rounded border border-line p-2">
-          <legend className="px-1 text-xs text-muted">
-            {index === 0
-              ? 'Start'
-              : index === waypoints.length - 1
-                ? 'Destination'
-                : `Via ${index}`}
-          </legend>
-          <div className="grid grid-cols-2 gap-2">
-            {(['lat', 'lon'] as const).map((axis) => (
-              <label key={axis} className="text-xs">
-                {axis === 'lat' ? 'Latitude' : 'Longitude'}
-                <input
-                  aria-label={`Waypoint ${index + 1} ${axis === 'lat' ? 'latitude' : 'longitude'}`}
-                  value={point[axis]}
-                  inputMode="decimal"
-                  maxLength={20}
-                  onChange={(event) => {
-                    clearResult();
-                    setWaypoints((rows) =>
-                      rows.map((row, position) =>
-                        position === index ? { ...row, [axis]: event.target.value } : row,
-                      ),
-                    );
-                  }}
-                  className="mt-1 w-full rounded border border-line bg-surface-2 p-2"
-                />
-              </label>
-            ))}
-          </div>
-          {waypoints.length > 2 && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                clearResult();
-                setWaypoints((rows) => rows.filter((_, position) => position !== index));
-              }}
-            >
-              Remove waypoint {index + 1}
-            </Button>
-          )}
-        </fieldset>
+        <RouteWaypoint
+          key={`${point.id}:${inputMode}`}
+          point={point}
+          index={index}
+          title={
+            index === 0 ? 'Start' : index === waypoints.length - 1 ? 'Destination' : `Via ${index}`
+          }
+          mode={inputMode}
+          removable={waypoints.length > 2}
+          onChange={(value) => {
+            clearResult();
+            setWaypoints((rows) => rows.map((row) => (row.id === point.id ? value : row)));
+          }}
+          onRemove={() => {
+            clearResult();
+            setWaypoints((rows) => rows.filter((row) => row.id !== point.id));
+          }}
+        />
       ))}
       <Button
         variant="secondary"
         disabled={waypoints.length >= 8}
         onClick={() => {
           clearResult();
-          setWaypoints((rows) => [...rows.slice(0, -1), { lat: '', lon: '' }, ...rows.slice(-1)]);
+          const id = nextWaypointId.current++;
+          setWaypoints((rows) => [
+            ...rows.slice(0, -1),
+            { id, lat: '', lon: '', label: '', query: '' },
+            ...rows.slice(-1),
+          ]);
         }}
       >
         Add waypoint
+      </Button>
+      <Button
+        variant="ghost"
+        onClick={() => {
+          clearResult();
+          setWaypoints((rows) => [...rows].reverse());
+        }}
+      >
+        Reverse stops
       </Button>
       <p className="text-xs text-muted">
         Calculate route sends these coordinates to FOSSGIS. The provider may log requests. No device

@@ -4,12 +4,22 @@ import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
 
+const CAPTIONS: Readonly<Record<string, string>> = {
+  'Map style': 'Style',
+  'Topics & time': 'Topics',
+  Measure: 'Measure',
+  'Route planner': 'Route',
+  'RF coverage': 'RF',
+  'Research area': 'Area',
+};
+
 interface PanelProps {
   label: string;
   icon: ControlIcon;
   side?: 'left' | 'right';
   children: ReactNode;
   entry?: boolean;
+  caption?: string;
 }
 export function ControlPanel({ children }: PanelProps) {
   return children;
@@ -68,7 +78,7 @@ export function GlobeControls({
         <MapControlLabel key={props.label} label={props.label}>
           <button
             type="button"
-            className={`map-icon-button ${['Map style', 'Map filters'].includes(props.label) ? 'map-style-button' : ''}`}
+            className={`map-icon-button ${(props.caption ?? CAPTIONS[props.label]) ? 'map-style-button' : ''}`}
             aria-label={props.label}
             title={props.label}
             aria-expanded={active === props.label}
@@ -79,8 +89,9 @@ export function GlobeControls({
             }}
           >
             <MapControlIcon name={props.icon} />
-            {props.label === 'Map style' && <span className="map-style-label">Map style</span>}
-            {props.label === 'Map filters' && <span className="map-style-label">Filters</span>}
+            {(props.caption ?? CAPTIONS[props.label]) && (
+              <span className="map-style-label">{props.caption ?? CAPTIONS[props.label]}</span>
+            )}
           </button>
         </MapControlLabel>
       ));

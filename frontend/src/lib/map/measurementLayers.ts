@@ -1,4 +1,4 @@
-import { PathLayer, ScatterplotLayer } from '@deck.gl/layers';
+import { PathLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import type { Position } from '@/lib/map/geoJsonTypes';
 import { measurementPaths } from '@/lib/map/measurements';
@@ -32,13 +32,38 @@ export function measurementLayers(
       pickable: false,
       wrapLongitude: true,
     }),
+    ...measurementPointLayers(points, flat),
+  ];
+}
+
+/** Reusable handles do not calculate or allocate a discarded geodesic path. */
+export function measurementPointLayers(points: readonly Position[], flat: boolean): Layer[] {
+  if (!points.length) return [];
+  return [
     new ScatterplotLayer<Position>({
       id: 'measurement-points',
       data: points.filter((point) => !flat || Math.abs(point[1]) <= 85.05112878),
       getPosition: (point) => point,
-      getRadius: 5,
+      getRadius: 8,
       radiusUnits: 'pixels',
       getFillColor: [120, 225, 240, 255],
+      stroked: true,
+      getLineColor: [5, 8, 10, 255],
+      getLineWidth: 2,
+      lineWidthUnits: 'pixels',
+      pickable: false,
+    }),
+    new TextLayer<{ point: Position; label: string }>({
+      id: 'measurement-labels',
+      data: points
+        .map((point, index) => ({ point, label: String(index + 1) }))
+        .filter(({ point }) => !flat || Math.abs(point[1]) <= 85.05112878),
+      getPosition: (item) => item.point,
+      getText: (item) => item.label,
+      getSize: 12,
+      getColor: [4, 10, 14, 255],
+      fontWeight: 'bold',
+      billboard: true,
       pickable: false,
     }),
   ];

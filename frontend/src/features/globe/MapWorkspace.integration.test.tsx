@@ -123,6 +123,10 @@ it('creates an unpickable route layer only after Calculate and removes it on Cle
   await screen.findByRole('region', { name: '3D globe' });
   await user.click(screen.getByRole('button', { name: 'Route planner' }));
   await screen.findByRole('link', { name: 'operator@example.com' });
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Enter stops using' }),
+    'coordinates',
+  );
   for (const [index, value] of [
     [1, '0'],
     [2, '0.01'],

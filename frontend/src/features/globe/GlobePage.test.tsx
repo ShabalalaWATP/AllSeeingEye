@@ -77,7 +77,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Map filters' }));
+    await user.click(screen.getByRole('button', { name: 'Topics & time' }));
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
@@ -117,7 +117,7 @@ describe('GlobePage', () => {
         id: null,
       });
     });
-    await user.click(screen.getByRole('button', { name: 'Map filters' }));
+    await user.click(screen.getByRole('button', { name: 'Topics & time' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();

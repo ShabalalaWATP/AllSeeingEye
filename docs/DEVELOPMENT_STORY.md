@@ -2873,3 +2873,35 @@ passed. The full formatter still flags three unchanged files, listed in the
 feature notes. Browser/GPU inspection remains blocked by the existing policy.
 No provider account, dependency, migration, production deployment or remote
 push was added.
+
+
+## 9 September 2026: discoverable map controls and practical planning inputs
+
+Moved GNSS to the top of the category rail and prevented buttons shrinking out of
+view. Renamed the generic shared filter panel Topics & time. Location quality now
+explains position classes and filters actual map/globe event markers, while its
+record list keeps unplotted reports inspectable.
+
+Drawing gained recognisable shape controls, drag creation for rectangles/circles
+and movement of the bounded local sketch. Measurement foregrounds map clicks,
+numbered points and finish/undo keyboard shortcuts. The route planner now starts
+with addresses and explicit Photon result selection, offers coordinates through
+a dropdown, and can reverse stops. Its new authenticated search proxy bounds
+requests/results, limits shared provider traffic and rechecks session access.
+Form state and the route overlay now stay together while the tool is closed;
+unfinished searches remain local and pending provider requests are cancelled.
+
+Nine illustrative radio presets and transmitter/receiver placement produce a
+labelled ideal-distance outline and optional path. This is not terrain-aware or
+measured RF coverage. OS style choices now explain missing-key and lookup-failure
+states and offer a configuration recheck. The local OS key remains absent;
+Valhalla route calculation still requires the public operator contact.
+
+Final verification passed 1,425 frontend tests (95.48% statements and 90.49%
+branches) and 33 targeted backend tests. Scoped geocoding coverage was 94%.
+Build, types, lint, changed-file formatting, architecture, size and scoped
+security checks passed. A 20,000-coordinate route regression verifies that drag
+previews retain unrelated layer/data identities. Interactive browser/GPU
+inspection remains blocked by the existing administrator policy. See
+[map tools and layers](MAP_TOOLS_AND_LAYERS.md) for implementation limits and
+[GNSS controls](GNSS_AND_MAP_CONTROLS.md) for the revised control layout.

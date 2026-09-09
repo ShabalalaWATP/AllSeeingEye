@@ -1,5 +1,6 @@
 /** MapLibre GL JS6 engine with the dedicated deck.gl camera adapter. */
 import { MapOverlayController } from './MapOverlayController';
+import { MapSketchInteraction } from './MapSketchInteraction';
 import type { Layer } from '@deck.gl/core';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import type { RequestParameters } from 'maplibre-gl';
@@ -17,6 +18,8 @@ import type {
   MapEngineEvent,
   MapEngineHandler,
   Projection,
+  SketchMode,
+  SketchDragHandler,
 } from './MapEngine';
 import { DARK_STYLE_URL, isApiRequest, vectorStyleFor } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
@@ -42,6 +45,8 @@ export const SPIN_STEP_MS = 30_000;
 export class MapLibreEngine implements MapEngine {
   private map: MapLibreMap | null = null;
   private overlays: MapOverlayController | null = null;
+  private sketch: MapSketchInteraction | null = null;
+  private sketchMode: SketchMode = 'navigate';
   private get overlay() {
     return this.overlays?.overlay ?? null;
   }
@@ -85,16 +90,23 @@ export class MapLibreEngine implements MapEngine {
       transformRequest: (url) => this.transformRequest(url),
     });
     this.map = map;
+    if (!this.options.captureEnabled) {
+      this.sketch = new MapSketchInteraction(map, () => this.spin(false));
+      this.sketch.setMode(this.sketchMode);
+    }
     this.overlays = new MapOverlayController(map, this.options, () => {
+      this.sketch?.cancel();
       this.captureFailed = true;
       this.revision += 1;
     });
     map.on('webglcontextlost', () => {
+      this.sketch?.setMode('navigate');
       this.contextLost = true;
       this.styleReady = false;
       this.spin(false);
     });
     map.on('webglcontextrestored', () => {
+      this.sketch?.setMode(this.sketchMode);
       this.contextLost = false;
       this.setBaseLayer(this.baseLayer);
     });
@@ -159,12 +171,14 @@ export class MapLibreEngine implements MapEngine {
   }
 
   setProjection(projection: Projection): void {
+    this.sketch?.cancel();
     this.revision += 1;
     this.projection = projection;
     this.applyProjection();
   }
 
   setBaseLayer(layer: BaseLayer): void {
+    this.sketch?.cancel();
     this.revision += 1;
     this.baseLayer = layer;
     if (this.contextLost) return;
@@ -270,10 +284,25 @@ export class MapLibreEngine implements MapEngine {
   on(event: MapEngineEvent, handler: MapEngineHandler): () => void {
     const map = this.map;
     if (map === null) return () => undefined;
-    map.on(event, handler);
+    const listener =
+      event === 'click'
+        ? (payload: unknown) => {
+            if (!this.sketch?.suppressesClick()) handler(payload);
+          }
+        : handler;
+    map.on(event, listener);
     return () => {
-      map.off(event, handler);
+      map.off(event, listener);
     };
+  }
+
+  onDrag(handler: SketchDragHandler): () => void {
+    return this.sketch?.onDrag(handler) ?? (() => undefined);
+  }
+
+  setSketchMode(mode: SketchMode): void {
+    this.sketchMode = mode;
+    this.sketch?.setMode(mode);
   }
 
   async captureImage(signal: AbortSignal): Promise<Blob> {
@@ -308,6 +337,8 @@ export class MapLibreEngine implements MapEngine {
     this.captureAbort?.abort();
     this.revision += 1;
     this.spinning = false;
+    this.sketch?.destroy();
+    this.sketch = null;
     this.overlays?.destroy();
     this.map?.remove();
     this.map = null;

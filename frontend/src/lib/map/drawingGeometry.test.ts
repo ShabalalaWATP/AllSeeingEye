@@ -57,6 +57,7 @@ it('uses independent non-pickable drawing layer IDs', () => {
   expect(layers.map((layer) => layer.id)).toEqual([
     'drawing-measurement-path',
     'drawing-measurement-points',
+    'drawing-measurement-labels',
   ]);
   expect(layers.every((layer) => !layer.props.pickable)).toBe(true);
 });

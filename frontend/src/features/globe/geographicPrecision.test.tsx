@@ -42,14 +42,28 @@ it('keeps every unplotted item selectable through pages and respects category fi
   );
   const onSelect = vi.fn();
   const { rerender } = render(
-    <GeographicPrecisionPanel events={records} hidden={[]} onSelect={onSelect} />,
+    <GeographicPrecisionPanel
+      events={records}
+      hidden={[]}
+      filter="all"
+      onFilterChange={vi.fn()}
+      onSelect={onSelect}
+    />,
   );
   const user = userEvent.setup();
   await user.click(screen.getByText('Not plotted (21)'));
   await user.click(screen.getByRole('button', { name: 'Next' }));
   await user.click(screen.getByRole('button', { name: /Unknown record 20/ }));
   expect(onSelect).toHaveBeenCalledWith(records[20]);
-  rerender(<GeographicPrecisionPanel events={records} hidden={['disaster']} onSelect={onSelect} />);
+  rerender(
+    <GeographicPrecisionPanel
+      events={records}
+      hidden={['disaster']}
+      filter="all"
+      onFilterChange={vi.fn()}
+      onSelect={onSelect}
+    />,
+  );
   expect(screen.getByText('Not plotted (0)')).toBeVisible();
   expect(screen.queryByRole('button', { name: /Unknown record/ })).not.toBeInTheDocument();
 });

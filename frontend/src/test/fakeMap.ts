@@ -20,6 +20,19 @@ export class FakeMap {
   static instances: FakeMap[] = [];
 
   readonly options: Record<string, unknown>;
+  private readonly canvas = document.createElement('canvas');
+  private panEnabled = true;
+  readonly dragPan = {
+    isEnabled: vi.fn(() => this.panEnabled),
+    enable: vi.fn(() => {
+      this.panEnabled = true;
+    }),
+    disable: vi.fn(() => {
+      this.panEnabled = false;
+    }),
+  };
+  readonly getCanvas = vi.fn(() => this.canvas);
+  readonly unproject = vi.fn(([lng, lat]: [number, number]) => ({ lng, lat }));
   readonly layers: StyleLayer[] = FAKE_STYLE_LAYERS.map((layer) => ({ ...layer }));
   readonly sources = new Map<string, unknown>();
   private readonly handlers = new Map<string, Handler[]>();
@@ -84,6 +97,14 @@ export class FakeMap {
 
   constructor(options: Record<string, unknown>) {
     this.options = options;
+    const captured = new Set<number>();
+    this.canvas.setPointerCapture = vi.fn((id: number) => {
+      captured.add(id);
+    });
+    this.canvas.hasPointerCapture = vi.fn((id: number) => captured.has(id));
+    this.canvas.releasePointerCapture = vi.fn((id: number) => {
+      captured.delete(id);
+    });
     FakeMap.instances.push(this);
   }
 

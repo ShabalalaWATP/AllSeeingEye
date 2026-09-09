@@ -99,6 +99,27 @@ export function MapLayerRail({
   ] as const;
   return (
     <>
+      <div className="flex flex-col items-center">
+        <LayerButton
+          label="GNSS interference"
+          caption="GNSS"
+          icon="gnss"
+          count={gnssCount}
+          active={interference}
+          onClick={toggleInterference}
+        />
+        {openPanel && (
+          <button
+            type="button"
+            aria-label="GNSS filters"
+            aria-expanded={activePanel === 'GNSS interference'}
+            className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
+            onClick={(event) => openPanel('GNSS interference', event.currentTarget)}
+          >
+            FILTERS <span aria-hidden="true"> ›</span>
+          </button>
+        )}
+      </div>
       {observations.map(({ kind, label }) => {
         const button = (
           <LayerButton
@@ -206,27 +227,6 @@ export function MapLayerRail({
           )}
         </div>
       ))}
-      <div className="flex flex-col items-center">
-        <LayerButton
-          label="GNSS interference"
-          caption="GNSS"
-          icon="gnss"
-          count={gnssCount}
-          active={interference}
-          onClick={toggleInterference}
-        />
-        {openPanel && (
-          <button
-            type="button"
-            aria-label="GNSS filters"
-            aria-expanded={activePanel === 'GNSS interference'}
-            className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
-            onClick={(event) => openPanel('GNSS interference', event.currentTarget)}
-          >
-            FILTERS <span aria-hidden="true"> ›</span>
-          </button>
-        )}
-      </div>
     </>
   );
 }

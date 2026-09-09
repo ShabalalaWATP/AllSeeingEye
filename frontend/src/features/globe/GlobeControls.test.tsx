@@ -63,3 +63,17 @@ it('keeps configuration on the left and opens its panel beside that rail', async
   await user.click(screen.getByRole('button', { name: 'Measure' }));
   expect(screen.getByRole('region', { name: 'Measure' })).toHaveAttribute('data-side', 'right');
 });
+
+it('identifies topic and time options with a persistent caption and accessible panel name', async () => {
+  const user = userEvent.setup();
+  render(
+    <GlobeControls layers={null}>
+      <ControlPanel label="Topics & time" icon="topics" side="left">
+        <p>Topic options</p>
+      </ControlPanel>
+    </GlobeControls>,
+  );
+  expect(screen.getByText('Topics')).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Topics & time' }));
+  expect(screen.getByRole('region', { name: 'Topics & time' })).toHaveTextContent('Topic options');
+});

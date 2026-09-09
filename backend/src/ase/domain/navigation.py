@@ -22,3 +22,9 @@ class NavigationRoute:
     duration_seconds: float
     coordinates: tuple[Point, ...]
     steps: tuple[RouteStep, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NavigationPlace:
+    label: str
+    point: Point

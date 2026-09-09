@@ -43,6 +43,7 @@ from ase.adapters.persistence.session import (
 from ase.adapters.persistence.source_controls import SqlSourceAdmission
 from ase.adapters.persistence.watchlists import SqlWatchlistPlanStore
 from ase.adapters.research_records.copernicus import CopernicusFootprintProvider
+from ase.adapters.routing.photon import PhotonPlaceSearchGateway
 from ase.adapters.routing.valhalla import ValhallaRoutingGateway
 from ase.adapters.security.hasher import Argon2PasswordHasher
 from ase.adapters.security.jwt_issuer import JwtAccessTokenIssuer
@@ -63,6 +64,7 @@ from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
 from ase.application.footprints import FootprintSearchUseCase
 from ase.application.navigation import RoutePlanner
+from ase.application.place_search import PlaceSearch
 from ase.application.ports import Clock, EmailSender, RateLimiter
 from ase.application.ports.archive import Archiver
 from ase.application.ports.feeds import FeedConnector
@@ -268,6 +270,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         self.map_interests = MapCollectionInterests(self.aircraft_interests, self.limiter)
         self.routing_http = FeedHttpClient(self.http.user_agent, max_bytes=2 * 1024 * 1024)
         self.route_planner = RoutePlanner(ValhallaRoutingGateway(self.routing_http), self.limiter)
+        self.place_search = PlaceSearch(PhotonPlaceSearchGateway(self.routing_http), self.limiter)
         self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=16 * 1024 * 1024)
         self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(

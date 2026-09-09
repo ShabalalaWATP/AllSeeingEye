@@ -34,6 +34,7 @@ import { WorldClocks } from './WorldClocks';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
 import { useConflictFilters } from './useConflictFilters';
+import { useLocationQuality } from './useLocationQuality';
 import { useHazardFilters } from './useHazardFilters';
 import { useMapWorkspaceTools } from './useMapWorkspaceTools';
 import { mapPlanningPanels } from './MapPlanningPanels';
@@ -94,10 +95,8 @@ export default function GlobePage() {
       }),
     [engine],
   );
-  const { osMaps, countries, countryByIso, countriesError } = useMapReferenceData(
-    baseLayer,
-    setBaseLayer,
-  );
+  const { osMaps, osLoading, osError, recheckOs, countries, countryByIso, countriesError } =
+    useMapReferenceData(baseLayer, setBaseLayer);
 
   const hidden = useEventsStore((state) => state.hidden);
   const country = useEventsStore((state) => state.country);
@@ -122,6 +121,7 @@ export default function GlobePage() {
   const satellites = useSatelliteFilters(observations.filtered);
   const hazards = useHazardFilters(satellites.filtered);
   const conflicts = useConflictFilters(hazards.filtered);
+  const quality = useLocationQuality(conflicts.filtered, hidden);
   const nation = country === null ? null : (countryByIso[country] ?? null);
   const storySize = useMemo(
     () =>
@@ -148,7 +148,7 @@ export default function GlobePage() {
     onPick,
     onCluster,
     onJam,
-  } = useMapPicking(conflicts.filtered, hidden, tools.picking, select, engine, closeCatalogues);
+  } = useMapPicking(quality.filtered, hidden, tools.picking, select, engine, closeCatalogues);
 
   const { focusCamera, cameraLayers } = useCameraSelection(
     cameras,
@@ -174,7 +174,7 @@ export default function GlobePage() {
   );
   useGlobeScene({
     engine,
-    events: conflicts.filtered,
+    events: quality.filtered,
     hidden,
     selectedId,
     highlightedId,
@@ -265,18 +265,27 @@ export default function GlobePage() {
               initialExpanded: true,
               value: baseLayer,
               osAvailable: osMaps,
+              osChecking: osLoading,
+              osError,
+              onCheckOs: recheckOs,
               onChange: setBaseLayer,
             },
             nation: { countries, value: country, onChange: changeNation, error: countriesError },
             country: nation
               ? { country: nation, events: scoped, selectedId, now, onSelect: focus }
               : null,
-            precision: { events: conflicts.filtered, hidden, onSelect: focus },
+            precision: {
+              events: quality.visible,
+              hidden: [],
+              filter: quality.filter,
+              onFilterChange: quality.setFilter,
+              onSelect: focus,
+            },
             grid: { grid: britishGrid, engine },
             cameras: { cameras, onSelect: focusCamera },
           })}
           {mapPlanningPanels(tools)}
-          <ControlPanel side="left" label="Map filters" icon="filter">
+          <ControlPanel side="left" label="Topics & time" icon="topics">
             <LayerPanel
               counts={counts}
               hidden={hidden}

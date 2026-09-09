@@ -86,8 +86,8 @@ it.each(['globe', 'map'] as const)(
 
 it('gives shared filters and appearance one owner on their respective rails', async () => {
   const { user } = renderApp('/', 'user');
-  await user.click(await screen.findByRole('button', { name: 'Map filters' }));
-  const filters = screen.getByRole('region', { name: 'Map filters' });
+  await user.click(await screen.findByRole('button', { name: 'Topics & time' }));
+  const filters = screen.getByRole('region', { name: 'Topics & time' });
   expect(within(filters).getAllByRole('switch')).toHaveLength(5);
   expect(
     within(filters).queryByRole('switch', { name: /GNSS|Flights|Boats|Day and night|graphics/ }),
@@ -96,7 +96,7 @@ it('gives shared filters and appearance one owner on their respective rails', as
   const tools = screen.getByRole('group', { name: 'Map tools' });
   expect(within(tools).getByRole('button', { name: 'British National Grid' })).toBeInTheDocument();
   await user.click(within(tools).getByRole('button', { name: 'Map style' }));
-  expect(screen.queryByRole('region', { name: 'Map filters' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Topics & time' })).not.toBeInTheDocument();
   const style = screen.getByRole('region', { name: 'Map style' });
   expect(within(style).getByRole('switch', { name: 'Day and night' })).toBeInTheDocument();
   expect(within(style).getByRole('switch', { name: 'Reduce graphics load' })).toBeInTheDocument();

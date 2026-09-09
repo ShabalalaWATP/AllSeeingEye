@@ -5,6 +5,7 @@ import asyncio
 from fastapi import APIRouter, Request, Response
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
+from ase.api.routers.navigation_places import router as places_router
 from ase.api.schemas_navigation import (
     NavigationCapabilitiesOut,
     NavigationRouteIn,
@@ -17,6 +18,7 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.events import Point
 
 router = APIRouter(prefix="/navigation", tags=["navigation"])
+router.include_router(places_router)
 INPUT_SCHEMA = NavigationRouteIn.model_json_schema()
 INPUT_SCHEMA["properties"]["waypoints"]["items"] = INPUT_SCHEMA.pop("$defs")["NavigationPointIn"]
 

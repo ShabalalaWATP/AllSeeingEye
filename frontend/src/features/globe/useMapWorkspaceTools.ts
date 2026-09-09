@@ -1,9 +1,12 @@
-import { useEffect, useEffectEvent, useMemo, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo } from 'react';
 import { PathLayer } from '@deck.gl/layers';
 import type { ViewMode } from '@/stores/globe';
 import type { NavigationRoute } from '@/lib/api/navigation';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 import { drawingLayers } from '@/lib/map/drawingLayers';
+import { rfMapLayers } from '@/lib/map/rfMap';
+import { useRoutePlannerState } from '@/components/maps/useRoutePlannerState';
+import { useRfMapPlacement } from './useRfMapPlacement';
 import { useMapDrawing } from './useMapDrawing';
 import { useMapMeasurement } from './useMapMeasurement';
 import type { GlobeEngineHandle } from './useGlobeEngine';
@@ -12,20 +15,41 @@ import type { GlobeEngineHandle } from './useGlobeEngine';
 export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean, mode: ViewMode) {
   const measurement = useMapMeasurement(engine, enabled);
   const drawing = useMapDrawing(engine, enabled);
-  const [route, setRoute] = useState<NavigationRoute | null>(null);
+  const rf = useRfMapPlacement(engine, enabled);
+  const routePlanner = useRoutePlannerState();
+  const { route, setRoute } = routePlanner;
   const stopPicking = useEffectEvent(() => {
     measurement.setPicking(false);
     drawing.setPicking(false);
+    rf.setPicking(null);
   });
   useEffect(() => {
     if (!enabled) stopPicking();
   }, [enabled]);
+  const sketchMode =
+    drawing.picking && drawing.interaction !== 'click'
+      ? 'drag'
+      : drawing.picking || measurement.picking || rf.picking
+        ? 'points'
+        : 'navigate';
+  useEffect(() => {
+    engine.setSketchMode?.(sketchMode);
+    return () => engine.setSketchMode?.('navigate');
+  }, [engine, sketchMode]);
 
-  const layers = useMemo(
-    () => [
-      ...measurementLayers(measurement.points, measurement.mode, mode === 'map'),
-      ...drawingLayers(drawing.points, drawing.mode, mode === 'map'),
-      ...(route
+  // Drag previews must not resample unchanged measurements/RF or upload long routes again.
+  const measured = useMemo(
+    () => measurementLayers(measurement.points, measurement.mode, mode === 'map'),
+    [measurement.points, measurement.mode, mode],
+  );
+  const drawn = useMemo(
+    () => drawingLayers(drawing.points, drawing.mode, mode === 'map', drawing.displayedAnchors),
+    [drawing.points, drawing.mode, drawing.displayedAnchors, mode],
+  );
+  const radio = useMemo(() => rfMapLayers(rf.estimate, mode === 'map'), [rf.estimate, mode]);
+  const routed = useMemo(
+    () =>
+      route
         ? [
             new PathLayer<{ path: NavigationRoute['coordinates'] }>({
               id: 'navigation-route',
@@ -38,31 +62,52 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
               wrapLongitude: mode === 'map',
             }),
           ]
-        : []),
-    ],
-    [measurement.points, measurement.mode, drawing.points, drawing.mode, route, mode],
+        : [],
+    [route, mode],
+  );
+  const layers = useMemo(
+    () => [...measured, ...drawn, ...radio, ...routed],
+    [measured, drawn, radio, routed],
   );
   return {
     measurement: {
       ...measurement,
       setPicking: (active: boolean) => {
-        if (active) drawing.setPicking(false);
+        if (active) {
+          drawing.setPicking(false);
+          rf.setPicking(null);
+        }
         measurement.setPicking(active);
       },
     },
     drawing: {
       ...drawing,
       setPicking: (active: boolean) => {
-        if (active) measurement.setPicking(false);
+        if (active) {
+          measurement.setPicking(false);
+          rf.setPicking(null);
+        }
         drawing.setPicking(active);
       },
     },
+    rf: {
+      ...rf,
+      setPicking: (point: 'origin' | 'receiver' | null) => {
+        if (point) {
+          measurement.setPicking(false);
+          drawing.setPicking(false);
+        }
+        rf.setPicking(point);
+      },
+    },
     layers,
+    routePlanner,
     setRoute,
-    picking: measurement.picking || drawing.picking,
+    picking: measurement.picking || drawing.picking || rf.picking !== null,
     activatePanel: (label: string | null) => {
       if (label !== null && label !== 'Measure distance and area') measurement.setPicking(false);
       if (label !== 'Draw on map') drawing.setPicking(false);
+      if (label !== 'RF link calculator') rf.setPicking(null);
     },
   };
 }
