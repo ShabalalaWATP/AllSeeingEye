@@ -7,7 +7,7 @@ from datetime import timedelta
 import pytest
 
 from ase.adapters.bus.memory import MAX_UPSERT_BYTES, MAX_UPSERT_EVENTS, InMemoryEventBus
-from ase.adapters.store import memory
+from ase.adapters.store import query as store_query
 from ase.adapters.store.memory import InMemoryEventStore, estimate_bytes
 from ase.api.routers.stream import serialise
 from ase.application.feeds.pipeline import Normaliser, Pipeline
@@ -105,13 +105,13 @@ def test_source_snapshot_checks_only_indexed_candidates(monkeypatch: pytest.Monk
     target = [make_event(str(i), source_id="target", country_iso="GB") for i in range(10)]
     store.upsert(target)
     examined = []
-    original = memory.evidence_matches_time
+    original = store_query.evidence_matches_time
 
     def counted(*args, **kwargs):
         examined.append(args[0].id)
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(memory, "evidence_matches_time", counted)
+    monkeypatch.setattr(store_query, "evidence_matches_time", counted)
     assert len(store.query(EventQuery(source_ids=frozenset({"target"}), limit=3))) == 3
     assert len(examined) == 10
     assert not store.query(EventQuery(source_ids=frozenset({"missing"})))

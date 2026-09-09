@@ -7,12 +7,14 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query
 
-from ase.api.deps import ContainerDep, CurrentUser
+from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.errors import InvalidQuery
 from ase.api.schemas_events import EventOut, EventsOut, StoreStatsOut
+from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import NotFound
-from ase.domain.events import BoundingBox, Category
+from ase.domain.events import BoundingBox, Category, Event
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -42,6 +44,7 @@ def parse_bbox(value: str | None) -> BoundingBox | None:
 async def list_events(
     user: CurrentUser,
     container: ContainerDep,
+    claims: ClaimsDep,
     categories: Annotated[str | None, Query(max_length=200)] = None,
     bbox: Annotated[str | None, Query(max_length=120)] = None,
     country: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
@@ -71,8 +74,19 @@ async def list_events(
         sampling=sampling,
     )
     container.map_interests.request(user.id, query)
-    items = [EventOut.from_event(event) for event in container.store.query(query)]
-    return EventsOut(items=items, count=len(items))
+
+    def project(events: list[Event]) -> EventsOut:
+        items = [EventOut.from_event(event) for event in events]
+        return EventsOut(items=items, count=len(items))
+
+    result = (
+        await container.store.read_cooperatively(query, project)
+        if isinstance(container.store, CooperativeEventReader)
+        else project(container.store.query(query))
+    )
+    await validate_request_session(container, claims)
+    validate_request_expiry(container, claims)
+    return result
 
 
 @router.get("/stats")

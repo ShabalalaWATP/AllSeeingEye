@@ -647,3 +647,19 @@ selection behaviour and map memory limits. See [map tools and layers](MAP_TOOLS_
 for source provenance, limitations, validation and routing contact requirements.
 Live routing awaits a real operator contact; no production deployment or new
 provider account was performed.
+
+## 9 September 2026: sustained map responsiveness
+
+- [x] Measure camera grouping and backend CPU stalls at worldwide catalogue sizes.
+- [x] Bound camera-grid work and reuse unchanged geometry/layer attributes.
+- [x] Coalesce bulk snapshot refreshes while publishing completed work.
+- [x] Preserve stream ordering across scheduled, explicit and reconnect snapshots.
+- [x] Yield backend ingestion/grading and bound concurrent query workers.
+- [x] Preserve cancellation, retention and post-worker authorisation checks.
+- [x] Restart the local ASE backend and verify populated event queries and health.
+- [x] Pass final frontend coverage, backend regressions, build and static/security checks.
+- [ ] Complete interactive GPU and long-duration browser verification when policy permits.
+
+See [performance repair](PERFORMANCE_REPAIR.md) and its linked audits. These
+changes preserve feeds and geographic coverage. CPU benchmarks and API probes
+do not establish visual frame rates or eliminate every possible driver failure.

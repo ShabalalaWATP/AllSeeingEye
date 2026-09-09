@@ -19,9 +19,10 @@ export function buildCameraLayers(
   zoom = 13,
   onCluster?: (cluster: CameraCluster) => void,
   bounds: MapBounds | null = null,
+  prepared?: ReturnType<typeof clusterCameras>,
 ): Layer[] {
   if (!cameras.length) return [];
-  const { loose, clusters } = clusterCameras(cameras, zoom, selectedId, bounds);
+  const { loose, clusters } = prepared ?? clusterCameras(cameras, zoom, selectedId, bounds);
   const layers: Layer[] = [
     new IconLayer<Camera>({
       id: 'public-camera-icons',
@@ -76,7 +77,8 @@ export function buildCameraLayers(
         getAngle: globe ? 180 : 0,
       }),
     );
-  const selected = cameras.find((camera) => camera.id === selectedId);
+  const selected =
+    selectedId === null ? undefined : cameras.find((camera) => camera.id === selectedId);
   if (selected)
     layers.push(
       new ScatterplotLayer<Camera>({

@@ -2,6 +2,7 @@
 
 from collections import deque
 from collections.abc import Sequence
+from datetime import datetime
 from math import floor
 
 from ase.domain.events import Category, Event
@@ -23,21 +24,32 @@ def geographic_page(
     Pagination is repeatable for an unchanged store and query, not a snapshot
     guarantee across concurrent live updates.
     """
-    cells: dict[tuple[int, int], dict[Category, deque[Event]]] = {}
-    unlocated: dict[Category, deque[Event]] = {}
-    for event in sorted(events, key=lambda e: (evidence_order(e, basis), e.id), reverse=True):
+    cells: dict[tuple[int, int], dict[Category, list[Event]]] = {}
+    unlocated: dict[Category, list[Event]] = {}
+    for event in events:
         if event.point is None:
-            unlocated.setdefault(event.category, deque()).append(event)
+            unlocated.setdefault(event.category, []).append(event)
             continue
         # Both representations of the antimeridian belong to the same cell;
         # the north pole remains in the final valid latitude band.
         longitude = (event.point.lon + 180) % 360
         latitude = min(17, floor((event.point.lat + 90) / CELL_DEGREES))
         key = (floor(longitude / CELL_DEGREES), latitude)
-        cells.setdefault(key, {}).setdefault(event.category, deque()).append(event)
-    active = deque(deque(categories.values()) for categories in cells.values())
+        cells.setdefault(key, {}).setdefault(event.category, []).append(event)
+
+    # Sort within spatial buckets, then only their heads globally. This preserves
+    # the same newest-first round robin without a large global comparison sort.
+    def rank(event: Event) -> tuple[datetime, str]:
+        return evidence_order(event, basis), event.id
+
+    def ordered_categories(categories: dict[Category, list[Event]]) -> deque[deque[Event]]:
+        buckets = [deque(sorted(bucket, key=rank, reverse=True)) for bucket in categories.values()]
+        return deque(sorted(buckets, key=lambda bucket: rank(bucket[0]), reverse=True))
+
+    grouped = [ordered_categories(categories) for categories in cells.values()]
+    active = deque(sorted(grouped, key=lambda buckets: rank(buckets[0][0]), reverse=True))
     if unlocated:
-        active.append(deque(unlocated.values()))
+        active.append(ordered_categories(unlocated))
     result: list[Event] = []
     position = 0
     while active and len(result) < limit:

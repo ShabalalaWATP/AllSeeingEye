@@ -1,9 +1,14 @@
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { SNAPSHOT_COALESCE_MS, SNAPSHOT_REFRESH_MS } from './events.refresh';
 import { liveEvent } from '@/test/fixtures';
 import * as api from '@/lib/api/events';
 import { useEventsStore } from './events';
 
-afterEach(() => useEventsStore.getState().reset());
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => {
+  useEventsStore.getState().reset();
+  vi.useRealTimers();
+});
 
 it('preserves markers and selection during a normal bulk refresh', async () => {
   let release!: (events: ReturnType<typeof liveEvent>[]) => void;
@@ -29,6 +34,7 @@ it('preserves markers and selection during a normal bulk refresh', async () => {
   });
   expect(useEventsStore.getState().selectedId).toBe('selected');
   expect(useEventsStore.getState().list).toHaveLength(1);
+  await vi.advanceTimersByTimeAsync(SNAPSHOT_COALESCE_MS);
   release([liveEvent({ id: 'selected', title: 'Refreshed' })]);
   await vi.waitFor(() => expect(useEventsStore.getState().loading).toBe(false));
   expect(useEventsStore.getState().selectedId).toBe('selected');
@@ -56,14 +62,16 @@ it('finishes an in-flight snapshot then reconciles one time for a burst of resyn
   for (let i = 0; i < 50; i++)
     useEventsStore.getState().handleStreamMessage({
       event: 'event.resync',
-      data: JSON.stringify({ reason: 'stream_gap' }),
+      data: JSON.stringify({ reason: 'snapshot_required' }),
       id: null,
     });
   expect(fetch).toHaveBeenCalledOnce();
   expect(fetch.mock.calls[0]?.[1]?.aborted).toBe(false);
   release([liveEvent({ id: 'old' })]);
   await loading;
-  await vi.waitFor(() => expect(useEventsStore.getState().loading).toBe(false));
+  expect(useEventsStore.getState().list.map((event) => event.id)).toEqual(['old']);
+  expect(fetch).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(SNAPSHOT_REFRESH_MS);
   expect(fetch).toHaveBeenCalledTimes(2);
   expect(useEventsStore.getState().list.map((event) => event.id)).toEqual(['new']);
 });
@@ -83,9 +91,11 @@ it('cancels a queued resync when the operator leaves the map', async () => {
     per_category: [],
   });
   const loading = useEventsStore.getState().load();
-  useEventsStore
-    .getState()
-    .handleStreamMessage({ event: 'event.resync', data: '{"reason":"stream_gap"}', id: null });
+  useEventsStore.getState().handleStreamMessage({
+    event: 'event.resync',
+    data: '{"reason":"snapshot_required"}',
+    id: null,
+  });
   useEventsStore.getState().cancelLoad();
   release([]);
   await loading;

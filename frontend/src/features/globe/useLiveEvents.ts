@@ -18,9 +18,9 @@ export function useLiveEvents(enabled = true): void {
   const visible = usePageVisible();
   useEffect(() => {
     if (!enabled || !visible) return;
-    const events = useEventsStore.getState();
     const batch = new EventUpdateBatch(useEventsStore.getState);
-    void events.load();
+    const releaseBarrier = useEventsStore.getState().onSnapshotStart(() => batch.flush());
+    let fallback: ReturnType<typeof setTimeout> | null = null;
     const client = new EventStreamClient({
       url: STREAM_URL,
       getToken: async (refresh) => {
@@ -35,16 +35,24 @@ export function useLiveEvents(enabled = true): void {
       onStatus: (status) => {
         useEventsStore.getState().setStatus(status);
         if (status === 'live') {
-          batch.flush();
+          if (fallback !== null) clearTimeout(fallback);
+          fallback = null;
           // The stream does not replay missed changes. Take a snapshot after the
           // subscription opens, including reconnects and normal token renewal.
           void useEventsStore.getState().load();
         }
       },
     });
+    // Keep offline snapshots usable if subscription setup cannot finish.
+    fallback = setTimeout(() => {
+      fallback = null;
+      void useEventsStore.getState().load();
+    }, 3_000);
     client.start();
     return () => {
+      if (fallback !== null) clearTimeout(fallback);
       client.stop();
+      releaseBarrier();
       batch.clear();
       useEventsStore.getState().cancelLoad();
     };

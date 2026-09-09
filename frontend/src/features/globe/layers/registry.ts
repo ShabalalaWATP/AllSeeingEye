@@ -3,6 +3,7 @@
  */
 import { ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
+import { sameLayerRows } from '@/lib/map/sameLayerRows';
 
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import { geographicOrder } from '@/stores/events.geography';
@@ -54,6 +55,7 @@ function scatterLayers(
     return new ScatterplotLayer<LiveEvent>({
       id: `events-${category}`,
       data,
+      dataComparator: sameLayerRows,
       pickable: true,
       radiusUnits: 'pixels',
       stroked: true,

@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
-import json
-from collections.abc import Iterable, Mapping
+import asyncio
+from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime
-from heapq import nlargest
 
 from ase.adapters.store.firms_retention import firms_evictions
-from ase.adapters.store.geographic import geographic_page
+from ase.adapters.store.query import select_events
+from ase.adapters.store.sizing import EVENT_OVERHEAD_BYTES, estimate_bytes
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
     VESSEL_POSITION_AGE,
     RetentionBudget,
     budget_for,
 )
+from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.application.feeds.position_freshness import satellite_position_expired
 from ase.application.ports.feeds import (
     CategoryStats,
@@ -23,72 +24,12 @@ from ase.application.ports.feeds import (
     StoreStats,
     UpsertResult,
 )
+from ase.domain.errors import RateLimited
 from ase.domain.events import Category, Event
-from ase.domain.evidence_time import evidence_matches_time, evidence_order
-from ase.domain.project import project_to_dict
-from ase.domain.source_provenance_records import provenance_size
-from ase.domain.traffic_classification import is_reported_military
+
+__all__ = ["EVENT_OVERHEAD_BYTES", "InMemoryEventStore", "estimate_bytes"]
 
 MAX_PRUNE_IDS = 10_000
-# Includes the slotted event, dates/point, per-record dict/set index entries,
-# attribute mapping, tag container and short Python string object overhead.
-# Text uses the worst-case four-byte Python Unicode representation.
-EVENT_OVERHEAD_BYTES = 1_024
-
-
-def estimate_bytes(event: Event) -> int:
-    text = (
-        event.id,
-        event.source_id,
-        event.subtype,
-        event.title,
-        event.summary,
-        event.url,
-        event.language,
-        event.title_en,
-        event.country_iso,
-        event.grade_rationale,
-        event.story_id,
-        event.content_hash,
-    )
-    size = EVENT_OVERHEAD_BYTES + 4 * sum(len(value or "") for value in text)
-    size += sum(96 + 4 * (len(key) + len(str(value))) for key, value in event.attributes.items())
-    size += sum(64 + 4 * len(tag) for tag in event.tags)
-    if event.geometry is not None:
-        geometry = event.geometry
-        size += len(geometry.source_geometry.encode("utf-8"))
-        size += (
-            sum(
-                len(value.encode("utf-8"))
-                for value in (
-                    geometry.precision,
-                    geometry.method,
-                    geometry.source_id,
-                    geometry.attribution,
-                )
-            )
-            + 256
-        )
-    if event.observation is not None:
-        observation = event.observation
-        size += (
-            sum(
-                len(value.encode("utf-8"))
-                for value in (
-                    observation.collection_id,
-                    observation.item_id,
-                    observation.limitations,
-                )
-            )
-            + 256
-        )
-    if event.project is not None:
-        size += (
-            len(json.dumps(project_to_dict(event.project), ensure_ascii=False).encode("utf-8"))
-            + 256
-        )
-    size += provenance_size(event.transformations, event.source_dates)
-    return size
 
 
 class InMemoryEventStore:
@@ -100,6 +41,9 @@ class InMemoryEventStore:
         self._budgets = budgets or {}
         self._memory_budget = memory_budget_bytes
         self._events: dict[str, Event] = {}
+        self._read_slot = asyncio.Semaphore(1)
+        self._waiting_reads = 0
+        self._stats_cache: StoreStats | None = None
         self._sizes: dict[str, int] = {}
         self._by_category: dict[Category, set[str]] = {}
         self._by_country: dict[str, set[str]] = {}
@@ -111,6 +55,35 @@ class InMemoryEventStore:
         self._pending_overflow = False
 
     def upsert(self, events: Iterable[Event]) -> UpsertResult:
+        result = self._upsert_batch(events)
+        self._capture_evictions()
+        return self._retained_result(result)
+
+    async def upsert_cooperatively(self, events: list[Event]) -> UpsertResult:
+        added = updated = unchanged = 0
+        changed: list[str] = []
+        try:
+            for offset in range(0, len(events), 250):
+                result = self._upsert_batch(events[offset : offset + 250])
+                added += result.added
+                updated += result.updated
+                unchanged += result.unchanged
+                changed.extend(result.changed_ids)
+                await asyncio.sleep(0)
+        finally:
+            # Cancellation must not leave the bounded store above its budget.
+            self._capture_evictions()
+        return self._retained_result(UpsertResult(added, updated, unchanged, tuple(changed)))
+
+    def _retained_result(self, result: UpsertResult) -> UpsertResult:
+        return UpsertResult(
+            result.added,
+            result.updated,
+            result.unchanged,
+            tuple(identifier for identifier in result.changed_ids if identifier in self._events),
+        )
+
+    def _upsert_batch(self, events: Iterable[Event]) -> UpsertResult:
         added = updated = unchanged = 0
         changed_ids: list[str] = []
         for event in events:
@@ -138,7 +111,6 @@ class InMemoryEventStore:
                 self._insert(event)
                 updated += 1
                 changed_ids.append(event.id)
-        self._capture_evictions()
         return UpsertResult(
             added=added,
             updated=updated,
@@ -155,40 +127,37 @@ class InMemoryEventStore:
             self._insert(event)
         self._capture_evictions()
 
+    async def put_grades_cooperatively(self, events: list[Event]) -> None:
+        try:
+            for offset in range(0, len(events), 250):
+                for event in events[offset : offset + 250]:
+                    current = self._events.get(event.id)
+                    if current is not None and current.content_hash == event.content_hash:
+                        self._remove(event.id)
+                        self._insert(event)
+                await asyncio.sleep(0)
+        finally:
+            self._capture_evictions()
+
     def get(self, event_id: str) -> Event | None:
         return self._events.get(event_id)
 
     def query(self, query: EventQuery) -> list[Event]:
-        candidates = self._candidates(query)
-        matched: list[Event] = []
-        for event_id in candidates:
-            event = self._events[event_id]
-            if query.source_ids and event.source_id not in query.source_ids:
-                continue
-            if query.military is not None and is_reported_military(event) is not query.military:
-                continue
-            if not evidence_matches_time(
-                event,
-                query.time_basis,
-                query.since,
-                query.until,
-                include_unknown=query.include_unknown_dates,
-            ):
-                continue
-            if query.bbox is not None and (
-                event.point is None or not query.bbox.contains(event.point)
-            ):
-                continue
-            matched.append(event)
-        offset = max(0, min(15_000, query.offset))
-        if query.sampling == "geographic":
-            return geographic_page(matched, query.time_basis, offset, max(1, query.limit))
-        ranked = nlargest(
-            offset + max(1, query.limit),
-            matched,
-            key=lambda e: (evidence_order(e, query.time_basis), e.id),
-        )
-        return ranked[offset:]
+        return select_events([self._events[i] for i in self._candidates(query)], query)
+
+    async def read_cooperatively[T](
+        self, query: EventQuery, project: Callable[[list[Event]], T]
+    ) -> T:
+        if self._waiting_reads >= 8:
+            raise RateLimited(1)
+        self._waiting_reads += 1
+        try:
+            async with self._read_slot:
+                # Capture references only after admission, never iterate live indexes in a thread.
+                snapshot = [self._events[i] for i in self._candidates(query)]
+                return await joined_thread_call(lambda: project(select_events(snapshot, query)))
+        finally:
+            self._waiting_reads -= 1
 
     def prune(self, now: datetime) -> PruneResult:
         expired: list[str] = []
@@ -234,18 +203,22 @@ class InMemoryEventStore:
         return result
 
     def stats(self) -> StoreStats:
+        if self._stats_cache is not None:
+            return self._stats_cache
         per_category = []
         for category, ids in sorted(self._by_category.items(), key=lambda kv: kv[0].value):
             if not ids:
                 continue
             times = [self._events[i].observed_at for i in ids]
             per_category.append(CategoryStats(category, len(ids), min(times), max(times)))
-        return StoreStats(
+        self._stats_cache = StoreStats(
             total=len(self._events),
             estimated_bytes=self._estimated_bytes,
             budget_bytes=self._memory_budget,
             per_category=tuple(per_category),
         )
+
+        return self._stats_cache
 
     def _candidates(self, query: EventQuery) -> Iterable[str]:
         if query.source_ids:
@@ -299,6 +272,7 @@ class InMemoryEventStore:
                 self._pending_overflow = True
 
     def _insert(self, event: Event) -> None:
+        self._stats_cache = None
         self._pending_expiry.discard(event.id)
         self._events[event.id] = event
         size = estimate_bytes(event)
@@ -313,6 +287,7 @@ class InMemoryEventStore:
         event = self._events.pop(event_id, None)
         if event is None:
             return
+        self._stats_cache = None
         self._estimated_bytes -= self._sizes.pop(event_id, 0)
         self._by_category.get(event.category, set()).discard(event_id)
         self._by_source.get(event.source_id, set()).discard(event_id)

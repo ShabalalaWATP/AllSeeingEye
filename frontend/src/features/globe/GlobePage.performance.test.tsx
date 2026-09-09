@@ -1,5 +1,3 @@
-// Load the real route after Vitest hoists its mocks, outside timed layer assertions.
-import './GlobePage';
 import { act, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -63,7 +61,8 @@ describe('globe rendering and motion', () => {
 
     const night = layer('terminator');
     clock.now += 30_000;
-    act(() => useEventsStore.getState().setStatus('live'));
+    // The fake stream connects on mount. Change status to render the injected clock.
+    act(() => useEventsStore.getState().setStatus('reconnecting'));
     expect(layer('terminator')).not.toBe(night);
     expect(layer('events-disaster')).toBe(original);
 
@@ -106,7 +105,7 @@ describe('globe rendering and motion', () => {
     });
     expect(layer('events-disaster')!.props.data.map((event) => event.id)).toEqual(['fresh', 'old']);
     clock.now += 30_000;
-    act(() => useEventsStore.getState().setStatus('live'));
+    act(() => useEventsStore.getState().setStatus('reconnecting'));
     expect(layer('events-disaster')!.props.data.map((event) => event.id)).toEqual(['fresh']);
   });
 

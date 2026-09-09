@@ -2819,3 +2819,27 @@ selection behaviour and map memory limits. See [map tools and layers](MAP_TOOLS_
 for source provenance, limitations, validation and routing contact requirements.
 Live routing awaits a real operator contact; no production deployment or new
 provider account was performed.
+
+## 9 September 2026: deeper responsiveness repair
+
+Measured worldwide camera grouping, browser snapshot reconciliation and backend
+CPU phases after further freeze reports. Removed repeated rejected camera-grid
+passes, cached immutable geometry, preserved unchanged GPU attributes and
+eliminated the snapshot-refresh starvation loop and duplicate initial download.
+Backend bulk work now yields and pure reads/grading use bounded workers.
+
+Review found and fixed buffered-delta ordering at snapshot boundaries, malformed
+refresh handling, post-worker session checks, stale-grade publication and worker
+failure after cancellation. Coverage and retention limits remain in place.
+The ASE backend was restarted locally and authenticated event/health requests
+succeeded. See [performance repair](PERFORMANCE_REPAIR.md),
+[rendering audit](PERF_RENDERING_AUDIT.md) and
+[backend audit](PERF_BACKEND_AUDIT.md) for measured results and verification limits.
+Interactive GPU verification remains outstanding under the browser policy.
+
+Final validation passed 1,356 frontend tests (95.34% statements, 90.37% branches)
+and the final 46-test backend regression group. Earlier backend scoped coverage
+was 91.85%. Production build, type checks, formatting, architecture and scoped
+security checks passed. A 45-second concurrent API check completed all 15 event
+requests and 167 health probes successfully at roughly 65,000 retained records.
+No database migration, production deployment or remote push was performed.

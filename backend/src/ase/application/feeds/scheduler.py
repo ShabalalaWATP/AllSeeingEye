@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
 from ase.application.ports import Clock
+from ase.application.ports.cooperative_feeds import CooperativeEventStore, CooperativeGrader
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector, FeedDeferred
 from ase.application.ports.feed_release import FeedUnavailable, GuardedFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
@@ -190,7 +191,11 @@ class FeedScheduler:
         """No external requests here; caller retains the shared admission/release guard."""
         source_id = connector.spec.id
         events = await self._pipeline.run_cooperatively(raw)
-        result = self._store.upsert(events)
+        result = (
+            await self._store.upsert_cooperatively(events)
+            if isinstance(self._store, CooperativeEventStore)
+            else self._store.upsert(events)
+        )
         finished = self._clock.now()
         latency_ms = (finished - started).total_seconds() * 1000
         entry = self._health.record_success(
@@ -205,23 +210,30 @@ class FeedScheduler:
             changed = set(result.changed_ids)
             fresh = [e for e in events if e.id in changed]
             if self._grader is not None:
-                fresh = self._regraded(fresh)
+                fresh = await self._regraded(fresh)
             await self._bus.publish(
                 BusMessage("event.upsert", {"source_id": source_id, "events": fresh})
             )
         await self._bus.publish(BusMessage("source.health", {"health": entry}))
         return PollOutcome(source_id, ok=True, fetched=len(events), changed=result.changed)
 
-    def _regraded(self, fresh: list[Event]) -> list[Event]:
+    async def _regraded(self, fresh: list[Event]) -> list[Event]:
         """Grades the batch in context and merges any neighbours whose grade moved."""
         assert self._grader is not None  # noqa: S101
         latest = {event.id: event for event in fresh}
-        for event in self._grader.regrade(fresh):
+        graded = (
+            await self._grader.regrade_cooperatively(fresh)
+            if isinstance(self._grader, CooperativeGrader)
+            else self._grader.regrade(fresh)
+        )
+        for event in graded:
             latest[event.id] = event
         for event_id in list(latest):
             stored = self._store.get(event_id)
             if stored is not None:
                 latest[event_id] = stored
+            else:
+                latest.pop(event_id)
         return list(latest.values())
 
     async def _run_connector(self, connector: FeedConnector) -> None:

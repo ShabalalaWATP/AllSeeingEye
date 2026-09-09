@@ -5,8 +5,11 @@ import type { SseMessage, StreamOptions, StreamStatus } from '@/lib/sse';
 
 export class FakeEventStreamClient {
   static instances: FakeEventStreamClient[] = [];
+  static autoConnect = true;
 
-  readonly start = vi.fn();
+  readonly start = vi.fn(() => {
+    if (FakeEventStreamClient.autoConnect) this.options.onStatus('live');
+  });
   readonly stop = vi.fn();
 
   constructor(readonly options: StreamOptions) {
@@ -23,6 +26,7 @@ export class FakeEventStreamClient {
 
   static reset(): void {
     FakeEventStreamClient.instances = [];
+    FakeEventStreamClient.autoConnect = true;
   }
 }
 

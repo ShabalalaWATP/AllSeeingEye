@@ -5,7 +5,7 @@ import type { ViewMode } from '@/stores/globe';
 import type { GlobeEngineHandle } from '../useGlobeEngine';
 import type { useCameras } from './useCameras';
 import { buildCameraLayers } from './cameraLayers';
-import type { CameraCluster } from './cameraClusters';
+import { clusterCameras, type CameraCluster } from './cameraClusters';
 
 /** Keep camera focus, event deselection and measurement gestures consistent. */
 export function useCameraSelection(
@@ -20,23 +20,28 @@ export function useCameraSelection(
     bounds: null,
   });
   useEffect(() => {
+    if (!cameras.enabled) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = engine.onView(() => {
       clearTimeout(timer);
-      timer = setTimeout(
-        () =>
-          setView({
-            zoom: Math.floor(engine.getZoom()),
-            bounds: engine.getViewportBounds?.() ?? null,
-          }),
-        150,
-      );
+      timer = setTimeout(() => {
+        const next = {
+          zoom: Math.floor(engine.getZoom()),
+          bounds: engine.getViewportBounds?.() ?? null,
+        };
+        setView((previous) =>
+          previous.zoom === next.zoom &&
+          JSON.stringify(previous.bounds) === JSON.stringify(next.bounds)
+            ? previous
+            : next,
+        );
+      }, 150);
     });
     return () => {
       clearTimeout(timer);
       unsubscribe();
     };
-  }, [engine]);
+  }, [engine, cameras.enabled]);
   const expandCluster = useCallback(
     (cluster: CameraCluster) => {
       if (!picking)
@@ -63,6 +68,10 @@ export function useCameraSelection(
     },
     [selectCamera, picking, engine],
   );
+  const prepared = useMemo(
+    () => clusterCameras(cameras.visible, view.zoom, cameras.selected?.id ?? null, view.bounds),
+    [cameras.visible, cameras.selected?.id, view],
+  );
   const cameraLayers = useMemo(
     () =>
       buildCameraLayers(
@@ -73,8 +82,9 @@ export function useCameraSelection(
         view.zoom,
         expandCluster,
         view.bounds,
+        prepared,
       ),
-    [cameras.visible, cameras.selected?.id, selectCamera, mode, view, expandCluster],
+    [cameras.visible, cameras.selected?.id, selectCamera, mode, view, expandCluster, prepared],
   );
   return { focusCamera, cameraLayers };
 }

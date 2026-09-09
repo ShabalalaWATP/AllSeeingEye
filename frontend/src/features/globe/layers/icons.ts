@@ -4,6 +4,7 @@
  */
 import { IconLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
+import { sameLayerRows } from '@/lib/map/sameLayerRows';
 
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
@@ -91,6 +92,7 @@ export function buildIconLayer(
   return new IconLayer<LiveEvent>({
     id: 'event-icons',
     data,
+    dataComparator: sameLayerRows,
     pickable: true,
     sizeUnits: 'pixels',
     // GlobeView culls back faces. Tangent icons hide the far hemisphere; their

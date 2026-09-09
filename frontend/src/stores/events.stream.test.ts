@@ -67,12 +67,66 @@ it('handles authority and resync immediately, dropping queued sensor records', (
   const batch = new EventUpdateBatch(() => sink);
   for (const event of ['access.changed', 'event.resync']) {
     batch.receive(upsert('old'));
-    const message = { event, data: '{}', id: null };
+    const message = { event, data: '{"reason":"stream_gap"}', id: null };
     batch.receive(message);
     expect(sink.handleStreamMessage).toHaveBeenLastCalledWith(message);
   }
   vi.advanceTimersByTime(STREAM_BATCH_MS);
   expect(sink.applyUpsert).not.toHaveBeenCalled();
+});
+
+it('preserves queued updates when a resync signal is malformed', () => {
+  const sink = { applyUpsert: vi.fn(), applyExpire: vi.fn(), handleStreamMessage: vi.fn() };
+  const batch = new EventUpdateBatch(() => sink);
+  batch.receive(upsert('valid'));
+  for (const data of ['invalid JSON', '{}', '{"reason":"unrecognised"}'])
+    batch.receive({ event: 'event.resync', data, id: null });
+  vi.advanceTimersByTime(STREAM_BATCH_MS);
+  expect(sink.applyUpsert).toHaveBeenCalledWith([expect.objectContaining({ id: 'valid' })]);
+  expect(sink.handleStreamMessage).not.toHaveBeenCalled();
+});
+
+it('preserves queued tombstones and updates before requesting a bulk refresh', () => {
+  const order: string[] = [];
+  const sink = {
+    applyUpsert: vi.fn(() => order.push('upsert')),
+    applyExpire: vi.fn(() => order.push('expire')),
+    handleStreamMessage: vi.fn(() => order.push('refresh')),
+  };
+  const batch = new EventUpdateBatch(() => sink);
+  batch.receive(upsert('gone'));
+  batch.receive(expire('gone'));
+  batch.receive(upsert('latest'));
+  batch.receive({ event: 'event.resync', data: '{"reason":"snapshot_required"}', id: null });
+  expect(sink.applyExpire).toHaveBeenCalledWith(['gone']);
+  expect(sink.applyUpsert).toHaveBeenCalledWith([expect.objectContaining({ id: 'latest' })]);
+  expect(order).toEqual(['expire', 'upsert', 'refresh']);
+  vi.advanceTimersByTime(STREAM_BATCH_MS);
+  expect(sink.applyUpsert).toHaveBeenCalledOnce();
+});
+
+it('ignores out-of-view deltas without rebuilding the mirror, but removes records leaving it', () => {
+  const store = useEventsStore.getState();
+  store.setCoverageBounds([-10, 40, 10, 60]);
+  const retained = liveEvent({ id: 'visible', point: { lon: 0, lat: 50 } });
+  store.applyUpsert([retained]);
+  store.select(retained.id);
+  const previous = useEventsStore.getState().list;
+  const changed = vi.fn();
+  const off = useEventsStore.subscribe(changed);
+  store.applyUpsert(
+    Array.from({ length: 5_000 }, (_, i) =>
+      liveEvent({ id: `outside-${i}`, point: { lon: 100, lat: 0 } }),
+    ),
+  );
+  store.applyUpsert([retained]);
+  expect(changed).not.toHaveBeenCalled();
+  expect(useEventsStore.getState().list).toBe(previous);
+  store.applyUpsert([{ ...retained, point: { lon: 100, lat: 0 } }]);
+  expect(changed).toHaveBeenCalledOnce();
+  expect(useEventsStore.getState().list).toEqual([]);
+  expect(useEventsStore.getState().selectedId).toBeNull();
+  off();
 });
 
 it('ignores malformed sensor frames and lets metadata bypass without flushing sensors', () => {

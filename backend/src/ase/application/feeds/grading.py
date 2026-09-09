@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+import asyncio
+from collections.abc import Iterator, Mapping, Sequence
+from functools import partial
 
+from ase.application.feeds.cooperative_work import joined_thread_call
 from ase.application.ports import Clock
+from ase.application.ports.cooperative_feeds import CooperativeEventStore
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.domain.events import Event
 from ase.domain.grading import SourceProfile, cutoff_for, grade_events
@@ -39,10 +43,38 @@ class GradingService:
         self._store = store
         self._profiles = profiles
         self._clock = clock
+        self._grade_slot = asyncio.Semaphore(1)
 
     def regrade(self, events: Sequence[Event]) -> list[Event]:
         """Regrades every category the batch touched; returns the events whose grade changed."""
+        changed = [
+            graded.apply()
+            for batch in self._batches(events)
+            for graded in grade_events(batch, self._profiles)
+            if graded.changed
+        ]
+        if changed:
+            self._store.put(changed)
+        return changed
+
+    async def regrade_cooperatively(self, events: Sequence[Event]) -> list[Event]:
         changed: list[Event] = []
+        for batch in self._batches(events):
+            # Pure immutable analysis can leave the API loop; store writes stay local.
+            async with self._grade_slot:
+                graded = await joined_thread_call(partial(grade_events, batch, self._profiles))
+            for offset in range(0, len(graded), 250):
+                changed.extend(
+                    item.apply() for item in graded[offset : offset + 250] if item.changed
+                )
+                await asyncio.sleep(0)
+        if isinstance(self._store, CooperativeEventStore):
+            await self._store.put_grades_cooperatively(changed)
+        elif changed:
+            self._store.put(changed)
+        return changed
+
+    def _batches(self, events: Sequence[Event]) -> Iterator[list[Event]]:
         instruments = [
             event
             for event in events
@@ -50,9 +82,8 @@ class GradingService:
         ]
         # Instrument grading is independent of narrative context. Do not leave
         # most of a large sensor batch ungraded because the topic window is full.
-        for graded in grade_events(instruments, self._profiles):
-            if graded.changed:
-                changed.append(graded.apply())
+        for offset in range(0, len(instruments), 250):
+            yield instruments[offset : offset + 250]
         since = cutoff_for(self._clock.now())
         for category in sorted({event.category for event in events}, key=lambda c: c.value):
             pool = self._store.query(
@@ -64,9 +95,5 @@ class GradingService:
                 if (profile := self._profiles.get(event.source_id)) is None
                 or not profile.instrument
             ]
-            for graded in grade_events(narrative, self._profiles):
-                if graded.changed:
-                    changed.append(graded.apply())
-        if changed:
-            self._store.put(changed)
-        return changed
+            if narrative:
+                yield narrative

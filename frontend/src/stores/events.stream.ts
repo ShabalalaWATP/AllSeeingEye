@@ -1,5 +1,5 @@
 import type { LiveEvent } from '@/lib/api/eventSchemas';
-import { streamExpireSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
+import { streamExpireSchema, streamResyncSchema, streamUpsertSchema } from '@/lib/api/eventSchemas';
 import type { SseMessage } from '@/lib/sse';
 
 export const STREAM_BATCH_MS = 250;
@@ -20,8 +20,19 @@ export class EventUpdateBatch {
 
   receive(message: SseMessage): void {
     if (!['event.upsert', 'event.expire'].includes(message.event)) {
-      // Resync replaces the mirror. Authority changes must never wait behind sensor work.
-      if (message.event === 'event.resync' || message.event === 'access.changed') this.clear();
+      // Keep queued deltas before a soft refresh. Authority changes never wait for sensors.
+      if (message.event === 'event.resync') {
+        let soft = false;
+        try {
+          const parsed = streamResyncSchema.safeParse(JSON.parse(message.data) as unknown);
+          if (!parsed.success) return;
+          soft = parsed.data.reason === 'snapshot_required';
+        } catch {
+          return;
+        }
+        if (soft) this.flush();
+        else this.clear();
+      } else if (message.event === 'access.changed') this.clear();
       this.sink().handleStreamMessage(message);
       return;
     }

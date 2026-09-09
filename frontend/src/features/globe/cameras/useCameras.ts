@@ -146,7 +146,11 @@ export function useCameras() {
         )
       : [];
   }, [catalogue, enabled, providers, query]);
-  const selected = visible.find((camera) => camera.id === selectedId) ?? null;
+  const selected = useMemo(
+    () =>
+      selectedId === null ? null : (visible.find((camera) => camera.id === selectedId) ?? null),
+    [visible, selectedId],
+  );
   const select = useCallback((camera: Camera | null) => setSelectedId(camera?.id ?? null), []);
   const close = useCallback(() => setSelectedId(null), []);
   const toggleProvider = useCallback(

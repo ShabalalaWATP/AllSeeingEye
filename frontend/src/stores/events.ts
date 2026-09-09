@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { boundedEvents, mergeSnapshots } from './events.coverage';
+import { SnapshotRefresh } from './events.refresh';
 
 import { insideCoverage, type CoverageBounds } from './events.geography';
 import { loadCoverageSupplements } from './events.supplements';
@@ -36,6 +37,8 @@ export interface EventsState {
   mirrorCapped: boolean;
   error: string | null;
   selectedId: string | null;
+  /** Flush queued deltas before opening a new snapshot reconciliation journal. */
+  onSnapshotStart: (flush: () => void) => () => void;
   load: () => Promise<void>;
   cancelLoad: () => void;
   applyUpsert: (events: LiveEvent[]) => void;
@@ -84,8 +87,10 @@ function without(
 }
 
 export const useEventsStore = create<EventsState>()((set, get) => {
-  let resyncRequested = false;
-  const needsResync = () => resyncRequested;
+  const snapshotBarriers = new Set<() => void>();
+  const refresh = new SnapshotRefresh(() => {
+    void get().load();
+  });
   let pending: {
     controller: AbortController;
     changes: Map<string, LiveEvent | null>;
@@ -104,8 +109,16 @@ export const useEventsStore = create<EventsState>()((set, get) => {
   return {
     ...initialEventsState,
 
+    onSnapshotStart: (flush) => {
+      snapshotBarriers.add(flush);
+      return () => {
+        snapshotBarriers.delete(flush);
+      };
+    },
+
     load: async () => {
-      resyncRequested = false;
+      for (const flush of snapshotBarriers) flush();
+      refresh.started();
       pending?.controller.abort();
       const request = {
         controller: new AbortController(),
@@ -130,7 +143,6 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           scope,
         );
         if (!isCurrent()) return;
-        if (needsResync()) return;
         if (request.overflow) {
           set({
             error:
@@ -171,13 +183,13 @@ export const useEventsStore = create<EventsState>()((set, get) => {
         if (pending === request) {
           pending = null;
           set({ loading: false });
-          if (needsResync()) void get().load();
+          refresh.finished();
         }
       }
     },
 
     cancelLoad: () => {
-      resyncRequested = false;
+      refresh.cancel();
       pending?.controller.abort();
       pending = null;
       set({ loading: false });
@@ -190,17 +202,18 @@ export const useEventsStore = create<EventsState>()((set, get) => {
 
     applyUpsert: (events) => {
       if (events.length === 0) return;
-      const merged = { ...get().byId };
+      const current = get();
+      let merged = current.byId;
       for (const event of events) {
-        if (insideCoverage(event, get().coverageBounds)) {
-          merged[event.id] = event;
-          record(event.id, event);
-        } else {
-          Reflect.deleteProperty(merged, event.id);
-          record(event.id, null);
-        }
+        const visible = insideCoverage(event, current.coverageBounds);
+        record(event.id, visible ? event : null);
+        if (visible ? merged[event.id] === event : !(event.id in merged)) continue;
+        if (merged === current.byId) merged = { ...current.byId };
+        if (visible) merged[event.id] = event;
+        else Reflect.deleteProperty(merged, event.id);
       }
-      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, get().selectedId);
+      if (merged === current.byId) return;
+      const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, current.selectedId);
       const selectedId = get().selectedId;
       set({
         byId,
@@ -239,23 +252,23 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       } else if (message.event === 'event.resync') {
         const parsed = streamResyncSchema.safeParse(payload);
         if (!parsed.success) return;
-        if (parsed.data.reason !== 'snapshot_required')
-          set({
-            byId: {},
-            list: [],
-            selectedId: null,
-            stats: null,
-            loaded: false,
-            snapshotCount: null,
-            snapshotLimited: false,
-            mirrorCapped: false,
-          });
-        if (pending) {
-          // Several bulk feeds can finish together. Finish this bounded snapshot,
-          // then reconcile once more instead of repeatedly aborting useful work.
-          resyncRequested = true;
+        if (parsed.data.reason === 'snapshot_required') {
+          // A bulk update is a refresh hint, not evidence that this snapshot is unsafe.
+          // Publish useful completed work and coalesce one bounded follow-up.
+          refresh.request(pending !== null);
           return;
         }
+        set({
+          byId: {},
+          list: [],
+          selectedId: null,
+          stats: null,
+          loaded: false,
+          snapshotCount: null,
+          snapshotLimited: false,
+          mirrorCapped: false,
+        });
+        // A real stream gap invalidates the in-flight snapshot and its delta journal.
         get().cancelLoad();
         void get().load();
       }
@@ -286,7 +299,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
     },
 
     reset: () => {
-      resyncRequested = false;
+      refresh.cancel();
       pending?.controller.abort();
       pending = null;
       set({ ...initialEventsState });
