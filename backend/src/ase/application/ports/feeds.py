@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Protocol
+from typing import Literal, Protocol
 
 from ase.domain.events import BoundingBox, Category, Event
 from ase.domain.evidence_time import EvidenceTimeBasis
@@ -34,6 +34,7 @@ class EventQuery:
     include_unknown_dates: bool = False
     military: bool | None = None
     offset: int = 0
+    sampling: Literal["newest", "geographic"] = "newest"
 
 
 @dataclass(frozen=True, slots=True)

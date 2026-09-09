@@ -1,5 +1,98 @@
 # NASA FIRMS thermal observations
 
+## Worldwide sensor coverage
+
+The adapters support both NOAA-20 and NOAA-21, with separate `firms_viirs_noaa20`
+and `firms_viirs_noaa21` Area API identities and `firms_public_noaa20` and
+`firms_public_noaa21` public-download identities. Both use the same fixed NASA
+host and, where configured, the same server-side MAP_KEY. Product identifiers
+are an allowlist, not administrator-provided URL fragments. Each sensor retains
+its own acquisition time, sensor code, measurement quality and health.
+
+NOAA-21 complements NOAA-20 coverage through additional observations; it is not a
+second independent publisher corroborating a claim. Cloud cover and orbit timing
+still create gaps. The API defaults to `world`; changing `ASE_FIRMS_AREA` restricts
+the optional Area API collection, while the public files remain worldwide.
+
+The keyed Area API requests two UTC calendar dates (today and yesterday), not
+only today's file. A local restart at 00:29 UTC exposed a valid but empty
+NOAA-20 response for the new date, leaving the fresh in-memory map without FIRMS
+observations. The two-date window preserves previous-day detections across that
+boundary. NASA documents this [day-range behaviour](https://firms.modaps.eosdis.nasa.gov/api/area/).
+One guarded NOAA-20 two-date probe returned 55,270 validated observations
+(sampled to 10,000) in 61.74 seconds, exceeding the scheduler's previous
+60-second deadline. Only the two fixed keyed sensor IDs now receive a
+120-second default fetch allowance. Other feeds keep 60 seconds, and explicitly
+configured scheduler deadlines still override both defaults. HTTP timeouts,
+input bounds and the single parser-worker limit remain unchanged.
+This is not an exact rolling 48-hour window; acquisition timestamps remain visible
+and the existing two-day timestamp validation, input and display caps still apply.
+
+The per-sensor bound is now 16 MiB and 150,000 rows. The previous 30,000-row API
+limit rejected a real NOAA-21 world response, and its published 24-hour file
+contained 111,691 records. This larger input remains bounded, parses off the API
+event loop, and uses the existing bounded store and snapshot-resynchronisation
+path rather than streaming an entire sensor batch into the browser.
+
+Every row is validated, but at most 10,000 observations per sensor are returned
+for display. Selection preserves the newest observation in every occupied
+5-degree geographic cell, then fills remaining places with the newest detections.
+This is a representative map sample, not a fire count or complete coverage.
+Each returned record includes `collection_total_observations`,
+`collection_returned_observations` and `collection_sampling_method`; sampled
+records also carry a plain-language summary note. Small batches retain their
+input order and duplicate identities retain the last provider measurement.
+
+Selection occurs while reading rows: the parser holds at most 10,000 newest
+event objects plus 2,592 cell representatives, together with bounded identity
+bookkeeping. It does not first retain all 150,000 full event objects. One parser
+worker per event loop runs at a time, and cancellation retains its slot until
+the underlying thread has finished. The downloaded NOAA-21 example now returns
+10,000 records covering 561 occupied cells. Their conservative store estimate is
+70.6 MiB including sampling metadata, versus 642.9 MiB for the complete input.
+The two-sensor output estimate is therefore about 141.2 MiB. Global store limits
+still apply, and per-poll selection alone must not be mistaken for a cumulative
+historical retention limit.
+
+The initial 20,000-record sensor cap still filled the live 512 MiB store and
+evicted all retained conflict, news and humanitarian records. The reduced
+10,000-record cap responds to that observed shared-memory pressure. Replaying
+the saved NOAA-21 input retained all 561 occupied cells without another upstream
+request; it halves the measured FIRMS retention estimate. This reserves more
+capacity for other topics but does not guarantee their retention under every load.
+
+The store additionally enforces a cumulative 10,000-record cap per physical
+sensor across both its public and keyed source IDs. NOAA-20 and NOAA-21 together
+therefore retain at most 20,000 records, even after repeated polls or activating
+a key while public collection exists. This cap runs before global byte eviction
+on both insertion and grading updates, and also during pruning. It preserves
+5-degree cell representatives before filling with newest acquisitions. Existing
+expiry/resynchronisation messages announce removed records, and immediately
+evicted incoming records are not republished as live changes. Other source types
+retain their existing eviction policy. The global byte budget still applies and
+may retain fewer records if other application data needs the shared capacity.
+
+That public file contained two negative FRP values. The adapter preserves these
+raw provider values in `reported_fire_radiative_power_mw`, sets usable power to
+null and attaches an explicit measurement-quality warning. It does not invent
+a cause, clamp the values to zero, or discard the remaining global observations.
+Malformed coordinates, timestamps, non-finite values and wrong-sensor rows still
+reject the batch. All 111,691 records in that downloaded file passed the updated
+contract, with the two power values explicitly flagged.
+The authenticated NOAA-21 Area API then returned 51,179 validated observations,
+including two quality flags, with the newest acquisition at 20:26 UTC on
+8 September 2026. This was an actual bounded, DNS-pinned request using the existing
+development MAP_KEY; it does not establish complete or uninterrupted coverage.
+
+Suomi NPP is not added as a new default dependency: NASA announces that delivery
+ends on 1 November 2026 and recommends NOAA-20/21 instead. See the official
+[Area API products](https://firms.modaps.eosdis.nasa.gov/api/area/),
+[VIIRS description and transition notice](https://firms.modaps.eosdis.nasa.gov/content/descriptions/FIRMS_VIIRS_Firehotspots.html),
+and [instrument outage history](https://firms.modaps.eosdis.nasa.gov/notifications/firms/outages.html).
+
+The historical verification notes below record the limits and configuration at
+the time of each earlier milestone; the bounds above supersede them.
+
 The default public connector downloads NASA's published NOAA-20 VIIRS 24-hour CSV
 without a key (`firms_public_noaa20`). It uses the fixed official URL published in
 NASA's [Active Fire Data catalogue](https://firms.modaps.eosdis.nasa.gov/active_fire/).

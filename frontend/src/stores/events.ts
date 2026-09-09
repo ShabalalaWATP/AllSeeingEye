@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { boundedEvents, mergeSnapshots } from './events.coverage';
 
+import { insideCoverage, type CoverageBounds } from './events.geography';
 import { loadCoverageSupplements } from './events.supplements';
 
 import { fetchEvents, fetchStats } from '@/lib/api/events';
@@ -22,6 +23,8 @@ export interface EventsState {
   hidden: Category[];
   /** ISO 3166-1 alpha-2 code of the nation filter, or null for the whole world. */
   country: string | null;
+  coverageBounds: CoverageBounds | null;
+  setCoverageBounds: (bounds: CoverageBounds | null) => void;
   /** Show only events published within this many hours, or null for the whole window. */
   windowHours: number | null;
   stats: StoreStats | null;
@@ -51,6 +54,7 @@ export const initialEventsState = {
   list: [] as LiveEvent[],
   hidden: [] as Category[],
   country: null as string | null,
+  coverageBounds: null as CoverageBounds | null,
   windowHours: null as number | null,
   stats: null as StoreStats | null,
   status: 'offline' as StreamStatus,
@@ -110,14 +114,21 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       };
       pending = request;
       const isCurrent = () => pending === request && !request.controller.signal.aborted;
+      const bounds = get().coverageBounds;
+      const scope = { sampling: 'geographic' as const, ...(bounds ? { bbox: bounds } : {}) };
       set({ loading: true, error: null });
       try {
         const [events, stats] = await Promise.all([
-          fetchEvents({ limit: SNAPSHOT_LIMIT }, request.controller.signal),
+          fetchEvents({ limit: SNAPSHOT_LIMIT, ...scope }, request.controller.signal),
           fetchStats(request.controller.signal),
         ]);
         if (!isCurrent()) return;
-        const supplement = await loadCoverageSupplements(events, stats, request.controller.signal);
+        const supplement = await loadCoverageSupplements(
+          events,
+          stats,
+          request.controller.signal,
+          scope,
+        );
         if (!isCurrent()) return;
         if (needsResync()) return;
         if (request.overflow) {
@@ -129,6 +140,7 @@ export const useEventsStore = create<EventsState>()((set, get) => {
           return;
         }
         const merged = mergeSnapshots(events, supplement.events);
+        for (const [id, event] of merged) if (!insideCoverage(event, bounds)) merged.delete(id);
         const snapshotCount = merged.size;
         for (const [id, event] of request.changes) {
           if (event === null) merged.delete(id);
@@ -171,12 +183,22 @@ export const useEventsStore = create<EventsState>()((set, get) => {
       set({ loading: false });
     },
 
+    setCoverageBounds: (coverageBounds) => {
+      get().cancelLoad();
+      set({ coverageBounds });
+    },
+
     applyUpsert: (events) => {
       if (events.length === 0) return;
       const merged = { ...get().byId };
       for (const event of events) {
-        merged[event.id] = event;
-        record(event.id, event);
+        if (insideCoverage(event, get().coverageBounds)) {
+          merged[event.id] = event;
+          record(event.id, event);
+        } else {
+          Reflect.deleteProperty(merged, event.id);
+          record(event.id, null);
+        }
       }
       const byId = boundedEvents(merged, MAX_CLIENT_EVENTS, get().selectedId);
       const selectedId = get().selectedId;

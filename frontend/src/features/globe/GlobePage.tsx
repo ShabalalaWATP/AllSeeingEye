@@ -53,6 +53,7 @@ import { useTrafficSelection } from './useTrafficSelection';
 
 import { clusteringZoomFor } from './layers/clusters';
 import { useGlobeEngine } from './useGlobeEngine';
+import { useViewportCoverage } from './useViewportCoverage';
 import { useLiveEvents } from './useLiveEvents';
 import { hasWebGl2 } from './webgl';
 
@@ -85,6 +86,7 @@ export default function GlobePage() {
   });
   const britishGrid = useBritishGrid(engine);
   useLiveEvents();
+  useViewportCoverage(engine, supported && visible);
   const measurement = useMapMeasurement(engine, supported && !opsRoom);
   const measured = useMemo(
     () => measurementLayers(measurement.points, measurement.mode, mode === 'map'),

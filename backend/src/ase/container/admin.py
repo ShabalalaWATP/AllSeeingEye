@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.firms_runtime import FirmsConnectionProbe
+from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.llm.bedrock import BedrockConverseGateway
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
@@ -52,6 +53,7 @@ if TYPE_CHECKING:
 class AdminWiring:
     if TYPE_CHECKING:
         http: FeedHttpClient
+        public_firms_http: FeedHttpClient
         cipher: SecretCipher
         clock: Clock
         llm: LlmGateway
@@ -77,6 +79,10 @@ class AdminWiring:
         self.llm = self._llm_gateway
         self.model_discovery = self._llm_gateway
 
+    def _resume_firms(self) -> None:
+        for sensor in FIRMS_SENSORS:
+            self.scheduler.resume(f"firms_viirs_{sensor.suffix}")
+
     def admin_firms_credentials(self, session: AsyncSession) -> AdminFirmsCredentials:
         r = self.repositories(session)
         return AdminFirmsCredentials(
@@ -84,12 +90,12 @@ class AdminWiring:
             r.refresh_tokens,
             SqlFirmsCredentials(session),
             self.cipher,
-            FirmsConnectionProbe(self.http, self.clock),
+            FirmsConnectionProbe(self.public_firms_http, self.clock),
             self.clock,
             self.limiter,
             self._auditor(r),
             r.uow,
-            lambda: self.scheduler.resume("firms_viirs_noaa20"),
+            self._resume_firms,
             area=self.settings.firms_area,
             environment_managed=bool(self.settings.firms_map_key),
             environment_disabled="firms_viirs_noaa20" in self.settings.disabled_feed_ids,

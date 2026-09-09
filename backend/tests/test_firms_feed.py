@@ -129,7 +129,7 @@ async def test_connector_uses_protected_request_and_public_metadata():
     class Http:
         async def get_secret_bytes(self, target):
             assert KEY not in repr(target)
-            assert target.url.endswith(f"/{KEY}/VIIRS_NOAA20_NRT/0,0,10,10/1")
+            assert target.url.endswith(f"/{KEY}/VIIRS_NOAA20_NRT/0,0,10,10/2")
             return payload(ROW)
 
     connector = FirmsConnector(Http(), FakeClock(NOW), KEY, "0,0,10,10")

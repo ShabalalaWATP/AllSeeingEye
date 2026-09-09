@@ -9,8 +9,10 @@ import pytest
 
 from ase.adapters.feeds.firms import SPEC, FirmsConnector
 from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
+from ase.adapters.feeds.firms_sensors import NOAA20, NOAA21
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
+from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.application.ports.feed_release import FeedUnavailable
 from ase.domain.errors import Unauthenticated
 from feeds_helpers import make_event
@@ -103,7 +105,8 @@ async def test_release_guard_rechecks_source_after_initial_admission(
         assert not allowed
 
 
-async def test_environment_precedence_and_disabled_veto(container, monkeypatch):
+@pytest.mark.parametrize("sensor", [NOAA20, NOAA21])
+async def test_environment_precedence_and_disabled_veto(container, monkeypatch, sensor):
     monkeypatch.setattr(
         SqlFirmsCredentials,
         "get",
@@ -119,6 +122,7 @@ async def test_environment_precedence_and_disabled_veto(container, monkeypatch):
         environment_key=KEY,
         area="world",
         disabled=False,
+        sensor=sensor,
     )
     batch = await runtime.fetch_batch()
     assert batch.generation == -1
@@ -128,6 +132,34 @@ async def test_environment_precedence_and_disabled_veto(container, monkeypatch):
     with pytest.raises(FeedUnavailable):
         await runtime.fetch_batch()
     assert fetch.await_count == 1
+
+
+@pytest.mark.parametrize("source_id", [SPEC.id, "firms_viirs_noaa21"])
+@pytest.mark.parametrize("environment_key", [KEY, None])
+async def test_noaa21_disabled_parent_or_sensor_never_contacts_nasa(
+    container, monkeypatch, source_id, environment_key
+):
+    controls = AsyncMock(return_value={source_id: False})
+    monkeypatch.setattr(SqlSourceControlRepository, "all", controls)
+    credentials = AsyncMock(side_effect=AssertionError("Disabled source must not read credentials"))
+    monkeypatch.setattr(SqlFirmsCredentials, "get", credentials)
+    fetch = AsyncMock(side_effect=AssertionError("Disabled source must not contact NASA"))
+    monkeypatch.setattr(FirmsConnector, "fetch", fetch)
+    runtime = ManagedFirmsConnector(
+        container.session_factory,
+        container.http,
+        container.clock,
+        container.cipher,
+        environment_key=environment_key,
+        area="world",
+        disabled=False,
+        sensor=NOAA21,
+    )
+    with pytest.raises(FeedUnavailable, match="disabled by an administrator"):
+        await runtime.fetch_batch()
+    controls.assert_awaited_once()
+    credentials.assert_not_awaited()
+    fetch.assert_not_awaited()
 
 
 async def test_unreadable_key_and_upstream_exception_are_redacted(

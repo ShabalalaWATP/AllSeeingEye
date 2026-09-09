@@ -14,6 +14,7 @@ export async function loadCoverageSupplements(
   events: LiveEvent[],
   stats: StoreStats,
   signal: AbortSignal,
+  scope: Pick<EventsQuery, 'bbox' | 'sampling'> = {},
 ): Promise<{ events: LiveEvent[]; error: string | null; limited: boolean }> {
   const requests: { label: string; query: EventsQuery }[] = [];
   const count = (category: 'maritime' | 'space' | 'disaster' | 'aviation') =>
@@ -59,12 +60,19 @@ export async function loadCoverageSupplements(
     requests.push({
       label: 'FIRMS thermal detection',
       query: {
-        sources: ['firms_viirs_noaa20', 'firms_public_noaa20'],
+        sources: [
+          'firms_viirs_noaa20',
+          'firms_public_noaa20',
+          'firms_viirs_noaa21',
+          'firms_public_noaa21',
+        ],
         limit: FIRMS_SNAPSHOT_LIMIT,
       },
     });
   }
-  const results = await Promise.allSettled(requests.map(({ query }) => fetchEvents(query, signal)));
+  const results = await Promise.allSettled(
+    requests.map(({ query }) => fetchEvents({ ...query, ...scope }, signal)),
+  );
   const additional: LiveEvent[] = [];
   const errors: string[] = [];
   let limited = false;

@@ -24,7 +24,18 @@ def test_explicit_focus_and_derivatives(source_id: str, countries: tuple[str, ..
     assert coverage.note
 
 
-@pytest.mark.parametrize("source_id", ["bbc_world", "gov_uk_travel_advice", "aisstream"])
+@pytest.mark.parametrize(
+    "source_id",
+    [
+        "bbc_world",
+        "gov_uk_travel_advice",
+        "aisstream",
+        "firms_viirs_noaa21",
+        "firms_public_noaa21",
+        "adsb_global",
+        "adsb_viewport",
+    ],
+)
 def test_international_feeds_are_not_assigned_publisher_country(source_id: str) -> None:
     coverage = source_coverage(source_id)
     assert coverage.scope == "global"

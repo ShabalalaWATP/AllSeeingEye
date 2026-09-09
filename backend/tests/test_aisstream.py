@@ -184,3 +184,29 @@ def test_registry_is_keyed_and_can_be_disabled():
 def test_redirect_refused():
     connection = aisstream._DirectConnection(aisstream.URL)
     assert isinstance(connection.process_redirect(ValueError("redirect")), FeedFetchError)
+
+
+def test_long_range_positions_require_current_position_and_correct_sentinels():
+    data = message("LongRangeAisBroadcastMessage")
+    report = data["Message"]["LongRangeAisBroadcastMessage"]
+    report.update(PositionLatency=False, Sog=63, Cog=511)
+    event = parse_position(data, NOW)
+    assert event is not None
+    assert event.attributes["speed_over_ground_knots"] is None
+    assert event.attributes["course_over_ground_deg"] is None
+    assert event.attributes["coordinate_resolution_arcminutes"] == 0.1
+    report["PositionLatency"] = True
+    assert parse_position(data, NOW) is None
+    del report["PositionLatency"]
+    assert parse_position(data, NOW) is None
+
+
+async def test_stream_interruption_preserves_valid_positions_and_explains_partial_result(
+    monkeypatch,
+):
+    socket, _ = setup(monkeypatch, [message(), {"error": "secret-never-disclose"}])
+    connector = aisstream.AisStreamConnector("key", FakeClock(NOW))
+    assert len(await connector.fetch()) == 1
+    assert "interrupted" in connector.warning
+    assert "secret" not in connector.warning
+    assert "LongRangeAisBroadcastMessage" in socket.sent[0]["FilterMessageTypes"]

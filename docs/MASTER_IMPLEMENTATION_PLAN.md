@@ -614,3 +614,24 @@ bounded collector repair; these are changing samples, not complete inventories.
 See [rendering repair](PERFORMANCE_REPAIR.md) and [camera coverage](CAMERA_FEEDS.md)
 for evidence, checks and remaining limits. No database migration or production
 deployment was performed; no remote is configured for this repository.
+
+
+## 9 September 2026: worldwide collection and geographic map loading
+
+Implemented a distributed whole-Earth aircraft sweep and bounded authenticated
+viewport collection interests, long-range AIS parsing and partial-window recovery,
+NOAA-21 thermal observations alongside NOAA-20, geographic API sampling and
+single-scope browser loading. Kept the 5,000-browser-event limit. FIRMS parsing and
+cumulative sensor retention are bounded before global memory eviction; source
+family controls agree across admission and administration.
+
+See [worldwide coverage](WORLDWIDE_COVERAGE.md) for the layer matrix, validation
+results and access limits. Simultaneous unrestricted worldwide flights, continuous
+satellite AIS, undisclosed spacecraft and every CCTV camera are not claimed.
+Further licensed provider activation requires suitable access; no purchase,
+credential creation, database migration or production deployment was performed.
+
+Final live checks also identified and fixed FIRMS UTC-midnight gaps and a measured
+61.74-second response exceeding the former deadline. Both NASA sensors loaded
+successfully after the fixes, alongside other categories at 339.1 MiB estimated
+store use within the 512 MiB budget. See the worldwide coverage validation record.

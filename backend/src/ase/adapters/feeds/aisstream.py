@@ -49,8 +49,17 @@ class AisStreamConnector:
     def __init__(self, key: str, clock: Clock) -> None:
         self._key, self._clock = key, clock
         self._classifications = VesselClassificationCache()
+        self._warning: str | None = None
+
+    @property
+    def warning(self) -> str | None:
+        return self._warning
+
+    def request_retry(self) -> None:
+        """Retry timing remains under the scheduler, with no extra socket opened."""
 
     async def fetch(self) -> list[Event]:
+        self._warning = None
         events: dict[str, Event] = {}
         try:
             address = await assert_public_host("https://stream.aisstream.io/v0/stream")
@@ -75,6 +84,7 @@ class AisStreamConnector:
                                 "PositionReport",
                                 "StandardClassBPositionReport",
                                 "ExtendedClassBPositionReport",
+                                "LongRangeAisBroadcastMessage",
                                 "ShipStaticData",
                                 "StaticDataReport",
                             ],
@@ -98,14 +108,25 @@ class AisStreamConnector:
                                 ):
                                     events[event.id] = event
                             if len(events) >= MAX_VESSELS:
+                                self._warning = (
+                                    "Vessel collection limit reached; coverage is a bounded sample."
+                                )
                                 break
+                        else:
+                            self._warning = (
+                                "Message collection limit reached; coverage is a bounded sample."
+                            )
                 except TimeoutError:
                     pass
         except Exception:
             # Provider errors can echo credentials; never put their bodies in health/logs.
-            raise FeedFetchError(
-                "AISStream connection unavailable; check key and provider status"
-            ) from None
+            if not events:
+                raise FeedFetchError(
+                    "AISStream connection unavailable; check key and provider status"
+                ) from None
+            self._warning = (
+                "Stream interrupted; retaining valid positions received before the interruption."
+            )
         if not events:
             raise FeedFetchError(
                 "AISStream returned no fresh vessel positions in the collection window"

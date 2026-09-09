@@ -115,3 +115,12 @@ formatting, strict mypy and both architecture contracts passed. No frontend code
 provider credentials, database schema or dependency versions changed. Browser
 visual verification and successful live active-catalogue population remain
 unclaimed.
+
+
+## 9 September: worldwide map retrieval
+
+The [worldwide coverage update](WORLDWIDE_COVERAGE.md) supersedes earlier browser
+loading details: geographic sampling occurs before API limits, viewport requests
+fetch relevant retained records, and all supplements share that scope. Browser
+capacity remains 5,000. Provider reception, sampling and source freshness limits
+still apply. See the update for collection changes and measured validation.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query
 
@@ -55,6 +55,7 @@ async def list_events(
         ),
     ] = None,
     offset: Annotated[int, Query(ge=0, le=15_000)] = 0,
+    sampling: Literal["newest", "geographic"] = "newest",
 ) -> EventsOut:
     query = EventQuery(
         categories=parse_categories(categories),
@@ -67,7 +68,9 @@ async def list_events(
         limit=limit,
         military=military,
         offset=offset,
+        sampling=sampling,
     )
+    container.map_interests.request(user.id, query)
     items = [EventOut.from_event(event) for event in container.store.query(query)]
     return EventsOut(items=items, count=len(items))
 

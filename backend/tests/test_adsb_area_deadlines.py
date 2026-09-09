@@ -1,11 +1,13 @@
 """Slow regional providers cannot discard successful traffic or starve later areas."""
 
 import asyncio
+from unittest.mock import AsyncMock
 
 import pytest
 
+from ase.adapters.feeds.adsb_global import AdsbGlobalConnector
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, WatchArea
-from ase.adapters.feeds.http import FeedFetchError
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpStatusError
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector
 from feeds_helpers import NOW, FakeClock
 
@@ -61,7 +63,7 @@ async def test_all_failed_regions_report_failure_without_claiming_success(monkey
         await AdsbAreaConnector(SlowRegions(), FakeClock(NOW), AREAS[1:3]).fetch()
 
 
-async def test_successful_next_poll_clears_partial_warning(monkeypatch):
+async def test_successful_empty_poll_replaces_failure_with_explicit_empty_status(monkeypatch):
     monkeypatch.setattr("ase.adapters.feeds.adsb_watch.AREA_REQUEST_TIMEOUT_SECONDS", 0.01)
     http = SlowRegions()
     connector = AdsbAreaConnector(http, FakeClock(NOW), AREAS[:2])
@@ -73,4 +75,39 @@ async def test_successful_next_poll_clears_partial_warning(monkeypatch):
 
     http.get_json = available
     assert await connector.fetch() == []
-    assert connector.warning is None
+    assert "queries succeeded" in connector.warning
+    assert "failed" not in connector.warning
+
+
+@pytest.mark.parametrize("status", [403, 429, 503, "secret-status", True, 999])
+async def test_http_diagnostics_keep_only_valid_numeric_codes(status):
+
+    http = AsyncMock()
+    http.get_json.side_effect = FeedHttpStatusError(status, "https://private/?key=secret")
+    connector = AdsbAreaConnector(http, FakeClock(NOW), AREAS[:2])
+    with pytest.raises(FeedFetchError) as captured:
+        await connector.fetch()
+    diagnostic = str(captured.value) + connector.warning
+    assert "2 failed queries" in diagnostic
+    assert "secret" not in diagnostic and "https" not in diagnostic
+    if type(status) is int and 100 <= status <= 599:
+        assert f"{status} (2)" in diagnostic
+    else:
+        assert "HTTP statuses" not in diagnostic
+
+
+async def test_global_warning_retains_partial_http_failure_counts():
+
+    http = AsyncMock()
+    http.get_json.side_effect = [
+        FeedHttpStatusError(429, "https://private/?key=secret"),
+        *[{"ac": []} for _ in range(23)],
+    ]
+    connector = AdsbGlobalConnector(http, FakeClock(NOW))
+    connector._request_interval = 0
+    assert await connector.fetch() == []
+    assert "Sampled worldwide sweep" in connector.warning
+    assert "23/24 areas retrieved" in connector.warning
+    assert "1 failed queries" in connector.warning
+    assert "429 (1)" in connector.warning
+    assert "secret" not in connector.warning

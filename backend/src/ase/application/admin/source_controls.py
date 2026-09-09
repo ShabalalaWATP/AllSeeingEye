@@ -119,10 +119,14 @@ class AdminSourceControls:
                 "This source is disabled in the operator environment configuration."
             )
         overrides = await self._controls.all()
-        if enabled and any(not overrides.get(parent, True) for parent in keys[1:]):
-            raise InvalidRequest(
-                "Enable this source's parent source before enabling its research variant."
-            )
+        if enabled:
+            for parent in keys[1:]:
+                if not overrides.get(parent, True):
+                    spec = self._specs.get(parent)
+                    name = spec.name if spec is not None else parent
+                    raise InvalidRequest(
+                        f"Enable the parent source ({name}) before enabling this source."
+                    )
         await self._controls.set(source_id, enabled, self._clock.now(), claims.user_id)
         await self._auditor.record(
             AuditAction.SOURCE_ACTIVATION_CHANGED,

@@ -1550,6 +1550,20 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "sampling",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "newest",
+                "geographic"
+              ],
+              "type": "string",
+              "default": "newest",
+              "title": "Sampling"
+            }
           }
         ],
         "responses": {

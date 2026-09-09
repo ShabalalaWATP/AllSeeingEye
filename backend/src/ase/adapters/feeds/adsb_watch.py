@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -20,7 +21,7 @@ from typing import Any
 
 from ase.adapters.feeds.adsb import adsb_spec, aircraft_event, records
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, FeedHttpStatusError, NotModified
 from ase.application.ports import Clock
 from ase.domain.events import Event, Reliability
 
@@ -139,9 +140,13 @@ class AdsbAreaConnector:
         areas: Sequence[WatchArea] | None = None,
         *,
         classifications: AircraftClassificationCache | None = None,
+        max_areas_per_poll: int | None = None,
+        request_interval: float = 0.0,
     ) -> None:
         self._http = http
         self._clock = clock
+        self._max_areas_per_poll = max_areas_per_poll
+        self._request_interval = request_interval
         self._areas = tuple(areas) if areas is not None else load_watch_areas()
         self._classifications = classifications or AircraftClassificationCache()
         self._start_area = 0
@@ -163,9 +168,18 @@ class AdsbAreaConnector:
         events: dict[str, Event] = {}
         start = self._start_area
         areas = self._areas[start:] + self._areas[:start]
+        if self._max_areas_per_poll is not None:
+            areas = areas[: self._max_areas_per_poll]
         deadline = asyncio.get_running_loop().time() + AREA_FETCH_BUDGET_SECONDS
         successful = attempted = 0
+        statuses: Counter[int] = Counter()
         for offset, area in enumerate(areas):
+            if offset and self._request_interval:
+                await asyncio.sleep(
+                    min(
+                        self._request_interval, max(0, deadline - asyncio.get_running_loop().time())
+                    )
+                )
             remaining = deadline - asyncio.get_running_loop().time()
             if remaining <= 0 or len(events) >= MAX_AREA_EVENTS:
                 break
@@ -175,6 +189,10 @@ class AdsbAreaConnector:
             try:
                 async with asyncio.timeout(min(AREA_REQUEST_TIMEOUT_SECONDS, remaining)):
                     data = await self._http.get_json(area.url, conditional=False)
+            except FeedHttpStatusError as exc:
+                # Retain only validated numeric codes, never exception URLs or bodies.
+                _record_http_status(statuses, exc.status_code)
+                continue
             except (FeedFetchError, NotModified, TimeoutError):
                 continue
             successful += 1
@@ -193,13 +211,45 @@ class AdsbAreaConnector:
                     await asyncio.sleep(0)
                     if asyncio.get_running_loop().time() >= deadline:
                         break
-        if successful < len(areas) or len(events) >= MAX_AREA_EVENTS:
-            self._warning = (
-                f"Partial regional coverage: {successful}/{len(areas)} areas retrieved; "
-                "remaining or unavailable regions rotate through subsequent polls."
-            )
-        if attempted == len(areas) and areas:
+        diagnostics, self._warning = _area_diagnostics(
+            attempted, successful, len(areas), len(events), statuses
+        )
+        if attempted == len(self._areas) and areas:
             self._start_area = (start + 1) % len(areas)
         if attempted and not successful:
-            raise FeedFetchError("ADS-B regional queries returned no successful responses.")
+            raise FeedFetchError(
+                "ADS-B regional queries returned no successful responses. " + diagnostics
+            )
         return list(events.values())
+
+
+def _area_diagnostics(
+    attempted: int, successful: int, total: int, event_count: int, statuses: Counter[int]
+) -> tuple[str, str | None]:
+    diagnostics = (
+        f"{attempted - successful} failed queries; {total - attempted} unattempted; "
+        f"{event_count} valid aircraft retained."
+    )
+    if statuses:
+        diagnostics += (
+            " HTTP statuses: "
+            + ", ".join(f"{code} ({count})" for code, count in sorted(statuses.items()))
+            + "."
+        )
+    warning = None
+    if successful < total or event_count >= MAX_AREA_EVENTS:
+        warning = (
+            f"Partial regional coverage: {successful}/{total} areas retrieved; "
+            f"{diagnostics} Remaining or unavailable regions rotate through subsequent polls."
+        )
+    elif successful and not event_count:
+        warning = (
+            f"{successful}/{total} regional queries succeeded; "
+            "no valid current aircraft positions returned."
+        )
+    return diagnostics, warning
+
+
+def _record_http_status(statuses: Counter[int], status: object) -> None:
+    if type(status) is int and 100 <= status <= 599:
+        statuses[status] += 1

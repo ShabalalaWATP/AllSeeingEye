@@ -41,7 +41,7 @@ class FeedScheduler:
         health: HealthRegistry,
         clock: Clock,
         *,
-        fetch_timeout: timedelta = timedelta(seconds=60),
+        fetch_timeout: timedelta | None = None,
         prune_interval: timedelta = timedelta(seconds=60),
         jitter: float = 0.1,
         sleep: SleepFn = asyncio.sleep,
@@ -118,7 +118,13 @@ class FeedScheduler:
         try:
             if self._admission is not None and not await self._admission.enabled(source_id):
                 raise FeedUnavailable("Disabled by administrator.")
-            async with asyncio.timeout(self._fetch_timeout.total_seconds()):
+            # World FIRMS responses have exceeded 60s in measured collection.
+            # Explicit caller timeouts still override these fixed-source defaults.
+            timeout = self._fetch_timeout
+            if timeout is None:
+                seconds = 120 if source_id in {"firms_viirs_noaa20", "firms_viirs_noaa21"} else 60
+                timeout = timedelta(seconds=seconds)
+            async with asyncio.timeout(timeout.total_seconds()):
                 if isinstance(connector, GuardedFeedConnector):
                     generation = await connector.current_generation()
                 batch = (

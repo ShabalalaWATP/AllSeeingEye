@@ -7,6 +7,8 @@ from collections.abc import Iterable, Mapping
 from datetime import datetime
 from heapq import nlargest
 
+from ase.adapters.store.firms_retention import firms_evictions
+from ase.adapters.store.geographic import geographic_page
 from ase.application.feeds.budgets import (
     DEFAULT_MEMORY_BUDGET_BYTES,
     VESSEL_POSITION_AGE,
@@ -138,7 +140,12 @@ class InMemoryEventStore:
                 changed_ids.append(event.id)
         self._capture_evictions()
         return UpsertResult(
-            added=added, updated=updated, unchanged=unchanged, changed_ids=tuple(changed_ids)
+            added=added,
+            updated=updated,
+            unchanged=unchanged,
+            changed_ids=tuple(
+                identifier for identifier in changed_ids if identifier in self._events
+            ),
         )
 
     def put(self, events: Iterable[Event]) -> None:
@@ -174,6 +181,8 @@ class InMemoryEventStore:
                 continue
             matched.append(event)
         offset = max(0, min(15_000, query.offset))
+        if query.sampling == "geographic":
+            return geographic_page(matched, query.time_basis, offset, max(1, query.limit))
         ranked = nlargest(
             offset + max(1, query.limit),
             matched,
@@ -266,6 +275,9 @@ class InMemoryEventStore:
 
     def _enforce_budget(self, evicted: list[str]) -> None:
         """Drops the oldest observed events until the memory estimate fits the budget."""
+        for identifier in firms_evictions(self._events, self._by_source):
+            self._remove(identifier)
+            evicted.append(identifier)
         if self._estimated_bytes <= self._memory_budget:
             return
         for event_id in sorted(self._events, key=lambda i: self._events[i].observed_at):

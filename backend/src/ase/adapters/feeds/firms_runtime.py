@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from ase.adapters.feeds.firms import SPEC, FirmsConnector, validate_area
+from ase.adapters.feeds.firms import SPEC, FirmsConnector, sensor_spec, validate_area
+from ase.adapters.feeds.firms_sensors import NOAA20, FirmsSensor, require_sensor
 from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
@@ -37,9 +38,12 @@ class ManagedFirmsConnector:
         environment_key: str | None,
         area: str,
         disabled: bool,
+        sensor: FirmsSensor = NOAA20,
     ) -> None:
         self.sessions, self.http, self.clock, self.cipher = sessions, http, clock, cipher
         self._environment_key = environment_key
+        self.sensor = require_sensor(sensor)
+        self.spec = sensor_spec(sensor)
         self.area, self.disabled = validate_area(area), disabled
 
     async def current_generation(self) -> int:
@@ -51,12 +55,15 @@ class ManagedFirmsConnector:
     async def fetch_batch(self) -> FetchedBatch:
         if self.disabled:
             raise FeedUnavailable("FIRMS is disabled by the operator environment.")
+        async with self.sessions() as session:
+            controls = await SqlSourceControlRepository(session).all()
+            if not controls.get(SPEC.id, True) or not controls.get(self.spec.id, True):
+                raise FeedUnavailable("FIRMS is disabled by an administrator.")
+            row = None if self._environment_key else await SqlFirmsCredentials(session).get()
         if self._environment_key:
             key, generation = self._environment_key, -1
         else:
-            async with self.sessions() as session:
-                row = await SqlFirmsCredentials(session).get()
-            if not row.active_encrypted:
+            if row is None or not row.active_encrypted:
                 raise FeedUnavailable("FIRMS needs an administrator connection.")
             try:
                 key = self.cipher.decrypt(row.active_encrypted)
@@ -64,7 +71,9 @@ class ManagedFirmsConnector:
                 raise FeedFetchError("The stored FIRMS connection cannot be read.") from None
             generation = row.active_revision
         try:
-            events = await FirmsConnector(self.http, self.clock, key, self.area).fetch()
+            events = await FirmsConnector(
+                self.http, self.clock, key, self.area, sensor=self.sensor
+            ).fetch()
         except Exception:
             raise FeedFetchError(
                 "FIRMS could not be fetched. Check its connection and area."
@@ -81,7 +90,8 @@ class ManagedFirmsConnector:
         async with self.sessions() as session:
             await SqlUserRepository(session).lock_administration()
             row = None if self._environment_key else await SqlFirmsCredentials(session).get()
-            enabled = (await SqlSourceControlRepository(session).all()).get(SPEC.id, True)
+            controls = await SqlSourceControlRepository(session).all()
+            enabled = controls.get(SPEC.id, True) and controls.get(self.spec.id, True)
             valid = (
                 enabled
                 and not self.disabled

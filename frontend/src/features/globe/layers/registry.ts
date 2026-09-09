@@ -5,6 +5,7 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
+import { geographicOrder } from '@/stores/events.geography';
 import { CATEGORY_STYLES } from '@/lib/categories';
 
 import { isMappedEvent } from '../geographicPrecision';
@@ -106,7 +107,7 @@ export function buildEventLayers(
     const traffic = exact.filter((event) =>
       ['aircraft', 'vessel', 'vessel_unknown'].includes(iconFor(event) ?? ''),
     );
-    const shown = traffic.slice(0, 250);
+    const shown = geographicOrder(traffic).slice(0, 250);
     const selectedTraffic = traffic.find((event) => event.id === selectedId);
     if (selectedTraffic && !shown.includes(selectedTraffic))
       shown[shown.length - 1] = selectedTraffic;

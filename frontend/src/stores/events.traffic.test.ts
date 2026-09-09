@@ -90,7 +90,7 @@ it('fetches military aircraft before API limiting so newer civilian rows cannot 
     );
   await useEventsStore.getState().load();
   expect(fetch).toHaveBeenCalledWith(
-    { categories: ['aviation'], military: true, limit: 1500 },
+    { categories: ['aviation'], military: true, limit: 1500, sampling: 'geographic' },
     expect.any(AbortSignal),
   );
   expect(useEventsStore.getState().byId.military).toBeDefined();

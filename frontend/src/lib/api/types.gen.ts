@@ -9518,6 +9518,7 @@ export interface operations {
                 /** @description Reported military aircraft/vessel classification; affiliation unverified. */
                 military?: boolean | null;
                 offset?: number;
+                sampling?: "newest" | "geographic";
             };
             header?: never;
             path?: never;

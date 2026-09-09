@@ -1,3 +1,4 @@
+import { geographicOrder } from './events.geography';
 import { isSatellite, satellitePriority } from '@/lib/satellites';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { isMilitaryAircraft, isMilitaryVessel } from '@/lib/traffic';
@@ -57,26 +58,27 @@ export function boundedEvents(
     return right[0] - left[0] || right[1] - left[1] || a.id.localeCompare(b.id);
   };
   events.sort(newestFirst);
-  const reserved = events
+  const fair = geographicOrder(events);
+  const reserved = fair
     .filter((event) => event.category === 'maritime' && event.subtype === 'vessel_position')
     .sort((a, b) => Number(isMilitaryVessel(b)) - Number(isMilitaryVessel(a)))
     .slice(0, Math.min(RESERVED_VESSELS, limit));
   reserved.push(
-    ...events
+    ...fair
       .filter((event) => event.category === 'aviation')
       .sort((a, b) => Number(isMilitaryAircraft(b)) - Number(isMilitaryAircraft(a)))
       .slice(0, Math.min(RESERVED_AIRCRAFT, limit - reserved.length)),
   );
-  const satellites = events
+  const satellites = fair
     .filter(isSatellite)
-    .sort((a, b) => satellitePriority(b) - satellitePriority(a) || newestFirst(a, b))
+    .sort((a, b) => satellitePriority(b) - satellitePriority(a))
     .slice(0, Math.min(RESERVED_SATELLITES, limit - reserved.length));
   reserved.push(...satellites);
   reserved.push(
-    ...events.filter(isFirms).slice(0, Math.min(RESERVED_FIRMS, limit - reserved.length)),
+    ...fair.filter(isFirms).slice(0, Math.min(RESERVED_FIRMS, limit - reserved.length)),
   );
   const ids = new Set(reserved.map((event) => event.id));
-  const remaining = events.filter((event) => !ids.has(event.id)).slice(0, limit - reserved.length);
+  const remaining = fair.filter((event) => !ids.has(event.id)).slice(0, limit - reserved.length);
   const retained = [...reserved, ...remaining];
   const selected = selectedId ? byId[selectedId] : undefined;
   if (selected && retained.length > 0 && !retained.some((event) => event.id === selected.id))

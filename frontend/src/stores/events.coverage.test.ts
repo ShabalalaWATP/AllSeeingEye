@@ -29,7 +29,11 @@ it('adds a category-specific maritime snapshot when general events crowd it out'
     .mockResolvedValueOnce([liveEvent({ id: 'news' })])
     .mockResolvedValueOnce([vessel('ship')]);
   await useEventsStore.getState().load();
-  expect(fetch.mock.calls[1]?.[0]).toEqual({ categories: ['maritime'], limit: 1500 });
+  expect(fetch.mock.calls[1]?.[0]).toEqual({
+    categories: ['maritime'],
+    limit: 1500,
+    sampling: 'geographic',
+  });
   expect(fetch.mock.calls[1]?.[1]).toBe(fetch.mock.calls[0]?.[1]);
   expect(useEventsStore.getState().byId.ship).toBeDefined();
   expect(useEventsStore.getState().snapshotCount).toBe(2);
@@ -65,8 +69,8 @@ it('retains ships when newer aircraft fill the mirror, without exceeding its cap
   );
   expect(Object.keys(bounded)).toHaveLength(MAX_CLIENT_EVENTS);
   expect(
-    Object.values(bounded).filter((event) => event.subtype === 'vessel_position'),
-  ).toHaveLength(RESERVED_VESSELS);
+    Object.values(bounded).filter((event) => event.subtype === 'vessel_position').length,
+  ).toBeGreaterThanOrEqual(RESERVED_VESSELS);
   const allAircraft = boundedEvents(
     Object.fromEntries(aircraft.map((event) => [event.id, event])),
     MAX_CLIENT_EVENTS,
@@ -166,9 +170,9 @@ it('reserves satellites and ships while favouring a specific military catalogue'
     Object.fromEntries([...ships, ...satellites, skynet, ...news].map((e) => [e.id, e])),
     5000,
   );
-  expect(Object.values(bounded).filter((event) => event.category === 'space')).toHaveLength(
-    RESERVED_SATELLITES,
-  );
+  expect(
+    Object.values(bounded).filter((event) => event.category === 'space').length,
+  ).toBeGreaterThanOrEqual(RESERVED_SATELLITES);
   expect(Object.values(bounded).filter((event) => event.category === 'maritime')).toHaveLength(
     1500,
   );
@@ -189,8 +193,13 @@ it('requests public military and crewed catalogues separately from the busy acti
     .mockResolvedValueOnce([])
     .mockResolvedValueOnce([satellite]);
   await useEventsStore.getState().load();
-  expect(fetch.mock.calls[1]?.[0]).toEqual({ categories: ['space'], limit: 1500 });
+  expect(fetch.mock.calls[1]?.[0]).toEqual({
+    categories: ['space'],
+    limit: 1500,
+    sampling: 'geographic',
+  });
   expect(fetch.mock.calls[2]?.[0]).toEqual({
+    sampling: 'geographic',
     sources: ['celestrak_skynet', 'celestrak_military', 'celestrak_stations'],
     limit: 1500,
   });
@@ -225,7 +234,7 @@ it('reserves thermal detections alongside ships and satellites when feeds are cr
     RESERVED_FIRMS,
   );
   expect(bounded.filter((event) => event.subtype === 'vessel_position')).toHaveLength(1500);
-  expect(bounded.filter((event) => event.subtype === 'satellite')).toHaveLength(
+  expect(bounded.filter((event) => event.subtype === 'satellite').length).toBeGreaterThanOrEqual(
     RESERVED_SATELLITES,
   );
   expect(bounded).toHaveLength(5000);
@@ -248,7 +257,13 @@ it('loads both keyed and public FIRMS sources when disaster records exist', asyn
     .mockResolvedValueOnce([fire]);
   await useEventsStore.getState().load();
   expect(fetch.mock.calls[1]?.[0]).toEqual({
-    sources: ['firms_viirs_noaa20', 'firms_public_noaa20'],
+    sampling: 'geographic',
+    sources: [
+      'firms_viirs_noaa20',
+      'firms_public_noaa20',
+      'firms_viirs_noaa21',
+      'firms_public_noaa21',
+    ],
     limit: 1000,
   });
   expect(useEventsStore.getState().byId.fire).toBeDefined();

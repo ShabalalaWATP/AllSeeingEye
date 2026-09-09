@@ -7,6 +7,8 @@ from pathlib import Path
 
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
+from ase.adapters.feeds.adsb_global import AdsbGlobalConnector
+from ase.adapters.feeds.adsb_viewport import AdsbViewportConnector, AircraftInterestQueue
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.aisstream import AisStreamConnector
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
@@ -26,6 +28,7 @@ from ase.adapters.feeds.emsc import EmscConnector
 from ase.adapters.feeds.eonet import EonetConnector
 from ase.adapters.feeds.firms import FirmsConnector
 from ase.adapters.feeds.firms_public import FirmsPublicConnector
+from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.http import FeedHttpClient
@@ -51,9 +54,11 @@ def build_connectors(
     *,
     firms_key: str | None = None,
     aisstream_key: str | None = None,
+    aircraft_interests: AircraftInterestQueue | None = None,
     firms_area: str = "world",
     digitraffic_http: FeedHttpClient | None = None,
     public_firms_http: FeedHttpClient | None = None,
+    firms_http: FeedHttpClient | None = None,
     include_public_firms: bool = True,
     satellite_cache_dir: Path | None = None,
     satellite_http: FeedHttpClient | None = None,
@@ -92,6 +97,7 @@ def build_connectors(
         ),
         AdsbSquawkConnector(http, clock, classifications=classifications),
         AdsbAreaConnector(http, clock, classifications=classifications),
+        AdsbGlobalConnector(http, clock, classifications=classifications),
         EmscConnector(http, clock),
         NhcConnector(http, clock, NHC_ATLANTIC),
         NhcConnector(http, clock, NHC_EAST_PACIFIC),
@@ -118,6 +124,10 @@ def build_connectors(
         ],
         *[MastodonConnector(http, clock, instance, tags) for instance, tags in load_watch()],
     ]
+    if aircraft_interests is not None and "adsb_viewport" not in excluded:
+        connectors.append(
+            AdsbViewportConnector(http, clock, aircraft_interests, classifications=classifications)
+        )
     if "ucdp_candidate" not in excluded:
         connectors.append(
             UcdpCandidateConnector(http, clock, ucdp_access_token, ucdp_candidate_version)
@@ -131,9 +141,21 @@ def build_connectors(
     if aisstream_key and AisStreamConnector.spec.id not in excluded:
         connectors.append(AisStreamConnector(aisstream_key, clock))
     if firms_key and FirmsConnector.spec.id not in excluded:
-        connectors.append(FirmsConnector(http, clock, firms_key, firms_area))
-    elif not firms_key and include_public_firms:
-        connectors.append(FirmsPublicConnector(public_firms_http or http, clock))
+        for sensor in FIRMS_SENSORS:
+            connectors.append(
+                FirmsConnector(
+                    firms_http or public_firms_http or http,
+                    clock,
+                    firms_key,
+                    firms_area,
+                    sensor=sensor,
+                )
+            )
+    elif not firms_key and include_public_firms and FirmsPublicConnector.spec.id not in excluded:
+        for sensor in FIRMS_SENSORS:
+            connectors.append(
+                FirmsPublicConnector(public_firms_http or firms_http or http, clock, sensor=sensor)
+            )
     if digitraffic_http is not None and DigitrafficConnector.spec.id not in excluded:
         connectors.append(DigitrafficConnector(digitraffic_http, clock))
     return [connector for connector in connectors if connector.spec.id not in excluded]

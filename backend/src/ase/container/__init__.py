@@ -17,9 +17,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
+from ase.adapters.feeds.adsb_viewport import AircraftInterestQueue
 from ase.adapters.feeds.adsb_watch import load_watch_areas
 from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
 from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
+from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.google_news import GoogleNewsWatchlistConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.registry import build_connectors
@@ -54,6 +56,7 @@ from ase.application.feeds.geo import CountryStage
 from ase.application.feeds.grading import GradingService, profiles_from_specs
 from ase.application.feeds.health import HealthRegistry
 from ase.application.feeds.language import LanguageStage
+from ase.application.feeds.map_interests import MapCollectionInterests
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
 from ase.application.feeds.streams import StreamLimiter
@@ -171,6 +174,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     self.clock,
                     settings.disabled_feed_ids,
                     digitraffic_http=self.marine_http,
+                    aircraft_interests=self.aircraft_interests,
                     public_firms_http=self.public_firms_http,
                     satellite_http=self.satellite_http,
                     satellite_cache_dir=(
@@ -198,17 +202,22 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     if settings.aisstream_api_key
                     else None,
                 ),
-                ManagedFirmsConnector(
-                    self.session_factory,
-                    self.http,
-                    self.clock,
-                    self.cipher,
-                    environment_key=settings.firms_map_key.get_secret_value()
-                    if settings.firms_map_key
-                    else None,
-                    area=settings.firms_area,
-                    disabled="firms_viirs_noaa20" in settings.disabled_feed_ids,
-                ),
+                *[
+                    ManagedFirmsConnector(
+                        self.session_factory,
+                        self.public_firms_http,
+                        self.clock,
+                        self.cipher,
+                        environment_key=settings.firms_map_key.get_secret_value()
+                        if settings.firms_map_key
+                        else None,
+                        area=settings.firms_area,
+                        disabled="firms_viirs_noaa20" in settings.disabled_feed_ids
+                        or f"firms_viirs_{sensor.suffix}" in settings.disabled_feed_ids,
+                        sensor=sensor,
+                    )
+                    for sensor in FIRMS_SENSORS
+                ],
             ]
         )
         watchlists = GoogleNewsWatchlistConnector(
@@ -253,7 +262,9 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         )
 
     def _initialise_map_catalogues(self) -> None:
-        self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
+        self.aircraft_interests = AircraftInterestQueue(self.clock)
+        self.map_interests = MapCollectionInterests(self.aircraft_interests, self.limiter)
+        self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=16 * 1024 * 1024)
         self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(
             build_camera_sources(self.camera_http, self.marine_http),

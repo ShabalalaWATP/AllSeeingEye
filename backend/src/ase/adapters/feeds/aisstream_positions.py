@@ -16,7 +16,12 @@ from ase.domain.events import (
     freeze_attributes,
 )
 
-_TYPES = {"PositionReport", "StandardClassBPositionReport", "ExtendedClassBPositionReport"}
+_TYPES = {
+    "PositionReport",
+    "StandardClassBPositionReport",
+    "ExtendedClassBPositionReport",
+    "LongRangeAisBroadcastMessage",
+}
 
 
 def _number(value: Any, maximum: float) -> float | None:
@@ -41,6 +46,9 @@ def parse_position(data: dict[str, Any], now: datetime) -> Event | None:
             raise ValueError
         if report.get("UserID") != mmsi or report.get("Valid") is not True:
             raise ValueError
+        long_range = kind == "LongRangeAisBroadcastMessage"
+        if long_range and report.get("PositionLatency") is not False:
+            raise ValueError  # Message 27 can explicitly carry an old GNSS position.
         # Use the position report, never metadata's potentially older last-known location.
         lat, lon = report["Latitude"], report["Longitude"]
         if type(lat) not in (int, float) or type(lon) not in (int, float):
@@ -73,7 +81,9 @@ def parse_position(data: dict[str, Any], now: datetime) -> Event | None:
                 else "course"
                 if course is not None
                 else "unknown",
-                "speed_over_ground_knots": _number(report.get("Sog"), 102.3),
+                "speed_over_ground_knots": _number(report.get("Sog"), 63 if long_range else 102.3),
+                "coordinate_resolution_arcminutes": 0.1 if long_range else None,
+                "position_latency": report.get("PositionLatency") if long_range else None,
                 "attribution": "AISStream",
                 "source_url": "https://aisstream.io/",
                 "collection_mode": "Bounded stream sampling",

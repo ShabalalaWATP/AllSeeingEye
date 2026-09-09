@@ -3,6 +3,7 @@ import { MAX_CLIENT_EVENTS, SNAPSHOT_LIMIT, useEventsStore } from '@/stores/even
 
 /** Browser coverage differs from the server's retained feed window. */
 export function LiveCoverage({ filteredCount }: { filteredCount: number }) {
+  const bounds = useEventsStore((state) => state.coverageBounds);
   const count = useEventsStore((state) => state.list.length);
   const snapshotCount = useEventsStore((state) => state.snapshotCount);
   const limited = useEventsStore((state) => state.snapshotLimited);
@@ -14,6 +15,10 @@ export function LiveCoverage({ filteredCount }: { filteredCount: number }) {
       className="mt-2 space-y-1 border-t border-line px-1 pt-2 text-[11px] text-muted"
       aria-label="Live event coverage"
     >
+      <p>
+        {bounds ? 'Visible-area sample' : 'Worldwide geographic sample'}. Pan or zoom to load the
+        area in view.
+      </p>
       <p>
         {count.toLocaleString('en-GB')} loaded in this browser;{' '}
         {filteredCount.toLocaleString('en-GB')} in the selected country and time window.
