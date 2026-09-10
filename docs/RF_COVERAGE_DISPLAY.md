@@ -2,7 +2,7 @@
 
 The RF planner offers a **Transmitter → receiver** study and a **360° area**
 study for terrain and free-space models. Place a transmitter with the map tool,
-choose the radio settings, then explicitly analyse terrain or show the reference
+choose the radio settings, then select **Analyse** or show the reference
 estimate. Selecting an area keeps a saved receiver available for a later link
 study but excludes it from the area calculation. A link requires both sites.
 
@@ -10,9 +10,49 @@ The compact RF workspace separates **Configure** and **Results**. The panel is
 capped at 360 px, with radio/model settings above transmitter/receiver placement
 to leave more of the map visible. **Transmit power (watts)** appears first in
 Configure. Skywave shows the saved power as disabled with an explanation, since
-that mode estimates geometry rather than received power. Advanced antenna and planning inputs remain in disclosures.
-Analysis runs only when requested; completed output opens Results. Edit study
+that mode estimates geometry rather than received power. Model, environment and
+engineering overrides remain under **Advanced**. An explicit analysis opens Results
+when complete; an automatic update preserves the selected tab. Edit study
 returns to the setup, with changed inputs invalidating the previous result.
+
+## Automatic setup and updates
+
+New studies start with automatic model and area selection. VHF/UHF uses the
+terrain screen; HF uses groundwave unless the selected preset describes a skywave
+scenario. Customising a skywave preset retains that HF choice, even if frequency
+temporarily moves into VHF/UHF and later returns. A manually selected model
+overrides this choice. Frequency alone does
+not determine the real propagation mechanism. Preset assumptions remain visible
+and editable, including ground properties and skywave geometry.
+
+A receiver link uses the actual distance between sites and does not ask for an
+area radius. For an area study, the terrain search extent starts from the ideal
+link budget and radio horizon with search headroom, bounded to 1 to 50 km. The
+initial extent is reduced if needed to fit the existing terrain tile/latitude
+limits. HF groundwave uses a bounded 200 km curve in automatic area mode. These
+extents define where the model checks, not the distance reception is guaranteed.
+Manual mode labels the setting **Area to analyse (km from transmitter)**.
+
+An automatic terrain area can make **one additional pass**: wider when passing
+targets reach its edge, or closer when only nearby targets pass. Missing terrain
+and possible bathymetry prevent refinement. The final screen retains both
+passes' sampled evidence inside the final extent. A failed or inconsistent
+second pass leaves the initial result with a warning. It never triggers a third
+pass or retries automatically.
+
+**Auto update** is enabled initially, but only becomes active after the first
+explicit Analyse action in that panel session. Valid input/site edits then
+schedule one analysis after a 1.2-second debounce, at least 30 seconds after the
+last manual or automatic attempt. Invalid inputs, site picking and an in-flight
+study pause scheduling. Identical failed inputs are not retried in a loop.
+Turning it off cancels pending automatic work while retaining completed results.
+Clear analysis, closing the panel, or changing account/access disarms automation.
+There is no mount-time analysis, polling or background job.
+
+The panel reuses at most two complete elevation batches with exactly matching
+positions for up to five minutes from fetch. Radio-only changes can reuse that
+terrain. The cache is memory-only and clears on account, role, active-state,
+workspace-access changes and unmount. Cancelled responses cannot refill it.
 
 In the area study, **Show estimated coverage bubble** shades the footprint.
 This switch only changes rendering of the saved result. It makes no new terrain
@@ -53,7 +93,7 @@ bearings. A direction with no passing target or unknown terrain leaves a gap.
 The shaded area between rays is illustrative, not terrain-verified coverage.
 The distinct narrow sampled sectors and grey unassessed tails remain visible.
 If no adjacent directions have passing targets, no bubble is drawn. The results
-table shows why. Reduce the sampling radius to assess closer targets; do not
+table shows why. Reduce the manual analysis area to assess closer targets; do not
 interpret the absence of a passing screen as proof of zero reception.
 
 ## Reading a free-space reference
@@ -88,8 +128,11 @@ elevations. The profile distinguishes this assumed screen from source ground.
 It is not a detected building/vegetation inventory or a material-loss model.
 
 Point-to-point sampling targets intervals of about 100 m, capped at **769 points**
-over 200 km. The cap increases spacing on longer paths. Radial studies retain
-**409 positions**, 24 bearings and 17 outward steps within 50 km. Quadratic spacing
+over 200 km. The cap increases spacing on longer paths. Each radial pass uses
+**409 positions**, 24 bearings and 17 outward steps within 50 km. The optional
+second pass combines at most **817 unique positions**, with at most 35 points
+per bearing including TX. Each network request remains capped at 409 positions.
+Quadratic spacing
 puts more points near TX: at 50 km the first assessed target is about 692 m,
 previously 5.88 km. Reducing survey radius further resolves closer targets.
 The first target needs at least one intermediate terrain sample.
@@ -99,6 +142,14 @@ assessed radial distance. Sampling more frequently does not improve the underlyi
 zoom-10 DEM or prove narrow ridges are resolved. Neither spacing value is a height
 accuracy guarantee. Negative elevations are retained and flagged because source
 bathymetry can differ from the actual water surface.
+
+For a receiver link, an automatic improvement check can rescreen the same DEM
+with a higher TX or RX mast and report the smaller one-site height change that
+clears the sampled Fresnel screen. It reports the resulting planning margin,
+including a remaining power shortfall. A clear but weak path instead reports
+the missing margin. These are local what-if calculations, never applied to the
+inputs automatically. Uncertain terrain suppresses this advice. A calculated
+height can be impractical and still requires a site/equipment feasibility check.
 
 ## Limits and verification
 

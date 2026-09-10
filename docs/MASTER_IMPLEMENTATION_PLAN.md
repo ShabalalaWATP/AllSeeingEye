@@ -765,3 +765,18 @@ and [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
 See [RF reach and coverage display](RF_COVERAGE_DISPLAY.md). The current screen
 uses one dominant sampled edge, with no claim of full P.526/ITM, live atmospheric
 conditions or guaranteed reception. HF skywave remains an explicit geometry scenario.
+
+## 10 September 2026: guided RF automation
+
+- [x] Default to automatic model and study extent, with manual overrides under Advanced.
+- [x] Keep watts prominent and the RF drawer capped at 360 px.
+- [x] Use the placed receiver distance for a link; label manual area extent in plain language.
+- [x] Add one bounded terrain refinement pass and retain initial observations inside the final radius, capped at 817 analysed positions.
+- [x] Cache two exact elevation batches for five minutes, with cancellation and account/access invalidation.
+- [x] Offer automatic updates after the first explicit analysis, with debounce, a 30-second automatic cooldown and no polling/retry loop.
+- [x] Show a local mast-height what-if or planning-margin shortfall for suitable receiver links, without changing user inputs.
+- [x] Pass 1,797 frontend tests, all unchanged coverage gates, lint, types, build, formatting and file-length checks; verify independent review fixes.
+- [ ] Verify the interactive browser/GPU journey when administrator policy permits.
+
+See [RF workflow and limits](RF_COVERAGE_DISPLAY.md). Automatic choices are
+bounded planning defaults, not a substitute for measured site or atmospheric data.

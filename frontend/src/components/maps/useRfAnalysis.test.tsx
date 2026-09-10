@@ -6,7 +6,7 @@ import type { TerrainElevations } from '@/lib/api/terrain';
 import { calculateGroundwave } from '@/lib/api/groundwave';
 import type { GroundwaveResult } from '@/lib/api/groundwave';
 import { ApiError } from '@/lib/api/errors';
-import { createRfDraft, RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
+import { createRfDraft as automaticDraft, RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { DEFAULT_RF_INPUTS } from '@/lib/map/rfPlanning';
 import type { RfInputs } from '@/lib/map/rfPlanning';
@@ -20,6 +20,9 @@ vi.mock('@/lib/api/terrain', () => ({ fetchTerrainElevations: vi.fn() }));
 vi.mock('@/lib/api/groundwave', () => ({ calculateGroundwave: vi.fn() }));
 const terrain = vi.mocked(fetchTerrainElevations);
 const groundwave = vi.mocked(calculateGroundwave);
+function createRfDraft(input: RfInputs = DEFAULT_RF_INPUTS): RfDraft {
+  return { ...automaticDraft(input), radiusMode: 'manual' };
+}
 function elevations(length: number): TerrainElevations {
   return {
     elevations_m: Array<number>(length).fill(0),
@@ -129,7 +132,9 @@ it.each(['radiusKm', 'conductivitySm', 'permittivity', 'refractivity'] as const)
       },
     });
     await act(() => result.current.analyse());
-    expect(result.current.error).toMatch(/Enter a valid/);
+    expect(result.current.error).toMatch(
+      field === 'radiusKm' ? /Area to analyse/ : /Enter a valid/,
+    );
     expect(groundwave).not.toHaveBeenCalled();
   },
 );

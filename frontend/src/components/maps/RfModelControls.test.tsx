@@ -4,18 +4,24 @@ import { expect, it } from 'vitest';
 import { createRfDraft } from '@/lib/map/rfDraft';
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { RfModelControls, rfEnvironmentValid } from './RfModelControls';
+import { RfAreaExtent } from './RfAreaExtent';
+import { DEFAULT_RF_INPUTS } from '@/lib/map/rfPlanning';
 function Fixture() {
   const [draft, setDraft] = useState<RfDraft>(createRfDraft);
   return (
     <>
       <RfModelControls draft={draft} onChange={setDraft} />
+      <RfAreaExtent draft={draft} input={DEFAULT_RF_INPUTS} onChange={setDraft} />
       <output aria-label="Valid settings">{String(rfEnvironmentValid(draft))}</output>
     </>
   );
 }
 it('preserves environmental drafts across model changes and rejects blanks', () => {
   render(<Fixture />);
-  fireEvent.change(screen.getByLabelText('Sampling radius (km)'), { target: { value: '' } });
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Choose analysis area automatically' }));
+  fireEvent.change(screen.getByLabelText('Area to analyse (km from transmitter)'), {
+    target: { value: '' },
+  });
   expect(screen.getByLabelText('Valid settings')).toHaveTextContent('false');
   fireEvent.change(screen.getByLabelText('Propagation model'), { target: { value: 'hf-skywave' } });
   expect(screen.getByText(/not an ionospheric forecast/)).toBeVisible();
@@ -24,7 +30,7 @@ it('preserves environmental drafts across model changes and rejects blanks', () 
   });
   expect(screen.getByLabelText('Valid settings')).toHaveTextContent('false');
   fireEvent.change(screen.getByLabelText('Propagation model'), { target: { value: 'terrain' } });
-  expect(screen.getByLabelText('Sampling radius (km)')).toHaveValue(null);
+  expect(screen.getByLabelText('Area to analyse (km from transmitter)')).toHaveValue(null);
 });
 it('keeps ground presets editable and labels their assumptions', () => {
   render(<Fixture />);

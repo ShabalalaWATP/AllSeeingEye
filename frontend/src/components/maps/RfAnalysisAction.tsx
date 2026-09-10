@@ -1,4 +1,5 @@
 import type { RfPropagation } from '@/lib/map/rfDraft';
+import { useId } from 'react';
 
 export function RfAnalysisAction({
   mode,
@@ -9,6 +10,8 @@ export function RfAnalysisAction({
   busy,
   error,
   onAnalyse,
+  progress,
+  automation,
 }: {
   mode: RfPropagation;
   frequencyMHz: number;
@@ -18,7 +21,10 @@ export function RfAnalysisAction({
   busy: boolean;
   error: string | null;
   onAnalyse: () => void;
+  progress?: string | null;
+  automation: { enabled: boolean; armed: boolean; setEnabled: (value: boolean) => void };
 }) {
+  const autoId = useId();
   return (
     <div className="rf-analysis-action">
       {mode === 'terrain' && frequencyMHz < 30 && (
@@ -38,8 +44,29 @@ export function RfAnalysisAction({
       )}
       <p className="rf-readiness">
         <span className="rf-readiness-dot" data-ready={ready} aria-hidden="true" />
-        {busy ? 'Calculating this study. Changing inputs cancels the request.' : readiness}
+        {busy
+          ? (progress ?? 'Calculating this study. Changing inputs cancels the request.')
+          : readiness}
       </p>
+      <div>
+        <label className="rf-auto-toggle" htmlFor={autoId}>
+          <input
+            id={autoId}
+            type="checkbox"
+            className="rf-checkbox"
+            checked={automation.enabled}
+            onChange={(event) => automation.setEnabled(event.target.checked)}
+          />
+          Auto update after changes
+        </label>
+        <p className="rf-help">
+          {!automation.armed
+            ? 'Starts after your first analysis.'
+            : automation.enabled
+              ? 'Updates after edits, at most twice a minute.'
+              : 'Paused. Analyse manually or enable updates.'}
+        </p>
+      </div>
       <button
         type="button"
         disabled={busy || !ready}

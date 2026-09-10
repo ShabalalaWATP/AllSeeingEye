@@ -31,7 +31,8 @@ it('switches Bowman groundwave, NVIS and VHF models without running a network an
   const onAnalysisChange = vi.fn();
   render(<RfCalculatorPanel origin={[0, 51]} onAnalysisChange={onAnalysisChange} />);
   choose('bowman-prc325-groundwave');
-  expect(screen.getByLabelText('Propagation model')).toHaveValue('hf-groundwave');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · HF groundwave/)).toBeVisible();
   expect(screen.getByLabelText('Frequency (MHz)')).toHaveValue(7);
   expect(screen.getByLabelText('Transmit power (watts)')).toHaveValue(20);
   expect(screen.getByLabelText('Transmit height above ground (m)')).toHaveValue(3);
@@ -39,12 +40,14 @@ it('switches Bowman groundwave, NVIS and VHF models without running a network an
   expect(screen.queryByLabelText('Published radio specifications')).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Analyse HF groundwave' })).toBeEnabled();
   choose('bowman-prc325-nvis');
-  expect(screen.getByLabelText('Propagation model')).toHaveValue('hf-skywave');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · HF skywave/)).toBeVisible();
   expect(screen.getByLabelText('Minimum launch elevation (degrees)')).toHaveValue(60);
   expect(screen.getByLabelText('Maximum launch elevation (degrees)')).toHaveValue(90);
   expect(screen.getByLabelText('Transmit power (watts)')).toBeDisabled();
   choose('bowman-vhf-vehicle');
-  expect(screen.getByLabelText('Propagation model')).toHaveValue('terrain');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · Terrain-aware/)).toBeVisible();
   expect(screen.getByLabelText('Transmit power (watts)')).toHaveValue(50);
   expect(screen.getByLabelText('Transmit height above ground (m)')).toHaveValue(3);
   expect(onAnalysisChange.mock.calls.every(([value]) => value === null)).toBe(true);

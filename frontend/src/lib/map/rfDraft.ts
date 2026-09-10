@@ -19,7 +19,11 @@ export type RfEnvironment = typeof RF_ENVIRONMENT_DEFAULTS;
 export interface RfDraft {
   values: Record<keyof RfInputs, string>;
   presetId: string;
-  propagation?: RfPropagation;
+  propagation?: RfPropagation | 'automatic';
+  /** Preserve the selected HF scenario when equipment values become custom. */
+  automaticHfMode?: 'hf-groundwave' | 'hf-skywave';
+  /** Omission preserves older manually configured studies. */
+  radiusMode?: 'automatic' | 'manual';
   environment?: RfEnvironment;
   engineering?: RfEngineeringDraft;
   /** Omission preserves automatic link selection when a receiver is placed. */
@@ -32,7 +36,8 @@ export function createRfDraft(input: RfInputs = DEFAULT_RF_INPUTS, presetId = 'c
       Object.entries(input).map(([key, value]) => [key, String(value)]),
     ) as RfDraft['values'],
     presetId,
-    propagation: 'terrain',
+    propagation: 'automatic',
+    radiusMode: 'automatic',
     environment: { ...RF_ENVIRONMENT_DEFAULTS },
     engineering: { ...RF_ENGINEERING_DRAFT_DEFAULTS },
   };

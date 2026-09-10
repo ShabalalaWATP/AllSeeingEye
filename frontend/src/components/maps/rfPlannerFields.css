@@ -220,3 +220,17 @@
 .rf-references a {
   color: var(--rf-accent);
 }
+.rf-auto-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #d2e6dc;
+  font-size: 12px;
+  cursor: pointer;
+}
+.rf-area-extent {
+  display: grid;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rf-line);
+}

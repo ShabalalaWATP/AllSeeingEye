@@ -89,10 +89,11 @@ it('uses the geodesic transmitter-to-receiver distance and prevents zero-radius 
   expect(screen.getByRole('status')).toHaveTextContent('below 1 metre');
 });
 
-it('defaults to terrain, uses watts and requires explicit valid analysis', () => {
+it('chooses terrain automatically, keeps watts first and requires explicit valid analysis', () => {
   const change = vi.fn();
   render(<Calculator origin={[0, 51]} onAnalysisChange={change} />);
-  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('terrain');
+  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · Terrain-aware/)).toBeVisible();
   expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeEnabled();
   const watts = screen.getByRole('spinbutton', { name: 'Transmit power (watts)' });
@@ -117,7 +118,8 @@ it('preserves custom model environment when changing a radio preset and honours 
   fireEvent.change(screen.getByRole('combobox', { name: 'Radio preset' }), {
     target: { value: 'hf-portable' },
   });
-  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('hf-groundwave');
+  expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · HF groundwave/)).toBeVisible();
   expect(screen.getByLabelText('Ground conductivity (S/m)')).toHaveValue(0.02);
   expect(screen.getByLabelText('Transmit power (watts)')).toHaveValue(20);
 });
@@ -162,7 +164,8 @@ it('moves HF to terrain for VHF presets, preserves an explicit free-space choice
   expect(screen.getByLabelText('Minimum launch elevation (degrees)')).toHaveValue(60);
   expect(screen.getByLabelText('Maximum launch elevation (degrees)')).toHaveValue(90);
   choose('marine');
-  expect(screen.getByLabelText('Propagation model')).toHaveValue('terrain');
+  expect(screen.getByLabelText('Propagation model')).toHaveValue('automatic');
+  expect(screen.getByText(/Automatic model · Terrain-aware/)).toBeVisible();
   fireEvent.change(screen.getByLabelText('Propagation model'), { target: { value: 'free-space' } });
   choose('hf-portable');
   expect(screen.getByLabelText('Propagation model')).toHaveValue('free-space');

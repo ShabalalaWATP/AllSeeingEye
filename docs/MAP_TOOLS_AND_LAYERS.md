@@ -85,7 +85,11 @@ editing form fields. The on-map readout exposes stop and undo actions. The
 The RF calculator now separates three propagation choices from the free-space
 reference: Terrain-aware VHF/UHF, HF groundwave and HF skywave scenario. The
 operator chooses a model, editable equipment inputs and environmental assumptions,
-places the transmitter and optional receiver, and explicitly calculates a result.
+places the transmitter and optional receiver, and explicitly starts the first
+analysis. Automatic setup chooses the model and area extent, with manual
+overrides. Optional automatic updates then respond to valid edits with a
+1.2-second debounce and at least 30 seconds between automatic attempts, measured
+from the last manual or automatic attempt. There is no polling or initial work.
 Changing inputs or positions invalidates the previous result. No extra polling
 or calculation on every keystroke is introduced.
 
@@ -97,7 +101,7 @@ See [ITU-R P.525](https://www.itu.int/rec/R-REC-P.525/en).
 
 ### Terrain-aware VHF/UHF
 
-Terrain analysis uses explicitly requested Mapzen Terrain Tiles in Terrarium
+Terrain analysis uses bounded requests for Mapzen Terrain Tiles in Terrarium
 format, sampled at zoom 10. It adds each antenna's above-ground height to its
 sampled source elevation. Elevation above sea level and antenna height above
 ground are displayed separately; changing an antenna's height does not change
@@ -105,7 +109,12 @@ the underlying ground elevation.
 
 A two-site study targets roughly 100 m intervals, capped at 769 points along a path of at most 200 km, and
 shows a terrain profile. The selectable 360° area study screens 24 bearings
-with 17 outward steps concentrated nearer TX, at most 409 positions within a 50 km radius. These are
+with 17 outward steps concentrated nearer TX, at most 409 positions per request
+within a 50 km radius. Automatic area planning can make one additional pass,
+retaining both passes' observations inside the final extent, at most 817 unique
+positions. The panel caches two complete, exactly matching elevation batches for
+five minutes from fetch and clears them on account/access changes or unmount.
+These are
 coarse samples, not a dense coverage raster. The screen defaults to k=4/3
 Earth curvature, 60% first Fresnel clearance and free-space loss plus a single
 dominant sampled knife-edge diffraction term. It is not a complete ITM or

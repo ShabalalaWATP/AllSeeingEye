@@ -14,7 +14,7 @@ import { RfPowerInput } from './RfPowerInput';
 import { RfPlannerTabs } from './RfPlannerTabs';
 import { RfAnalysisAction } from './RfAnalysisAction';
 import { RfPositions } from './RfPositions';
-import { RfModelControls, rfEnvironmentValid } from './RfModelControls';
+import { RfModelSummary, rfEnvironmentValid } from './RfModelControls';
 import { RfReferences } from './RfReferences';
 import { RfPresetSelect } from './RfPresetSelect';
 import { useRfAnalysis } from './useRfAnalysis';
@@ -23,6 +23,8 @@ import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 import { createRfDraft, RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { parseRfEngineering } from '@/lib/map/rfEngineering';
+import { resolveRfMode } from '@/lib/map/rfAutomation';
+import { useRfAutoUpdate } from './useRfAutoUpdate';
 import './rfPlanner.css';
 import './rfPlannerFields.css';
 import './rfPlannerResults.css';
@@ -63,8 +65,8 @@ export function RfCalculatorPanel({
   const [localDraft, setLocalDraft] = useState(() => createRfDraft());
   const currentDraft = draft ?? localDraft;
   const { values, presetId } = currentDraft;
-  const mode = currentDraft.propagation ?? 'terrain';
-  const supportsArea = mode === 'terrain' || mode === 'free-space';
+  const mode = resolveRfMode(currentDraft);
+  const supportsArea = mode !== 'hf-skywave';
   const target = supportsArea && currentDraft.study === 'area' ? null : receiver;
   const needsReceiver = supportsArea && currentDraft.study === 'link' && !receiver;
   const [localBubble, setLocalBubble] = useState(false);
@@ -117,24 +119,42 @@ export function RfCalculatorPanel({
     error = caught instanceof Error ? caught.message : 'Check the inputs.';
   }
   const change = (key: keyof RfInputs, value: string) => {
-    update({ ...currentDraft, values: { ...values, [key]: value }, presetId: 'custom' });
+    update({
+      ...currentDraft,
+      values: { ...values, [key]: value },
+      presetId: 'custom',
+      ...(currentDraft.propagation === 'automatic' && mode === 'hf-skywave'
+        ? { automaticHfMode: 'hf-skywave' as const }
+        : {}),
+    });
   };
   const view = currentAnalysis ? (selectedView ?? 'results') : 'configure';
-  const validEnvironment = rfEnvironmentValid(currentDraft);
+  const validEnvironment = rfEnvironmentValid(currentDraft, !!receiver);
   const invalidBand = mode === 'terrain' ? input.frequencyMHz < 30 : input.frequencyMHz > 30;
   const ready =
     !!origin &&
     !needsReceiver &&
     (mode === 'hf-skywave' ? !error : !!result) &&
     validEnvironment &&
-    !invalidBand;
+    !invalidBand &&
+    !picking;
   const readiness = !origin
     ? 'Place a transmitter before analysis.'
     : needsReceiver
       ? 'Place a receiver to analyse a point-to-point link.'
-      : !ready
-        ? 'Review the inputs before analysis.'
-        : 'Ready to analyse. Settings remain editable.';
+      : picking
+        ? 'Finish placing the site on the map.'
+        : !ready
+          ? 'Review the inputs before analysis.'
+          : 'Ready to analyse. Settings remain editable.';
+  const automation = useRfAutoUpdate({
+    identity: JSON.stringify([currentDraft, origin, receiver]),
+    ready: ready && mode !== 'free-space',
+    busy: worker.busy,
+    picking: !!picking,
+    run: worker.analyse,
+    cancel: worker.cancel,
+  });
   return (
     <section aria-label="RF planning calculator" className="rf-planner">
       <header className="rf-planner-header">
@@ -157,7 +177,6 @@ export function RfCalculatorPanel({
                   onChange={(value) => change('transmitDbm', value)}
                   disabled={mode === 'hf-skywave'}
                 />
-                <RfModelControls draft={currentDraft} onChange={update} />
                 <RfPresetSelect
                   presetId={presetId}
                   onSelect={(selected) => {
@@ -165,11 +184,18 @@ export function RfCalculatorPanel({
                       ...currentDraft,
                       values: createRfDraft(selected.values, selected.id).values,
                       presetId: selected.id,
+                      ...(selected.id !== 'custom'
+                        ? {
+                            automaticHfMode:
+                              selected.propagation === 'hf-skywave'
+                                ? ('hf-skywave' as const)
+                                : ('hf-groundwave' as const),
+                          }
+                        : {}),
                       propagation:
-                        selected.id === 'custom' || mode === 'free-space'
-                          ? mode
-                          : (selected.propagation ??
-                            (selected.values.frequencyMHz >= 30 ? 'terrain' : mode)),
+                        selected.id === 'custom' || currentDraft.propagation === 'free-space'
+                          ? (currentDraft.propagation ?? 'automatic')
+                          : 'automatic',
                       environment: {
                         ...RF_ENVIRONMENT_DEFAULTS,
                         ...currentDraft.environment,
@@ -178,6 +204,7 @@ export function RfCalculatorPanel({
                     });
                   }}
                 />
+                <RfModelSummary draft={currentDraft} />
                 <RfRadioFields
                   draft={currentDraft}
                   mode={mode}
@@ -202,6 +229,7 @@ export function RfCalculatorPanel({
                     }}
                     bubble={coverageBubble ?? localBubble}
                     onBubbleChange={onCoverageBubbleChange ?? setLocalBubble}
+                    input={input}
                   />
                 )}
                 <RfPositions
@@ -257,9 +285,11 @@ export function RfCalculatorPanel({
                 readiness={readiness}
                 busy={worker.busy}
                 error={worker.error}
+                progress={worker.progress}
+                automation={automation}
                 onAnalyse={() => {
                   setSelectedView(null);
-                  void worker.analyse();
+                  automation.manuallyAnalyse();
                 }}
               />
             )}
@@ -269,7 +299,10 @@ export function RfCalculatorPanel({
                 estimate={estimate}
                 error={mapError}
                 visible={overlayVisible}
-                onChange={onOverlayChange}
+                onChange={(value) => {
+                  if (!value) automation.disarm();
+                  onOverlayChange(value);
+                }}
               />
             )}
           </>
@@ -295,6 +328,7 @@ export function RfCalculatorPanel({
                   type="button"
                   className="rf-text-button"
                   onClick={() => {
+                    automation.disarm();
                     changeAnalysis(null);
                     setSelectedView('configure');
                   }}

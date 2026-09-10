@@ -1,5 +1,6 @@
 import { RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
 import type { RfDraft, RfEnvironment, RfPropagation } from '@/lib/map/rfDraft';
+import { resolveRfMode } from '@/lib/map/rfAutomation';
 const MODES: { id: RfPropagation; label: string; description: string }[] = [
   {
     id: 'terrain',
@@ -33,11 +34,8 @@ interface Field {
   max: number;
 }
 function fields(mode: RfPropagation): Field[] {
-  if (mode === 'terrain')
-    return [{ key: 'radiusKm', label: 'Sampling radius (km)', min: 1, max: 50 }];
   if (mode === 'hf-groundwave')
     return [
-      { key: 'radiusKm', label: 'Maximum groundwave distance (km)', min: 2, max: 200 },
       { key: 'conductivitySm', label: 'Ground conductivity (S/m)', min: 0.00001, max: 10 },
       { key: 'permittivity', label: 'Relative permittivity', min: 1, max: 100 },
       { key: 'refractivity', label: 'Surface refractivity (N-units)', min: 250, max: 400 },
@@ -51,10 +49,20 @@ function fields(mode: RfPropagation): Field[] {
     ];
   return [];
 }
-export function rfEnvironmentValid(draft: RfDraft) {
+export function rfEnvironmentValid(draft: RfDraft, hasReceiver = false) {
   const env = { ...RF_ENVIRONMENT_DEFAULTS, ...draft.environment };
-  const mode = draft.propagation ?? 'terrain';
+  const mode = resolveRfMode(draft);
+  const needsRadius =
+    (mode === 'terrain' || mode === 'hf-groundwave') && (!hasReceiver || draft.study === 'area');
+  const radiusValid =
+    !needsRadius ||
+    draft.radiusMode === 'automatic' ||
+    (env.radiusKm.trim() !== '' &&
+      Number.isFinite(Number(env.radiusKm)) &&
+      Number(env.radiusKm) >= (mode === 'terrain' ? 1 : 2) &&
+      Number(env.radiusKm) <= (mode === 'terrain' ? 50 : 200));
   return (
+    radiusValid &&
     fields(mode).every(
       ({ key, min, max }) =>
         env[key].trim() !== '' &&
@@ -65,6 +73,15 @@ export function rfEnvironmentValid(draft: RfDraft) {
     (mode !== 'hf-skywave' || Number(env.minElevationDeg) <= Number(env.maxElevationDeg))
   );
 }
+export function RfModelSummary({ draft }: { draft: RfDraft }) {
+  const mode = resolveRfMode(draft);
+  return (
+    <p className="rf-help">
+      {draft.propagation === 'automatic' ? 'Automatic model' : 'Manual model'} ·{' '}
+      {MODES.find((item) => item.id === mode)?.label}
+    </p>
+  );
+}
 export function RfModelControls({
   draft,
   onChange,
@@ -72,7 +89,7 @@ export function RfModelControls({
   draft: RfDraft;
   onChange: (draft: RfDraft) => void;
 }) {
-  const mode = draft.propagation ?? 'terrain';
+  const mode = resolveRfMode(draft);
   const env = { ...RF_ENVIRONMENT_DEFAULTS, ...draft.environment };
   const change = (key: keyof RfEnvironment, value: string) =>
     onChange({ ...draft, environment: { ...env, [key]: value } });
@@ -81,11 +98,15 @@ export function RfModelControls({
       <label className="rf-field">
         Propagation model
         <select
-          value={mode}
+          value={draft.propagation ?? 'terrain'}
           onChange={(event) =>
-            onChange({ ...draft, propagation: event.target.value as RfPropagation })
+            onChange({
+              ...draft,
+              propagation: event.target.value as NonNullable<RfDraft['propagation']>,
+            })
           }
         >
+          <option value="automatic">Automatic, based on the radio and frequency</option>
           {MODES.map((item) => (
             <option key={item.id} value={item.id}>
               {item.label}

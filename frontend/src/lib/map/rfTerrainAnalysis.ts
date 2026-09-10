@@ -5,7 +5,10 @@ import {
   validateRfEngineering,
   type RfEngineeringSettings,
 } from './rfEngineering';
-import { RF_TERRAIN_MAX_PATH_SAMPLES, RF_TERRAIN_MAX_SAMPLES } from './rfTerrainSampling';
+import {
+  RF_TERRAIN_MAX_PATH_SAMPLES,
+  RF_TERRAIN_MAX_AREA_ANALYSIS_SAMPLES,
+} from './rfTerrainSampling';
 import type {
   RfTerrainAnalysis,
   RfTerrainRadial,
@@ -30,7 +33,7 @@ export function analyseRfTerrain(
   validateRfEngineering(settings);
   if (
     plan.positions.length >
-      (plan.kind === 'path' ? RF_TERRAIN_MAX_PATH_SAMPLES : RF_TERRAIN_MAX_SAMPLES) ||
+      (plan.kind === 'path' ? RF_TERRAIN_MAX_PATH_SAMPLES : RF_TERRAIN_MAX_AREA_ANALYSIS_SAMPLES) ||
     plan.positions.length < 3 ||
     elevationsM.length !== plan.positions.length ||
     plan.profiles.length < 1 ||

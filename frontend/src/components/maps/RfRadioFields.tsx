@@ -2,6 +2,7 @@ import { RF_FIELDS } from '@/lib/map/rfPlanning';
 import type { RfInputs } from '@/lib/map/rfPlanning';
 import type { RfDraft, RfPropagation } from '@/lib/map/rfDraft';
 import { RfEngineeringControls } from './RfEngineeringControls';
+import { RfModelControls } from './RfModelControls';
 
 const BASIC_FIELDS = new Set<keyof RfInputs>([
   'frequencyMHz',
@@ -62,17 +63,22 @@ export function RfRadioFields({
             Antenna heights are above local ground. Terrain analysis adds ground elevation
             separately.
           </p>
-          <details className="rf-disclosure">
-            <summary>Link budget &amp; engineering settings</summary>
-            <div className="rf-disclosure-body">
+        </>
+      )}
+      <details className="rf-disclosure">
+        <summary>Advanced model &amp; radio settings</summary>
+        <div className="rf-disclosure-body">
+          <RfModelControls draft={draft} onChange={onDraftChange} />
+          {mode !== 'hf-skywave' && (
+            <>
               <div className="rf-field-grid">
                 {RF_FIELDS.filter(({ key }) => !BASIC_FIELDS.has(key)).map(field)}
               </div>
               <RfEngineeringControls draft={draft} onChange={onDraftChange} />
-            </div>
-          </details>
-        </>
-      )}
+            </>
+          )}
+        </div>
+      </details>
     </>
   );
 }

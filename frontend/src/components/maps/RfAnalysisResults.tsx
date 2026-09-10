@@ -5,6 +5,7 @@ import { RfMapLegend } from './RfMapLegend';
 import { RfTerrainReach } from './RfTerrainReach';
 import { RfTerrainBudget } from './RfTerrainBudget';
 import { RfTerrainQuality } from './RfTerrainQuality';
+import { RfLinkAdvice } from './RfLinkAdvice';
 import { RF_STATUS_CSS } from '@/lib/map/rfTerrainPresentation';
 
 const statusText = {
@@ -68,6 +69,7 @@ export function RfAnalysisResults({
         </p>
       </div>
       <RfTerrainReach terrain={terrain} />
+      <RfLinkAdvice analysis={analysis} />
       {terrain.path && (
         <>
           <RfTerrainBudget profile={terrain.path} />

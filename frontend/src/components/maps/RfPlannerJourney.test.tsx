@@ -109,7 +109,7 @@ it('leaves focus on the map when analysis completes after the operator moves out
   render(
     <>
       <button type="button">Map control</button>
-      <RfCalculatorPanel origin={[0, 51]} />
+      <RfCalculatorPanel origin={[0, 51]} receiver={[0.01, 51]} />
     </>,
   );
   const analyse = screen.getByRole('button', { name: 'Analyse terrain' });
@@ -135,7 +135,7 @@ it('exposes equipment assumptions on demand and shows the active planning reserv
 
 it('invalidates the previous result when an engineering allowance is incomplete', () => {
   render(<RfCalculatorPanel origin={[0, 51]} />);
-  fireEvent.click(screen.getByText('Link budget & engineering settings'));
+  fireEvent.click(screen.getByText('Advanced model & radio settings'));
   fireEvent.change(screen.getByLabelText('Planning reserve (dB)'), { target: { value: '' } });
   expect(screen.getByRole('alert')).toHaveTextContent('Planning reserve');
   expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeDisabled();

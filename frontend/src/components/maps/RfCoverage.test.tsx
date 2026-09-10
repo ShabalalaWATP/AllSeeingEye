@@ -104,7 +104,7 @@ it('uses the bounded radial plan for an area even with a saved receiver and rest
       plan: expect.objectContaining({ kind: 'path', receiver: [0.01, 51] }),
     }),
   );
-  expect(vi.mocked(fetchTerrainElevations).mock.calls[1]?.[0]).toHaveLength(9);
+  expect(vi.mocked(fetchTerrainElevations).mock.calls.at(-1)?.[0]).toHaveLength(9);
 });
 
 it('does not silently substitute a radial study for a requested link without a receiver', async () => {

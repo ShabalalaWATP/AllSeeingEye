@@ -1,5 +1,6 @@
 import type { RfDraft } from '@/lib/map/rfDraft';
 import { RF_ENGINEERING_DRAFT_DEFAULTS, RF_ENGINEERING_FIELDS } from '@/lib/map/rfEngineering';
+import { resolveRfMode } from '@/lib/map/rfAutomation';
 
 export function RfEngineeringControls({
   draft,
@@ -8,7 +9,7 @@ export function RfEngineeringControls({
   draft: RfDraft;
   onChange: (draft: RfDraft) => void;
 }) {
-  const mode = draft.propagation ?? 'terrain';
+  const mode = resolveRfMode(draft);
   if (mode === 'hf-skywave') return null;
   const values = { ...RF_ENGINEERING_DRAFT_DEFAULTS, ...draft.engineering };
   return (

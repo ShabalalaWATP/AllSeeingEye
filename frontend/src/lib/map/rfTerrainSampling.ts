@@ -9,6 +9,8 @@ export const RF_TERRAIN_MAX_RADIUS_KM = 50;
 export const RF_TERRAIN_MAX_PATH_SAMPLES = 769;
 /** Area studies retain their existing fixed request and rendering budget. */
 export const RF_TERRAIN_MAX_SAMPLES = 409;
+/** Two automatic area passes share one origin; only analysis can combine their samples. */
+export const RF_TERRAIN_MAX_AREA_ANALYSIS_SAMPLES = RF_TERRAIN_MAX_SAMPLES * 2 - 1;
 
 function count(value: number, minimum: number, maximum: number, label: string) {
   if (!Number.isInteger(value) || value < minimum || value > maximum)

@@ -3327,3 +3327,42 @@ production build and application type check, scoped ESLint, changed-source
 formatting, whitespace and file-length checks. Coverage was not remeasured for
 this display-only follow-up. Existing vendor-size and MapLibre file-length
 warnings remain. Browser/GPU verification remains blocked by administrator policy.
+
+## 10 September 2026: guided RF analysis and bounded automatic updates
+
+Made new RF studies choose their model and analysis extent automatically, with
+manual overrides under Advanced. Receiver links use the distance between placed
+sites. The area control now explains that its value is the distance to analyse
+from TX, not predicted reception range. Watts remains first and the drawer stays
+capped at 360 px.
+
+Automatic terrain areas can make one extra wider or closer pass. The combined
+screen retains both passes' sampled observations inside the final radius, with
+817 positions maximum. Source or duplicate-elevation disagreement leaves the
+first completed result and a warning. A two-entry, five-minute exact-position
+DEM cache avoids repeat terrain fetches for radio-only edits and clears across
+account/access changes and unmount.
+
+Optional Auto update starts only after an explicit analysis. It debounces edits
+and waits at least 30 seconds from the previous attempt, with no polling or retry
+loop. Invalid inputs and site picking pause work. Cancellation and access changes
+prevent stale output or cache repopulation. Suitable receiver links also get a
+same-DEM mast-height scenario or a quantified planning-margin shortfall. These
+suggestions never alter the inputs or claim measured reception.
+
+Updated the RF operating guide, map-model notes and implementation plan. No new
+provider, backend endpoint, credentials or dependencies were introduced.
+Independent review found two model-switch regressions: a saved receiver remained
+visible during an HF area study, and custom frequency edits could turn a selected
+skywave scenario into groundwave. Both were fixed and covered by regressions;
+review verification found no remaining actionable issues.
+
+Final validation passed: 1,797 frontend tests across 345 passing files, with one
+existing skipped file/test. Coverage is 95.48% statements, 90.72% branches,
+93.46% functions and 96.64% lines, meeting every unchanged gate. Whole frontend
+ESLint, application/tooling TypeScript checks, the production build, RF-source
+Prettier, whitespace and file-length checks passed. Existing large vendor chunks
+and the untouched 380-line MapLibre engine remain warnings. ASE login on 5174
+returned 200 with the correct app title and backend health on 8001 returned ok.
+No backend code changed or backend tests ran. Interactive browser/GPU acceptance
+remains unavailable under the existing administrator browser-control policy.
