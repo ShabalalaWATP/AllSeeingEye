@@ -18,7 +18,8 @@ def subject_specs() -> tuple[SourceSpec, ...]:
             "https://help.openalex.org/data/works/",
             "Opt-in metadata search. OpenAlex aggregates Crossref and other sources; "
             "independent corroboration is not established. "
-            "No full text; retraction flags require review. Anonymous API usage limits apply.",
+            "No full text; retraction flags require review. An optional operator API key "
+            "uses its account allowance; otherwise anonymous limits apply.",
         ),
         (
             "research-crossref",

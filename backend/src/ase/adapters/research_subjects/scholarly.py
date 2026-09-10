@@ -1,7 +1,7 @@
 """Metadata-only scholarly searches, with provider-reported update signals.
 
 Primary API contracts: https://help.openalex.org/data/works/attributes/
-https://help.openalex.org/api/authentication/ (keyless basic queries, August 2026).
+https://help.openalex.org/api/authentication/ (optional Bearer key, August 2026).
 https://www.crossref.org/documentation/retrieve-metadata/retraction-watch/
 https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/
 """
@@ -15,6 +15,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.research.feed import search_terms
 from ase.adapters.research_records.records import collect_json, receipt, text
 from ase.adapters.research_subjects.events import subject_event as record_event
+from ase.adapters.research_subjects.openalex_client import OPENALEX_ORIGIN, OpenAlexClient
 from ase.adapters.research_subjects.selection import day, doi, in_window, selected
 from ase.application.ports import Clock
 from ase.domain.events import Category, Event
@@ -30,8 +31,8 @@ class OpenAlexProvider:
         "First 20 dated publication metadata matches; no complete historical or integrity coverage."
     )
 
-    def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
-        self.http, self.clock = http, clock
+    def __init__(self, http: FeedHttpClient, clock: Clock, api_key: str | None = None) -> None:
+        self.http, self.clock = OpenAlexClient(http, api_key), clock
 
     def supports(self, query: ResearchQuery) -> bool:
         return selected(query, self.id, "academic:") and query.country_iso is None
@@ -44,7 +45,7 @@ class OpenAlexProvider:
                 CollectionStatus.UNSUPPORTED,
                 "Select scholarly metadata with English search terms and no country filter.",
             )
-        url = "https://api.openalex.org/works?" + urlencode(
+        url = f"{OPENALEX_ORIGIN}/works?" + urlencode(
             {
                 "search": " ".join(search_terms(query)),
                 "per_page": 20,
@@ -63,7 +64,12 @@ class OpenAlexProvider:
             "First 20 scholarly metadata matches, exact date-window filtering. "
             "No papers or abstracts fetched. Retraction flags are provider reports, "
             "not independent verdicts; missing flags remain unknown. "
-            "Metadata language and topic relevance require review. Anonymous API limits apply.",
+            "Metadata language and topic relevance require review. "
+            + (
+                "Authenticated account API limits apply."
+                if self.http.authenticated
+                else "Anonymous API limits apply."
+            ),
         )
 
     def parse(self, data: dict[str, Any], query: ResearchQuery) -> list[Event]:

@@ -62,6 +62,7 @@ def research_service(
     countries: CountryDirectory | None = None,
     companies_house_key: str | None = None,
     certificate_transparency_key: str | None = None,
+    openalex_api_key: str | None = None,
 ) -> ResearchCollectionService:
     sec_client = sec_client or SecClient(http)
     # Preserve the credential-specific rolling request allowance across research runs.
@@ -129,7 +130,7 @@ def research_service(
                 aiddata,
                 CopernicusResearchProvider(CopernicusFootprintProvider(http, clock)),
                 *designations,
-                OpenAlexProvider(http, clock),
+                OpenAlexProvider(http, clock, api_key=openalex_api_key),
                 CrossrefProvider(http, clock),
                 WorldBankProvider(http, clock),
                 ParliamentQuestionsProvider(http, clock),

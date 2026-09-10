@@ -3501,3 +3501,32 @@ Restarted the local ASE API on 8001. Health and the frontend login on 5174 retur
 200; unauthenticated research-plan access returned 401. Temporary coverage/config
 files were removed. No remote is configured, no push or deployment was performed,
 and account linking remains blocked on restoration of browser control.
+
+## 11 September 2026: browser recovery and OpenAlex account connection
+
+The stale Codex Windows user CLI override is absent and command execution works
+after the operator's cleanup and restart. WSDOT issued a camera access code during
+browser onboarding, and the operator completed OpenAlex registration. Other
+prepared registrations remain unfinished, as recorded in the source audit.
+
+Added optional `ASE_OPENALEX_API_KEY` using the existing origin-bound feed
+credentials. Requests carry a Bearer header only to `https://api.openalex.org`,
+with no redirects, shared authorisation headers or anonymous retry on failure.
+Unset keys retain anonymous collection. Source selection, administrator disable,
+the publication window, result cap and unassessed metadata grades are unchanged.
+The operator's temporary key is saved only in ignored `backend/.env`; no credential
+value is recorded in source or documentation.
+
+A live guarded account-allowance lookup succeeded and the actual metadata provider
+returned 20 satellite-imagery research records at 23:52 UTC on 10 September
+(11 September UK time). This verifies a bounded source connection, not full-text
+access, complete coverage or LLM report quality. The new regression initially
+failed because optional credential support was absent. Final focused acceptance:
+102 tests passed, 96.38% targeted statement/branch coverage (new client 100%),
+whole-backend Ruff/format/mypy, both import contracts, scoped Bandit and file-length
+checks passed. The existing untouched 380-line MapLibre warning remains.
+Independent correctness/security review found no blocking issues. The supplied
+key was checked absent from tracked diffs and new source files, and its local
+environment file remains ignored. Restarted the local API on 8001 and frontend on
+5174; health and login both returned HTTP 200. No remote is configured, and no
+production deployment or push was performed.

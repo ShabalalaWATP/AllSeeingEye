@@ -354,6 +354,15 @@ claim that credentials or local media tools are currently available.
 
 ### Official provider contracts checked on 6 September 2026
 
+OpenAlex authentication rechecked on 11 September 2026: configure optional
+`ASE_OPENALEX_API_KEY` in the backend environment. The server uses an origin-bound
+Bearer header, disables redirects and keeps credentials out of URLs and shared
+client state. Missing keys retain anonymous access; invalid configured credentials
+fail without silently retrying anonymously. The research receipt identifies
+authenticated or anonymous allowance. Existing explicit selection, publication
+window and 20-record limit apply; the key does not enable full text or change
+source reliability. See [OpenAlex authentication](https://help.openalex.org/api/authentication/).
+
 Companies House requires API authentication and permits 600 requests per five
 minutes. Its public data API is free; the implementation uses an operator key in
 per-request credentials, not a shared client's global headers. See the official

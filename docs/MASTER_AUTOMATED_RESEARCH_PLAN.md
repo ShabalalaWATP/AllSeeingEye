@@ -22,8 +22,12 @@ current delivery and research capability are separate acceptance criteria.
   source disable inheritance, cancellation and truthful page limits.
 - [x] Reject legacy EONET polygon centres from exact retained-area evidence.
 - [x] Verify current FIRMS delivery and add AISStream compression diagnostics.
-- [ ] Complete free provider account linking. Browser control currently fails
-  to start its app-server; no new registrations have been completed.
+- [x] Restore browser/command access and link the completed OpenAlex account:
+  optional server-side key, origin-bound Bearer header and a successful bounded
+  live metadata query (11 September UK time).
+- [ ] Complete remaining free provider account linking. WSDOT issued an access
+  code but its adapter is pending; OS email is verified and other prepared
+  registrations still require the operator's authentication steps.
 - [ ] Resolve disabled/untested AI profile readiness and complete real-model
   report evaluation through the administrator connection journey.
 - [ ] Extend secure administrator credential management beyond FIRMS and AI.

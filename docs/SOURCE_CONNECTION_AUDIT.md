@@ -5,6 +5,34 @@ provider requests and current official access documentation. Baseline commit:
 `4528ca6`. This document separates implemented connectors, configured access,
 observed delivery and work still needed. A catalogue entry is not a connection.
 
+## Account-linking update, 11 September 2026
+
+Browser access and the Codex command runner have recovered. The stale Windows
+user-level CLI override is absent. Account status now supersedes the original
+blocked-signup notes below:
+
+- OpenAlex: account completed and the operator's temporary development key saved
+  in ignored `backend/.env` as `ASE_OPENALEX_API_KEY`. The guarded client sends it
+  only in an origin-bound Bearer header. A live `/rate-limit` request succeeded;
+  a dated scholarly search returned 20 records at 23:52 UTC on 10 September
+  (11 September in the operator's UK timezone). This is bounded metadata access,
+  not full-text retrieval, exhaustive research or LLM report evaluation.
+- WSDOT: an access code was issued through its official form. Adapter integration
+  and live camera verification remain outstanding; no connection is claimed.
+- Ordnance Survey: email verified; remaining account steps await the operator.
+  OpenAQ, SSLMate, Alberta 511 and BarentsWatch forms were prepared. Companies
+  House requires the operator's GOV.UK One Login. Their API access is not verified.
+
+OpenAlex remains optional and anonymous access still works without a key. The
+receipt identifies which allowance is used, without promising a quota. Existing
+20-result, opt-in and source-disable controls remain. Rotate temporary credentials
+shared in chat before broader deployment; no keys were rotated here.
+
+The focused OpenAlex change passed 102 tests with 96.38% targeted branch-inclusive
+coverage (new client 100%), backend lint/format/type checks, architecture checks,
+scoped Bandit and independent review. The restarted local API health and frontend
+login both returned HTTP 200. The secret remains outside tracked changes.
+
 ## Findings that matter
 
 The app has a broad catalogue, but the main gaps are operational access,
@@ -123,7 +151,7 @@ secret values. All paths below are backend settings, not browser environment val
 | UK sanctions / OFAC SDN | Both snapshot paths absent | Import dated primary lists through the existing validated snapshot process and retain source hash/licence |
 | AidData projects | Catalogue path absent | Prepare the supported local catalogue with recorded years, provenance and actual project geometry |
 | OONI aggregates | Licence acknowledgement false | Confirm appropriate non-commercial use before enabling; no token is missing |
-| OpenAlex | Anonymous basic queries supported; no key setting yet | Free account can raise quota, but a guarded optional-key adapter change is needed before linking |
+| OpenAlex | Optional `ASE_OPENALEX_API_KEY` configured and live metadata query verified on 11 September | Keep bounded opt-in collection; anonymous access remains available when the key is unset |
 | AI reports | Disabled, untested saved profile | Use the administrator model-discovery, test and activation journey with usable encryption configuration |
 
 See the [research access audit](source-audit/research-access-gaps.md) for official
@@ -190,8 +218,8 @@ created in this run.
 
 ## Remaining acceptance gates
 
-- Restore the computer-use browser service, then complete eligible free account
-  journeys using the authorised contact. No new registrations were completed.
+- Continue the outstanding account journeys and integration checks listed in
+  the 11 September update. Account creation and issued keys are separate from delivery.
 - Resolve administrator AI connection readiness and run a real, cited report
   evaluation; a populated evidence batch is not a tested LLM report.
 - Add provider-specific connectors for queued sources and confirm actual access,
