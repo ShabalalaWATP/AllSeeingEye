@@ -1,7 +1,6 @@
 import { RF_FIELDS } from '@/lib/map/rfPlanning';
 import type { RfInputs } from '@/lib/map/rfPlanning';
 import type { RfDraft, RfPropagation } from '@/lib/map/rfDraft';
-import { RfPowerInput } from './RfPowerInput';
 import { RfEngineeringControls } from './RfEngineeringControls';
 
 const BASIC_FIELDS = new Set<keyof RfInputs>([
@@ -49,12 +48,6 @@ export function RfRadioFields({
     <>
       <div className="rf-field-grid">
         {RF_FIELDS.filter(({ key }) => key === 'frequencyMHz').map(field)}
-        {mode !== 'hf-skywave' && (
-          <RfPowerInput
-            dbm={draft.values.transmitDbm}
-            onChange={(value) => onChange('transmitDbm', value)}
-          />
-        )}
         {mode !== 'hf-skywave' &&
           RF_FIELDS.filter(
             ({ key }) =>

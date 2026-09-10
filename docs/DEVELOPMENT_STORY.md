@@ -3311,3 +3311,19 @@ untouched files (MapImagePreview.tsx, inputDeclarationCapacity.test.tsx and
 firmsConnection.ts). Existing large vendor chunks and the untouched 380-line
 MapLibre engine remain warnings. ASE login on 5174 and API health on 8001
 responded successfully. No backend code changed or backend tests ran this milestone.
+
+## 10 September 2026: compact RF panel and prominent watt input
+
+Following operator feedback, reduced the RF drawer from 640 px to a maximum of
+360 px, including narrow viewports, and stacked configuration sections to preserve
+map space. Moved the explicitly labelled Transmit power (watts) input to the top
+of Configure. Skywave retains the saved value in a disabled field with an
+explanation that its geometry calculation does not use transmit power.
+
+Watt-to-dBm conversion, modelling and request behaviour are unchanged. Updated
+existing input/preset regressions and checked that watts is the first visible
+numeric field outside disclosures. All 29 focused tests passed, as did the
+production build and application type check, scoped ESLint, changed-source
+formatting, whitespace and file-length checks. Coverage was not remeasured for
+this display-only follow-up. Existing vendor-size and MapLibre file-length
+warnings remain. Browser/GPU verification remains blocked by administrator policy.

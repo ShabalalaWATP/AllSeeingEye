@@ -20,7 +20,7 @@ interface PanelProps {
   children: ReactNode;
   entry?: boolean;
   caption?: string;
-  size?: 'wide';
+  size?: 'medium';
 }
 export function ControlPanel({ children }: PanelProps) {
   return children;

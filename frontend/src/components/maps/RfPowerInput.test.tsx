@@ -15,7 +15,7 @@ it('allows fractional watt editing and invalidates blank or zero power', async (
   }
   const user = userEvent.setup();
   render(<Fixture />);
-  const input = screen.getByLabelText('Transmit power (W)');
+  const input = screen.getByLabelText('Transmit power (watts)');
   await user.clear(input);
   await user.type(input, '0.5');
   expect(input).toHaveValue(0.5);

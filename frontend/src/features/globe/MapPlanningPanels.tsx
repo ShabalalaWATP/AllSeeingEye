@@ -30,7 +30,7 @@ export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>
       label="RF link calculator"
       caption="RF"
       icon="rf"
-      size="wide"
+      size="medium"
     >
       <RfCalculatorPanel
         origin={tools.rf.origin}

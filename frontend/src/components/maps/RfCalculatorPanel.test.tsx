@@ -95,10 +95,14 @@ it('defaults to terrain, uses watts and requires explicit valid analysis', () =>
   expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('terrain');
   expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeEnabled();
-  fireEvent.change(screen.getByLabelText('Transmit power (W)'), { target: { value: '20' } });
+  const watts = screen.getByRole('spinbutton', { name: 'Transmit power (watts)' });
+  expect(watts).toBeVisible();
+  expect(watts.closest('details')).toBeNull();
+  expect(screen.getAllByRole('spinbutton')[0]).toBe(watts);
+  fireEvent.change(screen.getByLabelText('Transmit power (watts)'), { target: { value: '20' } });
   expect(screen.getByLabelText('Transmit power (dBm)')).toHaveValue(30 + 10 * Math.log10(20));
   expect(change).toHaveBeenLastCalledWith(null);
-  fireEvent.change(screen.getByLabelText('Transmit power (W)'), { target: { value: '' } });
+  fireEvent.change(screen.getByLabelText('Transmit power (watts)'), { target: { value: '' } });
   expect(screen.getByRole('button', { name: 'Analyse terrain' })).toBeDisabled();
 });
 it('preserves custom model environment when changing a radio preset and honours its HF suggestion', () => {
@@ -115,7 +119,7 @@ it('preserves custom model environment when changing a radio preset and honours 
   });
   expect(screen.getByRole('combobox', { name: 'Propagation model' })).toHaveValue('hf-groundwave');
   expect(screen.getByLabelText('Ground conductivity (S/m)')).toHaveValue(0.02);
-  expect(screen.getByLabelText('Transmit power (W)')).toHaveValue(20);
+  expect(screen.getByLabelText('Transmit power (watts)')).toHaveValue(20);
 });
 
 it('does not apply a receive budget or unused radio-field validation to skywave', () => {
@@ -126,7 +130,8 @@ it('does not apply a receive budget or unused radio-field validation to skywave'
   draft.values.distanceKm = '';
   render(<Calculator draft={draft} origin={[0, 51]} />);
   expect(screen.getByRole('button', { name: 'Calculate skywave scenario' })).toBeEnabled();
-  expect(screen.queryByLabelText('Transmit power (W)')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Transmit power (watts)')).toBeDisabled();
+  expect(screen.getByText(/Power is not used by the skywave geometry scenario/)).toBeVisible();
   expect(screen.queryByLabelText('Path length (km)')).not.toBeInTheDocument();
   expect(screen.queryByText(/Estimated receive level/)).not.toBeInTheDocument();
 });

@@ -150,8 +150,8 @@
   left: 68px;
   right: auto;
 }
-.map-tool-panel[data-size='wide'] {
-  width: min(640px, calc(100% - 136px));
+.map-tool-panel[data-size='medium'] {
+  width: min(360px, calc(100% - 136px));
 }
 .map-rail-divider {
   width: 26px;
@@ -177,11 +177,15 @@
     right: 6px;
   }
   .map-tool-panel,
-  .map-tool-panel[data-size='wide'],
+  .map-tool-panel[data-size='medium'],
   .map-tool-panel[data-side='left'] {
     right: 58px;
     left: 58px;
     width: auto;
+  }
+  .map-tool-panel[data-size='medium'] {
+    left: auto;
+    width: min(360px, calc(100% - 116px));
   }
 }
 

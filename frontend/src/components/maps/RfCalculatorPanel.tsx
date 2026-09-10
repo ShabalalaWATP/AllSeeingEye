@@ -10,6 +10,7 @@ import { RfResults } from './RfResults';
 import { RfCoverageControls } from './RfCoverageControls';
 import { RfReferenceControls } from './RfReferenceControls';
 import { RfRadioFields } from './RfRadioFields';
+import { RfPowerInput } from './RfPowerInput';
 import { RfPlannerTabs } from './RfPlannerTabs';
 import { RfAnalysisAction } from './RfAnalysisAction';
 import { RfPositions } from './RfPositions';
@@ -151,6 +152,11 @@ export function RfCalculatorPanel({
             <div className="rf-configure-grid">
               <section className="rf-configure-section" aria-label="Radio and propagation settings">
                 <h3 className="rf-section-label">Radio &amp; propagation</h3>
+                <RfPowerInput
+                  dbm={values.transmitDbm}
+                  onChange={(value) => change('transmitDbm', value)}
+                  disabled={mode === 'hf-skywave'}
+                />
                 <RfModelControls draft={currentDraft} onChange={update} />
                 <RfPresetSelect
                   presetId={presetId}

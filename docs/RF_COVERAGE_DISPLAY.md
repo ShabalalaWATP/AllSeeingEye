@@ -6,9 +6,11 @@ choose the radio settings, then explicitly analyse terrain or show the reference
 estimate. Selecting an area keeps a saved receiver available for a later link
 study but excludes it from the area calculation. A link requires both sites.
 
-The wider RF workspace separates **Configure** and **Results**. Radio/model
-settings sit beside transmitter/receiver placement on larger displays and stack
-on narrower displays. Advanced antenna and planning inputs remain in disclosures.
+The compact RF workspace separates **Configure** and **Results**. The panel is
+capped at 360 px, with radio/model settings above transmitter/receiver placement
+to leave more of the map visible. **Transmit power (watts)** appears first in
+Configure. Skywave shows the saved power as disabled with an explanation, since
+that mode estimates geometry rather than received power. Advanced antenna and planning inputs remain in disclosures.
 Analysis runs only when requested; completed output opens Results. Edit study
 returns to the setup, with changed inputs invalidating the previous result.
 

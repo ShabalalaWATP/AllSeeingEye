@@ -3,7 +3,7 @@
   --rf-accent: #8cf1d0;
   --rf-muted: #9aa6ad;
   --rf-line: #293137;
-  --rf-gutter: 20px;
+  --rf-gutter: 16px;
   container: rf-planner / inline-size;
   padding: var(--rf-gutter);
   background: #0b0f12;
@@ -29,7 +29,7 @@
 }
 .rf-planner-header h2 {
   margin-top: 5px;
-  font-size: 23px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.035em;
 }
@@ -229,25 +229,16 @@
 .rf-budget-preview > p {
   margin: 12px 0;
 }
-@container rf-planner (min-width: 520px) {
-  .rf-configure-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 24px;
-  }
-  .rf-site-section {
-    border-left: 1px solid var(--rf-line);
-    padding-left: 24px;
-  }
-  .rf-stations {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .rf-station {
-    padding: 14px;
-    gap: 7px;
-  }
-  .rf-station-position {
-    font-size: 11px;
-  }
+.rf-power-input {
+  display: grid;
+  gap: 8px;
+}
+.rf-power-input input {
+  font-size: 18px;
+}
+.rf-power-input input:disabled {
+  color: var(--rf-muted);
+  background: #0d1115;
 }
 @container rf-planner (max-width: 270px) {
   .rf-field-grid,
@@ -269,10 +260,5 @@
   .rf-planner *::after {
     transition: none !important;
     animation: none !important;
-  }
-}
-@media (max-width: 640px) {
-  .rf-planner {
-    --rf-gutter: 16px;
   }
 }
