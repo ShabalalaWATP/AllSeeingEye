@@ -150,6 +150,9 @@
   left: 68px;
   right: auto;
 }
+.map-tool-panel[data-size='wide'] {
+  width: min(640px, calc(100% - 136px));
+}
 .map-rail-divider {
   width: 26px;
   border-top: 1px solid var(--color-line);
@@ -174,6 +177,7 @@
     right: 6px;
   }
   .map-tool-panel,
+  .map-tool-panel[data-size='wide'],
   .map-tool-panel[data-side='left'] {
     right: 58px;
     left: 58px;

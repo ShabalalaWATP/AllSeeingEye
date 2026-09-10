@@ -1,5 +1,6 @@
 import { DEFAULT_RF_INPUTS } from './rfPlanning';
 import type { RfInputs } from './rfPlanning';
+import { RF_ENGINEERING_DRAFT_DEFAULTS, type RfEngineeringDraft } from './rfEngineering';
 
 export type RfPropagation = 'terrain' | 'free-space' | 'hf-groundwave' | 'hf-skywave';
 export const RF_ENVIRONMENT_DEFAULTS = {
@@ -20,6 +21,7 @@ export interface RfDraft {
   presetId: string;
   propagation?: RfPropagation;
   environment?: RfEnvironment;
+  engineering?: RfEngineeringDraft;
   /** Omission preserves automatic link selection when a receiver is placed. */
   study?: 'link' | 'area';
 }
@@ -32,5 +34,6 @@ export function createRfDraft(input: RfInputs = DEFAULT_RF_INPUTS, presetId = 'c
     presetId,
     propagation: 'terrain',
     environment: { ...RF_ENVIRONMENT_DEFAULTS },
+    engineering: { ...RF_ENGINEERING_DRAFT_DEFAULTS },
   };
 }

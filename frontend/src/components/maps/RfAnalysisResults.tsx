@@ -3,6 +3,8 @@ import { RfTerrainProfileChart } from './RfTerrainProfileChart';
 import { RfGroundwaveResults } from './RfGroundwaveResults';
 import { RfMapLegend } from './RfMapLegend';
 import { RfTerrainReach } from './RfTerrainReach';
+import { RfTerrainBudget } from './RfTerrainBudget';
+import { RfTerrainQuality } from './RfTerrainQuality';
 import { RF_STATUS_CSS } from '@/lib/map/rfTerrainPresentation';
 
 const statusText = {
@@ -24,7 +26,7 @@ export function RfAnalysisResults({
     return (
       <section
         aria-label="HF skywave scenario result"
-        className="space-y-3 rounded-lg border border-indigo-300/30 bg-indigo-300/5 p-3"
+        className="rf-result-summary space-y-3 rounded-lg border border-indigo-300/30 bg-indigo-300/5 p-3"
       >
         <p className="text-indigo-200">Single-hop geometry scenario</p>
         <p className="font-mono text-lg">
@@ -50,34 +52,52 @@ export function RfAnalysisResults({
     );
   }
   const { terrain, elevations, input, plan } = analysis;
-  const txGround = elevations.elevations_m[0];
-  const rxGround = terrain.path ? elevations.elevations_m.at(-1) : undefined;
+  const txGround = terrain.path ? terrain.path.points[0]?.elevationM : elevations.elevations_m[0];
+  const rxGround = terrain.path?.points.at(-1)?.elevationM;
+  const headlineStatus =
+    terrain.path?.status ??
+    (terrain.radials.some((radial) => radial.clearDistanceKm > 0) ? 'clear' : 'unknown');
   return (
     <section aria-label="Terrain radio analysis" className="space-y-3">
-      <div className="rounded-lg border border-cyan/25 bg-cyan/5 p-3">
-        <p
-          className="font-medium"
-          style={{ color: RF_STATUS_CSS[terrain.path?.status ?? 'clear'] }}
-        >
+      <div className="rf-result-summary space-y-3">
+        <p className="rf-result-kicker text-xs font-mono uppercase tracking-wider text-muted">
+          {terrain.path ? 'Point-to-point terrain screen' : '360° terrain screen'}
+        </p>
+        <p className="text-lg font-medium" style={{ color: RF_STATUS_CSS[headlineStatus] }}>
           {terrain.path ? statusText[terrain.path.status] : 'Sampled terrain sectors'}
         </p>
-        <div className="mt-2 grid grid-cols-2 gap-3 text-xs">
+      </div>
+      <RfTerrainReach terrain={terrain} />
+      {terrain.path && (
+        <>
+          <RfTerrainBudget profile={terrain.path} />
+          <RfTerrainProfileChart profile={terrain.path} />
+        </>
+      )}
+      <div className="border-y border-line py-3">
+        <div className="grid grid-cols-2 gap-3 text-xs">
           <div>
             <p className="text-muted">TX ground elevation</p>
-            <p className="font-mono">{txGround?.toFixed(1)} m</p>
+            <p className="font-mono">{txGround == null ? 'Unknown' : `${txGround.toFixed(1)} m`}</p>
             <p className="text-muted">+ {input.transmitHeightM} m antenna AGL</p>
             <p className="font-mono">
-              {((txGround ?? 0) + input.transmitHeightM).toFixed(1)} m antenna elevation
+              {txGround == null
+                ? 'Antenna elevation unknown'
+                : `${(txGround + input.transmitHeightM).toFixed(1)} m antenna elevation`}
             </p>
           </div>
           <div>
-            {rxGround !== undefined ? (
+            {terrain.path ? (
               <>
                 <p className="text-muted">RX ground elevation</p>
-                <p className="font-mono">{rxGround.toFixed(1)} m</p>
+                <p className="font-mono">
+                  {rxGround == null ? 'Unknown' : `${rxGround.toFixed(1)} m`}
+                </p>
                 <p className="text-muted">+ {input.receiveHeightM} m antenna AGL</p>
                 <p className="font-mono">
-                  {(rxGround + input.receiveHeightM).toFixed(1)} m antenna elevation
+                  {rxGround == null
+                    ? 'Antenna elevation unknown'
+                    : `${(rxGround + input.receiveHeightM).toFixed(1)} m antenna elevation`}
                 </p>
               </>
             ) : (
@@ -92,28 +112,13 @@ export function RfAnalysisResults({
           </div>
         </div>
         <p className="mt-2 text-[10px] text-muted">
-          Elevations use the source sea-level datum. Grid spacing up to{' '}
-          {elevations.resolution_m.toFixed(0)} m is not a height-accuracy guarantee.
+          Elevations use the source sea-level datum. Antenna heights are above local ground.
+          Effective Earth factor k={(terrain.engineering?.earthFactor ?? 4 / 3).toFixed(3)}. Assumed
+          obstacle screen: {(terrain.engineering?.obstacleHeightM ?? 0).toFixed(1)} m above interior
+          ground samples.
         </p>
       </div>
-      <RfTerrainReach terrain={terrain} />
-      {terrain.path && (
-        <>
-          <RfTerrainProfileChart profile={terrain.path} />
-          <dl className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <dt className="text-muted">Sampled diffraction loss</dt>
-              <dd className="font-mono">
-                {terrain.path.diffractionLossDb?.toFixed(1) ?? 'Unknown'} dB
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">Modelled link margin</dt>
-              <dd className="font-mono">{terrain.path.marginDb?.toFixed(1) ?? 'Unknown'} dB</dd>
-            </div>
-          </dl>
-        </>
-      )}
+      <RfTerrainQuality analysis={analysis} />
       <RfMapLegend />
       <p className="text-xs text-muted">
         Mint marks sampled clearance; amber is risk and red is an obstructed direct path. Grey and

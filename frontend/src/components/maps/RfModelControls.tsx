@@ -77,15 +77,14 @@ export function RfModelControls({
   const change = (key: keyof RfEnvironment, value: string) =>
     onChange({ ...draft, environment: { ...env, [key]: value } });
   return (
-    <div className="space-y-3">
-      <label className="block text-muted">
+    <div className="rf-model">
+      <label className="rf-field">
         Propagation model
         <select
           value={mode}
           onChange={(event) =>
             onChange({ ...draft, propagation: event.target.value as RfPropagation })
           }
-          className="mt-1 min-h-11 w-full rounded border border-line bg-ground px-2 text-text"
         >
           {MODES.map((item) => (
             <option key={item.id} value={item.id}>
@@ -94,9 +93,9 @@ export function RfModelControls({
           ))}
         </select>
       </label>
-      <p className="text-muted">{MODES.find((item) => item.id === mode)?.description}</p>
+      <p className="rf-help">{MODES.find((item) => item.id === mode)?.description}</p>
       {mode === 'hf-groundwave' && (
-        <label className="block text-muted">
+        <label className="rf-field">
           Ground conductivity shortcut
           <select
             value={
@@ -107,7 +106,6 @@ export function RfModelControls({
             onChange={(event) => {
               if (event.target.value !== 'custom') change('conductivitySm', event.target.value);
             }}
-            className="mt-1 min-h-10 w-full rounded border border-line bg-ground p-2"
           >
             <option value="custom">Custom assumption</option>
             <option value="0.001">Poor ground / 0.001 S/m</option>
@@ -118,14 +116,14 @@ export function RfModelControls({
         </label>
       )}
       {mode === 'hf-groundwave' && (
-        <p className="text-muted">
+        <p className="rf-help">
           These shortcuts change conductivity only. Relative permittivity is unchanged; enter an
           appropriate separate assumption.
         </p>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="rf-field-grid">
         {fields(mode).map(({ key, label, min, max }) => (
-          <label key={key} className="block text-muted">
+          <label key={key} className="rf-field">
             {label}
             <input
               type="number"
@@ -134,7 +132,6 @@ export function RfModelControls({
               step="any"
               value={env[key]}
               onChange={(event) => change(key, event.target.value)}
-              className="mt-1 w-full rounded border border-line bg-ground p-2 text-text"
             />
           </label>
         ))}

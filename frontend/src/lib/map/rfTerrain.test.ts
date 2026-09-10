@@ -27,11 +27,11 @@ const distances = [0, 500, 1000];
 
 it('bounds geodesic sampling and shares a single radial origin', () => {
   const path = createRfTerrainPath([0, 51], [1, 51]);
-  expect(path.positions).toHaveLength(129);
+  const expected = Geodesic.WGS84.Inverse(51, 0, 51, 1).s12 ?? 0;
+  expect(path.positions).toHaveLength(Math.ceil(expected / 100) + 1);
   expect(path.positions[0]).toEqual([0, 51]);
   expect(path.positions.at(-1)).toEqual([1, 51]);
-  const expected = Geodesic.WGS84.Inverse(51, 0, 51, 1).s12 ?? 0;
-  expect(path.profiles[0]?.distancesM[64]).toBeCloseTo(expected / 2, 6);
+  expect(path.profiles[0]?.distancesM[1]).toBeCloseTo(expected / (path.positions.length - 1), 6);
   const radial = createRfTerrainRadials([0, 51], 50);
   expect(radial.positions).toHaveLength(409);
   expect(radial.profiles).toHaveLength(24);
@@ -48,7 +48,7 @@ it('wraps dateline samples and rejects excessive work or unsupported coordinates
   expect(path.positions.every(([lon]) => lon >= -180 && lon <= 180)).toBe(true);
   expect(() => createRfTerrainPath([0, 0], [10, 0])).toThrow(/200 km/);
   expect(() => createRfTerrainPath([0, 0], [0, 0])).toThrow(/1 metre/);
-  expect(() => createRfTerrainPath([0, 0], [0.1, 0], 130)).toThrow(/samples/);
+  expect(() => createRfTerrainPath([0, 0], [0.1, 0], 770)).toThrow(/samples/);
   expect(() => createRfTerrainRadials([0, 0], 51)).toThrow(/50 km/);
   expect(() => createRfTerrainRadials([0, 0], 10, 25)).toThrow(/bearings/);
   expect(() => createRfTerrainRadials([0, 0], 10, 24, 18)).toThrow(/steps/);
@@ -135,8 +135,8 @@ it('stops radial silhouettes at the first failing prefix without inventing recov
   const indices = plan.profiles[0]!.indices;
   elevations[indices[2]!] = 1000;
   const result = analyseRfTerrain(powerful, plan, elevations);
-  expect(result.radials[0]?.clearDistanceKm).toBe(2.5);
-  expect(result.radials[0]?.stopDistanceKm).toBe(3.75);
+  expect(result.radials[0]?.clearDistanceKm).toBe(1.25);
+  expect(result.radials[0]?.stopDistanceKm).toBe(2.8125);
   expect(result.radials[0]?.status).toBe('blocked');
   expect(result.radials[0]?.samples).toHaveLength(2);
   expect(result.radials[1]?.clearDistanceKm).toBe(5);

@@ -39,9 +39,10 @@ export function RfReferenceControls({
       )}
       <RfMapLegend terrain={false} />
       <p className="text-muted">
-        The labelled boundary is the smaller of the ideal radio horizon and sensitivity distance.
-        Red marks a receiver path beyond that limit. Terrain has not been checked. Changing radio
-        settings or sites clears the previous estimate.
+        The labelled boundary is the smaller of the ideal radio horizon and the distance meeting
+        receiver sensitivity plus your planning reserve. Red marks a receiver path beyond that
+        limit. Terrain has not been checked. Changing radio settings or sites clears the previous
+        estimate.
       </p>
     </div>
   );

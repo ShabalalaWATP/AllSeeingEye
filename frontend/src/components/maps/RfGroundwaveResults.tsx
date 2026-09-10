@@ -8,18 +8,20 @@ const km = (distance: number) => distance.toLocaleString('en-GB', { maximumFract
 /** A sampled model curve, not an interpolated claim of a maximum service range. */
 export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis }) {
   const { result, input, origin, receiver } = analysis;
-  const summary = hfGroundwaveSummary(result, input.sensitivityDbm);
+  const reserveDb = analysis.engineering?.reserveDb ?? 0;
+  const thresholdDbm = input.sensitivityDbm + reserveDb;
+  const summary = hfGroundwaveSummary(result, input.sensitivityDbm, reserveDb);
   const receiverDistance = receiver ? measure([origin, receiver], 'distance').metres / 1000 : null;
   const receive = receiverDistance === null ? null : hfGroundwaveReceiver(result, receiverDistance);
   const powers = result.samples.map((sample) => sample.received_power_dbm);
-  const top = Math.max(...powers, input.sensitivityDbm) + 6;
+  const top = Math.max(...powers, thresholdDbm) + 6;
   const bottom = Math.min(...powers, input.sensitivityDbm) - 6;
   const x = (distance: number) =>
     40 +
     (258 * Math.log(distance / summary.checkedFromKm)) /
       Math.log(summary.checkedToKm / summary.checkedFromKm);
   const y = (power: number) => 20 + (106 * (top - power)) / (top - bottom);
-  const thresholdY = y(input.sensitivityDbm);
+  const thresholdY = y(thresholdDbm);
   const curve = result.samples
     .map(
       (sample) => `${x(sample.distance_km).toFixed(2)},${y(sample.received_power_dbm).toFixed(2)}`,
@@ -32,8 +34,8 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
       : 'Last consecutive passing sample';
   return (
     <section aria-label="HF groundwave model results" className="space-y-3 text-xs">
-      <div className="rounded border border-cyan/25 bg-cyan/5 p-3">
-        <p className="font-mono uppercase tracking-wider text-muted">{status}</p>
+      <div className="rf-result-summary space-y-3">
+        <p className="rf-result-kicker font-mono uppercase tracking-wider text-muted">{status}</p>
         <p
           className={`mt-1 font-mono text-xl ${summary.noPassing ? 'text-amber-300' : 'text-cyan'}`}
         >
@@ -41,18 +43,28 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
         </p>
         <p className="mt-2 text-muted">
           {summary.noPassing
-            ? `The first model sample at ${km(summary.checkedFromKm)} km is below receiver sensitivity. No closer range was calculated.`
+            ? `The first model sample at ${km(summary.checkedFromKm)} km is below the planning threshold. No closer range was calculated.`
             : summary.atLimit
-              ? `Every checked sample meets the sensitivity threshold through ${km(summary.checkedToKm)} km. This is the search limit, not a maximum range.`
-              : `The next checked sample at ${km(summary.firstFailureKm ?? summary.checkedToKm)} km is below sensitivity. The threshold crossing between samples is unresolved.`}
+              ? `Every checked sample meets the planning threshold through ${km(summary.checkedToKm)} km. This is the search limit, not a maximum range.`
+              : `The next checked sample at ${km(summary.firstFailureKm ?? summary.checkedToKm)} km is below the planning threshold. The threshold crossing between samples is unresolved.`}
         </p>
+        <p className="text-muted">
+          Threshold {thresholdDbm.toFixed(1)} dBm = sensitivity {input.sensitivityDbm.toFixed(1)}{' '}
+          dBm + {reserveDb.toFixed(1)} dB planning reserve.
+        </p>
+        {summary.noPassing && (
+          <p className="rf-result-next-step text-amber-200">
+            Check the equipment sensitivity, antenna gains and ground conductivity. The model begins
+            at 1 km; it cannot determine shorter-range reception.
+          </p>
+        )}
       </div>
       <p className="text-muted">
         {result.samples.length} samples from {km(summary.checkedFromKm)} to{' '}
         {km(summary.checkedToKm)} km. Nothing closer than or beyond this interval is inferred. Later
         isolated passing samples do not extend the range outline.
       </p>
-      <figure className="rounded border border-line bg-ground/60 p-2">
+      <figure className="rf-profile rounded border border-line bg-ground/60 p-2">
         <svg
           viewBox="0 0 320 160"
           className="w-full"
@@ -61,7 +73,8 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
         >
           <title>HF groundwave model power curve</title>
           <desc>
-            Cyan line shows sampled received power. Amber dashed line shows receiver sensitivity.
+            Cyan line shows sampled received power. Amber dashed line shows sensitivity plus the
+            planning reserve. The grey dotted line shows sensitivity alone when reserve is applied.
             Distance uses a logarithmic scale. This is model output, not a measurement.
           </desc>
           <line x1="40" y1="20" x2="40" y2="126" stroke="currentColor" className="text-muted/40" />
@@ -74,6 +87,7 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
             className="text-muted/40"
           />
           <line
+            data-power-threshold="planning"
             x1="40"
             y1={thresholdY}
             x2="298"
@@ -82,6 +96,17 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
             strokeDasharray="4 4"
             className="text-amber-300"
           />
+          {reserveDb > 0 && (
+            <line
+              data-power-threshold="sensitivity"
+              x1="40"
+              y1={y(input.sensitivityDbm)}
+              x2="298"
+              y2={y(input.sensitivityDbm)}
+              stroke="#9aa7bc"
+              strokeDasharray="1 4"
+            />
+          )}
           <polyline
             points={curve}
             fill="none"
@@ -166,29 +191,38 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
         </svg>
         <figcaption className="flex flex-wrap justify-between gap-2 px-2 text-muted">
           <span className="text-cyan">Model samples</span>
-          <span className="text-amber-300">Sensitivity {input.sensitivityDbm.toFixed(1)} dBm</span>
+          <span className="text-amber-300">Planning threshold {thresholdDbm.toFixed(1)} dBm</span>
+          <span className="text-muted">Sensitivity {input.sensitivityDbm.toFixed(1)} dBm</span>
         </figcaption>
       </figure>
       {receiverDistance !== null && (
-        <div className="rounded border border-line p-3">
+        <div className="border-y border-line py-3">
           <p className="font-mono uppercase tracking-wide text-muted">
             Receiver · {km(receiverDistance)} km
           </p>
           {receive ? (
             <>
-              <dl className="mt-2 grid grid-cols-2 gap-2">
-                <div>
+              <dl className="rf-result-metrics mt-2 grid grid-cols-2 gap-2">
+                <div className="rf-result-metric">
                   <dt className="text-muted">Modelled receive level</dt>
                   <dd className="mt-1 font-mono text-base text-text">
                     {receive.receivedDbm.toFixed(1)} dBm
                   </dd>
                 </div>
-                <div>
+                <div className="rf-result-metric">
                   <dt className="text-muted">Margin above sensitivity</dt>
                   <dd
                     className={`mt-1 font-mono text-base ${receive.receivedDbm < input.sensitivityDbm ? 'text-amber-300' : 'text-cyan'}`}
                   >
                     {(receive.receivedDbm - input.sensitivityDbm).toFixed(1)} dB
+                  </dd>
+                </div>
+                <div className="rf-result-metric">
+                  <dt className="text-muted">Margin after planning reserve</dt>
+                  <dd
+                    className={`mt-1 font-mono text-base ${receive.receivedDbm < thresholdDbm ? 'text-amber-300' : 'text-cyan'}`}
+                  >
+                    {(receive.receivedDbm - thresholdDbm).toFixed(1)} dB
                   </dd>
                 </div>
               </dl>
@@ -210,7 +244,8 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
       <p className="text-muted">
         Smooth, homogeneous ground scenario. Terrain, buildings, vegetation and skywave are
         excluded. The cyan outline is the last consecutive passing sample; amber marks the first
-        failed sample. No fade or noise margin is added.
+        failed sample. The selected reserve is an allowance, not modelled noise, fading or a
+        reliability percentage. It does not change predicted receive power.
       </p>
       <details className="rounded border border-line p-3">
         <summary className="cursor-pointer text-text">Model, source and sample values</summary>
@@ -231,7 +266,8 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
               <tr>
                 <th className="p-1 font-normal">km</th>
                 <th className="p-1 font-normal">dBm</th>
-                <th className="p-1 font-normal">Margin dB</th>
+                <th className="p-1 font-normal">Raw margin dB</th>
+                <th className="p-1 font-normal">After reserve dB</th>
               </tr>
             </thead>
             <tbody>
@@ -242,6 +278,7 @@ export function RfGroundwaveResults({ analysis }: { analysis: GroundwaveAnalysis
                   <td className="p-1">
                     {(sample.received_power_dbm - input.sensitivityDbm).toFixed(1)}
                   </td>
+                  <td className="p-1">{(sample.received_power_dbm - thresholdDbm).toFixed(1)}</td>
                 </tr>
               ))}
             </tbody>

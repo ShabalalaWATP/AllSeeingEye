@@ -747,3 +747,21 @@ requirements from the earlier milestone remain in force.
 
 Source findings and limits are recorded in [OSIRIS interface plan](OSIRIS_MAP_INTERFACE_PLAN.md)
 and [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
+
+## 10 September 2026: RF workspace and planning quality
+
+- [x] Replace the narrow RF form with a responsive Configure/Results workspace, clear site controls and explicit analysis actions.
+- [x] Preserve keyboard focus through result transitions without taking focus from map interaction.
+- [x] Add editable planning reserve and distinct raw/remaining margin across terrain, free-space and HF groundwave.
+- [x] Add explicit obstacle-height and effective-Earth-factor scenarios without altering source elevations.
+- [x] Target 100 m point-to-point sampling, capped at 769 positions; concentrate the unchanged 409-position area study nearer TX.
+- [x] Expose sample gaps, nominal grid spacing, first assessed radial distance and missing/bathymetry limitations.
+- [x] Retain explicit requests, cancellation, access invalidation and existing backend provider budgets.
+- [x] Pass 1,727 frontend tests, unchanged coverage gates, lint, types, production build and changed-source formatting; complete independent correctness/access review.
+- [ ] Interactive browser/GPU acceptance when the administrator policy permits.
+- [ ] Separately validate a full terrain propagation engine, such as NTIA ITM, with reference vectors and explicit climate, ground, antenna and variability inputs.
+- [ ] Add measured site/noise and antenna-pattern inputs before claiming calibrated service reliability.
+
+See [RF reach and coverage display](RF_COVERAGE_DISPLAY.md). The current screen
+uses one dominant sampled edge, with no claim of full P.526/ITM, live atmospheric
+conditions or guaranteed reception. HF skywave remains an explicit geometry scenario.

@@ -15,7 +15,7 @@ export function RfPowerInput({
         ? String(Number((10 ** ((Number(dbm) - 30) / 10)).toPrecision(10)))
         : '';
   return (
-    <label className="block text-muted">
+    <label className="rf-field">
       Transmit power (W)
       <input
         type="number"
@@ -29,7 +29,6 @@ export function RfPowerInput({
           setEdit({ dbm: next, watts: raw });
           onChange(next);
         }}
-        className="mt-1 w-full rounded border border-line bg-ground p-2 text-text"
       />
     </label>
   );

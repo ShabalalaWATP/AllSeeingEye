@@ -50,6 +50,17 @@ it('distinguishes no passing samples from all samples passing at the search limi
   });
 });
 
+it('uses planning reserve consistently without modifying model samples or raw receive estimates', () => {
+  const result = model();
+  const original = structuredClone(result);
+  expect(hfGroundwaveSummary(result, -100, 15).radiusKm).toBe(1);
+  expect(hfGroundwaveSummary(result, -100, 25).radiusKm).toBeNull();
+  expect(hfGroundwaveReceiver(result, 10)?.receivedDbm).toBe(-90);
+  expect(result).toEqual(original);
+  for (const reserve of [NaN, Infinity, -1, 61])
+    expect(() => hfGroundwaveSummary(result, -100, reserve)).toThrow(/reserve/);
+});
+
 it('interpolates model power on log distance and never extrapolates beyond the sample domain', () => {
   expect(hfGroundwaveReceiver(model(), Math.sqrt(10))).toMatchObject({
     receivedDbm: -85,

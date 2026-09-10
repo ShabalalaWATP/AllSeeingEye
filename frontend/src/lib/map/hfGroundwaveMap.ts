@@ -32,14 +32,20 @@ function validatedSamples(result: GroundwaveResult) {
 }
 
 /** Conservative first-failure contour, not a fitted coverage boundary. */
-export function hfGroundwaveSummary(result: GroundwaveResult, sensitivityDbm: number) {
+export function hfGroundwaveSummary(
+  result: GroundwaveResult,
+  sensitivityDbm: number,
+  reserveDb = 0,
+) {
   if (!Number.isFinite(sensitivityDbm)) throw new Error('Receiver sensitivity must be finite.');
+  if (!Number.isFinite(reserveDb) || reserveDb < 0 || reserveDb > 60)
+    throw new Error('Planning reserve must be from 0 to 60 dB.');
   const { samples, first, last } = validatedSamples(result);
   let radiusKm: number | null = null;
   let firstFailureKm: number | null = null;
   let passingSamples = 0;
   for (const sample of samples) {
-    if (sample.received_power_dbm < sensitivityDbm) {
+    if (sample.received_power_dbm < sensitivityDbm + reserveDb) {
       firstFailureKm = sample.distance_km;
       break;
     }
@@ -111,7 +117,8 @@ export function hfGroundwaveLayers(analysis: GroundwaveAnalysis | null, flat: bo
   if (!analysis) return [];
   measurementPoint(...analysis.origin);
   if (analysis.receiver) measurementPoint(...analysis.receiver);
-  const summary = hfGroundwaveSummary(analysis.result, analysis.input.sensitivityDbm);
+  const reserveDb = analysis.engineering?.reserveDb ?? 0;
+  const summary = hfGroundwaveSummary(analysis.result, analysis.input.sensitivityDbm, reserveDb);
   const definitions = [
     { radius: summary.checkedFromKm, colour: MUTED },
     { radius: summary.radiusKm, colour: CYAN },
@@ -140,7 +147,8 @@ export function hfGroundwaveLayers(analysis: GroundwaveAnalysis | null, flat: bo
       )
     : null;
   if (analysis.receiver && receiverEstimate) {
-    const colour = receiverEstimate.receivedDbm >= analysis.input.sensitivityDbm ? CYAN : AMBER;
+    const colour =
+      receiverEstimate.receivedDbm >= analysis.input.sensitivityDbm + reserveDb ? CYAN : AMBER;
     for (const path of measurementPaths([analysis.origin, analysis.receiver], 'distance'))
       paths.push(...visiblePieces(path, flat).map((piece) => ({ path: piece, colour })));
   }
@@ -175,7 +183,7 @@ export function hfGroundwaveLayers(analysis: GroundwaveAnalysis | null, flat: bo
       id: 'hf-groundwave-label',
       data: sites.filter((point) => point === analysis.origin),
       getPosition: (point) => point,
-      getText: () => `HF groundwave · ${caption}\nHomogeneous ground scenario · no terrain`,
+      getText: () => `HF groundwave · ${caption}\n${reserveDb} dB planning reserve · no terrain`,
       getSize: 12,
       getColor: [220, 230, 235, 255],
       getPixelOffset: [0, -24],

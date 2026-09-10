@@ -24,7 +24,14 @@ export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>
           : {})}
       />
     </ControlPanel>,
-    <ControlPanel key="rf" side="right" label="RF link calculator" caption="RF" icon="rf">
+    <ControlPanel
+      key="rf"
+      side="right"
+      label="RF link calculator"
+      caption="RF"
+      icon="rf"
+      size="wide"
+    >
       <RfCalculatorPanel
         origin={tools.rf.origin}
         receiver={tools.rf.receiver}

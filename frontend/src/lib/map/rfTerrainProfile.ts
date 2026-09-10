@@ -3,6 +3,8 @@ import { measurementPoint } from './measurements';
 import { calculateRf } from './rfPlanning';
 import type { RfInputs } from './rfPlanning';
 import type { RfTerrainProfile } from './rfTerrainTypes';
+import { RF_PHYSICAL_REFERENCE, type RfEngineeringSettings } from './rfEngineering';
+import { RF_TERRAIN_MAX_PATH_SAMPLES } from './rfTerrainSampling';
 
 export const RF_EFFECTIVE_EARTH_RADIUS_M = (4 / 3) * 6_371_000;
 
@@ -23,14 +25,17 @@ export function evaluateRfTerrainProfile(
   positions: readonly Position[],
   distancesM: readonly number[],
   elevationsM: readonly (number | null)[],
+  settings: RfEngineeringSettings = RF_PHYSICAL_REFERENCE,
 ): RfTerrainProfile {
   if (
     positions.length < 3 ||
-    positions.length > 129 ||
+    positions.length > RF_TERRAIN_MAX_PATH_SAMPLES ||
     positions.length !== distancesM.length ||
     positions.length !== elevationsM.length
   )
-    throw new Error('Terrain profiles require 3 to 129 aligned samples.');
+    throw new Error(
+      `Terrain profiles require 3 to ${RF_TERRAIN_MAX_PATH_SAMPLES} aligned samples.`,
+    );
   positions.forEach((point) => measurementPoint(...point));
   const total = distancesM.at(-1) ?? NaN;
   if (
@@ -46,7 +51,7 @@ export function evaluateRfTerrainProfile(
     )
   )
     throw new Error('Terrain distances must increase from zero over a 1 metre to 200 km path.');
-  const free = calculateRf({ ...input, distanceKm: total / 1000 });
+  const free = calculateRf({ ...input, distanceKm: total / 1000 }, settings);
   const wavelength = 299_792_458 / (input.frequencyMHz * 1e6);
   const ground = elevationsM.map((value) =>
     value !== null && Number.isFinite(value) ? value : null,
@@ -56,7 +61,9 @@ export function evaluateRfTerrainProfile(
   const points = positions.map((position, index) => {
     const distanceM = distancesM[index] ?? 0;
     const elevationM = ground[index] ?? null;
-    const earthBulgeM = (distanceM * (total - distanceM)) / (2 * RF_EFFECTIVE_EARTH_RADIUS_M);
+    const earthBulgeM = (distanceM * (total - distanceM)) / (2 * settings.earthFactor * 6_371_000);
+    const obstacleHeightM =
+      index === 0 || index === positions.length - 1 ? 0 : settings.obstacleHeightM;
     const rayHeightM =
       start === null || end === null
         ? null
@@ -64,12 +71,15 @@ export function evaluateRfTerrainProfile(
           input.transmitHeightM +
           ((end + input.receiveHeightM - start - input.transmitHeightM) * distanceM) / total;
     const clearanceM =
-      rayHeightM === null || elevationM === null ? null : rayHeightM - elevationM - earthBulgeM;
+      rayHeightM === null || elevationM === null
+        ? null
+        : rayHeightM - elevationM - earthBulgeM - obstacleHeightM;
     const fresnel60M = 0.6 * Math.sqrt((wavelength * distanceM * (total - distanceM)) / total);
     return {
       position,
       distanceM,
       elevationM,
+      obstacleHeightM,
       earthBulgeM,
       rayHeightM,
       clearanceM,
@@ -77,7 +87,12 @@ export function evaluateRfTerrainProfile(
       fresnelClearanceM: clearanceM === null ? null : clearanceM - fresnel60M,
     };
   });
-  const base = { distanceKm: total / 1000, points, freeSpaceLossDb: free.freeSpaceLossDb };
+  const base = {
+    distanceKm: total / 1000,
+    points,
+    freeSpaceLossDb: free.freeSpaceLossDb,
+    reserveDb: settings.reserveDb,
+  };
   if (ground.some((value) => value === null))
     return {
       ...base,
@@ -85,6 +100,7 @@ export function evaluateRfTerrainProfile(
       diffractionLossDb: null,
       receivedDbm: null,
       marginDb: null,
+      planningMarginDb: null,
       minimumLosClearanceM: null,
       minimumFresnelClearanceM: null,
       obstructionIndex: null,
@@ -107,10 +123,11 @@ export function evaluateRfTerrainProfile(
   const diffractionLossDb = knifeEdgeLossDb(maximumV);
   const receivedDbm = free.receivedDbm - diffractionLossDb;
   const marginDb = receivedDbm - input.sensitivityDbm;
+  const planningMarginDb = marginDb - settings.reserveDb;
   const status =
     minimumLosClearanceM <= 0
       ? 'blocked'
-      : minimumFresnelClearanceM < 0 || marginDb < 0
+      : minimumFresnelClearanceM < 0 || planningMarginDb < 0
         ? 'risk'
         : 'clear';
   return {
@@ -119,6 +136,7 @@ export function evaluateRfTerrainProfile(
     diffractionLossDb,
     receivedDbm,
     marginDb,
+    planningMarginDb,
     minimumLosClearanceM,
     minimumFresnelClearanceM,
     obstructionIndex: diffractionLossDb > 0 ? obstructionIndex : null,

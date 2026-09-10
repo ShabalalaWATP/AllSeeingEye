@@ -47,3 +47,28 @@ it('keeps a clear chart unmarked and refuses missing elevations', () => {
   expect(screen.getByText(/missing elevations/)).toBeVisible();
   expect(screen.queryByRole('img')).not.toBeInTheDocument();
 });
+
+it('draws an assumed obstacle screen separately above unchanged source terrain', () => {
+  const ground = profile([10, 10, 10, 10], 20);
+  const assumed = evaluateRfTerrainProfile(
+    { ...DEFAULT_RF_INPUTS, transmitHeightM: 20, receiveHeightM: 20 },
+    ground.points.map((point) => point.position),
+    ground.points.map((point) => point.distanceM),
+    [10, 10, 10, 10],
+    { reserveDb: 0, obstacleHeightM: 30, earthFactor: 4 / 3 },
+  );
+  expect(assumed.status).toBe('blocked');
+  expect(assumed.points.map((point) => point.elevationM)).toEqual([10, 10, 10, 10]);
+  const { container, rerender } = render(<RfTerrainProfileChart profile={assumed} />);
+  const terrainLine = container.querySelector('[data-profile-series="terrain"]')!;
+  const obstacleLine = container.querySelector('[data-profile-series="assumed-obstacles"]')!;
+  expect(obstacleLine).toHaveAttribute('stroke-dasharray', '6 3');
+  const pointY = (line: Element) =>
+    Number(line.getAttribute('points')!.split(' ')[1]!.split(',')[1]);
+  expect(pointY(obstacleLine)).toBeLessThan(pointY(terrainLine));
+  expect(screen.getByText(/assumed 30.0 m obstacle screen/)).toHaveTextContent(
+    'Buildings and trees have not been measured',
+  );
+  rerender(<RfTerrainProfileChart profile={ground} />);
+  expect(container.querySelector('[data-profile-series="assumed-obstacles"]')).toBeNull();
+});

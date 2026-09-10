@@ -128,3 +128,57 @@ it('shows no passing range when the first groundwave sample fails', () => {
   expect(screen.getByText('No passing range established')).toBeVisible();
   expect(screen.getByText('Below threshold')).toBeVisible();
 });
+
+it('shows physical receive power and both margins separately when a terrain reserve is applied', () => {
+  const analysis = terrain();
+  const heights = analysis.plan.positions.map(() => 0);
+  analysis.input = { ...analysis.input, transmitHeightM: 100, receiveHeightM: 100 };
+  analysis.terrain = analyseRfTerrain(analysis.input, analysis.plan, heights, {
+    reserveDb: 10,
+    obstacleHeightM: 0,
+    earthFactor: 4 / 3,
+  });
+  analysis.elevations.elevations_m = heights;
+  render(<RfAnalysisResults analysis={analysis} />);
+  const path = analysis.terrain.path!;
+  expect(screen.getByText('Modelled receive power').parentElement).toHaveTextContent(
+    `${path.receivedDbm!.toFixed(1)} dBm`,
+  );
+  expect(screen.getByText('Margin above sensitivity').parentElement).toHaveTextContent(
+    `${path.marginDb!.toFixed(1)} dB`,
+  );
+  expect(screen.getByText('Margin after planning reserve').parentElement).toHaveTextContent(
+    `${(path.marginDb! - 10).toFixed(1)} dB`,
+  );
+  expect(screen.getByText(/10.0 dB planning reserve/)).toHaveTextContent(
+    'not predicted receive power',
+  );
+});
+
+it('does not replace missing site elevations with a zero-height antenna estimate', () => {
+  const analysis = terrain();
+  analysis.terrain = analyseRfTerrain(analysis.input, analysis.plan, [null, 90, null]);
+  render(<RfAnalysisResults analysis={analysis} />);
+  expect(screen.getAllByText('Antenna elevation unknown')).toHaveLength(2);
+  expect(screen.queryByText('-5.0 m antenna elevation')).not.toBeInTheDocument();
+  expect(screen.getByText(/2 missing terrain samples/)).toBeVisible();
+  expect(screen.getByText('Modelled receive power').parentElement).toHaveTextContent('Unknown');
+});
+
+it('applies the same reserve to the HF range, power curve threshold and receiver assessment', () => {
+  const analysis = groundwave([-80, -95, -110], Math.sqrt(10));
+  analysis.engineering = { reserveDb: 10, obstacleHeightM: 0, earthFactor: 4 / 3 };
+  const { container } = render(<RfAnalysisResults analysis={analysis} />);
+  expect(screen.getByText('Last consecutive passing sample').parentElement).toHaveTextContent(
+    '1 km',
+  );
+  expect(screen.getByText(/next checked sample at 10 km/)).toBeVisible();
+  expect(screen.getByText('Modelled receive level').parentElement).toHaveTextContent('-87.5 dBm');
+  expect(screen.getByText('Margin above sensitivity').parentElement).toHaveTextContent('12.5 dB');
+  expect(screen.getByText('Margin after planning reserve').parentElement).toHaveTextContent(
+    '2.5 dB',
+  );
+  const planning = container.querySelector('[data-power-threshold="planning"]')!;
+  const sensitivity = container.querySelector('[data-power-threshold="sensitivity"]')!;
+  expect(Number(planning.getAttribute('y1'))).toBeLessThan(Number(sensitivity.getAttribute('y1')));
+});

@@ -1,4 +1,5 @@
 import type { Position } from './geoJsonTypes';
+import type { RfEngineeringSettings } from './rfEngineering';
 
 export type RfTerrainStatus = 'clear' | 'risk' | 'blocked' | 'unknown';
 export interface RfTerrainSamplePlan {
@@ -13,6 +14,7 @@ export interface RfTerrainProfilePoint {
   position: Position;
   distanceM: number;
   elevationM: number | null;
+  obstacleHeightM?: number;
   earthBulgeM: number;
   rayHeightM: number | null;
   clearanceM: number | null;
@@ -27,6 +29,8 @@ export interface RfTerrainProfile {
   diffractionLossDb: number | null;
   receivedDbm: number | null;
   marginDb: number | null;
+  planningMarginDb?: number | null;
+  reserveDb?: number;
   minimumLosClearanceM: number | null;
   minimumFresnelClearanceM: number | null;
   obstructionIndex: number | null;
@@ -45,6 +49,7 @@ export interface RfTerrainRadial {
   samples: RfTerrainRadialSample[];
 }
 export interface RfTerrainAnalysis {
+  engineering?: RfEngineeringSettings;
   kind: 'path' | 'radial';
   origin: Position;
   receiver: Position | null;

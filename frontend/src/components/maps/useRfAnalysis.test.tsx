@@ -90,6 +90,8 @@ it('does no automatic network work and only publishes an explicitly requested te
   expect(terrain).toHaveBeenCalledOnce();
   expect(terrain.mock.calls[0]?.[0]).toHaveLength(409);
   expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'terrain' }));
+  const saved = changed.mock.calls.at(-1)?.[0];
+  expect(saved?.kind === 'terrain' && saved.terrain.engineering?.reserveDb).toBe(10);
   expect(result.current.busy).toBe(false);
   expect(result.current.error).toBeNull();
 });
@@ -162,6 +164,7 @@ it('validates native groundwave limits and converts transmit dBm to watts withou
     sample_count: 48,
   });
   expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'hf-groundwave' }));
+  expect(changed.mock.calls.at(-1)?.[0]).toMatchObject({ engineering: { reserveDb: 10 } });
   rerender({ ...initial, input: { ...input, transmitHeightM: 51 } });
   await act(() => result.current.analyse());
   expect(result.current.error).toMatch(/0 to 50/);
@@ -220,7 +223,16 @@ it('keeps the newest request busy when an older cancelled request finishes', asy
   expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'terrain' }));
 });
 
-it.each(['origin', 'receiver', 'input', 'access', 'account', 'role', 'unmount'] as const)(
+it.each([
+  'origin',
+  'receiver',
+  'input',
+  'engineering',
+  'access',
+  'account',
+  'role',
+  'unmount',
+] as const)(
   'cancels stale terrain work after %s changes even if the provider resolves after abort',
   async (change) => {
     const pending = deferred<TerrainElevations>();
@@ -235,6 +247,14 @@ it.each(['origin', 'receiver', 'input', 'access', 'account', 'role', 'unmount'] 
     if (change === 'receiver') rerender({ ...initial, receiver: [1, 51] });
     if (change === 'input')
       rerender({ ...initial, input: { ...initial.input, frequencyMHz: 950 } });
+    if (change === 'engineering')
+      rerender({
+        ...initial,
+        draft: {
+          ...initial.draft,
+          engineering: { reserveDb: '20', obstacleHeightM: '0', earthFactor: '1' },
+        },
+      });
     if (change === 'access') act(() => invalidateWorkspaceAccess());
     if (change === 'account') act(() => useAuthStore.setState({ user: adminUser }));
     if (change === 'role')
@@ -247,6 +267,24 @@ it.each(['origin', 'receiver', 'input', 'access', 'account', 'role', 'unmount'] 
     });
     expect(changed.mock.calls.map(([value]) => value)).toEqual([null]);
     if (change !== 'unmount') expect(result.current.busy).toBe(false);
+  },
+);
+
+it.each(['terrain', 'hf-groundwave'] as const)(
+  'rejects invalid planning assumptions before a %s request',
+  async (mode) => {
+    const { result } = setup({
+      input: { ...DEFAULT_RF_INPUTS, frequencyMHz: mode === 'terrain' ? 900 : 10 },
+      draft: {
+        ...createRfDraft(),
+        propagation: mode,
+        engineering: { reserveDb: '', obstacleHeightM: '0', earthFactor: '1' },
+      },
+    });
+    await act(() => result.current.analyse());
+    expect(result.current.error).toMatch(/Planning reserve/);
+    expect(terrain).not.toHaveBeenCalled();
+    expect(groundwave).not.toHaveBeenCalled();
   },
 );
 

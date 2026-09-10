@@ -1,0 +1,222 @@
+.rf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: #b8c2c7;
+  font-size: 12px;
+}
+.rf-field input,
+.rf-field select,
+.rf-planner .rf-engineering input,
+.rf-planner .rf-engineering select {
+  width: 100%;
+  min-width: 0;
+  min-height: 43px;
+  border: 1px solid #333d44;
+  border-radius: 7px;
+  background: #11171b;
+  color: #edf4f3;
+  padding: 9px 11px;
+  font-size: 13px;
+  transition:
+    border-color 0.14s ease,
+    background-color 0.14s ease;
+}
+.rf-field input {
+  font-family: 'JetBrains Mono', monospace;
+}
+.rf-field input:read-only {
+  background: #0d1115;
+  color: var(--rf-muted);
+}
+.rf-field input:focus,
+.rf-field select:focus {
+  border-color: var(--rf-accent);
+  background: #151e22;
+}
+.rf-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px 12px;
+}
+.rf-field-grid:empty {
+  display: none;
+}
+.rf-help {
+  color: var(--rf-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.rf-model,
+.rf-preset,
+.rf-positions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rf-preset-basis {
+  color: #b5cbc5;
+  font-size: 11px;
+}
+.rf-disclosure {
+  border-top: 1px solid var(--rf-line);
+  border-bottom: 1px solid var(--rf-line);
+}
+.rf-disclosure summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-size: 12px;
+  color: #d2dcdf;
+}
+.rf-disclosure summary::marker {
+  color: var(--rf-muted);
+}
+.rf-disclosure summary:hover {
+  color: var(--rf-accent);
+}
+.rf-disclosure-body {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 3px 0 16px;
+}
+.rf-preset-details {
+  border-bottom: 0;
+}
+.rf-specifications {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  font-size: 12px;
+}
+.rf-specifications dt {
+  color: var(--rf-muted);
+}
+.rf-specifications dd {
+  margin: 0;
+}
+.rf-coverage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.rf-coverage legend {
+  margin-bottom: 10px;
+}
+.rf-study-switch {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 3px;
+  background: #070b0e;
+  border: 1px solid var(--rf-line);
+  border-radius: 8px;
+  padding: 4px;
+}
+.rf-study-option {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 7px;
+  color: var(--rf-muted);
+  font-size: 12px;
+}
+.rf-study-option[aria-pressed='true'] {
+  background: #192b27;
+  border-color: #35564c;
+  color: var(--rf-accent);
+}
+.rf-study-option:hover {
+  color: #e7f3ef;
+}
+.rf-bubble-setting {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 8px 0;
+}
+.rf-checkbox {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  accent-color: var(--rf-accent);
+  margin-top: 2px;
+}
+.rf-checkbox-label {
+  cursor: pointer;
+  display: block;
+  color: #dce8e4;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.rf-stations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.rf-station {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  min-width: 0;
+  gap: 10px;
+  padding: 13px 11px;
+  border: 1px solid #344048;
+  border-radius: 9px;
+  background: #11181d;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.rf-station:hover,
+.rf-station[aria-pressed='true'] {
+  border-color: var(--rf-accent);
+  background: #17251f;
+}
+.rf-station-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+.rf-station-symbol {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--rf-accent);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.rf-station-state {
+  color: var(--rf-muted);
+  font-size: 10px;
+}
+.rf-station-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.rf-station-position {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--rf-muted);
+  overflow-wrap: anywhere;
+}
+.rf-station-action {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  color: var(--rf-accent);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.rf-placement-status {
+  border-left: 2px solid var(--rf-accent);
+  padding: 6px 10px;
+  color: var(--rf-accent);
+  font-size: 12px;
+}
+.rf-references {
+  font-size: 12px;
+}
+.rf-references a {
+  color: var(--rf-accent);
+}

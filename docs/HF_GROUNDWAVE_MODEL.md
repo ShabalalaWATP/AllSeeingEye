@@ -53,6 +53,14 @@ sensitivity crossing can support an assumed homogeneous-ground map contour; it
 is not a measured service boundary or a guarantee of intelligible communication.
 Do not extrapolate beyond the requested curve or below its 1 km start.
 
+The RF workspace applies an explicit planning reserve to its reception threshold,
+defaulting to 10 dB above the chosen receiver sensitivity. The reserve changes
+which model samples pass, not their predicted received power. Results retain
+both raw and remaining margin, with separate sensitivity and planning-threshold
+lines on the chart. A contour ends at the last consecutive passing sample before
+the first failure; it does not bridge isolated later passing samples. The reserve
+is a user assumption, not a computed noise level or statistical reliability.
+
 ## Capacity and failure behaviour
 
 The API authenticates before parsing a maximum 4 KiB JSON body, validates finite

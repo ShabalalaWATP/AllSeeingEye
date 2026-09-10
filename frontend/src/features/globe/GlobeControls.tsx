@@ -20,6 +20,7 @@ interface PanelProps {
   children: ReactNode;
   entry?: boolean;
   caption?: string;
+  size?: 'wide';
 }
 export function ControlPanel({ children }: PanelProps) {
   return children;
@@ -117,6 +118,7 @@ export function GlobeControls({
           aria-label={active ?? undefined}
           className="map-tool-panel"
           data-side={selected.props.side ?? 'right'}
+          data-size={selected.props.size}
         >
           <header className="flex items-center justify-between border-b border-line px-3 py-1">
             <h2 className="text-xs font-medium">{active}</h2>

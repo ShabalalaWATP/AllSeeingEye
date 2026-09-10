@@ -127,14 +127,14 @@ it('places radial failure markers on assessed receiver targets and greys the una
   const analysis = analyseRfTerrain(input, plan, elevations);
   const layers = rfTerrainLayers(analysis, true);
   const failed = analysis.radials[0]!;
-  expect(failed.clearDistanceKm).toBe(2.5);
-  expect(failed.stopDistanceKm).toBe(3.75);
+  expect(failed.clearDistanceKm).toBe(1.25);
+  expect(failed.stopDistanceKm).toBe(2.8125);
   expect(layer(layers, 'rf-terrain-stops').props.data).toEqual([
     { point: failed.samples.at(-1)!.position, status: 'blocked' },
   ]);
   expect(
     labels(layers).some((item) =>
-      item.label.includes('first failing target 3.8 km\nLast pass 2.5 km · beyond stop unassessed'),
+      item.label.includes('first failing target 2.8 km\nLast pass 1.3 km · beyond stop unassessed'),
     ),
   ).toBe(true);
   expect(labels(layers).every((item) => !item.label.includes('obstruction'))).toBe(true);

@@ -44,9 +44,11 @@ export function rfPathPointStatus(
 ): RfTerrainStatus {
   if (profile.status === 'unknown' || point.clearanceM === null) return 'unknown';
   if (summary.firstBlocked && point.distanceM >= summary.firstBlocked.distanceM) return 'blocked';
+  const margin =
+    profile.planningMarginDb === undefined ? profile.marginDb : profile.planningMarginDb;
   if (
     (summary.firstRisk && point.distanceM >= summary.firstRisk.distanceM) ||
-    (profile.marginDb !== null && profile.marginDb < 0)
+    (margin !== null && margin < 0)
   )
     return 'risk';
   return 'clear';

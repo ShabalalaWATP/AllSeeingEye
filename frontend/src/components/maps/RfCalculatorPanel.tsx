@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { calculateRf, RF_FIELDS } from '@/lib/map/rfPlanning';
+import { calculateRf } from '@/lib/map/rfPlanning';
 import type { RfInputs } from '@/lib/map/rfPlanning';
 import { RF_PRESETS } from '@/lib/map/rfPresets';
 import { rfMapEstimate } from '@/lib/map/rfMap';
@@ -9,7 +9,9 @@ import { measure } from '@/lib/map/measurements';
 import { RfResults } from './RfResults';
 import { RfCoverageControls } from './RfCoverageControls';
 import { RfReferenceControls } from './RfReferenceControls';
-import { RfPowerInput } from './RfPowerInput';
+import { RfRadioFields } from './RfRadioFields';
+import { RfPlannerTabs } from './RfPlannerTabs';
+import { RfAnalysisAction } from './RfAnalysisAction';
 import { RfPositions } from './RfPositions';
 import { RfModelControls, rfEnvironmentValid } from './RfModelControls';
 import { RfReferences } from './RfReferences';
@@ -19,13 +21,11 @@ import { RfAnalysisResults } from './RfAnalysisResults';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 import { createRfDraft, RF_ENVIRONMENT_DEFAULTS } from '@/lib/map/rfDraft';
 import type { RfDraft } from '@/lib/map/rfDraft';
+import { parseRfEngineering } from '@/lib/map/rfEngineering';
+import './rfPlanner.css';
+import './rfPlannerFields.css';
+import './rfPlannerResults.css';
 
-const BASIC_FIELDS = new Set<keyof RfInputs>([
-  'frequencyMHz',
-  'transmitHeightM',
-  'receiveHeightM',
-  'distanceKm',
-]);
 export interface RfCalculatorPanelProps {
   measuredDistanceKm?: number | undefined;
   origin?: Position | null;
@@ -68,6 +68,7 @@ export function RfCalculatorPanel({
   const needsReceiver = supportsArea && currentDraft.study === 'link' && !receiver;
   const [localBubble, setLocalBubble] = useState(false);
   const [localAnalysis, setLocalAnalysis] = useState<RfAnalysis | null>(null);
+  const [selectedView, setSelectedView] = useState<'configure' | 'results' | null>(null);
   const changeAnalysis = onAnalysisChange ?? setLocalAnalysis;
   const currentAnalysis = analysis === undefined ? localAnalysis : analysis;
   const setDraft = onDraftChange ?? setLocalDraft;
@@ -78,6 +79,7 @@ export function RfCalculatorPanel({
   if (origin && target) input.distanceKm = measure([origin, target], 'distance').metres / 1000;
   const worker = useRfAnalysis(input, currentDraft, origin, receiver, changeAnalysis);
   const update = (next: RfDraft) => {
+    setSelectedView('configure');
     setDraft(next);
     onOverlayChange?.(null);
     changeAnalysis(null);
@@ -88,7 +90,10 @@ export function RfCalculatorPanel({
   let mapError: string | null = null;
   try {
     if (mode !== 'hf-skywave')
-      result = calculateRf(mode === 'free-space' ? input : { ...input, distanceKm: 1 });
+      result = calculateRf(
+        mode === 'free-space' ? input : { ...input, distanceKm: 1 },
+        parseRfEngineering(currentDraft.engineering, mode),
+      );
     else if (
       !Number.isFinite(input.frequencyMHz) ||
       input.frequencyMHz < 1.6 ||
@@ -97,7 +102,12 @@ export function RfCalculatorPanel({
       throw new Error('HF frequency: enter a value from 1.6 to 30 MHz.');
     if (origin && mode === 'free-space' && !needsReceiver) {
       try {
-        estimate = rfMapEstimate(input, origin, target);
+        estimate = rfMapEstimate(
+          input,
+          origin,
+          target,
+          parseRfEngineering(currentDraft.engineering, mode),
+        );
       } catch (caught) {
         mapError = caught instanceof Error ? caught.message : 'Check the map position.';
       }
@@ -108,204 +118,189 @@ export function RfCalculatorPanel({
   const change = (key: keyof RfInputs, value: string) => {
     update({ ...currentDraft, values: { ...values, [key]: value }, presetId: 'custom' });
   };
-  const field = ({ key, label, min, max }: (typeof RF_FIELDS)[number]) => (
-    <label key={key} className="block text-muted">
-      {label}
-      {key === 'transmitHeightM' || key === 'receiveHeightM' ? ' (AGL)' : ''}
-      <input
-        aria-label={label}
-        type="number"
-        min={min}
-        max={max}
-        step="any"
-        value={key === 'distanceKm' && origin && target ? input.distanceKm.toFixed(3) : values[key]}
-        readOnly={key === 'distanceKm' && !!origin && !!target}
-        onChange={(event) => change(key, event.target.value)}
-        className="mt-1 w-full rounded border border-line bg-ground p-2 text-text read-only:opacity-60"
-      />
-    </label>
-  );
+  const view = currentAnalysis ? (selectedView ?? 'results') : 'configure';
+  const validEnvironment = rfEnvironmentValid(currentDraft);
+  const invalidBand = mode === 'terrain' ? input.frequencyMHz < 30 : input.frequencyMHz > 30;
+  const ready =
+    !!origin &&
+    !needsReceiver &&
+    (mode === 'hf-skywave' ? !error : !!result) &&
+    validEnvironment &&
+    !invalidBand;
+  const readiness = !origin
+    ? 'Place a transmitter before analysis.'
+    : needsReceiver
+      ? 'Place a receiver to analyse a point-to-point link.'
+      : !ready
+        ? 'Review the inputs before analysis.'
+        : 'Ready to analyse. Settings remain editable.';
   return (
-    <section aria-label="RF planning calculator" className="space-y-4 text-xs">
-      <header>
-        <h2 className="font-mono uppercase tracking-widest text-cyan">Radio link planner</h2>
-        <p className="mt-2 text-muted">
-          Choose a propagation model, enter the radio settings and place the transmitter. Run an
-          explicit analysis when ready.
-        </p>
+    <section aria-label="RF planning calculator" className="rf-planner">
+      <header className="rf-planner-header">
+        <div>
+          <p className="rf-eyebrow">RF workspace</p>
+          <h2>Radio link planner</h2>
+        </div>
+        <span className="rf-planner-state">
+          {worker.busy ? 'Analysing' : currentAnalysis ? 'Analysed' : 'Planning'}
+        </span>
       </header>
-      <RfModelControls draft={currentDraft} onChange={update} />
-      {supportsArea && (
-        <RfCoverageControls
-          draft={currentDraft}
-          hasReceiver={!!receiver}
-          onChange={(next) => {
-            onPick?.(null);
-            update(next);
-          }}
-          bubble={coverageBubble ?? localBubble}
-          onBubbleChange={onCoverageBubbleChange ?? setLocalBubble}
-        />
-      )}
-      <RfPresetSelect
-        presetId={presetId}
-        onSelect={(selected) => {
-          update({
-            ...currentDraft,
-            values: createRfDraft(selected.values, selected.id).values,
-            presetId: selected.id,
-            propagation:
-              selected.id === 'custom' || mode === 'free-space'
-                ? mode
-                : (selected.propagation ?? (selected.values.frequencyMHz >= 30 ? 'terrain' : mode)),
-            environment: {
-              ...RF_ENVIRONMENT_DEFAULTS,
-              ...currentDraft.environment,
-              ...selected.environment,
-            },
-          });
-        }}
-      />
-      <RfPositions
-        pathActive={target !== null}
-        origin={origin}
-        receiver={receiver}
-        picking={picking}
-        onPick={
-          onPick
-            ? (point) => {
-                if (point === 'receiver' && supportsArea)
-                  update({ ...currentDraft, study: 'link' });
-                onPick(point);
-              }
-            : undefined
-        }
-        onClearReceiver={onClearReceiver}
-      />
-      {needsReceiver && (
-        <p className="text-amber-300">Place a receiver to analyse a point-to-point link.</p>
-      )}
-      {supportsArea && currentDraft.study === 'area' && receiver && (
-        <p className="text-muted">
-          The saved receiver is excluded from this 360° study. Switch to the receiver link to use
-          it.
-        </p>
-      )}
-      {mode === 'free-space' &&
-        measuredDistanceKm !== undefined &&
-        Number.isFinite(measuredDistanceKm) &&
-        measuredDistanceKm > 0 &&
-        !(origin && target) && (
-          <button
-            type="button"
-            className="min-h-9 rounded border border-line px-2 text-cyan"
-            onClick={() => change('distanceKm', measuredDistanceKm.toFixed(3))}
-          >
-            Use measured path ({measuredDistanceKm.toFixed(3)} km)
-          </button>
-        )}
-      {mode !== 'hf-skywave' && (
-        <RfPowerInput dbm={values.transmitDbm} onChange={(value) => change('transmitDbm', value)} />
-      )}
-      <p className="text-muted">
-        Antenna heights are metres above local ground (AGL). Ground elevation is obtained separately
-        when you analyse terrain; it is not mast height.
-      </p>
-      <div className="grid grid-cols-2 gap-3">
-        {RF_FIELDS.filter(({ key }) =>
-          mode === 'hf-skywave'
-            ? key === 'frequencyMHz'
-            : BASIC_FIELDS.has(key) &&
-              (key !== 'distanceKm' ||
-                mode === 'free-space' ||
-                (mode === 'terrain' && !!origin && !!target)),
-        ).map(field)}
-      </div>
-      {mode !== 'hf-skywave' && (
-        <details className="rounded border border-line p-3">
-          <summary className="cursor-pointer text-text">
-            Advanced radio settings (dBm, gains and losses)
-          </summary>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {RF_FIELDS.filter(({ key }) => !BASIC_FIELDS.has(key)).map(field)}
-          </div>
-        </details>
-      )}
-      {error && (
-        <p role="alert" className="text-amber-300">
-          {error}
-        </p>
-      )}
-      {mode === 'free-space' && result && <RfResults result={result} />}
-      {mode !== 'free-space' && (
-        <div className="space-y-3 border-t border-line pt-3">
-          {!origin && <p className="text-muted">Place a transmitter before analysis.</p>}
-          {mode === 'terrain' && input.frequencyMHz < 30 && (
-            <p role="alert">
-              Terrain analysis requires at least 30 MHz. Choose an HF model below this frequency.
-            </p>
-          )}
-          {mode.startsWith('hf-') && input.frequencyMHz > 30 && (
-            <p role="alert">HF scenarios require 1.6 to 30 MHz.</p>
-          )}
-          {!rfEnvironmentValid(currentDraft) && (
-            <p role="alert">Complete every model setting with a valid number.</p>
-          )}
-          <button
-            type="button"
-            disabled={
-              worker.busy ||
-              !origin ||
-              needsReceiver ||
-              (mode === 'hf-skywave' ? !!error : !result) ||
-              !rfEnvironmentValid(currentDraft) ||
-              (mode === 'terrain' ? input.frequencyMHz < 30 : input.frequencyMHz > 30)
-            }
-            onClick={() => {
-              void worker.analyse();
-            }}
-            className="min-h-11 w-full rounded border border-cyan/40 bg-cyan/10 px-3 text-cyan disabled:opacity-40"
-          >
-            {worker.busy
-              ? 'Analysing...'
-              : mode === 'terrain'
-                ? 'Analyse terrain'
-                : mode === 'hf-groundwave'
-                  ? 'Analyse HF groundwave'
-                  : 'Calculate skywave scenario'}
-          </button>
-          {worker.error && (
-            <p role="alert" className="text-amber-300">
-              {worker.error}
-            </p>
-          )}
-          {currentAnalysis && (
-            <>
+      <RfPlannerTabs view={view} onChange={setSelectedView} hasResults={!!currentAnalysis}>
+        {view === 'configure' ? (
+          <>
+            <div className="rf-configure-grid">
+              <section className="rf-configure-section" aria-label="Radio and propagation settings">
+                <h3 className="rf-section-label">Radio &amp; propagation</h3>
+                <RfModelControls draft={currentDraft} onChange={update} />
+                <RfPresetSelect
+                  presetId={presetId}
+                  onSelect={(selected) => {
+                    update({
+                      ...currentDraft,
+                      values: createRfDraft(selected.values, selected.id).values,
+                      presetId: selected.id,
+                      propagation:
+                        selected.id === 'custom' || mode === 'free-space'
+                          ? mode
+                          : (selected.propagation ??
+                            (selected.values.frequencyMHz >= 30 ? 'terrain' : mode)),
+                      environment: {
+                        ...RF_ENVIRONMENT_DEFAULTS,
+                        ...currentDraft.environment,
+                        ...selected.environment,
+                      },
+                    });
+                  }}
+                />
+                <RfRadioFields
+                  draft={currentDraft}
+                  mode={mode}
+                  input={input}
+                  linked={!!origin && !!target}
+                  onChange={change}
+                  onDraftChange={update}
+                />
+              </section>
+              <section
+                className="rf-configure-section rf-site-section"
+                aria-label="Map sites and study area"
+              >
+                <h3 className="rf-section-label">Map sites &amp; study</h3>
+                {supportsArea && (
+                  <RfCoverageControls
+                    draft={currentDraft}
+                    hasReceiver={!!receiver}
+                    onChange={(next) => {
+                      onPick?.(null);
+                      update(next);
+                    }}
+                    bubble={coverageBubble ?? localBubble}
+                    onBubbleChange={onCoverageBubbleChange ?? setLocalBubble}
+                  />
+                )}
+                <RfPositions
+                  pathActive={target !== null}
+                  origin={origin}
+                  receiver={receiver}
+                  picking={picking}
+                  onPick={
+                    onPick
+                      ? (point) => {
+                          if (point === 'receiver' && supportsArea)
+                            update({ ...currentDraft, study: 'link' });
+                          onPick(point);
+                        }
+                      : undefined
+                  }
+                  onClearReceiver={onClearReceiver}
+                />
+                {supportsArea && currentDraft.study === 'area' && receiver && (
+                  <p className="rf-help">
+                    The saved receiver is excluded from this 360° study. Switch to the receiver link
+                    to use it.
+                  </p>
+                )}
+                {mode === 'free-space' &&
+                  measuredDistanceKm !== undefined &&
+                  Number.isFinite(measuredDistanceKm) &&
+                  measuredDistanceKm > 0 &&
+                  !(origin && target) && (
+                    <button
+                      type="button"
+                      className="rf-secondary-button"
+                      onClick={() => change('distanceKm', measuredDistanceKm.toFixed(3))}
+                    >
+                      Use measured path ({measuredDistanceKm.toFixed(3)} km)
+                    </button>
+                  )}
+                <RfReferences preset={preset} />
+              </section>
+            </div>
+            {error && (
+              <p role="alert" className="rf-notice rf-notice-warning">
+                {error}
+              </p>
+            )}
+            {mode === 'free-space' && result && <RfResults result={result} />}
+            {mode !== 'free-space' && (
+              <RfAnalysisAction
+                mode={mode}
+                frequencyMHz={input.frequencyMHz}
+                validEnvironment={validEnvironment}
+                ready={ready}
+                readiness={readiness}
+                busy={worker.busy}
+                error={worker.error}
+                onAnalyse={() => {
+                  setSelectedView(null);
+                  void worker.analyse();
+                }}
+              />
+            )}
+            {onOverlayChange && mode === 'free-space' && (
+              <RfReferenceControls
+                originPlaced={!!origin}
+                estimate={estimate}
+                error={mapError}
+                visible={overlayVisible}
+                onChange={onOverlayChange}
+              />
+            )}
+          </>
+        ) : (
+          currentAnalysis && (
+            <div className="rf-completed-results">
+              <p className="rf-result-intro" aria-live="polite">
+                Analysis complete. Review the path, limits and source quality below.
+              </p>
               <RfAnalysisResults
                 analysis={currentAnalysis}
                 bubble={coverageBubble ?? localBubble}
               />
-              <button
-                type="button"
-                onClick={() => changeAnalysis(null)}
-                className="min-h-9 text-cyan underline"
-              >
-                Clear analysis
-              </button>
-            </>
-          )}
-        </div>
-      )}
-      <RfReferences preset={preset} />
-      {onOverlayChange && mode === 'free-space' && (
-        <RfReferenceControls
-          originPlaced={!!origin}
-          estimate={estimate}
-          error={mapError}
-          visible={overlayVisible}
-          onChange={onOverlayChange}
-        />
-      )}
+              <div className="rf-result-actions">
+                <button
+                  type="button"
+                  className="rf-secondary-button"
+                  onClick={() => setSelectedView('configure')}
+                >
+                  Edit study
+                </button>
+                <button
+                  type="button"
+                  className="rf-text-button"
+                  onClick={() => {
+                    changeAnalysis(null);
+                    setSelectedView('configure');
+                  }}
+                >
+                  Clear analysis
+                </button>
+              </div>
+              <RfReferences preset={preset} />
+            </div>
+          )
+        )}
+      </RfPlannerTabs>
     </section>
   );
 }

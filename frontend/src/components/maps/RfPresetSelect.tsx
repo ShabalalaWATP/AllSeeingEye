@@ -16,8 +16,8 @@ export function RfPresetSelect({
 }) {
   const selected = RF_PRESETS.find((item) => item.id === presetId);
   return (
-    <div className="space-y-2">
-      <label className="block text-muted">
+    <div className="rf-preset">
+      <label className="rf-field">
         Radio preset
         <select
           value={presetId}
@@ -25,7 +25,6 @@ export function RfPresetSelect({
             const preset = RF_PRESETS.find((item) => item.id === event.target.value);
             if (preset) onSelect(preset);
           }}
-          className="mt-1 min-h-10 w-full rounded border border-line bg-ground px-2 text-text"
         >
           <option value="custom">Custom radio link</option>
           {GROUPS.map((group) => (
@@ -42,28 +41,31 @@ export function RfPresetSelect({
         </select>
       </label>
       {selected?.basis && (
-        <p className="text-cyan">
+        <p className="rf-preset-basis">
           {selected.basis === 'published'
             ? 'Published equipment data with editable planning inputs'
             : 'Illustrative configuration: verify your radio variant'}
         </p>
       )}
-      {selected?.specification && (
-        <dl
-          aria-label="Published radio specifications"
-          className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-l border-line pl-3"
-        >
-          <dt className="text-muted">Band</dt>
-          <dd>{selected.specification.band}</dd>
-          <dt className="text-muted">RF output</dt>
-          <dd>{selected.specification.output}</dd>
-        </dl>
-      )}
-      <p className="text-muted">{selected?.note}</p>
-      <p className="text-muted">
-        Selected frequencies, antenna heights, gains, losses and receiver sensitivity are editable
-        examples. Presets do not establish current network settings or guaranteed range.
-      </p>
+      <details className="rf-disclosure rf-preset-details">
+        <summary>Preset details &amp; assumptions</summary>
+        <div className="rf-disclosure-body">
+          {selected?.specification && (
+            <dl aria-label="Published radio specifications" className="rf-specifications">
+              <dt className="text-muted">Band</dt>
+              <dd>{selected.specification.band}</dd>
+              <dt className="text-muted">RF output</dt>
+              <dd>{selected.specification.output}</dd>
+            </dl>
+          )}
+          <p className="rf-help">{selected?.note}</p>
+          <p className="rf-help">
+            Selected frequencies, antenna heights, gains, losses and receiver sensitivity are
+            editable examples. Presets do not establish current network settings or guaranteed
+            range.
+          </p>
+        </div>
+      </details>
     </div>
   );
 }

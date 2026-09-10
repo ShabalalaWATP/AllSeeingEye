@@ -11,6 +11,7 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
     );
   const values = profile.points.flatMap((p) => [
     (p.elevationM ?? 0) + p.earthBulgeM,
+    (p.elevationM ?? 0) + p.earthBulgeM + (p.obstacleHeightM ?? 0),
     p.rayHeightM ?? 0,
     (p.rayHeightM ?? 0) - p.fresnel60M,
   ]);
@@ -23,14 +24,22 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
   const summary = rfPathSummary(profile);
   const obstruction = summary.firstBlocked ?? summary.firstRisk;
   const obstructionColour = summary.firstBlocked ? RF_STATUS_CSS.blocked : RF_STATUS_CSS.risk;
+  const maximumObstacleM = Math.max(...profile.points.map((point) => point.obstacleHeightM ?? 0));
   return (
-    <figure className="overflow-hidden rounded-lg border border-cyan/20 bg-black/40 p-2">
+    <figure className="rf-profile overflow-hidden rounded-lg border border-cyan/20 bg-black/40 p-2">
       <svg
         viewBox="0 0 320 158"
         className="w-full"
         role="img"
         aria-label="Terrain profile with radio line and lower 60 percent Fresnel boundary"
       >
+        <title>Sampled terrain and direct radio path</title>
+        <desc>
+          Grey shows source ground elevation with effective Earth curvature. The coloured ray shows
+          clearance and reserve status. Amber dashed line is the lower Fresnel boundary.
+          {maximumObstacleM > 0 &&
+            ' Violet dashed line is the assumed obstacle screen, not measured terrain.'}
+        </desc>
         {[28, 80, 132].map((row) => (
           <line key={row} x1="36" x2="304" y1={row} y2={row} stroke="#ffffff15" />
         ))}
@@ -39,11 +48,22 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
           fill="#7f9caa30"
         />
         <polyline
+          data-profile-series="terrain"
           points={series((p) => (p.elevationM ?? 0) + p.earthBulgeM)}
           fill="none"
           stroke="#a3b8c4"
           strokeWidth="1.5"
         />
+        {maximumObstacleM > 0 && (
+          <polyline
+            data-profile-series="assumed-obstacles"
+            points={series((p) => (p.elevationM ?? 0) + p.earthBulgeM + (p.obstacleHeightM ?? 0))}
+            fill="none"
+            stroke="#c4a7ff"
+            strokeWidth="2"
+            strokeDasharray="6 3"
+          />
+        )}
         <polyline
           points={series((p) => (p.rayHeightM ?? 0) - p.fresnel60M)}
           fill="none"
@@ -112,6 +132,12 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
         Grey: sampled terrain plus Earth curvature. Mint: clear direct ray. Amber: clearance or
         power risk, including the interval before a sampled intrusion. Red: obstructed direct ray.
         Dashed amber: lower 60% Fresnel boundary.
+        {maximumObstacleM > 0 && (
+          <span className="mt-1 block text-violet-200">
+            Violet dashed: assumed {maximumObstacleM.toFixed(1)} m obstacle screen above sampled
+            ground. Buildings and trees have not been measured.
+          </span>
+        )}
         {obstruction && (
           <span className="mt-1 block" style={{ color: obstructionColour }}>
             {summary.firstBlocked ? 'First sampled obstruction' : 'First sampled Fresnel intrusion'}{' '}

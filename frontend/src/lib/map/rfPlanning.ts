@@ -1,3 +1,9 @@
+import {
+  RF_PHYSICAL_REFERENCE,
+  validateRfEngineering,
+  type RfEngineeringSettings,
+} from './rfEngineering';
+
 /** Free-space link budget, ITU-R P.525. No terrain, groundwave or skywave model. */
 export interface RfInputs {
   distanceKm: number;
@@ -40,7 +46,11 @@ export const DEFAULT_RF_INPUTS: RfInputs = {
   receiveHeightM: 2,
 };
 
-export function calculateRf(input: RfInputs) {
+export function calculateRf(
+  input: RfInputs,
+  settings: RfEngineeringSettings = RF_PHYSICAL_REFERENCE,
+) {
+  validateRfEngineering(settings);
   for (const { key, label, min, max } of RF_FIELDS) {
     if (!Number.isFinite(input[key]) || input[key] < min || input[key] > max)
       throw new Error(`${label}: enter a value from ${min} to ${max}.`);
@@ -53,25 +63,29 @@ export function calculateRf(input: RfInputs) {
     input.receiveGainDbi -
     input.lossesDb -
     freeSpaceLossDb;
-  // Invert the same free-space equation at zero margin above sensitivity.
+  // Invert the same equation at sensitivity plus the explicit planning reserve.
   // Work in logarithms so intermediate powers cannot overflow before scaling.
   const allowableLossDb =
     input.transmitDbm +
     input.transmitGainDbi +
     input.receiveGainDbi -
     input.lossesDb -
-    input.sensitivityDbm;
+    input.sensitivityDbm -
+    settings.reserveDb;
   const logDistanceKm = allowableLossDb / 20 + Math.log10(wavelengthM / (4 * Math.PI * 1000));
   const sensitivityDistanceKm = 10 ** logDistanceKm;
   if (!Number.isFinite(sensitivityDistanceKm) || sensitivityDistanceKm <= 0)
     throw new Error('The sensitivity distance is outside the numerical calculation range.');
   // Approximate smooth-Earth horizons with standard refraction (k = 4/3).
-  const horizon = (height: number) => Math.sqrt(2 * (4 / 3) * 6371000 * height) / 1000;
+  const horizon = (height: number) => Math.sqrt(2 * settings.earthFactor * 6371000 * height) / 1000;
   const horizonKm = horizon(input.transmitHeightM) + horizon(input.receiveHeightM);
   return {
     freeSpaceLossDb,
     receivedDbm,
     marginDb: receivedDbm - input.sensitivityDbm,
+    planningMarginDb: receivedDbm - input.sensitivityDbm - settings.reserveDb,
+    reserveDb: settings.reserveDb,
+    earthFactor: settings.earthFactor,
     sensitivityDistanceKm,
     horizonKm,
     beyondHorizon: input.distanceKm > horizonKm,

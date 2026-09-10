@@ -13,53 +13,64 @@ export function RfPositions({
   return (
     <>
       {onPick && (
-        <div className="space-y-2 rounded border border-line bg-ground/50 p-3">
-          <p className="font-mono uppercase tracking-wide text-muted">Position on map</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              aria-pressed={picking === 'origin'}
-              onClick={() => onPick(picking === 'origin' ? null : 'origin')}
-              className="min-h-10 rounded border border-line px-2 text-cyan"
-            >
-              {origin ? 'Move transmitter' : 'Place transmitter'}
-            </button>
-            <button
-              type="button"
-              aria-pressed={picking === 'receiver'}
-              onClick={() => onPick(picking === 'receiver' ? null : 'receiver')}
-              className="min-h-10 rounded border border-line px-2 text-cyan"
-            >
-              {receiver ? 'Move receiver' : 'Add receiver'}
-            </button>
+        <div className="rf-positions">
+          <div className="rf-stations">
+            {(['origin', 'receiver'] as const).map((id) => {
+              const point = id === 'origin' ? origin : receiver;
+              const label =
+                id === 'origin'
+                  ? point
+                    ? 'Move transmitter'
+                    : 'Place transmitter'
+                  : point
+                    ? 'Move receiver'
+                    : 'Add receiver';
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-label={label}
+                  aria-pressed={picking === id}
+                  onClick={() => onPick(picking === id ? null : id)}
+                  className="rf-station"
+                >
+                  <span className="rf-station-top">
+                    <span className="rf-station-symbol" aria-hidden="true">
+                      {id === 'origin' ? 'TX' : 'RX'}
+                    </span>
+                    <span className="rf-station-state">
+                      {picking === id ? 'Placing' : point ? 'Located' : 'Not placed'}
+                    </span>
+                  </span>
+                  <span className="rf-station-title">
+                    {id === 'origin' ? 'Transmitter' : 'Receiver'}
+                  </span>
+                  <span className="rf-station-position">
+                    {point
+                      ? `${point[1].toFixed(4)}, ${point[0].toFixed(4)}`
+                      : 'Select a point on the map'}
+                  </span>
+                  <span className="rf-station-action">
+                    {picking === id ? 'Cancel placement' : label}
+                    <span aria-hidden="true">↗</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
           {picking && (
-            <p role="status" className="text-cyan">
+            <p role="status" className="rf-placement-status">
               Click the map to place the {picking === 'origin' ? 'transmitter' : 'receiver'}. Select
               the button again to cancel.
             </p>
           )}
-          {origin && (
-            <p className="font-mono text-muted">
-              TX {origin[1].toFixed(4)}, {origin[0].toFixed(4)}
-            </p>
-          )}
-          {receiver && (
-            <p className="font-mono text-muted">
-              RX {receiver[1].toFixed(4)}, {receiver[0].toFixed(4)}
-            </p>
-          )}
           {receiver && onClearReceiver && (
-            <button
-              type="button"
-              onClick={onClearReceiver}
-              className="min-h-9 text-muted underline"
-            >
+            <button type="button" onClick={onClearReceiver} className="rf-text-button">
               Remove receiver, keep transmitter
             </button>
           )}
           {origin && receiver && pathActive && (
-            <p className="text-muted">Path length follows the two map positions.</p>
+            <p className="rf-help">Path length follows the two map positions.</p>
           )}
         </div>
       )}

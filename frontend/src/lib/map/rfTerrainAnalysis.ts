@@ -1,5 +1,11 @@
 import { evaluateRfTerrainProfile } from './rfTerrainProfile';
 import type { RfInputs } from './rfPlanning';
+import {
+  RF_PHYSICAL_REFERENCE,
+  validateRfEngineering,
+  type RfEngineeringSettings,
+} from './rfEngineering';
+import { RF_TERRAIN_MAX_PATH_SAMPLES, RF_TERRAIN_MAX_SAMPLES } from './rfTerrainSampling';
 import type {
   RfTerrainAnalysis,
   RfTerrainRadial,
@@ -10,8 +16,8 @@ export type { RfTerrainAnalysis, RfTerrainProfile, RfTerrainRadial } from './rfT
 
 export const RF_TERRAIN_LIMITATIONS = [
   'Coarse terrain samples can miss ridges, buildings, trees and local obstructions. Clear means only that the sampled screen passed, not reliable reception.',
-  'Standard k=4/3 Earth curvature, 60% first Fresnel clearance and free-space loss plus one dominant sampled knife edge. This is not a full ITU-R P.526, ITM or measured coverage model.',
-  'No weather, clutter, interference, antenna pattern or fade margin. Ground elevations use the source DEM datum; antenna heights are above ground.',
+  'Effective-Earth curvature, 60% first Fresnel clearance and free-space loss plus one dominant sampled knife edge. This is not a full ITU-R P.526, ITM or measured coverage model.',
+  'No measured weather, interference or antenna pattern. Uniform assumed obstacle height is not detected land cover. Ground elevations use the source DEM datum; antenna heights are above ground.',
 ];
 
 /** Missing DEM never becomes zero terrain or a clear path. Negative values remain unaltered. */
@@ -19,9 +25,12 @@ export function analyseRfTerrain(
   input: RfInputs,
   plan: RfTerrainSamplePlan,
   elevationsM: readonly (number | null)[],
+  settings: RfEngineeringSettings = RF_PHYSICAL_REFERENCE,
 ): RfTerrainAnalysis {
+  validateRfEngineering(settings);
   if (
-    plan.positions.length > 409 ||
+    plan.positions.length >
+      (plan.kind === 'path' ? RF_TERRAIN_MAX_PATH_SAMPLES : RF_TERRAIN_MAX_SAMPLES) ||
     plan.positions.length < 3 ||
     elevationsM.length !== plan.positions.length ||
     plan.profiles.length < 1 ||
@@ -31,7 +40,7 @@ export function analyseRfTerrain(
     throw new Error('Terrain sample results do not match the bounded sample plan.');
   for (const profile of plan.profiles) {
     if (
-      profile.indices.length > 129 ||
+      profile.indices.length > RF_TERRAIN_MAX_PATH_SAMPLES ||
       profile.indices.length < 3 ||
       profile.indices.length !== profile.distancesM.length ||
       profile.indices.some(
@@ -46,6 +55,9 @@ export function analyseRfTerrain(
   const missingSamples = values.filter((value) => value === null).length;
   const belowSeaLevelSamples = values.filter((value) => value !== null && value < 0).length;
   const warnings = [...RF_TERRAIN_LIMITATIONS];
+  warnings.push(
+    `Planning reserve ${settings.reserveDb} dB; assumed obstacle height ${settings.obstacleHeightM} m; effective Earth factor k=${settings.earthFactor.toFixed(3)}. These are user assumptions, not calibrated reception probabilities.`,
+  );
   if (missingSamples)
     warnings.push(
       `${missingSamples} terrain samples are missing. Affected paths are unknown, not clear.`,
@@ -64,6 +76,7 @@ export function analyseRfTerrain(
       indices.map((index) => plan.positions[index] ?? plan.origin),
       profile.distancesM.slice(0, length),
       indices.map((index) => values[index] ?? null),
+      settings,
     );
   };
   const first = plan.profiles[0];
@@ -104,10 +117,11 @@ export function analyseRfTerrain(
       : [];
   if (plan.kind === 'radial')
     warnings.push(
-      'Only sampled bearings are screened. Each bearing stops at its first obstruction, Fresnel restriction, negative link margin or missing sample. Areas between rays and beyond a stop have not been assessed.',
+      'Only sampled bearings are screened. Each bearing stops at its first obstruction, Fresnel restriction, insufficient planning reserve or missing sample. Areas between rays and beyond a stop have not been assessed. Antenna gains are applied equally in every direction, not a measured radiation pattern.',
     );
   return {
     kind: plan.kind,
+    engineering: { ...settings },
     origin: plan.origin,
     receiver: plan.receiver,
     maxDistanceKm: plan.maxDistanceKm,

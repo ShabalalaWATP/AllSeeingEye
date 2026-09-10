@@ -3271,3 +3271,43 @@ RF run passed 96 tests. TypeScript, ESLint, the production build, changed-source
 Prettier, whitespace and file-length checks passed. Existing large vendor chunks
 and the untouched 380-line MapLibre engine remain warnings. Local frontend login
 and backend health returned 200. No backend code changed or backend tests ran.
+
+## 10 September 2026: RF workspace and explicit engineering assumptions
+
+Reworked the RF drawer into a wider responsive workspace with Configure/Results
+navigation, labelled transmitter/receiver placement controls, optional equipment
+details and a visible analysis action. Keyboard focus follows a completed study
+or Edit/Clear action only when it was inside the departing content. Moving focus
+onto the map is respected. Incomplete settings belonging to a different model
+no longer block the selected model.
+
+The default UI study requires 10 dB spare margin above receiver sensitivity,
+editable as a planning assumption. Raw receive power remains separate from raw
+margin and margin after reserve. Terrain, free-space and HF groundwave use the
+same threshold convention. Terrain also accepts explicit uniform obstacle height
+and effective Earth factor; the chart keeps assumed obstacles distinct from DEM
+ground and endpoint mast elevations.
+
+Path sampling now targets 100 m intervals with a 769-position cap over 200 km.
+Radial sampling uses the same 409-position budget but concentrates points near
+the transmitter. Results expose actual sample gaps, nominal DEM spacing, first
+assessed range, missing data and possible bathymetry. These changes improve
+screening without claiming full ITM/multiple-edge propagation or calibrated
+reception reliability. HF skywave remains geometry only.
+
+Independent review identified and verified fixes for model-switch validation
+and keyboard focus. It found no further actionable model, security or performance
+issues. Existing request, tile, body-size, cancellation and workspace-authority
+limits are retained. No new provider, credential, dependency or backend change
+was introduced. Updated the RF operating guide, model notes and implementation
+plan. Browser/GPU appearance remains unverified under the administrator policy.
+
+Final validation passed: 1,727 frontend tests across 336 passing files, with one
+existing skipped file/test. Coverage is 95.45% statements, 90.67% branches,
+93.39% functions and 96.62% lines. The combined focused RF run passed 133 tests.
+TypeScript, ESLint, the production build, changed-source Prettier, whitespace and
+file-length checks passed. A broader source-format check still reports three
+untouched files (MapImagePreview.tsx, inputDeclarationCapacity.test.tsx and
+firmsConnection.ts). Existing large vendor chunks and the untouched 380-line
+MapLibre engine remain warnings. ASE login on 5174 and API health on 8001
+responded successfully. No backend code changed or backend tests ran this milestone.

@@ -4,6 +4,7 @@ import type { Position } from './geoJsonTypes';
 import { measurementPoint } from './measurements';
 import { calculateRf } from './rfPlanning';
 import type { RfInputs } from './rfPlanning';
+import { RF_PHYSICAL_REFERENCE, type RfEngineeringSettings } from './rfEngineering';
 import {
   rfReferenceBubble,
   rfReferenceDistance,
@@ -21,6 +22,7 @@ export interface RfMapEstimate {
   radiusKm: number;
   horizonKm: number;
   sensitivityDistanceKm: number;
+  reserveDb?: number;
   label: string;
 }
 
@@ -28,10 +30,11 @@ export function rfMapEstimate(
   input: RfInputs,
   origin: Position,
   receiver: Position | null = null,
+  settings: RfEngineeringSettings = RF_PHYSICAL_REFERENCE,
 ): RfMapEstimate {
   measurementPoint(...origin);
   if (receiver) measurementPoint(...receiver);
-  const result = calculateRf(input);
+  const result = calculateRf(input, settings);
   const radiusKm = Math.min(result.horizonKm, result.sensitivityDistanceKm);
   if (radiusKm < 0.001)
     throw new Error(
@@ -43,6 +46,7 @@ export function rfMapEstimate(
     radiusKm,
     horizonKm: result.horizonKm,
     sensitivityDistanceKm: result.sensitivityDistanceKm,
+    reserveDb: settings.reserveDb,
     label: `RF estimate · ${rfReferenceDistance(radiusKm)} · no terrain model`,
   };
 }
@@ -97,7 +101,11 @@ export function rfMapLayers(
   );
   const boundary = link.limit ?? rfReferencePoint(estimate.origin, 90, estimate.radiusKm);
   const boundaryReason =
-    estimate.horizonKm <= estimate.sensitivityDistanceKm ? 'Radio horizon' : 'Receiver sensitivity';
+    estimate.horizonKm <= estimate.sensitivityDistanceKm
+      ? 'Radio horizon'
+      : (estimate.reserveDb ?? 0) > 0
+        ? `Sensitivity + ${estimate.reserveDb} dB reserve`
+        : 'Receiver sensitivity';
   const labels: ReferenceLabel[] = [
     { point: estimate.origin, label: 'TX · 0 km\nTerrain not checked' },
     {

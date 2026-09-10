@@ -64,3 +64,28 @@ it('lists last passing and first failing target distances for every surveyed bea
   expect(screen.getByText('Missing terrain')).toBeInTheDocument();
   expect(screen.getByText(/does not locate the obstructing ridge/)).toBeInTheDocument();
 });
+
+it('explains a reserve shortfall without claiming the receive power is below sensitivity', () => {
+  const terrain = path([0, 0, 0]);
+  const profile = terrain.path!;
+  profile.status = 'risk';
+  profile.marginDb = 4;
+  profile.reserveDb = 10;
+  profile.planningMarginDb = -6;
+  render(<RfTerrainReach terrain={terrain} />);
+  expect(screen.getByText(/Power exceeds receiver sensitivity/)).toHaveTextContent('6.0 dB short');
+  expect(screen.queryByText(/below receiver sensitivity/)).not.toBeInTheDocument();
+});
+
+it('gives a useful next step when every radial target fails', () => {
+  const plan = createRfTerrainRadials([0, 51], 25);
+  const terrain = analyseRfTerrain(
+    { ...DEFAULT_RF_INPUTS, transmitDbm: -100 },
+    plan,
+    plan.positions.map(() => 0),
+  );
+  render(<RfTerrainReach terrain={terrain} />);
+  expect(screen.getByText('No passing direction')).toBeVisible();
+  expect(screen.getByText(/0 of 24 bearings/)).toBeVisible();
+  expect(screen.getByText(/Reduce the survey radius/)).toHaveTextContent('place a receiver');
+});

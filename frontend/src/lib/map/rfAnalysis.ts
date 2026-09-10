@@ -4,6 +4,7 @@ import type { RfTerrainAnalysis, RfTerrainSamplePlan } from './rfTerrainTypes';
 import type { TerrainElevations } from '@/lib/api/terrain';
 import type { GroundwaveResult } from '@/lib/api/groundwave';
 import type { HfSkywaveMapEstimate } from './hfSkywaveLayers';
+import type { RfEngineeringSettings } from './rfEngineering';
 
 export type RfAnalysis =
   | {
@@ -15,6 +16,7 @@ export type RfAnalysis =
     }
   | {
       kind: 'hf-groundwave';
+      engineering?: RfEngineeringSettings;
       result: GroundwaveResult;
       origin: Position;
       receiver: Position | null;

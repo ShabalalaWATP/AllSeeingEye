@@ -103,14 +103,14 @@ sampled source elevation. Elevation above sea level and antenna height above
 ground are displayed separately; changing an antenna's height does not change
 the underlying ground elevation.
 
-A two-site study samples up to 129 points along a path of at most 200 km and
+A two-site study targets roughly 100 m intervals, capped at 769 points along a path of at most 200 km, and
 shows a terrain profile. The selectable 360° area study screens 24 bearings
-with 17 outward steps, at most 409 positions within a 50 km radius. These are
-coarse samples, not a dense coverage raster. The screen uses standard k=4/3
+with 17 outward steps concentrated nearer TX, at most 409 positions within a 50 km radius. These are
+coarse samples, not a dense coverage raster. The screen defaults to k=4/3
 Earth curvature, 60% first Fresnel clearance and free-space loss plus a single
 dominant sampled knife-edge diffraction term. It is not a complete ITM or
 ITU-R P.526 implementation. A radial stops at the first sampled obstruction,
-clearance restriction, negative link margin or missing point. Optional shading
+clearance restriction, insufficient planning reserve or missing point. Optional shading
 between adjacent passing bearings is explicitly illustrative; those gaps remain
 unassessed. See [RF reach and coverage display](RF_COVERAGE_DISPLAY.md) for the
 colour key, obstruction distances, per-bearing limits and display controls.
@@ -124,8 +124,11 @@ never substituted flat ground. Negative elevations remain negative, including
 possible bathymetry; a water-surface model is not inferred. Source attribution,
 nominal resolution and mixed historical DEM limitations accompany results.
 
-Terrain sampling does not account for trees, buildings, weather, interference,
-antenna patterns or fading. A sampled clearance pass is not reliable reception.
+The optional uniform obstacle-height screen does not detect actual trees or
+buildings. The operator can edit effective Earth factor and required reserve;
+the UI defaults to 10 dB reserve, without claiming a reliability percentage.
+Terrain sampling does not measure weather, interference, antenna patterns or
+fading. A sampled clearance pass is not reliable reception.
 Provider details: [Mapzen terrain sources](https://github.com/tilezen/joerd/blob/master/docs/attribution.md).
 
 ### HF models and equipment references

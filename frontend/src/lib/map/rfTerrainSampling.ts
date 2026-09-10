@@ -6,6 +6,8 @@ export type { RfTerrainSamplePlan } from './rfTerrainTypes';
 
 export const RF_TERRAIN_MAX_PATH_KM = 200;
 export const RF_TERRAIN_MAX_RADIUS_KM = 50;
+export const RF_TERRAIN_MAX_PATH_SAMPLES = 769;
+/** Area studies retain their existing fixed request and rendering budget. */
 export const RF_TERRAIN_MAX_SAMPLES = 409;
 
 function count(value: number, minimum: number, maximum: number, label: string) {
@@ -41,26 +43,30 @@ function tileBudget(plan: RfTerrainSamplePlan): RfTerrainSamplePlan {
   return plan;
 }
 
-/** Equally spaced geodesic samples. These bounds do not imply adequate DEM resolution. */
+/** Aim for 100 metre path intervals, capped to keep requests and rendering bounded.
+ * Equal geodesic spacing does not imply that the source DEM resolves every interval.
+ */
 export function createRfTerrainPath(
   origin: Position,
   receiver: Position,
-  samples = 129,
+  samples?: number,
 ): RfTerrainSamplePlan {
   const start = supported(origin),
     end = supported(receiver);
-  count(samples, 3, 129, 'Path samples');
+  if (samples !== undefined) count(samples, 3, RF_TERRAIN_MAX_PATH_SAMPLES, 'Path samples');
   const inverse = Geodesic.WGS84.Inverse(start[1], start[0], end[1], end[0]);
   const distanceM = inverse.s12 ?? NaN;
   const bearing = inverse.azi1 ?? NaN;
   if (!Number.isFinite(distanceM) || distanceM < 1 || distanceM > RF_TERRAIN_MAX_PATH_KM * 1000)
     throw new Error('Terrain paths must be at least 1 metre and no more than 200 km.');
+  const sampleCount =
+    samples ?? Math.min(RF_TERRAIN_MAX_PATH_SAMPLES, Math.max(3, Math.ceil(distanceM / 100) + 1));
   const distancesM = Array.from(
-    { length: samples },
-    (_, index) => (distanceM * index) / (samples - 1),
+    { length: sampleCount },
+    (_, index) => (distanceM * index) / (sampleCount - 1),
   );
   const positions = distancesM.map((distance, index) =>
-    index === 0 ? start : index === samples - 1 ? end : destination(start, bearing, distance),
+    index === 0 ? start : index === sampleCount - 1 ? end : destination(start, bearing, distance),
   );
   return tileBudget({
     kind: 'path',
@@ -78,7 +84,9 @@ export function createRfTerrainPath(
   });
 }
 
-/** One shared origin plus 24 × 17 DEM points. No smoothing between sampled bearings. */
+/** One shared origin plus 24 × 17 DEM points, concentrated towards the transmitter.
+ * Nearby sampling improves without increasing work. No smoothing between bearings.
+ */
 export function createRfTerrainRadials(
   origin: Position,
   radiusKm: number,
@@ -96,7 +104,9 @@ export function createRfTerrainRadials(
     const indices = [0],
       distancesM = [0];
     for (let step = 1; step <= steps; step++) {
-      const distanceM = (radiusKm * 1000 * step) / steps;
+      // A half-metre progression keeps the first assessed prefix (two steps) at
+      // least one metre. With <=17 steps and >=10m radius the outer radius stays exact.
+      const distanceM = Math.max(radiusKm * 1000 * (step / steps) ** 2, step / 2);
       indices.push(positions.length);
       distancesM.push(distanceM);
       positions.push(destination(start, bearingDegrees, distanceM));

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Position } from '@/lib/map/geoJsonTypes';
 import type { RfInputs } from '@/lib/map/rfPlanning';
 import { calculateRf } from '@/lib/map/rfPlanning';
+import { parseRfEngineering } from '@/lib/map/rfEngineering';
 import { measurementPoint } from '@/lib/map/measurements';
 import { RF_ENVIRONMENT_DEFAULTS, type RfDraft } from '@/lib/map/rfDraft';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
@@ -73,18 +74,20 @@ export function useRfAnalysis(
           ? createRfTerrainPath(origin, target)
           : createRfTerrainRadials(origin, number(env.radiusKm, 'terrain radius'));
         // The sampled path defines its distance; a hidden free-space distance is irrelevant.
-        calculateRf({ ...input, distanceKm: plan.maxDistanceKm });
+        const engineering = parseRfEngineering(draft.engineering, mode);
+        calculateRf({ ...input, distanceKm: plan.maxDistanceKm }, engineering);
         validated = true;
         const elevations = await fetchTerrainElevations(plan.positions, signal);
         signal.throwIfAborted();
         value = {
           kind: 'terrain',
-          terrain: analyseRfTerrain(input, plan, elevations.elevations_m),
+          terrain: analyseRfTerrain(input, plan, elevations.elevations_m, engineering),
           plan,
           elevations,
           input,
         };
       } else if (mode === 'hf-groundwave') {
+        const engineering = parseRfEngineering(draft.engineering, mode);
         bounded(input.sensitivityDbm, -200, 0, 'Receiver sensitivity (dBm)');
         const body = {
           frequency_mhz: bounded(input.frequencyMHz, 1.6, 30, 'HF frequency (MHz)'),
@@ -125,7 +128,7 @@ export function useRfAnalysis(
         validated = true;
         const result = await calculateGroundwave(body, signal);
         signal.throwIfAborted();
-        value = { kind: mode, result, origin, receiver, input };
+        value = { kind: mode, result, origin, receiver, input, engineering };
       } else if (mode === 'hf-skywave') {
         // This geometry-only scenario has no received-power or free-space distance calculation.
         const scenario = calculateHfSkywave({
