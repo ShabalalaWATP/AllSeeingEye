@@ -13,6 +13,13 @@ export function SavedCollectionPlan({ plan }: { plan: ResearchPlan }) {
         The plan recorded when this version was collected. Recorded collection outcomes show what
         happened.
       </p>
+      {plan.area && (
+        <p className="text-xs text-muted">
+          Area research: the exact collection boundary is retained with this report and shown on its
+          evidence map. Source coverage applies to this boundary and the recorded interval. Empty
+          results do not establish that nothing happened.
+        </p>
+      )}
       {!!plan.candidate_hypotheses?.length && (
         <section aria-label="Candidate hypotheses" className="space-y-2 text-xs">
           <h4 className="font-medium">Candidate hypotheses, not verified identities</h4>

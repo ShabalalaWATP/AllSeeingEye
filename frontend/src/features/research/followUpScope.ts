@@ -34,7 +34,7 @@ export function followUpRequest(parent: Report): ReportRequest {
       'Start a new historical request. Ordinary follow-ups cannot preserve this time policy.',
     );
   }
-  if (parent.report.scope.map_origin) {
+  if (parent.report.scope.map_origin || parent.report.scope.research_area) {
     throw new Error(
       'Start area research from its saved map revision. Ordinary follow-ups cannot preserve that scope.',
     );

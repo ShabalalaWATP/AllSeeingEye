@@ -22,7 +22,7 @@ def select_for_job(
     runtime_query: ResearchQuery | None = None,
 ) -> Selection:
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
-    area = job.request.map_origin is not None
+    area = job.request.effective_area is not None
     window = int(job.window.total_seconds() // 3600)
     if private and job.seed_events:
         # A supplied historic document is relevant because it was explicitly supplied,

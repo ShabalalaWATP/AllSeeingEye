@@ -12,6 +12,9 @@ from typing import Any
 from ase.domain.map_geometry import CanonicalMapGeometry, parse_map_geometry
 from ase.domain.map_views import MapCamera, MapViewState
 
+MAX_DIRECT_AREA_BYTES = 16 * 1024
+MAX_DIRECT_AREA_VERTICES = 256
+
 
 @dataclass(frozen=True, slots=True)
 class ResearchArea:
@@ -71,3 +74,26 @@ def area_from_dict(value: Any) -> ResearchArea | None:
     if value["sha256"] != geometry.sha256:
         raise ValueError("Frozen research area hash does not match its geometry")
     return ResearchArea(geometry)
+
+
+def direct_area_from_geometry(value: dict[str, Any]) -> ResearchArea:
+    """Bound dashboard drawings before expensive canonical topology validation."""
+    try:
+        text = json.dumps(value, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError, OverflowError, RecursionError) as exc:
+        raise ValueError("Invalid drawn research area") from exc
+    if len(text.encode("utf-8")) > MAX_DIRECT_AREA_BYTES:
+        raise ValueError("Drawn research areas allow at most 16 KiB of GeoJSON")
+    area = ResearchArea(parse_map_geometry(text))
+    validate_direct_area(area)
+    return area
+
+
+def validate_direct_area(area: ResearchArea) -> None:
+    if not isinstance(area, ResearchArea):
+        raise ValueError("Drawn research area requires canonical geometry")
+    if (
+        area.geometry.vertices > MAX_DIRECT_AREA_VERTICES
+        or len(area.geometry.canonical_json.encode("utf-8")) > MAX_DIRECT_AREA_BYTES
+    ):
+        raise ValueError("Drawn research areas allow at most 256 vertices and 16 KiB")

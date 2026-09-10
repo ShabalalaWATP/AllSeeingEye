@@ -2,9 +2,28 @@
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
-from ase.domain.research_area import ResearchArea, area_from_dict, area_to_dict
+from ase.domain.research_area import (
+    ResearchArea,
+    area_from_dict,
+    area_to_dict,
+    direct_area_from_geometry,
+)
+
+
+class ResearchAreaIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    geometry: dict[str, Any]
+    _area: ResearchArea = PrivateAttr()
+
+    @model_validator(mode="after")
+    def validate_geometry(self) -> "ResearchAreaIn":
+        self._area = direct_area_from_geometry(self.geometry)
+        return self
+
+    def to_domain(self) -> ResearchArea:
+        return self._area
 
 
 class ResearchAreaOut(BaseModel):

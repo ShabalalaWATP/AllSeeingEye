@@ -7045,6 +7045,7 @@ export interface components {
              * @default false
              */
             disclose_area_to_provider: boolean;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
             /** Research Since */
             research_since?: string | null;
             /** Research Until */
@@ -7314,6 +7315,13 @@ export interface components {
          * @enum {string}
          */
         RequestStatus: "pending" | "approved" | "rejected";
+        /** ResearchAreaIn */
+        ResearchAreaIn: {
+            /** Geometry */
+            geometry: {
+                [key: string]: unknown;
+            };
+        };
         /** ResearchAreaOut */
         ResearchAreaOut: {
             /** Geometry */
@@ -7539,6 +7547,7 @@ export interface components {
             map_revision_id?: string | null;
             /** Team Id */
             team_id?: string | null;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
         };
         /** ResearchPlanOut */
         ResearchPlanOut: {

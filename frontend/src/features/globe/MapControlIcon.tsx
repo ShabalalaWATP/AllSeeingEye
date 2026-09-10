@@ -25,6 +25,7 @@ export type ControlIcon =
   | 'draw'
   | 'route'
   | 'rf'
+  | 'research'
   | 'infrastructure';
 const paths: Record<ControlIcon, string> = {
   aircraft:
@@ -52,6 +53,7 @@ const paths: Record<ControlIcon, string> = {
   draw: 'm15 3 6 6-12 12H3v-6L15 3Zm-3 3 6 6M3 15l6 6',
   route: 'M5 4a2 2 0 1 0 0 .1M19 20a2 2 0 1 0 0 .1M5 7v4h10a4 4 0 0 1 0 8h-2',
   rf: 'M12 12v9M7 21h10M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M4 4a12 12 0 0 0 0 16M20 4a12 12 0 0 1 0 16',
+  research: 'M3 9V3h6m6 0h6v6M3 15v6h6M12 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm4-1 6 6',
   infrastructure:
     'M3 21V9h7v12M10 21V3h7v18M17 21v-8h4v8M5 12h3m-3 4h3m4-10h3m-3 4h3m-3 4h3M1 21h22',
 };

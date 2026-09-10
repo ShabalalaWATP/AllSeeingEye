@@ -4,6 +4,8 @@ import type { ViewMode } from '@/stores/globe';
 import type { NavigationRoute } from '@/lib/api/navigation';
 import { measurementLayers } from '@/lib/map/measurementLayers';
 import { drawingLayers } from '@/lib/map/drawingLayers';
+import { researchAreaLayers } from '@/lib/map/researchAreaLayers';
+import { researchAreaGeometry } from '@/lib/map/researchAreaGeometry';
 import { rfMapLayers } from '@/lib/map/rfMap';
 import { rfTerrainLayers } from '@/lib/map/rfTerrainLayers';
 import { hfGroundwaveLayers } from '@/lib/map/hfGroundwaveMap';
@@ -18,21 +20,24 @@ import type { GlobeEngineHandle } from './useGlobeEngine';
 export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean, mode: ViewMode) {
   const measurement = useMapMeasurement(engine, enabled);
   const drawing = useMapDrawing(engine, enabled);
+  const researchDrawing = useMapDrawing(engine, enabled);
   const rf = useRfMapPlacement(engine, enabled);
   const routePlanner = useRoutePlannerState();
   const { route, setRoute } = routePlanner;
   const stopPicking = useEffectEvent(() => {
     measurement.setPicking(false);
     drawing.setPicking(false);
+    researchDrawing.setPicking(false);
     rf.setPicking(null);
   });
   useEffect(() => {
     if (!enabled) stopPicking();
   }, [enabled]);
   const sketchMode =
-    drawing.picking && drawing.interaction !== 'click'
+    (drawing.picking && drawing.interaction !== 'click') ||
+    (researchDrawing.picking && researchDrawing.interaction !== 'click')
       ? 'drag'
-      : drawing.picking || measurement.picking || rf.picking
+      : drawing.picking || researchDrawing.picking || measurement.picking || rf.picking
         ? 'points'
         : 'navigate';
   useEffect(() => {
@@ -49,6 +54,26 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     () => drawingLayers(drawing.points, drawing.mode, mode === 'map', drawing.displayedAnchors),
     [drawing.points, drawing.mode, drawing.displayedAnchors, mode],
   );
+  const researchLayers = useMemo(
+    () =>
+      researchAreaLayers(researchDrawing.shape, researchDrawing.displayedAnchors, mode === 'map'),
+    [researchDrawing.shape, researchDrawing.displayedAnchors, mode],
+  );
+  const researchBoundary = useMemo(() => {
+    if (researchDrawing.picking || researchDrawing.anchors.length === 0)
+      return { area: null, areaError: null };
+    try {
+      return {
+        area: researchAreaGeometry(researchDrawing.shape, researchDrawing.anchors),
+        areaError: null,
+      };
+    } catch (error) {
+      return {
+        area: null,
+        areaError: error instanceof Error ? error.message : 'Draw a valid area.',
+      };
+    }
+  }, [researchDrawing.shape, researchDrawing.anchors, researchDrawing.picking]);
   const radio = useMemo(
     () => rfMapLayers(rf.estimate, mode === 'map', rf.coverageBubble && !rf.estimate?.receiver),
     [rf.estimate, mode, rf.coverageBubble],
@@ -80,8 +105,8 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     [route, mode],
   );
   const layers = useMemo(
-    () => [...measured, ...drawn, ...radio, ...propagation, ...routed],
-    [measured, drawn, radio, propagation, routed],
+    () => [...measured, ...drawn, ...researchLayers, ...radio, ...propagation, ...routed],
+    [measured, drawn, researchLayers, radio, propagation, routed],
   );
   return {
     measurement: {
@@ -89,6 +114,7 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
       setPicking: (active: boolean) => {
         if (active) {
           drawing.setPicking(false);
+          researchDrawing.setPicking(false);
           rf.setPicking(null);
         }
         measurement.setPicking(active);
@@ -99,9 +125,24 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
       setPicking: (active: boolean) => {
         if (active) {
           measurement.setPicking(false);
+          researchDrawing.setPicking(false);
           rf.setPicking(null);
         }
         drawing.setPicking(active);
+      },
+    },
+    research: {
+      ...researchBoundary,
+      drawing: {
+        ...researchDrawing,
+        setPicking: (active: boolean) => {
+          if (active) {
+            measurement.setPicking(false);
+            drawing.setPicking(false);
+            rf.setPicking(null);
+          }
+          researchDrawing.setPicking(active);
+        },
       },
     },
     rf: {
@@ -110,6 +151,7 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
         if (point) {
           measurement.setPicking(false);
           drawing.setPicking(false);
+          researchDrawing.setPicking(false);
         }
         rf.setPicking(point);
       },
@@ -117,10 +159,12 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     layers,
     routePlanner,
     setRoute,
-    picking: measurement.picking || drawing.picking || rf.picking !== null,
+    picking:
+      measurement.picking || drawing.picking || researchDrawing.picking || rf.picking !== null,
     activatePanel: (label: string | null) => {
       if (label !== null && label !== 'Measure distance and area') measurement.setPicking(false);
       if (label !== 'Draw on map') drawing.setPicking(false);
+      if (label !== 'Research area') researchDrawing.setPicking(false);
       if (label !== 'RF link calculator') rf.setPicking(null);
     },
   };

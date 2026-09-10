@@ -43,6 +43,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-uk-parliament",
         "research-ooni-aggregate",
         "research-copernicus-footprints",
+        "research-retained-area-feeds",
         "research-contracts-finder",
         "research-aiddata-projects",
         "research-designations-uksl",

@@ -40,10 +40,11 @@ class PreviewResearchPlan:
             team_id=team_id,
             map_view_id=map_view_id,
             map_revision_id=map_revision_id,
+            research_area=query.area,
         )
         # Preview only reads authorised local state. It neither grants nor records
         # consent: report collection still requires its own explicit disclosure.
         resolved = await self.origins.resolve(actor, request, require_disclosure=False)
         origin = resolved.map_origin
-        planned = replace(query, area=origin.area if origin else None)
+        planned = replace(query, area=resolved.effective_area)
         return ResearchPreview(self.research.plan(planned), origin)

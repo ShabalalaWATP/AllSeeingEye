@@ -7,13 +7,14 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.api.schemas_map_origin import MapResearchOriginOut
-from ase.api.schemas_research_area import ResearchAreaOut
+from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.api.schemas_research_tasks import (
     PlannedQueryTaskIn,
     PlannedQueryTaskOut,
     ResearchCandidateIn,
     ResearchCandidateOut,
 )
+from ase.application.reports.request import ReportRequest
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.registry_identifiers import RegistryLookup
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
@@ -66,11 +67,26 @@ class ResearchPlanIn(BaseModel):
     map_view_id: UUID | None = None
     map_revision_id: UUID | None = None
     team_id: UUID | None = None
+    research_area: ResearchAreaIn | None = None
 
     @model_validator(mode="after")
     def bounded(self) -> Self:
         if (self.map_view_id is None) != (self.map_revision_id is None):
             raise ValueError("Choose both saved map and revision identifiers")
+        if self.research_area is not None:
+            ReportRequest(
+                "ask",
+                question=self.question,
+                research_mode=self.mode,
+                research_focus=self.focus,
+                country_iso=self.country_iso,
+                research_area=self.research_area.to_domain(),
+                map_view_id=self.map_view_id,
+                map_revision_id=self.map_revision_id,
+                research_since=self.since,
+                research_until=self.until,
+                research_time_basis=self.time_basis,
+            )
         self.to_query()
         return self
 
@@ -95,6 +111,7 @@ class ResearchPlanIn(BaseModel):
             query_variants=tuple(variant.to_domain() for variant in self.query_variants),
             candidate_hypotheses=tuple(row.to_domain() for row in self.candidate_hypotheses),
             planned_tasks=tuple(row.to_domain() for row in self.planned_tasks),
+            area=self.research_area.to_domain() if self.research_area else None,
         )
 
 

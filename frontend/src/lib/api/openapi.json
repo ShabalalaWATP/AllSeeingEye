@@ -21243,6 +21243,16 @@
             "title": "Disclose Area To Provider",
             "default": false
           },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "research_since": {
             "anyOf": [
               {
@@ -22156,6 +22166,21 @@
         ],
         "title": "RequestStatus"
       },
+      "ResearchAreaIn": {
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "geometry"
+        ],
+        "title": "ResearchAreaIn"
+      },
       "ResearchAreaOut": {
         "properties": {
           "geometry": {
@@ -22795,6 +22820,16 @@
               }
             ],
             "title": "Team Id"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

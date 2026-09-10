@@ -142,7 +142,7 @@ class ReportResearchInputs:
                     "Start a new historical request; ordinary follow-ups cannot "
                     "preserve this time policy"
                 )
-            if record.scope.get("map_origin"):
+            if record.scope.get("map_origin") or record.scope.get("research_area"):
                 raise InvalidRequest(
                     "Start area research from its saved map revision; "
                     "ordinary follow-ups cannot preserve that scope"

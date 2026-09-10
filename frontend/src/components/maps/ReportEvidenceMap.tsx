@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { EvidenceItem } from '@/lib/api/reports';
+import type { ResearchPlan } from '@/lib/api/researchPlan';
+import { researchMapState } from './researchMapState';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { Alert } from '@/components/ui/Alert';
@@ -33,6 +35,7 @@ export interface ReportEvidenceMapProps {
   reportId: string;
   version: number;
   initialTimeBasis?: MapState['time_basis'];
+  initialResearchArea?: ResearchPlan['area'];
   evidence: readonly EvidenceItem[];
   onSelectEvidence?: (label: string) => void;
   savedView?: SavedMapView | undefined;
@@ -45,6 +48,7 @@ export default function ReportEvidenceMap({
   reportId,
   version,
   initialTimeBasis = 'publication',
+  initialResearchArea,
   evidence,
   onSelectEvidence,
   savedView,
@@ -67,7 +71,7 @@ export default function ReportEvidenceMap({
     actor.endsWith(':true');
   const [footprints, setFootprints] = useState<LocalCollection | null>(null);
   const [state, setState] = useState<MapState>(
-    () => savedView?.revision.state ?? { ...initialMapState(), time_basis: initialTimeBasis },
+    () => savedView?.revision.state ?? researchMapState(initialTimeBasis, initialResearchArea),
   );
   const saved = useSavedMapViews(reportId, version, savedView);
   const areaChanged = useMemo(

@@ -157,6 +157,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             self.clock,
             tuple(settings.disabled_feed_ids),
             admission=self.source_admission,
+            retained_store=self.store,
             sec_client=self.sec_client,
             ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
             uksl_snapshot_path=settings.uksl_snapshot_path,

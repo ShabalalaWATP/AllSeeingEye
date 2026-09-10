@@ -262,3 +262,15 @@ precision, private overlays, projection parity and acceptance tests.
 
 These documents are plans, not implemented connectors, activated sources or
 measured research-quality claims. Existing completed milestones remain above.
+
+## Main-map area research, 10 September 2026
+
+Direct area research now starts from the right-hand map toolbar without an
+existing report. The operator draws a boundary, optionally asks a question,
+checks source capabilities and confirms collection. The existing private report
+pipeline preserves exact geometry, hash, interval, source receipts and citations.
+An area-only retained-public-feed provider complements supported external
+queries, with bounded fair sampling, original source controls and explicit
+coverage gaps. See [area research](AREA_RESEARCH.md) for implemented capabilities
+and validation limits. This does not make every catalogue entry spatially
+searchable, add a complete historical archive or establish real-model quality.

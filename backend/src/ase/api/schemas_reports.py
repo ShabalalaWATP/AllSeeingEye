@@ -15,6 +15,7 @@ from ase.api.schemas_model_routing import ModelRoutingOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.api.schemas_research import ResearchReceiptOut
+from ase.api.schemas_research_area import ResearchAreaIn
 from ase.api.schemas_research_context import ResearchContextOut
 from ase.api.schemas_research_plan import QueryVariantIn
 from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
@@ -74,6 +75,7 @@ class ReportCreateIn(BaseModel):
     map_view_id: UUID | None = None
     map_revision_id: UUID | None = None
     disclose_area_to_provider: StrictBool = False
+    research_area: ResearchAreaIn | None = None
     research_since: AwareDatetime | None = None
     research_until: AwareDatetime | None = None
     research_time_basis: EvidenceTimeBasis | None = None
@@ -136,6 +138,7 @@ class ReportCreateIn(BaseModel):
             map_view_id=self.map_view_id,
             map_revision_id=self.map_revision_id,
             disclose_area_to_provider=self.disclose_area_to_provider,
+            research_area=self.research_area.to_domain() if self.research_area else None,
             research_since=self.research_since,
             research_time_basis=self.research_time_basis,
             research_until=self.research_until,

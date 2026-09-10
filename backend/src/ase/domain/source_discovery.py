@@ -100,6 +100,7 @@ GLOBAL_IDS = frozenset(
         "research-crossref",
         "research-world-bank",
         "research-copernicus-footprints",
+        "research-retained-area-feeds",
         "research-aiddata-projects",
         "research-gleif-profile",
         "research-gleif-direct-parent",

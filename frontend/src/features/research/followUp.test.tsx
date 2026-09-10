@@ -242,14 +242,17 @@ describe('private and follow-up research', () => {
   });
 });
 
-it('does not turn an area report into a rolling general follow-up', () => {
-  expect(() =>
-    followUpRequest({
-      ...report,
-      report: {
-        ...report.report,
-        scope: { ...report.report.scope, map_origin: { revision_id: 'saved' }, window_hours: 0 },
-      },
-    }),
-  ).toThrow('Start area research from its saved map revision');
-});
+it.each(['map_origin', 'research_area'])(
+  'does not turn an area report with %s into a rolling general follow-up',
+  (origin) => {
+    expect(() =>
+      followUpRequest({
+        ...report,
+        report: {
+          ...report.report,
+          scope: { ...report.report.scope, [origin]: { revision_id: 'saved' }, window_hours: 0 },
+        },
+      }),
+    ).toThrow('Start area research from its saved map revision');
+  },
+);

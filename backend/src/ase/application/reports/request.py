@@ -15,6 +15,7 @@ from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.query_variant_records import required_variant, validate_variant_anchors
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_area import ResearchArea, area_from_dict, validate_direct_area
 from ase.domain.research_plan import QueryVariant
 from ase.domain.research_tasks import (
     PlannedQueryTask,
@@ -60,16 +61,22 @@ class ReportRequest:
     research_since: datetime | None = None
     research_until: datetime | None = None
     research_time_basis: EvidenceTimeBasis | None = None
+    research_area: ResearchArea | None = None
+
+    @property
+    def effective_area(self) -> ResearchArea | None:
+        return self.research_area or (self.map_origin.area if self.map_origin else None)
 
     @property
     def effective_time_basis(self) -> EvidenceTimeBasis:
         return self.research_time_basis or (
             EvidenceTimeBasis.RESEARCH
-            if self.map_view_id or self.map_origin
+            if self.map_view_id or self.effective_area
             else EvidenceTimeBasis.PUBLICATION
         )
 
     def __post_init__(self) -> None:
+        self._validate_area()
         validate_variant_anchors(self.research_query_variants, self.research_terms)
         if any(row.origin != "operator" for row in self.research_candidate_hypotheses) or any(
             row.origin != "operator" for row in self.research_planned_tasks
@@ -83,7 +90,7 @@ class ReportRequest:
         validate_registry_scope(
             self.research_planned_tasks,
             self.research_focus is ResearchFocus.COMPANY
-            and self.map_origin is None
+            and self.effective_area is None
             and self.map_view_id is None,
         )
         if (self.research_candidate_hypotheses or self.research_planned_tasks) and (
@@ -127,11 +134,37 @@ class ReportRequest:
         if self.window_hours is not None:
             raise ValueError("Choose a fixed research interval or a rolling window")
         if self.research_mode is None or (
-            not recorded and (self.map_view_id is None or self.map_revision_id is None)
+            not recorded
+            and self.research_area is None
+            and (self.map_view_id is None or self.map_revision_id is None)
         ):
             raise ValueError(
-                "Fixed research intervals require an exact saved map and research mode"
+                "Fixed research intervals require a drawn area or exact saved map and research mode"
             )
+
+    def _validate_area(self) -> None:
+        if self.research_area is None:
+            return
+        validate_direct_area(self.research_area)
+        if (
+            self.map_view_id is not None
+            or self.map_revision_id is not None
+            or self.map_origin is not None
+        ):
+            raise ValueError("Choose a drawn area or an exact saved map, not both")
+        if (
+            self.template_id != "ask"
+            or self.research_mode is None
+            or self.research_focus is not ResearchFocus.GENERAL
+            or self.parent_report_id is not None
+            or self.research_input_id is not None
+            or self.plan_id is not None
+            or self.country_iso is not None
+            or self.conflict_id is not None
+            or self.hazard is not None
+            or self.categories
+        ):
+            raise ValueError("Area research needs a standalone general research question")
 
     @classmethod
     def from_scope(cls, template_id: str, scope: Mapping[str, Any]) -> ReportRequest:
@@ -147,6 +180,7 @@ class ReportRequest:
             map_revision_id=origin.revision_id if origin else None,
             disclose_area_to_provider=scope.get("disclose_area_to_provider") is True,
             map_origin=origin,
+            research_area=area_from_dict(scope.get("research_area")),
             report_language=scope.get("report_language", "en"),
             report_style=scope.get("report_style", "assessment"),
             country_iso=scope.get("country") or None,

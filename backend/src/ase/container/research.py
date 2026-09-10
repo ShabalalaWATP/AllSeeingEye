@@ -10,6 +10,7 @@ from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.regional import RegionalFeedResearchProvider
+from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research.social import SocialFeedResearchProvider
 from ase.adapters.research_records.aiddata_provider import AidDataProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
@@ -36,6 +37,7 @@ from ase.adapters.research_subjects.parliament import ParliamentQuestionsProvide
 from ase.adapters.research_subjects.scholarly import CrossrefProvider, OpenAlexProvider
 from ase.adapters.research_subjects.world_bank import WorldBankProvider
 from ase.adapters.store.memory import InMemoryEventStore
+from ase.application.ports.feeds import EventStore
 from ase.application.ports.geo import CountryDirectory
 from ase.application.ports.research import ResearchProvider
 from ase.application.ports.services import Clock
@@ -51,6 +53,7 @@ def research_service(
     disabled: tuple[str, ...] = (),
     *,
     admission: SourceAdmission | None = None,
+    retained_store: EventStore | None = None,
     sec_client: SecClient | None = None,
     ooni_noncommercial_use_acknowledged: bool = False,
     uksl_snapshot_path: str | None = None,
@@ -89,6 +92,10 @@ def research_service(
             # Analysing a private upload does not send its extracted terms to public feeds.
             return []
         selected: list[ResearchProvider] = []
+        if query.area is not None and retained_store is not None:
+            selected.append(
+                RetainedAreaFeedProvider(retained_store, admission=admission, disabled=disabled)
+            )
         if query.focus == ResearchFocus.COMPANY:
             selected.extend(
                 (
@@ -137,7 +144,9 @@ def research_service(
             if seed.spec.id not in disabled
         )
         return [
-            ControlledResearchProvider(provider, admission) if admission is not None else provider
+            ControlledResearchProvider(provider, admission)
+            if admission is not None and not isinstance(provider, RetainedAreaFeedProvider)
+            else provider
             for provider in selected
             if provider.id not in disabled
         ]
@@ -147,7 +156,11 @@ def research_service(
             return []
         # Registry/DNS snapshots ignore contrary search terms. Re-fetching them
         # for every judgement would exhaust the challenge budget without searching.
-        return providers(replace(query, focus=ResearchFocus.GENERAL))
+        return [
+            provider
+            for provider in providers(replace(query, focus=ResearchFocus.GENERAL))
+            if provider.id != RetainedAreaFeedProvider.id
+        ]
 
     return ResearchCollectionService(providers, challenge_providers=challenge_providers)
 

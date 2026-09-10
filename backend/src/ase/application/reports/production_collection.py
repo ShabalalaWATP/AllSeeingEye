@@ -59,7 +59,7 @@ async def prepare_collection(
             focus=job.request.research_focus,
             country_iso=job.request.country_iso,
             subject=job.request.research_subject,
-            area=job.request.map_origin.area if job.request.map_origin else None,
+            area=job.request.effective_area,
         )
         if not query.terms:
             totals.findings.append(

@@ -9,6 +9,7 @@ from ase.application.reports.templates import Template
 from ase.domain.collection import CollectionPlan
 from ase.domain.map_research_origin import origin_to_dict
 from ase.domain.query_variant_records import variant_to_dict
+from ase.domain.research_area import area_to_dict
 from ase.domain.trackers import HAZARD_TITLES, Conflict, Hazard
 
 
@@ -73,6 +74,14 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
         "hazard": request.hazard,
         "conflict": request.conflict_id,
         "plan": str(request.plan_id) if request.plan_id else None,
+        **(
+            {
+                "research_area": area_to_dict(request.research_area),
+                "disclose_area_to_provider": request.disclose_area_to_provider,
+            }
+            if request.research_area is not None
+            else {}
+        ),
         **(
             {
                 "map_origin": origin_to_dict(request.map_origin),

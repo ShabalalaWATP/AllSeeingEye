@@ -1,15 +1,27 @@
 import { MapMeasurementPanel } from '@/components/maps/MapMeasurementPanel';
+import { MapAreaResearchPanel } from '@/components/maps/MapAreaResearchPanel';
 import { RfCalculatorPanel } from '@/components/maps/RfCalculatorPanel';
 import { RoutePlannerPanel } from '@/components/maps/RoutePlannerPanel';
 import { measure } from '@/lib/map/measurements';
 import { ControlPanel } from './GlobeControls';
 import { MapDrawingPanel } from './MapDrawingPanel';
+import { MapResearchDrawingControls } from './MapResearchDrawingControls';
 import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
 
 /** Direct panel children allow the shared rail to manage one active tool. */
 export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>) {
   const { measurement } = tools;
   return [
+    <ControlPanel key="research" side="right" label="Research area" icon="research" size="medium">
+      <MapAreaResearchPanel
+        area={tools.research.area}
+        areaError={tools.research.areaError}
+        picking={tools.research.drawing.picking}
+        onStopDrawing={() => tools.research.drawing.setPicking(false)}
+      >
+        <MapResearchDrawingControls value={tools.research.drawing} />
+      </MapAreaResearchPanel>
+    </ControlPanel>,
     <ControlPanel
       key="drawing"
       side="right"

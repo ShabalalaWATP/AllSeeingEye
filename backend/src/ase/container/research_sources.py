@@ -6,6 +6,7 @@ from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
+from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
 from ase.adapters.research_records.company import (
@@ -177,6 +178,17 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
     )
     specs.extend(_record_specs())
     specs.extend(subject_specs())
+    specs.append(
+        _spec(
+            RetainedAreaFeedProvider.id,
+            RetainedAreaFeedProvider.name,
+            Category.NEWS,
+            "Area collection preserves original feed identities and grades; no new source trust.",
+            RetainedAreaFeedProvider.spatial_scope,
+            RetainedAreaFeedProvider.temporal_scope,
+            role="aggregator",
+        )
+    )
     specs.append(
         _spec(
             "research-aiddata-projects",

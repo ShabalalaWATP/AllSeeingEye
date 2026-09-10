@@ -397,3 +397,12 @@ facts before raw source fields. Completed drawings can hand off a conservative,
 editable bounding rectangle to the existing Warning indicator form, with reports
 off by default. See [dashboard context and watches](DASHBOARD_CONTEXT_AND_WATCHES.md)
 for exact scope, performance, access limits and remaining work.
+
+## Research area
+
+The right-hand toolbar includes **Research area**. Draw a polygon, rectangle or
+circle, optionally ask a question, check source support and generate a personal
+AI report. It preserves the exact boundary and collection period, with cited
+evidence and source coverage receipts. Drawing and research have separate state
+and share the exclusive map-input owner with measurement and RF tools.
+See [area research](AREA_RESEARCH.md) for the full flow, bounds and limitations.

@@ -3409,3 +3409,49 @@ ASE login on 5174 returned 200 with the correct app title, and API health on
 file-length warnings remain. No backend changes or backend test run were needed.
 Live browser/GPU appearance remains unverified under the existing administrator
 browser-control policy.
+
+## 10 September 2026: draw an area and request an AI report
+
+Added Research area to the right-hand map toolbar with independent drawing
+state, exclusive map gestures and a compact question/source/report flow.
+The user can drag rectangles/circles or click a polygon, optionally ask a
+question and review source support before explicit collection. Edits invalidate
+the preview; closing the tool or changing authority cancels pending work.
+
+Extended the existing research/report contracts with bounded canonical direct
+areas, without manufacturing a parent report. Exact geometry, hashes, intervals
+and source receipts survive generation and regeneration. The report evidence
+map restores the studied boundary. Added a cooperative retained-public-feed
+provider with precise polygon filtering, current source controls and fair
+category/source sampling. Existing external area queries remain capability
+gated. Retained data is explicitly distinguished from fresh collection and a
+complete historical archive. No new dependency, database or raw-event storage.
+
+Updated the map tools, implementation plan and automated-research plan, with
+the operational details in [area research](AREA_RESEARCH.md). Independent
+correctness and security reviews found no actionable issues. The API was
+restarted locally on port 8001 and its served schema now exposes both direct
+area inputs; the frontend remains on port 5174. Browser/GPU and real-model
+quality acceptance remain unverified under the previously recorded limits.
+
+The broader frontend run passed 1,839 tests with one existing skip. Coverage
+was 95.45% statements, 90.69% branches, 93.45% functions and 96.63% lines.
+After the final narrow-layout and lint correction, 43 area-specific tests
+passed. Whole frontend lint, both TypeScript configurations, final build,
+changed-file formatting, whitespace and file-length checks passed. The
+existing vendor-chunk and untouched 380-line engine warnings remain. The
+local area plan and report routes returned 401 without authentication.
+
+An attempted full backend run collected 4,402 tests but was stopped at about
+5% after twelve minutes, with no failures observed and expected PostgreSQL
+skips. Repeated full-app/database setup under coverage made that run unsuitable
+as an interactive feature check. It does not establish full-backend coverage;
+validation continued with the bounded affected research/report group instead.
+
+That final backend group passed 189 tests in 251.33 seconds, with 93.49%
+targeted coverage across seven area/request/provider modules and the unchanged
+90% gate. Full Ruff, formatting, strict mypy and both architecture contracts
+passed. Changed-source Bandit passed. Eight final frontend follow-up tests
+passed, including preservation of the direct-area scope boundary. Independent
+reviews reported no actionable correctness or security findings. Temporary
+validation logs were removed before committing; no remote is configured.

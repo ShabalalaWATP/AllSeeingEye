@@ -792,3 +792,19 @@ bounded planning defaults, not a substitute for measured site or atmospheric dat
 - [ ] Check interactive browser/GPU appearance when administrator policy permits.
 
 See [map tool panels](MAP_TOOLS_AND_LAYERS.md#compact-tool-panels).
+
+## 10 September 2026: research an area from the main map
+
+- [x] Add a compact Research area tool to the right-hand rail in both projections.
+- [x] Draw, move and validate independent polygon, rectangle and circle boundaries with exclusive map input.
+- [x] Offer an optional question, defaults, source-capability preview and explicit disclosure before generation.
+- [x] Accept bounded direct areas through existing research/report APIs without requiring an earlier report.
+- [x] Collect precise retained public feed evidence fairly across sources and categories, alongside supported external queries.
+- [x] Preserve exact geometry, hash, interval, source receipts and personal access; restore the area on the report evidence map.
+- [x] Invalidate stale previews and cancel work on edits, tool closure or authority changes.
+- [x] Complete independent correctness/security review and focused frontend/backend regressions.
+- [ ] Interactive browser/GPU and configured-model quality acceptance when available.
+
+See [area research](AREA_RESEARCH.md) for capabilities, explicit coverage gaps,
+budgets and access controls. Retained feeds are not a complete historical archive
+or a fresh search of every source catalogue entry.

@@ -225,6 +225,7 @@ export default function ReportPage() {
           reportId={id}
           version={version.number}
           initialTimeBasis={version.research?.time_basis ?? 'publication'}
+          initialResearchArea={version.research?.plan?.area ?? null}
           evidence={version.evidence}
           savedView={data.savedMap}
           scopeLabel={workspaces.label(report.team_id)}
@@ -237,10 +238,12 @@ export default function ReportPage() {
           <AdvocacyView advocacy={version.devils_advocacy} />
         )}
         <Link
-          to={`/research?parent=${encodeURIComponent(id)}`}
+          to={version.research?.plan?.area ? '/' : `/research?parent=${encodeURIComponent(id)}`}
           className="w-fit rounded border border-line px-4 py-3 text-sm font-medium hover:bg-surface-2"
         >
-          Ask a follow-up question
+          {version.research?.plan?.area
+            ? 'Research another area on the map'
+            : 'Ask a follow-up question'}
         </Link>
         <section aria-label="Report actions" className="space-y-3">
           <div className="flex flex-wrap gap-2">

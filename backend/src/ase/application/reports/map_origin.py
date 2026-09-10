@@ -22,6 +22,18 @@ class ReportMapOrigin:
     ) -> None:
         self.access, self.reports, self.views = access, reports, views
 
+    async def _direct(
+        self, actor: User, request: ReportRequest, *, require_disclosure: bool
+    ) -> None:
+        if request.research_area is None:
+            return
+        access = await self.access.context(actor)
+        access.require_create(request.team_id)
+        if require_disclosure and request.disclose_area_to_provider is not True:
+            raise InvalidRequest(
+                "Confirm disclosure of this area and interval to selected providers."
+            )
+
     async def resolve(
         self,
         actor: User,
@@ -33,6 +45,7 @@ class ReportMapOrigin:
         if request.map_view_id is None and request.map_revision_id is None:
             if request.map_origin is not None:
                 raise InvalidRequest("A research area needs its saved map reference.")
+            await self._direct(actor, request, require_disclosure=require_disclosure)
             return request
         if self.views is None or request.map_view_id is None or request.map_revision_id is None:
             raise InvalidRequest("Choose an exact saved map revision.")
