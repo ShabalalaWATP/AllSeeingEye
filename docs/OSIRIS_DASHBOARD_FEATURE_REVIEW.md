@@ -205,6 +205,10 @@ warning thresholds/cooldowns are a foundation, not complete crossing detection.
 
 ### Milestone 3: selected new layers and deeper map context
 
+- [x] Clearer RF reach display: labelled obstruction and distance boundaries,
+  shared map/profile colour key, per-bearing stops and optional illustrative
+  360° footprint. Rendering-only shading adds no collection work. See
+  [RF coverage display](RF_COVERAGE_DISPLAY.md); this is not measured reception.
 - [ ] Curated public GIS browser: preview publisher, licence, extent and dataset
   date before adding bounded features. Start with official public port/airport and
   relevant infrastructure datasets; support selected ArcGIS services through the

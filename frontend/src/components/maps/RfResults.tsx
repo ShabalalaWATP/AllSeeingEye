@@ -5,9 +5,15 @@ export function RfResults({ result }: { result: ReturnType<typeof calculateRf> }
   return (
     <div aria-live="polite" className="space-y-3 border-t border-line pt-3">
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded border border-purple-300/20 bg-purple-300/5 p-3">
+        <div className="rounded border border-cyan/30 bg-cyan/5 p-3">
           <p className="text-muted">Model distance limit</p>
-          <p className="mt-1 font-mono text-lg text-purple-200">{radius.toFixed(1)} km</p>
+          <p className="mt-1 font-mono text-lg text-cyan">{radius.toFixed(2)} km</p>
+          <p className="mt-1 text-[10px] text-muted">
+            Limited by{' '}
+            {result.horizonKm <= result.sensitivityDistanceKm
+              ? 'radio horizon'
+              : 'receiver sensitivity'}
+          </p>
         </div>
         <div className="rounded border border-line p-3">
           <p className="text-muted">Link margin</p>

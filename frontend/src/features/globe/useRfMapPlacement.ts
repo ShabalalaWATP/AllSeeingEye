@@ -17,6 +17,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
   const [estimate, setEstimate] = useState<RfMapEstimate | null>(null);
   const [analysis, setAnalysis] = useState<RfAnalysis | null>(null);
   const [draft, setDraft] = useState(() => createRfDraft());
+  const [coverageBubble, setCoverageBubble] = useState(false);
   useEffect(() => {
     const clear = () => {
       setOrigin(null);
@@ -25,6 +26,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
       setEstimate(null);
       setAnalysis(null);
       setDraft(createRfDraft());
+      setCoverageBubble(false);
     };
     const offAccess = subscribeWorkspaceAccess(clear);
     const offUser = useAuthStore.subscribe((next, previous) => {
@@ -76,6 +78,8 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
       if (next) setEstimate(null);
     },
     draft,
+    coverageBubble,
+    setCoverageBubble,
     setDraft: (next: RfDraft) => {
       setDraft(next);
       setEstimate(null);
@@ -83,6 +87,7 @@ export function useRfMapPlacement(engine: GlobeEngineHandle, enabled: boolean) {
     },
     clearReceiver: () => {
       setReceiver(null);
+      setDraft((previous) => ({ ...previous, study: 'area' }));
       setEstimate(null);
       setAnalysis(null);
       setPicking(null);

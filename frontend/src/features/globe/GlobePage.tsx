@@ -24,6 +24,7 @@ import { CoordinateReadout } from './CoordinateReadout';
 import { useBritishGrid } from './useBritishGrid';
 import { GlobeControls } from './GlobeControls';
 import { MeasurementReadout } from './MeasurementReadout';
+import { RfMapReadout } from './RfMapReadout';
 import { MapLayerRail } from './MapLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
 import { ModeToolbar } from './ModeToolbar';
@@ -314,6 +315,9 @@ export default function GlobePage() {
         </GlobeControls>
       )}
       <MeasurementReadout value={measurement} />
+      {!opsRoom && !tools.picking && (
+        <RfMapReadout analysis={tools.rf.analysis} estimate={tools.rf.estimate} />
+      )}
       {supported && !opsRoom && !tools.picking && (
         <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
       )}

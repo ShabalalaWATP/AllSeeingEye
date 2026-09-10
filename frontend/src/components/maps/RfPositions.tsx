@@ -5,7 +5,11 @@ export function RfPositions({
   picking,
   onPick,
   onClearReceiver,
-}: Pick<RfCalculatorPanelProps, 'origin' | 'receiver' | 'picking' | 'onPick' | 'onClearReceiver'>) {
+  pathActive = true,
+}: Pick<
+  RfCalculatorPanelProps,
+  'origin' | 'receiver' | 'picking' | 'onPick' | 'onClearReceiver'
+> & { pathActive?: boolean }) {
   return (
     <>
       {onPick && (
@@ -54,7 +58,7 @@ export function RfPositions({
               Remove receiver, keep transmitter
             </button>
           )}
-          {origin && receiver && (
+          {origin && receiver && pathActive && (
             <p className="text-muted">Path length follows the two map positions.</p>
           )}
         </div>

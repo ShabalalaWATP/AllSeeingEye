@@ -3233,3 +3233,41 @@ The All Seeing Eye; frontend login, API health and readiness returned 200. A
 context-event request without authentication returned 401. This is service and
 access verification, not an authenticated visual test or a new provider-coverage
 measurement. Delivery remains on local `main`, with no Git remote configured.
+
+## 10 September 2026: RF reach, obstruction and optional area shading
+
+The radio planner now has explicit transmitter-to-receiver and 360° area studies.
+An area ignores a saved receiver without deleting it; removing the receiver
+returns to an area study. Optional coverage shading changes only the saved
+overlay, without another terrain request, continuous animation or polling.
+Radio/site/study edits still clear stale results and cancel pending work.
+
+Terrain paths and their profile charts share mint clearance, amber risk, strong
+red obstruction and grey uncertainty colours. Dark underlays improve contrast
+over imagery. The first sampled intrusion has a marker and distance; the preceding
+sample interval is amber, and an obstructed direct ray stays red beyond the ridge.
+This is a direct-ray statement, not proof of zero reception after diffraction.
+The radial result lists last passing targets, first failures and survey limits by
+bearing, with grey unassessed tails and a bounded number of map callouts.
+
+The optional area footprint interpolates only to the shorter passing distance of
+adjacent bearings, preserving unknown gaps. It is labelled illustrative. The
+free-space reference splits a receiver path at the exact geodesic model boundary
+and identifies whether horizon or sensitivity sets that radius. Its optional
+shading uses bounded geodesic wedges, with conservative dateline/polar handling.
+A compact expandable key remains on the map after closing the calculator.
+
+The propagation calculations and provider intake bounds are unchanged. Independent
+correctness/access review found the receiver-removal regression and it was fixed.
+No new credentials, external requests, dependencies or authority paths were added.
+Only Conflicts remains enabled by default. Added the RF coverage operating note
+and updated the map tools and dashboard feature plan. Actual browser/GPU appearance
+remains unverified under the existing administrator browser-control policy.
+
+Final validation passed: 1,697 frontend tests across 332 passing files, with one
+existing skipped file/test. Coverage is 95.41% statements, 90.66% branches,
+93.32% functions and 96.58% lines, meeting all unchanged gates. The final focused
+RF run passed 96 tests. TypeScript, ESLint, the production build, changed-source
+Prettier, whitespace and file-length checks passed. Existing large vendor chunks
+and the untouched 380-line MapLibre engine remain warnings. Local frontend login
+and backend health returned 200. No backend code changed or backend tests ran.

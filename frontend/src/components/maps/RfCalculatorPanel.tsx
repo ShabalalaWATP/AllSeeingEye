@@ -7,6 +7,8 @@ import type { RfMapEstimate } from '@/lib/map/rfMap';
 import type { Position } from '@/lib/map/geoJsonTypes';
 import { measure } from '@/lib/map/measurements';
 import { RfResults } from './RfResults';
+import { RfCoverageControls } from './RfCoverageControls';
+import { RfReferenceControls } from './RfReferenceControls';
 import { RfPowerInput } from './RfPowerInput';
 import { RfPositions } from './RfPositions';
 import { RfModelControls, rfEnvironmentValid } from './RfModelControls';
@@ -32,6 +34,8 @@ export interface RfCalculatorPanelProps {
   onPick?: ((point: 'origin' | 'receiver' | null) => void) | undefined;
   onOverlayChange?: (estimate: RfMapEstimate | null) => void;
   overlayVisible?: boolean;
+  coverageBubble?: boolean;
+  onCoverageBubbleChange?: (value: boolean) => void;
   draft?: RfDraft;
   onDraftChange?: (draft: RfDraft) => void;
   onClearReceiver?: (() => void) | undefined;
@@ -47,6 +51,8 @@ export function RfCalculatorPanel({
   onPick,
   onOverlayChange,
   overlayVisible = false,
+  coverageBubble,
+  onCoverageBubbleChange,
   draft,
   onDraftChange,
   onClearReceiver,
@@ -57,6 +63,10 @@ export function RfCalculatorPanel({
   const currentDraft = draft ?? localDraft;
   const { values, presetId } = currentDraft;
   const mode = currentDraft.propagation ?? 'terrain';
+  const supportsArea = mode === 'terrain' || mode === 'free-space';
+  const target = supportsArea && currentDraft.study === 'area' ? null : receiver;
+  const needsReceiver = supportsArea && currentDraft.study === 'link' && !receiver;
+  const [localBubble, setLocalBubble] = useState(false);
   const [localAnalysis, setLocalAnalysis] = useState<RfAnalysis | null>(null);
   const changeAnalysis = onAnalysisChange ?? setLocalAnalysis;
   const currentAnalysis = analysis === undefined ? localAnalysis : analysis;
@@ -65,7 +75,7 @@ export function RfCalculatorPanel({
   const input = Object.fromEntries(
     Object.entries(values).map(([key, value]) => [key, value.trim() ? Number(value) : NaN]),
   ) as unknown as RfInputs;
-  if (origin && receiver) input.distanceKm = measure([origin, receiver], 'distance').metres / 1000;
+  if (origin && target) input.distanceKm = measure([origin, target], 'distance').metres / 1000;
   const worker = useRfAnalysis(input, currentDraft, origin, receiver, changeAnalysis);
   const update = (next: RfDraft) => {
     setDraft(next);
@@ -85,9 +95,9 @@ export function RfCalculatorPanel({
       input.frequencyMHz > 30
     )
       throw new Error('HF frequency: enter a value from 1.6 to 30 MHz.');
-    if (origin && mode === 'free-space') {
+    if (origin && mode === 'free-space' && !needsReceiver) {
       try {
-        estimate = rfMapEstimate(input, origin, receiver);
+        estimate = rfMapEstimate(input, origin, target);
       } catch (caught) {
         mapError = caught instanceof Error ? caught.message : 'Check the map position.';
       }
@@ -108,10 +118,8 @@ export function RfCalculatorPanel({
         min={min}
         max={max}
         step="any"
-        value={
-          key === 'distanceKm' && origin && receiver ? input.distanceKm.toFixed(3) : values[key]
-        }
-        readOnly={key === 'distanceKm' && !!origin && !!receiver}
+        value={key === 'distanceKm' && origin && target ? input.distanceKm.toFixed(3) : values[key]}
+        readOnly={key === 'distanceKm' && !!origin && !!target}
         onChange={(event) => change(key, event.target.value)}
         className="mt-1 w-full rounded border border-line bg-ground p-2 text-text read-only:opacity-60"
       />
@@ -127,6 +135,18 @@ export function RfCalculatorPanel({
         </p>
       </header>
       <RfModelControls draft={currentDraft} onChange={update} />
+      {supportsArea && (
+        <RfCoverageControls
+          draft={currentDraft}
+          hasReceiver={!!receiver}
+          onChange={(next) => {
+            onPick?.(null);
+            update(next);
+          }}
+          bubble={coverageBubble ?? localBubble}
+          onBubbleChange={onCoverageBubbleChange ?? setLocalBubble}
+        />
+      )}
       <RfPresetSelect
         presetId={presetId}
         onSelect={(selected) => {
@@ -147,17 +167,35 @@ export function RfCalculatorPanel({
         }}
       />
       <RfPositions
+        pathActive={target !== null}
         origin={origin}
         receiver={receiver}
         picking={picking}
-        onPick={onPick}
+        onPick={
+          onPick
+            ? (point) => {
+                if (point === 'receiver' && supportsArea)
+                  update({ ...currentDraft, study: 'link' });
+                onPick(point);
+              }
+            : undefined
+        }
         onClearReceiver={onClearReceiver}
       />
+      {needsReceiver && (
+        <p className="text-amber-300">Place a receiver to analyse a point-to-point link.</p>
+      )}
+      {supportsArea && currentDraft.study === 'area' && receiver && (
+        <p className="text-muted">
+          The saved receiver is excluded from this 360° study. Switch to the receiver link to use
+          it.
+        </p>
+      )}
       {mode === 'free-space' &&
         measuredDistanceKm !== undefined &&
         Number.isFinite(measuredDistanceKm) &&
         measuredDistanceKm > 0 &&
-        !(origin && receiver) && (
+        !(origin && target) && (
           <button
             type="button"
             className="min-h-9 rounded border border-line px-2 text-cyan"
@@ -180,7 +218,7 @@ export function RfCalculatorPanel({
             : BASIC_FIELDS.has(key) &&
               (key !== 'distanceKm' ||
                 mode === 'free-space' ||
-                (mode === 'terrain' && !!origin && !!receiver)),
+                (mode === 'terrain' && !!origin && !!target)),
         ).map(field)}
       </div>
       {mode !== 'hf-skywave' && (
@@ -218,6 +256,7 @@ export function RfCalculatorPanel({
             disabled={
               worker.busy ||
               !origin ||
+              needsReceiver ||
               (mode === 'hf-skywave' ? !!error : !result) ||
               !rfEnvironmentValid(currentDraft) ||
               (mode === 'terrain' ? input.frequencyMHz < 30 : input.frequencyMHz > 30)
@@ -242,7 +281,10 @@ export function RfCalculatorPanel({
           )}
           {currentAnalysis && (
             <>
-              <RfAnalysisResults analysis={currentAnalysis} />
+              <RfAnalysisResults
+                analysis={currentAnalysis}
+                bubble={coverageBubble ?? localBubble}
+              />
               <button
                 type="button"
                 onClick={() => changeAnalysis(null)}
@@ -256,37 +298,13 @@ export function RfCalculatorPanel({
       )}
       <RfReferences preset={preset} />
       {onOverlayChange && mode === 'free-space' && (
-        <div className="space-y-2 border-t border-line pt-3">
-          {!origin && (
-            <p className="text-muted">Place a transmitter to show the estimate on the map.</p>
-          )}
-          {mapError && (
-            <p role="status" className="text-amber-300">
-              {mapError}
-            </p>
-          )}
-          <button
-            type="button"
-            disabled={!estimate}
-            onClick={() => onOverlayChange(estimate)}
-            className="min-h-10 w-full rounded border border-purple-300/40 bg-purple-300/10 px-3 text-purple-200 disabled:opacity-40"
-          >
-            {overlayVisible ? 'Update map estimate' : 'Show estimate on map'}
-          </button>
-          {overlayVisible && (
-            <button
-              type="button"
-              onClick={() => onOverlayChange(null)}
-              className="min-h-9 w-full text-muted"
-            >
-              Clear map estimate
-            </button>
-          )}
-          <p className="text-muted">
-            Purple outline: ideal distance limit. Straight path: transmitter to receiver. No terrain
-            or measured coverage data. Changing inputs clears the previous estimate.
-          </p>
-        </div>
+        <RfReferenceControls
+          originPlaced={!!origin}
+          estimate={estimate}
+          error={mapError}
+          visible={overlayVisible}
+          onChange={onOverlayChange}
+        />
       )}
     </section>
   );

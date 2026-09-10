@@ -1,4 +1,5 @@
 import type { RfTerrainProfile } from '@/lib/map/rfTerrainTypes';
+import { RF_STATUS_CSS, rfPathSegmentStatus, rfPathSummary } from '@/lib/map/rfTerrainPresentation';
 
 /** Side view in the effective-Earth frame used by the sampled clearance calculation. */
 export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }) {
@@ -19,6 +20,9 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
   const y = (height: number) => 132 - (104 * (height - low)) / (high - low);
   const series = (value: (p: RfTerrainProfile['points'][number]) => number) =>
     profile.points.map((p) => `${x(p.distanceM).toFixed(2)},${y(value(p)).toFixed(2)}`).join(' ');
+  const summary = rfPathSummary(profile);
+  const obstruction = summary.firstBlocked ?? summary.firstRisk;
+  const obstructionColour = summary.firstBlocked ? RF_STATUS_CSS.blocked : RF_STATUS_CSS.risk;
   return (
     <figure className="overflow-hidden rounded-lg border border-cyan/20 bg-black/40 p-2">
       <svg
@@ -43,15 +47,52 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
         <polyline
           points={series((p) => (p.rayHeightM ?? 0) - p.fresnel60M)}
           fill="none"
-          stroke="#fabb4c"
+          stroke={RF_STATUS_CSS.risk}
           strokeDasharray="3 3"
         />
         <polyline
           points={series((p) => p.rayHeightM ?? 0)}
           fill="none"
-          stroke="#63e1eb"
-          strokeWidth="2"
+          stroke="#02070c"
+          strokeWidth="6"
         />
+        {profile.points.map((point, index) => {
+          const previous = profile.points[index - 1];
+          if (!previous) return null;
+          const status = rfPathSegmentStatus(profile, previous, point, summary);
+          return (
+            <line
+              key={point.distanceM}
+              data-ray-status={status}
+              x1={x(previous.distanceM)}
+              y1={y(previous.rayHeightM ?? 0)}
+              x2={x(point.distanceM)}
+              y2={y(point.rayHeightM ?? 0)}
+              stroke={RF_STATUS_CSS[status]}
+              strokeWidth="3"
+            />
+          );
+        })}
+        {obstruction && (
+          <g>
+            <line
+              x1={x(obstruction.distanceM)}
+              x2={x(obstruction.distanceM)}
+              y1="28"
+              y2="132"
+              stroke={obstructionColour}
+              strokeDasharray="3 3"
+            />
+            <circle
+              cx={x(obstruction.distanceM)}
+              cy={y(obstruction.rayHeightM ?? 0)}
+              r="4"
+              fill="#02070c"
+              stroke={obstructionColour}
+              strokeWidth="2"
+            />
+          </g>
+        )}
         <g fill="#a0a6ae" fontSize="9" fontFamily="monospace">
           <text x="1" y="31">
             {high}m
@@ -68,8 +109,17 @@ export function RfTerrainProfileChart({ profile }: { profile: RfTerrainProfile }
         </g>
       </svg>
       <figcaption className="text-[10px] leading-relaxed text-muted">
-        Grey: sampled terrain plus Earth curvature. Cyan: radio line. Dashed amber: lower 60%
-        Fresnel boundary.
+        Grey: sampled terrain plus Earth curvature. Mint: clear direct ray. Amber: clearance or
+        power risk, including the interval before a sampled intrusion. Red: obstructed direct ray.
+        Dashed amber: lower 60% Fresnel boundary.
+        {obstruction && (
+          <span className="mt-1 block" style={{ color: obstructionColour }}>
+            {summary.firstBlocked ? 'First sampled obstruction' : 'First sampled Fresnel intrusion'}{' '}
+            at {(obstruction.distanceM / 1000).toFixed(2)} km from TX.
+            {summary.firstBlocked &&
+              ' Red beyond the marker means the direct ray stays obstructed, not zero reception.'}
+          </span>
+        )}
       </figcaption>
     </figure>
   );

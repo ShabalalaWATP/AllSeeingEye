@@ -118,4 +118,5 @@ it('removes the receiver and obsolete link while keeping the transmitter and rad
   expect(screen.getByLabelText('Path length (km)')).not.toHaveAttribute('readonly');
   expect(screen.getByLabelText('Map estimate radius')).toHaveTextContent('none');
   expect(screen.getByRole('button', { name: 'Show estimate on map' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '360° area' })).toHaveAttribute('aria-pressed', 'true');
 });

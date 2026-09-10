@@ -151,7 +151,7 @@ it('creates static bounded terrain overlays with gaps between sampled bearings',
   const plan = createRfTerrainRadials([179.99, 0], 5, 4, 4);
   const analysis = analyseRfTerrain(powerful, plan, Array<number>(plan.positions.length).fill(0));
   const layers = rfTerrainLayers(analysis, true);
-  expect(layers).toHaveLength(6);
+  expect(layers).toHaveLength(11);
   expect(layers.every((layer) => !layer.props.pickable)).toBe(true);
   const sectors = layers.find((layer) => layer.id === 'rf-terrain-sampled-sectors');
   expect(sectors?.props.data).toHaveLength(4);
@@ -163,5 +163,8 @@ it('creates static bounded terrain overlays with gaps between sampled bearings',
   }
   const radialPaths = layers.find((layer) => layer.id === 'rf-terrain-paths');
   expect(radialPaths?.props.data).toHaveLength(12);
+  expect(
+    layers.find((layer) => layer.id === 'rf-terrain-interpolated-footprint')?.props.data,
+  ).toEqual([]);
   expect(rfTerrainLayers(null, false)).toEqual([]);
 });

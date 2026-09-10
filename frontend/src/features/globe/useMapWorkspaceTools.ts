@@ -49,14 +49,18 @@ export function useMapWorkspaceTools(engine: GlobeEngineHandle, enabled: boolean
     () => drawingLayers(drawing.points, drawing.mode, mode === 'map', drawing.displayedAnchors),
     [drawing.points, drawing.mode, drawing.displayedAnchors, mode],
   );
-  const radio = useMemo(() => rfMapLayers(rf.estimate, mode === 'map'), [rf.estimate, mode]);
+  const radio = useMemo(
+    () => rfMapLayers(rf.estimate, mode === 'map', rf.coverageBubble && !rf.estimate?.receiver),
+    [rf.estimate, mode, rf.coverageBubble],
+  );
   const propagation = useMemo(() => {
     const analysis = rf.analysis;
-    if (analysis?.kind === 'terrain') return rfTerrainLayers(analysis.terrain, mode === 'map');
+    if (analysis?.kind === 'terrain')
+      return rfTerrainLayers(analysis.terrain, mode === 'map', rf.coverageBubble);
     if (analysis?.kind === 'hf-groundwave') return hfGroundwaveLayers(analysis, mode === 'map');
     if (analysis?.kind === 'hf-skywave') return hfSkywaveLayers(analysis.estimate, mode === 'map');
     return [];
-  }, [rf.analysis, mode]);
+  }, [rf.analysis, mode, rf.coverageBubble]);
   const routed = useMemo(
     () =>
       route

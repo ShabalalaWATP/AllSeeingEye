@@ -54,8 +54,7 @@ Reviewed OSIRIS commit `fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8`:
 
 The nuclear layer has 195 historical plant records across 31 countries. Its
 [WRI source snapshot](https://github.com/wri/global-power-plant-database/tree/7a91cfbb2a4e272597acbc00506d61fc1ec73b3d)
-is licensed CC BY 4.0; WRI says the database has not been maintained since early
-2022. Exact source commit, CSV URL and checksum are retained in packaged provenance.
+is licensed CC BY 4.0; WRI says the database has not been maintained since early 2022. Exact source commit, CSV URL and checksum are retained in packaged provenance.
 The UI shows attribution, dataset version and licence. This is not current
 operational status, a reactor count, or a complete fuel-cycle/military inventory.
 
@@ -92,8 +91,8 @@ or calculation on every keystroke is introduced.
 
 The free-space reference retains ideal path loss, receive level, sensitivity
 margin, standard-refraction radio horizon and first Fresnel-zone radius. Its
-outline uses the smaller ideal sensitivity distance and radio horizon and remains
-an unfilled distance reference, not a directional antenna beam or coverage claim.
+outline uses the smaller ideal sensitivity distance and radio horizon. An optional
+shaded 360° reference uses that same limit; it does not establish reception.
 See [ITU-R P.525](https://www.itu.int/rec/R-REC-P.525/en).
 
 ### Terrain-aware VHF/UHF
@@ -105,14 +104,16 @@ ground are displayed separately; changing an antenna's height does not change
 the underlying ground elevation.
 
 A two-site study samples up to 129 points along a path of at most 200 km and
-shows a terrain profile. With only a transmitter, the study screens 24 bearings
+shows a terrain profile. The selectable 360° area study screens 24 bearings
 with 17 outward steps, at most 409 positions within a 50 km radius. These are
 coarse samples, not a dense coverage raster. The screen uses standard k=4/3
 Earth curvature, 60% first Fresnel clearance and free-space loss plus a single
 dominant sampled knife-edge diffraction term. It is not a complete ITM or
 ITU-R P.526 implementation. A radial stops at the first sampled obstruction,
-clearance restriction, negative link margin or missing point; unfilled gaps
-between bearings are unassessed.
+clearance restriction, negative link margin or missing point. Optional shading
+between adjacent passing bearings is explicitly illustrative; those gaps remain
+unassessed. See [RF reach and coverage display](RF_COVERAGE_DISPLAY.md) for the
+colour key, obstruction distances, per-bearing limits and display controls.
 
 The authenticated `POST /api/terrain/elevations` bounds intake to 64 KiB, at most
 1,000 positions and 64 unique tiles. There are at most two active requests, six
@@ -234,7 +235,6 @@ until the operator contact is configured and a provider request succeeds.
 Interactive GPU verification remains unavailable under the existing browser
 policy block. Mocked globe/map interaction tests do not establish a visual soak test.
 
-
 ## Ordnance Survey style readiness
 
 OS Road, OS Outdoor and OS Light remain unavailable without the server-side
@@ -266,7 +266,6 @@ the independent BNG overlay does not require those basemaps.
 - Mocked integration tests cover grouped disclosures, shape persistence across
   projections, exclusive click ownership, disabled-tool reset, route clearing and
   nuclear selection/close highlights. Live routing and GPU soak tests remain open.
-
 
 ## Interaction and address-search follow-up verification
 

@@ -20,6 +20,8 @@ export interface RfDraft {
   presetId: string;
   propagation?: RfPropagation;
   environment?: RfEnvironment;
+  /** Omission preserves automatic link selection when a receiver is placed. */
+  study?: 'link' | 'area';
 }
 
 export function createRfDraft(input: RfInputs = DEFAULT_RF_INPUTS, presetId = 'custom'): RfDraft {

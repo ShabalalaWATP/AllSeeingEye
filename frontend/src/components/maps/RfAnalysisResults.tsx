@@ -1,6 +1,9 @@
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
 import { RfTerrainProfileChart } from './RfTerrainProfileChart';
 import { RfGroundwaveResults } from './RfGroundwaveResults';
+import { RfMapLegend } from './RfMapLegend';
+import { RfTerrainReach } from './RfTerrainReach';
+import { RF_STATUS_CSS } from '@/lib/map/rfTerrainPresentation';
 
 const statusText = {
   clear: 'Sampled clearance passed',
@@ -8,7 +11,13 @@ const statusText = {
   blocked: 'Sampled terrain blocks line of sight',
   unknown: 'Terrain assessment incomplete',
 };
-export function RfAnalysisResults({ analysis }: { analysis: RfAnalysis }) {
+export function RfAnalysisResults({
+  analysis,
+  bubble = false,
+}: {
+  analysis: RfAnalysis;
+  bubble?: boolean;
+}) {
   if (analysis.kind === 'hf-groundwave') return <RfGroundwaveResults analysis={analysis} />;
   if (analysis.kind === 'hf-skywave') {
     const { scenario } = analysis.estimate;
@@ -46,7 +55,10 @@ export function RfAnalysisResults({ analysis }: { analysis: RfAnalysis }) {
   return (
     <section aria-label="Terrain radio analysis" className="space-y-3">
       <div className="rounded-lg border border-cyan/25 bg-cyan/5 p-3">
-        <p className="font-medium text-cyan">
+        <p
+          className="font-medium"
+          style={{ color: RF_STATUS_CSS[terrain.path?.status ?? 'clear'] }}
+        >
           {terrain.path ? statusText[terrain.path.status] : 'Sampled terrain sectors'}
         </p>
         <div className="mt-2 grid grid-cols-2 gap-3 text-xs">
@@ -84,6 +96,7 @@ export function RfAnalysisResults({ analysis }: { analysis: RfAnalysis }) {
           {elevations.resolution_m.toFixed(0)} m is not a height-accuracy guarantee.
         </p>
       </div>
+      <RfTerrainReach terrain={terrain} />
       {terrain.path && (
         <>
           <RfTerrainProfileChart profile={terrain.path} />
@@ -101,10 +114,17 @@ export function RfAnalysisResults({ analysis }: { analysis: RfAnalysis }) {
           </dl>
         </>
       )}
+      <RfMapLegend />
       <p className="text-xs text-muted">
-        Cyan marks sampled clearance. Amber/orange marks clearance risk or obstruction; grey is
-        unknown. Unfilled gaps have not been assessed.
+        Mint marks sampled clearance; amber is risk and red is an obstructed direct path. Grey and
+        unfilled gaps have not been assessed. Passing a sampled screen does not guarantee reception.
       </p>
+      {terrain.kind === 'radial' && bubble && (
+        <p className="text-xs text-muted">
+          The shaded bubble interpolates only to the shorter passing distance of adjacent bearings.
+          Terrain between bearings has not been sampled, so the footprint is illustrative.
+        </p>
+      )}
       <details className="rounded-lg border border-line p-3 text-xs">
         <summary className="cursor-pointer">Terrain source and model limits</summary>
         <p className="mt-2 text-muted">

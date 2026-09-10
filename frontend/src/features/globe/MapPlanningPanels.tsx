@@ -37,6 +37,8 @@ export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>
         onDraftChange={tools.rf.setDraft}
         onClearReceiver={tools.rf.clearReceiver}
         overlayVisible={tools.rf.estimate !== null}
+        coverageBubble={tools.rf.coverageBubble}
+        onCoverageBubbleChange={tools.rf.setCoverageBubble}
         {...(measurement.mode === 'distance' && measurement.points.length === 2
           ? { measuredDistanceKm: measure(measurement.points, 'distance').metres / 1000 }
           : {})}

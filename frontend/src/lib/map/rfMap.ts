@@ -1,10 +1,19 @@
-import { Geodesic } from 'geographiclib-geodesic';
-import { PathLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
+import { PathLayer, PolygonLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import type { Position } from './geoJsonTypes';
-import { measurementPaths, measurementPoint } from './measurements';
+import { measurementPoint } from './measurements';
 import { calculateRf } from './rfPlanning';
 import type { RfInputs } from './rfPlanning';
+import {
+  rfReferenceBubble,
+  rfReferenceDistance,
+  rfReferenceLink,
+  rfReferencePaths,
+  rfReferencePoint,
+  rfReferenceVisible,
+} from './rfReferenceGeometry';
+import type { RfReferencePath } from './rfReferenceGeometry';
+import { RF_STATUS_COLOURS } from './rfTerrainPresentation';
 
 export interface RfMapEstimate {
   origin: Position;
@@ -34,54 +43,119 @@ export function rfMapEstimate(
     radiusKm,
     horizonKm: result.horizonKm,
     sensitivityDistanceKm: result.sensitivityDistanceKm,
-    label: `RF estimate · ${radiusKm.toFixed(1)} km · no terrain model`,
+    label: `RF estimate · ${rfReferenceDistance(radiusKm)} · no terrain model`,
   };
 }
 
-/** Fixed-size geodesic outline, not a filled claim of reception coverage. */
+/** Fixed-size ideal reference boundary, with terrain and clutter still unchecked. */
 export function rfRangeRing(estimate: RfMapEstimate): Position[] {
-  return Array.from({ length: 73 }, (_, index) => {
-    const point = Geodesic.WGS84.Direct(
-      estimate.origin[1],
-      estimate.origin[0],
-      index * 5,
-      estimate.radiusKm * 1000,
-    );
-    return measurementPoint(point.lon2 ?? NaN, point.lat2 ?? NaN);
-  });
+  return Array.from({ length: 73 }, (_, index) =>
+    rfReferencePoint(estimate.origin, index * 5, estimate.radiusKm),
+  );
 }
 
-export function rfMapLayers(estimate: RfMapEstimate | null, flat: boolean): Layer[] {
+interface ReferenceLabel {
+  point: Position;
+  label: string;
+}
+
+function referenceShade(alpha: number): [number, number, number, number] {
+  const [red, green, blue] = RF_STATUS_COLOURS.clear;
+  return [red, green, blue, alpha];
+}
+
+const referenceColour = ({ status }: RfReferencePath): [number, number, number, number] =>
+  status === 'outside'
+    ? RF_STATUS_COLOURS.blocked
+    : status === 'range'
+      ? referenceShade(90)
+      : RF_STATUS_COLOURS.clear;
+
+export function rfMapLayers(
+  estimate: RfMapEstimate | null,
+  flat: boolean,
+  bubble = false,
+): Layer[] {
   if (!estimate) return [];
   const ring = rfRangeRing(estimate);
-  const paths = [
-    ring,
-    ...(estimate.receiver
-      ? measurementPaths([estimate.origin, estimate.receiver], 'distance')
-      : []),
-  ];
-  // Split at Web Mercator's latitude limit, preserving the globe geometry.
-  const visiblePaths = paths.flatMap((path) => {
-    const pieces: Position[][] = [[]];
-    for (const point of path) {
-      if (flat && Math.abs(point[1]) > 85.05112878) pieces.push([]);
-      else pieces[pieces.length - 1]?.push(point);
-    }
-    return pieces.filter((piece) => piece.length > 1);
-  });
-  const points = [estimate.origin, ...(estimate.receiver ? [estimate.receiver] : [])].filter(
-    (point) => !flat || Math.abs(point[1]) <= 85.05112878,
+  const link = rfReferenceLink(estimate);
+  const visiblePaths = rfReferencePaths(
+    [
+      { path: ring, status: 'boundary' },
+      ...(bubble
+        ? [0.25, 0.5, 0.75].map((fraction): RfReferencePath => ({
+            path: rfRangeRing({ ...estimate, radiusKm: estimate.radiusKm * fraction }),
+            status: 'range',
+          }))
+        : []),
+      ...link.paths,
+    ],
+    flat,
   );
+  const points = [estimate.origin, ...(estimate.receiver ? [estimate.receiver] : [])].filter(
+    (point) => rfReferenceVisible(point, flat),
+  );
+  const boundary = link.limit ?? rfReferencePoint(estimate.origin, 90, estimate.radiusKm);
+  const boundaryReason =
+    estimate.horizonKm <= estimate.sensitivityDistanceKm ? 'Radio horizon' : 'Receiver sensitivity';
+  const labels: ReferenceLabel[] = [
+    { point: estimate.origin, label: 'TX · 0 km\nTerrain not checked' },
+    {
+      point: boundary,
+      label: `Ideal limit · ${rfReferenceDistance(estimate.radiusKm)}\n${boundaryReason}`,
+    },
+  ];
+  if (estimate.receiver)
+    labels.push({
+      point: estimate.receiver,
+      label: `RX · ${rfReferenceDistance(link.distanceKm ?? 0)}\n${link.limit ? 'Beyond ideal limit' : 'Inside ideal limit'}`,
+    });
   return [
-    new PathLayer<Position[]>({
-      id: 'rf-estimate-paths',
-      data: visiblePaths,
-      getPath: (path) => path,
-      getColor: [195, 160, 255, 240],
-      getWidth: 2,
+    ...(bubble
+      ? [
+          new PolygonLayer<Position[]>({
+            id: 'rf-estimate-bubble',
+            data: rfReferenceBubble(estimate, ring, flat),
+            getPolygon: (polygon) => polygon,
+            getFillColor: referenceShade(28),
+            stroked: false,
+            pickable: false,
+            wrapLongitude: flat,
+          }),
+        ]
+      : []),
+    new PathLayer<RfReferencePath>({
+      id: 'rf-estimate-path-underlay',
+      data: visiblePaths.filter(({ status }) => status !== 'range'),
+      getPath: (segment) => segment.path,
+      getColor: [4, 10, 16, 230],
+      getWidth: 7,
       widthUnits: 'pixels',
       pickable: false,
       wrapLongitude: flat,
+    }),
+    new PathLayer<RfReferencePath>({
+      id: 'rf-estimate-paths',
+      data: visiblePaths,
+      getPath: (segment) => segment.path,
+      getColor: referenceColour,
+      getWidth: ({ status }) => (status === 'range' ? 1 : status === 'boundary' ? 2.5 : 4),
+      widthUnits: 'pixels',
+      pickable: false,
+      wrapLongitude: flat,
+    }),
+    new ScatterplotLayer<Position>({
+      id: 'rf-estimate-limit',
+      data: rfReferenceVisible(boundary, flat) ? [boundary] : [],
+      getPosition: (point) => point,
+      getRadius: 7,
+      radiusUnits: 'pixels',
+      getFillColor: link.limit ? RF_STATUS_COLOURS.blocked : RF_STATUS_COLOURS.clear,
+      stroked: true,
+      getLineColor: [255, 255, 255, 255],
+      getLineWidth: 2,
+      lineWidthUnits: 'pixels',
+      pickable: false,
     }),
     new ScatterplotLayer<Position>({
       id: 'rf-estimate-sites',
@@ -89,22 +163,24 @@ export function rfMapLayers(estimate: RfMapEstimate | null, flat: boolean): Laye
       getPosition: (point) => point,
       getRadius: 6,
       radiusUnits: 'pixels',
-      getFillColor: [195, 160, 255, 255],
+      getFillColor: [245, 251, 255, 255],
+      stroked: true,
+      getLineColor: [4, 10, 16, 255],
+      getLineWidth: 2,
+      lineWidthUnits: 'pixels',
       pickable: false,
     }),
-    new TextLayer<{ point: Position; label: string }>({
+    new TextLayer<ReferenceLabel>({
       id: 'rf-estimate-label',
-      data:
-        points.length && points[0] === estimate.origin
-          ? [{ point: estimate.origin, label: estimate.label }]
-          : [],
+      data: labels.filter(({ point }) => rfReferenceVisible(point, flat)),
       getPosition: (item) => item.point,
       getText: (item) => item.label,
       getSize: 12,
-      getColor: [225, 210, 255, 255],
-      getPixelOffset: [0, -20],
+      getColor: [245, 251, 255, 255],
+      getPixelOffset: [0, -30],
       background: true,
-      getBackgroundColor: [8, 8, 16, 220],
+      backgroundPadding: [6, 4],
+      getBackgroundColor: [4, 10, 16, 235],
       pickable: false,
     }),
   ];

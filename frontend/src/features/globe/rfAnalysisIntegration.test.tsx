@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import type { RfAnalysis } from '@/lib/map/rfAnalysis';
-import { createRfTerrainPath } from '@/lib/map/rfTerrainSampling';
+import { createRfTerrainPath, createRfTerrainRadials } from '@/lib/map/rfTerrainSampling';
 import { analyseRfTerrain } from '@/lib/map/rfTerrainAnalysis';
 import { DEFAULT_RF_INPUTS } from '@/lib/map/rfPlanning';
 import { rfMapEstimate } from '@/lib/map/rfMap';
@@ -113,4 +113,53 @@ it('replaces terrain with HF skywave, resets on edits and removes all analysis o
   act(() => result.current.rf.setAnalysis(terrainAnalysis()));
   act(() => result.current.rf.clearReceiver());
   expect(result.current.rf.analysis).toBeNull();
+});
+
+it.each(['map', 'globe'] as const)(
+  'toggles bounded coverage shading without discarding or recalculating the %s study',
+  (mode) => {
+    const { engine } = fakeEngine();
+    const { result } = renderHook(() => useMapWorkspaceTools(engine, true, mode));
+    const base = terrainAnalysis();
+    if (base.kind !== 'terrain') throw new Error('Expected terrain fixture');
+    const plan = createRfTerrainRadials([0, 51], 5, 4, 4);
+    const input = { ...DEFAULT_RF_INPUTS, transmitHeightM: 100, receiveHeightM: 100 };
+    const analysis: RfAnalysis = {
+      ...base,
+      plan,
+      input,
+      terrain: analyseRfTerrain(
+        input,
+        plan,
+        plan.positions.map(() => 0),
+      ),
+    };
+    act(() => result.current.rf.setAnalysis(analysis));
+    const footprint = () =>
+      result.current.layers.find((layer) => layer.id === 'rf-terrain-interpolated-footprint');
+    expect(footprint()?.props.data).toHaveLength(0);
+    act(() => result.current.rf.setCoverageBubble(true));
+    expect(result.current.rf.analysis).toBe(analysis);
+    expect(footprint()?.props.data).toHaveLength(4);
+    act(() => result.current.rf.setCoverageBubble(false));
+    expect(footprint()?.props.data).toHaveLength(0);
+    expect(result.current.rf.analysis).toBe(analysis);
+    act(() => result.current.rf.setCoverageBubble(true));
+    act(() => invalidateWorkspaceAccess());
+    expect(result.current.rf.coverageBubble).toBe(false);
+    expect(result.current.layers.some((layer) => layer.id.startsWith('rf-terrain'))).toBe(false);
+  },
+);
+
+it('keeps a free-space bubble optional and excludes it from a receiver link', () => {
+  const { engine } = fakeEngine();
+  const { result } = renderHook(() => useMapWorkspaceTools(engine, true, 'map'));
+  const estimate = rfMapEstimate(DEFAULT_RF_INPUTS, [0, 51]);
+  act(() => result.current.rf.setEstimate(estimate));
+  expect(result.current.layers.some((layer) => layer.id === 'rf-estimate-bubble')).toBe(false);
+  act(() => result.current.rf.setCoverageBubble(true));
+  expect(result.current.rf.estimate).toBe(estimate);
+  expect(result.current.layers.some((layer) => layer.id === 'rf-estimate-bubble')).toBe(true);
+  act(() => result.current.rf.setEstimate(rfMapEstimate(DEFAULT_RF_INPUTS, [0, 51], [0.01, 51])));
+  expect(result.current.layers.some((layer) => layer.id === 'rf-estimate-bubble')).toBe(false);
 });

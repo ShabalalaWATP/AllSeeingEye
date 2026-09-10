@@ -66,8 +66,11 @@ export function useRfAnalysis(
       if (mode === 'terrain') {
         if (input.frequencyMHz < 30)
           throw new Error('Choose an HF mode for frequencies below 30 MHz.');
-        const plan = receiver
-          ? createRfTerrainPath(origin, receiver)
+        if (draft.study === 'link' && !receiver)
+          throw new Error('Place a receiver to analyse a point-to-point link.');
+        const target = draft.study === 'area' ? null : receiver;
+        const plan = target
+          ? createRfTerrainPath(origin, target)
           : createRfTerrainRadials(origin, number(env.radiusKm, 'terrain radius'));
         // The sampled path defines its distance; a hidden free-space distance is irrelevant.
         calculateRf({ ...input, distanceKm: plan.maxDistanceKm });
