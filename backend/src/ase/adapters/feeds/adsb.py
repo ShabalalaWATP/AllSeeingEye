@@ -125,13 +125,21 @@ def aircraft_event(
     aircraft_type = _text(item.get("t"))
     label = callsign or registration or hex_code.upper()
     altitude = item.get("alt_baro")
-    on_ground = altitude == "ground"
-    altitude_ft = None if on_ground else _number(altitude)
+    altitude_ft = _number(altitude)
+    # readsb omits unavailable fields; only its literal ground value reports ground state.
+    on_ground = True if altitude == "ground" else False if altitude_ft is not None else None
+    state = (
+        "On the ground"
+        if on_ground is True
+        else "Airborne"
+        if on_ground is False
+        else "Ground status unknown"
+    )
     speed = _number(item.get("gs"))
     track = _number(item.get("track"))
     squawk = _text(item.get("squawk")) or None
     summary = (
-        f"{'On the ground' if on_ground else 'Airborne'}"
+        f"{state}"
         f"{f' at {int(altitude_ft)} ft' if altitude_ft is not None else ''}"
         f"{f', {int(speed)} kt' if speed is not None else ''}"
         f"{f', track {int(track)}°' if track is not None else ''}"

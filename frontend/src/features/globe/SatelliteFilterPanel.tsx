@@ -1,4 +1,7 @@
 import type { SatelliteGroup } from '@/lib/satellites';
+import type { LiveEvent } from '@/lib/api/eventSchemas';
+import { SatelliteResults } from './SatelliteResults';
+import { SATELLITE_QUERY_LIMIT } from './satelliteSearch';
 
 const choices: { value: SatelliteGroup; label: string }[] = [
   { value: 'all', label: 'All satellites' },
@@ -11,10 +14,22 @@ export function SatelliteFilterPanel({
   group,
   setGroup,
   counts,
+  query,
+  setQuery,
+  results,
+  searching,
+  onSelect,
+  selectedId,
 }: {
   group: SatelliteGroup;
   setGroup: (value: SatelliteGroup) => void;
   counts: Record<SatelliteGroup, number>;
+  query: string;
+  setQuery: (value: string) => void;
+  results: LiveEvent[];
+  searching: boolean;
+  onSelect?: ((event: LiveEvent) => void) | undefined;
+  selectedId?: string | null | undefined;
 }) {
   return (
     <section aria-label="Satellite filters" className="space-y-3 p-3">
@@ -38,13 +53,38 @@ export function SatelliteFilterPanel({
           </button>
         ))}
       </div>
+      <label className="block text-xs">
+        Find a satellite
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          maxLength={SATELLITE_QUERY_LIMIT}
+          placeholder="Name, NORAD number or designator"
+          className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
+        />
+      </label>
+      <p role="status" className="text-xs text-muted">
+        {searching
+          ? 'Updating satellite results…'
+          : `${results.length.toLocaleString('en-GB')} matching satellites`}
+      </p>
+      <p className="text-[11px] text-muted">
+        Search filters both the map and this list. Select a result to locate it.
+      </p>
+      <SatelliteResults
+        key={`${group}:${query.trim().toLocaleLowerCase('en-GB')}`}
+        results={results}
+        onSelect={onSelect}
+        selectedId={selectedId}
+      />
       <p className="text-[11px] leading-relaxed text-muted">
         Positions are predicted from public orbital elements, not live observations. Element age is
         shown in details; older elements are labelled stale.
       </p>
       <p className="text-[11px] leading-relaxed text-muted">
-        Counts reflect loaded objects. Military coverage is incomplete. Skynet includes historical
-        spacecraft and does not imply current service.
+        Catalogue counts reflect loaded objects before search. Military coverage is incomplete.
+        Skynet includes historical spacecraft and does not imply current service.
       </p>
     </section>
   );

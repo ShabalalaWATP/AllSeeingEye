@@ -1,6 +1,7 @@
 # Dashboard feature and filter review
 
-9 September 2026. Research and proposed delivery order, not an implementation claim.
+Compared 9 September 2026. Delivery status updated 10 September 2026. Checked items
+below identify implemented software, with validation and limits in the delivery note.
 
 ## Evidence and scope
 
@@ -50,16 +51,16 @@ problem of keyword matching and approximate regional dots.
 
 | Area | Present in current code | Proposed extension |
 | --- | --- | --- |
-| Flights and ships | Visibility, All/Military, searchable paginated lists, locate and selected highlight | Class/operator, altitude/speed and observation-age filters; small pinned shortlist; selected history where genuinely available |
-| Space | All, crewed, public military and Skynet catalogues; orbital age disclosure | Search by name/NORAD; mission/constellation/orbit filters using actual metadata; orbit/pass detail; space weather |
+| Flights and ships | Shared panel, All/Military, shared map/list search and provider filter; aircraft ground-status filter; paginated locate and readable selected facts | Class/operator, altitude/speed and observation-age filters; small pinned shortlist; selected history where genuinely available |
+| Space | All, crewed, public military and Skynet; name/NORAD/designator search and locate; orbital facts; NOAA context tab | Mission/constellation/orbit filters using actual metadata; orbit/pass detail |
 | Natural hazards | Earthquake, weather/cyclone, flood, volcano, wildfire, thermal, tsunami, drought, landslide and ice choices; magnitude/time/GDACS severity | Multi-select types, warning-area polygons, cyclone paths/cones and a clearer time scope |
 | GNSS | Dedicated control, flag/observation filters, cell details and freshness | Compare reports over a supported time window; useful links to aviation and space-weather context |
 | Infrastructure | Cables, satellite ground stations, historical nuclear power catalogue and text search | Public airports, ports and chokepoints; selected energy/communications datasets with per-source dates |
-| CCTV | Provider/region choices, status, search, clusters, snapshots, streams and external pages | In-view/media-kind/availability filters, favourites and a small operator-opened comparison panel |
+| CCTV | Provider/region choices, provider-name search, clusters, stream/clip/snapshot/provider-link filters | In-view/availability filters, favourites and a small operator-opened comparison panel |
 | Conflict | Curated regions, screened source reports, type/source/text/precision and explicit historical/unreviewed options | Better incident/region distinction, grouped reporting and linked map/list selection |
-| Place research | Research action on selected events | Draw/select an area, ask about it and create a bounded brief or watch |
+| Place research | Research action on selected events; completed sketch hands off an editable rectangular count watch | Actual area-scoped collection, cited area briefs and place dossiers |
 | Saved maps | Report-associated map revisions, timeline, AOIs and research handoff | A proper live-dashboard saved-view contract and reusable investigation presets |
-| Weather/connectivity | Existing NOAA SWPC, Kp, NWS, cyclone, IODA and NAVAREA ingestion | Dedicated readable panels and appropriate geometry, rather than another basic adapter |
+| Weather/connectivity | On-demand dated NOAA scales/Kp/bulletins, IODA signals and NAVAREA panels; first-position warning selection | Warning-area geometry and other supported weather context |
 
 Current code references:
 
@@ -73,12 +74,12 @@ Current code references:
   `backend/src/ase/application/feeds/budgets.py`,
   `backend/src/ase/application/warning/indicators.py`.
 
-The shared tool panel and the flight popup currently have different owners, so
-both can be open together. Topics/time and nation/location-quality controls are
-also separate, while cameras, infrastructure and GNSS intentionally have different
-filter semantics. A persistent scope summary is needed to make that understandable.
-The event inspector exposes useful provenance but also raw attribute keys; each
-domain needs a readable facts section with units and unknown values handled properly.
+The dashboard now gives traffic and category tools one panel owner. Active event
+scope and removable refinements remain visible after closing a drawer. Topics/time
+explains the separate catalogue, regional and context scopes. Aircraft, vessels,
+satellites, earthquakes and FIRMS now have readable source-backed facts, with raw
+attributes under a collapsed Source fields disclosure. Other categories can still
+benefit from specialised facts and a more uniform source-status treatment.
 
 ## Proposed filter and dashboard design
 
@@ -162,20 +163,30 @@ model relevance and claim confidence are different measures, not one accuracy sl
 
 ### Milestone 1: clearer interaction using existing data
 
-- [ ] Shared panel ownership, consistent category structure and visible active scope.
-- [ ] Specialist selected-object facts with units, date/source and a concise explanation.
-- [ ] Better aircraft/ship filters, satellite search and camera media/in-view filters.
-- [ ] Dedicated Space weather view: existing Kp, NOAA R/S/G, dated alerts and relevant
+- [x] Shared panel ownership and visible active event scope. Further category layout
+  and source-status consistency remain useful refinements.
+- [x] Specialist aircraft, vessel, satellite, earthquake and FIRMS facts with retained
+  units, source dates and unknown values. Severity is explicitly distinct from accuracy.
+- [x] Shared map/list traffic search and provider filters, aircraft status, satellite
+  search/locate and camera media filters.
+- [ ] Camera in-view/availability filtering and remaining traffic numeric filters.
+- [x] Dedicated Space weather view: existing Kp, NOAA R/S/G, dated alerts and relevant
   HF/GNSS context. Keep it distinct from terrestrial interference and the RF model.
-- [ ] Connectivity/outages and navigation warnings surfaced from existing adapters.
+- [x] Connectivity signals and navigation warnings surfaced from existing adapters.
+  IODA records are not a current-outage inventory; NAVAREA markers are first reported
+  positions, not warning-zone geometry.
 
 Success: the operator can see what is enabled, why an object is missing and when
 the displayed data was observed without opening several unrelated panels.
 
 ### Milestone 2: make the dashboard useful for research
 
-- [ ] Draw/select area, then **Brief this area**, **Research a question** or **Watch
-  this area**. Prefill the existing research/warning flows and show the chosen scope.
+- [x] **Watch this area** from completed drawings, with an editable conservative
+  bounding rectangle, count threshold and reports off by default. Handles dateline
+  bounds and geodesic edge curvature. This is not arrival/departure detection.
+- [ ] **Brief this area** and **Research a question** with genuine spatial collection
+  scope. The current arbitrary dashboard geometry has no report-revision identity;
+  putting coordinates in question text is not a substitute for a collection contract.
 - [ ] Area brief contains recent developments, source disagreements, nearby relevant
   objects and coverage gaps, with citations and a Save report action. Model calls
   are explicit and budgeted; a usable administrator-assigned model is required.
@@ -237,6 +248,7 @@ bounded cache. New history must not be implemented by quietly removing those lim
 - New public-dataset fetches need existing SSRF controls, bounds, publisher/licence
   review and cancellation. New shared saved objects require object-level access checks.
 
-No runtime files, API configuration, credentials or dependencies changed for this
-review. Static code comparison and source verification were performed; application
-tests were not rerun because the deliverable is documentation only.
+The original review was documentation only. The 10 September implementation reuses
+existing providers and introduces no dependencies, credentials, background polling
+or model calls. See [dashboard controls and context](DASHBOARD_CONTEXT_AND_WATCHES.md)
+for the shipped behaviour, remaining work and validation record.

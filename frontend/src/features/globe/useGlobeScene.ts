@@ -24,6 +24,7 @@ interface Scene {
   cameraLayers: readonly Layer[];
   infrastructureLayers?: readonly Layer[];
   conflictRegionLayers?: readonly Layer[];
+  contextLayers?: readonly Layer[];
   measured: readonly Layer[];
   supported: boolean;
   terminator: boolean;
@@ -54,6 +55,7 @@ export function useGlobeScene({
   cameraLayers,
   infrastructureLayers,
   conflictRegionLayers,
+  contextLayers,
   measured,
   supported,
   terminator,
@@ -96,6 +98,7 @@ export function useGlobeScene({
         ...eventLayers,
         ...(conflictRegionLayers ?? []),
         ...cameraLayers,
+        ...(contextLayers ?? []),
         ...measured,
       ]);
   }, [
@@ -109,6 +112,7 @@ export function useGlobeScene({
     cameraLayers,
     infrastructureLayers,
     conflictRegionLayers,
+    contextLayers,
   ]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.

@@ -11,6 +11,7 @@ export type ControlIcon =
   | 'news'
   | 'night'
   | 'signal'
+  | 'connectivity'
   | 'gnss'
   | 'layers'
   | 'measure'
@@ -37,6 +38,7 @@ const paths: Record<ControlIcon, string> = {
   news: 'M4 3h16v18H4V3Zm4 4h8M8 11h8m-8 4h3m2 0h3',
   night: 'M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z',
   signal: 'M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M12 11v2',
+  connectivity: 'M9 3h6v6H9V3ZM2 16h6v6H2v-6Zm14 0h6v6h-6v-6ZM12 9v4M5 16v-3h14v3',
   gnss: 'M12 2v3m0 14v3M2 12h3m14 0h3M18 7a8 8 0 0 1-11 11M6 17A8 8 0 0 1 17 6M3 3l18 18M9 9l6 6',
   layers: 'm12 3 10 5-10 5L2 8l10-5ZM2 12l10 5 10-5M2 16l10 5 10-5',
   measure: 'm3 16 13-13 5 5L8 21l-5-5Zm5-5 3 3m1-7 3 3m1-7 3 3',

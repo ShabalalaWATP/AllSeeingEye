@@ -21,6 +21,7 @@ import { useResource } from '@/lib/hooks/useResource';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { fetchPlans } from '@/lib/api/direction';
+import { clearAreaWatchDraft, useAreaWatchDraft } from '@/lib/areaWatchDraft';
 
 import { AlertDestination } from './AlertDestination';
 import { IndicatorForm, describeWindow } from './IndicatorForm';
@@ -85,6 +86,8 @@ function AlertItem({
 }
 
 export default function WarningPage() {
+  const draft = useAreaWatchDraft();
+  const draftId = draft?.id;
   const workspaces = useWorkspaces();
   const plans = useScopedResource(fetchPlans);
   const alerts = useScopedResource(fetchAlerts);
@@ -97,9 +100,10 @@ export default function WarningPage() {
     useCallback(
       async (request: IndicatorRequest) => {
         await createIndicator(request);
+        if (draftId !== undefined) clearAreaWatchDraft(draftId);
         await reloadIndicators();
       },
-      [reloadIndicators],
+      [reloadIndicators, draftId],
     ),
   );
   const remove = useAsyncAction(
@@ -128,6 +132,19 @@ export default function WarningPage() {
     ),
   );
 
+  const form = (
+    <IndicatorForm
+      key={`${workspaces.key}:${draftId ?? ''}`}
+      draft={draft}
+      workspaces={workspaces}
+      plans={plans.data ?? []}
+      templates={templates.data ?? []}
+      busy={create.busy}
+      error={create.error === null ? null : describeError(create.error)}
+      onSubmit={(request) => void create.run(request)}
+    />
+  );
+
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <h1 className="text-xl font-semibold">Warning</h1>
@@ -138,6 +155,7 @@ export default function WarningPage() {
         Indicators are standing rules over the live picture. When one fires, the alert lands here
         and on the stream, goes to the webhook when one is configured, and can open a report.
       </p>
+      {draft && form}
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Alerts</h2>
         {alerts.error === null ? null : <Notice tone="error">{describeError(alerts.error)}</Notice>}
@@ -212,15 +230,7 @@ export default function WarningPage() {
             </tbody>
           </Table>
         )}
-        <IndicatorForm
-          key={workspaces.key}
-          workspaces={workspaces}
-          plans={plans.data ?? []}
-          templates={templates.data ?? []}
-          busy={create.busy}
-          error={create.error === null ? null : describeError(create.error)}
-          onSubmit={(request) => void create.run(request)}
-        />
+        {!draft && form}
       </div>
     </section>
   );

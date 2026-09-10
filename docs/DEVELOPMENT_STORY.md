@@ -3164,3 +3164,72 @@ No new coverage measurement, backend test run or live GPU acceptance is claimed.
 Frontend lint, typecheck, production build, changed-file formatting, whitespace
 and file-length checks passed. Existing vendor-chunk and MapLibre length warnings
 remain. Work is on local `main`; no Git remote is configured.
+
+## 10 September 2026: dashboard filters, context and area watches
+
+Delivered the next slice of the OSIRIS comparison. Flight and boat drawers now
+share the category/tool panel owner, with independent retained searches and
+keyboard focus returning to the selected row. Text and provider refinements drive
+map and list together; aircraft have a reported ground-state choice. A compact
+event-scope strip exposes active refinements and reset actions. Location quality
+also governs selectable traffic, country and satellite lists. Excluded event
+selections clear permanently, while deliberately unplotted records remain inspectable.
+
+Space now has bounded name/NORAD/designator search, paginated locate/select and
+an on-demand NOAA space-weather tab. Boats adds dated NAVAREA warnings, and a
+distinct Network control opens IODA connectivity signals. Each context panel
+reads existing collected records on demand, with bounded responses and no polling.
+One selected context record can open the shared inspector outside the viewport
+cache; a located warning has one first-position highlight that clears on close.
+Missing locations remain unplotted. NOAA scales do not establish local jamming,
+IODA drops do not establish a current outage, and NAVAREA topics are keyword matches.
+
+CCTV gains stream/clip/snapshot/provider-link filters and provider-name search,
+using the existing media allowlists without autoplay. Aircraft, vessels, satellites,
+earthquakes and FIRMS show readable facts with retained units before collapsed raw
+source fields. Severity, sensor confidence and source grading stay distinct.
+
+Completed geodesic sketches now hand off a conservative bounding rectangle to
+the existing Warning form. Bounds are editable; submission and any report-template
+choice are explicit. Drafts stay in actor-scoped memory and clear on authority
+changes or completion. The existing indicator predicate now handles dateline boxes.
+This is an event-count watch with a cooldown, not arrival/departure detection or
+an area-scoped research brief.
+
+Backend fixes preserve unknown NOAA scales, use issue stamps in change detection,
+recognise actual NOAA bulletin IDs and preserve unknown ADS-B ground state when
+barometric altitude is absent or malformed. Primary NOAA, readsb and USCG contracts
+were checked. No provider, dependency, credential, continuous collection loop or
+automatic model call was added. Only Conflicts starts enabled.
+
+Independent correctness and access review found and resolved stale context revival
+across batched logout/login, geodesic rectangle envelope undercoverage, mismatched
+map/list quality filtering and cross-category popup state. The final review found
+no additional blocking issue. Tests cover these regressions and default-quality
+plus restricted-quality selection with a mocked map renderer. Earlier assertions
+were updated for the persistent drawer focus, labelled facts and visible-selection
+contract. These tests do not establish actual graphics-driver stability.
+
+Updated the feature-gap plan, map interface/tools notes and the dedicated
+[dashboard context and watches](DASHBOARD_CONTEXT_AND_WATCHES.md) operating note.
+Remaining work includes camera in-view filtering, richer traffic numeric filters,
+saved live views, shortlists, real spatial briefs, approved GIS/geometry, licensed
+history and authorised frontline data. Browser/GPU acceptance remains unverified
+under the existing browser-control policy.
+
+Final validation passed: 1,662 frontend tests across 326 passing files, with one
+existing skipped file/test. Coverage is 95.44% statements, 90.59% branches,
+93.52% functions and 96.65% lines, meeting the unchanged gates. The combined
+backend run passed 58 NOAA, tracker, warning/dateline and ADS-B tests; backend
+coverage was not remeasured. Frontend ESLint, TypeScript, production build and
+changed-file Prettier passed. Scoped Ruff and Bandit, full backend mypy (746 files),
+both architecture contracts, whitespace and file-length checks passed. Four
+configured secret values were checked against all 77 changed paths without
+disclosure; none matched. Existing large vendor-chunk and 380-line MapLibre
+warnings remain.
+
+Started the existing local ASE services on 5174 and 8001. The page title identifies
+The All Seeing Eye; frontend login, API health and readiness returned 200. A
+context-event request without authentication returned 401. This is service and
+access verification, not an authenticated visual test or a new provider-coverage
+measurement. Delivery remains on local `main`, with no Git remote configured.

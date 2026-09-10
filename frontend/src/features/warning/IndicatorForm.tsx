@@ -12,6 +12,9 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import type { ReportTemplate } from '@/lib/api/reports';
 import type { IndicatorRequest } from '@/lib/api/warning';
 import { parseCategories, parseCommaList, parseCountries } from '@/lib/text';
+import { clearAreaWatchDraft } from '@/lib/areaWatchDraft';
+import type { AreaWatchDraft } from '@/lib/areaWatchDraft';
+import { IndicatorAreaFields, useIndicatorArea } from './IndicatorAreaFields';
 
 export const WINDOWS = [
   { value: '60', label: '1 hour' },
@@ -27,6 +30,7 @@ export function describeWindow(minutes: number): string {
 }
 
 interface IndicatorFormProps {
+  draft?: AreaWatchDraft | null;
   templates: readonly ReportTemplate[];
   plans: readonly CollectionPlan[];
   workspaces: Workspaces;
@@ -43,6 +47,7 @@ export function IndicatorForm({
   onSubmit,
   plans,
   workspaces,
+  draft = null,
 }: IndicatorFormProps) {
   const scope = useWorkspaceSelection(workspaces);
   const [planId, setPlanId] = useState('');
@@ -53,6 +58,7 @@ export function IndicatorForm({
   const invalidPlan = planId !== '' && selectedPlan === '';
   const [name, setName] = useState('');
   const [countries, setCountries] = useState('');
+  const area = useIndicatorArea(draft);
   const [keywords, setKeywords] = useState('');
   const [categories, setCategories] = useState('');
   const [threshold, setThreshold] = useState('1');
@@ -61,7 +67,7 @@ export function IndicatorForm({
 
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!scope.ready || invalidPlan) return;
+    if (!scope.ready || invalidPlan || area.error) return;
     onSubmit({
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
       ...(selectedPlan ? { plan_id: selectedPlan } : {}),
@@ -70,7 +76,8 @@ export function IndicatorForm({
       enabled: true,
       cooldown_minutes: 60,
       severity_floor: 0,
-      countries: parseCountries(countries),
+      countries: area.mode === 'area' ? [] : parseCountries(countries),
+      ...(area.bbox ? { bbox: area.bbox } : {}),
       keywords: parseCommaList(keywords),
       categories: parseCategories(categories),
       threshold: Math.max(1, Number(threshold) || 1),
@@ -85,6 +92,27 @@ export function IndicatorForm({
       aria-label="New indicator"
       className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
     >
+      {draft && (
+        <div className="space-y-2 rounded border border-cyan/30 bg-cyan/5 p-3 text-sm">
+          <h3 className="font-medium text-cyan">Watch this area</h3>
+          <p>
+            {draft.source === 'sketch-envelope'
+              ? 'This approximate bounding rectangle includes areas outside your sketch. Adjust it before adding an indicator.'
+              : 'Your map bounds are ready to review. Adjust the location, categories and threshold before adding an indicator.'}
+          </p>
+          <p className="text-xs text-muted">
+            Nothing is saved yet. Reports are off by default. An indicator counts published items in
+            its time window and waits 60 minutes between alerts.
+          </p>
+          <button
+            type="button"
+            className="text-xs underline"
+            onClick={() => clearAreaWatchDraft(draft.id)}
+          >
+            Discard map draft
+          </button>
+        </div>
+      )}
       {invalidPlan && (
         <Alert tone="error">
           The linked plan is no longer available. Choose a plan in this workspace or select No plan.
@@ -108,6 +136,7 @@ export function IndicatorForm({
           ...matchingPlans.map((plan) => ({ value: plan.id, label: plan.name })),
         ]}
       />
+      <IndicatorAreaFields value={area} countries={countries} onCountriesChange={setCountries} />
       <div className="grid gap-3 md:grid-cols-3">
         <TextField
           label="Indicator name"
@@ -117,14 +146,6 @@ export function IndicatorForm({
           }}
           required
           maxLength={120}
-        />
-        <TextField
-          label="Nations"
-          hint="ISO codes, comma separated; blank watches everywhere."
-          value={countries}
-          onChange={(event) => {
-            setCountries(event.target.value);
-          }}
         />
         <TextField
           label="Categories"
@@ -176,7 +197,11 @@ export function IndicatorForm({
       </div>
       {error === null ? null : <Alert tone="error">{error}</Alert>}
       <div>
-        <Button type="submit" busy={busy} disabled={!scope.ready || invalidPlan}>
+        <Button
+          type="submit"
+          busy={busy}
+          disabled={!scope.ready || invalidPlan || area.error !== null}
+        >
           Add indicator
         </Button>
       </div>

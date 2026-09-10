@@ -4,6 +4,10 @@ import { MapDrawingPanel } from './MapDrawingPanel';
 import { useMapDrawing } from './useMapDrawing';
 import type { CursorHandler } from '@/lib/map/MapEngine';
 import type { SketchDrag, SketchDragHandler } from '@/lib/map/MapEngine';
+import { MemoryRouter } from 'react-router';
+import { useAuthStore } from '@/stores/auth';
+import { plainUser, tokenFor } from '@/test/fixtures';
+import { readAreaWatchDraft } from '@/lib/areaWatchDraft';
 
 it('draws a bounded two-click circle, stops collecting, then undoes and clears it', () => {
   let click: CursorHandler = () => undefined;
@@ -23,7 +27,11 @@ it('draws a bounded two-click circle, stops collecting, then undoes and clears i
       </>
     );
   }
-  const { unmount } = render(<Harness />);
+  const { unmount } = render(
+    <MemoryRouter>
+      <Harness />
+    </MemoryRouter>,
+  );
   fireEvent.click(screen.getByRole('button', { name: 'Radius circle' }));
   fireEvent.click(screen.getByRole('button', { name: 'Draw with map clicks' }));
   act(() => click({ lon: 0, lat: 0 }));
@@ -62,7 +70,11 @@ it('offers drag creation, moving existing geometry, cancellation and the click a
       </>
     );
   }
-  const { unmount } = render(<Harness />);
+  const { unmount } = render(
+    <MemoryRouter>
+      <Harness />
+    </MemoryRouter>,
+  );
   const emit = (phase: SketchDrag['phase'], lon: number, lat: number) =>
     act(() => {
       for (const handler of handlers)
@@ -94,4 +106,38 @@ it('offers drag creation, moving existing geometry, cancellation and the click a
   expect(screen.getByRole('button', { name: 'Draw with map clicks' })).toBeEnabled();
   unmount();
   expect(handlers.size).toBe(0);
+});
+
+it('only hands completed area sketches to the editable Warning draft', () => {
+  useAuthStore.getState().setSession(tokenFor(plainUser));
+  let click: CursorHandler = () => undefined;
+  const engine = {
+    onClick: (handler: CursorHandler) => {
+      click = handler;
+      return () => undefined;
+    },
+  };
+  function Harness() {
+    return <MapDrawingPanel value={useMapDrawing(engine, true)} />;
+  }
+  render(
+    <MemoryRouter>
+      <Harness />
+    </MemoryRouter>,
+  );
+  const watch = screen.getByRole('button', { name: 'Watch this area' });
+  expect(watch).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Draw with map clicks' }));
+  act(() => click({ lon: 0, lat: 0 }));
+  act(() => click({ lon: 1, lat: 0 }));
+  act(() => click({ lon: 1, lat: 1 }));
+  expect(watch).toBeDisabled();
+  expect(readAreaWatchDraft()).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Finish drawing' }));
+  expect(watch).toBeEnabled();
+  fireEvent.click(watch);
+  expect(readAreaWatchDraft()?.source).toBe('sketch-envelope');
+  expect(readAreaWatchDraft()?.bounds.west).toBeLessThan(0);
+  fireEvent.click(screen.getByRole('button', { name: 'Path' }));
+  expect(watch).toBeDisabled();
 });

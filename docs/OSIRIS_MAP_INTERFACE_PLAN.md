@@ -222,3 +222,15 @@ equipment choices and the retained general examples. Public mode-specific powers
 remain distinct from illustrative settings. Selection preserves the existing
 analysis models and clears stale estimates. See [radio presets](RADIO_PRESETS.md)
 for the catalogue, primary references, checks and outstanding interactive acceptance.
+
+## Dashboard context and filters delivered, 10 September 2026
+
+The next OSIRIS comparison slice adds shared traffic/category drawers, visible
+event scope, map/list traffic refinements, satellite search/locate, CCTV media
+filters, source-backed object facts and explicit context tabs for NOAA space
+weather, NAVAREA warnings and IODA signals. Completed sketches now lead to a
+reviewable area-count watch through the existing Warning form. The globe remains
+the primary view and only Conflicts starts enabled. No new continuous collection
+or automatic model call was added. Exact behaviour, remaining gaps and validation
+limits are tracked in [dashboard context and watches](DASHBOARD_CONTEXT_AND_WATCHES.md)
+and the [feature review](OSIRIS_DASHBOARD_FEATURE_REVIEW.md).

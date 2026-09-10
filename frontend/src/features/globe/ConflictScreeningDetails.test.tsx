@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
 import { liveEvent } from '@/test/fixtures';
@@ -56,6 +56,8 @@ it('shows model screening evidence as plain text while retaining grade, provider
   expect(screen.getByText(`Grade ${event.grade}`)).toBeVisible();
   expect(screen.getByText('fight')).toBeVisible();
   expect(screen.getByText('Location precision')).toBeVisible();
+  expect(screen.getByText('root_code')).not.toBeVisible();
+  fireEvent.click(screen.getByText('Source fields'));
   expect(screen.getByText('root_code')).toBeVisible();
   expect(screen.queryByText('conflict_screening_quote')).not.toBeInTheDocument();
 });

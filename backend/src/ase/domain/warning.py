@@ -58,10 +58,7 @@ class Indicator:
             point = event.point
             if point is None:
                 return False
-            return (
-                self.bbox.west <= point.lon <= self.bbox.east
-                and self.bbox.south <= point.lat <= self.bbox.north
-            )
+            return self.bbox.contains(point)
         if self.countries:
             return event.country_iso is not None and event.country_iso.upper() in self.countries
         return True

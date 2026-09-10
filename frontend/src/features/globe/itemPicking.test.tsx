@@ -66,6 +66,7 @@ it.each(['globe', 'map'] as const)(
       expect(
         within(screen.getByRole('complementary', { name: 'Event details' })).getByRole('heading', {
           name: event.title,
+          level: 2,
         }),
       ).toBeVisible();
       expect(screen.queryByRole('complementary', { name: 'Map details' })).not.toBeInTheDocument();

@@ -3,6 +3,8 @@ import { useState } from 'react';
 import type { CameraState } from './useCameras';
 import { MapControlIcon } from '../MapControlIcon';
 import { CameraSources } from './CameraSources';
+import { CameraMediaFilter } from './CameraMediaFilter';
+import { cameraMedia } from './cameraMediaFilters';
 
 export function CameraPanel({
   cameras,
@@ -38,7 +40,7 @@ export function CameraPanel({
       </button>
       <p className="text-muted">
         Worldwide public camera sources. Enable a region to load its catalogue. Snapshots, video and
-        provider links are labelled separately. Media loads only when you select a camera.
+        provider links are labelled separately. Open camera details to request an image or playback.
       </p>
       {cameras.enabled && (
         <>
@@ -55,6 +57,13 @@ export function CameraPanel({
           )}
           {cameras.error && <p role="alert">{cameras.error}</p>}
           <CameraSources cameras={cameras} />
+          <CameraMediaFilter
+            kind={cameras.mediaKind}
+            setKind={(value) => {
+              setPage(0);
+              cameras.setMediaKind(value);
+            }}
+          />
           <label className="block">
             Find a camera
             <input
@@ -74,9 +83,11 @@ export function CameraPanel({
           </p>
           {!cameras.loading && !cameras.visible.length && (
             <p className="rounded border border-line p-3 text-muted">
-              {cameras.query.trim()
-                ? 'No cameras match this search. Try another name or provider.'
-                : 'No cameras to display. Enable a source below or refresh its catalogue.'}
+              {cameras.mediaKind !== 'all'
+                ? 'No cameras match this media filter. Try All media or enable another source.'
+                : cameras.query.trim()
+                  ? 'No cameras match this search. Try another name or provider.'
+                  : 'No cameras to display. Enable a source below or refresh its catalogue.'}
             </p>
           )}
           <ul className="max-h-80 overflow-y-auto">
@@ -96,16 +107,7 @@ export function CameraPanel({
                     )?.name ?? camera.provider}
                   </span>
                   <span className="mt-1 block text-[10px] text-cyan">
-                    {[
-                      camera.snapshot_url ? 'Snapshot' : null,
-                      camera.stream_url ? 'Video stream' : null,
-                      camera.external_url ? 'Provider page' : null,
-                      !camera.snapshot_url && !camera.stream_url && !camera.external_url
-                        ? 'Source details'
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' / ')}
+                    {cameraMedia(camera).label}
                     {camera.coordinate_precision === 'approximate' ? ' / Approximate location' : ''}
                   </span>
                 </button>

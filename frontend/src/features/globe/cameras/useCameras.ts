@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchCameras,
   type Camera,
   type CameraCatalogue,
   type CameraProvider,
 } from '@/lib/api/cameras';
+import {
+  matchesCameraMedia,
+  matchesCameraSearch,
+  type CameraMediaKind,
+} from './cameraMediaFilters';
 
 interface CachedCatalogue {
   revision: number;
@@ -37,6 +42,8 @@ export function useCameras() {
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const [query, setQuery] = useState('');
+  const term = useDeferredValue(query.trim().toLocaleLowerCase('en-GB'));
+  const [mediaKind, setMediaKind] = useState<CameraMediaKind>('all');
   const [providers, setProviders] = useState<Record<CameraProvider, boolean>>({
     tfl: true,
     hongkong: true,
@@ -136,16 +143,26 @@ export function useCameras() {
     setError(null);
     if (!value) setSelectedId(null);
   }, []);
+  const providerNames = useMemo(
+    () =>
+      new Map(
+        catalogue?.providers.map((provider) => [
+          provider.id,
+          provider.name.toLocaleLowerCase('en-GB'),
+        ]),
+      ),
+    [catalogue],
+  );
   const visible = useMemo(() => {
-    const term = query.trim().toLocaleLowerCase();
     return enabled
       ? (catalogue?.cameras ?? []).filter(
           (camera) =>
             providers[camera.provider] &&
-            `${camera.title} ${camera.provider}`.toLocaleLowerCase().includes(term),
+            matchesCameraSearch(camera, term, providerNames.get(camera.provider) ?? '') &&
+            matchesCameraMedia(camera, mediaKind),
         )
       : [];
-  }, [catalogue, enabled, providers, query]);
+  }, [catalogue, enabled, providers, term, mediaKind, providerNames]);
   const selected = useMemo(
     () =>
       selectedId === null ? null : (visible.find((camera) => camera.id === selectedId) ?? null),
@@ -173,9 +190,16 @@ export function useCameras() {
     setLoading(true);
   }, []);
   const search = useCallback((value: string) => {
-    setQuery(value);
+    setQuery(value.slice(0, 200));
     setSelectedId(null);
   }, []);
+  const changeMedia = useCallback(
+    (value: CameraMediaKind) => {
+      setMediaKind(value);
+      if (selected && !matchesCameraMedia(selected, value)) setSelectedId(null);
+    },
+    [selected],
+  );
   const refresh = useCallback(() => {
     setLoading(true);
     setRevision((old) => old + 1);
@@ -190,6 +214,8 @@ export function useCameras() {
     toggleProvider,
     setProviderGroup,
     query,
+    mediaKind,
+    setMediaKind: changeMedia,
     setQuery: search,
     visible,
     selected,

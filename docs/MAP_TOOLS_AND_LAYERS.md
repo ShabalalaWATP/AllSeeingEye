@@ -341,3 +341,15 @@ returned 401 without authentication. The frontend on port 5174 returned 200.
 An authenticated interactive terrain flow and GPU/visual acceptance remain
 unverified because the existing administrator browser-control policy blocks
 interactive checks. Automated tests do not establish measured RF reception.
+
+## Dashboard refinement, 10 September 2026
+
+Traffic drawers now share the main panel owner. Text and provider filters apply to
+map and list together, and the event-scope strip keeps active refinements visible.
+Space includes searchable satellite results and an on-demand NOAA weather tab.
+Boats includes NAVAREA warnings; Network opens IODA signal context. CCTV supports
+stream, clip, snapshot and provider-link filtering. Selected objects show readable
+facts before raw source fields. Completed drawings can hand off a conservative,
+editable bounding rectangle to the existing Warning indicator form, with reports
+off by default. See [dashboard context and watches](DASHBOARD_CONTEXT_AND_WATCHES.md)
+for exact scope, performance, access limits and remaining work.

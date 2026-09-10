@@ -51,7 +51,7 @@ it('changes the hook filter and shows truthful loaded counts and disclosure', ()
   act(() => result.current.setGroup('skynet'));
   expect(result.current.filtered).toEqual([skynet]);
   const change = vi.fn();
-  render(<SatelliteFilterPanel group="all" setGroup={change} counts={result.current.counts} />);
+  render(<SatelliteFilterPanel {...result.current} group="all" setGroup={change} />);
   fireEvent.click(screen.getByRole('radio', { name: /Skynet/ }));
   expect(change).toHaveBeenCalledWith('skynet');
   expect(screen.getByRole('radio', { name: /All satellites/ })).toHaveAttribute(

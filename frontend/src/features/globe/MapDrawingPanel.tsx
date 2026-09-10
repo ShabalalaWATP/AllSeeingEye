@@ -1,6 +1,9 @@
 import { DRAWING_SHAPES } from '@/lib/map/drawingGeometry';
 import type { DrawingShape } from '@/lib/map/drawingGeometry';
 import type { MapDrawing } from './useMapDrawing';
+import { useMemo } from 'react';
+import { WatchAreaButton } from '@/components/maps/WatchAreaButton';
+import { drawingWatchArea } from '@/lib/map/areaWatchGeometry';
 
 const icons: Record<DrawingShape, string> = {
   path: 'M3 18 9 5l6 10 6-12M2 18h2M8 5h2M14 15h2M20 3h2',
@@ -10,6 +13,18 @@ const icons: Record<DrawingShape, string> = {
 };
 
 export function MapDrawingPanel({ value }: { value: MapDrawing }) {
+  const watch = useMemo(() => {
+    // Envelope calculations run once a sketch is finished, never on live drag/click frames.
+    if (value.picking) return { area: null, error: 'Finish drawing before watching this area.' };
+    try {
+      return { area: drawingWatchArea(value.shape, value.anchors), error: null };
+    } catch (failure) {
+      return {
+        area: null,
+        error: failure instanceof Error ? failure.message : 'Finish a valid area sketch.',
+      };
+    }
+  }, [value.shape, value.anchors, value.picking]);
   const twoPoint = value.shape === 'rectangle' || value.shape === 'circle';
   const complete = value.anchors.length >= (twoPoint ? 2 : 32);
   const moving = value.interaction === 'move';
@@ -143,6 +158,16 @@ export function MapDrawingPanel({ value }: { value: MapDrawing }) {
           Clear drawing
         </button>
       </div>
+      <WatchAreaButton
+        area={watch.area}
+        disabled={value.picking}
+        hint={
+          value.picking
+            ? 'Finish drawing or moving before preparing an area indicator.'
+            : (watch.error ??
+              'Watch an approximate bounding rectangle around this sketch, including its curved edges and areas outside the shape. Review the bounds in Warning before adding an indicator.')
+        }
+      />
       <details className="text-muted">
         <summary className="cursor-pointer py-1">How drawings and measurements work</summary>
         <p className="mt-2 leading-relaxed">

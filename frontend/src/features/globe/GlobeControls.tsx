@@ -130,7 +130,9 @@ export function GlobeControls({
               <MapControlIcon name="close" />
             </button>
           </header>
-          <div className="map-tool-content">{selected.props.children}</div>
+          <div key={active} className="map-tool-content">
+            {selected.props.children}
+          </div>
         </section>
       )}
     </>

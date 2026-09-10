@@ -60,14 +60,13 @@ it.each(['globe', 'map'] as const)(
       const opener = screen.getByRole('button', { name: label });
       await user.click(opener);
       await user.type(screen.getByRole('searchbox', { name: search }), term);
-      await user.click(
-        within(
-          screen.getByRole('list', {
-            name:
-              event.category === 'aviation' ? 'aircraft search results' : 'vessels search results',
-          }),
-        ).getByRole('button', { name: new RegExp(event.title) }),
-      );
+      const resultButton = within(
+        screen.getByRole('list', {
+          name:
+            event.category === 'aviation' ? 'aircraft search results' : 'vessels search results',
+        }),
+      ).getByRole('button', { name: new RegExp(event.title) });
+      await user.click(resultButton);
       await waitFor(() => expect(selection()).toBe(event.id));
       expect(FakeMap.instances[0]?.flyTo).toHaveBeenLastCalledWith({
         center: [event.point?.lon, event.point?.lat],
@@ -81,7 +80,8 @@ it.each(['globe', 'map'] as const)(
       await user.click(screen.getByRole('button', { name: 'Close' }));
       await waitFor(() => expect(selection()).toBeUndefined());
       expect(useEventsStore.getState().selectedId).toBeNull();
-      expect(opener).toHaveFocus();
+      // The shared drawer stays open, so focus returns to its selected row.
+      expect(resultButton).toHaveFocus();
     }
   },
 );

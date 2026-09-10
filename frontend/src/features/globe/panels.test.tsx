@@ -134,9 +134,11 @@ describe('EventInspector', () => {
     expect(within(drawer).getByText('5 Sept 2026, 00:00 UTC')).toBeInTheDocument();
     expect(within(drawer).getByText('50.000, 10.000 (exact)')).toBeInTheDocument();
     expect(within(drawer).getByText('GB')).toBeInTheDocument();
-    expect(within(drawer).getByText('50%')).toBeInTheDocument();
+    expect(within(drawer).getByText('0.50 / 1')).toBeInTheDocument();
     expect(within(drawer).getByText('Depth 10 km.')).toBeInTheDocument();
-    expect(within(drawer).getByText('depth_km')).toBeInTheDocument();
+    expect(within(drawer).getByText('depth_km')).not.toBeVisible();
+    await userEvent.click(within(drawer).getByText('Source fields'));
+    expect(within(drawer).getByText('depth_km')).toBeVisible();
     expect(within(drawer).queryByText('note')).not.toBeInTheDocument();
     expect(within(drawer).queryByText('flag')).not.toBeInTheDocument();
     expect(within(drawer).getByText('seismic')).toBeInTheDocument();
@@ -163,7 +165,7 @@ describe('EventInspector', () => {
     );
     expect(screen.queryByRole('link', { name: 'Open source' })).not.toBeInTheDocument();
     expect(screen.queryByText('Position')).not.toBeInTheDocument();
-    expect(screen.queryByText('Severity')).not.toBeInTheDocument();
+    expect(screen.queryByText('Severity index')).not.toBeInTheDocument();
     expect(isHttpUrl('http://example.org/x')).toBe(true);
     expect(isHttpUrl('ftp://example.org/x')).toBe(false);
     expect(isHttpUrl('not a url')).toBe(false);

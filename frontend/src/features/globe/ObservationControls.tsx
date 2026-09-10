@@ -4,6 +4,12 @@ import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import { useEventsStore } from '@/stores/events';
 import { matchesFlightFilter, matchesVesselFilter } from './flightFilters';
 import type { FlightFilter } from './flightFilters';
+import {
+  matchesTrafficRefinement,
+  useTrafficRefinements,
+  type TrafficRefinement,
+  type TrafficKind,
+} from './trafficRefinements';
 
 export type ObservationKind = 'aircraft' | 'vessels' | 'firms';
 export type ObservationVisibility = Record<ObservationKind, boolean>;
@@ -30,13 +36,16 @@ export function filterObservations(
   visibility: ObservationVisibility,
   flightFilter: FlightFilter = 'all',
   vesselFilter: FlightFilter = 'all',
+  refinements?: Partial<Record<TrafficKind, TrafficRefinement>>,
 ) {
   return events.filter((event) => {
     const kind = observationKind(event);
     return (
       (kind === null || visibility[kind]) &&
       matchesFlightFilter(event, flightFilter) &&
-      matchesVesselFilter(event, vesselFilter)
+      matchesVesselFilter(event, vesselFilter) &&
+      matchesTrafficRefinement(event, 'aircraft', refinements?.aircraft) &&
+      matchesTrafficRefinement(event, 'vessels', refinements?.vessels)
     );
   });
 }
@@ -44,24 +53,34 @@ export function filterObservations(
 export function useObservationFilters(events: readonly LiveEvent[]) {
   const [flightFilter, setFlightFilter] = useState<FlightFilter>('all');
   const [vesselFilter, setVesselFilter] = useState<FlightFilter>('all');
+  const aircraft = useTrafficRefinements(events, 'aircraft');
+  const vessels = useTrafficRefinements(events, 'vessels');
+  const trafficRefinements = useMemo(() => ({ aircraft, vessels }), [aircraft, vessels]);
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);
   useEffect(() => {
     const selected = events.find((event) => event.id === selectedId);
     if (
       selected &&
-      (!matchesVesselFilter(selected, vesselFilter) || !matchesFlightFilter(selected, flightFilter))
+      (!matchesVesselFilter(selected, vesselFilter) ||
+        !matchesFlightFilter(selected, flightFilter) ||
+        !matchesTrafficRefinement(selected, 'aircraft', aircraft.applied) ||
+        !matchesTrafficRefinement(selected, 'vessels', vessels.applied))
     )
       select(null);
-  }, [events, selectedId, select, vesselFilter, flightFilter]);
+  }, [events, selectedId, select, vesselFilter, flightFilter, aircraft.applied, vessels.applied]);
   const [visibility, setVisibility] = useState<ObservationVisibility>({
     aircraft: true,
     vessels: true,
     firms: true,
   });
   const filtered = useMemo(
-    () => filterObservations(events, visibility, flightFilter, vesselFilter),
-    [events, visibility, flightFilter, vesselFilter],
+    () =>
+      filterObservations(events, visibility, flightFilter, vesselFilter, {
+        aircraft: aircraft.applied,
+        vessels: vessels.applied,
+      }),
+    [events, visibility, flightFilter, vesselFilter, aircraft.applied, vessels.applied],
   );
   return {
     visibility,
@@ -70,6 +89,7 @@ export function useObservationFilters(events: readonly LiveEvent[]) {
     setFlightFilter,
     vesselFilter,
     setVesselFilter,
+    trafficRefinements,
     toggle: (kind: ObservationKind) =>
       setVisibility((previous) => ({ ...previous, [kind]: !previous[kind] })),
   };

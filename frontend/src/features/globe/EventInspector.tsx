@@ -14,6 +14,8 @@ import { CATEGORY_STYLES } from '@/lib/categories';
 import { ConflictScreeningDetails } from './ConflictScreeningDetails';
 import { conflictKind, conflictReportLabel } from '@/lib/conflicts';
 import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
+import { SelectedEventFacts } from './SelectedEventFacts';
+import { eventTimeLabel } from './eventFacts';
 
 export interface EventInspectorProps {
   event: LiveEvent;
@@ -132,7 +134,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
         <dl className={`mt-3 text-muted ${dl}`}>
           <dt>Source</dt>
           <dd className="text-text">{sourceLabel(event.source_id)}</dd>
-          <dt>{event.subtype === 'vessel_position' ? 'Position record time' : 'Published'}</dt>
+          <dt>{eventTimeLabel(event)}</dt>
           <dd className="text-text">{formatUtc(event.published_at)}</dd>
           <dt>Location precision</dt>
           <dd className="text-text">{precisionLabel(event)}</dd>
@@ -152,11 +154,18 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           )}
           {event.severity !== null && (
             <>
-              <dt>Severity</dt>
-              <dd className="text-text">{Math.round(event.severity * 100)}%</dd>
+              <dt>Severity index</dt>
+              <dd className="text-text">{event.severity.toFixed(2)} / 1</dd>
             </>
           )}
         </dl>
+        {event.severity !== null && (
+          <p className="mt-2 text-xs text-muted">
+            Normalised source-derived severity, not accuracy or likelihood. Values are not directly
+            comparable across source types.
+          </p>
+        )}
+        <SelectedEventFacts event={event} />
         {event.summary !== null && (
           <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
         )}
@@ -165,14 +174,19 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           dates={event.source_dates}
         />
         {attributes.length > 0 && (
-          <dl className={`mt-3 ${dl}`}>
-            {attributes.map(([key, value]) => (
-              <Fragment key={key}>
-                <dt className="text-muted">{key}</dt>
-                <dd className="break-words text-text">{String(value)}</dd>
-              </Fragment>
-            ))}
-          </dl>
+          <details key={event.id} className="mt-3 rounded border border-line px-3">
+            <summary className="cursor-pointer py-3 text-xs font-medium text-muted focus-visible:outline-2 focus-visible:outline-ember">
+              Source fields
+            </summary>
+            <dl className={`pb-3 ${dl}`}>
+              {attributes.map(([key, value]) => (
+                <Fragment key={key}>
+                  <dt className="text-muted">{key}</dt>
+                  <dd className="break-words text-text">{String(value)}</dd>
+                </Fragment>
+              ))}
+            </dl>
+          </details>
         )}
         {event.tags.length > 0 && (
           <p className="mt-3 flex flex-wrap gap-1">

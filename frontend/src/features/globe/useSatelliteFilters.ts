@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useNow } from '@/lib/hooks/useNow';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import {
@@ -7,10 +7,22 @@ import {
   isCurrentSatellitePosition,
   type SatelliteGroup,
 } from '@/lib/satellites';
+import { matchesSatelliteSearch, SATELLITE_QUERY_LIMIT } from './satelliteSearch';
 
 export function useSatelliteFilters(events: LiveEvent[]) {
   const now = useNow();
   const [group, setGroup] = useState<SatelliteGroup>('all');
+  const [query, updateQuery] = useState('');
+  const setQuery = useCallback(
+    (value: string) => updateQuery(value.slice(0, SATELLITE_QUERY_LIMIT)),
+    [],
+  );
+  const search = query.trim().toLocaleLowerCase('en-GB');
+  const deferredSearch = useDeferredValue(search);
+  const terms = useMemo(
+    () => (deferredSearch ? deferredSearch.split(/\s+/) : []),
+    [deferredSearch],
+  );
   // Stable membership avoids rebuilding all GPU layers on an unrelated clock tick.
   const membership = events
     .map((event) => (!isSatellite(event) || isCurrentSatellitePosition(event, now) ? '1' : '0'))
@@ -20,7 +32,15 @@ export function useSatelliteFilters(events: LiveEvent[]) {
       membership.includes('0') ? events.filter((_, index) => membership[index] === '1') : events,
     [events, membership],
   );
-  const filtered = useMemo(() => filterSatellites(current, group), [current, group]);
+  const grouped = useMemo(() => filterSatellites(current, group), [current, group]);
+  const filtered = useMemo(
+    () =>
+      terms.length
+        ? grouped.filter((event) => !isSatellite(event) || matchesSatelliteSearch(event, terms))
+        : grouped,
+    [grouped, terms],
+  );
+  const results = useMemo(() => filtered.filter(isSatellite), [filtered]);
   const counts = useMemo(
     () =>
       Object.fromEntries(
@@ -31,5 +51,14 @@ export function useSatelliteFilters(events: LiveEvent[]) {
       ) as Record<SatelliteGroup, number>,
     [current],
   );
-  return { filtered, group, setGroup, counts };
+  return {
+    filtered,
+    group,
+    setGroup,
+    counts,
+    query,
+    setQuery,
+    results,
+    searching: search !== deferredSearch,
+  };
 }

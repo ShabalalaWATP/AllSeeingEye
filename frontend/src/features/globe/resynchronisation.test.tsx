@@ -32,6 +32,8 @@ it('an actual mounted stream callback clears an expired selection and reloads th
   const stale = liveEvent({ id: 'stale-vessel', category: 'maritime', subtype: 'vessel_position' });
   act(() => {
     useEventsStore.getState().applyUpsert([stale]);
+    // The item must be visible before selection; startup only enables conflicts.
+    useEventsStore.getState().toggleCategory('maritime');
     useEventsStore.getState().select(stale.id);
   });
   expect(screen.getByRole('complementary', { name: 'Event details' })).toBeInTheDocument();

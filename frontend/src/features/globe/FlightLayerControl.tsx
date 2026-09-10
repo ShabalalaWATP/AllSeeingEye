@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import type { FlightFilter } from './flightFilters';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
-import { TrafficList } from './TrafficList';
+import { TrafficPanel } from './TrafficPanel';
 
 /** A disclosure attached to the flight switch; its portal escapes the scrolling rail. */
 export function FlightLayerControl({
@@ -16,6 +16,8 @@ export function FlightLayerControl({
   available,
   onSelect,
   selectionDisabled = false,
+  openPanel,
+  activePanel,
 }: {
   children: ReactNode;
   filter?: FlightFilter;
@@ -26,6 +28,8 @@ export function FlightLayerControl({
   events?: readonly LiveEvent[];
   available?: number | undefined;
   onSelect?: ((event: LiveEvent) => void) | undefined;
+  openPanel?: ((label: string, button: HTMLButtonElement) => void) | undefined;
+  activePanel?: string | null | undefined;
 }) {
   const label = kind === 'aircraft' ? 'Flight filters' : 'Boat list';
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
@@ -69,7 +73,7 @@ export function FlightLayerControl({
         ref={trigger}
         type="button"
         aria-label={label}
-        aria-expanded={position !== null}
+        aria-expanded={openPanel ? activePanel === label : position !== null}
         aria-controls={position ? id : undefined}
         title={
           kind === 'vessels'
@@ -80,6 +84,10 @@ export function FlightLayerControl({
         }
         className={`flex h-6 w-10 items-center justify-center rounded text-[10px] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan ${filter === 'military' ? 'text-cyan' : 'text-muted'}`}
         onClick={(event) => {
+          if (openPanel) {
+            openPanel(label, event.currentTarget);
+            return;
+          }
           if (position) {
             close();
             return;
@@ -96,7 +104,8 @@ export function FlightLayerControl({
           ▸
         </span>
       </button>
-      {position &&
+      {!openPanel &&
+        position &&
         createPortal(
           <section
             ref={panel}
@@ -117,68 +126,23 @@ export function FlightLayerControl({
                 ×
               </button>
             </header>
-            {onChange && (
-              <fieldset>
-                <legend className="mb-2 text-xs text-muted">
-                  {kind === 'aircraft' ? 'Aircraft shown' : 'Vessels shown'}
-                </legend>
-                {(['all', 'military'] as const).map((value) => (
-                  <label
-                    key={value}
-                    className="flex min-h-10 cursor-pointer items-center gap-2 text-sm"
-                  >
-                    <input
-                      type="radio"
-                      name={id}
-                      value={value}
-                      checked={filter === value}
-                      onChange={() => onChange(value)}
-                      className="accent-cyan"
-                    />
-                    {value === 'all'
-                      ? kind === 'aircraft'
-                        ? 'All aircraft'
-                        : 'All vessels'
-                      : 'Military only'}
-                  </label>
-                ))}
-              </fieldset>
-            )}
-            <p
-              className={`my-2 text-xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}
-            >
-              {count}{' '}
-              {kind === 'aircraft'
-                ? 'provider-labelled military aircraft loaded'
-                : 'vessels labelled as military operations'}
-            </p>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
-              {kind === 'aircraft' ? (
-                <>
-                  Classification comes from the public provider. Reception is incomplete; hidden
-                  transponders and aircraft outside receiver coverage are not shown. This filter
-                  does not establish a flight’s mission.
-                </>
-              ) : (
-                <>
-                  Purple identifies reported military operations from AIS ship type or an explicit
-                  provider label. This does not verify naval ownership. Position and classification
-                  coverage vary.
-                </>
-              )}
-            </p>
-            {events && onSelect && (
-              <TrafficList
-                events={events}
-                kind={kind}
-                available={available}
-                selectionDisabled={selectionDisabled}
-                onSelect={(event) => {
-                  close();
-                  onSelect(event);
-                }}
-              />
-            )}
+            <TrafficPanel
+              kind={kind}
+              filter={filter}
+              onChange={onChange}
+              count={count}
+              events={events}
+              available={available}
+              selectionDisabled={selectionDisabled}
+              onSelect={
+                onSelect
+                  ? (event) => {
+                      close();
+                      onSelect(event);
+                    }
+                  : undefined
+              }
+            />
           </section>,
           document.body,
         )}

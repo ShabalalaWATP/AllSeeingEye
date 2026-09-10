@@ -9,7 +9,7 @@ const camera = {
   title: 'Bridge',
   latitude: 51,
   longitude: 0,
-  snapshot_url: 'https://example.test/image.jpg',
+  snapshot_url: 'https://weathercam.digitraffic.fi/C0000101.jpg',
   stream_url: null,
   stream_type: null,
   external_url: null,
@@ -42,6 +42,8 @@ function state(): CameraState {
     toggleProvider: vi.fn(),
     setProviderGroup: vi.fn(),
     query: '',
+    mediaKind: 'all',
+    setMediaKind: vi.fn(),
     setQuery: vi.fn(),
     visible: [camera],
     selected: null,
@@ -84,6 +86,10 @@ it('bounds camera pages and returns to the first page when searching', async () 
   expect(screen.queryByRole('button', { name: 'Camera 50' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Next cameras' }));
   expect(screen.getByRole('button', { name: 'Camera 50' })).toBeVisible();
+  await user.click(screen.getByRole('radio', { name: 'Streams' }));
+  expect(cameras.setMediaKind).toHaveBeenCalledWith('streams');
+  expect(screen.getByRole('button', { name: 'Camera 0' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Next cameras' }));
   await user.type(screen.getByLabelText('Find a camera'), 'Bridge');
   expect(screen.getByRole('button', { name: 'Camera 0' })).toBeVisible();
   expect(cameras.setQuery).toHaveBeenCalled();

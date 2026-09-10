@@ -143,6 +143,8 @@ export function MapLayerRail({
         return kind === 'aircraft' && onFlightFilter ? (
           <FlightLayerControl
             key={kind}
+            openPanel={openPanel}
+            activePanel={activePanel}
             filter={flightFilter}
             onChange={onFlightFilter}
             count={events.filter(isMilitaryFlight).length}
@@ -161,6 +163,8 @@ export function MapLayerRail({
         ) : kind === 'vessels' && onTrafficSelect ? (
           <FlightLayerControl
             key={kind}
+            openPanel={openPanel}
+            activePanel={activePanel}
             kind="vessels"
             filter={vesselFilter}
             onChange={onVesselFilter}

@@ -115,7 +115,8 @@ class ModuleService:
         alerts = [
             e
             for e in events
-            if e.source_id.startswith("swpc") and e.subtype not in ("geomagnetic",)
+            if e.source_id in ("noaa_swpc_alerts", "swpc_alerts")
+            and e.subtype in ("space_weather_alert", "space_weather")
         ]
         recent = [e for e in alerts if e.published_at is not None and e.published_at >= now - DAY]
         kp_value = kp_event.attributes.get("kp") if kp_event is not None else None

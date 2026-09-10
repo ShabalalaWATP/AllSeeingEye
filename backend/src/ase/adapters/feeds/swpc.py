@@ -50,6 +50,17 @@ HEADLINE_PREFIXES = ("ALERT", "WARNING", "WATCH", "SUMMARY", "EXTENDED", "CANCEL
 MAX_SCALE = 5.0
 
 
+def _scale(current: dict[str, Any], key: str) -> tuple[str | None, str]:
+    """An unavailable NOAA scale is unknown, never an inferred level zero."""
+    item = current.get(key)
+    if not isinstance(item, dict):
+        return None, "unavailable"
+    value = item.get("Scale")
+    if isinstance(value, bool) or str(value) not in {"0", "1", "2", "3", "4", "5"}:
+        return None, "unavailable"
+    return str(value), str(item.get("Text") or "description unavailable")
+
+
 def _parse_issue_time(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
@@ -136,14 +147,16 @@ class SwpcScalesConnector:
         if not isinstance(current, dict):
             return []
         now = self._clock.now()
-        levels = {key: str((current.get(key) or {}).get("Scale") or "0") for key in ("R", "S", "G")}
-        texts = {
-            key: str((current.get(key) or {}).get("Text") or "none") for key in ("R", "S", "G")
-        }
+        scales = {key: _scale(current, key) for key in ("R", "S", "G")}
+        levels = {key: value[0] for key, value in scales.items()}
+        texts = {key: value[1] for key, value in scales.items()}
         stamp = f"{current.get('DateStamp')} {current.get('TimeStamp')}"
         published = _parse_issue_time(stamp) or now
-        title = f"Space weather now: R{levels['R']} S{levels['S']} G{levels['G']}"
-        severity = max(int(v) if v.isdigit() else 0 for v in levels.values()) / MAX_SCALE
+        title = "Space weather now: " + " ".join(
+            f"{key}{value if value is not None else ' unknown'}" for key, value in levels.items()
+        )
+        known = [int(value) for value in levels.values() if value is not None]
+        severity = max(known) / MAX_SCALE if known else None
         return [
             Event(
                 id=event_id(self.spec.id, "current"),
@@ -164,6 +177,6 @@ class SwpcScalesConnector:
                 attributes=freeze_attributes(
                     {"r": levels["R"], "s": levels["S"], "g": levels["G"], "stamp": stamp}
                 ),
-                content_hash=content_hash(levels["R"], levels["S"], levels["G"]),
+                content_hash=content_hash(*(str(value) for value in levels.values()), stamp),
             )
         ]

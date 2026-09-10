@@ -12,27 +12,32 @@ export function TrafficList({
   available,
   onSelect,
   selectionDisabled = false,
+  searchEnabled = true,
 }: {
   events: readonly LiveEvent[];
   kind: 'aircraft' | 'vessels';
   available?: number | undefined;
   onSelect: (event: LiveEvent) => void;
   selectionDisabled?: boolean;
+  searchEnabled?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
   const now = useNow();
   const indexed = useMemo(
-    () => events.map((event) => ({ event, search: trafficSearchText(event) })),
-    [events],
+    () =>
+      searchEnabled ? events.map((event) => ({ event, search: trafficSearchText(event) })) : [],
+    [events, searchEnabled],
   );
   const results = useMemo(
     () =>
-      indexed
-        .filter(({ search }) => !deferredQuery || search.includes(deferredQuery))
-        .map(({ event }) => event),
-    [indexed, deferredQuery],
+      searchEnabled
+        ? indexed
+            .filter(({ search }) => !deferredQuery || search.includes(deferredQuery))
+            .map(({ event }) => event)
+        : events,
+    [indexed, deferredQuery, events, searchEnabled],
   );
   const pages = Math.max(1, Math.ceil(results.length / TRAFFIC_PAGE_SIZE));
   const currentPage = Math.min(page, pages - 1);
@@ -43,20 +48,24 @@ export function TrafficList({
   const noun = kind === 'aircraft' ? 'aircraft' : 'vessels';
   return (
     <section aria-label={`Loaded ${noun}`} className="space-y-2 border-t border-line pt-3">
-      <label className="block text-xs text-muted">
-        Search {noun}
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setPage(0);
-          }}
-          placeholder={kind === 'aircraft' ? 'Callsign, registration or ICAO' : 'Name, MMSI or IMO'}
-          maxLength={100}
-          className="mt-1 w-full rounded-md border border-line bg-ground px-3 py-2 text-sm text-text outline-none focus:border-cyan"
-        />
-      </label>
+      {searchEnabled && (
+        <label className="block text-xs text-muted">
+          Search {noun}
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(0);
+            }}
+            placeholder={
+              kind === 'aircraft' ? 'Callsign, registration or ICAO' : 'Name, MMSI or IMO'
+            }
+            maxLength={100}
+            className="mt-1 w-full rounded-md border border-line bg-ground px-3 py-2 text-sm text-text outline-none focus:border-cyan"
+          />
+        </label>
+      )}
       <p className="font-mono text-[10px] text-muted">
         {events.length.toLocaleString()} loaded in this scope
         {available === undefined
