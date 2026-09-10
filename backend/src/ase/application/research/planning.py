@@ -69,8 +69,6 @@ def build_plan(
         )
     if any(task.source_id not in inventory for task in query.planned_tasks):
         raise InvalidRequest("Planned task source is unavailable for this research scope")
-    if len(providers) + len(query.planned_tasks) > 64:
-        raise InvalidRequest("Expanded research plans support at most 64 tasks")
     tasks = []
     for provider in providers:
         language = getattr(provider, "language", None)
@@ -141,6 +139,19 @@ def build_plan(
                 registry_lookup=lookup,
             )
         )
+    if len(tasks) + len(supplementary) > 64:
+        # New catalogue capabilities must not invalidate saved explicit tasks.
+        # Remove only presentation rows that cannot perform selected work. Keep
+        # every explicit source and every baseline referenced by a planned task.
+        referenced = {task.source_id for task in supplementary}
+        tasks = [
+            task
+            for task in tasks
+            if task.source_id in referenced
+            or (task.selected if query.source_ids is not None else task.supported)
+        ]
+    if len(tasks) + len(supplementary) > 64:
+        raise InvalidRequest("Expanded research plans support at most 64 tasks")
     # Alternate baseline and explicit tasks so the latter do not sit behind the
     # full provider inventory. Every task still consumes the same run allowance.
     ordered = []

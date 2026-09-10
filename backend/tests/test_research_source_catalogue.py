@@ -10,6 +10,7 @@ from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
+from ase.adapters.research.publisher import PUBLISHER_SEEDS
 from ase.application.feeds.grading import profiles_from_specs
 from ase.container import Container
 from ase.container.research_sources import research_source_specs
@@ -29,6 +30,9 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         *(f"research_google_news_{language}" for language in EDITIONS),
         *(f"research_social_{seed.spec.id}" for seed in SOCIAL_SEEDS),
         *(f"research_regional_{seed.spec.id}" for seed in REGIONAL_SEEDS),
+        *(f"research_publisher_{seed.spec.id}" for seed in PUBLISHER_SEEDS),
+        "research-usgs-area",
+        "research-eonet-area",
         "research-sec-submissions",
         "research-sec-company-directory",
         "research-companies-house",

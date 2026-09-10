@@ -34,6 +34,9 @@ SPEC = SourceSpec(
 COLLECTION_SECONDS = 40
 MAX_MESSAGES = 50_000
 MAX_VESSELS = 20_000
+COMPRESSION_WARNING = (
+    "The provider reports compression is disabled; bandwidth limits may drop vessel messages."
+)
 # Never let WebSocket debug frame logs disclose subscription credentials.
 _LOGGER = logging.Logger("ase.aisstream.transport", level=logging.CRITICAL + 1)
 
@@ -60,6 +63,7 @@ class AisStreamConnector:
 
     async def fetch(self) -> list[Event]:
         self._warning = None
+        warnings: list[str] = []
         events: dict[str, Event] = {}
         try:
             address = await assert_public_host("https://stream.aisstream.io/v0/stream")
@@ -97,6 +101,17 @@ class AisStreamConnector:
                             data: Any = json.loads(await socket.recv())
                             if not isinstance(data, dict) or "error" in data or "Error" in data:
                                 raise FeedFetchError("AISStream refused the subscription")
+                            confirmation = (
+                                data.get("Message")
+                                if data.get("MessageType") == "SubscriptionConfirmation"
+                                else None
+                            )
+                            if (
+                                isinstance(confirmation, dict)
+                                and confirmation.get("CompressionEnabled") is False
+                                and COMPRESSION_WARNING not in warnings
+                            ):
+                                warnings.append(COMPRESSION_WARNING)
                             self._classifications.observe(data, self._clock.now())
                             event = parse_position(data, self._clock.now())
                             if event is not None:
@@ -108,12 +123,12 @@ class AisStreamConnector:
                                 ):
                                     events[event.id] = event
                             if len(events) >= MAX_VESSELS:
-                                self._warning = (
+                                warnings.append(
                                     "Vessel collection limit reached; coverage is a bounded sample."
                                 )
                                 break
                         else:
-                            self._warning = (
+                            warnings.append(
                                 "Message collection limit reached; coverage is a bounded sample."
                             )
                 except TimeoutError:
@@ -124,9 +139,11 @@ class AisStreamConnector:
                 raise FeedFetchError(
                     "AISStream connection unavailable; check key and provider status"
                 ) from None
-            self._warning = (
+            warnings.append(
                 "Stream interrupted; retaining valid positions received before the interruption."
             )
+        finally:
+            self._warning = " ".join(warnings) or None
         if not events:
             raise FeedFetchError(
                 "AISStream returned no fresh vessel positions in the collection window"

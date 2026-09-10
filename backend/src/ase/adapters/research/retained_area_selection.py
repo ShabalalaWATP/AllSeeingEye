@@ -30,6 +30,15 @@ class AreaPointFilter:
         point = event.point
         if point is None or event.geo_confidence is not GeoConfidence.EXACT:
             return False
+        # Legacy EONET feed records label averaged polygon display centres EXACT
+        # without retaining the original shape. They cannot establish membership
+        # of a research area, even when that centre happens to fall inside it.
+        if event.source_id == "nasa_eonet" and (
+            event.geometry is None
+            or event.geometry.source_id != event.source_id
+            or event.geometry.location_role is not LocationRole.INCIDENT
+        ):
+            return False
         if event.geometry is not None:
             # A scene footprint, publisher's office or drawing must not acquire an
             # incident location from its representative map point.

@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-09-10T12:58:50.073525+00:00",
+  "scope": "California rectangle, preceding seven days; one request per provider",
+  "results": [
+    {
+      "id": "research-usgs-area",
+      "status": "completed",
+      "records": 50,
+      "receipt": "0 candidates excluded by location, date or validation. Truncated page; additional events were not fetched.  One current USGS earthquake catalogue page, at most 50 quick or 100 detailed candidates. Exact polygon/multipolygon intersection and origin-time interval, at most 14 days. Question/language terms do not filter this area query. Catalogue revisions, monitoring coverage and page limits prevent a complete historical account; no results do not establish absence of earthquakes."
+    },
+    {
+      "id": "research-eonet-area",
+      "status": "completed",
+      "records": 1,
+      "receipt": "0 candidates excluded by location, date or validation.  One current EONET catalogue page, open and closed events, at most 50 quick or 100 detailed candidates. Exact local polygon/multipolygon intersection of dated source geometry. Upstream bounding-box datapoint filtering may omit overlapping extents. Latest matching observation per event only; no full track or historical completeness. Dates are often day-level midnight estimates. Question/language terms do not filter these area records. An empty result does not establish absence of hazards."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+"""Interleave source families without changing the collection request budget."""
+
+from itertools import zip_longest
+
+from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
+from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
+from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
+from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
+from ase.adapters.research.publisher import PublisherFeedResearchProvider
+from ase.adapters.research.regional import RegionalFeedResearchProvider
+from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.application.ports import Clock
+from ase.application.ports.research import ResearchProvider
+
+
+def public_research_feeds(
+    http: FeedHttpClient, clock: Clock, *, spatial: bool
+) -> list[ResearchProvider]:
+    regional = [RegionalFeedResearchProvider(http, clock, seed) for seed in REGIONAL_SEEDS]
+    social = [SocialFeedResearchProvider(http, clock, seed) for seed in SOCIAL_SEEDS]
+    if spatial:
+        # Existing unsupported capabilities explain the spatial boundary. The new
+        # publisher family has no spatial support and does not enlarge this plan.
+        return [*regional, *social]
+    official = [PublisherFeedResearchProvider(http, clock, seed) for seed in OFFICIAL_SEEDS]
+    outlets = [PublisherFeedResearchProvider(http, clock, seed) for seed in OUTLET_SEEDS]
+    # A short request budget should not be consumed by one entire feed family
+    # before another is considered. Unsupported languages consume no requests.
+    return [
+        provider
+        for group in zip_longest(official, outlets, regional, social)
+        for provider in group
+        if provider is not None
+    ]

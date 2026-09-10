@@ -1,0 +1,8 @@
+{
+  "provider": "NASA FIRMS",
+  "checked_at": "2026-09-10T12:54:43.410413+00:00",
+  "credential_present": true,
+  "scope": "NOAA-20, UK bounding box, two UTC calendar days",
+  "observations": 45,
+  "status": "connected_valid_csv"
+}

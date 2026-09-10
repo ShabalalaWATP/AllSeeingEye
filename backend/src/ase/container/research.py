@@ -6,12 +6,10 @@ from typing import Literal
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
-from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
-from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
+from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.news import GoogleNewsResearchProvider
-from ase.adapters.research.regional import RegionalFeedResearchProvider
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
-from ase.adapters.research.social import SocialFeedResearchProvider
+from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
 from ase.adapters.research_records.aiddata_provider import AidDataProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
@@ -44,7 +42,9 @@ from ase.application.ports.services import Clock
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.service import ResearchCollectionService
 from ase.application.research.source_admission import ControlledResearchProvider
+from ase.container.research_feeds import public_research_feeds
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
+from ase.domain.source_controls import source_control_keys
 
 
 def research_service(
@@ -92,6 +92,11 @@ def research_service(
             # Analysing a private upload does not send its extracted terms to public feeds.
             return []
         selected: list[ResearchProvider] = []
+        if query.area is not None:
+            # Fresh dated geometry wins duplicate identities from retained feeds.
+            selected.extend(
+                (UsgsAreaResearchProvider(http, clock), EonetAreaResearchProvider(http, clock))
+            )
         if query.area is not None and retained_store is not None:
             selected.append(
                 RetainedAreaFeedProvider(retained_store, admission=admission, disabled=disabled)
@@ -133,22 +138,15 @@ def research_service(
                 ),
             )
         )
-        selected.extend(
-            RegionalFeedResearchProvider(http, clock, seed)
-            for seed in REGIONAL_SEEDS
-            if seed.spec.id not in disabled
-        )
-        selected.extend(
-            SocialFeedResearchProvider(http, clock, seed)
-            for seed in SOCIAL_SEEDS
-            if seed.spec.id not in disabled
-        )
+        # All 21 publishers fit the 64-provider bound, including eight company
+        # lookups and eight language editions. Never truncate operator selection.
+        selected.extend(public_research_feeds(http, clock, spatial=query.area is not None))
         return [
             ControlledResearchProvider(provider, admission)
             if admission is not None and not isinstance(provider, RetainedAreaFeedProvider)
             else provider
             for provider in selected
-            if provider.id not in disabled
+            if not any(key in disabled for key in source_control_keys(provider.id))
         ]
 
     def challenge_providers(query: ResearchQuery) -> list[ResearchProvider]:
@@ -159,7 +157,12 @@ def research_service(
         return [
             provider
             for provider in providers(replace(query, focus=ResearchFocus.GENERAL))
-            if provider.id != RetainedAreaFeedProvider.id
+            if provider.id
+            not in {
+                RetainedAreaFeedProvider.id,
+                UsgsAreaResearchProvider.id,
+                EonetAreaResearchProvider.id,
+            }
         ]
 
     return ResearchCollectionService(providers, challenge_providers=challenge_providers)

@@ -1,5 +1,13 @@
 # Data Source Catalogue
 
+Current operational audit: [10 September source connections and coverage](SOURCE_CONNECTION_AUDIT.md).
+Use that audit for configured keys, observed delivery, account eligibility and
+implemented private research. The historical candidate tables below are not
+current activation instructions. In particular, OpenSky operational REST use
+requires a written agreement; airplanes.live is not a wired fallback, and all
+seven current aviation connectors use adsb.lol. OpenAQ reuse is dataset-specific,
+and Global Fishing Watch account eligibility must be established before signup.
+
 Status: source catalogue with dated verification. The original research was checked against official documentation on 2 September 2026; unconfirmed claims are marked UNVERIFIED. Section O records probes from this host. Section P records the implemented Phase 5 scope and its remaining limitations as of 6 September 2026. Section Q records the active automated-research implementation. Older catalogue rows describe candidate capabilities, not a promise that every connector exists.
 
 Conventions:

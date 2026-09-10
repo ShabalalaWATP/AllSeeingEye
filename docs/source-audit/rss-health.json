@@ -1,0 +1,1026 @@
+{
+  "audit": "Point-in-time existing RSS connector health, no live availability guarantee",
+  "started_at_utc": "2026-09-10T12:50:14.700933+00:00",
+  "finished_at_utc": "2026-09-10T12:50:28.863498+00:00",
+  "method": {
+    "seed_count": 38,
+    "source_attempts": 1,
+    "maximum_concurrency": 4,
+    "per_source_deadline_seconds": 15,
+    "per_response_maximum_bytes": 5242880,
+    "maximum_redirects": 3,
+    "client": "Existing FeedHttpClient public-address DNS checks, pinning, TLS and byte/encoding guards",
+    "parser": "Existing RssConnector with original seed options",
+    "user_agent": "Existing configured app User-Agent and genuine operator contact, value not recorded",
+    "credentials": "None sent",
+    "body_retention": "No response bodies, titles, summaries, article links or exception text retained",
+    "network_note": "One deliberate audit per configured source; normal redirects remain within the single bounded attempt. Existing application may poll independently."
+  },
+  "counts": {
+    "ok": 33,
+    "empty": 0,
+    "failed": 5,
+    "timeout": 0
+  },
+  "items": [
+    {
+      "source_id": "gov_uk_fcdo_news",
+      "source_name": "GOV.UK FCDO news",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:15.105419+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 20,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.206,
+      "response_bytes": 11631,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.gov.uk",
+          "content_type": "application/atom+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "gov_uk_travel_advice",
+      "source_name": "GOV.UK foreign travel advice",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:15.454962+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 20,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.111,
+      "response_bytes": 13395,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.gov.uk",
+          "content_type": "application/atom+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "us_state_travel_advisories",
+      "source_name": "US State Department travel advisories",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:15.804778+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 200,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": true,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.359,
+      "response_bytes": 1070090,
+      "responses": [
+        {
+          "status": 200,
+          "host": "travel.state.gov",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "un_news",
+      "source_name": "UN News",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:16.145944+00:00",
+      "attempts": 1,
+      "status": "failed",
+      "item_count": null,
+      "reason": "Unsupported response content encoding",
+      "failed_stage": "fetch",
+      "elapsed_seconds": 0.754,
+      "response_bytes": null,
+      "responses": [
+        {
+          "status": 200,
+          "host": "news.un.org",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "un_press",
+      "source_name": "UN press releases and meetings coverage",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:16.550421+00:00",
+      "attempts": 1,
+      "status": "failed",
+      "item_count": null,
+      "reason": "Unsupported response content encoding",
+      "failed_stage": "fetch",
+      "elapsed_seconds": 1.114,
+      "response_bytes": null,
+      "responses": [
+        {
+          "status": 200,
+          "host": "press.un.org",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "reliefweb_updates",
+      "source_name": "ReliefWeb updates",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:16.907231+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 20,
+      "dated_item_count": 20,
+      "newest_publication_utc": "2026-09-10T12:44:14+00:00",
+      "oldest_publication_utc": "2026-09-10T09:12:28+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.234,
+      "response_bytes": 113044,
+      "responses": [
+        {
+          "status": 200,
+          "host": "reliefweb.int",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "crisis_group",
+      "source_name": "International Crisis Group",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:17.296604+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 10,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.2,
+      "response_bytes": 8155,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.crisisgroup.org",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "bbc_world",
+      "source_name": "BBC News World",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:17.669470+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 22,
+      "dated_item_count": 22,
+      "newest_publication_utc": "2026-09-10T12:24:54+00:00",
+      "oldest_publication_utc": "2026-09-09T09:49:08+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.137,
+      "response_bytes": 17286,
+      "responses": [
+        {
+          "status": 200,
+          "host": "feeds.bbci.co.uk",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "dw_world",
+      "source_name": "DW World",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:18.102220+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 11,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.281,
+      "response_bytes": 10679,
+      "responses": [
+        {
+          "status": 200,
+          "host": "rss.dw.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "france24_en",
+      "source_name": "France 24 English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:18.463762+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 23,
+      "dated_item_count": 23,
+      "newest_publication_utc": "2026-09-10T12:39:29+00:00",
+      "oldest_publication_utc": "2026-09-10T09:50:30+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.328,
+      "response_bytes": 27246,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.france24.com",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "aljazeera_en",
+      "source_name": "Al Jazeera English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:18.785343+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 25,
+      "dated_item_count": 25,
+      "newest_publication_utc": "2026-09-10T12:16:47+00:00",
+      "oldest_publication_utc": "2026-09-10T04:25:50+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.317,
+      "response_bytes": 17123,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.aljazeera.com",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "guardian_world",
+      "source_name": "The Guardian World",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:19.066798+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 45,
+      "dated_item_count": 45,
+      "newest_publication_utc": "2026-09-10T12:36:24+00:00",
+      "oldest_publication_utc": "2026-09-04T13:10:26+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.337,
+      "response_bytes": 157339,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.theguardian.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "lemonde_en",
+      "source_name": "Le Monde in English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:19.429777+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 18,
+      "dated_item_count": 18,
+      "newest_publication_utc": "2026-09-10T11:49:21+00:00",
+      "oldest_publication_utc": "2026-09-09T09:48:10+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.767,
+      "response_bytes": 22005,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.lemonde.fr",
+          "content_type": "application/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "scmp_news",
+      "source_name": "South China Morning Post",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:19.781016+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 50,
+      "dated_item_count": 50,
+      "newest_publication_utc": "2026-09-10T12:35:38+00:00",
+      "oldest_publication_utc": "2026-09-10T02:00:11+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.927,
+      "response_bytes": 83863,
+      "responses": [
+        {
+          "status": 301,
+          "host": "www.scmp.com",
+          "content_type": "text/html"
+        },
+        {
+          "status": 301,
+          "host": "www.scmp.com",
+          "content_type": "text/html"
+        },
+        {
+          "status": 200,
+          "host": "www.scmp.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 2,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "nikkei_asia",
+      "source_name": "Nikkei Asia",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:20.115697+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 50,
+      "dated_item_count": 0,
+      "newest_publication_utc": null,
+      "oldest_publication_utc": null,
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.739,
+      "response_bytes": 26607,
+      "responses": [
+        {
+          "status": 200,
+          "host": "asia.nikkei.com",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "times_of_israel",
+      "source_name": "The Times of Israel",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:20.480147+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 11,
+      "dated_item_count": 11,
+      "newest_publication_utc": "2026-09-10T12:23:11+00:00",
+      "oldest_publication_utc": "2026-09-10T09:33:30+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.065,
+      "response_bytes": 18779,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.timesofisrael.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "anadolu_en",
+      "source_name": "Anadolu Agency English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:20.856001+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 30,
+      "dated_item_count": 30,
+      "newest_publication_utc": "2026-09-10T12:47:42+00:00",
+      "oldest_publication_utc": "2026-09-10T10:17:41+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.132,
+      "response_bytes": 19684,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.aa.com.tr",
+          "content_type": "application/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "dawn",
+      "source_name": "Dawn",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:21.191067+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 24,
+      "dated_item_count": 24,
+      "newest_publication_utc": "2026-09-10T12:42:46+00:00",
+      "oldest_publication_utc": "2026-09-10T02:14:52+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.807,
+      "response_bytes": 370856,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.dawn.com",
+          "content_type": "application/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "meduza_en",
+      "source_name": "Meduza in English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:21.534075+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 30,
+      "dated_item_count": 30,
+      "newest_publication_utc": "2026-09-10T12:46:25+00:00",
+      "oldest_publication_utc": "2026-09-08T17:54:54+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.817,
+      "response_bytes": 182366,
+      "responses": [
+        {
+          "status": 200,
+          "host": "meduza.io",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "pravda_ua_en",
+      "source_name": "Ukrainska Pravda in English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:22.001918+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 20,
+      "dated_item_count": 20,
+      "newest_publication_utc": "2026-09-10T11:29:00+00:00",
+      "oldest_publication_utc": "2026-09-10T06:27:00+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.026,
+      "response_bytes": 57921,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.pravda.com.ua",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "tass_en",
+      "source_name": "TASS English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:22.354588+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 100,
+      "dated_item_count": 100,
+      "newest_publication_utc": "2026-09-10T12:47:08+00:00",
+      "oldest_publication_utc": "2026-09-09T17:55:26+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.68,
+      "response_bytes": 49228,
+      "responses": [
+        {
+          "status": 200,
+          "host": "tass.com",
+          "content_type": "unknown"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_bbc_news",
+      "source_name": "BBC News (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:22.651722+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T12:23:02+00:00",
+      "oldest_publication_utc": "2026-09-09T20:00:02+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.646,
+      "response_bytes": 20733,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_reuters",
+      "source_name": "Reuters (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:22.953078+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T12:30:41+00:00",
+      "oldest_publication_utc": "2026-09-10T09:29:17+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.684,
+      "response_bytes": 24035,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_dw_news",
+      "source_name": "DW News (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:23.337705+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T11:48:22+00:00",
+      "oldest_publication_utc": "2026-09-09T18:00:26+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.409,
+      "response_bytes": 32035,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_al_jazeera",
+      "source_name": "Al Jazeera English (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:23.672676+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T12:31:14+00:00",
+      "oldest_publication_utc": "2026-09-10T04:40:44+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.435,
+      "response_bytes": 31780,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_france24",
+      "source_name": "FRANCE 24 English (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:24.031532+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T12:25:51+00:00",
+      "oldest_publication_utc": "2026-09-10T10:19:32+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.423,
+      "response_bytes": 34143,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "yt_sky_news",
+      "source_name": "Sky News (YouTube)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:24.368163+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 15,
+      "dated_item_count": 15,
+      "newest_publication_utc": "2026-09-10T12:00:10+00:00",
+      "oldest_publication_utc": "2026-09-09T20:49:58+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.088,
+      "response_bytes": 36356,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.youtube.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "reddit_worldnews",
+      "source_name": "r/worldnews (Reddit)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:24.774140+00:00",
+      "attempts": 1,
+      "status": "failed",
+      "item_count": null,
+      "reason": "HTTP 429",
+      "failed_stage": "fetch",
+      "elapsed_seconds": 1.851,
+      "response_bytes": null,
+      "responses": [
+        {
+          "status": 429,
+          "host": "www.reddit.com",
+          "content_type": "unknown"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 429
+    },
+    {
+      "source_id": "reddit_geopolitics",
+      "source_name": "r/geopolitics (Reddit)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:25.113718+00:00",
+      "attempts": 1,
+      "status": "failed",
+      "item_count": null,
+      "reason": "HTTP 429",
+      "failed_stage": "fetch",
+      "elapsed_seconds": 1.771,
+      "response_bytes": null,
+      "responses": [
+        {
+          "status": 429,
+          "host": "www.reddit.com",
+          "content_type": "unknown"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 429
+    },
+    {
+      "source_id": "reddit_ukrainianconflict",
+      "source_name": "r/UkrainianConflict (Reddit)",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:25.469486+00:00",
+      "attempts": 1,
+      "status": "failed",
+      "item_count": null,
+      "reason": "HTTP 429",
+      "failed_stage": "fetch",
+      "elapsed_seconds": 1.434,
+      "response_bytes": null,
+      "responses": [
+        {
+          "status": 429,
+          "host": "www.reddit.com",
+          "content_type": "unknown"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 429
+    },
+    {
+      "source_id": "meduza_ru",
+      "source_name": "Meduza in Russian",
+      "language": "ru",
+      "checked_at_utc": "2026-09-10T12:50:25.809217+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 30,
+      "dated_item_count": 30,
+      "newest_publication_utc": "2026-09-10T12:16:42+00:00",
+      "oldest_publication_utc": "2026-09-09T15:57:53+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.469,
+      "response_bytes": 333762,
+      "responses": [
+        {
+          "status": 200,
+          "host": "meduza.io",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "mediazona_ru",
+      "source_name": "Mediazona in Russian",
+      "language": "ru",
+      "checked_at_utc": "2026-09-10T12:50:26.268344+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 50,
+      "dated_item_count": 50,
+      "newest_publication_utc": "2026-09-10T11:35:38+00:00",
+      "oldest_publication_utc": "2026-09-08T06:16:24+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.441,
+      "response_bytes": 21952,
+      "responses": [
+        {
+          "status": 200,
+          "host": "zona.media",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "insider_ru",
+      "source_name": "The Insider in Russian",
+      "language": "ru",
+      "checked_at_utc": "2026-09-10T12:50:26.548536+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 50,
+      "dated_item_count": 50,
+      "newest_publication_utc": "2026-09-10T12:45:17+00:00",
+      "oldest_publication_utc": "2026-09-08T16:11:20+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 2.303,
+      "response_bytes": 486878,
+      "responses": [
+        {
+          "status": 200,
+          "host": "theins.ru",
+          "content_type": "application/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "cdt_zh",
+      "source_name": "China Digital Times in Chinese",
+      "language": "zh",
+      "checked_at_utc": "2026-09-10T12:50:26.862268+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 7,
+      "dated_item_count": 7,
+      "newest_publication_utc": "2026-09-10T09:16:17+00:00",
+      "oldest_publication_utc": "2026-09-08T21:50:51+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.546,
+      "response_bytes": 73291,
+      "responses": [
+        {
+          "status": 200,
+          "host": "feeds.feedburner.com",
+          "content_type": "text/xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "hrana_fa",
+      "source_name": "HRANA in Persian",
+      "language": "fa",
+      "checked_at_utc": "2026-09-10T12:50:27.274111+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 30,
+      "dated_item_count": 30,
+      "newest_publication_utc": "2026-09-10T11:59:18+00:00",
+      "oldest_publication_utc": "2026-09-08T18:29:11+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.881,
+      "response_bytes": 43805,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.hra-news.org",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "hrana_en",
+      "source_name": "HRANA in English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:27.731456+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 10,
+      "dated_item_count": 10,
+      "newest_publication_utc": "2026-09-10T08:44:56+00:00",
+      "oldest_publication_utc": "2026-09-08T10:46:34+00:00",
+      "returned_items_truncated": false,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.382,
+      "response_bytes": 60595,
+      "responses": [
+        {
+          "status": 200,
+          "host": "www.en-hrana.org",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "iranwire_fa",
+      "source_name": "IranWire in Persian",
+      "language": "fa",
+      "checked_at_utc": "2026-09-10T12:50:28.100583+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 200,
+      "dated_item_count": 200,
+      "newest_publication_utc": "2026-09-10T12:14:48+00:00",
+      "oldest_publication_utc": "2026-09-03T10:11:04+00:00",
+      "returned_items_truncated": true,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 1.118,
+      "response_bytes": 953246,
+      "responses": [
+        {
+          "status": 200,
+          "host": "iranwire.com",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    },
+    {
+      "source_id": "iranwire_en",
+      "source_name": "IranWire in English",
+      "language": "en",
+      "checked_at_utc": "2026-09-10T12:50:28.538918+00:00",
+      "attempts": 1,
+      "status": "ok",
+      "item_count": 200,
+      "dated_item_count": 200,
+      "newest_publication_utc": "2026-09-10T10:42:30+00:00",
+      "oldest_publication_utc": "2026-08-31T08:10:35+00:00",
+      "returned_items_truncated": true,
+      "reason": "Valid bounded feed parsed",
+      "elapsed_seconds": 0.651,
+      "response_bytes": 276190,
+      "responses": [
+        {
+          "status": 200,
+          "host": "iranwire.com",
+          "content_type": "application/rss+xml"
+        }
+      ],
+      "redirect_count": 0,
+      "final_http_status": 200
+    }
+  ],
+  "followup_header_checks": {
+    "checked_at_utc": "2026-09-10T12:54:43+00:00",
+    "method": "Separately authorised GET response headers only, body not consumed; one request per UN source",
+    "items": [
+      {
+        "source_id": "un_news",
+        "http_status": 200,
+        "content_encoding": "gzip",
+        "declared_compressed_bytes": 7087
+      },
+      {
+        "source_id": "un_press",
+        "http_status": 200,
+        "content_encoding": "gzip",
+        "declared_compressed_bytes": 2364
+      }
+    ]
+  },
+  "repair_note": "Bounded gzip compatibility added only for the two exact UN URLs, without credentials or redirects. The original 38-source audit remains the pre-repair observation; post_repair_un_checks records separate two-source verification.",
+  "post_repair_un_checks": {
+    "started_at_utc": "2026-09-10T13:02:33.097458+00:00",
+    "finished_at_utc": "2026-09-10T13:02:34.044869+00:00",
+    "method": "One separately authorised full GET per UN source using the existing RssConnector and FeedHttpClient with the bounded exact-URL gzip exception. Original configured User-Agent, 15-second deadline, 5 MiB compressed and decoded caps. No API keys sent or article content retained.",
+    "items": [
+      {
+        "source_id": "un_news",
+        "checked_at_utc": "2026-09-10T13:02:33.389856+00:00",
+        "attempts": 1,
+        "status": "ok",
+        "parsed_item_count": 30,
+        "recognised_publication_count": 30,
+        "newest_publication_utc": "2026-09-09T12:00:00+00:00",
+        "reason": "Existing RSS adapter parsed bounded gzip response",
+        "elapsed_seconds": 0.521,
+        "http_status_sequence": [
+          200
+        ]
+      },
+      {
+        "source_id": "un_press",
+        "checked_at_utc": "2026-09-10T13:02:33.854541+00:00",
+        "attempts": 1,
+        "status": "ok",
+        "parsed_item_count": 10,
+        "recognised_publication_count": 10,
+        "newest_publication_utc": "2026-09-10T10:56:59+00:00",
+        "reason": "Existing RSS adapter parsed bounded gzip response",
+        "elapsed_seconds": 0.42,
+        "http_status_sequence": [
+          200
+        ]
+      }
+    ]
+  }
+}

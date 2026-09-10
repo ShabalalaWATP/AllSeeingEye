@@ -19,6 +19,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import httpx
 
+from ase.adapters.feeds.bounded_gzip import BoundedGzipError, read_feed_response
 from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
 
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
@@ -220,7 +221,7 @@ class FeedHttpClient:
         if not 0 <= max_redirects <= MAX_REDIRECTS:
             raise ValueError("Invalid redirect budget")
         current = url
-        for _ in range(max_redirects + 1):
+        for redirect_count in range(max_redirects + 1):
             address = await assert_public_host(current)
             headers: dict[str, str] = {
                 "Accept-Encoding": "identity",
@@ -248,8 +249,16 @@ class FeedHttpClient:
                         continue
                     if response.status_code >= 400:
                         raise await self._status_error(response, current)
-                    body = await self._read_bounded(response)
-            except httpx.HTTPError as exc:
+                    body = await read_feed_response(
+                        response,
+                        self._max_bytes,
+                        url,
+                        current,
+                        credentialed=credential is not None,
+                        redirected=redirect_count > 0,
+                        default_reader=self._read_bounded,
+                    )
+            except (httpx.HTTPError, BoundedGzipError) as exc:
                 raise FeedFetchError(f"{type(exc).__name__}: {exc}") from exc
             if conditional:
                 self._validators[url] = _Validators(

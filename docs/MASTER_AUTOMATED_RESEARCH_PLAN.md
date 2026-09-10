@@ -4,6 +4,37 @@ Status: software implementation committed in `de72899`; combined software checks
 Configured-model quality evaluation remains open. Checked items below describe
 implemented behaviour within the documented limits, not measured research accuracy.
 
+## Source audit and activation, 10 September 2026
+
+The current operational findings and ranked onboarding queue are in
+[SOURCE_CONNECTION_AUDIT.md](SOURCE_CONNECTION_AUDIT.md). Configuration presence,
+current delivery and research capability are separate acceptance criteria.
+
+- [x] Inventory every scheduled source, research capability and camera provider;
+  audit server-side key presence without recording values.
+- [x] Check all 38 RSS seeds once with bounded requests; record baseline failures
+  and successful UN/SCMP repair checks separately.
+- [x] Connect the existing 21 official/general publisher feeds to private headline
+  research with original source controls and provenance.
+- [x] Interleave feed families within existing budgets and preserve existing
+  explicit tasks when the expanded catalogue reaches the plan row limit.
+- [x] Add fresh USGS/EONET area searches with exact geometry/time filtering,
+  source disable inheritance, cancellation and truthful page limits.
+- [x] Reject legacy EONET polygon centres from exact retained-area evidence.
+- [x] Verify current FIRMS delivery and add AISStream compression diagnostics.
+- [ ] Complete free provider account linking. Browser control currently fails
+  to start its app-server; no new registrations have been completed.
+- [ ] Resolve disabled/untested AI profile readiness and complete real-model
+  report evaluation through the administrator connection journey.
+- [ ] Extend secure administrator credential management beyond FIRMS and AI.
+- [ ] Add approved OS/Companies House/CT credentials, ReliefWeb appname/UCDP
+  access, authorised camera keys and validated primary dataset imports.
+- [ ] Add regional context beside exact-area evidence; integrate fresh FIRMS,
+  BarentsWatch, MET Norway, OpenAQ, humanitarian aggregates and dated imagery
+  in the priority order and within the rights recorded in the audit.
+- [ ] Measure geographic and temporal delivery, deduplicate original sources,
+  and verify each new provider's source-disable and report citation behaviour.
+
 ## Acceptance checklist
 
 - [x] Question-led research with quick/detailed collection, explicit date,

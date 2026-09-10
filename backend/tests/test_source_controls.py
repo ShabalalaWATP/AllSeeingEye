@@ -65,16 +65,19 @@ async def test_disabled_during_live_fetch_does_not_publish(
     assert container.health.get(connector.spec.id).polls == 0
 
 
+@pytest.mark.parametrize(
+    "prefix", ["research_social_", "research_regional_", "research_publisher_"]
+)
 async def test_private_parent_admission_before_and_after_fetch(
-    container: Container, admin: User
+    container: Container, admin: User, prefix: str
 ) -> None:
     gate = SqlSourceAdmission(container.session_factory)
-    provider = Provider("research_social_parent", ResearchBatch(items=(event("private"),)))
+    provider = Provider(f"{prefix}parent", ResearchBatch(items=(event("private"),)))
     await disable(container, admin, "parent")
     result = await ControlledResearchProvider(provider, gate).collect(QUERY)
     assert provider.called == 0
     assert result.attempts[0].status is CollectionStatus.UNAVAILABLE
-    fresh = Provider("research_regional_regional", ResearchBatch(items=(event("private"),)))
+    fresh = Provider(f"{prefix}regional", ResearchBatch(items=(event("private"),)))
     original = fresh.collect
 
     async def collect(query):

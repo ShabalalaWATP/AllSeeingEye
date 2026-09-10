@@ -3455,3 +3455,49 @@ passed. Changed-source Bandit passed. Eight final frontend follow-up tests
 passed, including preservation of the direct-area scope boundary. Independent
 reviews reported no actionable correctness or security findings. Temporary
 validation logs were removed before committing; no remote is configured.
+
+
+## 10 September 2026: source access audit and practical collection repairs
+
+Audited all baseline scheduled source IDs, research capabilities and camera
+providers, and checked local credential presence without recording values.
+Published the machine-readable inventory and a cited, ranked account/adapter
+queue in docs/SOURCE_CONNECTION_AUDIT.md and docs/source-audit/. Browser control
+could not start its app-server, so no provider accounts were created. Targeted
+Gmail account recovery was available. The saved AI profile remains disabled and
+untested; this audit context lacked usable decryption configuration, so no model
+request, connection change or validity claim was made.
+
+Connected 21 existing official/general publisher feeds to private headline
+research, interleaved source families within existing budgets, and retained
+original publisher identities and administrator source controls. Fixed SCMP to
+its direct HTTPS feed. Added exact, bounded USGS/EONET area searches and excluded
+legacy EONET polygon centres from retained exact-area evidence. Preserved existing
+explicit source tasks when the expanded catalogue reaches its 64-row limit.
+The catalogue now describes 80 research capabilities, not 80 verified connections.
+
+The initial bounded RSS audit parsed 33 of 38 feeds. UN News and UN Press required
+a narrowly allowlisted gzip reader with independent compressed/expanded limits;
+post-repair checks returned 30 and 10 dated items. Three Reddit endpoints returned
+429 and were not retried. Six other feeds had no recognised publication timestamps;
+research still excludes those items rather than substituting modification dates.
+SCMP's actual private-provider query returned 13 matching headlines in one GET.
+The existing FIRMS key returned 45 valid UK observations. Fresh USGS/EONET checks
+returned 50 explicitly truncated earthquake records and one hazard record for a
+California rectangle over seven days. AISStream now reports explicitly disabled
+compression, but no additional live stream probe was opened.
+
+Final validation passed 304 affected-backend tests in 95.69 seconds with 96.26%
+targeted combined statement/branch coverage and the unchanged 90% gate. The first
+combined coverage command failed before tests during NumPy import; standard
+package-source coverage plus a report include list avoided early dotted-module
+imports. Whole-backend Ruff, formatting, strict mypy and both architecture
+contracts passed. Scoped Bandit and independent review passed after the two
+identified area/plan regressions were fixed and reproduced. File-length checks
+passed with the existing untouched 380-line MapLibre warning. No frontend source
+changed and no full-backend or real-model quality claim is made.
+
+Restarted the local ASE API on 8001. Health and the frontend login on 5174 returned
+200; unauthenticated research-plan access returned 401. Temporary coverage/config
+files were removed. No remote is configured, no push or deployment was performed,
+and account linking remains blocked on restoration of browser control.

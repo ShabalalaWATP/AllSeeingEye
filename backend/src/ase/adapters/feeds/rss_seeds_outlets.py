@@ -85,7 +85,7 @@ OUTLET_SEEDS: tuple[RssSeed, ...] = (
         "South China Morning Post",
         "SCMP",
         N,
-        "https://www.scmp.com/rss/91/feed",
+        "https://www.scmp.com/rss/91/feed/",
         C,
         30,
         PRESS,

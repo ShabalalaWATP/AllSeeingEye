@@ -40,6 +40,13 @@ research does not switch those layers on.
 - **Copernicus:** the existing external scene-metadata query supports a single
   axis-aligned rectangle of at most 10 degrees per side and a suitable interval.
   It does not analyse imagery or widen another shape to a rectangle.
+- **Fresh USGS and EONET searches:** one dated catalogue request per selected
+  source, followed by exact local polygon/multipolygon intersection. USGS uses
+  earthquake origin time; EONET uses dated original event geometry and includes
+  open and closed events. At most 50 Quick or 100 Detailed candidates and a
+  14-day interval. Question terms do not filter these observations. Provider
+  bounding-box/page limits mean overlapping or older records can be omitted.
+  Fresh records precede retained duplicates; original source identities remain.
 - **Other capabilities:** unsupported scope and collection failures are recorded.
   The configured AidData historical-project flow uses its recorded-year policy;
   this recent-area drawer does not activate that mode. CCTV imagery, camera
@@ -51,6 +58,12 @@ multipolygons and holes. Country-only, approximate, ungeolocated and unsupported
 footprint records are excluded. Dates use observation acquisition time where
 present, otherwise publication time. Unknown dates are excluded. Source and
 category sampling prevents traffic volume from consuming the whole allowance.
+Legacy EONET records without validated original incident point geometry are
+excluded because a displayed polygon centre is not an exact incident location.
+Most conflict/news records only have city, regional or country precision and
+therefore do not qualify for exact-area selection. This is a coverage gap,
+not evidence that the area has no conflict. The new 21 publisher headline
+capabilities serve ordinary question research and do not claim polygon support.
 Receipts state missing categories, exclusions and truncation. Empty results do
 not establish absence of activity; model output does not establish complete
 collection or independently verified facts.
