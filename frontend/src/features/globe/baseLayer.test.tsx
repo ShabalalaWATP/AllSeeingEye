@@ -11,6 +11,36 @@ import { server } from '@/test/server';
 import { BaseLayerToolbar } from './BaseLayerToolbar';
 
 describe('BaseLayerToolbar', () => {
+  it('keeps embedded choices open and lets the enclosing drawer handle Escape', async () => {
+    const escape = vi.fn();
+    const onChange = vi.fn();
+    const { container } = render(
+      <BaseLayerToolbar value="satellite" embedded osAvailable={false} onChange={onChange} />,
+    );
+    expect(screen.queryByRole('button', { name: /Map style:/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('radio')).toHaveLength(8);
+    expect(screen.getByRole('radio', { name: 'OS Road' })).toHaveAccessibleDescription(
+      /An administrator must configure/,
+    );
+    expect(screen.getByText(/swatches are illustrative/)).toBeVisible();
+    expect(container.querySelector('img, video, iframe')).toBeNull();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('radio', { name: 'Dark' }));
+    expect(onChange).toHaveBeenCalledWith('dark');
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') escape();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    try {
+      await user.keyboard('{Escape}');
+    } finally {
+      document.removeEventListener('keydown', onKeyDown);
+    }
+    expect(escape).toHaveBeenCalledOnce();
+    expect(screen.getByRole('radio', { name: 'Satellite' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Imagery licence' })).toBeVisible();
+  });
+
   it('starts compact and opens a labelled group with the current choice', async () => {
     const onChange = vi.fn();
     render(<BaseLayerToolbar value="hybrid" osAvailable={false} onChange={onChange} />);
@@ -32,6 +62,7 @@ describe('BaseLayerToolbar', () => {
     );
     await userEvent.click(trigger);
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Imagery licence' })).toBeVisible();
   });
 
   it('keeps unavailable OS choices discoverable and explains the missing connection', async () => {

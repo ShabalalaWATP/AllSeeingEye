@@ -4,6 +4,7 @@ import type { FlightFilter } from './flightFilters';
 import { TrafficList } from './TrafficList';
 import { TrafficRefinementControls } from './TrafficRefinementControls';
 import { matchesTrafficRefinement, type TrafficRefinementsState } from './trafficRefinements';
+import { MapToolIntro } from '@/components/maps/MapToolIntro';
 
 export interface TrafficPanelProps {
   kind: 'aircraft' | 'vessels';
@@ -37,29 +38,37 @@ export function TrafficPanel({
     [events, kind, applied],
   );
   return (
-    <div className="space-y-3 p-3">
+    <div className="map-tool-workspace">
+      <MapToolIntro
+        title={kind === 'aircraft' ? 'Aircraft' : 'Vessels'}
+        description="Filter loaded positions, then select a result to locate it on the map."
+      />
       {onChange && (
         <fieldset>
           <legend className="mb-2 text-xs text-muted">
             {kind === 'aircraft' ? 'Aircraft shown' : 'Vessels shown'}
           </legend>
-          {(['all', 'military'] as const).map((value) => (
-            <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name={id}
-                value={value}
-                checked={filter === value}
-                onChange={() => onChange(value)}
-                className="accent-cyan"
-              />
-              {value === 'all'
-                ? kind === 'aircraft'
-                  ? 'All aircraft'
-                  : 'All vessels'
-                : 'Military only'}
-            </label>
-          ))}
+          <div className="map-tool-choice-grid">
+            {(['all', 'military'] as const).map((value) => (
+              <label key={value} className="map-tool-radio-option">
+                <input
+                  type="radio"
+                  name={id}
+                  value={value}
+                  checked={filter === value}
+                  onChange={() => onChange(value)}
+                  className="sr-only"
+                />
+                <span>
+                  {value === 'all'
+                    ? kind === 'aircraft'
+                      ? 'All aircraft'
+                      : 'All vessels'
+                    : 'Military only'}
+                </span>
+              </label>
+            ))}
+          </div>
         </fieldset>
       )}
       <p className={`text-xs ${kind === 'aircraft' ? 'text-amber-300' : 'text-fuchsia-300'}`}>
@@ -84,7 +93,7 @@ export function TrafficPanel({
           searchEnabled={!refinements}
         />
       )}
-      <details className="border-t border-line pt-2 text-xs text-muted">
+      <details className="map-tool-disclosure">
         <summary className="min-h-9 cursor-pointer py-2">Source and coverage</summary>
         <p className="leading-relaxed">
           {kind === 'aircraft'

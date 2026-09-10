@@ -232,7 +232,7 @@ describe('GlobePage', () => {
     expect(FakeMap.instances[0]!.flyTo).toHaveBeenCalledWith({ center: [31.2, 48.4], zoom: 4 });
     const panel = screen.getByRole('region', { name: 'Ukraine panel' });
     expect(
-      within(panel).getByText('Nothing in the live tier for this nation.'),
+      within(panel).getByText('No matching records are currently loaded for this nation.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Natural hazards 0' })).toBeInTheDocument();
     expect(overlayLayerIds()).toEqual(['terminator']);

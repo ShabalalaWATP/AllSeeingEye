@@ -106,7 +106,7 @@ describe('CountryPanel', () => {
     );
     const panel = screen.getByRole('region', { name: 'Ukraine panel' });
     expect(within(panel).getByRole('heading', { name: 'Ukraine' })).toBeInTheDocument();
-    expect(within(panel).getByText('UA · 2 live')).toBeInTheDocument();
+    expect(within(panel).getByText('UA · 2 loaded')).toBeInTheDocument();
     expect(within(panel).getByText('Disasters 1')).toBeInTheDocument();
     expect(within(panel).getByText('Political 1')).toBeInTheDocument();
     const buttons = within(panel).getAllByRole('button');
@@ -126,7 +126,9 @@ describe('CountryPanel', () => {
         onSelect={vi.fn()}
       />,
     );
-    expect(screen.getByText('Nothing in the live tier for this nation.')).toBeInTheDocument();
+    expect(
+      screen.getByText('No matching records are currently loaded for this nation.'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

@@ -780,3 +780,15 @@ conditions or guaranteed reception. HF skywave remains an explicit geometry scen
 
 See [RF workflow and limits](RF_COVERAGE_DISPLAY.md). Automatic choices are
 bounded planning defaults, not a substitute for measured site or atmospheric data.
+
+## 10 September 2026: consistent map tool popups
+
+- [x] Audit remaining map drawers against the compact RF workspace.
+- [x] Add shared panel headings, typography, fields, actions and expandable detail, bounded to 320/360 px.
+- [x] Modernise measurement, drawing and routing controls while retaining gestures, calculations, disclosure and cancellation.
+- [x] Modernise BNG, map style/appearance and location quality; remove the nested basemap collapse in the shared drawer.
+- [x] Improve nation, topic/time and traffic controls; fix ineffective conflict/hazard/context field colour tokens.
+- [x] Complete independent review, fix narrow-drawer layouts, and pass 1,800 frontend tests, all coverage gates, lint, types, build and formatting checks.
+- [ ] Check interactive browser/GPU appearance when administrator policy permits.
+
+See [map tool panels](MAP_TOOLS_AND_LAYERS.md#compact-tool-panels).

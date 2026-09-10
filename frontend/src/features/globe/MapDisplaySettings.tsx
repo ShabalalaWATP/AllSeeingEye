@@ -1,3 +1,6 @@
+import '@/components/maps/mapTool.css';
+import './referenceTools.css';
+
 /** Appearance has one owner, beside basemap choices on the right. */
 export function MapDisplaySettings({
   terminator,
@@ -11,11 +14,21 @@ export function MapDisplaySettings({
   onToggleLite: () => void;
 }) {
   return (
-    <section aria-label="Map appearance" className="space-y-2 border-t border-line p-3 text-xs">
-      <h3 className="font-medium">Appearance and performance</h3>
+    <section aria-label="Map appearance" className="map-tool-workspace map-reference-appearance">
+      <h3 className="map-tool-section-title">Appearance and performance</h3>
       {[
-        { label: 'Day and night', checked: terminator, action: onToggleTerminator },
-        { label: 'Reduce graphics load', checked: lite, action: onToggleLite },
+        {
+          label: 'Day and night',
+          description: 'Show the sunlit and dark sides of the Earth.',
+          checked: terminator,
+          action: onToggleTerminator,
+        },
+        {
+          label: 'Reduce graphics load',
+          description: 'Turn off atmosphere, rotation and day/night shading.',
+          checked: lite,
+          action: onToggleLite,
+        },
       ].map((item) => (
         <button
           key={item.label}
@@ -24,19 +37,17 @@ export function MapDisplaySettings({
           aria-label={item.label}
           aria-checked={item.checked}
           onClick={item.action}
-          className="flex min-h-10 w-full items-center justify-between rounded px-2 text-left hover:bg-white/5"
+          className="map-reference-switch"
         >
-          <span>{item.label}</span>
-          <span className={item.checked ? 'text-cyan' : 'text-muted'}>
-            {item.checked ? 'On' : 'Off'}
+          <span>
+            <span className="map-reference-switch-title">{item.label}</span>
+            <span className="map-tool-help">{item.description}</span>
           </span>
+          <span aria-hidden="true" className="map-reference-toggle" />
         </button>
       ))}
-      <p className="text-muted">
-        Reduced graphics turns off atmosphere, rotation and day/night shading.
-      </p>
       {lite && terminator && (
-        <p role="status" className="text-muted">
+        <p role="status" className="map-tool-notice">
           Day/night is saved as on, but paused while reduced graphics is enabled.
         </p>
       )}

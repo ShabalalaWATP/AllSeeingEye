@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { MapControlLabel } from './MapControlLabel';
 import { MapControlIcon } from './MapControlIcon';
 import type { ControlIcon } from './MapControlIcon';
+import './mapToolShell.css';
 
 const CAPTIONS: Readonly<Record<string, string>> = {
   'Map style': 'Style',
@@ -120,8 +121,11 @@ export function GlobeControls({
           data-side={selected.props.side ?? 'right'}
           data-size={selected.props.size}
         >
-          <header className="flex items-center justify-between border-b border-line px-3 py-1">
-            <h2 className="text-xs font-medium">{active}</h2>
+          <header className="map-tool-heading">
+            <span className="map-tool-heading-icon" aria-hidden="true">
+              <MapControlIcon name={selected.props.icon} />
+            </span>
+            <h2>{active}</h2>
             <button
               ref={closeButton}
               type="button"

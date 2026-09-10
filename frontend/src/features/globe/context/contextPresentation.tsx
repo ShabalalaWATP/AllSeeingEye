@@ -9,7 +9,7 @@ export interface ContextPanelProps {
 }
 
 export const controlClass =
-  'min-h-9 w-full rounded-lg border border-line bg-panel px-2 text-xs text-text';
+  'min-h-9 w-full rounded-lg border border-line bg-surface-2 px-2 text-xs text-text';
 export const actionClass =
   'inline-flex min-h-9 items-center text-xs text-cyan underline underline-offset-2';
 

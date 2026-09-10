@@ -2,12 +2,16 @@ import { Fragment, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import type { BaseLayer } from '@/stores/globe';
+import { MapToolIntro } from '@/components/maps/MapToolIntro';
 
 import { BASE_LAYER_OPTIONS } from './engine/baseLayers';
+import './referenceTools.css';
 
 export interface BaseLayerToolbarProps {
   value: BaseLayer;
   initialExpanded?: boolean;
+  /** The shared map drawer already owns disclosure and Escape handling. */
+  embedded?: boolean;
   /** Whether the server proxies Ordnance Survey tiles (it needs a key). */
   osAvailable: boolean;
   osChecking?: boolean;
@@ -25,6 +29,7 @@ export function BaseLayerToolbar({
   onCheckOs,
   onChange,
   initialExpanded = false,
+  embedded = false,
 }: BaseLayerToolbarProps) {
   const [open, setOpen] = useState(initialExpanded);
   const panelId = useId();
@@ -35,7 +40,7 @@ export function BaseLayerToolbar({
     BASE_LAYER_OPTIONS.find((option) => option.id === value) ?? BASE_LAYER_OPTIONS[0];
   const imagery = value === 'satellite' || value === 'hybrid';
   const closeOnEscape = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !embedded) {
       event.stopPropagation();
       setOpen(false);
       trigger.current?.focus();
@@ -43,63 +48,68 @@ export function BaseLayerToolbar({
   };
 
   return (
-    <div className="rounded-md border border-line bg-surface/95 backdrop-blur">
-      <button
-        ref={trigger}
-        type="button"
-        aria-label={`Map style: ${selected.label}`}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onKeyDown={closeOnEscape}
-        onClick={() => {
-          setOpen(!open);
-        }}
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
-      >
-        <span className="flex min-w-0 items-center gap-2">
+    <div className="map-tool-workspace">
+      {embedded ? (
+        <MapToolIntro
+          title="Basemap"
+          description="Choose the surface beneath your event layers."
+          status={selected.label}
+          statusActive
+        />
+      ) : (
+        <button
+          ref={trigger}
+          type="button"
+          aria-label={`Map style: ${selected.label}`}
+          aria-expanded={open}
+          aria-controls={panelId}
+          onKeyDown={closeOnEscape}
+          onClick={() => {
+            setOpen(!open);
+          }}
+          className="map-tool-secondary flex w-full items-center justify-between gap-2 text-left"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+              className="size-4 shrink-0 text-ember"
+            >
+              <path
+                d="m10 2 8 4-8 4-8-4 8-4ZM2 10l8 4 8-4M2 14l8 4 8-4"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="text-muted">Map style</span>
+            <span className="truncate font-medium">{selected.label}</span>
+          </span>
           <svg
-            viewBox="0 0 20 20"
+            viewBox="0 0 12 12"
             fill="none"
             aria-hidden="true"
-            className="size-4 shrink-0 text-ember"
+            className={`size-3 shrink-0 text-muted transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
           >
-            <path
-              d="m10 2 8 4-8 4-8-4 8-4ZM2 10l8 4 8-4M2 14l8 4 8-4"
-              stroke="currentColor"
-              strokeWidth="1.25"
-              strokeLinejoin="round"
-            />
+            <path d="m2 4 4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
           </svg>
-          <span className="text-muted">Map style</span>
-          <span className="truncate font-medium">{selected.label}</span>
-        </span>
-        <svg
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden="true"
-          className={`size-3 shrink-0 text-muted transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
-        >
-          <path d="m2 4 4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      </button>
-      {open && (
-        <div
-          id={panelId}
-          role="group"
-          aria-label="Map style settings"
-          className="border-t border-line"
-        >
-          <fieldset aria-describedby={hintId} className="m-0 min-w-0 border-0 p-1">
+        </button>
+      )}
+      {(open || embedded) && (
+        <div id={panelId} role="group" aria-label="Map style settings" className="map-tool-section">
+          <p className="map-tool-help">Style swatches are illustrative, not map previews.</p>
+          <fieldset aria-describedby={hintId} className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">Base layer</legend>
             {BASE_LAYER_OPTIONS.map((option) => {
               const unavailable = option.needsOs && !osAvailable;
               return (
                 <Fragment key={option.id}>
                   {option.id === 'os_road' && (
-                    <div className="mt-2 space-y-2 border-t border-line px-2 py-3 text-xs leading-relaxed">
+                    <div className="map-tool-section map-reference-footnote">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-text">Ordnance Survey · Great Britain</p>
-                        <span className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
+                        <p className="map-tool-section-title">Ordnance Survey · Great Britain</p>
+                        <span className="map-reference-badge">
                           {osChecking
                             ? 'Checking'
                             : osError
@@ -109,7 +119,11 @@ export function BaseLayerToolbar({
                                 : 'Connection required'}
                         </span>
                       </div>
-                      <p id={osHintId} role={osError ? 'alert' : 'status'} className="text-muted">
+                      <p
+                        id={osHintId}
+                        role={osError ? 'alert' : 'status'}
+                        className="map-tool-help"
+                      >
                         {osChecking
                           ? 'Checking the server’s Ordnance Survey configuration…'
                           : osError
@@ -119,11 +133,9 @@ export function BaseLayerToolbar({
                               : 'OS maps are unavailable. An administrator must configure an OS Data Hub Maps API key before these styles can be selected.'}
                       </p>
                       {!osAvailable && !osChecking && !osError && (
-                        <details className="text-muted">
-                          <summary className="cursor-pointer text-text">
-                            How to enable OS maps
-                          </summary>
-                          <ol className="mt-2 list-decimal space-y-1 pl-4">
+                        <details className="map-tool-disclosure">
+                          <summary>How to enable OS maps</summary>
+                          <ol className="map-tool-help mt-2 list-decimal space-y-2 pl-4">
                             <li>Create an OS Data Hub project with the Maps API enabled.</li>
                             <li>
                               The server administrator adds its key as <code>ASE_OS_MAPS_KEY</code>{' '}
@@ -135,7 +147,7 @@ export function BaseLayerToolbar({
                             href="https://docs.os.uk/os-apis/accessing-os-apis/os-maps-api/getting-started"
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-2 inline-block underline underline-offset-2"
+                            className="map-tool-text-button mt-2 inline-block"
                           >
                             OS Data Hub setup guide
                           </a>
@@ -144,7 +156,7 @@ export function BaseLayerToolbar({
                       {onCheckOs && (
                         <button
                           type="button"
-                          className="rounded border border-line px-2 py-1.5 text-text hover:bg-surface-2 disabled:opacity-50"
+                          className="map-tool-secondary"
                           disabled={osChecking}
                           onClick={onCheckOs}
                         >
@@ -153,13 +165,7 @@ export function BaseLayerToolbar({
                       )}
                     </div>
                   )}
-                  <label
-                    className={`flex min-h-11 items-center gap-2 rounded px-2 text-sm transition-colors lg:min-h-9 ${
-                      unavailable
-                        ? 'cursor-not-allowed text-muted'
-                        : 'cursor-pointer text-text hover:bg-surface-2'
-                    } ${option.id === value ? 'bg-surface-2' : ''}`}
-                  >
+                  <label className="map-reference-choice">
                     <input
                       type="radio"
                       name={panelId}
@@ -174,9 +180,27 @@ export function BaseLayerToolbar({
                       }}
                       className="size-3.5 shrink-0 accent-ember focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
                     />
-                    <span className="flex-1">{option.label}</span>
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 42 30"
+                      data-style={option.id}
+                      className="map-reference-swatch"
+                    >
+                      <path
+                        d="M0 9 17 4 29 12 42 5v14L28 26 13 20 0 26Z"
+                        fill="currentColor"
+                        opacity=".24"
+                      />
+                      <path
+                        d="M-2 27 12 18 19 4 25-2M13 32 24 19l20-6M-2 9l46 15"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                    <span className="map-reference-choice-title">{option.label}</span>
                     {option.needsOs && (
-                      <span className="text-[10px] tracking-wide text-muted">
+                      <span className="map-reference-badge">
                         {unavailable ? 'Unavailable' : 'GB'}
                       </span>
                     )}
@@ -185,32 +209,31 @@ export function BaseLayerToolbar({
               );
             })}
           </fieldset>
-          <div
-            id={hintId}
-            className="space-y-2 border-t border-line px-3 py-2.5 text-xs leading-relaxed text-muted"
-          >
-            <p className="font-medium text-text">{selected.coverage}</p>
-            <p>{selected.description}</p>
-            {imagery && (
-              <p>
-                Non-commercial use only.{' '}
-                <a
-                  className="underline underline-offset-2 hover:text-text"
-                  href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-                  onKeyDown={closeOnEscape}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Imagery licence
-                </a>
-              </p>
-            )}
-            {selected.needsOs && (
-              <p>Zoom into Great Britain to see OS mapping. Uses OpenData detail only.</p>
-            )}
-          </div>
         </div>
       )}
+      <div id={hintId} className="map-tool-section map-reference-footnote">
+        <p className="map-tool-section-title">{selected.coverage}</p>
+        <p className="map-tool-help">{selected.description}</p>
+        {imagery && (
+          <p className="map-tool-help">
+            Non-commercial use only.{' '}
+            <a
+              className="map-tool-text-button"
+              href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+              onKeyDown={closeOnEscape}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Imagery licence
+            </a>
+          </p>
+        )}
+        {selected.needsOs && (
+          <p className="map-tool-help">
+            Zoom into Great Britain to see OS mapping. Uses OpenData detail only.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

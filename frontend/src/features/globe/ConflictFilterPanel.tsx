@@ -82,7 +82,7 @@ export function ConflictFilterPanel({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Place, topic or report text"
-            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-xs text-text"
           />
         </label>
       )}
@@ -92,7 +92,7 @@ export function ConflictFilterPanel({
           <select
             value={source}
             onChange={(event) => setSource(event.target.value)}
-            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-xs text-text"
           >
             <option value="all">All loaded sources</option>
             {source !== 'all' && !sourceOptions.some((choice) => choice.value === source) && (
@@ -112,7 +112,7 @@ export function ConflictFilterPanel({
           <select
             value={precision}
             onChange={(event) => setPrecision(event.target.value as ConflictPrecision)}
-            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main"
+            className="mt-1 min-h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-xs text-text"
           >
             <option value="all">All, including unknown locations</option>
             <option value="exact">Source-labelled exact points</option>

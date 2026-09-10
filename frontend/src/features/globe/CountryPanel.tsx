@@ -7,6 +7,7 @@ import { formatAgo } from '@/lib/format';
 import { countByCategory } from '@/stores/events';
 
 import { CATEGORY_STYLES, ORDERED_CATEGORIES } from '@/lib/categories';
+import '@/components/maps/mapTool.css';
 
 export const COUNTRY_PANEL_LIMIT = 8;
 
@@ -24,14 +25,11 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
   const counts = countByCategory(events);
   const present = ORDERED_CATEGORIES.filter((category) => (counts[category] ?? 0) > 0);
   return (
-    <section
-      aria-label={`${country.name} panel`}
-      className="rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
-    >
-      <div className="flex items-baseline justify-between px-1">
+    <section aria-label={`${country.name} panel`} className="map-tool-workspace">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold text-text">{country.name}</h2>
         <span className="font-mono text-[11px] text-muted">
-          {country.iso2} · {events.length} live
+          {country.iso2} · {events.length} loaded
         </span>
       </div>
       <Link
@@ -39,18 +37,15 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
           `What are the most significant recent developments in ${country.name}, what evidence supports or challenges them, and what remains uncertain?`,
           country.iso2,
         )}
-        className="inline-flex min-h-11 items-center px-1 text-xs text-ember hover:underline focus-visible:outline-2 focus-visible:outline-ember"
+        className="map-tool-secondary"
         title="Review the question before starting research"
       >
         Research this country
       </Link>
       {present.length > 0 ? (
-        <ul className="mt-1 flex flex-wrap gap-1 px-1">
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-2">
           {present.map((category) => (
-            <li
-              key={category}
-              className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted"
-            >
+            <li key={category} className="inline-flex items-center gap-2 text-xs text-muted">
               <span
                 aria-hidden="true"
                 className="h-2 w-2 rounded-full"
@@ -61,10 +56,10 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
           ))}
         </ul>
       ) : (
-        <p className="mt-1 px-1 text-xs text-muted">Nothing in the live tier for this nation.</p>
+        <p className="map-tool-help">No matching records are currently loaded for this nation.</p>
       )}
       {events.length > 0 && (
-        <ol className="mt-2 space-y-0.5">
+        <ol className="map-tool-list" aria-label="Recent country records">
           {events.slice(0, COUNTRY_PANEL_LIMIT).map((event) => (
             <li key={event.id}>
               <button
@@ -73,20 +68,18 @@ export function CountryPanel({ country, events, selectedId, now, onSelect }: Cou
                 onClick={() => {
                   onSelect(event);
                 }}
-                className={`flex w-full items-start gap-2 rounded px-1.5 py-1 text-left text-xs hover:bg-surface-2 ${
-                  event.id === selectedId ? 'bg-surface-2' : ''
-                }`}
+                className="map-tool-list-button flex items-start gap-2"
               >
                 <span
                   aria-hidden="true"
                   className="mt-1 h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: CATEGORY_STYLES[event.category].css }}
                 />
-                <span className="line-clamp-2 flex-1 text-text">
+                <span className="min-w-0 flex-1 text-text">
                   {event.title_en ?? event.title}
-                </span>{' '}
-                <span className="shrink-0 font-mono text-[11px] text-muted">
-                  {formatAgo(event.published_at, now)}
+                  <span className="mt-1 block text-[11px] text-muted">
+                    {formatAgo(event.published_at, now)}
+                  </span>
                 </span>
               </button>
             </li>

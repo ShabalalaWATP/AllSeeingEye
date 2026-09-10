@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react';
+import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import {
   locationQuality,
@@ -7,9 +8,21 @@ import {
   type LocationQuality,
   type LocationQualityFilter,
 } from './geographicPrecision';
+import './referenceTools.css';
 
 const PAGE_SIZE = 20;
 const QUALITIES: LocationQuality[] = ['reported', 'approximate', 'propagated', 'unplotted'];
+const DESCRIPTIONS: Record<LocationQualityFilter, string> = {
+  all: 'Show every location quality, including records without a plotted position.',
+  reported:
+    'A supplied point marked exact by its source. It has not been independently verified or audited.',
+  approximate:
+    'A city or administrative location. A marker is not an uncertainty boundary or an exact incident site.',
+  propagated:
+    'A calculated orbital position from source elements, not a directly observed current position.',
+  unplotted:
+    'Country-only, unknown or invalid coordinates. The record remains available without an invented point.',
+};
 
 /** Loaded records stay inspectable, including those that cannot be plotted. */
 export function GeographicPrecisionPanel({
@@ -56,112 +69,70 @@ export function GeographicPrecisionPanel({
   const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
   const current = Math.min(page, pages - 1);
   return (
-    <section
-      aria-label="Location quality"
-      className="shrink-0 rounded-md border border-line bg-surface/90 p-3 text-xs"
-    >
-      <h2 className="font-medium">Location quality</h2>
-      <p className="mt-2 text-muted">Understand what a position represents before using it.</p>
-      <dl className="mt-3 space-y-2">
-        <div>
-          <dt className="font-medium">Source-reported exact</dt>
-          <dd className="text-muted">
-            A supplied point marked exact by its source. It has not been independently verified or
-            audited.
-          </dd>
-        </div>
-        <div>
-          <dt className="font-medium">Approximate</dt>
-          <dd className="text-muted">
-            A city or administrative location. A marker is not an uncertainty boundary or an exact
-            incident site.
-          </dd>
-        </div>
-        <div>
-          <dt className="font-medium">Propagated satellite</dt>
-          <dd className="text-muted">
-            A calculated orbital position from source elements, not a directly observed current
-            position.
-          </dd>
-        </div>
-        <div>
-          <dt className="font-medium">Not plotted</dt>
-          <dd className="text-muted">
-            Country-only, unknown or invalid coordinates. The record remains available without an
-            invented point.
-          </dd>
-        </div>
-      </dl>
-      <p className="mt-3 text-muted">
-        Counts cover loaded records within your other filters, not worldwide coverage. This filters
-        event markers, including flights and ships. GNSS, CCTV and infrastructure keep their
-        separate controls. Choose All location qualities to restore event markers.
-      </p>
-      <ul aria-label="Location quality counts" className="mt-2 space-y-1">
-        {QUALITIES.map((quality) => (
-          <li key={quality}>
-            {QUALITY_LABELS[quality]} ({counts[quality]})
-          </li>
-        ))}
-      </ul>
-      <label htmlFor={`${id}-filter`} className="mt-3 block font-medium">
+    <section aria-label="Location quality" className="map-tool-workspace">
+      <MapToolIntro
+        title="Location quality"
+        description="Filter loaded records by what their position represents."
+        status={`${visible.length.toLocaleString('en-GB')} loaded`}
+      />
+      <label htmlFor={`${id}-filter`} className="map-tool-field">
         Show on map or globe
+        <select
+          id={`${id}-filter`}
+          value={filter}
+          onChange={(event) => {
+            onFilterChange(event.target.value as LocationQualityFilter);
+            setPage(0);
+          }}
+          aria-describedby={`${id}-quality-help`}
+          className="map-tool-input"
+        >
+          {(['all', ...QUALITIES] as const).map((quality) => (
+            <option key={quality} value={quality}>
+              {QUALITY_LABELS[quality]}
+            </option>
+          ))}
+        </select>
       </label>
-      <select
-        id={`${id}-filter`}
-        value={filter}
-        onChange={(event) => {
-          onFilterChange(event.target.value as LocationQualityFilter);
-          setPage(0);
-        }}
-        className="mt-1 min-h-11 w-full rounded border border-line bg-surface p-2"
-      >
-        {(['all', ...QUALITIES] as const).map((quality) => (
-          <option key={quality} value={quality}>
-            {QUALITY_LABELS[quality]}
-          </option>
-        ))}
-      </select>
+      <p id={`${id}-quality-help`} className="map-tool-help">
+        {DESCRIPTIONS[filter]}
+      </p>
       {filter === 'unplotted' && (
-        <p className="mt-2 text-muted">
+        <p className="map-tool-notice">
           These records have no map markers. Select a record below to inspect its source details.
         </p>
       )}
-      <label htmlFor={`${id}-search`} className="mt-3 block font-medium">
+      <label htmlFor={`${id}-search`} className="map-tool-field">
         Search loaded records
+        <input
+          id={`${id}-search`}
+          type="search"
+          maxLength={200}
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setPage(0);
+          }}
+          aria-describedby={`${id}-search-help`}
+          placeholder="Title, country code, source or record ID"
+          className="map-tool-input"
+        />
       </label>
-      <input
-        id={`${id}-search`}
-        type="search"
-        maxLength={200}
-        value={search}
-        onChange={(event) => {
-          setSearch(event.target.value);
-          setPage(0);
-        }}
-        aria-describedby={`${id}-search-help`}
-        className="mt-1 min-h-11 w-full rounded border border-line bg-surface p-2"
-      />
-      <p id={`${id}-search-help`} className="mt-1 text-muted">
-        Search this list by title, country code, source or record ID. This does not change the map
-        filter.
+      <p id={`${id}-search-help`} className="map-tool-help">
+        Searches this list only. The location-quality selection above filters the map.
       </p>
-      <p role="status" className="mt-2">
+      <p role="status" className="map-tool-help">
         {matches.length} matching loaded records · page {current + 1} of {pages}
       </p>
       {matches.length === 0 ? (
-        <p className="mt-2 text-muted">No records match these filters.</p>
+        <p className="map-tool-notice">No records match these filters.</p>
       ) : (
-        <ul className="mt-2 space-y-2">
+        <ul className="map-reference-results">
           {matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map((event) => (
             <li key={event.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(event)}
-                className="min-h-11 w-full rounded p-1 text-left hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-ember"
-              >
-                <span className="block">{event.title_en ?? event.title}</span>
-                <span className="mt-1 block text-muted">
+              <button type="button" onClick={() => onSelect(event)}>
+                <span>{event.title_en ?? event.title}</span>
+                <span className="map-tool-help">
                   {event.country_iso ?? 'No country'} · {precisionLabel(event)}
                 </span>
               </button>
@@ -170,31 +141,51 @@ export function GeographicPrecisionPanel({
         </ul>
       )}
       {pages > 1 && (
-        <nav
-          aria-label="Location quality record pages"
-          className="mt-2 flex items-center justify-between gap-2"
-        >
+        <nav aria-label="Location quality record pages" className="map-tool-actions">
           <button
             type="button"
             disabled={current === 0}
             onClick={() => setPage(current - 1)}
-            className="min-h-11 disabled:opacity-40"
+            className="map-tool-secondary"
           >
             Previous
           </button>
-          <span>
+          <span className="map-tool-help">
             {current + 1} / {pages}
           </span>
           <button
             type="button"
             disabled={current === pages - 1}
             onClick={() => setPage(current + 1)}
-            className="min-h-11 disabled:opacity-40"
+            className="map-tool-secondary"
           >
             Next
           </button>
         </nav>
       )}
+      <details className="map-tool-disclosure">
+        <summary>How locations are classified</summary>
+        <dl className="map-reference-glossary map-tool-help">
+          {QUALITIES.map((quality) => (
+            <div key={quality}>
+              <dt>{QUALITY_LABELS[quality]}</dt>
+              <dd>{DESCRIPTIONS[quality]}</dd>
+            </div>
+          ))}
+        </dl>
+        <ul aria-label="Location quality counts" className="map-reference-counts map-tool-help">
+          {QUALITIES.map((quality) => (
+            <li key={quality}>
+              {QUALITY_LABELS[quality]} ({counts[quality]})
+            </li>
+          ))}
+        </ul>
+      </details>
+      <p className="map-tool-help map-reference-footnote">
+        Counts cover loaded records within your other filters, not worldwide coverage. This filters
+        event markers, including flights and ships. GNSS, CCTV and infrastructure keep their
+        separate controls. Choose All location qualities to restore event markers.
+      </p>
     </section>
   );
 }

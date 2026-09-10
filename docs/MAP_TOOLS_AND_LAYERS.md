@@ -1,6 +1,6 @@
 # Map layers and planning tools
 
-Updated 9 September 2026.
+Updated 10 September 2026.
 
 ## Operator controls
 
@@ -34,6 +34,39 @@ report filters. See [conflict display controls](CONFLICT_DISPLAY_FILTERS.md).
   positions, with a real event-marker filter and searchable record list.
 - Map style and British National Grid remain on the right, alongside drawing,
   measurement, routing and RF planning.
+
+## Compact tool panels
+
+Map tools share a dark drawer with an icon, clear title, close action and internal
+scrolling. General drawers are at most 320 px wide; drawing, measurement, routing
+and RF are at most 360 px. Narrow-screen widths leave space for the rails. Escape
+and Close return focus to the opening button. Controls remain non-modal so map
+gestures are available. Reduced-motion preferences disable the brief transitions.
+
+- Measurement offers labelled Distance/Area choices, a prominent result and
+  one Pick/Finish action. Manual coordinates, coordinate history and accuracy
+  notes are expandable. Its existing map-picking shortcuts remain unchanged.
+- Drawing uses labelled shape icons showing their defining points. Creation,
+  move, undo and clear remain separate actions, with active gesture instructions.
+- Routing shows driving/walking/cycling choices, numbered stops, selected address
+  matches and separate distance/time results. Selecting a match returns keyboard
+  focus to its address field. Search and routing disclosure remain visible before
+  requests; directions and provider terms are expandable.
+- Map style opens its choices immediately in the shared drawer. Swatches are
+  local illustrations, not fetched previews. Disabled OS options retain their
+  configuration explanation. Selected imagery age, source and licence remain
+  outside the optional setup disclosure. Appearance and BNG have labelled switches.
+- Location quality puts filtering, search and matching records before the
+  classification glossary. The active quality explanation and unplotted-record
+  warning remain visible. Nation results say "loaded", avoiding a freshness claim.
+- Topics & time puts time choices first and uses labelled switches for additional
+  topics. Aircraft/vessel filters retain native radio semantics with clearer
+  selected states, consistent fields and pagination controls.
+
+Existing CCTV, infrastructure, satellite and context grouping remains intact within
+the shared drawer. Invalid conflict/hazard/context field colour tokens were replaced
+with actual theme tokens. This presentation update adds no provider requests,
+background loops, dependencies, map calculations or persistence changes.
 
 ## OSIRIS comparison and source provenance
 

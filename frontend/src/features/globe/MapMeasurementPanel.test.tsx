@@ -25,7 +25,9 @@ it('supports typed area vertices, undo, clear and clearing draft coordinates on 
   await add('0', '0');
   await add('1', '0');
   await add('1', '1');
-  await user.selectOptions(screen.getByLabelText('Measurement type'), 'area');
+  await user.click(screen.getByRole('button', { name: 'Area' }));
+  expect(screen.getByRole('button', { name: 'Area' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Distance' })).toHaveAttribute('aria-pressed', 'false');
   expect(screen.getByLabelText('Measurement result')).toHaveTextContent('km²');
   await user.click(screen.getByRole('button', { name: 'Undo point' }));
   expect(screen.getByLabelText('Measurement result')).toHaveTextContent('Add more');

@@ -24,7 +24,7 @@ function Controls() {
 it('uses one tab stop and native arrow selection for the time window', async () => {
   const user = userEvent.setup();
   render(<Controls />);
-  screen.getByRole('switch', { name: 'Economic 0' }).focus();
+  // Time is the first control group; disabled reset actions are skipped.
   await user.tab();
   expect(screen.getByRole('radio', { name: 'All' })).toHaveFocus();
   expect(screen.getByRole('radio', { name: 'All' })).toBeChecked();
@@ -36,7 +36,7 @@ it('uses one tab stop and native arrow selection for the time window', async () 
   await user.keyboard('{ArrowUp}');
   expect(screen.getByRole('radio', { name: '7 d' })).toBeChecked();
   await user.tab();
-  expect(screen.getByText('Connection and coverage')).toHaveFocus();
+  expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveFocus();
   await user.tab({ shift: true });
   expect(screen.getByRole('radio', { name: '7 d' })).toHaveFocus();
 });

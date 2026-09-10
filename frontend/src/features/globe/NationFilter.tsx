@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 
 import type { Country } from '@/lib/api/geoSchemas';
+import { MapToolIntro } from '@/components/maps/MapToolIntro';
 
 export interface NationFilterProps {
   countries: readonly Country[];
@@ -57,18 +58,28 @@ export function NationFilter({ countries, value, onChange, error = null }: Natio
   };
 
   return (
-    <div className="rounded-md border border-line bg-surface/90 p-1.5 backdrop-blur">
-      <div className="flex items-center gap-1">
+    <div className="map-tool-workspace">
+      <MapToolIntro
+        title="Find nation"
+        description="Enter a country name or ISO code to focus the map and loaded records."
+        status={selected ? selected.name : 'Worldwide'}
+        statusActive={selected !== null}
+      />
+      <label className="map-tool-field" htmlFor={`${listId}-input`}>
+        Nation filter
+      </label>
+      <div className="flex items-center gap-2">
         <input
+          id={`${listId}-input`}
           type="text"
           aria-label="Nation filter"
           list={listId}
-          placeholder="Nation"
+          placeholder="e.g. United Kingdom or GB"
           autoComplete="off"
           value={shown}
           onChange={handleChange}
           onKeyDown={handleKey}
-          className="min-h-11 min-w-0 flex-1 rounded bg-transparent px-1.5 py-1 text-sm text-text placeholder:text-muted lg:min-h-0"
+          className="map-tool-input flex-1"
         />
         <datalist id={listId}>
           {countries.map((country) => (
@@ -80,14 +91,14 @@ export function NationFilter({ countries, value, onChange, error = null }: Natio
             type="button"
             aria-label="Clear nation filter"
             onClick={clear}
-            className="min-h-11 min-w-11 rounded px-1.5 text-muted hover:bg-surface-2 hover:text-text lg:min-h-0 lg:min-w-0"
+            className="map-tool-secondary"
           >
-            ×
+            Clear
           </button>
         )}
       </div>
       {error !== null && (
-        <p role="alert" className="mt-1 px-1.5 text-xs text-critical">
+        <p role="alert" className="map-tool-notice">
           Nations unavailable: {error}
         </p>
       )}

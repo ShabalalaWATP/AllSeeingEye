@@ -5,6 +5,7 @@ import {
   type TrafficRefinementsState,
   type AircraftGroundFilter,
 } from './trafficRefinements';
+import '@/components/maps/mapTool.css';
 
 export function TrafficRefinementControls({
   kind,
@@ -14,12 +15,10 @@ export function TrafficRefinementControls({
   state: TrafficRefinementsState;
 }) {
   const id = useId();
-  const selectClass =
-    'mt-1 min-h-11 w-full rounded-md border border-line bg-ground px-2 text-sm text-text focus:border-cyan';
   return (
     <fieldset className="space-y-3 border-t border-line pt-3">
       <legend className="text-xs text-muted">Refine the map and list</legend>
-      <label className="block text-xs text-muted" htmlFor={`${id}-query`}>
+      <label className="map-tool-field" htmlFor={`${id}-query`}>
         Search {kind}
         <input
           id={`${id}-query`}
@@ -28,16 +27,16 @@ export function TrafficRefinementControls({
           onChange={(event) => state.setQuery(event.target.value)}
           maxLength={TRAFFIC_QUERY_LIMIT}
           placeholder={kind === 'aircraft' ? 'Callsign, registration or ICAO' : 'Name, MMSI or IMO'}
-          className={selectClass}
+          className="map-tool-input"
         />
       </label>
-      <label className="block text-xs text-muted" htmlFor={`${id}-source`}>
+      <label className="map-tool-field" htmlFor={`${id}-source`}>
         Position source
         <select
           id={`${id}-source`}
           value={state.source}
           onChange={(event) => state.setSource(event.target.value)}
-          className={selectClass}
+          className="map-tool-input"
         >
           <option value="">All loaded sources</option>
           {state.source && !state.sources.includes(state.source) && (
@@ -51,13 +50,13 @@ export function TrafficRefinementControls({
         </select>
       </label>
       {kind === 'aircraft' && (
-        <label className="block text-xs text-muted" htmlFor={`${id}-ground`}>
+        <label className="map-tool-field" htmlFor={`${id}-ground`}>
           Reported aircraft status
           <select
             id={`${id}-ground`}
             value={state.ground}
             onChange={(event) => state.setGround(event.target.value as AircraftGroundFilter)}
-            className={selectClass}
+            className="map-tool-input"
           >
             <option value="all">Any status</option>
             <option value="airborne">Airborne</option>

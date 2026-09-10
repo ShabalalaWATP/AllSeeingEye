@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
-import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { calculateNavigationRoute, fetchNavigationCapabilities } from '@/lib/api/navigation';
 import type {
@@ -15,6 +14,10 @@ import { useAuthStore } from '@/stores/auth';
 import { RouteWaypoint } from './RouteWaypoint';
 import { createRouteDraft } from './useRoutePlannerState';
 import type { RoutePlannerDraft } from './useRoutePlannerState';
+import { MapToolIntro } from './MapToolIntro';
+import { RouteTravelMode } from './RouteTravelMode';
+import { RoutePlannerResult, RouteProviderDetails } from './RoutePlannerResult';
+import './routePlanner.css';
 
 export interface RoutePlannerPanelProps {
   onRouteChange: (route: NavigationRoute | null) => void;
@@ -123,173 +126,137 @@ function Planner({
   }
 
   return (
-    <section aria-label="Route planner" className="space-y-3 p-3 text-sm">
-      <div>
-        <h2 className="font-semibold">Route planner</h2>
-        <p className="mt-1 text-xs text-muted">
-          Search for your start and destination, choose each match, then calculate your route.
-        </p>
-      </div>
-      <label className="block space-y-1">
-        <span>Travel mode</span>
-        <select
-          aria-label="Travel mode"
-          value={mode}
-          onChange={(event) => {
-            clearResult();
-            setMode(event.target.value as NavigationRequest['mode']);
-          }}
-          className="w-full rounded border border-line bg-surface-2 p-2"
-        >
-          <option value="driving">Driving</option>
-          <option value="walking">Walking</option>
-          <option value="cycling">Cycling</option>
-        </select>
-      </label>
-      <label className="block space-y-1 text-xs">
-        <span>Enter stops using</span>
-        <select
-          aria-label="Enter stops using"
-          value={inputMode}
-          onChange={(event) => setInputMode(event.target.value as typeof inputMode)}
-          className="w-full rounded border border-line bg-surface-2 p-2"
-        >
-          <option value="address">Addresses and places</option>
-          <option value="coordinates">Coordinates</option>
-        </select>
-      </label>
-      {inputMode === 'address' && (
-        <p className="text-xs text-muted">
-          Search sends the entered place to Photon (komoot). Only press Search for public locations;
-          avoid confidential addresses. Nothing is sent while typing.
-        </p>
-      )}
-      {waypoints.map((point, index) => (
-        <RouteWaypoint
-          key={`${point.id}:${inputMode}`}
-          point={point}
-          index={index}
-          title={
-            index === 0 ? 'Start' : index === waypoints.length - 1 ? 'Destination' : `Via ${index}`
-          }
-          mode={inputMode}
-          removable={waypoints.length > 2}
-          onChange={(value) => {
-            clearResult();
-            setWaypoints((rows) => rows.map((row) => (row.id === point.id ? value : row)));
-          }}
-          onRemove={() => {
-            clearResult();
-            setWaypoints((rows) => rows.filter((row) => row.id !== point.id));
-          }}
-        />
-      ))}
-      <Button
-        variant="secondary"
-        disabled={waypoints.length >= 8}
-        onClick={() => {
+    <section aria-label="Route planner" className="map-tool-workspace route-planner">
+      <MapToolIntro
+        title="Route planner"
+        description="Choose your stops and travel mode, then calculate the route."
+        status={busy ? 'Calculating' : route ? 'Route ready' : 'Plan a journey'}
+        statusActive={busy || !!route}
+      />
+      <RouteTravelMode
+        value={mode}
+        onChange={(value) => {
           clearResult();
-          const id = nextWaypointId.current++;
-          setWaypoints((rows) => [
-            ...rows.slice(0, -1),
-            { id, lat: '', lon: '', label: '', query: '' },
-            ...rows.slice(-1),
-          ]);
+          setMode(value);
         }}
-      >
-        Add waypoint
-      </Button>
-      <Button
-        variant="ghost"
-        onClick={() => {
-          clearResult();
-          setWaypoints((rows) => [...rows].reverse());
-        }}
-      >
-        Reverse stops
-      </Button>
-      <p className="text-xs text-muted">
-        Calculate route sends these coordinates to FOSSGIS. The provider may log requests. No device
-        location is requested. Routes are not saved.
-      </p>
-      {capabilities?.configuration_message && (
-        <Alert tone="warning">{capabilities.configuration_message}</Alert>
-      )}
-      {capabilities?.available && (
-        <p className="text-xs text-muted">
-          App operator:{' '}
-          <a href={`mailto:${capabilities.operator_contact}`} className="underline">
-            {capabilities.operator_contact}
-          </a>
-        </p>
-      )}
-      <div className="flex flex-wrap gap-2">
-        <Button disabled={busy || !capabilities?.available} onClick={() => void calculate()}>
-          {busy ? 'Calculating…' : 'Calculate route'}
-        </Button>
-        <Button variant="ghost" onClick={clearResult}>
-          {busy ? 'Cancel' : 'Clear route'}
-        </Button>
-      </div>
-      {error && <Alert tone="error">{error}</Alert>}
-      {route && (
-        <div className="space-y-2">
-          <p role="status" className="font-medium">
-            {route.distance_km.toFixed(1)} km · approximately{' '}
-            {Math.ceil(route.duration_seconds / 60)} min
-          </p>
-          <p className="text-xs text-muted">{route.limitations}</p>
-          <details>
-            <summary className="cursor-pointer">Directions ({route.steps.length})</summary>
-            <ol className="mt-2 max-h-64 list-decimal space-y-2 overflow-auto pl-5">
-              {route.steps.map((step, index) => (
-                <li key={index}>
-                  {step.instruction}
-                  <span className="block text-xs text-muted">{step.distance_km.toFixed(2)} km</span>
-                </li>
-              ))}
-            </ol>
-          </details>
+      />
+      <section className="map-tool-section" aria-label="Route stops">
+        <div className="route-stop-heading">
+          <h3 className="map-tool-section-title">Stops</h3>
+          <span className="route-stop-count">{waypoints.length} / 8</span>
         </div>
-      )}
-      <p className="text-xs text-muted">
-        Routing: FOSSGIS Valhalla. Data ©{' '}
-        <a
-          href="https://www.openstreetmap.org/copyright"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          OpenStreetMap contributors
-        </a>{' '}
-        (
-        <a
-          href="https://opendatacommons.org/licenses/odbl/index.html"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          ODbL
-        </a>
-        ).{' '}
-        <a
-          href="https://www.openstreetmap.org/fixthemap"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          Fix the map
-        </a>{' '}
-        ·{' '}
-        <a
-          href="https://fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen/"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          Provider terms
-        </a>
-      </p>
+        <label className="map-tool-field">
+          <span>Enter stops using</span>
+          <select
+            aria-label="Enter stops using"
+            value={inputMode}
+            onChange={(event) => setInputMode(event.target.value as typeof inputMode)}
+            className="map-tool-input"
+          >
+            <option value="address">Addresses and places</option>
+            <option value="coordinates">Coordinates</option>
+          </select>
+        </label>
+        {inputMode === 'address' && (
+          <p className="map-tool-help route-search-privacy">
+            Search sends the entered place to Photon (komoot). Only press Search for public
+            locations; avoid confidential addresses. Nothing is sent while typing.
+          </p>
+        )}
+        <div className="route-waypoint-list">
+          {waypoints.map((point, index) => (
+            <RouteWaypoint
+              key={`${point.id}:${inputMode}`}
+              point={point}
+              index={index}
+              title={
+                index === 0
+                  ? 'Start'
+                  : index === waypoints.length - 1
+                    ? 'Destination'
+                    : `Via ${index}`
+              }
+              mode={inputMode}
+              removable={waypoints.length > 2}
+              onChange={(value) => {
+                clearResult();
+                setWaypoints((rows) => rows.map((row) => (row.id === point.id ? value : row)));
+              }}
+              onRemove={() => {
+                clearResult();
+                setWaypoints((rows) => rows.filter((row) => row.id !== point.id));
+              }}
+            />
+          ))}
+        </div>
+        <div className="map-tool-actions route-stop-actions">
+          <button
+            type="button"
+            className="map-tool-secondary"
+            disabled={waypoints.length >= 8}
+            onClick={() => {
+              clearResult();
+              const id = nextWaypointId.current++;
+              setWaypoints((rows) => [
+                ...rows.slice(0, -1),
+                { id, lat: '', lon: '', label: '', query: '' },
+                ...rows.slice(-1),
+              ]);
+            }}
+          >
+            Add waypoint
+          </button>
+          <button
+            type="button"
+            className="map-tool-text-button"
+            onClick={() => {
+              clearResult();
+              setWaypoints((rows) => [...rows].reverse());
+            }}
+          >
+            Reverse stops
+          </button>
+        </div>
+      </section>
+      <section className="map-tool-section route-submit" aria-label="Calculate route">
+        <p className="map-tool-help">
+          Calculate route sends these coordinates to FOSSGIS. The provider may log requests. No
+          device location is requested. Routes are not saved.
+        </p>
+        {capabilities?.configuration_message && (
+          <Alert tone="warning" className="map-tool-notice">
+            {capabilities.configuration_message}
+          </Alert>
+        )}
+        {capabilities?.available && (
+          <p className="map-tool-help route-provider-contact">
+            App operator:{' '}
+            <a href={`mailto:${capabilities.operator_contact}`} className="underline">
+              {capabilities.operator_contact}
+            </a>
+          </p>
+        )}
+        <div className="map-tool-actions">
+          <button
+            type="button"
+            className="map-tool-primary"
+            disabled={busy || !capabilities?.available}
+            onClick={() => void calculate()}
+          >
+            {busy ? 'Calculating…' : 'Calculate route'}
+          </button>
+          <button type="button" className="map-tool-text-button" onClick={clearResult}>
+            {busy ? 'Cancel' : 'Clear route'}
+          </button>
+        </div>
+        {error && (
+          <Alert tone="error" className="map-tool-notice">
+            {error}
+          </Alert>
+        )}
+      </section>
+      {route && <RoutePlannerResult route={route} />}
+      <RouteProviderDetails />
     </section>
   );
 }

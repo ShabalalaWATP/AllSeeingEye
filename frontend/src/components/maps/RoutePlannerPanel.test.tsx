@@ -67,7 +67,7 @@ it('requires explicit Calculate, displays contact and inert directions, and clea
   render(<RoutePlannerPanel onRouteChange={changed} initialWaypoints={points} />);
   await screen.findByRole('link', { name: 'operator@example.com' });
   expect(calculateNavigationRoute).not.toHaveBeenCalled();
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Travel mode' }), 'walking');
+  await user.click(screen.getByRole('button', { name: 'Walking' }));
   await user.click(screen.getByRole('button', { name: 'Calculate route' }));
   expect(await screen.findByRole('status')).toHaveTextContent('2.0 km');
   expect(calculateNavigationRoute).toHaveBeenCalledWith(
@@ -140,6 +140,7 @@ it('searches only explicitly, requires choosing address matches and calculates r
   expect(searchNavigationPlaces).not.toHaveBeenCalled();
   await user.click(screen.getByRole('button', { name: 'Search start' }));
   await user.click(await screen.findByRole('button', { name: /Oxford station, Oxford/ }));
+  expect(screen.getByRole('textbox', { name: 'Start address or place' })).toHaveFocus();
   await user.type(
     screen.getByRole('textbox', { name: 'Destination address or place' }),
     'Oxford museum',
@@ -244,20 +245,20 @@ it('keeps a closed tool route and its matching stops together, then resets on ac
   const user = userEvent.setup();
   render(<PersistentPlanner seed />);
   await screen.findByRole('link', { name: 'operator@example.com' });
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Travel mode' }), 'walking');
+  await user.click(screen.getByRole('button', { name: 'Walking' }));
   await user.click(screen.getByRole('button', { name: 'Calculate route' }));
   expect(await screen.findByText('Overlay 2')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Toggle route tool' }));
   expect(screen.queryByRole('region', { name: 'Route planner' })).toBeNull();
   expect(screen.getByText('Overlay 2')).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Toggle route tool' }));
-  expect(screen.getByRole('combobox', { name: 'Travel mode' })).toHaveValue('walking');
+  expect(screen.getByRole('button', { name: 'Walking' })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('textbox', { name: 'Waypoint 2 latitude' })).toHaveValue('0.01');
   expect(screen.getByRole('status')).toHaveTextContent('2.0 km');
   await user.type(screen.getByRole('textbox', { name: 'Waypoint 1 latitude' }), '1');
   expect(screen.getByText('Overlay none')).toBeInTheDocument();
   act(() => useAuthStore.setState({ user: { ...plainUser, id: 'replacement-account' } }));
-  expect(screen.getByRole('combobox', { name: 'Travel mode' })).toHaveValue('driving');
+  expect(screen.getByRole('button', { name: 'Driving' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 it('preserves an unfinished address query on close without automatically searching on reopen', async () => {
@@ -273,4 +274,59 @@ it('preserves an unfinished address query on close without automatically searchi
     'Oxford station',
   );
   expect(searchNavigationPlaces).not.toHaveBeenCalled();
+});
+
+it('uses labelled cycling controls and presents distance, longer duration and provider references', async () => {
+  const user = userEvent.setup();
+  vi.mocked(calculateNavigationRoute).mockResolvedValue({
+    ...route,
+    mode: 'cycling',
+    distance_km: 12.4,
+    duration_seconds: 5400,
+  });
+  render(<RoutePlannerPanel onRouteChange={vi.fn()} initialWaypoints={points} />);
+  await screen.findByRole('link', { name: 'operator@example.com' });
+  expect(screen.getByText(/Calculate route sends these coordinates to FOSSGIS/)).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Cycling' }));
+  expect(screen.getByRole('button', { name: 'Cycling' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Driving' })).toHaveAttribute('aria-pressed', 'false');
+  expect(calculateNavigationRoute).not.toHaveBeenCalled();
+  await user.click(screen.getByRole('button', { name: 'Calculate route' }));
+  expect(await screen.findByRole('status')).toHaveTextContent('12.4 km');
+  expect(screen.getByRole('status')).toHaveTextContent('1 h 30 min');
+  expect(calculateNavigationRoute).toHaveBeenCalledWith(
+    { mode: 'cycling', waypoints: points },
+    expect.any(AbortSignal),
+  );
+  await user.click(screen.getByText('Routing data & provider terms'));
+  expect(screen.getByRole('link', { name: 'OpenStreetMap contributors' })).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Provider terms' })).toHaveAttribute(
+    'href',
+    'https://fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen/',
+  );
+});
+
+it('keeps Cancel available during calculation and discards the cancelled route', async () => {
+  let finish: (value: typeof route) => void = vi.fn();
+  vi.mocked(calculateNavigationRoute).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const user = userEvent.setup();
+  const changed = vi.fn();
+  render(<RoutePlannerPanel onRouteChange={changed} initialWaypoints={points} />);
+  await screen.findByRole('link', { name: 'operator@example.com' });
+  await user.click(screen.getByRole('button', { name: 'Calculate route' }));
+  expect(screen.getByRole('button', { name: 'Calculating…' })).toBeDisabled();
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(vi.mocked(calculateNavigationRoute).mock.calls[0]![1].aborted).toBe(true);
+  await act(async () => {
+    finish(route);
+    await Promise.resolve();
+  });
+  expect(changed).not.toHaveBeenCalledWith(route);
+  expect(screen.queryByRole('region', { name: 'Calculated route' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Calculate route' })).toBeEnabled();
 });

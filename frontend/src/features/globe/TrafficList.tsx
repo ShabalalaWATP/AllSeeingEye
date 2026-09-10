@@ -3,6 +3,7 @@ import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { militaryTrafficLabel, trafficSearchText } from '@/lib/traffic';
 import { formatAgo } from '@/lib/format';
 import { useNow } from '@/lib/hooks/useNow';
+import '@/components/maps/mapTool.css';
 
 export const TRAFFIC_PAGE_SIZE = 25;
 
@@ -49,7 +50,7 @@ export function TrafficList({
   return (
     <section aria-label={`Loaded ${noun}`} className="space-y-2 border-t border-line pt-3">
       {searchEnabled && (
-        <label className="block text-xs text-muted">
+        <label className="map-tool-field">
           Search {noun}
           <input
             type="search"
@@ -62,7 +63,7 @@ export function TrafficList({
               kind === 'aircraft' ? 'Callsign, registration or ICAO' : 'Name, MMSI or IMO'
             }
             maxLength={100}
-            className="mt-1 w-full rounded-md border border-line bg-ground px-3 py-2 text-sm text-text outline-none focus:border-cyan"
+            className="map-tool-input"
           />
         </label>
       )}
@@ -92,7 +93,7 @@ export function TrafficList({
                 type="button"
                 disabled={selectionDisabled || event.point === null}
                 onClick={() => onSelect(event)}
-                className="w-full space-y-1 px-1 py-2 text-left hover:bg-white/5 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cyan"
+                className="map-tool-list-button space-y-1 disabled:opacity-50"
               >
                 <span className="block truncate text-xs font-medium">
                   {event.title_en ?? event.title}
@@ -121,7 +122,7 @@ export function TrafficList({
           type="button"
           disabled={currentPage === 0}
           onClick={() => setPage(currentPage - 1)}
-          className="min-h-9 px-2 disabled:opacity-40"
+          className="map-tool-secondary"
         >
           Previous
         </button>
@@ -132,7 +133,7 @@ export function TrafficList({
           type="button"
           disabled={currentPage >= pages - 1}
           onClick={() => setPage(currentPage + 1)}
-          className="min-h-9 px-2 disabled:opacity-40"
+          className="map-tool-secondary"
         >
           Next
         </button>

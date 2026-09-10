@@ -20,7 +20,7 @@ export function mapReferencePanels(props: {
 }) {
   return [
     <ControlPanel key="style" side="right" label="Map style" icon="layers">
-      <BaseLayerToolbar {...props.base} />
+      <BaseLayerToolbar {...props.base} embedded />
       <MapDisplaySettings {...props.display} />
     </ControlPanel>,
     <ControlPanel key="nation" label="Find nation" icon="nation">

@@ -51,6 +51,7 @@ it('keeps every unplotted item selectable through pages and respects category fi
     />,
   );
   const user = userEvent.setup();
+  await user.click(screen.getByText('How locations are classified'));
   await user.click(screen.getByText('Not plotted (21)'));
   await user.click(screen.getByRole('button', { name: 'Next' }));
   await user.click(screen.getByRole('button', { name: /Unknown record 20/ }));

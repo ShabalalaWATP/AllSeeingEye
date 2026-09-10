@@ -10,10 +10,17 @@ import type { useMapWorkspaceTools } from './useMapWorkspaceTools';
 export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>) {
   const { measurement } = tools;
   return [
-    <ControlPanel key="drawing" side="right" label="Draw on map" caption="Draw" icon="draw">
+    <ControlPanel
+      key="drawing"
+      side="right"
+      label="Draw on map"
+      caption="Draw"
+      icon="draw"
+      size="medium"
+    >
       <MapDrawingPanel value={tools.drawing} />
     </ControlPanel>,
-    <ControlPanel key="route" side="right" label="Route planner" icon="route">
+    <ControlPanel key="route" side="right" label="Route planner" icon="route" size="medium">
       <RoutePlannerPanel
         onRouteChange={tools.setRoute}
         draft={tools.routePlanner.draft}
@@ -51,7 +58,13 @@ export function mapPlanningPanels(tools: ReturnType<typeof useMapWorkspaceTools>
           : {})}
       />
     </ControlPanel>,
-    <ControlPanel key="measure" label="Measure distance and area" caption="Measure" icon="measure">
+    <ControlPanel
+      key="measure"
+      label="Measure distance and area"
+      caption="Measure"
+      icon="measure"
+      size="medium"
+    >
       <MapMeasurementPanel key={measurement.resetSequence} value={measurement} />
     </ControlPanel>,
   ];

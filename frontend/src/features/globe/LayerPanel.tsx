@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import { LiveCoverage } from './LiveCoverage';
 import type { Category, StoreStats } from '@/lib/api/eventSchemas';
 import type { StreamStatus } from '@/lib/sse';
@@ -50,23 +51,49 @@ export function LayerPanel({
 }: LayerPanelProps) {
   const windowName = useId();
   return (
-    <section
-      aria-label="Topics and time controls"
-      className="shrink-0 rounded-md border border-line bg-surface/90 p-2 backdrop-blur"
-    >
-      <div className="mb-1 flex items-center justify-between px-1">
-        <h3 className="text-sm font-medium">Topics &amp; time</h3>
-        <ConnectionStatus status={status} />
-      </div>
-      <p className="mb-2 px-1 text-xs text-muted">
-        Use the left rail to switch each main layer on or off. Its Filters button opens options for
-        that layer. Map appearance is under Map style on the right.
-      </p>
-      <div className="flex items-center justify-between px-1">
-        <h3 className="py-2 text-xs font-medium">Additional topics</h3>
+    <section aria-label="Topics and time controls" className="map-tool-workspace">
+      <MapToolIntro
+        title="Topics & time"
+        description="Filter loaded event records by time and topic. Counts describe collected records, not complete coverage."
+      />
+      <ConnectionStatus status={status} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="map-tool-section-title">Event time window</h3>
         <button
           type="button"
-          className="min-h-9 text-xs text-cyan disabled:opacity-40"
+          disabled={windowHours === null}
+          onClick={() => onWindow(null)}
+          className="map-tool-text-button"
+        >
+          Clear time filter
+        </button>
+      </div>
+      <p className="map-tool-help">
+        Applies to live events across categories. Layer and topic switches narrow this further.
+        GNSS, CCTV and infrastructure use their own coverage.
+      </p>
+      <div role="radiogroup" aria-label="Time window" className="grid grid-cols-3 gap-2">
+        {WINDOWS.map((option) => (
+          <label key={option.label} className="map-tool-radio-option">
+            <input
+              type="radio"
+              name={windowName}
+              value={option.label}
+              checked={option.hours === windowHours}
+              onChange={() => {
+                onWindow(option.hours);
+              }}
+              className="peer sr-only"
+            />
+            <span className="font-mono">{option.label}</span>
+          </label>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
+        <h3 className="map-tool-section-title">Additional topics</h3>
+        <button
+          type="button"
+          className="map-tool-text-button"
           disabled={!OTHER_TOPICS.some((topic) => hidden.includes(topic))}
           onClick={() =>
             OTHER_TOPICS.filter((topic) => hidden.includes(topic)).forEach((topic) =>
@@ -77,7 +104,7 @@ export function LayerPanel({
           Show all topics
         </button>
       </div>
-      <ul className="space-y-0.5" aria-label="Additional event topics">
+      <ul className="map-tool-list" aria-label="Additional event topics">
         {OTHER_TOPICS.map((category) => {
           const style = CATEGORY_STYLES[category];
           const shown = !hidden.includes(category);
@@ -90,7 +117,7 @@ export function LayerPanel({
                 onClick={() => {
                   onToggle(category);
                 }}
-                className={`flex min-h-11 w-full items-center gap-2 rounded px-1.5 py-1 text-left text-sm transition-colors hover:bg-surface-2 lg:min-h-0 ${
+                className={`map-tool-list-button flex items-center gap-2 ${
                   shown ? 'text-text' : 'text-muted'
                 }`}
               >
@@ -100,9 +127,7 @@ export function LayerPanel({
                   style={{ backgroundColor: style.css, opacity: shown ? 1 : 0.3 }}
                 />
                 <span className="flex-1">{style.label}</span>
-                <span aria-hidden="true" className="text-[10px] text-muted">
-                  {shown ? 'On' : 'Off'}
-                </span>{' '}
+                <span aria-hidden="true" className="map-tool-switch-track shrink-0" />{' '}
                 <span className="font-mono text-xs text-muted tabular-nums">
                   {counts[category] ?? 0}
                 </span>
@@ -111,45 +136,7 @@ export function LayerPanel({
           );
         })}
       </ul>
-      <div className="mt-3 flex items-center justify-between px-1">
-        <h3 className="text-xs font-medium">Event time window</h3>
-        <button
-          type="button"
-          disabled={windowHours === null}
-          onClick={() => onWindow(null)}
-          className="min-h-9 text-xs text-cyan disabled:opacity-40"
-        >
-          Clear time filter
-        </button>
-      </div>
-      <p className="px-1 text-xs text-muted">
-        Applies to live events across categories. Layer and topic switches narrow this further.
-        GNSS, CCTV and infrastructure use their own coverage.
-      </p>
-      <div
-        role="radiogroup"
-        aria-label="Time window"
-        className="mt-1 flex flex-wrap gap-1 border-t border-line px-1 pt-1.5"
-      >
-        {WINDOWS.map((option) => (
-          <label key={option.label} className="cursor-pointer">
-            <input
-              type="radio"
-              name={windowName}
-              value={option.label}
-              checked={option.hours === windowHours}
-              onChange={() => {
-                onWindow(option.hours);
-              }}
-              className="peer sr-only"
-            />
-            <span className="inline-flex min-h-11 items-center rounded px-2 py-0.5 font-mono text-[11px] text-muted hover:text-text peer-checked:bg-surface-2 peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember lg:min-h-0 lg:px-1.5">
-              {option.label}
-            </span>
-          </label>
-        ))}
-      </div>
-      <details className="mt-3 border-t border-line px-1 pt-1 text-xs">
+      <details className="map-tool-disclosure">
         <summary className="min-h-9 cursor-pointer py-2 font-medium">
           Connection and coverage
         </summary>
@@ -158,12 +145,17 @@ export function LayerPanel({
             Retained on server: <span>{formatBudget(stats)}</span>
           </p>
         )}
+        <p className="map-tool-help mb-3">
+          Use the left rail for each main layer. Regional conflict markers follow the nation
+          selection only. Context bulletins show their own scope and dates. Map appearance is under
+          Map style on the right.
+        </p>
         <LiveCoverage
           filteredCount={Object.values(counts).reduce((total, count) => total + count, 0)}
         />
       </details>
       {error !== null && (
-        <p role="alert" className="mt-1 px-1 text-xs text-critical">
+        <p role="alert" className="map-tool-notice">
           {error}
         </p>
       )}

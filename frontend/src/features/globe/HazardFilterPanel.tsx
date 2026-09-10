@@ -19,7 +19,7 @@ export function HazardFilterPanel({
 }) {
   const id = useId();
   const selectClass =
-    'mt-1 min-h-10 w-full rounded-lg border border-line bg-panel px-2 text-xs text-main';
+    'mt-1 min-h-10 w-full rounded-lg border border-line bg-surface-2 px-2 text-xs text-text';
   return (
     <section aria-label="Natural hazard filters" className="space-y-3 p-3">
       <p className="text-xs text-muted">

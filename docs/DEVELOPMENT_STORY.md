@@ -3366,3 +3366,46 @@ and the untouched 380-line MapLibre engine remain warnings. ASE login on 5174
 returned 200 with the correct app title and backend health on 8001 returned ok.
 No backend code changed or backend tests ran. Interactive browser/GPU acceptance
 remains unavailable under the existing administrator browser-control policy.
+
+## 10 September 2026: map tool presentation consistency
+
+Audited remaining map popups and replaced older form layouts in measurement,
+drawing, routing, British National Grid, map appearance, location quality, nation,
+topics/time and traffic controls. The shared drawer has a clear icon/title and
+close action, thin scrollbars and bounded 320 px or 360 px widths. Shared fields,
+buttons, selected states and disclosures use the existing dark/cyan palette.
+
+Measurement and drawing keep their original geometry and gesture hooks. Routing
+shows numbered connected stops, travel-mode choices and distinct distance/time
+results; selecting an address restores input focus. Search/routing disclosure
+still precedes requests. Basemap choices open directly in the drawer, with local
+illustrative swatches and retained source/licence/OS availability information.
+Location-quality controls precede the glossary, and the active definition stays
+visible. Country results describe loaded records. Topics/time retain their scope
+and connection details. Corrected field tokens absent from the theme.
+
+CCTV, infrastructure, satellite and context grouping was already current and
+retains its behaviour inside the improved shell. No API, dependency, geometry,
+provider request, polling or persistence changes were introduced. Updated map
+tool notes and implementation plan. Final review and validation follow below.
+
+Independent review identified crowded basemap rows and drawing choices at the
+narrowest drawer width. Added container-aware layout rules: decorative swatches
+hide, availability moves below the label, shape icons stack above text, and
+route modes/actions/metrics stack when needed. General mobile drawers now retain
+their 320 px maximum. Rebuilt after these presentation corrections.
+
+The initial full run exposed two assertions for the former country empty-state
+wording and old tab order. Updated them to the intended presentation; their
+12 integration tests passed. The final complete run passed 1,800 tests across
+345 files, with one existing skipped file/test. Coverage is 95.49% statements,
+90.75% branches, 93.48% functions and 96.65% lines. All unchanged gates passed.
+Whole frontend ESLint and application/tooling TypeScript checks, final production
+build, changed-source formatting, whitespace and file-length checks passed.
+Independent review verified its fixes with no remaining actionable findings.
+
+ASE login on 5174 returned 200 with the correct app title, and API health on
+8001 returned ok. Existing vendor chunk-size and untouched MapLibre engine
+file-length warnings remain. No backend changes or backend test run were needed.
+Live browser/GPU appearance remains unverified under the existing administrator
+browser-control policy.
