@@ -1,0 +1,70 @@
+.eye-launcher {
+  position: fixed;
+  z-index: 42;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.eye-launcher-mark {
+  width: 100%;
+  height: 64px;
+  flex: 0 0 64px;
+}
+.eye-launcher img {
+  pointer-events: none;
+}
+.eye-launcher-label {
+  color: #eef2f4;
+  text-shadow:
+    0 1px 4px #000,
+    0 0 12px #000;
+  font:
+    10px 'JetBrains Mono',
+    monospace;
+  line-height: 18px;
+  letter-spacing: 0.18em;
+  transition: color 140ms;
+}
+.eye-launcher:hover .eye-launcher-label {
+  color: var(--eye-accent);
+}
+.eye-assistant[data-dragging='true'] .eye-launcher {
+  cursor: grabbing;
+}
+.eye-restart {
+  position: fixed;
+  z-index: 42;
+  right: 20px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 40px);
+  padding: 10px 14px;
+  border: 1px solid #79d8eb50;
+  border-radius: 14px;
+  background: #090c10f5;
+  box-shadow: 0 6px 22px #0008;
+  text-align: left;
+  font-size: 12px;
+}
+.eye-restart img {
+  object-fit: contain;
+}
+.eye-restart small {
+  display: block;
+  margin-top: 4px;
+  color: #a0a9b5;
+  font-size: 10px;
+}

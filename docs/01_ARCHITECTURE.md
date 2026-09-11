@@ -442,6 +442,12 @@ respects reduced motion. Auth screens use the full visual. Static icons derive
 from the real component. Preserve the component and
 `frontend/THIRD_PARTY_NOTICES.md`; never replace it with a redrawn imitation.
 
+`AssistantEye` uses opt-in transparent compositing of that same shader for the
+movable chat launcher. It has a wider canvas, a 24 fps ceiling, hidden-tab pause
+and reduced-motion handling. The captured fallback hides after a successful
+render and returns on graphics failure. Opaque login and rail defaults remain
+unchanged; the assistant animation never subscribes to live map data.
+
 Public account pages share a near-black composition with faint white square grid
 lines, the full eye and app name beside a quiet form column. Sign-in and signup
 (administrator approval) use shared tabs; the existing forgotten-password link

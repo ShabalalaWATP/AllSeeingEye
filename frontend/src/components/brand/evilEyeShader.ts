@@ -86,6 +86,7 @@ uniform float uFlameSpeed;
 uniform vec3 uEyeColor;
 uniform vec3 uBgColor;
 uniform bool uLightMode;
+uniform bool uTransparent;
 
 void main() {
   vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution.xy) / uResolution.y;
@@ -142,6 +143,9 @@ void main() {
 
   // Outer eye bg glow
   outerBgGlow += distanceMask;
+  // The transparent surface needs defined zero-energy fragments at every edge.
+  // Keep the existing opaque brand rendering unchanged.
+  if (uTransparent) outerBgGlow = max(outerBgGlow, 0.0);
   outerBgGlow = pow(outerBgGlow, 0.5);
   outerBgGlow *= 0.15;
 
@@ -157,6 +161,14 @@ void main() {
     color = eyeEnergy + uBgColor;
   }
 
-  gl_FragColor = vec4(color, 1.0);
+  if (uTransparent) {
+    // Straight-alpha compositing retains the same emitted light on black while
+    // allowing the map to show through its glow, without a dark rectangle.
+    vec3 energy = max(eyeEnergy, vec3(0.0));
+    float alpha = clamp(max(energy.r, max(energy.g, energy.b)), 0.0, 1.0);
+    gl_FragColor = vec4(energy / max(alpha, 0.0001), alpha);
+  } else {
+    gl_FragColor = vec4(color, 1.0);
+  }
 }
 `;

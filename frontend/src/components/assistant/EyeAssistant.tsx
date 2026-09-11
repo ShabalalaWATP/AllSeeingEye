@@ -2,14 +2,18 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { clearAssistantMapFocus } from '@/lib/assistantMapContext';
-import { useAssistantPosition } from './useAssistantPosition';
+import { AssistantEye } from '@/components/brand/AssistantEye';
+import { LAUNCHER_HEIGHT, LAUNCHER_WIDTH, useAssistantPosition } from './useAssistantPosition';
+import { panelPlacement } from './panelPlacement';
 import { useEyeChat } from './useEyeChat';
 import { EyeAssistantPanel } from './EyeAssistantPanel';
 import { AssistantBoundary } from './AssistantBoundary';
 import './eyeAssistant.css';
+import './eyeLauncher.css';
 
 function EyeSession() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const placement = useAssistantPosition();
   const chat = useEyeChat();
   const launcher = useRef<HTMLButtonElement>(null);
@@ -21,17 +25,6 @@ function EyeSession() {
     launcher.current?.focus();
   };
   useEffect(() => () => clearAssistantMapFocus(), []);
-  const width = Math.min(390, window.innerWidth - 24);
-  const height = Math.min(600, window.innerHeight - 32);
-  const panelStyle = {
-    left: Math.max(12, Math.min(window.innerWidth - width - 12, placement.position.x + 76 - width)),
-    top: Math.max(
-      16,
-      Math.min(window.innerHeight - height - 16, placement.position.y - height - 10),
-    ),
-    width,
-    maxHeight: height,
-  };
   return (
     <div className="eye-assistant" data-dragging={placement.dragging}>
       <button
@@ -42,7 +35,12 @@ function EyeSession() {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-describedby={helpId}
-        style={{ left: placement.position.x, top: placement.position.y }}
+        style={{
+          left: placement.position.x,
+          top: placement.position.y,
+          width: LAUNCHER_WIDTH,
+          height: LAUNCHER_HEIGHT,
+        }}
         onPointerDown={placement.onPointerDown}
         onPointerMove={placement.onPointerMove}
         onPointerUp={placement.onPointerUp}
@@ -55,15 +53,10 @@ function EyeSession() {
           }
         }}
       >
-        <img
-          src="/brand/eye-512.png"
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          width="64"
-          height="42"
-        />
-        <span aria-hidden="true">ASK EYE</span>
+        <AssistantEye className="eye-launcher-mark" />
+        <span className="eye-launcher-label" aria-hidden="true">
+          ASK EYE
+        </span>
       </button>
       <span id={helpId} className="sr-only">
         Click to chat. Drag to move. Arrow keys reposition; Home resets. Hold Shift for larger
@@ -80,7 +73,9 @@ function EyeSession() {
           chat={chat}
           onClose={close}
           onResetPosition={placement.reset}
-          style={panelStyle}
+          expanded={expanded}
+          onToggleExpanded={() => setExpanded((previous) => !previous)}
+          style={panelPlacement(placement.position, expanded)}
         />
       )}
     </div>

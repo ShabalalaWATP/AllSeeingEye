@@ -9,7 +9,7 @@
  *             Full text in frontend/THIRD_PARTY_NOTICES.md.
  *
  * Modifications from the registry copy (kept to the minimum needed by the small
- * shell instance of the mark; the shader, colours and defaults are untouched):
+ * shell instance of the mark; existing colours and defaults are untouched):
  *   1. Two optional props were added to EvilEyeProps: `maxFps` caps the
  *      requestAnimationFrame loop by skipping frames, and `paused` stops the loop
  *      while true. Both are read through refs so changing them does not rebuild
@@ -19,6 +19,8 @@
  *   3. Observe responsive resizing; stop/release graphics resources on failures.
  *      The existing original frame capture remains visible without creating a recovery loop.
  *   4. Shader/noise helpers are extracted unchanged into evilEyeShader.ts.
+ *   5. Opt-in transparent compositing preserves the original eye/flame pattern
+ *      for the assistant launcher. The captured fallback hides after a good frame.
  */
 import { Renderer, Program, Mesh, Triangle, Texture } from 'ogl';
 import { useEffect, useRef, useState } from 'react';
@@ -40,6 +42,8 @@ interface EvilEyeProps {
   maxFps?: number;
   /** Added for The All Seeing Eye: stop rendering while true. */
   paused?: boolean;
+  /** Render the original eye energy on a transparent surface, without a background. */
+  transparent?: boolean;
 }
 
 export default function EvilEye({
@@ -56,8 +60,10 @@ export default function EvilEye({
   lightMode = false,
   maxFps,
   paused = false,
+  transparent = false,
 }: EvilEyeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const fallbackRef = useRef<HTMLImageElement>(null);
   const [unavailable, setUnavailable] = useState(false);
   // Added for The All Seeing Eye: frame cap and pause are read through refs so
   // that toggling them never tears down the WebGL context.
@@ -77,11 +83,14 @@ export default function EvilEye({
   useEffect(() => {
     if (unavailable || !containerRef.current) return;
     const container = containerRef.current;
+    const fallback = fallbackRef.current;
+    if (fallback) fallback.hidden = false;
     const disposers: Array<() => void> = [];
     let stopped = false;
     const dispose = () => {
       if (stopped) return;
       stopped = true;
+      if (fallback) fallback.hidden = false;
       resumeRef.current = null;
       for (const release of disposers.reverse()) {
         try {
@@ -187,6 +196,7 @@ export default function EvilEye({
           uEyeColor: { value: hexToVec3(eyeColor) },
           uBgColor: { value: hexToVec3(backgroundColor) },
           uLightMode: { value: lightMode },
+          uTransparent: { value: transparent },
         },
       });
 
@@ -216,6 +226,9 @@ export default function EvilEye({
         program.uniforms.uTime.value = time * 0.001;
         try {
           renderer.render({ scene: mesh });
+          // Hide the captured matte once a real frame exists, especially when
+          // the live canvas is transparent. Restore it only on graphics failure.
+          if (fallback && !fallback.hidden) fallback.hidden = true;
         } catch {
           fail();
         }
@@ -247,15 +260,25 @@ export default function EvilEye({
     flameSpeed,
     backgroundColor,
     lightMode,
+    transparent,
   ]);
 
   return (
     <div className="relative h-full w-full">
       <img
+        ref={fallbackRef}
         src="/brand/eye-512.png"
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-contain"
+        style={
+          transparent
+            ? {
+                mixBlendMode: 'screen',
+                maskImage: 'radial-gradient(ellipse at center, black 35%, transparent 72%)',
+              }
+            : undefined
+        }
       />
       <div ref={containerRef} className="relative h-full w-full" hidden={unavailable} />
     </div>

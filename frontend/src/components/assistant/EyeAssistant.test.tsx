@@ -27,13 +27,15 @@ function mount(session: 'user' | 'anonymous' = 'user') {
   return userEvent.setup();
 }
 
-it('only renders for authenticated accounts and uses the original captured eye without WebGL', () => {
+it('only renders for authenticated accounts and animates the original eye transparently', () => {
   mount('anonymous');
   expect(screen.queryByRole('button', { name: 'Open Eye assistant' })).not.toBeInTheDocument();
   act(() => applySession('user'));
   expect(screen.getByRole('button', { name: 'Open Eye assistant' })).toBeVisible();
-  expect(document.querySelector('.eye-launcher img')).toHaveAttribute('src', '/brand/eye-512.png');
-  expect(document.querySelector('canvas')).toBeNull();
+  expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-transparent', 'true');
+  expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-max-fps', '24');
+  expect(screen.getByTestId('evil-eye')).toHaveAttribute('data-pupil-follow', '1');
+  expect(screen.getByText('ASK EYE')).toBeVisible();
 });
 
 it('opens a compact non-modal panel and returns focus when Escape closes it', async () => {
@@ -42,7 +44,7 @@ it('opens a compact non-modal panel and returns focus when Escape closes it', as
   await user.click(launcher);
   const panel = screen.getByRole('dialog', { name: 'Eye assistant' });
   expect(panel).toHaveAttribute('aria-modal', 'false');
-  expect(parseInt(panel.style.width)).toBeLessThanOrEqual(390);
+  expect(parseInt(panel.style.width)).toBeLessThanOrEqual(420);
   expect(screen.getByLabelText('Ask the Eye')).toHaveFocus();
   await user.keyboard('{Escape}');
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -77,7 +79,7 @@ it('distinguishes pointer dragging from clicking and supports keyboard movement 
   await user.click(launcher);
   expect(screen.getByRole('dialog')).toBeVisible();
   expect(clampAssistantPosition({ x: 9000, y: -200 }, { width: 320, height: 260 })).toEqual({
-    x: 232,
+    x: 172,
     y: 12,
   });
 });

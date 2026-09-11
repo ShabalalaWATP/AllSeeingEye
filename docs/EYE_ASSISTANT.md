@@ -2,8 +2,8 @@
 
 ## Design
 
-The assistant is a quiet black and cyan companion to the map, using the actual
-Eye brand capture and leaving the working surface visible.
+The assistant is a quiet black and cyan companion to the map, using the original
+animated Eye without a launcher box, with ASK EYE directly below it.
 
 The content sequence is a movable Eye launcher, a short question and explicit
 search scope, a concise answer with evidence links, then a follow-up question or
@@ -11,13 +11,17 @@ deeper research. Coverage and source dates belong beside the answer.
 
 Interaction uses direct pointer dragging with keyboard alternatives, a short panel
 reveal, and a clear hover/focus response. Reduced motion removes transitions.
-The launcher uses the existing original Eye frame capture without another WebGL
-context, animation loop or map subscription.
+The wider launcher uses the same original flame and pupil motion as the login
+page, with transparent compositing and room at both sides. Its small WebGL
+instance is capped at 24 frames per second and pauses when the tab is hidden.
+Reduced motion stops flames and pupil following. Graphics failure restores the
+original captured frame, without a context-recovery loop or a map subscription.
 
 Acceptance requirements:
 
 - Available across authenticated pages; login and MFA gates do not mount it.
-- A compact panel and launcher stay inside desktop and mobile viewports.
+- Compact and expanded panels, and the wider launcher, stay inside desktop and
+  mobile viewports. Expanding preserves the draft and in-flight response.
 - Dragging moves the launcher without accidentally sending a click.
 - Search retained public map data independently of visual layer toggles; allow
   an explicitly chosen current map area when an actual area is available.
@@ -39,8 +43,11 @@ Acceptance requirements:
 
 Sign in and click the Eye at the lower right. Drag the launcher to move it;
 keyboard arrows also move it, Shift increases the step, and Home resets it.
-The panel fits beside the map and stays inside small screens. Escape closes it
-while focus is inside. Closing or stopping cancels the current request.
+The panel fits beside the map and stays inside small screens. Expand in its
+header opens a window across most of the screen with a small outer margin;
+Restore returns to compact size. Both preserve the conversation and current
+request. Escape closes it while focus is inside. Closing or stopping cancels
+the current request.
 
 Choose all retained map sources, the current geographic view, or a selected map
 item. Hidden visual layers remain searchable. Follow a source link to check its
@@ -97,8 +104,8 @@ Current account, session and source permissions are checked before model work
 and again before release. No database lock crosses a provider request. Usage
 stores bounded operational metadata, never raw questions, answers or feed text.
 The response is private and not cached. A local popup error boundary allows
-restarting the assistant without remounting the map. The launcher introduces no
-WebGL context, animation loop, live-feed subscription or new dependency.
+restarting the assistant without remounting the map. The bounded Eye animation
+introduces no live-feed subscription, new dependency or additional model call.
 
 ## Verification
 

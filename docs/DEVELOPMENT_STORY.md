@@ -3893,3 +3893,25 @@ The local SQLite database was backed up, the backup verified, then migration
 0033 applied. The restarted API health and frontend login returned 200;
 unauthenticated report-job requests returned 401. Work remains local on main,
 with no Git remote configured. See DURABLE_RESEARCH_JOBS.md for scope and limits.
+
+### 11 September 2026: animated Eye launcher and expanded chat
+
+Removed the assistant launcher's box and widened its canvas, with ASK EYE below
+the original animated mark. Opt-in transparent compositing preserves the login
+Eye's flame and pupil behaviour while leaving existing opaque branding unchanged.
+The small animation is capped at 24 fps, pauses when hidden and honours reduced
+motion. Its original captured fallback returns on graphics failure without a
+recovery loop.
+
+Expand and Restore controls switch between a compact panel and a window covering
+most of the screen with an outer margin. Conversation, draft, focus and in-flight
+requests survive resizing. Wider-launcher bounds and responsive panel placement
+keep controls within small screens; dragging and keyboard movement remain intact.
+
+All 80 related assistant, brand and authentication tests passed, alongside the
+production build, TypeScript, scoped ESLint, formatting and file-length checks.
+Browser verification confirmed changing animation frames, transparent side-edge
+pixels, no launcher box, drag, focus return and retained drafts at 1440 by 900,
+390 by 844 and 320 by 568. A bounded peer review found no actionable UI or
+lifecycle issue. No backend, permission, source, provider or model change was
+made, and no paid model call was used for these UI checks.

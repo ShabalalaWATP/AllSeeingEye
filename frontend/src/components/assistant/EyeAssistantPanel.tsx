@@ -20,12 +20,16 @@ export function EyeAssistantPanel({
   chat,
   onClose,
   onResetPosition,
+  expanded,
+  onToggleExpanded,
   style,
 }: {
   id: string;
   chat: EyeChat;
   onClose: () => void;
   onResetPosition: () => void;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   style: CSSProperties;
 }) {
   const map = useAssistantMapAvailability();
@@ -66,6 +70,7 @@ export function EyeAssistantPanel({
       aria-label="Eye assistant"
       aria-modal="false"
       className="eye-assistant-panel"
+      data-expanded={expanded}
       style={style}
     >
       <header className="eye-assistant-heading">
@@ -74,14 +79,46 @@ export function EyeAssistantPanel({
           <h2>The Eye</h2>
           <p>Ask your map sources</p>
         </div>
-        <button
-          type="button"
-          className="eye-icon-action"
-          aria-label="Close Eye assistant"
-          onClick={onClose}
-        >
-          ×
-        </button>
+        <div className="eye-window-actions">
+          <button
+            type="button"
+            className="eye-size-action"
+            aria-label={expanded ? 'Restore compact chat' : 'Expand chat'}
+            title={expanded ? 'Restore compact chat' : 'Expand chat'}
+            aria-pressed={expanded}
+            onClick={onToggleExpanded}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d={
+                  expanded
+                    ? 'M8 3v5H3m13-5v5h5M3 16h5v5m13-5h-5v5'
+                    : 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5'
+                }
+              />
+            </svg>
+            <span>{expanded ? 'Restore' : 'Expand'}</span>
+          </button>
+          <button
+            type="button"
+            className="eye-icon-action"
+            aria-label="Close Eye assistant"
+            title="Close Eye assistant"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
       </header>
       <div className="eye-assistant-tools">
         <button

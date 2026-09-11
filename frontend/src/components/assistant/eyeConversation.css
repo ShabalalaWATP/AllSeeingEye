@@ -1,6 +1,6 @@
 .eye-transcript {
   flex: 1 1 auto;
-  min-height: 76px;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 18px 16px;
@@ -141,4 +141,25 @@
   border-radius: 50%;
   background: var(--eye-accent);
   animation: eye-working 1.4s ease-in-out infinite;
+}
+.eye-assistant-panel[data-expanded='true'] .eye-transcript {
+  padding: clamp(20px, 4vh, 40px) clamp(16px, 5vw, 72px);
+}
+.eye-assistant-panel[data-expanded='true'] .eye-turn,
+.eye-assistant-panel[data-expanded='true'] .eye-welcome {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+.eye-assistant-panel[data-expanded='true'] .eye-welcome h3 {
+  font-size: clamp(18px, 2vw, 24px);
+}
+.eye-assistant-panel[data-expanded='true'] .eye-answer,
+.eye-assistant-panel[data-expanded='true'] .eye-welcome > p {
+  font-size: 14px;
+}
+.eye-assistant-panel[data-expanded='true'] .eye-composer {
+  padding-inline: clamp(12px, 5vw, 72px);
+}
+.eye-assistant-panel[data-expanded='true'] .eye-composer textarea {
+  font-size: 14px;
 }

@@ -24,6 +24,7 @@ vi.mock('../components/brand/EvilEye', async () => {
     flameSpeed?: number;
     pupilFollow?: number;
     backgroundColor?: string;
+    transparent?: boolean;
   }
   function EvilEyeStub(props: StubProps) {
     return React.createElement('div', {
@@ -33,6 +34,7 @@ vi.mock('../components/brand/EvilEye', async () => {
       'data-flame-speed': String(props.flameSpeed ?? 1),
       'data-pupil-follow': String(props.pupilFollow ?? 1),
       'data-background': props.backgroundColor ?? '#000000',
+      'data-transparent': String(props.transparent ?? false),
     });
   }
   return { default: EvilEyeStub };

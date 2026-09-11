@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent } from 'react';
 
-const WIDTH = 76,
-  HEIGHT = 56,
-  MARGIN = 12;
+export const LAUNCHER_WIDTH = 136;
+export const LAUNCHER_HEIGHT = 82;
+const MARGIN = 12;
 interface Position {
   x: number;
   y: number;
@@ -11,14 +11,14 @@ interface Position {
 const viewport = () => ({ width: window.innerWidth, height: window.innerHeight });
 export function clampAssistantPosition(position: Position, size = viewport()): Position {
   return {
-    x: Math.max(MARGIN, Math.min(size.width - WIDTH - MARGIN, position.x)),
-    y: Math.max(MARGIN, Math.min(size.height - HEIGHT - MARGIN, position.y)),
+    x: Math.max(MARGIN, Math.min(size.width - LAUNCHER_WIDTH - MARGIN, position.x)),
+    y: Math.max(MARGIN, Math.min(size.height - LAUNCHER_HEIGHT - MARGIN, position.y)),
   };
 }
 const home = () =>
   clampAssistantPosition({
-    x: window.innerWidth - WIDTH - 20,
-    y: window.innerHeight - HEIGHT - 28,
+    x: window.innerWidth - LAUNCHER_WIDTH - 20,
+    y: window.innerHeight - LAUNCHER_HEIGHT - 28,
   });
 
 /** Pointer movement stays local; nothing subscribes map rendering to this position. */
