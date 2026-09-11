@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import replace
-from uuid import uuid4
+from functools import partial
 
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
@@ -17,30 +17,29 @@ from ase.application.ports.research import ResearchCollection
 from ase.application.reports.advocacy import advocate, apply_advocacy
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.challenge import run_challenge
-from ase.application.reports.citation_checks import check_generated_report_citations
 from ase.application.reports.direction import direct
 from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.fresh_web_research import FreshWebResearch
+from ase.application.reports.frozen_challenge import review_frozen
+from ase.application.reports.production_checkpoint import ProductionCheckpoints, ProductionSnapshot
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_completion import complete_production
 from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
+from ase.application.reports.production_version import build_version, header_for
 from ase.application.reports.progress import Progress, reached
-from ase.application.reports.render import render_markdown
-from ase.application.reports.resolve_links import resolve_cited_links
 from ase.application.reports.reused_evidence import REUSE_NOTICE
+from ase.application.reports.sections import draft_sections
 from ase.application.reports.selection import Selection
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, quality_of_information
 from ase.domain.grading import SourceProfile
-from ase.domain.judgement_assessment import build_report_assessment
 from ase.domain.llm import LlmRole
 from ase.domain.report_records import ReportVersion
-from ase.domain.reports import ReportBody, ReportHeader, ReportStatus
+from ase.domain.reports import ReportBody
 from ase.domain.research import ResearchMode
-from ase.domain.research_context import build_research_context
 from ase.domain.research_runs import ResearchStage
 from ase.domain.validation import Finding, Severity
 
@@ -80,8 +79,11 @@ class Producer:
         before_persist: Callable[[], Awaitable[None]] | None = None,
         *,
         progress: Progress | None = None,
+        checkpoints: ProductionCheckpoints | None = None,
     ) -> ReportVersion:
-        result = await self.produce_with_claims(job, profile_for, before_persist, progress=progress)
+        result = await self.produce_with_claims(
+            job, profile_for, before_persist, progress=progress, checkpoints=checkpoints
+        )
         return result.version
 
     async def produce_with_claims(
@@ -91,23 +93,37 @@ class Producer:
         before_persist: Callable[[], Awaitable[None]] | None = None,
         *,
         progress: Progress | None = None,
+        checkpoints: ProductionCheckpoints | None = None,
     ) -> ProductionResult:
-        totals = Totals()
-        await reached(progress, ResearchStage.PLANNING)
-        direction = await self._direct(job, profile_for, totals)
-        store, receipt, query = await prepare_collection(
-            job,
-            direction,
-            totals,
-            self._research,
-            self._private_store_factory,
-            self._store,
-            progress,
-            gateway=self._gateway,
-            cipher=self._cipher,
-            profile_for=profile_for,
-            web_research=self._web_research,
+        snapshot = await checkpoints.load_collection() if checkpoints is not None else None
+        totals = (
+            replace(
+                snapshot.totals,
+                findings=list(snapshot.totals.findings),
+                usage=list(snapshot.totals.usage),
+            )
+            if snapshot is not None
+            else Totals()
         )
+        await reached(progress, ResearchStage.PLANNING)
+        if snapshot is None:
+            direction = await self._direct(job, profile_for, totals)
+            store, receipt, query = await prepare_collection(
+                job,
+                direction,
+                totals,
+                self._research,
+                self._private_store_factory,
+                self._store,
+                progress,
+                gateway=self._gateway,
+                cipher=self._cipher,
+                profile_for=profile_for,
+                web_research=self._web_research,
+            )
+        else:
+            direction, receipt, query = snapshot.direction, snapshot.receipt, snapshot.query
+            store = self._store
 
         def select(extra_terms: tuple[str, ...] = ()) -> Selection:
             return select_for_job(
@@ -119,17 +135,17 @@ class Producer:
                 runtime_query=query,
             )
 
-        selection = select()
-        quality = quality_of_information(selection.items, selection.flagged)
-        header = ReportHeader(
-            template=job.template.id,
-            title=job.title,
-            scope=job.scope,
-            period_from=job.period_from,
-            period_to=job.period_to,
-            data_cutoff=max((job.now, *(item.captured_at for item in selection.items))),
-            requirements=direction.requirement_ids() if direction else (),
-        )
+        selection = snapshot.selection if snapshot is not None else select()
+        if checkpoints is not None and snapshot is None:
+            await checkpoints.save_collection(
+                ProductionSnapshot(
+                    selection,
+                    direction,
+                    receipt,
+                    query,
+                    replace(totals, findings=list(totals.findings), usage=list(totals.usage)),
+                )
+            )
         earlier = (
             job.previous.body.key_judgements
             if job.previous is not None
@@ -138,15 +154,20 @@ class Producer:
 
         async def make_draft(selected: Selection) -> Draft:
             await reached(progress, ResearchStage.DRAFTING)
-            draft = await draft_body(
+            draft_fn = (
+                draft_body
+                if checkpoints is None
+                else partial(
+                    draft_sections,
+                    checkpoints=checkpoints.section_checkpoints,
+                )
+            )
+            draft = await draft_fn(
                 self._gateway,
                 job.profile,
                 self._cipher.decrypt(job.profile.api_key_encrypted),
                 job.template,
-                replace(
-                    header,
-                    data_cutoff=max((job.now, *(item.captured_at for item in selected.items))),
-                ),
+                header_for(job, selected, direction),
                 job.request.question,
                 quality_of_information(selected.items, selected.flagged),
                 selected.items,
@@ -178,7 +199,19 @@ class Producer:
         body = draft.body or ReportBody()
         advocacy: DevilsAdvocacy | None = None
         challenge = None
-        if query is not None and query.mode is ResearchMode.DETAILED:
+        if query is not None and query.mode is ResearchMode.DETAILED and checkpoints is not None:
+            body, challenge = await review_frozen(
+                job,
+                body,
+                selection,
+                gateway=self._gateway,
+                cipher=self._cipher,
+                profile_for=profile_for,
+                totals=totals,
+                progress=progress,
+            )
+            advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
+        elif query is not None and query.mode is ResearchMode.DETAILED:
             original_findings = tuple(draft.findings)
             outcome = await run_challenge(
                 job,
@@ -205,58 +238,22 @@ class Producer:
                 outcome.body,
                 outcome.challenge,
             )
-            quality = quality_of_information(selection.items, selection.flagged)
-            header = replace(
-                header, data_cutoff=max((job.now, *(item.captured_at for item in selection.items)))
-            )
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
         elif job.request.devils_advocacy and body.key_judgements and draft.body is not None:
             await reached(progress, ResearchStage.CHALLENGING)
             body, advocacy = await self._advocate(job, profile_for, body, selection.items, totals)
-        evidence = selection.items
-        status = self._status(draft)
-        if self._url_resolver is not None:
-            cited = body.cited_labels() | frozenset(advocacy.evidence if advocacy else ())
-            if challenge:
-                cited |= challenge.cited_labels()
-            evidence = await resolve_cited_links(self._url_resolver, evidence, cited)
-        await reached(progress, ResearchStage.VALIDATING)
-        assessment = build_report_assessment(body, evidence, totals.findings)
-        citation_checks = check_generated_report_citations(body, evidence)
-        research_context = build_research_context(evidence) if receipt else None
-        markdown = render_markdown(
-            header, body, evidence, quality, totals.findings,
-            direction=direction, advocacy=advocacy, status=status, assessment=assessment,
-            citation_checks=citation_checks, research=receipt, challenge=challenge,
-            research_context=research_context,
-        )  # fmt: skip
-        version = ReportVersion(
-            id=uuid4(),
-            report_id=job.report_id or uuid4(),
-            number=job.previous.number + 1 if job.previous is not None else 1,
-            status=status,
-            body=body,
-            findings=tuple(totals.findings),
-            evidence=evidence,
-            quality=quality,
-            assessment=assessment,
-            markdown=markdown,
-            profile_id=job.profile.id,
-            model=draft.model or job.profile.model,
-            prompt_tokens=totals.prompt_tokens,
-            completion_tokens=totals.completion_tokens,
-            latency_ms=totals.latency_ms,
-            attempts=draft.attempts,
-            created_at=job.now,
-            period_from=header.period_from,
-            period_to=header.period_to,
-            data_cutoff=header.data_cutoff,
+        version = await build_version(
+            job,
+            draft,
+            body,
+            selection,
+            totals,
             direction=direction,
+            receipt=receipt,
             advocacy=advocacy,
-            research=receipt,
-            citation_checks=citation_checks,
             challenge=challenge,
-            research_context=research_context,
+            url_resolver=self._url_resolver,
+            progress=progress,
         )
         return await complete_production(
             version,
@@ -330,11 +327,3 @@ class Producer:
         if draft.advocacy is None:
             return body, None
         return apply_advocacy(body, draft.advocacy)
-
-    @staticmethod
-    def _status(draft: Draft) -> ReportStatus:
-        if draft.body is None:
-            return ReportStatus.FAILED
-        if draft.has_errors:
-            return ReportStatus.NEEDS_REVIEW
-        return ReportStatus.READY

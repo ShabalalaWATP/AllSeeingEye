@@ -13,7 +13,7 @@ beforeEach(() => applySession('user'));
 it('requires a current preview and consent even when generation is invoked directly', async () => {
   let calls = 0;
   server.use(
-    http.post('/api/reports', () => {
+    http.post('/api/report-jobs', () => {
       calls += 1;
       return HttpResponse.json({});
     }),

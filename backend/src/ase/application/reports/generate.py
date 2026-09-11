@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
-from datetime import datetime
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
@@ -36,32 +35,24 @@ from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.fresh_web_research import FreshWebResearch
+from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.production import Job, Producer
+from ase.application.reports.production_checkpoint import ProductionCheckpoints
+from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.progress import Progress
 from ase.application.reports.request import ReportRequest
-from ase.application.reports.research_inputs import ReportResearchInputs
+from ase.application.reports.research_inputs import ParentReference, ReportResearchInputs
 from ase.application.reports.save_production import SaveProduction
-from ase.application.reports.scope import (
-    conflict_background,
-    report_scope,
-    report_title,
-    report_window,
-)
-from ase.application.reports.templates import Template, template_for
-from ase.domain.collection import CollectionPlan
+from ase.application.reports.templates import Template
 from ase.domain.errors import (
     EncryptionUnavailable,
     InvalidRequest,
     NotFound,
     RateLimited,
 )
-from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
-from ase.domain.llm import LlmProfile
 from ase.domain.report_records import ReportRecord, ReportVersion
-from ase.domain.research_scope import validate_research_interval
-from ase.domain.trackers import Conflict, Hazard
 from ase.domain.users import User
 
 __all__ = ["GenerateReportUseCase", "ReportRequest"]
@@ -113,10 +104,8 @@ class GenerateReportUseCase:
             if claims is not None
             else None,
         )
-        self._countries = countries
-        self._conflicts = conflicts
+        self._builder = ReportJobBuilder(countries, conflicts, aois, self._backgrounds)
         self._plans = plans
-        self._aois = aois
         self._routing = ModelRouting(llm_profiles, llm_bindings)
         self._cipher = cipher
         self._reports = reports
@@ -140,34 +129,26 @@ class GenerateReportUseCase:
         progress: Progress | None = None,
     ) -> tuple[ReportRecord, ReportVersion]:
         """A new report from the live evidence: version 1 of a new record."""
-        template = self._template(request)
-        plan = await self._authorisation.prepare(actor, request)
-        request = await self._map_origin.resolve(actor, request)
-        inputs = await self._research_inputs.prepare(actor, request)
-        routing = await self._prepare(actor, request, template, owner_id=actor.id)
-        profile = routing.required(template.role)
-        now = self._clock.now()
-        job = inputs.apply(await self._job(actor, template, request, profile, now, plan=plan))
-        await self._uow.rollback()
+        job, routing = await self.prepare_job(actor, request)
         produced = await self._producer.produce_with_claims(
             job,
             routing.profile_for,
-            lambda: self._authorisation.finish(actor, request, None, plan, inputs.parent),
+            lambda: self._finish_prepared(job),
             progress=progress,
         )
         version = produced.version
         version.model_routing = routing.provenance
         record = ReportRecord(
             id=version.report_id,
-            template=template.id,
+            template=job.template.id,
             title=job.title,
             scope=dict(job.scope),
             period_from=job.period_from,
             period_to=job.period_to,
-            data_cutoff=version.data_cutoff or now,
+            data_cutoff=version.data_cutoff or job.now,
             status=version.status,
             created_by=actor.id,
-            created_at=now,
+            created_at=job.now,
             latest_version=1,
             team_id=request.team_id,
         )
@@ -175,6 +156,91 @@ class GenerateReportUseCase:
             actor, record, produced, context, creating=True, automation=request.automation
         )
         return record, version
+
+    async def prepare_job(self, actor: User, request: ReportRequest) -> tuple[Job, RoleProfiles]:
+        """Authorise and freeze inputs and routing, without generating model output."""
+        try:
+            template = self._builder.template(request)
+            plan = await self._authorisation.prepare(actor, request)
+            request = await self._map_origin.resolve(actor, request)
+            inputs = await self._research_inputs.prepare(actor, request)
+            if inputs.parent is not None:
+                request = replace(request, parent_version=inputs.parent.version)
+            routing = await self._prepare(actor, request, template, owner_id=actor.id)
+            job = inputs.apply(
+                await self._builder.build(
+                    actor,
+                    template,
+                    request,
+                    routing.required(template.role),
+                    self._clock.now(),
+                    plan=plan,
+                )
+            )
+            if plan is not None:
+                job = replace(
+                    job,
+                    scope={
+                        **job.scope,
+                        "collection_plan_revision": {
+                            "id": str(plan.id),
+                            "updated_at": plan.updated_at.isoformat(),
+                        },
+                    },
+                )
+            return job, routing
+        finally:
+            # Jobs may wait in a queue or perform network calls. Neither keeps this read snapshot.
+            await self._uow.rollback()
+
+    async def produce_prepared(
+        self,
+        job: Job,
+        routing: RoleProfiles,
+        *,
+        checkpoints: ProductionCheckpoints | None = None,
+        progress: Progress | None = None,
+        before_persist: Callable[[], Awaitable[None]] | None = None,
+    ) -> ProductionResult:
+        """Produce a frozen job without saving its report; the caller owns the final transaction."""
+
+        async def authorise() -> None:
+            await self.revalidate_prepared(job)
+            if before_persist is not None:
+                await before_persist()
+
+        result = await self._producer.produce_with_claims(
+            job,
+            routing.profile_for,
+            authorise,
+            progress=progress,
+            checkpoints=checkpoints,
+        )
+        result.version.model_routing = routing.provenance
+        return result
+
+    async def revalidate_prepared(self, job: Job) -> None:
+        """Recheck frozen references and release guards before another job session is used."""
+        try:
+            await self._finish_prepared(job)
+        finally:
+            await self._uow.rollback()
+
+    async def _finish_prepared(self, job: Job) -> None:
+        if job.request.parent_report_id is not None and job.request.parent_version is None:
+            raise InvalidRequest("Prepared research must reference an exact parent version.")
+        plan = await self._authorisation.prepare(job.actor, job.request)
+        if plan is not None and job.scope.get("collection_plan_revision") != {
+            "id": str(plan.id),
+            "updated_at": plan.updated_at.isoformat(),
+        }:
+            raise InvalidRequest("The collection plan changed after research was prepared.")
+        parent = (
+            ParentReference(job.request.parent_report_id, job.request.parent_version, job.actor.id)
+            if job.request.parent_report_id is not None and job.request.parent_version is not None
+            else None
+        )
+        await self._authorisation.finish(job.actor, job.request, None, plan, parent)
 
     async def regenerate(
         self,
@@ -199,11 +265,11 @@ class GenerateReportUseCase:
         inputs = await self._research_inputs.prepare(
             actor, request, previous, owner_id=record.created_by
         )
-        template = self._template(request)
+        template = self._builder.template(request)
         routing = await self._prepare(actor, request, template, owner_id=record.created_by)
         profile = routing.required(template.role)
         now = self._clock.now()
-        job = await self._job(
+        job = await self._builder.build(
             actor,
             template,
             request,
@@ -250,85 +316,3 @@ class GenerateReportUseCase:
         if not self._cipher.available:
             raise EncryptionUnavailable()
         return routing
-
-    async def _job(
-        self,
-        actor: User,
-        template: Template,
-        request: ReportRequest,
-        profile: LlmProfile,
-        now: datetime,
-        *,
-        previous: ReportVersion | None = None,
-        report_id: UUID | None = None,
-        plan: CollectionPlan | None = None,
-    ) -> Job:
-        if request.research_since is not None and request.research_until is not None:
-            try:
-                validate_research_interval(
-                    request.research_since,
-                    request.research_until,
-                    recorded=request.effective_time_basis is EvidenceTimeBasis.RECORDED,
-                    now=now,
-                )
-            except ValueError as exc:
-                raise InvalidRequest(str(exc)) from exc
-        country = self._countries.get(request.country_iso) if request.country_iso else None
-        country_names = [
-            value.name if (value := self._countries.get(iso)) else iso
-            for iso in request.country_isos
-        ]
-        conflict = self._conflict(request)
-        hazard = self._hazard(request)
-        provider = self._backgrounds.get(template.id)
-        background = await provider() if provider is not None else conflict_background(conflict)
-        aoi = await self._aois.get(plan.aoi_id) if plan is not None and plan.aoi_id else None
-        if plan is not None:
-            background = plan.description or None
-            request = replace(request, question=request.question or plan.pirs[0].text)
-        return Job(
-            actor=actor,
-            template=template,
-            request=request,
-            profile=profile,
-            now=now,
-            window=report_window(request, template),
-            title=report_title(template, request, country, conflict, hazard, plan),
-            scope=report_scope(request, template),
-            country_name=", ".join(country_names) or None,
-            previous=previous,
-            report_id=report_id,
-            bbox=conflict.bbox if conflict else (aoi.bbox if aoi else None),
-            countries=conflict.countries
-            if conflict
-            else (plan.countries or (aoi.countries if aoi else ()) if plan else ()),
-            hazard=hazard,
-            terms=conflict.keywords if conflict else (plan.search_terms() if plan else ()),
-            background=background,
-            direction=plan.direction() if plan is not None else None,
-        )
-
-    def _template(self, request: ReportRequest) -> Template:
-        try:
-            template = template_for(request.template_id)
-        except ValueError as exc:
-            raise InvalidRequest(str(exc)) from exc
-        if template.needs_country and len(request.country_isos) != 1:
-            raise InvalidRequest("This template needs exactly one country.")
-        if template.needs_question and not (request.question or "").strip() and not request.plan_id:
-            raise InvalidRequest("This template needs a question.")
-        if template.needs_conflict and self._conflict(request) is None:
-            raise InvalidRequest("This template needs a conflict from the tracker list.")
-        if template.needs_hazard and self._hazard(request) is None:
-            raise InvalidRequest("This template needs a hazard from the disaster tracker.")
-        return template
-
-    def _conflict(self, request: ReportRequest) -> Conflict | None:
-        return self._conflicts.get(request.conflict_id) if request.conflict_id else None
-
-    @staticmethod
-    def _hazard(request: ReportRequest) -> Hazard | None:
-        try:
-            return Hazard(request.hazard) if request.hazard else None
-        except ValueError:
-            return None

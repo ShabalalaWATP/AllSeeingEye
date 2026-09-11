@@ -219,7 +219,9 @@ async def test_production_assesses_final_body_before_late_authorisation_and_usag
     async def profile_for(role):
         return job.profile
 
-    monkeypatch.setattr("ase.application.reports.production.build_report_assessment", assess)
+    monkeypatch.setattr(
+        "ase.application.reports.production_version.build_report_assessment", assess
+    )
     producer = Producer(
         store=filled_store(),
         source_profiles={},

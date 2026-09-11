@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
@@ -55,9 +56,9 @@ it('previews and submits distinct same-source tasks, preserves exact phrases and
         ],
       });
     }),
-    http.post('/api/reports', async ({ request }) => {
-      submitted = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      submitted = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const { user } = renderApp('/research?question=Which%20Acme%20is%20this%3F', 'user');

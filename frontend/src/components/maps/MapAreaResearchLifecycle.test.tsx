@@ -1,9 +1,9 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { reportJob } from '@/test/reportJobFixture';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/server';
 import { applySession } from '@/test/render';
-import { report } from '@/test/fixtures';
 import {
   areaPreview,
   consentLabel,
@@ -109,18 +109,18 @@ it('cancels a pending source preview when the drawer unmounts', async () => {
 });
 
 it.each(['cancel', 'boundary', 'unmount', 'workspace'] as const)(
-  'cancels report generation on %s and ignores a late saved report',
+  'stops waiting for submission on %s and ignores a late research job receipt',
   async (cause) => {
     ordinaryPreview();
     const pending = gate();
     let signal: AbortSignal | undefined;
     let calls = 0;
     server.use(
-      http.post('/api/reports', async ({ request }) => {
+      http.post('/api/report-jobs', async ({ request }) => {
         calls += 1;
         signal = request.signal;
         await pending.promise;
-        return HttpResponse.json(report, { status: 201 });
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const view = mountAreaPanel();
@@ -132,8 +132,7 @@ it.each(['cancel', 'boundary', 'unmount', 'workspace'] as const)(
     expect(screen.getByLabelText('Question (optional)')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Draw boundary' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Generating report…' }));
-    if (cause === 'cancel')
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel research' }));
+    if (cause === 'cancel') fireEvent.click(screen.getByRole('button', { name: 'Stop waiting' }));
     if (cause === 'boundary') view.update({ area: otherResearchArea });
     if (cause === 'unmount') view.unmount();
     if (cause === 'workspace') act(() => invalidateWorkspaceAccess());
@@ -146,7 +145,11 @@ it.each(['cancel', 'boundary', 'unmount', 'workspace'] as const)(
     if (cause !== 'unmount')
       expect(screen.getByLabelText('Current location')).toHaveTextContent('/');
     if (cause === 'cancel')
-      expect(screen.getByRole('link', { name: 'Check Reports' })).toBeVisible();
+      expect(
+        within(screen.getByRole('region', { name: 'Research progress' })).getByRole('link', {
+          name: 'Research jobs',
+        }),
+      ).toBeVisible();
   },
 );
 

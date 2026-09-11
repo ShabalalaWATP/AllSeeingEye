@@ -78,6 +78,7 @@ async def advocate(
         temperature=profile.temperature,
         reasoning_effort=profile.reasoning_effort,
         provider=profile.provider,
+        profile_id=profile.id,
         json_schema=ADVOCACY_SCHEMA,
         schema_name="advocacy",
     )

@@ -324,6 +324,7 @@ export function ResearchForm({
         snapshot={action.progress.snapshot}
         active={action.progress.active}
         onCancel={action.progress.cancel}
+        onRetry={() => void action.retry()}
       />
     </form>
   );

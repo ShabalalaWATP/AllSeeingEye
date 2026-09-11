@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
@@ -12,9 +13,9 @@ import { researchDateError } from './ResearchTimeScope';
 function captureRequest() {
   let body: ReportRequest | undefined;
   server.use(
-    http.post('/api/reports', async ({ request }) => {
-      body = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      body = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   return () => body;

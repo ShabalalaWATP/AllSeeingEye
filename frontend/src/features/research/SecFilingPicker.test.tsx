@@ -1,10 +1,10 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { expect, it, vi } from 'vitest';
 import { server } from '@/test/server';
 import { applySession, renderApp } from '@/test/render';
-import { report } from '@/test/fixtures';
 import { secPage, secChoice, secReceipt } from '@/test/fixtures.secFilings';
 import type { SecFilingsSearch } from '@/lib/api/secFilings';
 import type { ReportRequest } from '@/lib/api/reports';
@@ -27,9 +27,9 @@ it('uses the imported document ID for actual research and cannot start from meta
   handlers();
   const requests: ReportRequest[] = [];
   server.use(
-    http.post('/api/reports', async ({ request }) => {
-      requests.push((await request.json()) as ReportRequest);
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      requests.push(await readReportJobRequest(request));
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   renderApp('/research?question=Analyse%20this%20filing', 'user');

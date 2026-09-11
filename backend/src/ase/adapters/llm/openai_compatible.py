@@ -29,6 +29,9 @@ from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_REPORT_TIMEOUT_SECONDS = 300.0
+REPORT_SCHEMAS = frozenset(
+    {"report", "report_topic", "report_synthesis", "report_judgements", "report_context"}
+)
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 MAX_CONCURRENT_REQUESTS = 2
 MAX_JSON_DEPTH = 64
@@ -38,7 +41,7 @@ def completion_timeout_seconds(base_url: str, request: LlmRequest, override: flo
     """One total budget for admission, HTTP and parsing; explicit overrides win."""
     if override is not None:
         return override
-    if uses_responses(base_url, request) and request.schema_name == "report":
+    if uses_responses(base_url, request) and request.schema_name in REPORT_SCHEMAS:
         return MAX_REPORT_TIMEOUT_SECONDS
     return DEFAULT_TIMEOUT_SECONDS
 

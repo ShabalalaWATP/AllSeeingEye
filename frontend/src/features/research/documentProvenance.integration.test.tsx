@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -110,11 +111,16 @@ it.each(['sec', 'local'] as const)(
         declarations.push((await request.json()) as InputDeclarations);
         return HttpResponse.json(derived, { status: 201 });
       }),
-      http.post('/api/reports', async ({ request }) => {
-        requests.push((await request.json()) as ReportRequest);
-        return HttpResponse.json(completed, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        requests.push(await readReportJobRequest(request));
+        return HttpResponse.json(reportJob({ status: 'completed', report_id: report.report.id }), {
+          status: 202,
+        });
       }),
       http.get(`/api/reports/${report.report.id}`, () => HttpResponse.json(completed)),
+      http.get('/api/report-jobs/:id', () =>
+        HttpResponse.json(reportJob({ status: 'completed', report_id: report.report.id })),
+      ),
     );
     renderApp('/research?question=Analyse%20this%20document', 'user');
     await screen.findByLabelText('Research focus');
@@ -175,6 +181,7 @@ it.each(['sec', 'local'] as const)(
     await waitFor(() => expect(start).toBeEnabled());
     await userEvent.click(screen.getByRole('button', { name: 'Start research' }));
     await waitFor(() => expect(requests[0]?.research_input_id).toBe(derived.id));
+    await userEvent.click(await screen.findByRole('link', { name: /Open completed report/ }));
     const annex = await screen.findByRole('region', { name: 'Evidence annex' });
     await userEvent.click(within(annex).getAllByText(original)[0]!);
     expect(within(annex).getByText('Declared rendering')).toBeVisible();

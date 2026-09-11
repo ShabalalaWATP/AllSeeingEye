@@ -1,5 +1,7 @@
 """One final authorised transaction for a report, its usage and automatic claims."""
 
+from collections.abc import Awaitable, Callable
+
 from ase.application.access import AccessPolicy
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
@@ -34,6 +36,7 @@ class SaveProduction:
         *,
         creating: bool,
         automation: bool,
+        before_commit: Callable[[], Awaitable[None]] | None = None,
     ) -> None:
         try:
             access = (
@@ -66,6 +69,8 @@ class SaveProduction:
                     "attempts": result.version.attempts,
                 },
             )
+            if before_commit is not None:
+                await before_commit()
             await self.uow.commit()
         except BaseException:
             await self.uow.rollback()

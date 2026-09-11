@@ -23,6 +23,21 @@ REPORT_REQUEST = replace(REQUEST, schema_name="report", json_schema=REPORT_BODY_
         (BASE, "max", "report", None, 150, 300),
         (BASE + "/", "max", "report", None, 150, 300),
         (BASE, "max", "report", None, 301, 300),
+        (BASE, "max", "report_topic", None, 150, 300),
+        (BASE + "/", "max", "report_topic", None, 301, 300),
+        (BASE, "max", "report_synthesis", None, 150, 300),
+        (BASE, "max", "report_synthesis", None, 301, 300),
+        (BASE, "max", "report_judgements", None, 150, 300),
+        (BASE, "max", "report_judgements", None, 301, 300),
+        (BASE, "max", "report_context", None, 150, 300),
+        (BASE, "max", "report_context", None, 301, 300),
+        (BASE, "max", "report_judgements", 1, 2, 1),
+        (BASE, "max", "report_context", 1, 2, 1),
+        (BASE, "max", "report_topic", 1, 2, 1),
+        (BASE, "max", "report_synthesis", 1, 2, 1),
+        (BASE, "xhigh", "report_topic", None, 121, 120),
+        ("http://localhost:11434/v1", "max", "report_synthesis", None, 121, 120),
+        (BASE, "max", "report_other", None, 121, 120),
         (BASE, "max", "connection_test", None, 121, 120),
         (BASE, "max", "photo_geolocation", None, 121, 120),
         (BASE, "xhigh", "report", None, 121, 120),
@@ -85,7 +100,8 @@ async def test_selected_deadline_covers_http_queue_and_response_processing(
     assert deadlines == [deadline] and len(calls) == 1
 
 
-async def test_long_native_report_still_obeys_outer_deadline_and_closes_stream():
+@pytest.mark.parametrize("schema", ["report", "report_topic", "report_synthesis"])
+async def test_long_native_report_still_obeys_outer_deadline_and_closes_stream(schema):
     stream = RecordingStream([b" "] * 200, delay=0.005)
     async with httpx.AsyncClient(
         transport=httpx.MockTransport(lambda _: httpx.Response(200, stream=stream))
@@ -93,11 +109,14 @@ async def test_long_native_report_still_obeys_outer_deadline_and_closes_stream()
         gateway = OpenAiCompatibleGateway(client=client)
         with pytest.raises(TimeoutError):
             async with asyncio.timeout(0.04):
-                await gateway.complete(BASE, "key", "gpt-5.6-luna", REPORT_REQUEST)
+                await gateway.complete(
+                    BASE, "key", "gpt-5.6-luna", replace(REPORT_REQUEST, schema_name=schema)
+                )
     assert stream.closed and stream.yielded < 200
 
 
-async def test_explicit_native_report_timeout_stops_slow_drip_without_retry():
+@pytest.mark.parametrize("schema", ["report", "report_topic", "report_synthesis"])
+async def test_explicit_native_report_timeout_stops_slow_drip_without_retry(schema):
     stream = RecordingStream([b" "] * 200, delay=0.005)
     calls = []
 
@@ -108,5 +127,7 @@ async def test_explicit_native_report_timeout_stops_slow_drip_without_retry():
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         gateway = OpenAiCompatibleGateway(client=client, timeout_seconds=0.04)
         with pytest.raises(LlmGatewayError, match="timed out"):
-            await gateway.complete(BASE, "key", "gpt-5.6-luna", REPORT_REQUEST)
+            await gateway.complete(
+                BASE, "key", "gpt-5.6-luna", replace(REPORT_REQUEST, schema_name=schema)
+            )
     assert stream.closed and stream.yielded < 200 and len(calls) == 1

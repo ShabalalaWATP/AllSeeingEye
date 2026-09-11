@@ -15,6 +15,10 @@ describe('research workspace navigation', () => {
       'page',
     );
     const tools = screen.getByRole('navigation', { name: 'Research tools' });
+    expect(within(tools).getByRole('link', { name: 'Jobs' })).toHaveAttribute(
+      'href',
+      '/research/jobs',
+    );
     expect(within(tools).getByRole('link', { name: 'Geolocate a photo' })).toHaveAttribute(
       'href',
       '/research/photo',

@@ -123,6 +123,7 @@ async def translate_queries(
         temperature=0,
         reasoning_effort=profile.reasoning_effort,
         provider=profile.provider,
+        profile_id=profile.id,
         json_schema=translation_schema(languages, len(terms)),
         schema_name="query_translation",
     )

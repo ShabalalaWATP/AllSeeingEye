@@ -124,6 +124,7 @@ async def collect_with_replan(  # noqa: PLR0912 - one shared-budget state machin
             if first.items and not isinstance(candidate, ContinuationProposal):
                 candidate = ContinuationProposal(None, unavailable(first, ""))
             if isinstance(candidate, ContinuationProposal):
+                invoked = candidate.model_called
                 proposal = validate_proposal(candidate, query, first)
                 trace = proposal.trace
                 candidate = proposal.query if trace.decision == "replan" else None

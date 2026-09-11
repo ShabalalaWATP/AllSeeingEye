@@ -117,6 +117,7 @@ class PhotoGeolocation:
                     temperature=profile.temperature,
                     reasoning_effort=profile.reasoning_effort,
                     provider=profile.provider,
+                    profile_id=profile.id,
                     json_schema=PhotoAssessment.model_json_schema(),
                     schema_name="photo_geolocation",
                 )

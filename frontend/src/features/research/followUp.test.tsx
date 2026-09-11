@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
@@ -81,8 +82,8 @@ describe('private and follow-up research', () => {
           previews: [],
         });
       }),
-      http.post('/api/reports', async ({ request }) => {
-        body = await request.json();
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
         return HttpResponse.json(
           { error: { code: 'unavailable', message: 'Drafting unavailable.' } },
           { status: 503 },
@@ -134,12 +135,9 @@ describe('private and follow-up research', () => {
           report: { ...report.report, team_id: team.id, scope: privateScope },
         }),
       ),
-      http.post('/api/reports', async ({ request }) => {
-        requestBody = await request.json();
-        return HttpResponse.json(
-          { ...report, report: { ...report.report, id: nextId } },
-          { status: 201 },
-        );
+      http.post('/api/report-jobs', async ({ request }) => {
+        requestBody = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob({ id: nextId, team_id: team.id }), { status: 202 });
       }),
     );
     const { user, router } = renderApp(`/research?parent=${report.report.id}&country=UA`, 'user');
@@ -156,7 +154,7 @@ describe('private and follow-up research', () => {
       expect(screen.getByRole('button', { name: 'Start research' })).toBeEnabled(),
     );
     await user.click(screen.getByRole('button', { name: 'Start research' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe(`/reports/${nextId}`));
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/research/jobs/${nextId}`));
     expect(requestBody).toMatchObject({
       parent_report_id: report.report.id,
       team_id: team.id,
@@ -190,9 +188,9 @@ describe('private and follow-up research', () => {
   it('requires an attachment for a new private run and preserves private focus after rejection', async () => {
     let posts = 0;
     server.use(
-      http.post('/api/reports', () => {
+      http.post('/api/report-jobs', () => {
         posts++;
-        return HttpResponse.json(report);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = renderApp('/research', 'user');

@@ -1,9 +1,10 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import type { ReportRequest } from '@/lib/api/reports';
-import { countries, report } from '@/test/fixtures';
+import { countries } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -20,9 +21,9 @@ function nationChoices() {
 function captureReport() {
   let body: ReportRequest | undefined;
   server.use(
-    http.post('/api/reports', async ({ request }) => {
-      body = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      body = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   return () => body;

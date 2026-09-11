@@ -1,7 +1,7 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
-import { report } from '@/test/fixtures';
 import { savedMapFixture } from '@/test/fixtures.savedMaps';
 import { applySession, renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -24,9 +24,9 @@ it('launches historical project research from the exact saved area and resets co
     http.post('/api/research/runs/plan', async ({ request }) =>
       HttpResponse.json(preview((await request.json()) as ResearchPlanInput)),
     ),
-    http.post('/api/reports', async ({ request }) => {
-      submitted = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      submitted = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const { user } = renderApp(path, 'user');
@@ -126,9 +126,9 @@ it('requires a current exact-area preview and submits its fixed dates without a 
       plans.push(input);
       return HttpResponse.json(preview(input));
     }),
-    http.post('/api/reports', async ({ request }) => {
-      submitted = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      submitted = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const { user } = renderApp(path, 'user');

@@ -347,3 +347,31 @@ queries, with bounded fair sampling, original source controls and explicit
 coverage gaps. See [area research](AREA_RESEARCH.md) for implemented capabilities
 and validation limits. This does not make every catalogue entry spatially
 searchable, add a complete historical archive or establish real-model quality.
+
+## Section-based durable research, 11 September 2026
+
+- [x] Persist authorised jobs, frozen evidence and validated topic sections.
+- [x] Separate synthesis from topic writing, preserve citation identities and bound splitting.
+- [x] Reserve per-call usage before transport and retain uncertain reservations on interruption.
+- [x] Fence pause/resume, restart recovery and atomic report publication with database leases.
+- [x] Add research-job progress, saved drafts, model/usage details and confirmed discard.
+- [x] Complete configured Luna Max reliability acceptance and record actual quality/coverage limits.
+
+The live job completed after an explicit resume, reusing four topic checkpoints
+unchanged. The two final steps succeeded; this establishes checkpoint recovery
+and bounded publication, not analytical completeness. The optional claim call
+reached its existing deadline and retained an unknown-usage reservation.
+
+Next report-quality work identified by this acceptance:
+
+- [ ] Add an explicit requirement-completeness check and Needs review outcome for
+  unaddressed EEIs, with neutral "not separately assessed" notices.
+- [ ] Stop final context from copying existing gaps. Improve new-job topic matching
+  so common country terms cannot assign unrelated evidence to the first EEI.
+- [ ] Collect richer original source material; keep generated web context separate
+  until original-source retrieval and provenance checks support its use as evidence.
+- [ ] Align optional claim-extraction admission/deadlines with Max reasoning and
+  report its incomplete outcome without repeating completed report sections.
+
+See [durable research operations](DURABLE_RESEARCH_JOBS.md). Existing direct report
+generation and recurring schedules keep their earlier pipeline in this milestone.

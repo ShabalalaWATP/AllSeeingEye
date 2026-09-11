@@ -1,4 +1,5 @@
 import { profileHandlers } from './handlers.profile';
+import { reportJob } from './reportJobFixture';
 import { libraryHandlers } from './handlers.library';
 /** Default MSW handlers implementing docs/api/AUTH_API.md against the fixtures. */
 import { http, HttpResponse } from 'msw';
@@ -321,6 +322,10 @@ export const handlers = [
   ),
 
   ...directionHandlers,
+  http.get('/api/report-jobs', () => HttpResponse.json({ items: [] })),
+  http.get('/api/report-jobs/:id', ({ params }) =>
+    HttpResponse.json(reportJob({ id: String(params.id) })),
+  ),
   ...libraryHandlers,
   ...warningHandlers,
   ...scheduleHandlers,

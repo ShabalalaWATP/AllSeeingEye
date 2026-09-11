@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.adapters.persistence.annotation_monitor_codec import StoredComparisonCodec
 from ase.adapters.persistence.annotation_monitors import SqlAnnotationMonitorRepository
 from ase.adapters.persistence.comparison_reports import SqlComparisonReportRepository
@@ -37,7 +36,6 @@ from ase.application.reports.comparison_reports import ComparisonReports
 from ase.application.reports.evidence_package import ExportEvidencePackage
 from ase.application.reports.export_claim_package import ExportClaimPackage
 from ase.application.reports.exports import CompareReportsUseCase, ExportReportUseCase
-from ase.application.reports.generate import GenerateReportUseCase
 from ase.application.reports.generate_claims import GenerateClaims
 from ase.application.reports.identities import ReportIdentities
 from ase.application.reports.map_origin import ReportMapOrigin
@@ -48,8 +46,9 @@ from ase.application.research.library import ResearchLibrary
 from ase.application.research.map_image import ExportMapImage
 from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
+from ase.container.report_generation import ReportGenerationWiring
+from ase.container.report_jobs import ReportJobWiring
 from ase.container.report_renderer import build_report_renderer
-from ase.container.research import private_research_store
 from ase.container.research_web import WebResearchWiring
 from ase.domain.report_records import ReportVersion
 
@@ -82,7 +81,7 @@ if TYPE_CHECKING:
 log = structlog.get_logger(__name__)
 
 
-class ReportWiring(WebResearchWiring):
+class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
     """Session-scoped report production, export and search factories."""
 
     if TYPE_CHECKING:
@@ -126,41 +125,6 @@ class ReportWiring(WebResearchWiring):
                 await archive_evidence(self.archiver, r.reports, r.uow, version)
         except Exception:
             log.warning("archive.job_failed", report_version=str(version.id), exc_info=True)
-
-    def generate_report(self, session: AsyncSession) -> GenerateReportUseCase:
-        r = self.repositories(session)
-        return GenerateReportUseCase(
-            store=self.store,
-            research=self.research,
-            web_research=self.fresh_web_research,
-            research_inputs=self.research_inputs,
-            private_store_factory=private_research_store,
-            source_profiles=self.source_profiles,
-            countries=self.countries,
-            conflicts=self.conflicts,
-            plans=r.plans,
-            aois=r.aois,
-            backgrounds={
-                "aviation_activity": lambda: self.aviation_background(session),
-                "maritime_activity": self._maritime_background,
-                "cyber_summary": self._cyber_background,
-            },
-            llm_profiles=r.llm_profiles,
-            llm_bindings=r.llm_bindings,
-            usage=r.llm_usage,
-            cipher=self.cipher,
-            gateway=self.llm,
-            reports=r.reports,
-            map_views=r.map_views,
-            claims=r.claims,
-            clock=self.clock,
-            limiter=self.limiter,
-            limits=self.limits,
-            auditor=self._auditor(r),
-            uow=r.uow,
-            url_resolver=GoogleNewsUrlResolver(),
-            access=self.access_policy(session),
-        )
 
     def preview_research(self, session: AsyncSession) -> PreviewResearchPlan:
         r = self.repositories(session)

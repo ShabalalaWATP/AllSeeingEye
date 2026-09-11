@@ -36,9 +36,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         expire_original_assets(container.session_factory, container.clock)
     )
     annotation_monitoring = asyncio.create_task(build_annotation_monitor_worker(container).run())
+    await container.report_job_worker.start()
     try:
         yield
     finally:
+        await container.report_job_worker.stop()
         annotation_monitoring.cancel()
         await asyncio.gather(annotation_monitoring, return_exceptions=True)
         asset_expiry.cancel()

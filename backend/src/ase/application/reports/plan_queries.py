@@ -7,6 +7,7 @@ from typing import Any
 
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.research import ResearchCollection
+from ase.application.reports.planning_deadlines import DURABLE_PLANNING_SECONDS
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
 from ase.application.research.model_planning import (
     admit_proposals,
@@ -168,11 +169,13 @@ async def prepare_model_plan(
             temperature=0,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,
+            profile_id=profile.id,
             json_schema=planning_schema(context),
             schema_name="research_plan",
         )
         invoked = True
-        async with asyncio.timeout(PLANNING_SECONDS):
+        seconds = DURABLE_PLANNING_SECONDS if job.version_id is not None else PLANNING_SECONDS
+        async with asyncio.timeout(seconds):
             response = await gateway.complete(profile.base_url, key, profile.model, request)
         call.model = response.model if bounded_text(response.model, 2048, empty=True) else ""
         call.prompt_tokens, call.completion_tokens, call.latency_ms = (

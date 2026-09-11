@@ -1,9 +1,9 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
 import { useProfileStore } from '@/stores/profile';
 import { defaultProfile } from '@/test/handlers.profile';
-import { report } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -26,9 +26,9 @@ it('loads defaults before editing, honours URL scope and preserves edits after p
         report_style: 'briefing',
       });
     }),
-    http.post('/api/reports', async ({ request }) => {
-      body = await request.json();
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      body = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const { user } = renderApp('/research?country=UA&question=What%20changed%3F', 'user');

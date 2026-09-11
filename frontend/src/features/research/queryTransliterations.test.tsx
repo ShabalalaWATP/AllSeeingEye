@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { expect, it } from 'vitest';
@@ -39,9 +40,9 @@ it('previews and submits distinct translation and transliteration with exact ori
         })),
       });
     }),
-    http.post('/api/reports', async ({ request }) => {
-      submitted = (await request.json()) as ReportRequest;
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      submitted = await readReportJobRequest(request);
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const { user } = renderApp('/research?question=Which%20company%3F', 'user');

@@ -77,6 +77,7 @@ async def draft_body(
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,
+            profile_id=profile.id,
             json_schema=REPORT_BODY_SCHEMA,
             schema_name="report",
         )

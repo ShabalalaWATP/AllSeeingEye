@@ -1,0 +1,260 @@
+.report-jobs-page {
+  height: 100%;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 28px 32px 56px;
+}
+.report-jobs-workspace {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.job-back {
+  width: fit-content;
+  font-size: 12px;
+  color: #9aa4b3;
+  transition: color 150ms;
+}
+.job-back:hover {
+  color: #79d8eb;
+}
+.job-heading h1,
+.job-list-heading h1 {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.job-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #9aa4b3;
+  text-transform: uppercase;
+}
+.job-eyebrow span {
+  color: #79d8eb;
+}
+.job-connection {
+  margin-top: 12px;
+  color: #b3bbc8;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.job-continuity,
+.job-list-heading p {
+  color: #9aa4b3;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.job-progress {
+  border-block: 1px solid #ffffff16;
+  padding: 22px 0;
+}
+.job-progress-label {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+}
+.job-progress-label span {
+  color: #9aa4b3;
+  font-size: 12px;
+}
+.job-progress progress {
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  display: block;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #ffffff12;
+}
+.job-progress progress::-webkit-progress-bar {
+  background: #ffffff12;
+}
+.job-progress progress:indeterminate::-webkit-progress-bar {
+  background: #79d8eb44;
+}
+.job-progress progress::-webkit-progress-value {
+  background: #79d8eb;
+  transition: width 240ms ease;
+}
+.job-progress progress::-moz-progress-bar {
+  background: #79d8eb;
+}
+.job-progress[data-running='true'] progress {
+  animation: job-progress-pulse 2.4s ease-in-out infinite;
+}
+.job-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+.job-actions > span {
+  color: #9aa4b3;
+  font-size: 12px;
+}
+.job-report-link {
+  color: #79d8eb;
+  font-size: 13px;
+  width: fit-content;
+  padding-block: 8px;
+  white-space: nowrap;
+}
+.job-report-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.job-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.job-list-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #9aa4b3;
+  font-size: 12px;
+}
+.job-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.job-list li {
+  border-top: 1px solid #ffffff12;
+}
+.job-list li:last-child {
+  border-bottom: 1px solid #ffffff12;
+}
+.job-list a {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 20px 6px;
+  transition: background 150ms;
+}
+.job-list a:hover {
+  background: #ffffff04;
+}
+.job-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.job-row-main strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.job-row-main > span,
+.job-row-context time {
+  display: block;
+  font-size: 11px;
+  color: #9aa4b3;
+  margin-top: 7px;
+}
+.job-row-context {
+  font-size: 12px;
+  text-align: right;
+}
+.job-row-context > span {
+  color: #79d8eb;
+}
+.job-row-arrow {
+  color: #9aa4b3;
+}
+.job-empty {
+  padding: 28px 0;
+  color: #9aa4b3;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.job-empty h2 {
+  color: #d2d9e2;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.job-discard {
+  scroll-margin-bottom: 96px;
+  border-top: 1px solid #ffffff12;
+  padding-top: 18px;
+}
+.job-discard > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #b3bbc8;
+  max-width: 620px;
+}
+.job-discard > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+@keyframes job-progress-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes job-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .report-jobs-page {
+    padding: 20px 16px 112px;
+  }
+  .job-list-heading,
+  .job-progress-label {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .job-row-context time,
+  .job-row-arrow {
+    display: none;
+  }
+  .job-list a {
+    gap: 12px;
+  }
+  .job-budget dl {
+    grid-template-columns: 1fr;
+  }
+  .job-section-body {
+    padding-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .job-progress progress,
+  .job-section[open] .job-section-body {
+    animation: none;
+  }
+  .job-progress progress::-webkit-progress-value,
+  .job-section summary,
+  .job-list a {
+    transition: none;
+  }
+}

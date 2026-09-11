@@ -8,6 +8,10 @@ from dataclasses import replace
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
 from ase.application.ports.research import ContinuationProposal, ReplanCallback
 from ase.application.reports.continuation_schema import review_schema
+from ase.application.reports.planning_deadlines import (
+    DURABLE_PLANNING_SECONDS,
+    continuation_seconds,
+)
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
 from ase.application.research.continuation_review import (
     REVIEW_INSTRUCTIONS,
@@ -20,7 +24,7 @@ from ase.application.research.query_translation import (
     QueryTranslation,
     parse_translation,
 )
-from ase.domain.llm import LlmMessage, LlmRequest, LlmRole
+from ase.domain.llm import LlmMessage, LlmRequest, LlmRole, ReasoningEffort
 from ase.domain.project_lookup import preserve_project_lookup
 from ase.domain.research import ResearchBatch, ResearchFocus, ResearchQuery
 from ase.domain.research_continuation import ContinuationTrace
@@ -76,6 +80,28 @@ async def make_replanner(
     async def replan(
         query: ResearchQuery, first: ResearchBatch, seconds: float
     ) -> ResearchQuery | ContinuationProposal | None:
+        timeout = continuation_seconds(
+            seconds, profile.reasoning_effort, durable=job.version_id is not None
+        )
+        if timeout is None:
+            limitation = (
+                "the remaining collection time cannot fit the "
+                f"{DURABLE_PLANNING_SECONDS:g}-second Max reasoning allowance"
+                if job.version_id is not None and profile.reasoning_effort == ReasoningEffort.MAX
+                else "the remaining collection time is exhausted or invalid"
+            )
+            return ContinuationProposal(
+                None,
+                replace(
+                    unavailable(first, profile.model),
+                    rationale=(
+                        f"Optional continuation review was not performed: {limitation}. "
+                        "The original source plan and search terms were retained; "
+                        "no model request was sent."
+                    ),
+                ),
+                model_called=False,
+            )
         fixed = job.request.research_query_variants
         fixed_languages = {variant.language.lower() for variant in fixed}
         languages = tuple(
@@ -117,6 +143,7 @@ async def make_replanner(
             temperature=0,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,
+            profile_id=profile.id,
             schema_name="research_replan",
             json_schema={
                 "type": "object",
@@ -186,7 +213,7 @@ async def make_replanner(
             )
         revised: ResearchQuery | ContinuationProposal | None = None
         try:
-            async with asyncio.timeout(min(20, seconds)):
+            async with asyncio.timeout(timeout):
                 response = await gateway.complete(
                     profile.base_url,
                     cipher.decrypt(profile.api_key_encrypted),

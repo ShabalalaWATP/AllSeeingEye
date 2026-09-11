@@ -3829,3 +3829,67 @@ plan and Eye operator guide record scope, limits and acceptance history.
 The final frozen-source assistant suite passed all 146 tests with 96.04% focused
 branch coverage, above the unchanged 90% gate. No new full-app coverage result
 is claimed. Source and security reviewers reported no remaining blockers.
+
+### 11 September 2026: durable section-based research
+
+New Research, photo and map-area submissions create durable jobs. The server
+freezes authorised inputs, model assignments and selected evidence, then saves
+validated topic sections and two smaller final synthesis steps. Jobs expose
+progress, plain-text drafts, the unchanged model/thinking choice and cumulative
+usage. Stop preserves checkpoints; explicit Resume reuses accepted work. Closing
+the page does not cancel the job. Confirmed discard removes inactive progress
+without deleting an already published report.
+
+Database revisions and leases fence late writes. Current owner, team, source and
+linked-input access is rechecked before paid calls, checkpoints, release and the
+atomic report/version/claims/job transaction. Calls reserve usage before dispatch;
+unknown outcomes retain their maximum reservation. No model downgrade, automatic
+paid restart retry or increased allowance was introduced. The operating bounds
+are two workers, 24 calls and 256,000 output/reasoning tokens per job; input usage
+is additional. Deployment remains one API process. No new dependency was added.
+
+The real configured Luna Max acceptance collected 13 frozen evidence items and
+saved four topics, each in roughly 6 to 15 seconds. The first combined synthesis
+timed out at 300 seconds. Splitting it into judgements and context preserved the
+original topic digest: explicit resume made only three new calls, with all four
+topic checkpoints byte-for-byte unchanged. Judgements completed in 134 seconds
+using 12,545 output/reasoning tokens; context completed in 96 seconds using
+11,417. The final report was saved as Ready with zero validation errors and three
+warnings. Optional claim extraction reached its existing 45-second deadline and
+kept an unknown-usage reservation. It did not prevent report publication.
+
+This proves generation, recovery and publication for this example, not analytical
+completeness. Retained evidence was mainly unassessed headlines. The output
+repeated gaps for EEI-1, including malformed near-copies, and did not separately
+address EEIs 2 to 8. The generated web-search context remained separately labelled
+and was not promoted into original evidence. Requirement completeness, better
+topic assignment, non-repeating context, richer source collection and the optional
+claim deadline are explicit next tasks in the implementation plan. The stored
+report and acceptance artefacts preserve the observed result without rewriting it.
+
+The acceptance also exposed old 20-second planning cut-offs. Durable initial
+planning now gets 120 seconds; optional Max continuation is not dispatched when
+the remaining collection allowance cannot fit that deadline. Receipts record
+zero model calls for this skip, and original planned collection continues.
+
+The broad report regression passed all 785 cases; its coverage run overlapped
+source changes and was not used as the final gate. After sources froze, 582
+focused backend tests passed with 95.27% branch-aware coverage, exceeding the
+unchanged 90% requirement. Frontend research/navigation integration passed 156
+tests, with further focused progress/discard checks. Desktop and 390-pixel mobile
+browser checks exercised stop, resume, discard, saved drafts and layout using
+fixtures, separately from the real-model acceptance.
+
+Final Ruff, formatting, strict mypy (841 source files), both architecture
+contracts, generated API types, frontend production build and all pre-commit
+hooks passed. Scoped configured Bandit passed; the broader scan still flags three
+unchanged sites: the camera ParseError import, Chromium's private /tmp mount and
+the fixed no-shell Chromium worker launch. These were not introduced by this
+milestone. Independent bounded runtime review found no actionable publication,
+access, retry or accounting issue. Gitleaks passed. No full-app coverage or
+repository-wide clean security scan is claimed.
+
+The local SQLite database was backed up, the backup verified, then migration
+0033 applied. The restarted API health and frontend login returned 200;
+unauthenticated report-job requests returned 401. Work remains local on main,
+with no Git remote configured. See DURABLE_RESEARCH_JOBS.md for scope and limits.

@@ -7,6 +7,8 @@ import { useAuthStore } from '@/stores/auth';
 
 type Outcome = 'running' | 'completed' | 'failed' | 'cancelled';
 export interface ResearchProgressSnapshot {
+  /** Durable jobs use this only while the initial submission is being acknowledged. */
+  submission?: boolean;
   stage: ResearchStage | null;
   outcome: Outcome;
   unavailable: boolean;

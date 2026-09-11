@@ -1,0 +1,80 @@
+"""Revalidate saved step bodies and bind them to server-owned display metadata."""
+
+from typing import Any, Literal
+
+from ase.application.ports.section_checkpoints import SectionCheckpoint, SectionCheckpoints
+from ase.application.reports.sections.contracts import validate_step
+from ase.application.reports.sections.planning import Topic
+from ase.application.reports.sections.synthesis_contracts import PARTS, TITLES, validate_part
+
+
+def metadata(topic: Topic | None, labels: tuple[str, ...]) -> dict[str, Any]:
+    return {
+        "id": topic.id if topic else "synthesis",
+        "title": topic.title if topic else "Final synthesis",
+        "kind": "topic" if topic else "synthesis",
+        "evidence_labels": list(labels),
+        "parent": topic.parent if topic else None,
+    }
+
+
+def synthesis_metadata(part: str, labels: tuple[str, ...]) -> dict[str, Any]:
+    return {**metadata(None, labels), "id": part, "title": TITLES[part], "parent": "synthesis"}
+
+
+def read_body(
+    checkpoint: SectionCheckpoint,
+    expected: dict[str, Any],
+    eeis: frozenset[str],
+    *,
+    previous_exists: bool = False,
+) -> dict[str, Any]:
+    payload = checkpoint.payload
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {*expected, "body"}
+        or any(payload.get(key) != value for key, value in expected.items())
+    ):
+        raise ValueError("Checkpoint metadata does not match its frozen section")
+    if expected["id"] in PARTS:
+        return validate_part(
+            payload["body"],
+            part=expected["id"],
+            labels=frozenset(expected["evidence_labels"]),
+            eeis=eeis,
+            previous_exists=previous_exists,
+        )
+    return validate_step(
+        payload["body"],
+        synthesis=expected["kind"] == "synthesis",
+        labels=frozenset(expected["evidence_labels"]),
+        eeis=eeis,
+    )
+
+
+async def write_state(
+    checkpoints: SectionCheckpoints,
+    digest: str,
+    expected: dict[str, Any],
+    status: Literal["running", "completed", "split", "incomplete"],
+    *,
+    body: dict[str, Any] | None = None,
+    reason: str | None = None,
+    children: tuple[str, ...] = (),
+) -> None:
+    payload = dict(expected)
+    if body is not None:
+        payload["body"] = body
+    if children:
+        payload["children"] = list(children)
+    if status not in ("running", "completed", "split", "incomplete"):
+        raise ValueError("Unknown checkpoint state")
+    await checkpoints.save(
+        digest,
+        str(expected["id"]),
+        SectionCheckpoint(
+            status=status,
+            payload=payload,
+            reason=reason,
+        ),
+    )

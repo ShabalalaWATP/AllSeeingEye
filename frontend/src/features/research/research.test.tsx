@@ -1,9 +1,10 @@
+import { jobId, reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
-import { countries, plainUser, report, tokenFor } from '@/test/fixtures';
+import { countries, plainUser, tokenFor } from '@/test/fixtures';
 import { setupTeams, team } from '@/test/fixtures.teams';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
@@ -33,12 +34,12 @@ describe('question-led research', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('submits a contextual quick question using the Ask the Eye template and opens its saved report', async () => {
+  it('submits a contextual quick question using the Ask the Eye template and opens its research job', async () => {
     let body: unknown;
     server.use(
-      http.post('/api/reports', async ({ request }) => {
-        body = await request.json();
-        return HttpResponse.json(report, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user, router } = renderApp(
@@ -51,9 +52,7 @@ describe('question-led research', () => {
       expect(screen.getByRole('button', { name: 'Start research' })).toBeEnabled(),
     );
     await user.click(screen.getByRole('button', { name: 'Start research' }));
-    await waitFor(() =>
-      expect(router.state.location.pathname).toBe(`/reports/${report.report.id}`),
-    );
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/research/jobs/${jobId}`));
     expect(body).toEqual({
       disclose_area_to_provider: false,
       template: 'ask',
@@ -75,9 +74,9 @@ describe('question-led research', () => {
     setupTeams();
     let body: unknown;
     server.use(
-      http.post('/api/reports', async ({ request }) => {
-        body = await request.json();
-        return HttpResponse.json(report, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = renderApp('/research?country=UA');
@@ -122,9 +121,9 @@ describe('question-led research', () => {
   it('validates empty questions, language selection and explicit domain subjects without sending', async () => {
     let requests = 0;
     server.use(
-      http.post('/api/reports', () => {
+      http.post('/api/report-jobs', () => {
         requests++;
-        return HttpResponse.json(report);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = renderApp('/research', 'user');
@@ -163,7 +162,7 @@ describe('question-led research', () => {
     });
     let requests = 0;
     server.use(
-      http.post('/api/reports', async () => {
+      http.post('/api/report-jobs', async () => {
         requests++;
         await gate;
         return HttpResponse.json(
@@ -179,7 +178,7 @@ describe('question-led research', () => {
       fireEvent.submit(form);
       fireEvent.submit(form);
     });
-    expect(await screen.findByText('Starting research')).toBeVisible();
+    expect(await screen.findByText('Starting your research job')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Start research' })).toBeDisabled();
     expect(screen.getByLabelText('Your question')).toBeDisabled();
     await waitFor(() => expect(requests).toBe(1));
@@ -196,10 +195,10 @@ describe('question-led research', () => {
     });
     let requests = 0;
     server.use(
-      http.post('/api/reports', async () => {
+      http.post('/api/report-jobs', async () => {
         requests++;
         await gate;
-        return HttpResponse.json(report);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user, router } = renderApp('/research?question=What%20changed%3F', 'user');

@@ -192,6 +192,8 @@ class LlmRequest:
     schema_name: str = "response"
     reasoning_effort: ReasoningEffort | None = None
     provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
+    # Internal accounting identity only. Provider adapters never send this field.
+    profile_id: UUID | None = None
 
     def __post_init__(self) -> None:
         if sum(len(message.images) for message in self.messages) > 1:

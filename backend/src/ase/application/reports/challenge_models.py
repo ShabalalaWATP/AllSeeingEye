@@ -211,6 +211,7 @@ async def challenge_call(
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,
+            profile_id=profile.id,
             json_schema=REVIEW_SCHEMA if review else PLAN_SCHEMA,
             schema_name="challenge_reviews" if review else "challenge_plan",
         )

@@ -159,6 +159,7 @@ async def propose_claims(
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,
+            profile_id=profile.id,
             json_schema=SCHEMA,
             schema_name="claim_proposals",
         )

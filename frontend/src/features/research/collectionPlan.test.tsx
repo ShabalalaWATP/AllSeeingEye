@@ -1,3 +1,4 @@
+import { reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { act, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
@@ -91,9 +92,9 @@ describe('editable collection plan', () => {
     mockPreview([]);
     let submitted = false;
     server.use(
-      http.post('/api/reports', () => {
+      http.post('/api/report-jobs', () => {
         submitted = true;
-        return HttpResponse.json(report);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = await openPlan();
@@ -132,9 +133,9 @@ describe('editable collection plan', () => {
     let body: ReportRequest | undefined;
     mockPreview(plans);
     server.use(
-      http.post('/api/reports', async ({ request }) => {
-        body = (await request.json()) as ReportRequest;
-        return HttpResponse.json(report, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = await openPlan();
@@ -173,9 +174,9 @@ describe('editable collection plan', () => {
     let body: ReportRequest | undefined;
     mockPreview(plans);
     server.use(
-      http.post('/api/reports', async ({ request }) => {
-        body = (await request.json()) as ReportRequest;
-        return HttpResponse.json(report, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = await openPlan();
@@ -213,9 +214,9 @@ describe('editable collection plan', () => {
     let body: ReportRequest | undefined;
     mockPreview(plans);
     server.use(
-      http.post('/api/reports', async ({ request }) => {
-        body = (await request.json()) as ReportRequest;
-        return HttpResponse.json(report, { status: 201 });
+      http.post('/api/report-jobs', async ({ request }) => {
+        body = await readReportJobRequest(request);
+        return HttpResponse.json(reportJob(), { status: 202 });
       }),
     );
     const { user } = await openPlan();

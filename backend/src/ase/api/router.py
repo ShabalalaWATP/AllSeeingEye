@@ -39,6 +39,7 @@ from ase.api.routers import (
     recovery,
     relationships,
     report_documents,
+    report_jobs,
     report_methodology,
     report_search,
     reports,
@@ -59,6 +60,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)

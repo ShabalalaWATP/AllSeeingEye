@@ -13,6 +13,8 @@ from ase.domain.research_plan import ResearchPlan
 class ContinuationProposal:
     query: ResearchQuery | None
     trace: ContinuationTrace
+    # A pre-dispatch policy decision is distinct from an attempted, failed model call.
+    model_called: bool = True
 
 
 ReplanCallback = Callable[

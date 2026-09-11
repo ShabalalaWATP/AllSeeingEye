@@ -1,0 +1,119 @@
+.job-sections h2 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.job-sections header > p {
+  color: #9aa4b3;
+  margin: 7px 0 18px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.job-section {
+  border-top: 1px solid #ffffff12;
+}
+.job-section:last-child {
+  border-bottom: 1px solid #ffffff12;
+}
+.job-section summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  list-style: none;
+  padding: 18px 0;
+  transition: background 140ms;
+}
+.job-section summary::-webkit-details-marker {
+  display: none;
+}
+.job-section summary:hover {
+  background: #ffffff03;
+}
+.job-section-number {
+  font:
+    11px 'JetBrains Mono',
+    monospace;
+  color: #75808e;
+}
+.job-section-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.job-section-title small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #9aa4b3;
+  font-weight: 400;
+}
+.job-section-indicator {
+  font-size: 19px;
+  margin-inline: 10px;
+  color: #8794a5;
+}
+.job-section-indicator[data-complete='true'] {
+  color: #79d8eb;
+  font-size: 15px;
+}
+.job-section-body {
+  padding: 0 0 22px 34px;
+  max-width: 800px;
+  display: grid;
+  gap: 18px;
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.job-section[open] .job-section-body {
+  animation: job-reveal 180ms ease;
+}
+.job-section-body h3 {
+  margin-bottom: 6px;
+  color: #a5afbd;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 10px;
+}
+.job-section-body p + p {
+  margin-top: 10px;
+}
+.job-citations,
+.job-section-note {
+  color: #a5afbd;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.job-budget {
+  border-top: 1px solid #ffffff12;
+  padding-top: 18px;
+  color: #9aa4b3;
+  font-size: 12px;
+}
+.job-budget summary {
+  cursor: pointer;
+  width: fit-content;
+}
+.job-budget dl {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 28px;
+}
+.job-budget dt {
+  font-size: 11px;
+}
+.job-budget dd {
+  margin-top: 4px;
+  color: #d2d9e2;
+  overflow-wrap: anywhere;
+}
+.job-budget > p {
+  max-width: 680px;
+  margin-top: 18px;
+  font-size: 11px;
+  line-height: 1.7;
+}

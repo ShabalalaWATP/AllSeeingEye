@@ -1,10 +1,10 @@
+import { jobId, reportJob, readReportJobRequest } from '@/test/reportJobFixture';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeEach, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/server';
 import { applySession } from '@/test/render';
-import { report } from '@/test/fixtures';
 import {
   areaPreview,
   consentLabel,
@@ -40,9 +40,9 @@ it('starts without source or model calls, uses a neutral optional question and f
       plans.push(input);
       return HttpResponse.json(areaPreview(input));
     }),
-    http.post('/api/reports', async ({ request }) => {
-      requests.push((await request.json()) as ReportRequest);
-      return HttpResponse.json(report, { status: 201 });
+    http.post('/api/report-jobs', async ({ request }) => {
+      requests.push(await readReportJobRequest(request));
+      return HttpResponse.json(reportJob(), { status: 202 });
     }),
   );
   const view = mountAreaPanel();
@@ -79,9 +79,7 @@ it('starts without source or model calls, uses a neutral optional question and f
   expect(requests[0]).not.toHaveProperty('parent_report_id');
   expect(requests[0]).not.toHaveProperty('window_hours');
   await waitFor(() =>
-    expect(screen.getByLabelText('Current location')).toHaveTextContent(
-      `/reports/${report.report.id}`,
-    ),
+    expect(screen.getByLabelText('Current location')).toHaveTextContent(`/research/jobs/${jobId}`),
   );
   expect(view.stop).toHaveBeenCalledOnce();
 });
@@ -200,7 +198,7 @@ it.each([
 
 it('reports model failures without losing the checked area or enabling duplicate requests', async () => {
   server.use(
-    http.post('/api/reports', () =>
+    http.post('/api/report-jobs', () =>
       HttpResponse.json(
         { error: { code: 'unavailable', message: 'AI connection unavailable.', fields: {} } },
         { status: 503 },

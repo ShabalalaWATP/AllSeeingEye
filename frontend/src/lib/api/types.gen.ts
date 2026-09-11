@@ -4,6 +4,76 @@
  */
 
 export interface paths {
+    "/api/report-jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Job */
+        get: operations["get_job_api_report_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        /** Discard Job */
+        delete: operations["discard_job_api_report_jobs__job_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Jobs */
+        get: operations["list_jobs_api_report_jobs_get"];
+        put?: never;
+        /** Create Job */
+        post: operations["create_job_api_report_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-jobs/{job_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Job */
+        post: operations["pause_job_api_report_jobs__job_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-jobs/{job_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Job */
+        post: operations["resume_job_api_report_jobs__job_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/assistant/answer": {
         parameters: {
             query?: never;
@@ -7405,6 +7475,106 @@ export interface components {
             /** Source Dates */
             source_dates?: components["schemas"]["SourceDate"][];
         };
+        /** ReportJobCreateIn */
+        ReportJobCreateIn: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            report: components["schemas"]["ReportCreateIn"];
+        };
+        /** ReportJobOut */
+        ReportJobOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Revision */
+            revision: number;
+            /** Title */
+            title: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "paused" | "completed" | "needs_review" | "failed";
+            /** Stage */
+            stage: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Report Id */
+            report_id: string | null;
+            /** Model */
+            model: string;
+            /** Reasoning Effort */
+            reasoning_effort: string | null;
+            /** Error */
+            error: string | null;
+            /** Can Resume */
+            can_resume: boolean;
+            /** Completed Sections */
+            completed_sections: number;
+            /** Total Sections */
+            total_sections: number;
+            /** Sections */
+            sections: components["schemas"]["ReportJobSectionOut"][];
+            usage: components["schemas"]["ReportJobUsageOut"];
+        };
+        /** ReportJobSectionOut */
+        ReportJobSectionOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "topic" | "synthesis";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "completed" | "split" | "incomplete";
+            /** Reporting */
+            reporting?: string[];
+            /** Assessment */
+            assessment?: string | null;
+            /** Citations */
+            citations?: string[];
+            /** Error */
+            error?: string | null;
+        };
+        /** ReportJobUsageOut */
+        ReportJobUsageOut: {
+            /** Calls */
+            calls: number;
+            /** Max Calls */
+            max_calls: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Output Allowance */
+            output_allowance: number;
+            /** Uncertain Calls */
+            uncertain_calls: number;
+        };
+        /** ReportJobsOut */
+        ReportJobsOut: {
+            /** Items */
+            items: components["schemas"]["ReportJobOut"][];
+        };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
             /** Method Version */
@@ -9110,6 +9280,192 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_job_api_report_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_job_api_report_jobs__job_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_jobs_api_report_jobs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_job_api_report_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportJobCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_job_api_report_jobs__job_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_job_api_report_jobs__job_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     answer_api_assistant_answer_post: {
         parameters: {
             query?: never;

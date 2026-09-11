@@ -31,6 +31,8 @@ const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
 const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
+const ReportJobsPage = lazy(() => import('@/features/report-jobs/ReportJobsPage'));
+const ReportJobPage = lazy(() => import('@/features/report-jobs/ReportJobPage'));
 const PhotoResearchPage = lazy(() => import('@/features/research/PhotoResearchPage'));
 const RecurringResearchPage = lazy(() => import('@/features/reports/RecurringResearchPage'));
 const SourcesPage = lazy(() => import('@/features/sources/SourcesPage'));
@@ -80,6 +82,8 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <GlobePage /> },
           { path: 'research', element: <ResearchPage /> },
+          { path: 'research/jobs', element: <ReportJobsPage /> },
+          { path: 'research/jobs/:id', element: <ReportJobPage /> },
           { path: 'research/photo', element: <PhotoResearchPage /> },
           { path: 'research/recurring', element: <RecurringResearchPage /> },
           { path: 'sources', element: <SourcesPage /> },

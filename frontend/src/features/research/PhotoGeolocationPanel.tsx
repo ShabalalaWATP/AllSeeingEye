@@ -233,6 +233,7 @@ function PhotoGeolocationForm({
         snapshot={report.progress.snapshot}
         active={report.progress.active}
         onCancel={report.progress.cancel}
+        onRetry={() => void report.retry()}
       />
     </div>
   );

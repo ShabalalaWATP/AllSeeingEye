@@ -190,11 +190,12 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
         snapshot={action.progress.snapshot}
         active={action.progress.active}
         onCancel={action.progress.cancel}
+        onRetry={() => void action.retry()}
       />
       <p className="map-tool-help">
         Saved to your personal reports using the configured AI connection. Closing this tool or
-        changing tools cancels the request. Reports include cited evidence and uncertainty;
-        collection is not exhaustive.
+        accepted jobs continue when you leave this tool. Reports include cited evidence and
+        uncertainty; collection is not exhaustive.
       </p>
     </form>
   );

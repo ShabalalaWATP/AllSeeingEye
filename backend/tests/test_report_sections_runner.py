@@ -1,0 +1,146 @@
+"""Successful step reuse, safe pauses and smaller attempts after explicit exhaustion."""
+
+import asyncio
+import json
+from dataclasses import replace
+
+import pytest
+
+from ase.application.ports.llm import LlmGatewayError
+from ase.application.reports.sections import SectionIncomplete
+from ase.application.reports.sections.planning import plan_topics
+from ase.application.reports.sections.synthesis_contracts import CONTEXT, JUDGEMENTS
+from ase.domain.llm import LlmProvider, ReasoningEffort
+from assistant_model_helpers import PROFILE
+from section_model_helpers import Checkpoints, Gateway, exhausted, items, run, synthesis_part_body
+
+
+async def test_assembly_keeps_topic_text_citations_and_can_resume_without_any_calls():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints)
+    first = await run(gateway, checkpoints)
+    assert first.body and not first.has_errors and first.attempts == 5
+    assert first.prompt_tokens == 50 and first.completion_tokens == 25
+    assert [theme.items[0].text for theme in first.body.reporting] == [
+        f"Original reporting from E{x}." for x in range(1, 4)
+    ]
+    assert first.body.cited_labels() == {"E1", "E2", "E3"}
+    assert all(row.status == "completed" for row in checkpoints.rows.values())
+    assert all("test-key-marker" not in repr(row) for row in checkpoints.rows.values())
+    resumed = await run(gateway, checkpoints)
+    assert resumed.body == first.body and len(gateway.calls) == 5 and resumed.attempts == 0
+    assert resumed.prompt_tokens is None and resumed.completion_tokens is None
+
+
+async def test_topic_exhaustion_splits_once_and_accounts_failed_paid_attempt():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints, {"S1": exhausted()})
+    draft = await run(gateway, checkpoints, items(8))
+    names = [name for name, *_ in gateway.calls]
+    assert names[:3] == ["S1", "S1.1", "S1.2"] and names.count("S1") == 1
+    assert draft.body and not draft.has_errors
+    assert draft.attempts == 8 and draft.prompt_tokens == 90 and draft.completion_tokens == 32035
+    split = next(row for (_, key), row in checkpoints.rows.items() if key == "S1")
+    assert split.status == "split" and split.payload["children"] == ["S1.1", "S1.2"]
+    before = len(gateway.calls)
+    assert (await run(gateway, checkpoints, items(8))).body == draft.body
+    assert len(gateway.calls) == before
+
+
+async def test_unsplittable_topic_keeps_finished_sections_and_is_not_replayed_on_resume():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints, {"S2": exhausted()})
+    for _ in range(2):
+        with pytest.raises(SectionIncomplete) as caught:
+            await run(gateway, checkpoints)
+        assert caught.value.section_id == "S2" and caught.value.reason == "token_budget_exhausted"
+    assert [name for name, *_ in gateway.calls] == ["S1", "S2"]
+    assert any(
+        key == "S1" and row.status == "completed" for (_, key), row in checkpoints.rows.items()
+    )
+
+
+async def test_exhausted_synthesis_never_repeats_all_topic_work_or_same_synthesis():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints, {CONTEXT: exhausted()})
+    for _ in range(2):
+        with pytest.raises(SectionIncomplete) as caught:
+            await run(gateway, checkpoints)
+        assert caught.value.section_id == CONTEXT
+    assert [name for name, *_ in gateway.calls] == ["S1", "S2", "S3", JUDGEMENTS, CONTEXT]
+    assert sum(row.status == "completed" for row in checkpoints.rows.values()) == 4
+
+
+async def test_one_failed_step_can_be_repaired_on_explicit_resume_without_rewriting_others():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints, {"S2": LlmGatewayError("private-provider-marker")})
+    with pytest.raises(SectionIncomplete) as caught:
+        await run(gateway, checkpoints)
+    assert "private-provider-marker" not in str(caught.value) + repr(checkpoints.rows)
+    gateway.overrides.clear()
+    draft = await run(gateway, checkpoints)
+    assert draft.body and not draft.has_errors
+    assert [name for name, *_ in gateway.calls] == ["S1", "S2", "S2", "S3", JUDGEMENTS, CONTEXT]
+    assert "previous step" in gateway.calls[2][1].messages[-1].content
+
+
+async def test_invalid_final_assumptions_pause_synthesis_and_reuse_completed_topics():
+    checkpoints = Checkpoints()
+    invalid = synthesis_part_body(JUDGEMENTS, ["E1"])
+    invalid["key_judgements"][0]["assumptions"] = ["A999"]
+    gateway = Gateway(checkpoints, {JUDGEMENTS: json.dumps(invalid)})
+    with pytest.raises(SectionIncomplete) as caught:
+        await run(gateway, checkpoints)
+    assert caught.value.reason == "invalid_section" and caught.value.draft.has_errors
+    gateway.overrides.clear()
+    assert (await run(gateway, checkpoints)).body
+    assert [name for name, *_ in gateway.calls].count("S1") == 1
+    assert [name for name, *_ in gateway.calls].count(JUDGEMENTS) == 2
+
+
+async def test_changed_frozen_metadata_invalidates_reuse_even_with_same_ids_and_hash():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints)
+    await run(gateway, checkpoints)
+    updated = tuple(replace(row, source_name="Revised attribution") for row in items())
+    await run(gateway, checkpoints, updated)
+    assert len(gateway.calls) == 10 and len({digest for digest, _ in checkpoints.rows}) == 2
+
+
+async def test_cancelled_running_step_is_not_replayed_or_saved_as_completed():
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints, {"S1": asyncio.CancelledError()})
+    with pytest.raises(asyncio.CancelledError):
+        await run(gateway, checkpoints)
+    with pytest.raises(SectionIncomplete) as caught:
+        await run(gateway, checkpoints)
+    assert caught.value.reason == "interrupted" and len(gateway.calls) == 1
+    assert next(iter(checkpoints.rows.values())).status == "running"
+
+
+async def test_split_depth_and_twelve_leaf_cap_bound_failure_recursion():
+    checkpoints = Checkpoints()
+    topics = plan_topics(items(100), None)
+    overrides = {topic.id: exhausted() for topic in topics}
+    overrides.update({f"{topic.id}.{index}": exhausted() for topic in topics for index in (1, 2)})
+    gateway = Gateway(checkpoints, overrides)
+    with pytest.raises(SectionIncomplete) as caught:
+        await run(gateway, checkpoints, items(100))
+    assert caught.value.reason == "token_budget_exhausted"
+    assert len(checkpoints.rows) <= 25 and len(gateway.calls) <= 25
+    assert all(name.count(".") <= 2 for name, *_ in gateway.calls)
+
+
+@pytest.mark.parametrize("provider", [LlmProvider.OPENAI_COMPATIBLE, LlmProvider.BEDROCK])
+async def test_every_call_preserves_selected_provider_and_effort_budget(provider):
+    checkpoints = Checkpoints()
+    gateway = Gateway(checkpoints)
+    profile = replace(
+        PROFILE, provider=provider, reasoning_effort=ReasoningEffort.MAX, max_output_tokens=32000
+    )
+    await run(gateway, checkpoints, items(1), profile=profile)
+    assert len(gateway.calls) == 3
+    for _, request, base, key, model in gateway.calls:
+        assert (base, key, model) == (profile.base_url, "test-key-marker", profile.model)
+        assert request.provider is provider and request.reasoning_effort is ReasoningEffort.MAX
+        assert request.max_output_tokens == 32000

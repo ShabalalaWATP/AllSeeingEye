@@ -39,6 +39,7 @@ class Job:
     country_name: str | None
     previous: ReportVersion | None = None
     report_id: UUID | None = None
+    version_id: UUID | None = None
     bbox: BoundingBox | None = None
     countries: tuple[str, ...] = ()
     hazard: Hazard | None = None
