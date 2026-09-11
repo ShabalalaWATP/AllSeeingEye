@@ -1,6 +1,6 @@
 # Americas public camera sources
 
-Implementation: `backend/src/ase/adapters/geo/camera_americas*.py`.
+Implementation: `backend/src/ase/adapters/geo/camera_americas*.py` and `camera_wsdot.py`.
 Reference: [OSIRIS camera adapters](https://github.com/simplifaisoul/osiris/tree/master/src/app/api/cctv), inspected at commit `fac8d1b` on 8 September 2026.
 
 The adapters reproduce the public provider catalogue formats, not OSIRIS's proxy,
@@ -11,7 +11,7 @@ hosts. A camera record cannot choose an arbitrary remote proxy target.
 
 | Provider | Catalogue and capability |
 | --- | --- |
-| Washington WSDOT | Referenced public JSON endpoint currently returns 404. Registered as unavailable. |
+| Washington WSDOT | Official Highway Cameras REST API with optional server-side `ASE_WSDOT_ACCESS_CODE`. Active snapshot cameras only; missing code leaves the provider unavailable without a request. |
 | California Caltrans | Official ArcGIS CCTV FeatureServer, paginated by OBJECTID. Snapshots and published HLS URLs. |
 | Ottawa | Official municipal camera list and snapshots. |
 | Quebec 511 | Official transport WFS catalogue, provider MP4 camera clips and original player links. |
@@ -49,6 +49,17 @@ remain. Other catalogues are bounded to 5,000 input rows. No feed depends on a p
 API key, and missing/retired feeds have no fake camera fallback.
 
 ## Verification
+
+WSDOT follow-up, 11 September 2026: obtain a free access code from the
+[official API page](https://www.wsdot.wa.gov/traffic/api/), set
+`ASE_WSDOT_ACCESS_CODE` in the backend environment and restart the API. The
+adapter calls the fixed HTTPS `GetCamerasAsJson` operation through protected
+query-credential transport, with no redirects or credential-bearing provenance.
+The code stays on the server; public images use the existing provider allowlist.
+The live check at 00:08 UTC returned 1,630 active snapshot cameras and successfully
+downloaded one sampled JPEG. The API supplied no continuous video streams.
+121 relevant tests passed; the new adapter achieved 100% statement/branch coverage
+in a separate 25-test run. These results supersede the old WSDOT failure below.
 
 Offline parser, media origin, coordinate, disabled/authentication flag, malformed
 payload, deduplication and pagination regression tests run without network.

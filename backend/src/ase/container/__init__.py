@@ -293,7 +293,15 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         self.public_firms_http = FeedHttpClient(self.http.user_agent, max_bytes=16 * 1024 * 1024)
         self.camera_http = CameraHttpClient(self.http.user_agent, max_bytes=10 * 1024 * 1024)
         self.cameras = CameraCatalogueService(
-            build_camera_sources(self.camera_http, self.marine_http),
+            build_camera_sources(
+                self.camera_http,
+                self.marine_http,
+                wsdot_access_code=(
+                    self.settings.wsdot_access_code.get_secret_value()
+                    if self.settings.wsdot_access_code
+                    else None
+                ),
+            ),
             self.clock,
         )
         self.footprints = FootprintSearchUseCase(

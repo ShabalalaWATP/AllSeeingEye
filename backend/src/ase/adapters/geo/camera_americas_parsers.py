@@ -87,6 +87,8 @@ def _simple(provider: str, r: dict[str, Any]) -> dict[str, Any] | None:
     external: Any = None
     stream_type = "hls"
     if provider == "wsdot":
+        if r.get("IsActive") is False:
+            return None
         key, title, image = r.get("CameraID"), r.get("Title"), r.get("ImageURL")
         p = obj(r.get("CameraLocation"))
         lat, lon = p.get("Latitude"), p.get("Longitude")

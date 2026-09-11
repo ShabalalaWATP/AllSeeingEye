@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     companies_house_key: SecretStr | None = None
     certificate_transparency_key: SecretStr | None = None
     openalex_api_key: SecretStr | None = None
+    wsdot_access_code: SecretStr | None = None
     ooni_noncommercial_use_acknowledged: bool = False
     uksl_snapshot_path: str | None = None
     ofac_sdn_snapshot_path: str | None = None

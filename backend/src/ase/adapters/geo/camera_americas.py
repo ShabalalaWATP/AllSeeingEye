@@ -8,13 +8,13 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.geo.camera_americas_common import FRAME_HOSTS, MEDIA_HOSTS, camera, unique
 from ase.adapters.geo.camera_americas_ibi import CONFIGS, IbiCameraSource
 from ase.adapters.geo.camera_americas_parsers import parse_index
+from ase.adapters.geo.camera_wsdot import WsdotCameraSource
 from ase.application.ports.cameras import CameraSource
 from ase.domain.cameras import Camera
 
 __all__ = ["FRAME_HOSTS", "MEDIA_HOSTS", "build_sources"]
 
 ENDPOINTS = {
-    "wsdot": ("WSDOT", "https://data.wsdot.wa.gov/log/public/cameras.json"),
     "caltrans": (
         "Caltrans",
         "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/CCTV/FeatureServer/0/query?where=1%3D1&outFields=*&f=json&resultRecordCount=2000&orderByFields=OBJECTID",
@@ -160,9 +160,12 @@ class AmericanPublishedLinks:
         )
 
 
-def build_sources(http: FeedHttpClient) -> tuple[CameraSource, ...]:
+def build_sources(
+    http: FeedHttpClient, *, wsdot_access_code: str | None = None
+) -> tuple[CameraSource, ...]:
     return (
-        tuple(AmericanCameraSource(provider, http) for provider in ENDPOINTS)
-        + tuple(IbiCameraSource(cfg, http) for cfg in CONFIGS)
-        + (AmericanPublishedLinks(),)
+        WsdotCameraSource(http, wsdot_access_code),
+        *(AmericanCameraSource(provider, http) for provider in ENDPOINTS),
+        *(IbiCameraSource(cfg, http) for cfg in CONFIGS),
+        AmericanPublishedLinks(),
     )

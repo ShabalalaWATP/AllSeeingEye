@@ -17,8 +17,10 @@ blocked-signup notes below:
   a dated scholarly search returned 20 records at 23:52 UTC on 10 September
   (11 September in the operator's UK timezone). This is bounded metadata access,
   not full-text retrieval, exhaustive research or LLM report evaluation.
-- WSDOT: an access code was issued through its official form. Adapter integration
-  and live camera verification remain outstanding; no connection is claimed.
+- WSDOT: official access code saved in ignored `backend/.env`; the retired public
+  endpoint is replaced by the protected official API. A live check at 00:08 UTC
+  on 11 September returned 1,630 active snapshot cameras and one sampled JPEG
+  downloaded successfully. No continuous video streams were supplied by this API.
 - Ordnance Survey: email verified; remaining account steps await the operator.
   OpenAQ, SSLMate, Alberta 511 and BarentsWatch forms were prepared. Companies
   House requires the operator's GOV.UK One Login. Their API access is not verified.
@@ -32,6 +34,13 @@ The focused OpenAlex change passed 102 tests with 96.38% targeted branch-inclusi
 coverage (new client 100%), backend lint/format/type checks, architecture checks,
 scoped Bandit and independent review. The restarted local API health and frontend
 login both returned HTTP 200. The secret remains outside tracked changes.
+
+The WSDOT follow-up passed 121 relevant camera/transport tests, with 100%
+statement and branch coverage of the new adapter in a separate focused run.
+Inactive entries are excluded. The existing 15-minute catalogue cache, provider
+selection and 5,000-camera cap remain, with no redirect or credential-bearing
+URL exposure. This verifies one regional catalogue and one image, not every
+camera's freshness or worldwide coverage. See [camera operations](CAMERA_AMERICAS.md).
 
 ## Findings that matter
 
@@ -152,6 +161,7 @@ secret values. All paths below are backend settings, not browser environment val
 | AidData projects | Catalogue path absent | Prepare the supported local catalogue with recorded years, provenance and actual project geometry |
 | OONI aggregates | Licence acknowledgement false | Confirm appropriate non-commercial use before enabling; no token is missing |
 | OpenAlex | Optional `ASE_OPENALEX_API_KEY` configured and live metadata query verified on 11 September | Keep bounded opt-in collection; anonymous access remains available when the key is unset |
+| WSDOT | `ASE_WSDOT_ACCESS_CODE` configured; 1,630 active snapshot cameras and one sample image verified on 11 September | Select WSDOT in CCTV providers; normal bounded catalogue refresh applies |
 | AI reports | Disabled, untested saved profile | Use the administrator model-discovery, test and activation journey with usable encryption configuration |
 
 See the [research access audit](source-audit/research-access-gaps.md) for official
@@ -167,7 +177,7 @@ also does not establish redistribution rights, complete coverage or independence
 | Priority | Addition | Why it helps | Access / implementation remaining |
 | --- | --- | --- | --- |
 | 1 | OS OpenData and Companies House | Makes existing map styles and UK company research usable | Accounts/keys, existing connectors, bounded smoke tests |
-| 1 | WSDOT and Alberta 511 | Repairs known North American camera gaps | Authorised codes/keys and adapter updates; WSDOT offers an email access-code form |
+| 1 | Alberta 511 | Repairs another North American camera gap; WSDOT now connected | Finish account and API access, then add protected credential support and live verification |
 | 1 | ReliefWeb and UCDP | Better humanitarian and documented conflict context | Approved appname/token, truthful geographic precision and freshness |
 | 1 | Fresh FIRMS area research | Uses the already verified key for requests beyond retained data | New private provider with credential-generation guard, sensor/date budgets and thermal uncertainty |
 | 2 | BarentsWatch AIS | Independent complementary Norwegian/Arctic terrestrial and satellite AIS | Account/OAuth client and new adapter; regional, not worldwide |

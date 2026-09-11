@@ -3530,3 +3530,27 @@ key was checked absent from tracked diffs and new source files, and its local
 environment file remains ignored. Restarted the local API on 8001 and frontend on
 5174; health and login both returned HTTP 200. No remote is configured, and no
 production deployment or push was performed.
+
+## 11 September 2026: WSDOT camera connection
+
+Recovered the already issued official WSDOT access code through its authorised
+email lookup. Saved it only in ignored `backend/.env`. Replaced the retired JSON
+index with WSDOT's fixed HTTPS Highway Cameras REST operation, using protected
+query credentials and no redirects. The existing provider ID, image-origin
+allowlist, catalogue bounds and cache remain; inactive cameras are excluded and
+a missing code makes the source unavailable without an upstream request.
+
+At 00:08 UTC the production adapter returned 1,630 active snapshot cameras; one
+sampled JPEG downloaded successfully. This API supplied no continuous streams.
+121 relevant tests passed, followed by 25 focused tests with 100% statement and
+branch coverage of the new adapter. Changed-file Ruff/format, full backend mypy,
+both import contracts, scoped Bandit, file-length and diff checks passed.
+Independent static correctness/security review found no blockers. Credential
+checks found no configured secrets in proposed changes, and the local environment
+remains ignored. The local API was restarted; API health and frontend login
+returned HTTP 200. No remote is configured, and no push or deployment occurred.
+
+The source audit, active plan, camera operations and environment example now
+document the connection. Other provider registrations still need account
+completion or approved API access. The Ordnance Survey sign-in was prepared again
+after the browser restart; account completion and a usable map key remain unverified.

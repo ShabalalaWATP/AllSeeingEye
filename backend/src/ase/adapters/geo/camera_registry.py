@@ -36,12 +36,17 @@ class GuardedCameraSource:
             raise ValueError("Public camera provider unavailable") from exc
 
 
-def build_sources(http: CameraHttpClient, digitraffic: FeedHttpClient) -> tuple[CameraSource, ...]:
+def build_sources(
+    http: CameraHttpClient,
+    digitraffic: FeedHttpClient,
+    *,
+    wsdot_access_code: str | None = None,
+) -> tuple[CameraSource, ...]:
     sources = (
         OfficialCameraSource("tfl", http),
         OfficialCameraSource("hongkong", http),
         OfficialCameraSource("fintraffic", digitraffic),
-        *camera_americas.build_sources(http),
+        *camera_americas.build_sources(http, wsdot_access_code=wsdot_access_code),
         *camera_europe.build_sources(http),
         *camera_world.build_sources(http),
         *camera_world_directory.build_sources(http),

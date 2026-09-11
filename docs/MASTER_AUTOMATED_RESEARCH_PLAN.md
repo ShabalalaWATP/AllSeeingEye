@@ -25,8 +25,10 @@ current delivery and research capability are separate acceptance criteria.
 - [x] Restore browser/command access and link the completed OpenAlex account:
   optional server-side key, origin-bound Bearer header and a successful bounded
   live metadata query (11 September UK time).
-- [ ] Complete remaining free provider account linking. WSDOT issued an access
-  code but its adapter is pending; OS email is verified and other prepared
+- [x] Connect WSDOT's official access-code API with protected credentials, existing
+  camera cache/limits and live catalogue/sample-image verification: 1,630 active
+  snapshot cameras on 11 September, no continuous video supplied by this API.
+- [ ] Complete remaining free provider account linking. OS email is verified and other prepared
   registrations still require the operator's authentication steps.
 - [ ] Resolve disabled/untested AI profile readiness and complete real-model
   report evaluation through the administrator connection journey.
