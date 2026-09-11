@@ -3594,3 +3594,10 @@ source audit, active implementation plan, maritime coverage, BarentsWatch guide
 and environment example. Restarted the local API with both connections: health
 and frontend login returned 200 and protected-camera access without authentication
 returned 401. No remote is configured; no push or production deployment occurred.
+
+The operator then supplied the original BarentsWatch general-client secret.
+At 00:39 UTC, a guarded token request returned 200 with scope `api`. Saved the
+verified general-client credentials separately in ignored `backend/.env` and
+verified the working AIS credentials were unchanged. General API adapters are
+still unimplemented; no additional feed activation or API restart was needed.
+Documented the reserved local credential names without recording their values.

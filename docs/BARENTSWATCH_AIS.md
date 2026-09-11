@@ -20,6 +20,14 @@ The current local AIS client was created on 11 September 2026. Its generated
 secret is stored only in ignored `backend/.env`. The operator's general API
 client is unchanged and is not used for ship access.
 
+The operator subsequently supplied the general client's secret. Its token
+request succeeded with scope `api` at 00:39 UTC on 11 September. That credential
+is saved separately as `ASE_BARENTSWATCH_API_CLIENT_ID` and
+`ASE_BARENTSWATCH_API_CLIENT_SECRET` in ignored `backend/.env`, reserved for
+future general API adapters. The current application does not consume those
+two values. Both existing AIS credential values were verified unchanged;
+this does not activate fish-health, wave or other general API datasets.
+
 ## Collection and display
 
 The connector requests the current combined snapshot every two minutes. Tokens

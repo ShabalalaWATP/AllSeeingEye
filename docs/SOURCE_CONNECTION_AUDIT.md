@@ -32,6 +32,9 @@ blocked-signup notes below:
   At 00:33 UTC the production connector accepted 3,407 fresh positions, including
   12 labelled by AIS as military operations. This is not verified naval identity.
   See [BarentsWatch operations](BARENTSWATCH_AIS.md) for connector verification.
+  The general `api` client also authenticated successfully at 00:39 UTC; its
+  separately stored credentials are reserved for future general API adapters.
+  This does not activate additional datasets or replace the working AIS client.
 - Ordnance Survey: email verified; remaining account steps await the operator.
   OpenAQ and Alberta 511 forms were prepared. Companies
   House requires the operator's GOV.UK One Login. Their API access is not verified.
