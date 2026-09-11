@@ -24,6 +24,10 @@ EXIF_FIELDS = {
     36867: "metadata_datetime_original",
     36881: "metadata_timezone_original",
 }
+IMAGE_REQUIREMENTS = (
+    "Use a static PNG, JPEG or WebP (no animation), up to 8 MiB, "
+    "8 megapixels and 8,192 pixels per edge."
+)
 
 
 def decode_image(data: bytes) -> tuple[Image.Image, tuple[tuple[str, str], ...]]:
@@ -39,7 +43,10 @@ def decode_image(data: bytes) -> tuple[Image.Image, tuple[tuple[str, str], ...]]
                     or max(width, height) > MAX_DIMENSION
                     or getattr(source, "is_animated", False)
                 ):
-                    raise ImportRejected("Image dimensions or animation exceed supported limits.")
+                    raise ImportRejected(
+                        "Image dimensions or animation exceed supported limits. "
+                        + IMAGE_REQUIREMENTS
+                    )
                 metadata = [
                     ("format", str(source.format)),
                     ("width", str(width)),
@@ -57,7 +64,9 @@ def decode_image(data: bytes) -> tuple[Image.Image, tuple[tuple[str, str], ...]]
     except ImportRejected:
         raise
     except Exception:
-        raise ImportRejected("The image is malformed or exceeds decoding limits.") from None
+        raise ImportRejected(
+            "The image is malformed or exceeds decoding limits. " + IMAGE_REQUIREMENTS
+        ) from None
     finally:
         Image.MAX_IMAGE_PIXELS = previous
 

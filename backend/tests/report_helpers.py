@@ -35,6 +35,7 @@ GOOD_BODY = {
             "supporting_evidence": ["E3"],
             "contradicting_evidence": [],
             "assumptions": [],
+            "change_from_previous": None,
             "indicators": [],
         },
     ],

@@ -133,8 +133,13 @@ def compose_messages(
         )
     if direction is not None:
         parts.append(
-            "Direction. Answer by EEI: write one assessment section per EEI, headed by the "
-            "EEI id and its text, and name in each gap the EEI it leaves open:"
+            "Direction. Address every EEI using the supplied evidence. Group related supported "
+            "EEIs in assessment sections, naming their IDs and citing the relevant evidence. "
+            "Put unsupported EEIs in gaps with their EEI id and the missing evidence. Do not "
+            "create a speculative assessment paragraph or attach unrelated citations merely "
+            "to fill a section. A request for corroboration does not establish that a check "
+            "was performed; distinguish future collection recommendations from completed "
+            "checks. Keep all required report sections and evidence-quality safeguards:"
         )
         parts.extend(direction.lines())
     parts.append(f"Quality of information check: {quality.describe()}")

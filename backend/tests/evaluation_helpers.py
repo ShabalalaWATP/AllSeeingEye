@@ -20,6 +20,7 @@ REPORT_ANSWER: dict[str, Any] = {
             "supporting_evidence": ["E1"],
             "contradicting_evidence": [],
             "assumptions": [],
+            "change_from_previous": None,
             "indicators": [],
         }
     ],

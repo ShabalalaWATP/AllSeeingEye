@@ -30,15 +30,19 @@ export function PhotoGeolocationUpload({
         <label htmlFor={id} className="text-sm font-semibold">
           Photograph
         </label>
-        <span className="text-xs text-muted">PNG, JPEG or WebP · up to 8 MiB</span>
+        <span className="text-xs text-muted">Static PNG, JPEG or WebP · up to 8 MiB</span>
       </div>
+      <p id={`${id}-limits`} className="text-xs leading-relaxed text-muted">
+        Maximum 8 megapixels (width × height) and 8,192 pixels on either edge. Animated images are
+        not supported.
+      </p>
       <input
         key={input.key}
         id={id}
         type="file"
         accept={PHOTO_EXTENSIONS}
         disabled={disabled}
-        aria-describedby={`${id}-privacy`}
+        aria-describedby={`${id}-limits ${id}-privacy`}
         className="block w-full min-w-0 text-xs text-muted file:mr-3 file:rounded-md file:border file:border-line file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:font-medium file:text-text focus-visible:outline-2 focus-visible:outline-ember disabled:opacity-50"
         onChange={(event) => {
           const file = event.currentTarget.files?.[0];

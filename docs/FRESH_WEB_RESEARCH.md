@@ -41,6 +41,14 @@ dates remain unknown. Requested countries and area geometry are search context,
 not evidence that a result belongs to that location. Historical searches are partial
 discovery, not proof of complete coverage for the selected interval.
 
+The search instructions require the model to preserve the actual claimant and
+distinguish original event dates from original publication, republication, page
+update and search-index dates. Reused historical claims must be background;
+unresolved event dates must remain uncertain rather than current-period facts.
+These instructions reduce risk but do not verify claims. A completed, cited
+response can still misattribute a claim or present old events as new. Operators
+must check the original source and event timing before relying on the synthesis.
+
 ## Privacy and operational limits
 
 - Public research requires the explicit `research_web_search: true` option.
@@ -48,15 +56,27 @@ discovery, not proof of complete coverage for the selected interval.
   this tool. A separate public question can be used for public corroboration.
 - The administrator can disable `research-web-search` in source controls. Checks
   before dispatch and after the external call prevent disabled results being admitted.
-- One request allows at most three native tool calls, 90 seconds including admission,
-  6,000 output tokens, 12 citation annotations, 20 consulted URLs and 6,000 characters
-  of generated synthesis. The selected profile can impose a smaller token budget.
+- One request allows at most three native tool calls and 90 seconds including admission.
+  The search instructions plan across all selected countries within two tool calls,
+  then require a final cited answer that states any coverage gaps. Three remains
+  the hard request and response-validation ceiling, not the intended search count.
+  The output allowance uses the selected profile's stage budget: 6,000 tokens by
+  default, with configured reasoning headroom up to a hard 16,000-token ceiling.
+  This includes reasoning tokens, not just the visible answer. A smaller profile
+  budget remains binding. The model and reasoning effort are preserved; the app
+  does not retry automatically when the provider exhausts the allowance.
+- Response limits remain 12 citation annotations, 20 consulted URLs and 6,000
+  characters of generated synthesis, even with a larger reasoning allowance.
 - Two concurrent native requests, six attempts per user per hour and 24 attempts
   per process per hour are allowed. These limits assume the documented single API
   worker deployment. They are separate from ordinary feed collection budgets.
-- Native `tool_choice: required` and `external_web_access: true` are explicit.
-  Success requires a completed response containing a completed search action and
-  attributable text. A plausible answer without an executed search fails closed.
+- Native `tool_choice: auto` allows the model to finish its cited answer after
+  searching; `external_web_access: true` enables live search. The instructions
+  explicitly require a real search. Success still requires a completed response,
+  at least one completed search action, no unfinished calls, no more than three
+  total tool calls and attributable text with native citations. An answer without
+  an executed search fails closed, as does a fourth call even if the overall
+  provider response says it completed. No generated fallback is admitted.
 - Redirects and compressed replies are rejected; streaming response bodies are
   capped at 512 KiB. Errors expose safe status messages, never provider bodies,
   question text or credentials. Cancellation closes the transport.
@@ -73,7 +93,8 @@ discovery, not proof of complete coverage for the selected interval.
 ## Verification
 
 Deterministic tests cover fixed origin and credential placement, configured model
-preservation, actual tool execution, citation and response bounds, private-input
+preservation, profile token limits and reasoning headroom, actual tool execution,
+citation and response bounds, incomplete-response usage accounting, private-input
 exclusion, selected countries, source disable during a request, cancellation,
 durable usage, generated-context persistence and report HTTP read/export. These
 tests use synthetic responses and do not establish live provider availability or

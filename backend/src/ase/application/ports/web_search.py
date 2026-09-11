@@ -7,6 +7,9 @@ from typing import Protocol
 from ase.domain.llm import LlmUsage, ReasoningEffort
 from ase.domain.web_research import WebCitation
 
+DEFAULT_WEB_OUTPUT_TOKENS = 6_000
+MAX_WEB_OUTPUT_TOKENS = 16_000
+
 WebSearchUsageSink = Callable[[LlmUsage], Awaitable[None]]
 
 

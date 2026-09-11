@@ -65,8 +65,9 @@ def test_image_type_and_dimension_limits_precede_ocr(monkeypatch: pytest.MonkeyP
     with pytest.raises(ImportRejected, match="filename type"):
         extract_media(synthetic_image(), "mislabelled.jpg", MediaTools())
     monkeypatch.setattr(images, "MAX_PIXELS", 10)
-    with pytest.raises(ImportRejected, match="decoding limits"):
+    with pytest.raises(ImportRejected, match="decoding limits") as error:
         extract_media(synthetic_image(), "oversized.png", MediaTools())
+    assert "8 megapixels and 8,192 pixels per edge" in str(error.value)
     assert Image.MAX_IMAGE_PIXELS != 10
 
 
@@ -76,8 +77,9 @@ def test_animated_image_is_rejected() -> None:
     first.save(
         output, format="PNG", save_all=True, append_images=[Image.new("RGB", (32, 32), "blue")]
     )
-    with pytest.raises(ImportRejected, match="animation"):
+    with pytest.raises(ImportRejected, match="animation") as error:
         extract_media(output.getvalue(), "animated.png", MediaTools())
+    assert "static PNG, JPEG or WebP (no animation), up to 8 MiB" in str(error.value)
 
 
 def test_ocr_receives_sanitised_local_image_and_fixed_arguments(

@@ -5,7 +5,7 @@ still requires entering its key and testing it through the app.
 
 ## OpenAI GPT-5.6 Luna
 
-Sign in as an administrator and open **Administration → AI connections**.
+Sign in as an administrator and open **Administration > AI connections**.
 Create an OpenAI connection using:
 
 | Setting | Value |
@@ -27,6 +27,42 @@ request with the selected model and reasoning setting, not saved research.
 It can consume API tokens. A successful test establishes connectivity and a
 small output contract, not the quality of a full research assessment.
 
+At the official OpenAI base URL, an explicit **Max** reasoning setting uses
+`/v1/responses`. This preserves the selected model and reasoning level instead of
+silently lowering them when Chat Completions rejects `max`. Structured output uses
+strict `text.format` JSON schema; sanitised photo analysis uses native `input_image`
+content. The request sets `store: false`, which does not override the provider's
+account-level retention policy. Other reasoning settings and custom compatible
+endpoints retain the existing Chat Completions route.
+
+Official OpenAI **Max** report drafts have a five-minute request deadline by
+default. Full drafts can need several minutes; the longer deadline does not
+guarantee completion. Other gateway requests retain their two-minute default,
+and shorter stage deadlines still apply. An explicitly configured gateway timeout
+overrides these defaults. Admission waiting, HTTP transfer and response parsing
+all count towards the selected deadline. The whole report remains bounded by its
+ten-minute production deadline, and the existing retry limit is unchanged.
+Cancellation, concurrency and response-size limits still apply to both routes.
+Incomplete responses, refusals and malformed response bodies fail the connection
+test rather than being treated as successful answers. The official
+[Luna model documentation](https://developers.openai.com/api/docs/models/gpt-5.6-luna)
+lists `max` reasoning, image input and structured outputs. The request shape follows
+the [structured output guide](https://developers.openai.com/api/docs/guides/structured-outputs)
+and [image input guide](https://developers.openai.com/api/docs/guides/images-vision).
+
+Full report schemas require every declared property, including nullable values.
+For example, each new key judgement includes `change_from_previous: null` when
+there is no previous judgement to compare. The new-output validator enforces
+this contract; existing saved reports that omitted the field remain readable.
+Recursive local tests cover the actual schemas used by drafting, planning,
+review, translation, conflict screening and photo analysis. These checks prevent
+missing-required-field errors but do not establish full provider compatibility.
+
+Direction questions guide coverage; they do not establish that requested checks
+were performed. Related supported questions can share a cited assessment section.
+Unsupported questions are recorded as named intelligence gaps, with missing
+evidence and future collection recommendations kept separate from completed work.
+
 Apply the tested connection to the global default or a selected team. Global
 applies to personal work and teams that inherit it, including administrators'
 work. An explicit team override stays in place when the global default changes.
@@ -41,7 +77,7 @@ and explicit scope confirmation are still required.
 
 ## Amazon Bedrock
 
-Open **Administration → AI connections**, create a connection and choose
+Open **Administration > AI connections**, create a connection and choose
 **Amazon Bedrock**. Select the AWS region, enter a Bedrock API key in the password
 field and paste the exact model or inference-profile ID from the AWS console.
 The app builds the regional endpoint, for example
@@ -63,9 +99,9 @@ See [Bedrock structured outputs](https://docs.aws.amazon.com/bedrock/latest/user
 and the [model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-oss-120b.html).
 
 Model selection is manual. The app does not enumerate the AWS model catalogue,
-which requires a separate control-plane integration. Bedrock currently supports
-text connections only, with provider-default reasoning and temperature from 0
-to 1. Embeddings retain their separate OpenAI-compatible profile. The app accepts
+which requires a separate control-plane integration. Bedrock supports text and
+sanitised image requests through Converse, subject to the selected model accepting
+those inputs, with provider-default reasoning and temperature from 0 to 1. Embeddings retain their separate OpenAI-compatible profile. The app accepts
 model and inference-profile identifiers up to 2,048 characters; AWS still checks
 the identifier, model access and model-specific token budget during the test.
 The configured completion budget applies to every native text stage, including

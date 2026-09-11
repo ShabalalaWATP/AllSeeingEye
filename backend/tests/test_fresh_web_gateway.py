@@ -2,12 +2,13 @@
 
 import asyncio
 import json
+from dataclasses import replace
 
 import httpx
 import pytest
 
 from ase.adapters.llm import openai_web_search
-from ase.adapters.llm.openai_web_search import OpenAiWebSearchGateway
+from ase.adapters.llm.openai_web_search import OpenAiWebSearchGateway, web_payload
 from ase.adapters.llm.web_search_response import parse_web_response
 from ase.application.ports.web_search import WebSearchError, WebSearchRequest
 from test_llm_gateway_security import RecordingStream
@@ -16,23 +17,45 @@ from web_search_helpers import CITATION, RESULT, TEXT, URL, native_response
 REQUEST = WebSearchRequest('{"question":"public-scope"}', 8000, "max")
 
 
-async def test_fixed_origin_native_search_requires_live_tool_and_keeps_configured_model():
+def test_search_instructions_preserve_claimants_and_distinguish_event_dates_from_page_dates():
+    instructions = web_payload("configured-model", REQUEST)["instructions"]
+    assert "Preserve the actual claimant for every reported assertion" in instructions
+    assert "a publisher relaying a claim is not the claimant" in instructions
+    assert "Do not change which party made the claim" in instructions
+    assert "Check the original event date" in instructions
+    assert "republication, page updates and search indexes do not establish the event date" in (
+        instructions
+    )
+    assert "Treat reused historical claims as background" in instructions
+    assert "unresolved event dates as uncertain, never as current-period facts" in instructions
+
+
+@pytest.mark.parametrize("budget", [1, 6000, 8000, 16000])
+async def test_fixed_origin_native_search_requires_live_tool_and_keeps_configured_model(budget):
+    calls = []
+
     def handler(request):
+        calls.append(request)
         assert str(request.url) == "https://api.openai.com/v1/responses"
         assert request.headers["authorization"] == "Bearer fixture-key"
         payload = json.loads(request.content)
         assert payload["model"] == "configured-model"
         assert payload["reasoning"] == {"effort": "max"}
-        assert payload["tool_choice"] == "required"
+        assert payload["tool_choice"] == "auto"
+        assert "must execute the live web-search tool before answering" in payload["instructions"]
+        assert "all selected countries within at most two tool calls" in payload["instructions"]
+        assert "then stop calling tools and give the final answer" in payload["instructions"]
+        assert "report coverage gaps without further searches" in payload["instructions"]
         assert payload["tools"] == [{"type": "web_search", "external_web_access": True}]
-        assert payload["max_tool_calls"] == 3 and payload["max_output_tokens"] == 6000
+        assert payload["max_tool_calls"] == 3 and payload["max_output_tokens"] == budget
         assert payload["store"] is False and "fixture-key" not in request.content.decode()
         return httpx.Response(200, json=native_response())
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         result = await OpenAiWebSearchGateway(client=client).search(
-            "fixture-key", "configured-model", REQUEST
+            "fixture-key", "configured-model", replace(REQUEST, max_output_tokens=budget)
         )
+    assert len(calls) == 1
     assert result.synthesis == TEXT and result.citations == (CITATION,)
     assert result.consulted_urls == (URL,) and result.tool_calls == 1
     assert result.prompt_tokens == 30 and result.completion_tokens == 15
@@ -43,6 +66,8 @@ async def test_fixed_origin_native_search_requires_live_tool_and_keeps_configure
     [
         "no_search",
         "failed_tool",
+        "unfinished_after_search",
+        "fourth_searching",
         "too_many",
         "incomplete",
         "uncited",
@@ -56,6 +81,12 @@ def test_generated_text_is_not_accepted_without_complete_native_search_and_safe_
         data["output"].pop(0)
     elif change == "failed_tool":
         data["output"][0]["status"] = "failed"
+    elif change in {"unfinished_after_search", "fourth_searching"}:
+        completed = data["output"][0]
+        data["output"] = [completed] * (3 if change == "fourth_searching" else 1) + [
+            {**completed, "status": "searching"},
+            data["output"][1],
+        ]
     elif change == "only_open_page":
         data["output"][0]["action"]["type"] = "open_page"
     elif change == "too_many":
@@ -202,6 +233,18 @@ async def test_key_and_request_bounds_before_network():
             await gateway.search("key", "model", WebSearchRequest("x" * 12001, 10, None))
 
 
-def test_normal_native_response_keeps_unknown_publication_date_unknown():
-    result = parse_web_response(native_response(), "fallback", 25)
-    assert result == RESULT and not hasattr(result, "published_at")
+@pytest.mark.parametrize("budget", [0, -1, 16001, 32000, True, 6000.5, "6000", None])
+async def test_invalid_token_budgets_fail_before_network(budget):
+    async with httpx.AsyncClient(transport=httpx.MockTransport(lambda _: pytest.fail())) as client:
+        with pytest.raises(WebSearchError, match="output-token budget"):
+            await OpenAiWebSearchGateway(client=client).search(
+                "fixture-key", "model", replace(REQUEST, max_output_tokens=budget)
+            )
+
+
+@pytest.mark.parametrize("calls", [1, 2, 3])
+def test_normal_native_response_keeps_unknown_publication_date_unknown(calls):
+    data = native_response()
+    data["output"] = [data["output"][0]] * calls + [data["output"][1]]
+    result = parse_web_response(data, "fallback", 25)
+    assert result == replace(RESULT, tool_calls=calls) and not hasattr(result, "published_at")

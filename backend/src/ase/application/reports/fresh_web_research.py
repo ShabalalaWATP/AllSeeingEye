@@ -9,6 +9,8 @@ from ase.application.ports.llm import SecretCipher
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.ports.web_search import (
+    DEFAULT_WEB_OUTPUT_TOKENS,
+    MAX_WEB_OUTPUT_TOKENS,
     WebSearchError,
     WebSearchGateway,
     WebSearchRequest,
@@ -60,15 +62,14 @@ class FreshWebResearch:
         if isinstance(inputs, WebResearchRecord):
             return inputs
         context, key = inputs
+        output_budget = min(profile.token_budget(DEFAULT_WEB_OUTPUT_TOKENS), MAX_WEB_OUTPUT_TOKENS)
         started = time.perf_counter()
         try:
             async with asyncio.timeout(90):
                 result = await self._gateway.search(
                     key,
                     profile.model,
-                    WebSearchRequest(
-                        context, min(profile.token_budget(6000), 6000), profile.reasoning_effort
-                    ),
+                    WebSearchRequest(context, output_budget, profile.reasoning_effort),
                 )
             record = replace(
                 record,
@@ -77,7 +78,8 @@ class FreshWebResearch:
                 or (
                     "A live web search completed. Generated context and cited links are "
                     "saved separately from dated, graded evidence. Up to three tool calls "
-                    "share a separate 90-second and 6,000-output-token ceiling."
+                    "share a separate 90-second deadline and a ceiling of "
+                    f"{output_budget:,} output tokens, including reasoning."
                 ),
                 retrieved_at=self._clock.now(),
                 returned_model=result.model,

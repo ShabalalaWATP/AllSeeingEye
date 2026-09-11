@@ -54,6 +54,7 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                     "supporting_evidence",
                     "contradicting_evidence",
                     "assumptions",
+                    "change_from_previous",
                     "indicators",
                 ],
                 "properties": {

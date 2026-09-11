@@ -13,7 +13,8 @@ def web_search_spec() -> SourceSpec:
         Category.NEWS,
         "A model synthesises live web-search results; generated context is not primary evidence.",
         "Explicit public-question search with the destination's OpenAI direction profile, "
-        "up to three tool calls, 90 seconds and 6,000 output tokens per run.",
+        "up to three tool calls and 90 seconds per run. Output allowance follows the profile: "
+        "6,000 tokens by default, up to 16,000 with reasoning headroom.",
         WEB_NOTICE,
         "Requires a compatible OpenAI Responses model and account access. "
         "Bedrock and custom OpenAI-compatible endpoints are not silently substituted. "

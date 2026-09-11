@@ -28,18 +28,26 @@ REQUEST = LlmRequest((LlmMessage("user", "Fixture"),), 16000, 0, reasoning_effor
 
 async def test_luna_max_outbound_payload_preserves_model_and_combined_budget() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
-        assert str(request.url) == BASE + "/chat/completions"
+        assert str(request.url) == BASE + "/responses"
         assert request.headers["authorization"] == "Bearer fixture-secret"
         body = json.loads(request.content)
         assert body["model"] == "gpt-5.6-luna"
-        assert body["reasoning_effort"] == "max"
-        assert body["max_completion_tokens"] == 16000
+        assert body["reasoning"] == {"effort": "max"}
+        assert body["max_output_tokens"] == 16000 and body["store"] is False
         assert "max_tokens" not in body and "temperature" not in body
         return httpx.Response(
             200,
             json={
                 "model": "gpt-5.6-luna",
-                "choices": [{"message": {"content": '{"ok":true}'}}],
+                "status": "completed",
+                "output": [
+                    {
+                        "type": "message",
+                        "role": "assistant",
+                        "status": "completed",
+                        "content": [{"type": "output_text", "text": '{"ok":true}'}],
+                    }
+                ],
             },
         )
 
@@ -58,6 +66,21 @@ async def test_completion_does_not_inherit_client_credentials() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request.headers["authorization"])
+        if request.url.path.endswith("/responses"):
+            return httpx.Response(
+                200,
+                json={
+                    "status": "completed",
+                    "output": [
+                        {
+                            "type": "message",
+                            "role": "assistant",
+                            "status": "completed",
+                            "content": [{"type": "output_text", "text": "ok"}],
+                        }
+                    ],
+                },
+            )
         return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
 
     async with httpx.AsyncClient(

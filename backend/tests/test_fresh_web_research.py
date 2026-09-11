@@ -4,8 +4,10 @@ import asyncio
 import json
 from dataclasses import replace
 
+import httpx
 import pytest
 
+from ase.adapters.llm.openai_web_search import OpenAiWebSearchGateway
 from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.ports.feeds import EventQuery
 from ase.application.ports.web_search import WebSearchError
@@ -33,6 +35,7 @@ from web_search_helpers import (
     Cipher,
     Gateway,
     job,
+    native_response,
     profile,
 )
 
@@ -65,7 +68,7 @@ async def test_uses_destination_direction_profile_and_discloses_only_public_quer
     assert roles == [LlmRole.DIRECTION]
     key, model, request = gateway.calls[0]
     assert key == "fixture-native-key" and model == "configured-model"
-    assert request.max_output_tokens == 6000 and request.reasoning_effort == "max"
+    assert request.max_output_tokens == 8000 and request.reasoning_effort == "max"
     context = json.loads(request.query_context)
     assert (
         context["countries"] == ["GB", "DE"]
@@ -74,6 +77,59 @@ async def test_uses_destination_direction_profile_and_discloses_only_public_quer
     assert "encrypted" not in request.query_context and "seed_events" not in context
     assert set(admission.seen) == {WEB_SOURCE_ID}
     assert totals.usage[0].ok and totals.prompt_tokens == 30 and totals.completion_tokens == 15
+
+
+@pytest.mark.parametrize(
+    ("model", "effort", "configured", "expected"),
+    [
+        ("configured-model", None, 8000, 6000),
+        ("configured-model", None, 2048, 2048),
+        ("configured-model", "max", 2048, 2048),
+        ("configured-model", "max", 8000, 8000),
+        ("gpt-5.6-luna", "max", 16000, 16000),
+        ("gpt-5.6-luna", None, 16000, 16000),
+        ("gpt-5.6-luna", "max", 32000, 16000),
+    ],
+)
+async def test_web_budget_preserves_profile_limits_and_reasoning_headroom(
+    model, effort, configured, expected
+):
+    selected = profile(model=model, reasoning_effort=effort, max_output_tokens=configured)
+    service, gateway, _, lookup, _ = setup(selected=selected)
+    record = await service.collect(job(), QUERY, Totals(), Cipher(), lookup)
+    assert record.status == "completed" and len(gateway.calls) == 1
+    _, sent_model, request = gateway.calls[0]
+    assert sent_model == model and request.reasoning_effort == effort
+    assert request.max_output_tokens == expected
+    assert f"{expected:,} output tokens" in record.explanation
+
+
+async def test_incomplete_reasoning_search_keeps_billable_usage_without_retry_or_context():
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        payload = json.loads(request.content)
+        assert payload["max_output_tokens"] == 16000 and payload["max_tool_calls"] == 3
+        return httpx.Response(
+            200,
+            json=native_response(
+                status="incomplete", usage={"input_tokens": 900, "output_tokens": 16000}
+            ),
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        service, _, _, lookup, _ = setup(
+            gateway=OpenAiWebSearchGateway(client=client),
+            selected=profile(model="gpt-5.6-luna", max_output_tokens=16000),
+        )
+        totals = Totals()
+        record = await service.collect(job(), QUERY, totals, Cipher(), lookup)
+    assert len(calls) == record.request_count == len(totals.usage) == 1
+    assert record.status == "failed" and not totals.usage[0].ok
+    assert not record.synthesis and not record.citations and not record.consulted_urls
+    assert record.completion_tokens == totals.completion_tokens == 16000
+    assert record.prompt_tokens == totals.prompt_tokens == 900
 
 
 @pytest.mark.parametrize("change", ["off", "document", "media", "disabled"])

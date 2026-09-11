@@ -21,9 +21,11 @@ fixed UTC range, with inclusive start and exclusive end. Ordinary intervals allo
 730 days. This limits duration, not the age of a saved historical interval.
 
 Inspect the collection plan for actual source coverage. Current RSS feeds cannot
-supply two years of archives. Country-filtered graded evidence requires associated
-geography: unknown-country articles are excluded rather than assigned a country
-from the question. OONI/AidData country-specific research currently requires one
+supply two years of archives. Fresh headline research can match reviewed country
+names in original titles or summaries, with exact source spans and an explicit
+unverified-geography notice. It never assigns incident countries or coordinates
+from the question. Spatial research retains its strict location requirements.
+See [country subject matching](COUNTRY_SUBJECT_RESEARCH.md). OONI/AidData country-specific research currently requires one
 supported country. Specialist recorded-project history keeps its separate policy.
 
 Fresh web search is an explicit, separate opt-in. It sends the public question and
@@ -37,7 +39,8 @@ can move forward. Start new research to change the scope.
 ## Photo geolocation
 
 Open Research, Geolocate a photo. Select the destination and upload one PNG, JPEG
-or WebP up to 8 MiB. Optional questions and hints describe what to examine. Confirm
+or WebP up to 8 MiB, 8 megapixels and 8,192 pixels per edge, with no animation.
+Optional questions and hints describe what to examine. Confirm
 that the sanitised preview and supplied context may be sent to the configured AI,
 then select Analyse photo.
 

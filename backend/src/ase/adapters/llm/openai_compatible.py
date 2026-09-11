@@ -1,4 +1,4 @@
-"""Chat completions against any OpenAI-compatible endpoint (OpenAI, Ollama, LM Studio, vLLM).
+"""OpenAI-compatible completions, with native Responses for official OpenAI max reasoning.
 
 The key travels only in the Authorization header. Provider errors contain a status only,
 never response text, since callers persist them in report findings and usage records.
@@ -18,13 +18,29 @@ from typing import Any
 import httpx
 
 from ase.adapters.llm.model_discovery import discover_models, model_id
+from ase.adapters.llm.openai_responses import (
+    RESPONSES_URL,
+    build_responses_payload,
+    parse_response,
+    uses_responses,
+)
 from ase.application.ports.llm import LlmGatewayError
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
+MAX_REPORT_TIMEOUT_SECONDS = 300.0
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 MAX_CONCURRENT_REQUESTS = 2
 MAX_JSON_DEPTH = 64
+
+
+def completion_timeout_seconds(base_url: str, request: LlmRequest, override: float | None) -> float:
+    """One total budget for admission, HTTP and parsing; explicit overrides win."""
+    if override is not None:
+        return override
+    if uses_responses(base_url, request) and request.schema_name == "report":
+        return MAX_REPORT_TIMEOUT_SECONDS
+    return DEFAULT_TIMEOUT_SECONDS
 
 
 def _bounded_json(content: bytearray) -> Any:
@@ -119,12 +135,13 @@ class OpenAiCompatibleGateway:
         self,
         *,
         client: httpx.AsyncClient | None = None,
-        timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+        timeout_seconds: float | None = None,
     ) -> None:
+        self._timeout_override = timeout_seconds
+        self._timeout = DEFAULT_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
         self._client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
+            timeout=httpx.Timeout(self._timeout), follow_redirects=False
         )
-        self._timeout = timeout_seconds
         self._admission = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
 
     async def aclose(self) -> None:
@@ -148,17 +165,21 @@ class OpenAiCompatibleGateway:
             "Authorization": f"Bearer {api_key}" if api_key else "",
         }
         started = time.perf_counter()
+        native = uses_responses(base_url, request)
+        timeout = completion_timeout_seconds(base_url, request, self._timeout_override)
         try:
             async with (
-                asyncio.timeout(self._timeout),
+                asyncio.timeout(timeout),
                 self._admission,
                 self._client.stream(
                     "POST",
-                    f"{base_url}/chat/completions",
-                    json=build_payload(model, request),
+                    RESPONSES_URL if native else f"{base_url}/chat/completions",
+                    json=build_responses_payload(model, request)
+                    if native
+                    else build_payload(model, request),
                     headers=headers,
                     auth=None,
-                    timeout=self._timeout,
+                    timeout=timeout,
                     follow_redirects=False,
                 ) as response,
             ):
@@ -193,8 +214,8 @@ class OpenAiCompatibleGateway:
                 f"Could not reach the model endpoint: {type(exc).__name__}"
             ) from None
         data = _bounded_json(content)
-        result = parse_completion(data, model, 0)
+        result = parse_response(data, model, 0) if native else parse_completion(data, model, 0)
         latency_ms = (time.perf_counter() - started) * 1000
-        if latency_ms > self._timeout * 1000:
+        if latency_ms > timeout * 1000:
             raise LlmGatewayError("The model endpoint timed out.")
         return replace(result, latency_ms=latency_ms)
