@@ -1,7 +1,7 @@
 /**
  * Fetch wrapper for the ASE API. Sends cookies, injects the bearer token, parses
  * the error envelope into ApiError, validates successful bodies with zod, and on
- * a 401 refreshes the session once and retries before giving up.
+ * a 401 refreshes the session once. Calls may disable automatic request replay.
  *
  * The client never imports the auth store (lib must not depend on stores); the
  * store binds itself through `bindSession`.
@@ -45,6 +45,8 @@ export interface CallOptions {
   headers?: Record<string, string>;
   /** When true (default) the bearer token is attached and a 401 triggers one refresh and retry. */
   auth?: boolean;
+  /** Disable for costly operations: refresh the session, but require an explicit resubmission. */
+  retryAfterRefresh?: boolean;
 }
 
 /** Performs a request whose successful body is validated against `schema`. */
@@ -104,6 +106,13 @@ async function execute(path: string, options: CallOptions): Promise<Response> {
   if (token === null) {
     session.onSessionLost();
     throw await toApiError(first);
+  }
+  if (options.retryAfterRefresh === false) {
+    throw new ApiError(
+      409,
+      'request_retry_required',
+      'Your session has been refreshed. This request was not repeated automatically. Please submit it again if needed.',
+    );
   }
   const second = await send(path, options, token);
   if (second.status === 401) {

@@ -78,6 +78,7 @@ from ase.application.ports.warning import AlertNotifier
 from ase.application.terrain import TerrainSampler
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
 from ase.container.admin import AdminWiring
+from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
 from ase.container.conflict_screening import build_conflict_screening
 from ase.container.email import build_email_sender
@@ -95,7 +96,9 @@ from ase.infrastructure.settings import Environment, Settings
 log = structlog.get_logger(__name__)
 
 
-class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring, AuthWiring):
+class Container(
+    FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring, AuthWiring, AssistantWiring
+):
     def __init__(
         self,
         settings: Settings,

@@ -2,6 +2,7 @@ import { Suspense, useRef } from 'react';
 import { Outlet } from 'react-router';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 
 import { AdminHeader } from './AdminHeader';
 import { AdminNavigation } from './AdminNavigation';
@@ -29,6 +30,7 @@ export function AdminShell() {
           </Suspense>
         </main>
       </div>
+      <EyeAssistant />
     </div>
   );
 }

@@ -5,6 +5,21 @@ subject matching in `b9f9050`. The local OpenAI connection is active; successful
 long-report completion and wider model-quality evaluation remain open. Checked items below describe
 implemented behaviour within the documented limits, not measured research accuracy.
 
+## Eye assistant, 11 September 2026
+
+The implemented interactive slice is the [floating Eye assistant](EYE_ASSISTANT.md),
+separate from long report generation. The existing Max reasoning connection stays
+selected; full report acceptance remains open independently of the chat checks.
+
+- [x] Add an accessible draggable Eye launcher across authenticated workspaces.
+- [x] Search bounded retained public events, cached camera metadata and packaged
+  infrastructure, with explicit scope and coverage limits.
+- [x] Validate concise answers and citation membership, preserve the selected
+  model, and enforce cancellation, source controls and current access.
+- [x] Verify behaviour, browser layout and one real configured-model answer.
+  Final content acceptance covered six refetched USGS records. Broader factual
+  accuracy and complete provider coverage are not established by this check.
+
 ## Source audit and activation, 10 September 2026
 
 The active next milestone is the [research workspace overhaul](RESEARCH_WORKSPACE_OVERHAUL.md):

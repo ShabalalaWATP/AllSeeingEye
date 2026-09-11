@@ -3786,3 +3786,46 @@ secret, file-length and restarted API checks passed. The operator's choice about
 testing High reasoning remains pending; Max stays selected and full live report
 acceptance remains open. No additional live acceptance runs were started after
 that choice was requested; already-running checks retained their bounded retries.
+
+
+### 11 September 2026: floating Eye map assistant
+
+Added a movable Eye launcher to authenticated research and administration shells.
+It uses the existing brand capture, fits small screens and adds no WebGL context,
+animation loop or feed subscription. Pointer and keyboard movement, cancellable
+questions, source links, coverage details and map centring work through a compact
+panel. A local error boundary can restart chat without remounting the map.
+
+The new authenticated endpoint searches bounded retained events, cached camera
+metadata and packaged infrastructure independently of visible layer switches.
+Current-view and selected-item scope are explicit. One unchanged assigned-model
+call produces short, schema-checked paragraphs with references to server-selected
+evidence. Chat stays in browser memory; only bounded usage metadata is persisted.
+Current source, account and session access is rechecked before and after model
+work. Expired sessions no longer automatically replay a paid assistant request.
+
+Live checking exposed a natural-language retrieval defect: output instructions
+were treated as required evidence terms. The repaired parser preserves supported
+place constraints and asks for clarification when complex scope is uncertain.
+Two actual Luna Max calls completed without exhaustion or malformed references.
+The first answer nevertheless inferred the wrong incident state from a relative
+USGS place label. A stricter geographic-attribution prompt was checked against
+the same six refetched observations. The final answer took 20.7 seconds, matched
+the supplied numeric values and exact relative labels, and stated the bounded
+one-source coverage. This validates the narrow example, not general factual
+accuracy. Long-report acceptance remains open independently.
+
+Root verification passed 77 frontend integration tests, the production build,
+full frontend typing, changed-file lint/format checks, strict mypy over 799 backend
+source files, both architecture contracts and scoped Bandit. Browser tests covered
+movement, scope, follow-ups, evidence and layouts down to 320 by 568 pixels;
+browser answers were fixtures, separate from live use-case acceptance. Focused
+security review found no outstanding issue in access release, cancellation,
+accounting or paid-request replay. The configured-secret scan found no plaintext
+matches in non-ignored source. The restarted local backend and frontend login
+returned 200; unauthenticated assistant requests returned 401. The implementation
+plan and Eye operator guide record scope, limits and acceptance history.
+
+The final frozen-source assistant suite passed all 146 tests with 96.04% focused
+branch coverage, above the unchanged 90% gate. No new full-app coverage result
+is claimed. Source and security reviewers reported no remaining blockers.

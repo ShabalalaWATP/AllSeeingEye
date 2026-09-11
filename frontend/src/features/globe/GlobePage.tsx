@@ -47,6 +47,7 @@ import { useGlobeEngine } from './useGlobeEngine';
 import { useViewportCoverage } from './useViewportCoverage';
 import { useLiveEvents } from './useLiveEvents';
 import { hasWebGl2 } from './webgl';
+import { useEyeMapContext } from './useEyeMapContext';
 
 export { FOCUS_ZOOM } from './useMapFocus';
 import { useMapFocus } from './useMapFocus';
@@ -112,6 +113,7 @@ export default function GlobePage() {
   const cameras = useCameras();
   const infrastructure = useInfrastructure();
   const context = useContextSelection(country, tools.picking);
+  useEyeMapContext(engine, supported, selected ?? context.event, cameras, infrastructure);
   const closeContext = context.close;
   const closeCamera = cameras.close;
   const closeInfrastructure = infrastructure.close;

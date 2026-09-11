@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useGlobeStore } from '@/stores/globe';
+import { EyeAssistant } from '@/components/assistant/EyeAssistant';
 
 import { LeftRail } from './LeftRail';
 import { OpsRoomOverlay } from './OpsRoomOverlay';
@@ -38,6 +39,7 @@ export function AppShell() {
           {opsRoom && <OpsRoomOverlay />}
         </main>
       </div>
+      <EyeAssistant />
     </div>
   );
 }

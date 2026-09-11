@@ -1,0 +1,144 @@
+.eye-transcript {
+  flex: 1 1 auto;
+  min-height: 76px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #42505c transparent;
+}
+.eye-welcome h3 {
+  font-size: 15px;
+  font-weight: 500;
+}
+.eye-welcome > p {
+  margin-top: 10px;
+  color: #aab2be;
+  line-height: 1.65;
+  font-size: 12px;
+}
+.eye-suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.eye-suggestions button {
+  border: 1px solid #ffffff22;
+  border-radius: 8px;
+  padding: 9px 10px;
+  color: #c6d1da;
+  font-size: 11px;
+  transition: background 120ms;
+}
+.eye-suggestions button:hover {
+  background: #79d8eb0b;
+  border-color: #79d8eb50;
+}
+.eye-turn + .eye-turn {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #ffffff10;
+}
+.eye-question {
+  margin: 0 0 16px 24px;
+  padding: 10px 12px;
+  border-radius: 10px 10px 2px 10px;
+  background: #19222a;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.eye-answer {
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.eye-paragraph + .eye-paragraph {
+  margin-top: 13px;
+}
+.eye-answer-label {
+  display: block;
+  font:
+    9px 'JetBrains Mono',
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a7bec9;
+  margin-bottom: 4px;
+}
+.eye-citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-top: 6px;
+  font-size: 10px;
+}
+.eye-assistant a,
+.eye-source-actions button {
+  color: var(--eye-accent);
+}
+.eye-source-details {
+  border-top: 1px solid #ffffff18;
+  margin-top: 16px;
+  padding-top: 10px;
+}
+.eye-source-details summary {
+  cursor: pointer;
+  color: #bfcbd4;
+  font-size: 11px;
+}
+.eye-source-details summary span {
+  display: block;
+  color: #919da8;
+  font-size: 10px;
+  margin-top: 2px;
+}
+.eye-coverage {
+  margin-top: 10px;
+  color: #aab3bd;
+  font-size: 10px;
+}
+.eye-coverage > p + p {
+  margin-top: 7px;
+}
+.eye-source {
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid #ffffff0d;
+  display: grid;
+  gap: 3px;
+}
+.eye-source strong {
+  color: #c9d3da;
+  font-weight: 500;
+}
+.eye-source-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 30px;
+}
+.eye-source-actions button {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.eye-answer-meta {
+  color: #8e99a5;
+  font-size: 9px;
+  margin-top: 10px;
+}
+.eye-pending {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 11px;
+  color: #b1c3cd;
+}
+.eye-pending span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--eye-accent);
+  animation: eye-working 1.4s ease-in-out infinite;
+}

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/assistant/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer */
+        post: operations["answer_api_assistant_answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -3132,6 +3149,133 @@ export interface components {
             contested_judgements: number;
             /** Unsupported Judgements */
             unsupported_judgements: number;
+        };
+        /** AssistantAnswerIn */
+        AssistantAnswerIn: {
+            /** Question */
+            question: string;
+            /** Prior Questions */
+            prior_questions?: string[];
+            /**
+             * Scope
+             * @default global
+             * @enum {string}
+             */
+            scope: "global" | "viewport" | "selected";
+            bbox?: components["schemas"]["AssistantBoundsIn"] | null;
+            selected?: components["schemas"]["AssistantSelectionIn"] | null;
+        };
+        /** AssistantAnswerOut */
+        AssistantAnswerOut: {
+            /** Paragraphs */
+            paragraphs: components["schemas"]["AssistantParagraphOut"][];
+            /** Sources */
+            sources: components["schemas"]["AssistantSourceOut"][];
+            scope: components["schemas"]["AssistantScopeOut"];
+            coverage: components["schemas"]["AssistantCoverageOut"];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            model: components["schemas"]["AssistantModelOut"] | null;
+        };
+        /** AssistantBoundsIn */
+        AssistantBoundsIn: {
+            /** West */
+            west: number;
+            /** South */
+            south: number;
+            /** East */
+            east: number;
+            /** North */
+            north: number;
+        };
+        /** AssistantCoverageOut */
+        AssistantCoverageOut: {
+            /** Candidate Count */
+            candidate_count: number;
+            /** Matched Count */
+            matched_count: number;
+            /** Selected Count */
+            selected_count: number;
+            /** Source Count */
+            source_count: number;
+            /** Capped */
+            capped: boolean;
+            /** Notes */
+            notes: string[];
+        };
+        /** AssistantModelOut */
+        AssistantModelOut: {
+            /** Name */
+            name: string;
+            /** Reasoning Effort */
+            reasoning_effort: string | null;
+        };
+        /** AssistantParagraphOut */
+        AssistantParagraphOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "finding" | "inference" | "gap";
+            /** Text */
+            text: string;
+            /** Citations */
+            citations: string[];
+        };
+        /** AssistantPointOut */
+        AssistantPointOut: {
+            /** Lon */
+            lon: number;
+            /** Lat */
+            lat: number;
+        };
+        /** AssistantScopeOut */
+        AssistantScopeOut: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "global" | "viewport" | "selected";
+            bbox: components["schemas"]["AssistantBoundsIn"] | null;
+            selected: components["schemas"]["AssistantSelectionIn"] | null;
+        };
+        /** AssistantSelectionIn */
+        AssistantSelectionIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "camera" | "infrastructure";
+            /** Id */
+            id: string;
+        };
+        /** AssistantSourceOut */
+        AssistantSourceOut: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "camera" | "infrastructure" | "gnss";
+            /** Record Id */
+            record_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Observed At */
+            observed_at: string | null;
+            point: components["schemas"]["AssistantPointOut"] | null;
+            /** Grade */
+            grade: string | null;
         };
         /** AuditEntryOut */
         AuditEntryOut: {
@@ -8966,6 +9110,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    answer_api_assistant_answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantAnswerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_health_get: {
         parameters: {
             query?: never;

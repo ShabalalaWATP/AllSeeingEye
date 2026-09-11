@@ -9,6 +9,7 @@ from ase.application.ports.cameras import CameraSource
 from ase.application.ports.services import Clock
 from ase.domain.cameras import Camera, CameraCatalogue, CameraProviderStatus
 from ase.domain.errors import Unauthenticated
+from ase.domain.events import BoundingBox, Point
 from ase.domain.users import User
 
 MAX_CAMERAS_PER_PROVIDER = 5000
@@ -37,6 +38,65 @@ class CameraCatalogueService:
     @property
     def provider_ids(self) -> tuple[str, ...]:
         return tuple(source.source.id for source in self._sources)
+
+    def snapshot(
+        self,
+        actor: User,
+        *,
+        bbox: BoundingBox | None = None,
+        selected_id: str | None = None,
+        limit: int = 100,
+    ) -> CameraCatalogue:
+        """Read only already-cached metadata, without refreshing any provider or imagery."""
+        if not actor.is_active:
+            raise Unauthenticated()
+        if not 1 <= limit <= 100:
+            raise ValueError("Cached camera queries are limited to 100 facilities.")
+        now = self._clock.now()
+        statuses: list[CameraProviderStatus] = []
+        groups = []
+        for cached in self._sources:
+            fresh_enough = cached.fetched_at is not None and now - cached.fetched_at <= MAX_STALE
+            available = cached.cameras if fresh_enough else ()
+            status: Literal["available", "stale", "unavailable", "not_loaded"] = (
+                "stale"
+                if cached.failed and available
+                else "available"
+                if available
+                else "not_loaded"
+                if cached.fetched_at is None
+                else "unavailable"
+            )
+            statuses.append(
+                CameraProviderStatus(
+                    cached.source.id,
+                    cached.source.name,
+                    status,
+                    len(available),
+                    cached.fetched_at,
+                )
+            )
+            groups.append(
+                iter(
+                    camera
+                    for camera in available
+                    if (selected_id is None or camera.id == selected_id)
+                    and (bbox is None or bbox.contains(Point(camera.longitude, camera.latitude)))
+                )
+            )
+        # Round-robin providers so a large first catalogue cannot occupy the entire sample.
+        cameras: list[Camera] = []
+        while groups and len(cameras) < limit:
+            active = []
+            for group in groups:
+                camera = next(group, None)
+                if camera is not None:
+                    cameras.append(camera)
+                    active.append(group)
+                if len(cameras) >= limit:
+                    break
+            groups = active
+        return CameraCatalogue(tuple(cameras), tuple(statuses), now)
 
     async def initial_catalogue(self, actor: User) -> CameraCatalogue:
         keys = [key for key in ("tfl", "hongkong", "fintraffic") if key in self.provider_ids]

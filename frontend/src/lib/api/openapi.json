@@ -5,6 +5,52 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/assistant/answer": {
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Answer",
+        "operationId": "answer_api_assistant_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantAnswerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantAnswerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "tags": [
@@ -10202,6 +10248,427 @@
           "unsupported_judgements"
         ],
         "title": "AssessmentTalliesOut"
+      },
+      "AssistantAnswerIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "prior_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Prior Questions"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "viewport",
+              "selected"
+            ],
+            "title": "Scope",
+            "default": "global"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantBoundsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantSelectionIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "AssistantAnswerIn"
+      },
+      "AssistantAnswerOut": {
+        "properties": {
+          "paragraphs": {
+            "items": {
+              "$ref": "#/components/schemas/AssistantParagraphOut"
+            },
+            "type": "array",
+            "title": "Paragraphs"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AssistantSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/AssistantScopeOut"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/AssistantCoverageOut"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantModelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "paragraphs",
+          "sources",
+          "scope",
+          "coverage",
+          "generated_at",
+          "model"
+        ],
+        "title": "AssistantAnswerOut"
+      },
+      "AssistantBoundsIn": {
+        "properties": {
+          "west": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "West"
+          },
+          "south": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "South"
+          },
+          "east": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "East"
+          },
+          "north": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "North"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "west",
+          "south",
+          "east",
+          "north"
+        ],
+        "title": "AssistantBoundsIn"
+      },
+      "AssistantCoverageOut": {
+        "properties": {
+          "candidate_count": {
+            "type": "integer",
+            "title": "Candidate Count"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "selected_count": {
+            "type": "integer",
+            "title": "Selected Count"
+          },
+          "source_count": {
+            "type": "integer",
+            "title": "Source Count"
+          },
+          "capped": {
+            "type": "boolean",
+            "title": "Capped"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_count",
+          "matched_count",
+          "selected_count",
+          "source_count",
+          "capped",
+          "notes"
+        ],
+        "title": "AssistantCoverageOut"
+      },
+      "AssistantModelOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "reasoning_effort"
+        ],
+        "title": "AssistantModelOut"
+      },
+      "AssistantParagraphOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "finding",
+              "inference",
+              "gap"
+            ],
+            "title": "Kind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "citations"
+        ],
+        "title": "AssistantParagraphOut"
+      },
+      "AssistantPointOut": {
+        "properties": {
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lon",
+          "lat"
+        ],
+        "title": "AssistantPointOut"
+      },
+      "AssistantScopeOut": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "global",
+              "viewport",
+              "selected"
+            ],
+            "title": "Mode"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantBoundsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantSelectionIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "bbox",
+          "selected"
+        ],
+        "title": "AssistantScopeOut"
+      },
+      "AssistantSelectionIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "event",
+              "camera",
+              "infrastructure"
+            ],
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "AssistantSelectionIn"
+      },
+      "AssistantSourceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "event",
+              "camera",
+              "infrastructure",
+              "gnss"
+            ],
+            "title": "Kind"
+          },
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "point": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantPointOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "record_id",
+          "source_id",
+          "title",
+          "url",
+          "published_at",
+          "observed_at",
+          "point",
+          "grade"
+        ],
+        "title": "AssistantSourceOut"
       },
       "AuditEntryOut": {
         "properties": {

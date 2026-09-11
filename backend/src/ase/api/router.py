@@ -16,6 +16,7 @@ from ase.api.routers import (
     admin_users,
     annotation_comparisons,
     annotation_monitors,
+    assistant,
     auth,
     cameras,
     capabilities,
@@ -58,6 +59,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(assistant.router)
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)
 api_router.include_router(terrain.router)
