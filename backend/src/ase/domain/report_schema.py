@@ -23,6 +23,17 @@ def _string_list(limit: int = MAX_ITEM_CHARS) -> dict[str, Any]:
     return {"type": "array", "maxItems": MAX_LIST, "items": _text(limit)}
 
 
+def _evidence_ids() -> dict[str, Any]:
+    return {
+        **_string_list(32),
+        "items": {
+            **_text(32),
+            "pattern": "^E[1-9][0-9]*$",
+            "description": "Exact supplied evidence ID only, for example E1. No explanatory text.",
+        },
+    }
+
+
 REPORT_BODY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -63,8 +74,8 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                     "probability": {"type": "string", "enum": [p.value for p in Probability]},
                     "confidence": {"type": "string", "enum": [c.value for c in Confidence]},
                     "confidence_statement": _text(),
-                    "supporting_evidence": {**_string_list(32), "minItems": 1},
-                    "contradicting_evidence": _string_list(32),
+                    "supporting_evidence": {**_evidence_ids(), "minItems": 1},
+                    "contradicting_evidence": _evidence_ids(),
                     "assumptions": _string_list(32),
                     "change_from_previous": {
                         "type": ["string", "null"],
@@ -94,7 +105,7 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                             "required": ["text", "evidence", "grade"],
                             "properties": {
                                 "text": _text(),
-                                "evidence": {**_string_list(32), "minItems": 1},
+                                "evidence": {**_evidence_ids(), "minItems": 1},
                                 "grade": _text(160, required=False),
                             },
                         },
@@ -113,7 +124,7 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "heading": _text(120),
                     "text": _text(MAX_SECTION_CHARS),
-                    "evidence": {**_string_list(32), "minItems": 1},
+                    "evidence": {**_evidence_ids(), "minItems": 1},
                 },
             },
         },
@@ -141,7 +152,7 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "text": _text(),
                     "why_less_likely": _text(),
-                    "evidence": {**_string_list(32), "minItems": 1},
+                    "evidence": {**_evidence_ids(), "minItems": 1},
                 },
             },
         },

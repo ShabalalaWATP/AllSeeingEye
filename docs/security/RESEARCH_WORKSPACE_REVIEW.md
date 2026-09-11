@@ -56,8 +56,33 @@ worker. A database failure during cancelled web work can leave final usage
 unavailable. `store: false` does not guarantee zero provider retention. No new
 dependency, database migration or production deployment was introduced.
 
-Actual model quality remains unmeasured: the saved local OpenAI profile is disabled
-and its credential cannot be decrypted without the original server encryption key.
-Known-location photo and native web-search evaluation must follow restoration of a
-working connection. Software fixtures cannot establish geographical accuracy,
-complete historical coverage, citation truth or the selected model's capabilities.
+## Live connection follow-up
+
+The replacement operator credential is encrypted in the local database and its
+tested Luna profile is active globally. Recovery copies preceded the new local
+encryption key and application of existing migrations 0027 to 0032. One existing
+administrator authenticator remains unreadable without its original key; its
+ciphertext was preserved and no MFA recovery or bypass was performed.
+
+The official maximum-reasoning Responses path shares the existing credential,
+redirect, compression, byte, concurrency and cancellation boundaries. Its report
+request deadline is 300 seconds; the outer report deadline remains 600 seconds.
+Other default gateway requests remain at 120 seconds. The web request retains its
+separate 90-second limit, three-tool ceiling and strict completion checks, with up
+to 16,000 configured output tokens including reasoning. The independent follow-up
+security reviewer passed 108 focused checks with no outstanding finding.
+
+Two public photo examples behaved as expected, but are not an accuracy benchmark.
+Long-report acceptance remains open. A factual spot-check of rejected web context
+found wrong-period and claimant-attribution errors. Prompt instructions address
+those failure modes; they do not verify facts. Generated web context remains
+outside original evidence and corroboration scores. The live harness exercises
+application use cases, not HTTP login/MFA. See the
+[live acceptance record](../LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
+
+An additional independent review passed 72 focused checks for the new-connection
+budget preset and explicit exhaustion handling. Exhaustion carries only a static
+error and validated optional model/token metadata, never partial output. Drafting
+uses local elapsed time, clears any earlier invalid body and stops repeated use
+of the same exhausted allowance. Existing production accounting writes the known
+usage once. Saved and manual budgets remain unchanged by preset selection.

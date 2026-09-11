@@ -2,6 +2,7 @@ import type { LlmProfile, LlmRole } from '@/lib/api/llm';
 
 export const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 export const LUNA_MODEL = 'gpt-5.6-luna';
+export const LUNA_MAX_OUTPUT_TOKENS = 32_000;
 export const TEXT_ROLES: LlmRole[] = ['direction', 'assessment', 'devil', 'translation'];
 export const ROLE_LABELS: Record<LlmRole, string> = {
   direction: 'Research planning',

@@ -13,8 +13,18 @@ Create an OpenAI connection using:
 | API base URL | `https://api.openai.com/v1` |
 | Model | `gpt-5.6-luna` |
 | Reasoning | Max |
-| Completion budget | 16,000 tokens, including reasoning |
+| Completion budget | 32,000 tokens, including reasoning |
 | API key | Enter directly into the password field in the app |
+
+The local live acceptance found that Max report drafting could consume all
+16,000 tokens on reasoning without producing an answer. The 32,000-token setting
+uses the app's existing upper limit; it increases the per-request token allowance
+and possible cost, not the reasoning level. It does not guarantee completion.
+OpenAI recommends initially reserving at least 25,000 tokens for reasoning plus
+output. See [reasoning allowance guidance](https://developers.openai.com/api/docs/guides/reasoning#allocating-space-for-reasoning).
+The subsequent local 32,000-token checks still encountered exhaustion and invalid
+judgement citations. Full-report reliability at Max remains an open acceptance
+item; see the [actual live results](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
 
 The key goes to the application server and is encrypted using the existing
 server encryption configuration. It is never returned by the API; an existing
@@ -41,7 +51,10 @@ guarantee completion. Other gateway requests retain their two-minute default,
 and shorter stage deadlines still apply. An explicitly configured gateway timeout
 overrides these defaults. Admission waiting, HTTP transfer and response parsing
 all count towards the selected deadline. The whole report remains bounded by its
-ten-minute production deadline, and the existing retry limit is unchanged.
+ten-minute production deadline. Transient failures and schema-repair requests
+retain the existing retry limit; explicit native token exhaustion stops immediately
+instead of repeating the same allowance. Known exhausted-call usage is recorded
+once; absent or invalid token counts remain unknown.
 Cancellation, concurrency and response-size limits still apply to both routes.
 Incomplete responses, refusals and malformed response bodies fail the connection
 test rather than being treated as successful answers. The official

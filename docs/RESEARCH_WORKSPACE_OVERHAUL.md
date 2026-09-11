@@ -48,8 +48,10 @@ the configured AI only after an explicit disclosure acknowledgement.
 - [x] Run relevant integration, lint, typing, build, architecture, file-length and
   security checks. Record actual results and remaining model-quality limitations.
 - [x] Update operator/API documentation and make a coherent local commit.
-- [ ] Restore a working AI connection and evaluate actual web and photo results
-  against known examples. Fixture tests do not establish research accuracy.
+- [x] Restore and activate the operator's tested OpenAI Luna connection at maximum
+  reasoning. Evaluate a known landmark and an ambiguous photograph.
+- [ ] Complete a successful live report and wider research-quality evaluation.
+  Fixture tests and two photographs do not establish research accuracy.
 
 ## Data and model boundaries
 
@@ -71,15 +73,21 @@ Recurring runs retain their owner/team access checks and save a new report. A
 calendar-monthly run on day 31 clamps to a shorter month's last day without
 changing the requested day in subsequent months.
 
-## Operational blocker
+## Current operational acceptance
 
-The local OpenAI Luna profile is disabled and untested. Its encrypted credential
-cannot be read because the original `ASE_ENCRYPTION_KEY` is unavailable. The
-operator has been asked whether to restore it or authorise a new local key and
-re-enter the OpenAI credential. Neither key nor profile was changed while that
-answer was pending. OpenAQ live authentication succeeded independently.
+The operator supplied a replacement OpenAI credential. The encrypted local Luna
+profile passed its connection test and was activated globally at maximum
+reasoning. The original missing encryption key still prevents recovery of one
+existing administrator's authenticator record; that ciphertext was preserved.
 
-The overall goal remains open until configured-model evaluation is possible.
+Actual photo checks recognised a known landmark and returned unknown for an
+ambiguous image. Longer report checks exposed schema, timeout and incomplete
+response failures. At 32,000 tokens one photo draft was saved for review with
+invalid judgement references, while the multi-country report timed out. Source
+spot-checks also found date and attribution errors in generated web context.
+The operator's reasoning-level choice is pending. The overall milestone remains open for reliable
+report completion and broader quality evaluation. See the complete
+[live acceptance record](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
 
 ## Verification evidence
 
@@ -102,9 +110,9 @@ The overall goal remains open until configured-model evaluation is possible.
   session. At 1440 by 1000 and 390 by 844 they exercised research navigation,
   multiple countries, two-year scope, optional web search, photo controls and
   monthly day 31. Screenshots were inspected. No live report was submitted.
-- Restarted the local API. Health and frontend login returned 200; unauthenticated
+- At the original software milestone, restarted the local API. Health and frontend login returned 200; unauthenticated
   photo analysis and input deletion returned 401. OpenAQ authentication was also
-  verified independently; the AI connection remains blocked as described above.
+  verified independently. Subsequent AI activation and live results are recorded above.
 - The [manual scoped security review](security/RESEARCH_WORKSPACE_REVIEW.md)
   reported no outstanding confirmed finding after corrections. A scan of proposed
   files found no configured local secret values. Test output, screenshots and

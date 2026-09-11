@@ -3708,3 +3708,81 @@ a new local key and credential re-entry. Neither was changed while awaiting that
 choice. Operator, API, architecture and scoped security documentation now describe
 the new flows and their limits. Final frontend integration and local Git evidence
 are recorded in the workspace milestone checklist.
+
+## 11 September 2026: Live OpenAI connection and acceptance repairs
+
+Connected the operator's replacement OpenAI credential to the existing Luna
+profile through normal application update, test and audited activation use cases.
+Model discovery included the selected `gpt-5.6-luna`; maximum reasoning remains
+selected. The credential is encrypted in the local database, with a new server
+encryption key in ignored local configuration. Recovery copies preceded the
+credential update and application of existing migrations 0027 to 0032. SQLite
+quick-check passed with no foreign-key violations. One pre-existing administrator
+authenticator record still needs its original key or authorised recovery; its
+ciphertext was preserved and MFA was not disabled.
+
+Actual requests exposed an endpoint incompatibility for Max reasoning and a
+strict-schema omission. Official OpenAI Max requests now use Responses with the
+same bounded transport. New report judgements include the nullable comparison
+field required by strict output; legacy saved reports remain readable. Native
+web discovery preserves up to 16,000 configured reasoning/output tokens within
+its existing 90-second and three-tool limits. Instructions allow a final answer
+after at most two searches, and strict response-completion checks remain in place.
+Long Max report requests have a bounded 300-second deadline inside the unchanged
+600-second report deadline. Unsupported direction questions go into named gaps,
+without forced speculative assessment paragraphs or unrelated citations.
+
+Fresh country research can retain title/summary subject matches with exact spans
+and an explicit unverified-geography notice, without inventing map coordinates
+or an incident country. Matching excludes known ambiguous publisher/place forms
+and preserves source grades and original hashes. Canonical compatibility tests
+pin the legacy single-country provenance digest. The change is in `b9f9050`;
+provider, prompt and photo-limit fixes are in `1bb429e`.
+
+Actual public photo checks recognised the Statue of Liberty and appropriately
+returned unknown for an ambiguous airfield photograph. Frozen photo evidence
+survived deletion of working uploads. A multi-country web call completed with
+two searches and eight native citations, but longer report bodies still failed
+with incomplete responses. Independent source checks found historical material
+and misattribution in generated context. Prompt defences address those failure
+modes without claiming factual verification. Initial failures and later runs
+remain separately recorded in the live acceptance document and ignored artefacts.
+
+Root verification passed 184 focused regressions. The direction-prompt change
+passed another selection of 107 tests, with overlapping paths, not 291 unique
+tests. Ruff/format, strict mypy across 786 source files, both import contracts,
+scoped Bandit and file-length checks passed. The existing untouched 380-line
+MapLibre warning remains. Frontend typing and changed-file lint/format checks
+passed for the photo-limit copy. No new full-suite coverage figure is claimed.
+Configured plaintext-secret scanning found no matches in non-ignored source.
+The restarted local API health and frontend login returned 200; unauthenticated
+photo analysis returned 401. Commits remain local on main with no configured
+remote. No production deployment occurred.
+
+The metadata-only final 16,000-token probe confirmed both photo draft attempts
+spent the entire allowance on reasoning with no visible answer. Following that
+evidence, the normal create/test/activate flow selected a replacement Luna Max
+profile with 32,000 tokens, inside the existing application limit. The connection
+test passed and the global binding advanced to revision 2. This retains maximum
+reasoning and increases the possible per-request usage. Web discovery keeps its
+separate 16,000-token cap. Final report outcomes are recorded in the live
+acceptance document; connection-test success alone does not establish them.
+
+The 32,000-token photo check produced one completed draft on its second attempt,
+but it had invalid judgement references and was correctly saved for review,
+not accepted as validated. The concurrent multi-country run exhausted its first
+allowance and hit the overall deadline during its second request. A new typed
+exhaustion error now prevents identical-budget retries and retains validated
+failed-call usage once. Exact evidence-ID patterns now apply in the outgoing
+schema and strict new-output parser; historical decoding is unchanged.
+
+Root report/provider integration ran 520 tests: 519 passed and one outdated
+membership fixture failed after syntax validation moved earlier. That fixture
+was corrected to use `E999`, and all 117 affected-module tests then passed.
+The retry/accounting selection separately passed 162 tests, with overlapping
+coverage. Preset checks passed 35 frontend and 33 evaluation tests. Independent
+security review passed 72 checks with no findings. Final static, architecture,
+secret, file-length and restarted API checks passed. The operator's choice about
+testing High reasoning remains pending; Max stays selected and full live report
+acceptance remains open. No additional live acceptance runs were started after
+that choice was requested; already-running checks retained their bounded retries.

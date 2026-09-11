@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-from ase.application.ports.llm import LlmGateway, LlmGatewayError
+from ase.application.ports.llm import LlmGateway, LlmGatewayError, LlmTokenBudgetExhausted
 from ase.application.reports.prompts import compose_messages
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
@@ -48,7 +49,7 @@ async def draft_body(
     direction: Direction | None = None,
     background: str | None = None,
 ) -> Draft:
-    """Ask the model up to twice; the second attempt quotes the validator's findings back."""
+    """Retry repairable failures once, but never repeat an exhausted token budget."""
     draft = Draft()
     labels = frozenset(item.label for item in evidence)
     urls = {item.label: item.url for item in evidence}
@@ -79,8 +80,19 @@ async def draft_body(
             json_schema=REPORT_BODY_SCHEMA,
             schema_name="report",
         )
+        started = time.perf_counter()
         try:
             result = await gateway.complete(profile.base_url, api_key, profile.model, llm_request)
+        except LlmTokenBudgetExhausted as exc:
+            draft.body = None
+            draft.model = exc.model or draft.model
+            if exc.prompt_tokens is not None:
+                draft.prompt_tokens = (draft.prompt_tokens or 0) + exc.prompt_tokens
+            if exc.completion_tokens is not None:
+                draft.completion_tokens = (draft.completion_tokens or 0) + exc.completion_tokens
+            draft.latency_ms += max(0.0, (time.perf_counter() - started) * 1000)
+            draft.findings = [Finding("model", Severity.ERROR, "gateway", str(exc))]
+            break
         except LlmGatewayError as exc:
             draft.findings = [Finding("model", Severity.ERROR, "gateway", str(exc))]
             continue

@@ -50,6 +50,27 @@ class LlmGatewayError(Exception):
     """The model endpoint could not be used; the message never contains the key."""
 
 
+class LlmTokenBudgetExhausted(LlmGatewayError):
+    """An explicit output limit, not a transient failure; do not repeat the same budget.
+
+    Adapters may attach validated accounting metadata, never partial model output.
+    """
+
+    def __init__(
+        self,
+        *,
+        model: str,
+        prompt_tokens: int | None = None,
+        completion_tokens: int | None = None,
+    ) -> None:
+        super().__init__(
+            "The model exhausted its completion token budget before producing a complete answer."
+        )
+        self.model = model
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
+
+
 class LlmGateway(Protocol):
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest

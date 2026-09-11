@@ -1,7 +1,8 @@
 # Automated research implementation plan
 
-Status: software implementation committed in `de72899`; combined software checks pass.
-Configured-model quality evaluation remains open. Checked items below describe
+Status: research workspace implementation committed in `ab6e226`, with country
+subject matching in `b9f9050`. The local OpenAI connection is active; successful
+long-report completion and wider model-quality evaluation remain open. Checked items below describe
 implemented behaviour within the documented limits, not measured research accuracy.
 
 ## Source audit and activation, 10 September 2026
@@ -47,8 +48,11 @@ current delivery and research capability are separate acceptance criteria.
   partial coverage, not a historical series or health assessment.
 - [ ] Complete remaining free provider account linking. OS email is verified and other prepared
   registrations still require the operator's authentication steps.
-- [ ] Resolve disabled/untested AI profile readiness and complete real-model
-  report evaluation through the administrator connection journey.
+- [x] Restore, test and activate the operator's OpenAI Luna profile at maximum
+  reasoning through the normal audited application connection use cases.
+- [ ] Complete live report acceptance and representative model-quality evaluation.
+  Two photo examples passed; long reports and web source quality exposed failures.
+  See [live acceptance](LIVE_RESEARCH_ACCEPTANCE_2026_09_11.md).
 - [ ] Extend secure administrator credential management beyond FIRMS and AI.
 - [ ] Add approved OS/Companies House credentials, ReliefWeb appname/UCDP
   access, authorised camera keys and validated primary dataset imports.

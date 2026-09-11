@@ -4,7 +4,7 @@ import base64
 from typing import Any
 
 from ase.adapters.llm.model_discovery import model_id
-from ase.application.ports.llm import LlmGatewayError
+from ase.application.ports.llm import LlmGatewayError, LlmTokenBudgetExhausted
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 
 OPENAI_BASE = "https://api.openai.com/v1"
@@ -86,10 +86,30 @@ def _usage(data: dict[str, Any]) -> tuple[int | None, int | None]:
     return tokens[0], tokens[1]
 
 
+def _budget_exhausted(data: dict[str, Any], fallback_model: str) -> LlmTokenBudgetExhausted:
+    # An explicit exhaustion remains non-retryable even if optional accounting
+    # metadata is malformed. Unknown counts stay unknown and fit stored integers.
+    usage = data.get("usage")
+    tokens = []
+    for key in ("input_tokens", "output_tokens"):
+        value = usage.get(key) if isinstance(usage, dict) else None
+        tokens.append(value if type(value) is int and 0 <= value <= 2_147_483_647 else None)
+    try:
+        model = model_id(data.get("model") or fallback_model)
+    except LlmGatewayError:
+        model = ""
+    return LlmTokenBudgetExhausted(
+        model=model, prompt_tokens=tokens[0], completion_tokens=tokens[1]
+    )
+
+
 def parse_response(data: Any, fallback_model: str, latency_ms: float) -> LlmResult:
     if not isinstance(data, dict):
         raise LlmGatewayError("The model endpoint returned something other than an object.")
     if data.get("status") == "incomplete":
+        details = data.get("incomplete_details")
+        if isinstance(details, dict) and details.get("reason") == "max_output_tokens":
+            raise _budget_exhausted(data, fallback_model)
         raise LlmGatewayError(
             "The model response was incomplete. It may have exhausted its completion token "
             "budget; check the configured budget and reasoning effort."

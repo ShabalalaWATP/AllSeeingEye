@@ -10,6 +10,7 @@ beforeEach(() =>
   server.use(http.post('/api/admin/llm/models/discover', () => HttpResponse.json({ models: [] }))),
 );
 import { LlmProfileForm } from './LlmProfileForm';
+import { draft } from './llmTestFixtures';
 
 describe('connection draft form', () => {
   it('hides old account model choices after a credential or endpoint change', async () => {
@@ -94,13 +95,57 @@ describe('connection draft form', () => {
         base_url: 'https://api.openai.com/v1',
         model: 'gpt-5.6-luna',
         reasoning_effort: 'max',
-        max_output_tokens: 16000,
+        max_output_tokens: 32000,
         api_key: 'synthetic-test-key',
         enabled: false,
         roles: ['direction', 'assessment', 'devil', 'translation'],
       }),
     );
   });
+
+  it('keeps the larger budget specific to the untouched Luna preset and preserves manual edits', async () => {
+    const user = userEvent.setup();
+    render(<LlmProfileForm busy={false} error={null} onSubmit={vi.fn()} onCancel={vi.fn()} />);
+    await user.click(screen.getByText('Advanced settings'));
+    const budget = screen.getByLabelText('Response budget (includes reasoning)');
+    expect(budget).toHaveValue(32000);
+    await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
+    expect(budget).toHaveValue(16000);
+    await user.selectOptions(screen.getByLabelText('Provider'), 'bedrock');
+    expect(budget).toHaveValue(16000);
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+    expect(budget).toHaveValue(32000);
+    await user.clear(budget);
+    await user.type(budget, '9000');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+    expect(budget).toHaveValue(9000);
+  });
+
+  it.each([false, true])(
+    'preserves a saved 16k budget when replacement is %s',
+    async (replacement) => {
+      const user = userEvent.setup();
+      render(
+        <LlmProfileForm
+          initial={draft()}
+          replacement={replacement}
+          busy={false}
+          error={null}
+          onSubmit={vi.fn()}
+          onCancel={vi.fn()}
+        />,
+      );
+      await user.click(screen.getByText('Advanced settings'));
+      const budget = screen.getByLabelText('Response budget (includes reasoning)');
+      expect(budget).toHaveValue(16000);
+      await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'low');
+      await user.selectOptions(screen.getByLabelText('Reasoning effort'), 'max');
+      await user.selectOptions(screen.getByLabelText('Provider'), 'custom');
+      await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+      expect(budget).toHaveValue(16000);
+    },
+  );
 
   it('allows a custom endpoint and manual model ID without requiring a key', async () => {
     const submit = vi.fn();

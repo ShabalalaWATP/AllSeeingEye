@@ -69,7 +69,7 @@ def test_grouped_supported_assessment_and_named_gaps_fit_existing_strict_validat
     assert result.body.cited_labels() <= {"E1", "E2", "E3"}
 
 
-@pytest.mark.parametrize("citation", [[], ["unrelated-invented-label"]])
+@pytest.mark.parametrize("citation", [[], ["E999"]])
 def test_grouped_assessment_still_requires_known_evidence(citation):
     data = compact_body()
     data["assessment"][0]["evidence"] = citation

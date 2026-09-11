@@ -10,7 +10,7 @@ import { LlmModelSelection } from './LlmModelSelection';
 import { useLlmModelDiscovery } from './useLlmModelDiscovery';
 import { LlmAdvancedSettings } from './LlmAdvancedSettings';
 import { BedrockRegion, bedrockEndpoint, regionFromEndpoint } from './BedrockRegion';
-import { LUNA_MODEL, OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
+import { LUNA_MAX_OUTPUT_TOKENS, LUNA_MODEL, OPENAI_BASE_URL, TEXT_ROLES } from './llmPresentation';
 
 export interface LlmProfileFormProps {
   initial?: LlmProfile | undefined;
@@ -65,7 +65,10 @@ export function LlmProfileForm({
   const [apiKey, setApiKey] = useState('');
   const [embeddings, setEmbeddings] = useState(initial?.roles.includes('embeddings') ?? false);
   const [embeddingEnabled, setEmbeddingEnabled] = useState(initial?.enabled ?? false);
-  const [maxTokens, setMaxTokens] = useState(String(initial?.max_output_tokens ?? 16_000));
+  const [maxTokens, setMaxTokens] = useState(
+    String(initial?.max_output_tokens ?? LUNA_MAX_OUTPUT_TOKENS),
+  );
+  const preserveTokenBudget = useRef(initial !== undefined);
   const [temperature, setTemperature] = useState(String(initial?.temperature ?? 0.2));
   const [effort, setEffort] = useState<NonNullable<LlmProfile['reasoning_effort']> | ''>(
     initial?.reasoning_effort ?? (initial === undefined ? 'max' : ''),
@@ -108,6 +111,8 @@ export function LlmProfileForm({
     setApiKey('');
     setEmbeddings(false);
     setEmbeddingEnabled(false);
+    if (!preserveTokenBudget.current)
+      setMaxTokens(String(value === 'openai' ? LUNA_MAX_OUTPUT_TOKENS : 16_000));
     if (value === 'bedrock') setTemperature(String(Math.min(Number(temperature) || 0, 1)));
     setName(
       value === 'openai'
@@ -120,7 +125,6 @@ export function LlmProfileForm({
       setBaseUrl(OPENAI_BASE_URL);
       setModel(LUNA_MODEL);
       setEffort('max');
-      setMaxTokens('16000');
     } else {
       setRegion('');
       setBaseUrl('');
@@ -279,7 +283,10 @@ export function LlmProfileForm({
             <LlmAdvancedSettings
               bedrock={provider === 'bedrock'}
               maxTokens={maxTokens}
-              setMaxTokens={setMaxTokens}
+              setMaxTokens={(value) => {
+                preserveTokenBudget.current = true;
+                setMaxTokens(value);
+              }}
               temperature={temperature}
               setTemperature={setTemperature}
               embeddings={embeddings}

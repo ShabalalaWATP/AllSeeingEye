@@ -250,7 +250,7 @@ async def test_empty_model_output_retries_and_cannot_become_ready() -> None:
 
 async def test_model_retry_repairs_unknown_citations_and_uses_frozen_grades() -> None:
     bad = sound_body()
-    bad["key_judgements"][0]["supporting_evidence"] = ["invented"]
+    bad["key_judgements"][0]["supporting_evidence"] = ["E999"]
     gateway = ScriptedGateway(json.dumps(bad), json.dumps(sound_body()))
     profile = LlmProfile(
         uuid4(),
@@ -279,4 +279,4 @@ async def test_model_retry_repairs_unknown_citations_and_uses_frozen_grades() ->
     )
     assert draft.attempts == 2 and not draft.has_errors and draft.body is not None
     assert draft.body.reporting[0].items[0].grade == "C3"
-    assert "Unknown evidence invented" in gateway.requests[1].messages[1].content
+    assert "Unknown evidence E999" in gateway.requests[1].messages[1].content

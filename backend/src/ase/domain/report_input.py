@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
@@ -40,6 +41,9 @@ def _check(value: Any, schema: dict[str, Any], path: str) -> None:
     elif isinstance(value, str):
         if not schema.get("minLength", 0) <= len(value.strip()) <= schema.get("maxLength", 1200):
             raise ReportParseError(f"{path} has an invalid text length")
+        # Patterns come only from the application-owned schema, never from model output.
+        if "pattern" in schema and re.fullmatch(schema["pattern"], value) is None:
+            raise ReportParseError(f"{path} has an invalid identifier")
 
 
 def parse_model_body(data: Any) -> ReportBody:

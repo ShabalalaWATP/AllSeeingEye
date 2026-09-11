@@ -104,14 +104,19 @@ Luna is a text-generation model, not an embedding endpoint.
 OpenAI documents `gpt-5.6-luna` with reasoning efforts none, low, medium, high,
 xhigh and max, and support for Chat Completions and structured outputs.
 [Luna model](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
-Retain the existing Chat Completions adapter; use the supported modern reasoning
-parameters and keep compatibility with existing local endpoints.
+At the official OpenAI base URL, explicit Max requests use the native Responses
+route. Other reasoning settings and compatible endpoints retain Chat Completions.
 
 Account model discovery uses `GET https://api.openai.com/v1/models`.
 [List models](https://developers.openai.com/api/reference/resources/models/methods/list).
 Reasoning and visible output share the completion token budget. The new OpenAI
-preset uses a bounded 16,000-token budget; Max may take longer and consume more
-tokens. Account-specific access and actual quality still require a real test.
+preset uses a bounded 32,000-token budget. Two observed 16,000-token photo report
+drafts exhausted their full budgets on reasoning without producing an answer.
+The larger preset is headroom, not a completion guarantee. It applies to new Luna
+connections; saved and manually entered budgets remain unchanged. Other provider
+defaults and independent source/web limits remain unchanged. Max can take longer
+and consume more tokens. Account-specific access and actual quality still require
+a real test.
 
 ## Verification evidence
 
