@@ -451,6 +451,25 @@ administration colours unchanged; reduced motion removes entry transitions and
 stops the flames. Container resize observation keeps the canvas matched to the
 responsive layout without changing the original shader.
 
+### 5.7 Research workspace
+
+Research groups questions, private photo geolocation, recurring runs and reusable
+plans/areas. Saved reports remains the output library; Live monitor displays
+connected-feed activity and Alerts contains notifications and deterministic rules.
+Legacy routes remain valid. Shared research navigation lives under `components`,
+without feature-to-feature imports. Specialist report forms mount only on demand.
+
+Public questions carry up to eight canonical countries and rolling or fixed
+intervals of up to 730 days. Provider limits remain independent of request scope.
+An optional native web-search port uses the destination's frozen model profile;
+generated search context is stored separately from graded source evidence.
+Photo geolocation sends a bounded sanitised preview through the existing LLM port,
+retains candidate uncertainty and inherits the private-input expiry/access policy.
+Monthly recurrence uses the existing scheduler and stores additive options in its
+JSON settings. See the [operator guide](RESEARCH_WORKSPACE_OPERATIONS.md),
+[web-search boundary](FRESH_WEB_RESEARCH.md) and
+[scoped security review](security/RESEARCH_WORKSPACE_REVIEW.md).
+
 ## 6. Checks and remaining evidence
 
 Backend checks are pytest with SQLite by default, a 90 percent coverage gate,

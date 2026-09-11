@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.feeds.mastodon import load_watch
+from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
 from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
@@ -32,6 +33,7 @@ from ase.application.schedules.manage import (
     ListSchedulesUseCase,
     UpdateScheduleUseCase,
 )
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.application.schedules.runner import ScheduleRunner
 from ase.application.teams.service import TeamService
 from ase.application.trackers.aviation import (
@@ -331,20 +333,11 @@ class FeatureWiring(ReportWiring):
             owner = await self.repositories(session).users.get_by_id(schedule.created_by)
             if owner is None or not owner.is_active:
                 raise InvalidRequest("The schedule's owner is unavailable.")
-            request = ReportRequest(
-                template_id=schedule.template_id,
-                country_iso=schedule.country_iso,
-                window_hours=schedule.window_hours,
-                plan_id=schedule.plan_id,
-                team_id=schedule.team_id,
-                automation=True,
-                question=schedule.question,
-                research_mode=schedule.research_mode,
-                research_languages=schedule.research_languages,
-                research_focus=schedule.research_focus,
-                research_subject=schedule.research_subject,
-            )
+            request = scheduled_report_request(schedule)
             record, _version = await self.generate_report(session).execute(
                 owner, request, RequestContext()
             )
             return record.id
+
+    def public_infrastructure(self) -> dict[str, Any]:
+        return public_infrastructure()

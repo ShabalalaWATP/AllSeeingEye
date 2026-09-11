@@ -59,7 +59,9 @@ def select_for_job(
         # Area eligibility was admitted by spatial providers. A point-only filter
         # here would silently discard valid footprints without event coordinates.
         bbox=None if private or area else job.bbox,
-        countries=() if private else job.countries,
+        countries=()
+        if private
+        else tuple(dict.fromkeys((*job.request.country_isos, *job.countries))),
         hazard=None if private else job.hazard,
         time_basis=job.request.effective_time_basis,
         since=job.period_from if job.request.research_since is not None else None,

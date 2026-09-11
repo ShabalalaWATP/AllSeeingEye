@@ -50,7 +50,7 @@ def supports(query: ResearchQuery) -> bool:
     return (
         query.area is not None
         and query.focus is ResearchFocus.GENERAL
-        and query.country_iso is None
+        and not query.country_isos
         and query.effective_time_basis is EvidenceTimeBasis.RESEARCH
         and query.until - query.since <= timedelta(days=14)
     )

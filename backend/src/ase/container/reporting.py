@@ -50,6 +50,7 @@ from ase.application.research.map_views import SavedMapViews
 from ase.application.research.preview import PreviewResearchPlan
 from ase.container.report_renderer import build_report_renderer
 from ase.container.research import private_research_store
+from ase.container.research_web import WebResearchWiring
 from ase.domain.report_records import ReportVersion
 
 if TYPE_CHECKING:
@@ -81,7 +82,7 @@ if TYPE_CHECKING:
 log = structlog.get_logger(__name__)
 
 
-class ReportWiring:
+class ReportWiring(WebResearchWiring):
     """Session-scoped report production, export and search factories."""
 
     if TYPE_CHECKING:
@@ -131,6 +132,7 @@ class ReportWiring:
         return GenerateReportUseCase(
             store=self.store,
             research=self.research,
+            web_research=self.fresh_web_research,
             research_inputs=self.research_inputs,
             private_store_factory=private_research_store,
             source_profiles=self.source_profiles,

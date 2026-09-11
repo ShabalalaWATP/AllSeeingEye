@@ -93,6 +93,7 @@ export function useAreaResearch(
     setApproved(null);
     const until = new Date();
     const input: AreaInput = {
+      research_web_search: false,
       research_area: { geometry: { ...area } },
       question: resolvedQuestion,
       since: new Date(until.getTime() - days * 86_400_000).toISOString(),
@@ -147,6 +148,7 @@ export function useAreaResearch(
       research_time_basis: 'acquisition_or_publication',
       research_mode: mode,
       research_focus: 'general',
+      research_web_search: false,
       research_languages: input.languages,
       research_source_ids: null,
       report_language: preferences.report_language,

@@ -10,7 +10,6 @@ import asyncio
 import secrets
 from collections.abc import Sequence
 from datetime import timedelta
-from typing import Any
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +30,6 @@ from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.camera_registry import build_sources as build_camera_sources
 from ase.adapters.geo.conflicts import ConflictIndex
 from ase.adapters.geo.countries import CountryIndex
-from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.links import PublicLinkBuilder
 from ase.adapters.llm.embeddings import OpenAiEmbeddingGateway
 from ase.adapters.notify.webhook import NullNotifier, WebhookNotifier
@@ -319,9 +317,6 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             admission=self.source_admission,
         )
 
-    def public_infrastructure(self) -> dict[str, Any]:
-        return public_infrastructure()
-
     async def dispose(self) -> None:
         await self.http.aclose()
         await self.satellite_http.aclose()
@@ -333,6 +328,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         await self.terrain_gateway.aclose()
         await self.terrain_http.aclose()
         await self._llm_gateway.aclose()
+        await self.close_web_search()
         await self._embedding_gateway.aclose()
         await self.tiles.aclose()
         await self.archiver.aclose()

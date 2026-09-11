@@ -10,6 +10,7 @@ from ase.domain.registry_identifiers import RegistryLookup, validate_lookup_anch
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_planning import PlanningTrace
+from ase.domain.research_scope import normalise_countries
 from ase.domain.research_tasks import ResearchCandidate, validate_task_receipt
 from ase.domain.text_transformations import validate_script
 
@@ -134,3 +135,12 @@ class ResearchPlan:
     candidate_hypotheses: tuple[ResearchCandidate, ...] = ()
     continuation: ContinuationTrace | None = None
     planning: PlanningTrace | None = None
+    country_isos: tuple[str, ...] = ()
+    research_web_search: bool = False
+
+    def __post_init__(self) -> None:
+        countries = normalise_countries(self.country_iso, self.country_isos)
+        object.__setattr__(self, "country_isos", countries)
+        object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
+        if not isinstance(self.research_web_search, bool):
+            raise ValueError("Invalid frozen fresh web-search choice")

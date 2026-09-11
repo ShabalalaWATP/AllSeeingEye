@@ -6,6 +6,11 @@ implemented behaviour within the documented limits, not measured research accura
 
 ## Source audit and activation, 10 September 2026
 
+The active next milestone is the [research workspace overhaul](RESEARCH_WORKSPACE_OVERHAUL.md):
+multiple countries, historical periods, photo geolocation, native web context,
+monthly recurring research and clearer navigation. Live configured-AI evaluation
+remains open. See [operator flows](RESEARCH_WORKSPACE_OPERATIONS.md).
+
 The current operational findings and ranked onboarding queue are in
 [SOURCE_CONNECTION_AUDIT.md](SOURCE_CONNECTION_AUDIT.md). Configuration presence,
 current delivery and research capability are separate acceptance criteria.

@@ -158,8 +158,9 @@ async def test_direct_preview_rejects_foreign_team(client, user):
 
 
 async def test_direct_report_preserves_area_on_regeneration_and_blocks_unscoped_followup(
-    client, container, user
+    client, container, user, clock
 ):
+    clock.advance(NOW - clock.now())
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
     provider = SpatialFixture(True)
     container.research = ResearchCollectionService(lambda query: [provider])
@@ -236,10 +237,10 @@ async def test_direct_area_authorisation_rechecks_team_membership_after_collecti
             await service.finish(user, request, None, None)
 
 
-async def test_direct_preview_rejects_unsupported_long_recent_interval(client, user):
+async def test_direct_preview_rejects_interval_beyond_two_years(client, user):
     response = await client.post(
         "/api/research/runs/plan",
-        json={**preview_body(), "since": (NOW - timedelta(days=15)).isoformat()},
+        json={**preview_body(), "since": (NOW - timedelta(days=731)).isoformat()},
         headers=await headers(client, user),
     )
     assert response.status_code == 422

@@ -175,6 +175,8 @@ def build_plan(
         mode=query.mode.value,
         subject=query.subject,
         country_iso=query.country_iso,
+        country_isos=query.country_isos,
+        research_web_search=query.research_web_search,
         area=query.area,
         time_basis=query.effective_time_basis,
         candidate_hypotheses=query.candidate_hypotheses,

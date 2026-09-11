@@ -72,7 +72,7 @@ def select_snapshot(
         for event in bounded
         if spatial.contains(event)
         and evidence_matches_time(event, query.effective_time_basis, query.since, query.until)
-        and (query.country_iso is None or event.country_iso == query.country_iso)
+        and (not query.country_isos or event.country_iso in query.country_isos)
     )
     return AreaSnapshot(
         matches, len(bounded), len(bounded) - len(matches), len(events) > SCAN_PER_CATEGORY

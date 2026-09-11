@@ -120,11 +120,24 @@ class BoundedResearchInputStore:
         self, reservation: InputReservation, extraction: InputExtraction
     ) -> StoredResearchInput:
         self.require_pending(reservation)
+        expires_at = reservation.expires_at
+        if extraction.parent_input_id is not None:
+            parent = self._reservations.get(extraction.parent_input_id)
+            if (
+                parent is None
+                or parent.id not in self._ready
+                or parent.owner_id != reservation.owner_id
+                or parent.security_version != reservation.security_version
+            ):
+                raise NotFound()
+            expires_at = min(reservation.expires_at, parent.expires_at)
         if extraction.filename != reservation.filename:
             raise InvalidRequest("The extracted input does not match the reserved filename.")
         events, estimate = _freeze_and_measure(extraction)
         if sum(self._sizes.values()) + estimate > MAX_ESTIMATED_BYTES:
             raise RateLimited(INPUT_TTL_SECONDS)
+        reservation = replace(reservation, expires_at=expires_at)
+        self._reservations[reservation.id] = reservation
         receipt = ResearchInputReceipt(
             id=reservation.id,
             filename=extraction.filename,
@@ -162,3 +175,22 @@ class BoundedResearchInputStore:
         ):
             raise NotFound()
         return self._ready[input_id]
+
+    def discard(self, actor: User, input_id: UUID) -> None:
+        self.read(actor, input_id)
+        discarded = {input_id}
+        # At most eight receipts exist. Descendants are derived only from matching owners.
+        while True:
+            children = {
+                key
+                for key, stored in self._ready.items()
+                if stored.receipt.parent_input_id in discarded
+                and self._reservations[key].owner_id == actor.id
+            }
+            if children <= discarded:
+                break
+            discarded.update(children)
+        for key in discarded:
+            self._reservations.pop(key, None)
+            self._ready.pop(key, None)
+            self._sizes.pop(key, None)

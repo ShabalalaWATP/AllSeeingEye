@@ -160,9 +160,27 @@ class LlmConnectionBinding:
 
 
 @dataclass(frozen=True, slots=True)
+class LlmImage:
+    """One already sanitised PNG, never raw upload bytes or an external URL."""
+
+    png: bytes = field(repr=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.png, bytes) or not self.png.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise ValueError("Model images must be sanitised PNG bytes.")
+        if not 24 <= len(self.png) <= 1024 * 1024:
+            raise ValueError("Model images must be at most 1 MiB.")
+
+
+@dataclass(frozen=True, slots=True)
 class LlmMessage:
     role: Literal["system", "user", "assistant"]
     content: str
+    images: tuple[LlmImage, ...] = field(default=(), repr=False)
+
+    def __post_init__(self) -> None:
+        if len(self.images) > 1 or (self.images and self.role != "user"):
+            raise ValueError("Only user messages may contain one sanitised image.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,6 +192,10 @@ class LlmRequest:
     schema_name: str = "response"
     reasoning_effort: ReasoningEffort | None = None
     provider: LlmProvider = LlmProvider.OPENAI_COMPATIBLE
+
+    def __post_init__(self) -> None:
+        if sum(len(message.images) for message in self.messages) > 1:
+            raise ValueError("A model request may contain at most one sanitised image.")
 
 
 @dataclass(frozen=True, slots=True)

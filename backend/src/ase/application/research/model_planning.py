@@ -41,6 +41,7 @@ def planning_context(
         "terms": query.terms,
         "subject": query.subject,
         "country_iso": query.country_iso,
+        "country_isos": query.country_isos,
         "languages": query.languages,
         "since": query.since.isoformat(),
         "until": query.until.isoformat(),

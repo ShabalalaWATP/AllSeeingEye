@@ -99,7 +99,7 @@ it('previews and submits distinct same-source tasks, preserves exact phrases and
   expect(submitted?.research_candidate_hypotheses).toEqual(previews.at(-1)?.candidate_hypotheses);
   const parent = {
     ...report,
-    report: { ...report.report, scope: { ...report.report.scope, ...submitted } },
+    report: { ...report.report, scope: { ...report.report.scope, ...submitted, country: null } },
   };
   expect(followUpRequest(parent).research_planned_tasks).toEqual(submitted?.research_planned_tasks);
 });

@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
 import { useGlobeStore } from '@/stores/globe';
@@ -7,6 +7,14 @@ import { renderApp } from '@/test/render';
 
 import { viewTitle } from './TopBar';
 import { isEditableTarget } from './useViewShortcuts';
+
+// Load real route modules before timing keyboard transitions into the map.
+beforeAll(async () => {
+  await Promise.all([
+    import('@/features/globe/GlobePage'),
+    import('@/features/research/ResearchPage'),
+  ]);
+});
 
 describe('AppShell', () => {
   it('lets the keyboard skip repeated navigation and focus the main area', async () => {
@@ -24,16 +32,16 @@ describe('AppShell', () => {
     expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(nav).getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
-    expect(within(nav).getByRole('link', { name: 'Trackers' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
+      'href',
+      '/reports',
+    );
+    expect(within(nav).getByRole('link', { name: 'Live monitor' })).toHaveAttribute(
       'href',
       '/trackers',
     );
-    expect(within(nav).getByRole('link', { name: 'Direction' })).toHaveAttribute(
-      'href',
-      '/direction',
-    );
-    expect(within(nav).getByRole('link', { name: 'Warning' })).toHaveAttribute('href', '/warning');
+    expect(within(nav).queryByRole('link', { name: 'Direction' })).not.toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Alerts' })).toHaveAttribute('href', '/warning');
     expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
     expect(screen.getByText('Globe', { selector: 'p' })).toBeInTheDocument();
   });
@@ -81,7 +89,7 @@ describe('AppShell', () => {
   it('returns to the map workspace without changing the chosen projection', async () => {
     const { user, router } = renderApp('/reports', 'admin');
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(screen.getByText('Reports', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText('Saved reports', { selector: 'p' })).toBeInTheDocument();
     await user.click(within(nav).getByRole('link', { name: 'Map' }));
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/');
@@ -102,7 +110,7 @@ describe('AppShell', () => {
     expect(viewTitle('/', 'globe')).toBe('Globe');
     expect(viewTitle('/', 'map')).toBe('Map');
     expect(viewTitle('/admin/audit', 'globe')).toBe('Admin');
-    expect(viewTitle('/warning', 'globe')).toBe('Warning');
+    expect(viewTitle('/warning', 'globe')).toBe('Alerts');
     expect(viewTitle('/elsewhere', 'globe')).toBe('The All Seeing Eye');
 
     const editable = document.createElement('div');

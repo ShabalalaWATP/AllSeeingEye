@@ -47,6 +47,12 @@ def _from_row(row: ScheduleRow) -> Schedule:
         research_languages=tuple(options.get("languages") or ["en"]),
         research_focus=ResearchFocus(options.get("focus", "general")),
         research_subject=options.get("subject"),
+        country_isos=tuple(options.get("country_isos", ())),
+        monthday=options.get("monthday", 1),
+        research_web_search=options.get("web_search", False),
+        research_source_ids=tuple(options["source_ids"])
+        if options.get("source_ids") is not None
+        else None,
     )
 
 
@@ -75,6 +81,12 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
         "languages": list(schedule.research_languages),
         "focus": schedule.research_focus.value,
         "subject": schedule.research_subject,
+        "country_isos": list(schedule.country_isos),
+        "monthday": schedule.monthday,
+        "web_search": schedule.research_web_search,
+        "source_ids": list(schedule.research_source_ids)
+        if schedule.research_source_ids is not None
+        else None,
     }
 
 

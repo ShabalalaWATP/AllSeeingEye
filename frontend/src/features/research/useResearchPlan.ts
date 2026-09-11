@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MAX_RESEARCH_HOURS, researchDateError, type ResearchDates } from './ResearchTimeScope';
 
 import { useAccountRequest } from '@/components/account/useAccountRequest';
 import { ApiError, describeError } from '@/lib/api/errors';
@@ -15,7 +16,10 @@ export interface PlanScope {
   mode: NonNullable<ReportRequest['research_mode']>;
   focus: NonNullable<ReportRequest['research_focus']>;
   subject: string;
-  country: string;
+  country?: string;
+  countries?: string[];
+  dates?: ResearchDates;
+  webSearch?: boolean;
   history?: { since: string; until: string; projectId?: string };
   area?: {
     viewId: string;
@@ -140,17 +144,39 @@ export function useResearchPlan(scope: PlanScope) {
         return;
       }
     }
-    if (scope.area && !scope.history) {
-      const duration = Date.parse(scope.area.until) - Date.parse(scope.area.since);
-      if (!Number.isFinite(duration) || duration <= 0 || duration > 14 * 86_400_000) {
-        setError('Choose a positive UTC interval of at most 14 days before previewing.');
+    const countries = scope.countries ?? (scope.country ? [scope.country] : []);
+    if (
+      countries.length > 8 ||
+      new Set(countries).size !== countries.length ||
+      countries.some((code) => !/^[A-Z]{2}$/.test(code))
+    ) {
+      setError('Choose up to eight distinct countries before previewing.');
+      return;
+    }
+    const dateScope = scope.area ?? scope.dates;
+    if (dateScope && !scope.history) {
+      const dateError = researchDateError(dateScope);
+      if (dateError) {
+        setError(dateError);
         return;
       }
+    } else if (
+      !scope.history &&
+      (!Number.isInteger(Number(scope.windowHours)) ||
+        Number(scope.windowHours) <= 0 ||
+        Number(scope.windowHours) > MAX_RESEARCH_HOURS)
+    ) {
+      setError('Choose a valid search period of up to two years.');
+      return;
+    }
+    if (scope.webSearch && (scope.focus === 'document' || scope.focus === 'media')) {
+      setError('Fresh web search is unavailable for private attachments.');
+      return;
     }
     const signal = beginRequest();
     setBusy(true);
     setError(null);
-    const fixed = scope.area ?? scope.history;
+    const fixed = scope.area ?? scope.history ?? scope.dates;
     const until = fixed ? new Date(fixed.until) : new Date();
     const since = fixed
       ? new Date(fixed.since)
@@ -174,7 +200,8 @@ export function useResearchPlan(scope: PlanScope) {
           mode: scope.mode,
           focus: scope.focus,
           subject: scope.subject.trim() || null,
-          country_iso: scope.country || null,
+          countries,
+          research_web_search: scope.webSearch ?? false,
           source_ids: sourceIds,
           query_variants: variants,
           candidate_hypotheses: candidateHypotheses,
@@ -195,8 +222,8 @@ export function useResearchPlan(scope: PlanScope) {
           'The preview does not match the selected map revision and interval.',
         );
       if (
-        scope.history &&
-        (data.time_basis !== 'recorded_time' ||
+        (scope.history || scope.dates) &&
+        ((scope.history && data.time_basis !== 'recorded_time') ||
           Date.parse(data.since) !== since.getTime() ||
           Date.parse(data.until) !== until.getTime())
       )
@@ -213,6 +240,7 @@ export function useResearchPlan(scope: PlanScope) {
     }
   };
   const request: Partial<ReportRequest> = {
+    ...(scope.webSearch === undefined ? {} : { research_web_search: scope.webSearch }),
     ...(candidateHypotheses.length ? { research_candidate_hypotheses: candidateHypotheses } : {}),
     ...(plannedTasks.length ? { research_planned_tasks: plannedTasks } : {}),
     ...(sourceIds === null ? {} : { research_source_ids: sourceIds }),

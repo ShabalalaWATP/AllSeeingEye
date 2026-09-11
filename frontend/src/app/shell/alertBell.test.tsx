@@ -70,7 +70,7 @@ describe('alert count and ops-room strip', () => {
       ),
     );
     renderApp('/reports', 'user');
-    const bell = await screen.findByRole('link', { name: 'Alerts' });
+    const bell = await within(screen.getByRole('banner')).findByRole('link', { name: 'Alerts' });
     expect(bell).toHaveAttribute('href', '/warning');
     server.use(
       http.get('/api/warning/alerts', () => HttpResponse.json({ items: [], unacknowledged: 0 })),

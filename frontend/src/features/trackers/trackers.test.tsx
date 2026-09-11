@@ -100,6 +100,7 @@ describe('tracker products', () => {
         template: 'conflict_assessment',
         conflict: 'ukraine',
         research_focus: 'general',
+        research_web_search: false,
         report_language: 'en',
         report_style: 'assessment',
         devils_advocacy: false,

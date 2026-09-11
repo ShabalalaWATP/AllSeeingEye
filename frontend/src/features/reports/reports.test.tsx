@@ -46,6 +46,7 @@ describe('ReportsPage', () => {
       http.get('/api/reports/99999999-9999-4999-8999-999999999999', () => HttpResponse.json(asked)),
     );
     const { user } = renderApp('/reports', 'user');
+    await user.click(await screen.findByRole('button', { name: 'Specialist report templates' }));
     const form = await screen.findByRole('form', { name: 'Generate a report' });
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
     expect(
@@ -66,6 +67,7 @@ describe('ReportsPage', () => {
       report_language: 'en',
       report_style: 'assessment',
       research_focus: 'general',
+      research_web_search: false,
       devils_advocacy: false,
       country: 'UA',
       question: 'What next?',
@@ -125,7 +127,7 @@ describe('ReportPage', () => {
     expect(screen.getByRole('button', { name: 'Copy Markdown' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Reports' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Saved reports' })).toBeInTheDocument();
     });
   });
 

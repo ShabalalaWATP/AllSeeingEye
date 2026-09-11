@@ -103,6 +103,7 @@ async def test_concave_and_split_antimeridian_areas(monkeypatch):
         {"country_iso": "GB"},
         {"time_basis": EvidenceTimeBasis.PUBLICATION},
         {"since": QUERY.until - timedelta(days=15)},
+        {"since": QUERY.until - timedelta(days=730)},
     ],
 )
 async def test_unsupported_scope_makes_no_request(monkeypatch, changes):

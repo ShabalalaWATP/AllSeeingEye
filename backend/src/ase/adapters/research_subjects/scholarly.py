@@ -35,7 +35,7 @@ class OpenAlexProvider:
         self.http, self.clock = OpenAlexClient(http, api_key), clock
 
     def supports(self, query: ResearchQuery) -> bool:
-        return selected(query, self.id, "academic:") and query.country_iso is None
+        return selected(query, self.id, "academic:") and not query.country_isos
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:
         if not self.supports(query):
@@ -135,7 +135,7 @@ class CrossrefProvider:
         self.http, self.clock = http, clock
 
     def supports(self, query: ResearchQuery) -> bool:
-        return selected(query, self.id, "academic:") and query.country_iso is None
+        return selected(query, self.id, "academic:") and not query.country_isos
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:
         if not self.supports(query):

@@ -37,6 +37,8 @@ class PreviewResearchPlan:
             research_mode=query.mode,
             research_focus=query.focus,
             country_iso=query.country_iso,
+            country_isos=query.country_isos,
+            research_web_search=query.research_web_search,
             team_id=team_id,
             map_view_id=map_view_id,
             map_revision_id=map_revision_id,

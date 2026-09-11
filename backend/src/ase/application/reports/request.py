@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -12,11 +12,15 @@ from ase.domain.events import Category
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import ReportLanguage
 from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
-from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.query_variant_records import required_variant, validate_variant_anchors
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea, area_from_dict, validate_direct_area
 from ase.domain.research_plan import QueryVariant
+from ase.domain.research_scope import (
+    normalise_countries,
+    validate_research_interval,
+    validate_research_window,
+)
 from ase.domain.research_tasks import (
     PlannedQueryTask,
     ResearchCandidate,
@@ -62,6 +66,8 @@ class ReportRequest:
     research_until: datetime | None = None
     research_time_basis: EvidenceTimeBasis | None = None
     research_area: ResearchArea | None = None
+    country_isos: tuple[str, ...] = ()
+    research_web_search: bool = False
 
     @property
     def effective_area(self) -> ResearchArea | None:
@@ -76,7 +82,27 @@ class ReportRequest:
         )
 
     def __post_init__(self) -> None:
+        self._validate_scope()
+        self._validate_plan()
+        self._validate_interval()
+
+    def _validate_scope(self) -> None:
+        countries = normalise_countries(self.country_iso, self.country_isos)
+        object.__setattr__(self, "country_isos", countries)
+        object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
+        validate_research_window(self.window_hours)
+        if not isinstance(self.research_web_search, bool):
+            raise ValueError("Fresh web search must be explicitly enabled or disabled")
+        if self.research_web_search and (
+            self.research_mode is None
+            or self.research_focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
+        ):
+            raise ValueError("Fresh web search requires public-source research")
+        if self.research_mode and countries and self.research_focus is not ResearchFocus.GENERAL:
+            raise ValueError("Country filters are unavailable for record-focused research")
         self._validate_area()
+
+    def _validate_plan(self) -> None:
         validate_variant_anchors(self.research_query_variants, self.research_terms)
         if any(row.origin != "operator" for row in self.research_candidate_hypotheses) or any(
             row.origin != "operator" for row in self.research_planned_tasks
@@ -98,6 +124,8 @@ class ReportRequest:
             or self.research_focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
         ):
             raise ValueError("Operator source tasks require public-source research")
+
+    def _validate_interval(self) -> None:
         if self.research_time_basis is not None and not isinstance(
             self.research_time_basis, EvidenceTimeBasis
         ):
@@ -120,27 +148,13 @@ class ReportRequest:
             return
         if self.research_since is None or self.research_until is None:
             raise ValueError("Provide both research interval bounds")
-        if any(value.utcoffset() is None for value in (self.research_since, self.research_until)):
-            raise ValueError("Research interval bounds must include a timezone")
-        maximum_days = MAX_PROJECT_INTERVAL.days if recorded else 14
-        if (
-            not timedelta(0)
-            < self.research_until - self.research_since
-            <= timedelta(days=maximum_days)
-        ):
-            raise ValueError(f"Research interval must be positive and at most {maximum_days} days")
+        validate_research_interval(self.research_since, self.research_until, recorded=recorded)
         object.__setattr__(self, "research_since", self.research_since.astimezone(UTC))
         object.__setattr__(self, "research_until", self.research_until.astimezone(UTC))
         if self.window_hours is not None:
             raise ValueError("Choose a fixed research interval or a rolling window")
-        if self.research_mode is None or (
-            not recorded
-            and self.research_area is None
-            and (self.map_view_id is None or self.map_revision_id is None)
-        ):
-            raise ValueError(
-                "Fixed research intervals require a drawn area or exact saved map and research mode"
-            )
+        if self.research_mode is None:
+            raise ValueError("Fixed research intervals require research mode")
 
     def _validate_area(self) -> None:
         if self.research_area is None:
@@ -159,7 +173,7 @@ class ReportRequest:
             or self.parent_report_id is not None
             or self.research_input_id is not None
             or self.plan_id is not None
-            or self.country_iso is not None
+            or self.country_isos
             or self.conflict_id is not None
             or self.hazard is not None
             or self.categories
@@ -184,6 +198,8 @@ class ReportRequest:
             report_language=scope.get("report_language", "en"),
             report_style=scope.get("report_style", "assessment"),
             country_iso=scope.get("country") or None,
+            country_isos=normalise_countries(None, scope.get("countries", ())),
+            research_web_search=scope.get("research_web_search", False),
             categories=categories,
             question=scope.get("question") or None,
             window_hours=int(window) if window and not scope.get("research_since") else None,

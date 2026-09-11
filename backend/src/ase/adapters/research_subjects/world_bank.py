@@ -48,7 +48,7 @@ class WorldBankProvider:
         return bool(
             query.focus is ResearchFocus.GENERAL
             and parsed
-            and (query.country_iso is None or query.country_iso.upper() == parsed[0])
+            and (not query.country_isos or parsed[0] in query.country_isos)
         )
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:

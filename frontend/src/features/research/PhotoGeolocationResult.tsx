@@ -1,0 +1,111 @@
+import type { ResearchGeolocation } from '@/lib/api/researchGeolocation';
+import { formatUtc } from '@/lib/format';
+
+function ClueList({ title, items }: { title: string; items: readonly string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="min-w-0">
+      <h4 className="text-xs font-semibold text-text">{title}</h4>
+      <ul className="mt-2 list-disc space-y-1.5 pl-4 text-sm leading-relaxed text-muted">
+        {items.map((item, index) => (
+          <li key={index} className="break-words">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Candidates are hypotheses, including any returned coordinates or metadata claims. */
+export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation }) {
+  return (
+    <section
+      aria-label="Photo geolocation result"
+      className="min-w-0 space-y-6 border-t border-line pt-6"
+    >
+      <header>
+        <p className="text-xs font-medium uppercase tracking-widest text-ember">
+          Visual assessment
+        </p>
+        <h3 className="mt-2 text-xl font-semibold tracking-tight">
+          {result.status === 'unknown'
+            ? 'No location identified'
+            : 'Unverified location candidates'}
+        </h3>
+        <p className="mt-2 break-words text-sm leading-relaxed text-muted">{result.summary}</p>
+      </header>
+      <ClueList title="Visible clues" items={result.visual_clues} />
+      {result.candidates.length > 0 && (
+        <ol className="divide-y divide-line border-y border-line">
+          {result.candidates.map((candidate, index) => (
+            <li key={index} className="py-5">
+              <div className="flex items-baseline gap-3">
+                <span className="font-mono text-xs text-muted">0{index + 1}</span>
+                <div className="min-w-0">
+                  <h4 className="break-words text-base font-semibold">{candidate.label}</h4>
+                  <p className="mt-1 text-xs text-muted">
+                    {candidate.precision} level
+                    {candidate.country_iso ? ` · ${candidate.country_iso}` : ''} · Not verified
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <ClueList title="Supporting clues" items={candidate.supporting_clues} />
+                <ClueList
+                  title="Contradictions or missing evidence"
+                  items={candidate.contradictions}
+                />
+              </div>
+              {candidate.coordinates && (
+                <div className="mt-4 border-l-2 border-ember/50 pl-3">
+                  <p className="text-xs font-medium">Candidate position, not a verified pin</p>
+                  <p className="mt-1 font-mono text-xs tabular-nums">
+                    {candidate.coordinates.latitude.toFixed(4)},{' '}
+                    {candidate.coordinates.longitude.toFixed(4)}
+                    {' · '}uncertainty radius{' '}
+                    {candidate.coordinates.uncertainty_radius_km.toLocaleString()} km
+                  </p>
+                  <p className="mt-1 break-words text-xs leading-relaxed text-muted">
+                    {candidate.coordinates.basis}
+                  </p>
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+      <ClueList title="How to verify" items={result.verification_steps} />
+      <ClueList title="Limits of this assessment" items={result.limitations} />
+      <details className="text-xs text-muted">
+        <summary className="cursor-pointer py-2 font-medium text-text">Analysis record</summary>
+        <dl className="mt-2 space-y-2 break-words">
+          <div>
+            <dt className="inline">Model: </dt>
+            <dd className="inline">{result.provenance.returned_model}</dd>
+          </div>
+          <div>
+            <dt className="inline">Configured model: </dt>
+            <dd className="inline">{result.provenance.configured_model}</dd>
+          </div>
+          <div>
+            <dt className="inline">Provider: </dt>
+            <dd className="inline">{result.provenance.provider}</dd>
+          </div>
+          <div>
+            <dt className="inline">Analysed: </dt>
+            <dd className="inline">{formatUtc(result.provenance.analysed_at)}</dd>
+          </div>
+          <div>
+            <dt>Original file SHA-256</dt>
+            <dd className="mt-1 break-all font-mono">{result.provenance.original_sha256}</dd>
+          </div>
+          <div>
+            <dt>Analysed preview SHA-256</dt>
+            <dd className="mt-1 break-all font-mono">{result.provenance.image_sha256}</dd>
+          </div>
+        </dl>
+      </details>
+    </section>
+  );
+}

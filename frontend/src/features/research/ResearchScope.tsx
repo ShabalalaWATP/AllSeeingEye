@@ -1,3 +1,6 @@
+import { CountryMultiSelect } from '@/components/research/CountryMultiSelect';
+import { ResearchTimeScope, type ResearchDates } from './ResearchTimeScope';
+import { FreshWebSearch } from './FreshWebSearch';
 import { ProjectHistory, type ProjectHistoryState } from './ProjectHistory';
 import { SourceLanguagePicker } from '@/components/languages/SourceLanguagePicker';
 import { RegionalPresets } from './RegionalPresets';
@@ -17,8 +20,12 @@ interface ScopeProps {
   teamId: string;
   selectTeam: (id: string) => void;
   countries: readonly Country[];
-  country: string;
-  setCountry: (value: string) => void;
+  selectedCountries: string[];
+  setCountries: (value: string[]) => void;
+  dates: ResearchDates | null;
+  setDates: (value: ResearchDates | null) => void;
+  webSearch: boolean;
+  setWebSearch: (value: boolean) => void;
   windowHours: string;
   setWindowHours: (value: string) => void;
   selectedLanguages: string[];
@@ -30,58 +37,15 @@ interface ScopeProps {
 }
 
 export function ResearchScope(props: ScopeProps) {
-  const knownCountry =
-    !props.country || props.countries.some((item) => item.iso2 === props.country);
+  const privateFocus = props.focus === 'document' || props.focus === 'media';
   return (
-    <div className="grid min-w-0 gap-5 pt-4">
+    <div className="grid min-w-0 gap-5 pt-4 sm:grid-cols-2">
       <WorkspaceField
         workspaces={props.workspaces}
         value={props.teamId}
         onChange={props.selectTeam}
       />
-      {props.focus === 'general' && (
-        <RegionalPresets
-          onSelect={(country, languages) => {
-            props.setCountry(country);
-            props.setLanguages(languages);
-          }}
-        />
-      )}
-      {props.focus === 'general' && props.history && props.setHistory && (
-        <ProjectHistory value={props.history} onChange={props.setHistory} />
-      )}
-      <div className="grid gap-5 sm:grid-cols-2">
-        {props.focus === 'general' && (
-          <SelectField
-            label="Country"
-            value={props.country}
-            onChange={(event) => props.setCountry(event.target.value)}
-            className="min-h-11"
-            options={[
-              { value: '', label: 'All countries' },
-              ...(!knownCountry
-                ? [{ value: props.country, label: `Unavailable country: ${props.country}` }]
-                : []),
-              ...props.countries.map((item) => ({ value: item.iso2, label: item.name })),
-            ]}
-          />
-        )}
-        {!props.history?.enabled && (
-          <SelectField
-            label="Reporting window"
-            value={props.windowHours}
-            onChange={(event) => props.setWindowHours(event.target.value)}
-            className="min-h-11"
-            options={[
-              { value: '24', label: 'Past 24 hours' },
-              { value: '72', label: 'Past 3 days' },
-              { value: '168', label: 'Past 7 days' },
-              { value: '336', label: 'Past 14 days' },
-            ]}
-          />
-        )}
-      </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid content-start gap-4">
         <SelectField
           label="Research focus"
           value={props.focus}
@@ -121,14 +85,61 @@ export function ResearchScope(props: ScopeProps) {
         )}
       </div>
       {props.focus === 'general' && (
-        <GeneralRecordScope
-          subject={props.subject}
-          setSubject={props.setSubject}
-          country={props.country}
+        <CountryMultiSelect
           countries={props.countries}
+          value={props.selectedCountries}
+          onChange={props.setCountries}
         />
       )}
-      <SourceLanguagePicker selected={props.selectedLanguages} onChange={props.setLanguages} />
+      {!props.history?.enabled && (
+        <ResearchTimeScope
+          windowHours={props.windowHours}
+          setWindowHours={props.setWindowHours}
+          dates={props.dates}
+          setDates={props.setDates}
+        />
+      )}
+      <div className="sm:col-span-2">
+        {!privateFocus && (
+          <FreshWebSearch enabled={props.webSearch} onChange={props.setWebSearch} />
+        )}
+        {privateFocus && (
+          <p className="text-xs text-muted">
+            Private input research stays within your selected AI connection. Public web search is
+            disabled for attachments.
+          </p>
+        )}
+      </div>
+      <details className="min-w-0 sm:col-span-2">
+        <summary className="cursor-pointer py-2 text-sm font-medium">
+          Advanced source settings{' '}
+          <span className="ml-2 text-xs font-normal text-muted">
+            Languages, regional presets and specialist records
+          </span>
+        </summary>
+        <div className="space-y-5 pt-4">
+          {props.focus === 'general' && (
+            <RegionalPresets
+              onSelect={(country, languages) => {
+                props.setCountries([country]);
+                props.setLanguages(languages);
+              }}
+            />
+          )}
+          {props.focus === 'general' && props.history && props.setHistory && (
+            <ProjectHistory value={props.history} onChange={props.setHistory} />
+          )}
+          {props.focus === 'general' && (
+            <GeneralRecordScope
+              subject={props.subject}
+              setSubject={props.setSubject}
+              selectedCountries={props.selectedCountries}
+              countries={props.countries}
+            />
+          )}
+          <SourceLanguagePicker selected={props.selectedLanguages} onChange={props.setLanguages} />
+        </div>
+      </details>
     </div>
   );
 }

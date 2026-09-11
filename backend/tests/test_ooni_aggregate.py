@@ -70,7 +70,7 @@ async def test_licence_acknowledgement_required_before_request(
     "query",
     [
         QUERY,
-        replace(OONI_QUERY, country_iso="RU"),
+        replace(OONI_QUERY, country_iso="RU", country_isos=()),
         replace(OONI_QUERY, subject="ooni:IR,US"),
         replace(OONI_QUERY, until=QUERY.since + timedelta(days=15)),
     ],

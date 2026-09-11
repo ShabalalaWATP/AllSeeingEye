@@ -114,10 +114,13 @@ export default function TrackersPage() {
   const disasters = useResource(fetchDisasterBoard);
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Trackers</h1>
+      <h1 className="text-xl font-semibold">Live monitor</h1>
       <p className="text-sm text-muted">
-        Boards are computed from the live store as you open them: activity now against the week
-        before, the worst item and the newest, for every curated conflict and every hazard.
+        Browse recent activity from connected feeds by topic. Open an item to inspect it, or use{' '}
+        <Link to="/research" className="text-text underline">
+          Research
+        </Link>{' '}
+        to collect sources and answer a specific question.
       </p>
       <ul aria-label="Modules" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {MODULES.map((module) => (

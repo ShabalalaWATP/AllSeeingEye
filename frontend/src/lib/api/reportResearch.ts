@@ -3,6 +3,7 @@ import { queryVariantSchema } from './sourceProvenance';
 import type { components } from './types.gen';
 import { planSchema } from './researchPlan';
 import { registryLookupSchema } from './registryRouting';
+import { webResearchSchema } from './webResearch';
 
 const collectionAttemptSchema = z.object({
   source_id: z.string(),
@@ -37,6 +38,7 @@ export const researchReceiptSchema = z.object({
   until: z.string(),
   collected_items: z.number().int(),
   policy_version: z.string(),
+  web_research: webResearchSchema.nullable().default(null),
   time_basis: z
     .enum(['publication', 'acquisition_or_publication', 'recorded_time'])
     .default('publication'),

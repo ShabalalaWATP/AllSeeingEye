@@ -33,7 +33,9 @@ class ParliamentQuestionsProvider:
         self.http, self.clock = http, clock
 
     def supports(self, query: ResearchQuery) -> bool:
-        return selected(query, self.id, "parliament:") and query.country_iso in (None, "GB")
+        return selected(query, self.id, "parliament:") and (
+            not query.country_isos or "GB" in query.country_isos
+        )
 
     async def collect(self, query: ResearchQuery) -> ResearchBatch:
         if not self.supports(query):

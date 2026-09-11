@@ -18,8 +18,11 @@ the existing report generation service and personal/team access policy.
 | `research_focus` | `general`, `company`, `domain`, `document` or `media` |
 | `research_subject` | Optional explicit record subject, at most 300 characters; required where the selected capability needs an identifier |
 | `research_languages` | One to eight language codes, default `en`; edition choice does not prove actual language coverage |
-| `window_hours` | Optional 1 to 336-hour publication window; internal receipts freeze concrete UTC bounds |
-| `country` | Optional two-letter scope for general research; rejected with non-general research focus |
+| `window_hours` | Optional rolling window up to 17,520 hours for ordinary research; receipts freeze UTC bounds |
+| `research_since`, `research_until` | Paired fixed UTC interval, inclusive start/exclusive end, at most 730 days; mutually exclusive with rolling hours |
+| `countries` | Up to eight ISO2 codes for general research; empty means worldwide |
+| `research_web_search` | Strict boolean, false by default; optional public native search through the destination direction profile |
+| `country` | Legacy singleton scope; must agree with any supplied plural scope |
 | `team_id` | Explicit team scope or null for personal scope, subject to current access checks |
 | `research_input_id` | An unexpired input belonging to the current user/security version |
 | `parent_report_id` | Follow-up source report; requires authorised frozen evidence reuse and compatible scope |
@@ -67,6 +70,27 @@ request may have a 499 outcome that the departed client cannot receive. If savin
 had started, a commit can win cancellation or its outcome can be uncertain after
 a lost connection. **Check Reports before retrying.** Cancellation is not a
 guarantee that no report was saved, and there is no separate cancellation endpoint.
+
+## Photo geolocation and cleanup
+
+`POST /api/research/inputs/{input_id}/geolocation` accepts explicit
+`consent_to_send_image: true`, optional `question` (2,000 characters), `hints`
+(1,000 characters) and `team_id`. The response contains candidates/unknown,
+visual clues, uncertainty, verification steps, model/hash provenance and a derived
+`input` receipt usable in a private-media report. Ownership, session and team
+checks run before and after the bounded vision call. No automatic public image
+search or live-map candidate placement occurs.
+
+`DELETE /api/research/inputs/{input_id}` discards the current owner's working
+receipt and same-owner descendants, without deleting saved reports. Current
+ownership and security-version checks apply independently of client cleanup.
+
+Follow-ups preserve countries and fixed intervals. The 730-day limit measures
+interval duration, not the age of saved historical work. Preview uses `countries`,
+`since` and `until`; frozen plans expose canonical `country_isos`. Unknown-country
+articles are not assigned geography from questions. Optional
+`version.research.web_research` stores generated context and native citations
+separately from graded evidence. See [fresh web research](../FRESH_WEB_RESEARCH.md).
 
 ## Private upload
 

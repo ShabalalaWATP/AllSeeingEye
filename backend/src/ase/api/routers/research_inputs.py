@@ -14,6 +14,7 @@ from ase.api.schemas_input_declarations import (
     InputDeclarationTargetOut,
     InputDeclarationTargetsOut,
 )
+from ase.api.schemas_photo_geolocation import PhotoGeolocationIn, PhotoGeolocationOut
 from ase.api.schemas_research_inputs import ResearchInputOut
 from ase.api.session_guard import validate_request_expiry, validate_request_session
 from ase.application.ports.research_inputs import MAX_INPUT_BYTES
@@ -21,6 +22,60 @@ from ase.domain.errors import InvalidRequest
 
 router = APIRouter(prefix="/research/inputs", tags=["research"])
 BODY_TIMEOUT_SECONDS = 30
+
+
+@router.delete("/{input_id}", status_code=204)
+async def discard_input(
+    input_id: UUID,
+    user: CurrentUser,
+    claims: ClaimsDep,
+    session: SessionDep,
+    container: ContainerDep,
+) -> Response:
+    async def check_session() -> None:
+        await validate_request_session(container, claims)
+
+    await container.import_research_input(session).discard(
+        user,
+        input_id,
+        before_discard=check_session,
+    )
+    return Response(status_code=204, headers={"Cache-Control": "private, no-store"})
+
+
+@router.post("/{input_id}/geolocation", status_code=201)
+async def geolocate_photo(
+    input_id: UUID,
+    body: PhotoGeolocationIn,
+    user: CurrentUser,
+    claims: ClaimsDep,
+    request: Request,
+    session: SessionDep,
+    container: ContainerDep,
+    response: Response,
+) -> PhotoGeolocationOut:
+    async def check_session() -> None:
+        await validate_request_session(container, claims)
+
+    result = await _complete_connected(
+        request,
+        container.photo_geolocation(session).execute(
+            user,
+            input_id,
+            question=body.question,
+            hints=body.hints,
+            team_id=body.team_id,
+            consent_to_send_image=body.consent_to_send_image,
+            check_session=check_session,
+        ),
+    )
+    validate_request_expiry(container, claims)
+    response.headers["Cache-Control"] = "private, no-store"
+    return PhotoGeolocationOut(
+        **result.assessment.model_dump(),
+        provenance=result.provenance,
+        input=ResearchInputOut.from_receipt(result.receipt),
+    )
 
 
 @router.get("/{input_id}/declaration-targets")

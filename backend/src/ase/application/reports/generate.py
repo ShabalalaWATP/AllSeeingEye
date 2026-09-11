@@ -35,6 +35,7 @@ from ase.application.ports.research_inputs import ResearchInputStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.automatic_claims import AutomaticClaims
+from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.progress import Progress
@@ -55,9 +56,11 @@ from ase.domain.errors import (
     NotFound,
     RateLimited,
 )
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmProfile
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.research_scope import validate_research_interval
 from ase.domain.trackers import Conflict, Hazard
 from ase.domain.users import User
 
@@ -93,6 +96,7 @@ class GenerateReportUseCase:
         llm_bindings: LlmBindingRepository | None = None,
         map_views: MapViewRepository | None = None,
         claims: ClaimRepository | None = None,
+        web_research: FreshWebResearch | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -103,6 +107,7 @@ class GenerateReportUseCase:
             usage=usage,
             url_resolver=url_resolver,
             research=research,
+            web_research=web_research,
             private_store_factory=private_store_factory,
             automatic_claims=AutomaticClaims(gateway, cipher, clock, limiter)
             if claims is not None
@@ -258,7 +263,21 @@ class GenerateReportUseCase:
         report_id: UUID | None = None,
         plan: CollectionPlan | None = None,
     ) -> Job:
+        if request.research_since is not None and request.research_until is not None:
+            try:
+                validate_research_interval(
+                    request.research_since,
+                    request.research_until,
+                    recorded=request.effective_time_basis is EvidenceTimeBasis.RECORDED,
+                    now=now,
+                )
+            except ValueError as exc:
+                raise InvalidRequest(str(exc)) from exc
         country = self._countries.get(request.country_iso) if request.country_iso else None
+        country_names = [
+            value.name if (value := self._countries.get(iso)) else iso
+            for iso in request.country_isos
+        ]
         conflict = self._conflict(request)
         hazard = self._hazard(request)
         provider = self._backgrounds.get(template.id)
@@ -276,7 +295,7 @@ class GenerateReportUseCase:
             window=report_window(request, template),
             title=report_title(template, request, country, conflict, hazard, plan),
             scope=report_scope(request, template),
-            country_name=country.name if country else None,
+            country_name=", ".join(country_names) or None,
             previous=previous,
             report_id=report_id,
             bbox=conflict.bbox if conflict else (aoi.bbox if aoi else None),
@@ -294,8 +313,8 @@ class GenerateReportUseCase:
             template = template_for(request.template_id)
         except ValueError as exc:
             raise InvalidRequest(str(exc)) from exc
-        if template.needs_country and not request.country_iso:
-            raise InvalidRequest("This template needs a country.")
+        if template.needs_country and len(request.country_isos) != 1:
+            raise InvalidRequest("This template needs exactly one country.")
         if template.needs_question and not (request.question or "").strip() and not request.plan_id:
             raise InvalidRequest("This template needs a question.")
         if template.needs_conflict and self._conflict(request) is None:

@@ -56,7 +56,7 @@ class ReportMapOrigin:
             or request.parent_report_id is not None
             or request.research_input_id is not None
             or request.plan_id is not None
-            or request.country_iso is not None
+            or request.country_isos
             or request.conflict_id is not None
             or request.hazard is not None
             or request.categories

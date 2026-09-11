@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router';
 import { useCallback } from 'react';
 import { useProfile } from '@/stores/profile';
+import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -30,14 +31,16 @@ export default function ResearchPage() {
   const parent = useScopedResource(loadParent);
   const template = templates.data?.find((item) => item.id === 'ask' && item.needs_question);
   return (
-    <section className="h-full min-w-0 overflow-y-auto px-4 py-8 sm:px-8 sm:py-12">
-      <div className="mx-auto flex max-w-3xl flex-col gap-7">
+    <section className="h-full min-w-0 overflow-y-auto px-4 py-8 sm:px-8">
+      <div className="mx-auto flex max-w-4xl flex-col gap-5">
         <header>
           <h1 className="text-3xl font-semibold tracking-tight">Research</h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-            Ask a question and save an evidence-based report with its sources and uncertainty.
+            Ask a question, choose your scope and collect an answer from the available sources. Save
+            the findings with their evidence and uncertainty.
           </p>
         </header>
+        <ResearchNavigation />
         {templates.loading && <LoadingNote label="Loading research options" />}
         {countries.loading && params.get('country') && (
           <LoadingNote label="Loading country scope" />

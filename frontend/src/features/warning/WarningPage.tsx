@@ -147,13 +147,17 @@ export default function WarningPage() {
 
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Warning</h1>
+      <h1 className="text-xl font-semibold">Alerts</h1>
       <Link to="/annotation-monitors" className="text-sm text-ember underline">
         Annotation monitors and exact transition history
       </Link>
       <p className="text-sm text-muted">
-        Indicators are standing rules over the live picture. When one fires, the alert lands here
-        and on the stream, goes to the webhook when one is configured, and can open a report.
+        Review changes that need attention and set rules for activity in connected feeds. For a
+        question answered every week or month, use{' '}
+        <Link to="/research/recurring" className="text-text underline">
+          recurring research
+        </Link>
+        .
       </p>
       {draft && form}
       <div className="flex flex-col gap-3">
@@ -183,7 +187,7 @@ export default function WarningPage() {
         )}
       </div>
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Indicators</h2>
+        <h2 className="text-base font-semibold">Alert rules</h2>
         {indicators.error === null ? null : (
           <Notice tone="error">{describeError(indicators.error)}</Notice>
         )}

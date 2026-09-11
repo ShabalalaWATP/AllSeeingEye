@@ -101,7 +101,7 @@ describe('Personal and team creation', () => {
         }),
       );
     }
-    const { user, router } = renderApp('/reports', 'user');
+    const { user, router } = renderApp('/reports?template=intsum', 'user');
     const report = await screen.findByRole('form', { name: 'Generate a report' });
     await within(report).findByRole('option', { name: 'Team: Northern desk' });
     await user.selectOptions(within(report).getByLabelText('Workspace'), team.id);
@@ -110,10 +110,15 @@ describe('Personal and team creation', () => {
     await user.click(within(report).getByRole('button', { name: 'Generate' }));
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toMatchObject({ team_id: team.id, plan: teamPlan.id });
-    const schedule = screen.getByRole('form', { name: 'New schedule' });
+    await act(async () => {
+      await router.navigate('/research/recurring');
+    });
+    const schedule = await screen.findByRole('form', { name: 'New schedule' });
+    await user.click(within(schedule).getByText('Advanced scope and sources'));
     await user.selectOptions(within(schedule).getByLabelText('Workspace'), team.id);
     await user.selectOptions(within(schedule).getByLabelText('Collection plan'), teamPlan.id);
     await user.type(within(schedule).getByLabelText('Schedule name'), 'Desk update');
+    await user.type(within(schedule).getByLabelText('Question'), 'What changed in this area?');
     await user.click(within(schedule).getByRole('button', { name: 'Add schedule' }));
     await waitFor(() => expect(writes).toHaveLength(2));
     expect(writes[1]).toMatchObject({ team_id: team.id, plan_id: teamPlan.id });

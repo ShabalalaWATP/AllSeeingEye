@@ -34,6 +34,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         "research-usgs-area",
         "research-eonet-area",
         "research-openaq-area",
+        "research-web-search",
         "research-sec-submissions",
         "research-sec-company-directory",
         "research-companies-house",
@@ -73,6 +74,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         assert spec.rating.scope and len(spec.rating.limitations) >= 3
         assert not spec.url and not spec.homepage
     assert {spec.id for spec in specs if spec.requires_key} == {
+        "research-web-search",
         "research-openaq-area",
         "research-companies-house",
         "research-companies-house-officers",

@@ -42,13 +42,14 @@ describe('regional and specialist research scope', () => {
       await screen.findByLabelText('Your question');
       await user.click(screen.getByRole('radio', { name: /Detailed/ }));
       await user.click(screen.getByText('Scope and sources'));
-      await screen.findByRole('option', { name: 'Iran' });
+      await user.click(screen.getByText('Advanced source settings'));
+      await screen.findByRole('button', { name: 'Iran' });
       await user.click(screen.getByRole('button', { name }));
-      expect(screen.getByLabelText('Country')).toHaveValue(country);
+      expect(screen.getByRole('button', { name: `Remove ${name}` })).toBeVisible();
       await user.click(screen.getByRole('button', { name: 'Start research' }));
       await waitFor(() =>
         expect(body()).toMatchObject({
-          country,
+          countries: [country],
           research_languages: languages,
           question: 'What changed?',
           research_mode: 'detailed',
@@ -66,6 +67,7 @@ describe('regional and specialist research scope', () => {
     );
     await screen.findByLabelText('Your question');
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'world_bank');
     await user.clear(screen.getByLabelText('First year'));
     await user.type(screen.getByLabelText('First year'), '2020');
@@ -74,7 +76,7 @@ describe('regional and specialist research scope', () => {
     await user.click(screen.getByRole('button', { name: 'Start research' }));
     await waitFor(() =>
       expect(body()).toMatchObject({
-        country: 'GB',
+        countries: ['GB'],
         research_focus: 'general',
         research_subject: 'WB:GB:NY.GDP.MKTP.CD:2020:2024',
       }),
@@ -87,11 +89,12 @@ describe('regional and specialist research scope', () => {
     const { user } = renderApp('/research?country=GB&question=Review%20recent%20research', 'user');
     await screen.findByLabelText('Your question');
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'academic');
     await user.click(screen.getByRole('button', { name: 'Start research' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Choose All countries');
+    expect(screen.getByRole('alert')).toHaveTextContent('Choose worldwide');
     expect(body()).toBeUndefined();
-    await user.selectOptions(screen.getByLabelText('Country'), '');
+    await user.click(screen.getByRole('button', { name: 'Use worldwide' }));
     await user.click(screen.getByRole('button', { name: 'Start research' }));
     await waitFor(() => expect(body()?.research_subject).toBe('academic:'));
   });
@@ -102,6 +105,7 @@ describe('regional and specialist research scope', () => {
     const { user } = renderApp('/research?country=IR&question=Connectivity%20changes', 'user');
     await screen.findByLabelText('Your question');
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'ooni');
     expect(
       screen.getByText(/Collection requires administrator approval of the source licence/),
@@ -114,6 +118,7 @@ describe('regional and specialist research scope', () => {
     const { user } = renderApp('/research', 'user');
     await screen.findByLabelText('Your question');
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Record collection'), 'identifier');
     await user.type(screen.getByLabelText('Record identifier'), 'custom-value');
     await user.clear(screen.getByLabelText('Record identifier'));

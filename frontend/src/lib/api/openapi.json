@@ -5237,6 +5237,105 @@
         }
       }
     },
+    "/api/research/inputs/{input_id}": {
+      "delete": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Discard Input",
+        "operationId": "discard_input_api_research_inputs__input_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/research/inputs/{input_id}/geolocation": {
+      "post": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Geolocate Photo",
+        "operationId": "geolocate_photo_api_research_inputs__input_id__geolocation_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoGeolocationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoGeolocationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/research/inputs/{input_id}/declaration-targets": {
       "get": {
         "tags": [
@@ -18834,6 +18933,279 @@
         ],
         "title": "OriginalAssetReserveIn"
       },
+      "PhotoCandidate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "precision": {
+            "type": "string",
+            "enum": [
+              "country",
+              "region",
+              "city",
+              "landmark"
+            ],
+            "title": "Precision"
+          },
+          "supporting_clues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Supporting Clues"
+          },
+          "contradictions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Contradictions"
+          },
+          "coordinates": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoCoordinates"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "country_iso",
+          "precision",
+          "supporting_clues",
+          "contradictions",
+          "coordinates"
+        ],
+        "title": "PhotoCandidate"
+      },
+      "PhotoCoordinates": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "uncertainty_radius_km": {
+            "type": "number",
+            "maximum": 20000.0,
+            "minimum": 0.1,
+            "title": "Uncertainty Radius Km"
+          },
+          "basis": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "uncertainty_radius_km",
+          "basis"
+        ],
+        "title": "PhotoCoordinates"
+      },
+      "PhotoGeolocationIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Question",
+            "default": "Where might this photograph have been taken?"
+          },
+          "hints": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Hints",
+            "default": ""
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "consent_to_send_image": {
+            "type": "boolean",
+            "const": true,
+            "title": "Consent To Send Image"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "consent_to_send_image"
+        ],
+        "title": "PhotoGeolocationIn"
+      },
+      "PhotoGeolocationOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "candidates",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "visual_clues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Visual Clues"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoCandidate"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Candidates"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Verification Steps"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Limitations"
+          },
+          "input": {
+            "$ref": "#/components/schemas/ResearchInputOut"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/PhotoProvenance"
+          },
+          "candidate_status": {
+            "type": "string",
+            "const": "unverified",
+            "title": "Candidate Status",
+            "default": "unverified"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "summary",
+          "visual_clues",
+          "candidates",
+          "verification_steps",
+          "limitations",
+          "input",
+          "provenance"
+        ],
+        "title": "PhotoGeolocationOut"
+      },
+      "PhotoProvenance": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "title": "Profile Revision"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/LlmProvider"
+          },
+          "configured_model": {
+            "type": "string",
+            "title": "Configured Model"
+          },
+          "returned_model": {
+            "type": "string",
+            "title": "Returned Model"
+          },
+          "analysed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Analysed At"
+          },
+          "original_sha256": {
+            "type": "string",
+            "title": "Original Sha256"
+          },
+          "image_sha256": {
+            "type": "string",
+            "title": "Image Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile_id",
+          "profile_revision",
+          "provider",
+          "configured_model",
+          "returned_model",
+          "analysed_at",
+          "original_sha256",
+          "image_sha256"
+        ],
+        "title": "PhotoProvenance"
+      },
       "PirIn": {
         "properties": {
           "text": {
@@ -20971,6 +21343,16 @@
             ],
             "title": "Country"
           },
+          "countries": {
+            "items": {
+              "type": "string",
+              "maxLength": 2,
+              "minLength": 2
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Countries"
+          },
           "categories": {
             "items": {
               "$ref": "#/components/schemas/Category"
@@ -20995,7 +21377,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 336.0,
+                "maximum": 17520.0,
                 "minimum": 1.0
               },
               {
@@ -21105,6 +21487,11 @@
                 "type": "null"
               }
             ]
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search",
+            "default": false
           },
           "research_languages": {
             "items": {
@@ -22736,6 +23123,21 @@
             ],
             "title": "Country Iso"
           },
+          "countries": {
+            "items": {
+              "type": "string",
+              "maxLength": 2,
+              "minLength": 2
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Countries"
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search",
+            "default": false
+          },
           "source_ids": {
             "anyOf": [
               {
@@ -22929,6 +23331,19 @@
             ],
             "title": "Country Iso"
           },
+          "country_isos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Country Isos"
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search",
+            "default": false
+          },
           "translation": {
             "anyOf": [
               {
@@ -23090,6 +23505,19 @@
               }
             ],
             "title": "Country Iso"
+          },
+          "country_isos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Country Isos"
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search",
+            "default": false
           },
           "translation": {
             "anyOf": [
@@ -23255,6 +23683,16 @@
             "type": "array",
             "maxItems": 2,
             "title": "Passes"
+          },
+          "web_research": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebResearchOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -23851,6 +24289,16 @@
             ],
             "title": "Country Iso"
           },
+          "country_isos": {
+            "items": {
+              "type": "string",
+              "maxLength": 2,
+              "minLength": 2
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Country Isos"
+          },
           "plan_id": {
             "anyOf": [
               {
@@ -23883,11 +24331,18 @@
             "title": "Weekday",
             "default": 0
           },
+          "monthday": {
+            "type": "integer",
+            "maximum": 31.0,
+            "minimum": 1.0,
+            "title": "Monthday",
+            "default": 1
+          },
           "window_hours": {
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 336.0,
+                "maximum": 17520.0,
                 "minimum": 1.0
               },
               {
@@ -23965,6 +24420,28 @@
               }
             ],
             "title": "Research Subject"
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search",
+            "default": false
+          },
+          "research_source_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 120,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Source Ids"
           }
         },
         "additionalProperties": false,
@@ -24001,6 +24478,13 @@
             ],
             "title": "Country Iso"
           },
+          "country_isos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Country Isos"
+          },
           "plan_id": {
             "anyOf": [
               {
@@ -24024,6 +24508,10 @@
           "weekday": {
             "type": "integer",
             "title": "Weekday"
+          },
+          "monthday": {
+            "type": "integer",
+            "title": "Monthday"
           },
           "window_hours": {
             "anyOf": [
@@ -24168,6 +24656,24 @@
               }
             ],
             "title": "Research Subject"
+          },
+          "research_web_search": {
+            "type": "boolean",
+            "title": "Research Web Search"
+          },
+          "research_source_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Source Ids"
           }
         },
         "type": "object",
@@ -24176,10 +24682,12 @@
           "name",
           "template_id",
           "country_iso",
+          "country_isos",
           "plan_id",
           "hour_utc",
           "cadence",
           "weekday",
+          "monthday",
           "window_hours",
           "enabled",
           "created_by",
@@ -24196,7 +24704,9 @@
           "research_mode",
           "research_languages",
           "research_focus",
-          "research_subject"
+          "research_subject",
+          "research_web_search",
+          "research_source_ids"
         ],
         "title": "ScheduleOut"
       },
@@ -26102,6 +26612,196 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WebCitationOut": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "start_index": {
+            "type": "integer",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "Start Index"
+          },
+          "end_index": {
+            "type": "integer",
+            "maximum": 6000.0,
+            "minimum": 0.0,
+            "title": "End Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "title",
+          "start_index",
+          "end_index"
+        ],
+        "title": "WebCitationOut"
+      },
+      "WebResearchOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "unavailable",
+              "unsupported",
+              "failed",
+              "timed_out",
+              "not_collected"
+            ],
+            "title": "Status"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "returned_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Returned Model"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "profile_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Revision"
+          },
+          "synthesis": {
+            "type": "string",
+            "maxLength": 6000,
+            "title": "Synthesis"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/WebCitationOut"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Citations"
+          },
+          "consulted_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Consulted Urls"
+          },
+          "tool_calls": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Tool Calls"
+          },
+          "request_count": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Request Count"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "latency_ms": {
+            "type": "number",
+            "title": "Latency Ms"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "explanation",
+          "retrieved_at",
+          "requested_model",
+          "returned_model",
+          "profile_id",
+          "profile_revision",
+          "synthesis",
+          "citations",
+          "consulted_urls",
+          "tool_calls",
+          "request_count",
+          "prompt_tokens",
+          "completion_tokens",
+          "latency_ms",
+          "policy_version",
+          "notice"
+        ],
+        "title": "WebResearchOut"
       },
       "YardstickBandOut": {
         "properties": {

@@ -1,10 +1,10 @@
 """Editable deterministic plans use source IDs, never client-supplied fetch URLs."""
 
-from datetime import datetime
-from typing import Literal, Self
+from datetime import UTC, datetime
+from typing import Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, model_validator
 
 from ase.api.schemas_map_origin import MapResearchOriginOut
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
@@ -19,6 +19,7 @@ from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.registry_identifiers import RegistryLookup
 from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
 from ase.domain.research_plan import UNKNOWN_SPATIAL_SCOPE, QueryVariant
+from ase.domain.research_scope import validate_research_interval
 
 
 class QueryVariantIn(BaseModel):
@@ -59,6 +60,10 @@ class ResearchPlanIn(BaseModel):
     focus: ResearchFocus = ResearchFocus.GENERAL
     subject: str | None = Field(default=None, max_length=300)
     country_iso: str | None = Field(default=None, min_length=2, max_length=2)
+    countries: list[Annotated[str, Field(min_length=2, max_length=2)]] = Field(
+        default_factory=list, max_length=8
+    )
+    research_web_search: StrictBool = False
     source_ids: list[str] | None = Field(default=None, max_length=64)
     time_basis: EvidenceTimeBasis | None = None
     query_variants: list[QueryVariantIn] = Field(default_factory=list, max_length=8)
@@ -71,6 +76,16 @@ class ResearchPlanIn(BaseModel):
 
     @model_validator(mode="after")
     def bounded(self) -> Self:
+        validate_research_interval(
+            self.since,
+            self.until,
+            recorded=self.time_basis is EvidenceTimeBasis.RECORDED,
+            now=datetime.now(UTC),
+        )
+        if (self.country_iso or self.countries) and self.focus is not ResearchFocus.GENERAL:
+            raise ValueError("Country filters are unavailable for record-focused research")
+        if self.research_web_search and self.focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}:
+            raise ValueError("Fresh web search requires public-source research")
         if (self.map_view_id is None) != (self.map_revision_id is None):
             raise ValueError("Choose both saved map and revision identifiers")
         if self.research_area is not None:
@@ -80,6 +95,8 @@ class ResearchPlanIn(BaseModel):
                 research_mode=self.mode,
                 research_focus=self.focus,
                 country_iso=self.country_iso,
+                country_isos=tuple(self.countries),
+                research_web_search=self.research_web_search,
                 research_area=self.research_area.to_domain(),
                 map_view_id=self.map_view_id,
                 map_revision_id=self.map_revision_id,
@@ -107,6 +124,8 @@ class ResearchPlanIn(BaseModel):
             focus=self.focus,
             subject=self.subject,
             country_iso=self.country_iso.upper() if self.country_iso else None,
+            country_isos=tuple(self.countries),
+            research_web_search=self.research_web_search,
             source_ids=tuple(self.source_ids) if self.source_ids is not None else None,
             query_variants=tuple(variant.to_domain() for variant in self.query_variants),
             candidate_hypotheses=tuple(row.to_domain() for row in self.candidate_hypotheses),
@@ -210,6 +229,8 @@ class ResearchPlanOut(BaseModel):
     mode: str
     subject: str | None
     country_iso: str | None
+    country_isos: list[str] = Field(default_factory=list, max_length=8)
+    research_web_search: bool = False
     translation: QueryTransformationOut | None = None
     area: ResearchAreaOut | None = None
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION

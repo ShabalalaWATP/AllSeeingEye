@@ -179,7 +179,9 @@ async def test_world_bank_preserves_missing_zero_unit_and_period_not_publication
     assert result.items[0].attributes["observation_year"] == "2024"
     assert http.get_json.call_count == 1
     assert urlsplit(http.get_json.call_args.args[0]).hostname == "api.worldbank.org"
-    assert not WorldBankProvider(http, FakeClock(NOW)).supports(replace(query, country_iso="US"))
+    assert not WorldBankProvider(http, FakeClock(NOW)).supports(
+        replace(query, country_iso="US", country_isos=())
+    )
 
 
 async def test_parliament_current_attributed_answer_and_correction_no_followed_links() -> None:

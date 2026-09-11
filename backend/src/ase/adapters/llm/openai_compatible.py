@@ -9,6 +9,7 @@ streaming size guard. Local endpoints remain an administrator-controlled trust b
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import time
 from dataclasses import replace
@@ -18,7 +19,7 @@ import httpx
 
 from ase.adapters.llm.model_discovery import discover_models, model_id
 from ase.application.ports.llm import LlmGatewayError
-from ase.domain.llm import LlmRequest, LlmResult
+from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
@@ -45,10 +46,25 @@ def _bounded_json(content: bytearray) -> Any:
     return data
 
 
+def _content(message: LlmMessage) -> str | list[dict[str, Any]]:
+    if not message.images:
+        return message.content
+    return [{"type": "text", "text": message.content}] + [
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "data:image/png;base64," + base64.b64encode(image.png).decode("ascii"),
+                "detail": "high",
+            },
+        }
+        for image in message.images
+    ]
+
+
 def build_payload(model: str, request: LlmRequest) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": model,
-        "messages": [{"role": m.role, "content": m.content} for m in request.messages],
+        "messages": [{"role": m.role, "content": _content(m)} for m in request.messages],
         "temperature": request.temperature,
         "max_tokens": request.max_output_tokens,
     }
@@ -147,6 +163,14 @@ class OpenAiCompatibleGateway:
                 ) as response,
             ):
                 if response.status_code != 200:
+                    if response.status_code in (400, 415, 422) and any(
+                        message.images for message in request.messages
+                    ):
+                        raise LlmGatewayError(
+                            "The configured model rejected image analysis or its structured "
+                            "output settings. Ask an administrator to select a compatible "
+                            "vision model; no alternative provider was used."
+                        )
                     raise LlmGatewayError(f"The model endpoint answered {response.status_code}.")
                 if response.headers.get("content-encoding", "identity").strip().lower() not in (
                     "",

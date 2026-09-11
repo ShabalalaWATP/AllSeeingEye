@@ -3642,3 +3642,69 @@ settings, and the existing OpenAlex/BarentsWatch credentials remain configured.
 Restarted the local API; `/api/health` and frontend login returned 200, while
 unauthenticated camera access returned 401. No full-suite/backend coverage,
 real-model report, remote push or production deployment is claimed.
+
+## 11 September 2026: Research workspace expansion
+
+Implemented the next research milestone across scope, collection, private inputs
+and recurrence. Questions now accept up to eight countries and ordinary rolling
+or fixed intervals up to 730 days. Validation, source queries, plans, frozen
+reports and follow-ups retain that scope. Unknown-country feed articles are not
+assigned geography from a question, and a longer interval does not create source
+archives. OONI/AidData single-country restrictions remain explicit.
+
+Added optional native OpenAI Responses web discovery through a dedicated port
+and the destination's frozen direction profile. One bounded request requires
+actual search execution and native citations. Generated context, model provenance
+and usage are saved separately from original source evidence and do not increase
+corroboration scores. Private document/media inputs cannot enter web discovery.
+Source admission, origin/response bounds, cancellation and isolated usage writes
+were reviewed and tested, including uncertain commits and post-call revocation.
+
+Photo geolocation now sends an actual sanitised image to the selected assessment
+model through OpenAI or Bedrock image payloads. Explicit consent precedes the
+call. Results contain up to three candidates or an unknown result, clues,
+contradictions, uncertainty and verification steps. Private preview/derived
+receipts expire after 15 minutes. Replacement and reanalysis clean obsolete
+receipts; a bounded browser registry preserves cleanup handles across navigation
+and protects inputs while saved-report creation is pending. Owner/session/team
+checks and same-owner deletion prevent cross-account access. Coordinates remain
+unverified and are not automatically published as map observations.
+
+Recurring research now offers weekly and calendar-monthly runs, retaining
+countries, source selection and optional web discovery. Day 31 clamps in shorter
+months and returns to the requested day thereafter. Pause/resume preserves scope;
+changing scope resets evidence-change comparison. Company/domain subjects are
+required, and expiring private inputs cannot recur. Additive options use existing
+schedule JSON storage, with no new migration.
+
+Research groups New research, Geolocate a photo, Recurring and Plans & areas.
+Saved reports holds outputs, comparison and exports. Live monitor explains feed
+boards; Alerts explains notifications and rules. Existing routes and contextual
+report links remain usable. Specialist report forms load on demand, avoiding
+unnecessary board/configuration requests while browsing saved reports.
+
+Independent correctness/security review identified and resolved photo receipt
+capacity/lifecycle problems, missing recurring subjects and duplicate web-usage
+accounting risks. The final security recheck passed 36 targeted tests and reported
+no outstanding confirmed finding. Root integration passed 196 backend tests.
+Worker coverage measured 99.55% across four core photo modules, 93% across seven
+fresh-web modules and 100% across two scope helpers. These are scoped figures,
+not full backend coverage. Frontend photo tests separately measured 96.62%
+statements, 91.97% branches and 98.07% functions.
+
+Backend Ruff/format, strict mypy across 783 files, both import contracts and scoped
+Bandit passed. Frontend type checks, ESLint and production build passed; existing
+large map/deck/HLS chunk warnings remain. File-length and configured-secret checks
+passed, with only the existing untouched MapLibre target-length warning. Browser
+checks used synthetic intercepted APIs and inspected desktop/mobile screenshots;
+no actual photo or web report was submitted. The restarted local API and frontend
+login returned 200, and unauthenticated new photo analysis/deletion routes returned
+401. No dependency, remote service deployment or production migration was added.
+
+OpenAQ authentication still passes independently. Actual AI evaluation remains
+blocked: the saved OpenAI Luna profile is disabled/untested and the original server
+encryption key is missing. The operator has been asked to restore it or authorise
+a new local key and credential re-entry. Neither was changed while awaiting that
+choice. Operator, API, architecture and scoped security documentation now describe
+the new flows and their limits. Final frontend integration and local Git evidence
+are recorded in the workspace milestone checklist.

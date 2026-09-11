@@ -52,6 +52,7 @@ class AidDataProvider:
             query.focus is ResearchFocus.GENERAL
             and query.effective_time_basis is EvidenceTimeBasis.RECORDED
             and self.id in (query.source_ids or ())
+            and len(query.country_isos) <= 1
             and (query.country_iso is None or query.country_iso in self._iso2_to_iso3)
         )
 

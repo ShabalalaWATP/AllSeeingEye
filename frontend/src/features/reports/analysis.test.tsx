@@ -71,6 +71,7 @@ describe('direction, advocacy and archives in the reader', () => {
       }),
     );
     const { user } = renderApp('/reports', 'user');
+    await user.click(await screen.findByRole('button', { name: 'Specialist report templates' }));
     const form = await screen.findByRole('form', { name: 'Generate a report' });
     await user.click(within(form).getByRole('checkbox', { name: /Devil's advocacy/ }));
     await user.click(within(form).getByRole('button', { name: 'Generate' }));
@@ -79,6 +80,7 @@ describe('direction, advocacy and archives in the reader', () => {
         disclose_area_to_provider: false,
         template: 'intsum',
         research_focus: 'general',
+        research_web_search: false,
         report_language: 'en',
         report_style: 'assessment',
         devils_advocacy: true,

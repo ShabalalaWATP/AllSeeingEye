@@ -58,11 +58,12 @@ describe('question-led research', () => {
       disclose_area_to_provider: false,
       template: 'ask',
       question: 'What changed in Ukraine?',
-      country: 'UA',
+      countries: ['UA'],
       window_hours: 72,
       report_language: 'en',
       report_style: 'assessment',
       research_mode: 'quick',
+      research_web_search: false,
       research_languages: ['en'],
       research_focus: 'general',
       research_subject: null,
@@ -86,13 +87,14 @@ describe('question-led research', () => {
     );
     await user.click(screen.getByRole('radio', { name: /Detailed/ }));
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await screen.findByRole('option', { name: `Team: ${team.name}` });
     await user.selectOptions(screen.getByLabelText('Workspace'), team.id);
-    expect(screen.getByLabelText('Country')).toHaveValue('UA');
+    expect(screen.getByRole('button', { name: 'Remove Ukraine' })).toBeVisible();
     await user.selectOptions(screen.getByLabelText('Research focus'), 'company');
-    expect(screen.queryByLabelText('Country')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Countries' })).not.toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Research focus'), 'general');
-    expect(screen.getByLabelText('Country')).toHaveValue('');
+    expect(screen.getByText('Worldwide', { exact: true })).toBeVisible();
     await user.selectOptions(screen.getByLabelText('Research focus'), 'company');
     await user.type(screen.getByLabelText('Company name'), 'Example Company, UK');
     await user.selectOptions(screen.getByLabelText('Reporting window'), '168');
@@ -107,6 +109,7 @@ describe('question-led research', () => {
         report_language: 'en',
         report_style: 'assessment',
         research_mode: 'detailed',
+        research_web_search: false,
         research_languages: ['en', 'fr'],
         research_focus: 'company',
         research_subject: 'Example Company, UK',
@@ -131,6 +134,7 @@ describe('question-led research', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Enter a question to research.');
     await user.type(screen.getByLabelText('Your question'), 'Assess this domain.');
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.click(screen.getByLabelText('English'));
     await user.click(button);
     expect(screen.getByRole('alert')).toHaveTextContent('Select at least one search language.');
@@ -147,10 +151,9 @@ describe('question-led research', () => {
     await waitFor(() => expect(button).toBeEnabled());
     await user.click(button);
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Choose an available country or all countries.',
+      'Choose up to eight available countries, or use worldwide.',
     );
-    expect(screen.getByLabelText('Country')).toBeVisible();
-    expect(screen.getByLabelText('Country')).toHaveValue('ZZ');
+    expect(screen.getByRole('button', { name: 'Remove Unavailable country: ZZ' })).toBeVisible();
   });
 
   it('keeps a single pending request, shows real busy state, and preserves input after failure', async () => {

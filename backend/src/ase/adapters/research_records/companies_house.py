@@ -77,7 +77,7 @@ class CompaniesHouseProvider(RegistryLookupCapability):
         subject = (query.subject or "").strip()
         return (
             query.focus is ResearchFocus.COMPANY
-            and query.country_iso in {None, "GB"}
+            and (not query.country_isos or "GB" in query.country_isos)
             and bool(subject)
             and not any(ord(char) < 32 for char in subject)
             and not re.fullmatch(r"CIK\s*:?\s*[0-9]+", subject, re.IGNORECASE)

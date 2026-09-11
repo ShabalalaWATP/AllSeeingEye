@@ -14,14 +14,15 @@ function recordMode(subject: string) {
 export function GeneralRecordScope({
   subject,
   setSubject,
-  country,
+  selectedCountries,
   countries,
 }: {
   subject: string;
   setSubject: (value: string) => void;
-  country: string;
+  selectedCountries: string[];
   countries: readonly Country[];
 }) {
+  const country = selectedCountries[0] ?? '';
   const [mode, setMode] = useState(() => recordMode(subject));
   const parts = subject.split(':');
   const targetCountry = parts[1] ?? '';
@@ -73,8 +74,8 @@ export function GeneralRecordScope({
       )}
       {mode === 'parliament' && (
         <p className="text-xs text-muted">
-          Search current written-question records using English terms. Choose United Kingdom or All
-          countries above.
+          Search current written-question records using English terms. Include United Kingdom or
+          choose worldwide above.
         </p>
       )}
       {(mode === 'world_bank' || mode === 'ooni') && (
@@ -134,8 +135,9 @@ export function GeneralRecordScope({
       )}
       {country &&
         (mode === 'academic' ||
-          (mode === 'parliament' && country !== 'GB') ||
-          ((mode === 'world_bank' || mode === 'ooni') && targetCountry !== country)) && (
+          (mode === 'parliament' && !selectedCountries.includes('GB')) ||
+          ((mode === 'world_bank' || mode === 'ooni') &&
+            !selectedCountries.includes(targetCountry))) && (
           <Alert tone="warning">
             The country filter conflicts with this record collection. Adjust the country filter or
             the record country before starting.

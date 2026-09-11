@@ -50,19 +50,21 @@ async def collect_report_evidence(
     ):
         # Copy public context only for public research. Unrelated high-ranked live items
         # must not crowd supplied document/media or historical project records out.
-        retained = live_store.query(
-            EventQuery(
-                since=query.since,
-                country_iso=request.country_iso,
-                categories=frozenset(request.categories),
-                limit=1000,
-            )
-        )
-        private.upsert(
-            item
-            for item in retained
-            if item.published_at is not None and item.published_at < query.until
-        )
+        countries: tuple[str | None, ...] = query.country_isos or (None,)
+        retained: dict[str, Event] = {}
+        for country in countries:
+            for item in live_store.query(
+                EventQuery(
+                    since=query.since,
+                    until=query.until,
+                    country_iso=country,
+                    time_basis=query.effective_time_basis,
+                    categories=frozenset(request.categories),
+                    limit=1000 // len(countries),
+                )
+            ):
+                retained.setdefault(item.id, item)
+        private.upsert(tuple(retained.values())[:1000])
     private.upsert(batch.items)
     private.upsert(seed_events)
     return private, ResearchReceipt.build(

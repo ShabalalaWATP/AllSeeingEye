@@ -53,7 +53,7 @@ class ContractsFinderProvider:
     def supports(self, query: ResearchQuery) -> bool:
         return (
             query.focus in {ResearchFocus.GENERAL, ResearchFocus.COMPANY}
-            and query.country_iso in {None, "GB"}
+            and (not query.country_isos or "GB" in query.country_isos)
             and bool(search_terms(query))
         )
 

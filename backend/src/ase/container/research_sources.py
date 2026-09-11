@@ -13,6 +13,7 @@ from ase.adapters.research_subjects.specs import subject_specs
 from ase.container.research_feed_specs import additional_feed_specs
 from ase.container.research_record_specs import record_specs
 from ase.container.research_spec import research_spec as _spec
+from ase.container.research_web_spec import web_search_spec
 from ase.domain.events import Category
 from ase.domain.source_controls import source_control_keys
 from ase.domain.sources import SourceKind, SourceSpec
@@ -227,6 +228,7 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
     )
     specs.extend(additional_feed_specs())
     specs.extend(_private_specs())
+    specs.append(web_search_spec())
     return tuple(
         spec for spec in specs if not any(key in disabled for key in source_control_keys(spec.id))
     )

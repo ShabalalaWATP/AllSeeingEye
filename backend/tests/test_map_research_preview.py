@@ -48,6 +48,9 @@ async def test_preview_retains_exact_area_without_collecting(client, container, 
     assert {task["source_id"] for task in result["tasks"] if task["supported"]} == {
         "research-copernicus-footprints",
         "research-retained-area-feeds",
+        "research-usgs-area",
+        "research-eonet-area",
+        "research-openaq-area",
     }
     assert result["model_calls"] == result["translation_calls"] == 0
     collect.assert_not_awaited()

@@ -13,11 +13,13 @@ export function ResearchPlanEditor({
   languages,
   area = false,
   historical = false,
+  fixed = false,
 }: {
   plan: ResearchPlanState;
   languages: string[];
   area?: boolean;
   historical?: boolean;
+  fixed?: boolean;
 }) {
   const catalogue = useLanguageCatalogue();
   const sources = (plan.snapshot?.tasks ?? []).filter(
@@ -38,7 +40,9 @@ export function ResearchPlanEditor({
             ? 'The chosen area and fixed dates are used for preview and collection.'
             : historical
               ? 'The chosen commitment years are fixed for preview and collection.'
-              : 'The reporting window advances to the time the run starts.'}
+              : fixed
+                ? 'Your chosen dates stay fixed for preview and collection.'
+                : 'The reporting window advances to the time the run starts.'}
           {area
             ? ' Area collection only uses providers that explicitly support this geometry. Empty results do not prove absence.'
             : ' General research can review its first results using the configured AI connection. It may revise an empty search or investigate a possible conflict, or stop when the question appears covered and required tasks are finished. This uses one bounded review within the same collection budget. Scope and explicit tasks stay fixed; the decision and passes are saved for review.'}

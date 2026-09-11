@@ -78,6 +78,7 @@ export function GenerateForm({
       report_language: reportLanguage,
       report_style: reportStyle,
       research_focus: 'general',
+      research_web_search: false,
       devils_advocacy: advocacy,
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
     };

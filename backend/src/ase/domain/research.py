@@ -7,10 +7,10 @@ from enum import StrEnum
 from ase.domain.events import Event
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
-from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.registry_identifiers import RegistryLookup, validate_lookup_anchor
 from ase.domain.research_area import ResearchArea
 from ase.domain.research_plan import QueryVariant, ResearchPlan
+from ase.domain.research_scope import normalise_countries, validate_research_interval
 from ase.domain.research_tasks import (
     PlannedQueryTask,
     ResearchCandidate,
@@ -61,6 +61,8 @@ class ResearchQuery:
     time_basis: EvidenceTimeBasis | None = None
     candidate_hypotheses: tuple[ResearchCandidate, ...] = ()
     planned_tasks: tuple[PlannedQueryTask, ...] = ()
+    country_isos: tuple[str, ...] = ()
+    research_web_search: bool = False
 
     @property
     def effective_time_basis(self) -> EvidenceTimeBasis:
@@ -69,6 +71,11 @@ class ResearchQuery:
         )
 
     def __post_init__(self) -> None:
+        countries = normalise_countries(self.country_iso, self.country_isos)
+        object.__setattr__(self, "country_isos", countries)
+        object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
+        if not isinstance(self.research_web_search, bool):
+            raise ValueError("Fresh web search must be explicitly enabled or disabled")
         validate_operator_plan(
             self.candidate_hypotheses,
             self.planned_tasks,
@@ -100,15 +107,9 @@ class ResearchQuery:
         )
         if not self.question.strip() or len(self.question) > 2000:
             raise ValueError("Question must contain between 1 and 2000 characters")
-        if any(value.utcoffset() is None for value in (self.since, self.until)):
-            raise ValueError("Research dates must include a timezone")
-        if self.since >= self.until or (
-            self.effective_time_basis is EvidenceTimeBasis.RECORDED
-            and self.until - self.since > MAX_PROJECT_INTERVAL
-        ):
-            raise ValueError(
-                "Invalid interval: project history requires a positive span of at most 30 years"
-            )
+        validate_research_interval(
+            self.since, self.until, recorded=self.effective_time_basis is EvidenceTimeBasis.RECORDED
+        )
         if not 1 <= len(self.languages) <= 8 or any(
             not value or len(value) > 16 for value in self.languages
         ):

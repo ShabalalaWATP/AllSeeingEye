@@ -1,7 +1,8 @@
 # Saved research schedules
 
 Schedules can save an explicit question and repeat bounded public-source research
-through the same report generator used by an interactive request. Each successful run saves a new report. Optional change monitoring creates an
+through the same report generator used by an interactive request. Each successful
+run saves a new report. Optional change monitoring creates an
 in-app alert only when the deterministic comparison detects a difference.
 There are no email, webhook or desktop-host notifications.
 
@@ -15,14 +16,19 @@ personal/team visibility and management rules. New input/output fields:
 | `research_mode` | Null for existing live evidence, `quick` or `detailed` |
 | `research_languages` | One to eight language codes; defaults to `en`; duplicates removed |
 | `research_focus` | `general`, `company`, `domain`, `document` or `media`; defaults to `general` |
-| `research_subject` | Nullable, at most 300 characters |
+| `research_subject` | Nullable, at most 300 characters; required for company/domain |
+| `country_isos` | Up to eight ISO2 codes; legacy `country_iso` must agree |
+| `research_web_search` | Strict boolean, false by default, requires public research mode |
+| `research_source_ids` | Optional app source selection, independent of web opt-in |
+| `monthday` | Monthly day 1..31, clamped to each shorter month |
 
 `ask` requires a saved question or a linked same-scope collection plan. Selecting
 research mode always requires an explicit saved question. With a non-general
 research focus, the subject defines scope and a nation filter is rejected.
-Language codes are lower-cased before deduplication. Cadence remains daily,
-weekdays or weekly at a chosen UTC hour. The existing 1..336-hour evidence window
-still applies. Requested languages and focus are collection instructions, not a
+Language codes are lower-cased before deduplication. Cadence supports daily,
+weekdays, weekly or calendar-monthly at a UTC hour. Ordinary research lookback
+supports 1..17,520 hours. Private document/media schedules are unsupported.
+Requested languages and focus are collection instructions, not a
 guarantee that a provider supports them or that matching evidence exists.
 
 The scheduler forwards these fields with `automation=True`; current active owner,
@@ -33,14 +39,18 @@ saved question and subject each run. Existing bounded collection, source receipt
 frozen evidence and report access rules apply. No raw research corpus is persisted.
 
 Migration `0015`, following `0014`, adds nullable `question` and
-`research_options` columns to schedules. The JSON contains only mode, languages,
-focus and subject. Legacy null values map to the defaults above. Downgrading drops
+`research_options` columns to schedules. The JSON now stores plural countries,
+monthly day, source IDs and web choice alongside mode, languages, focus and subject.
+These additive fields need no new migration. Legacy null values map to the defaults
+above. Downgrading drops
 these settings while preserving the older schedule columns; a research question
 cannot survive that downgrade. Back up the intended database before upgrading.
 Development checks used synthetic databases, not an operator database.
 
-The Reports schedule form offers question, depth, languages, focus and subject;
-a saved-question disclosure makes the standing order reviewable after creation.
+Research, Recurring offers question, depth, scope and sources. Saved settings
+remain reviewable after creation; pause/resume preserves all options. Monthly
+day 31 clamps in February and returns to day 31 in March, without drift.
+
 ## Evidence-change monitoring
 
 With `notify_on_change=true`, the first usable report establishes a baseline

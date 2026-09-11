@@ -14,23 +14,28 @@ it('saves an explicit question and bounded research options for each scheduled r
       return HttpResponse.json(schedule, { status: 201 });
     }),
   );
-  const { user } = renderApp('/reports', 'user');
+  const { user } = renderApp('/research/recurring', 'user');
   const form = within(await screen.findByRole('form', { name: 'New schedule' }));
+  await user.click(form.getByText('Advanced scope and sources'));
   await user.type(form.getByLabelText('Schedule name'), 'Weekly port research');
   await user.selectOptions(form.getByLabelText('Product'), 'ask');
   expect(form.getByRole('button', { name: 'Add schedule' })).toBeDisabled();
   await user.type(form.getByLabelText('Question'), 'What changed at the port?');
-  await user.click(form.getByRole('checkbox', { name: 'Notify in app when evidence changes' }));
+  expect(
+    form.getByRole('checkbox', { name: /^Notify in app when evidence changes/ }),
+  ).toBeChecked();
   await user.selectOptions(form.getByLabelText('Collection depth'), 'detailed');
   await user.clear(form.getByLabelText('Research languages'));
   await user.type(form.getByLabelText('Research languages'), 'en; bad');
   expect(form.getByRole('button', { name: 'Add schedule' })).toBeDisabled();
   await user.clear(form.getByLabelText('Research languages'));
   await user.type(form.getByLabelText('Research languages'), 'en, uk, en');
-  await user.selectOptions(form.getByLabelText('Nation'), 'UA');
+  await user.click(form.getByText('Choose countries'));
+  await user.click(form.getByRole('checkbox', { name: /^Ukraine/ }));
   await user.selectOptions(form.getByLabelText('Research focus'), 'company');
-  expect(form.getByLabelText('Nation')).toBeDisabled();
-  expect(form.getByLabelText('Nation')).toHaveValue('');
+  expect(form.getByRole('group', { name: 'Countries' })).toBeDisabled();
+  expect(form.getByRole('button', { name: 'Add schedule' })).toBeDisabled();
+  expect(form.getByLabelText('Research subject')).toBeRequired();
   await user.type(form.getByLabelText('Research subject'), 'Example Port');
   await user.click(form.getByRole('button', { name: 'Add schedule' }));
   await waitFor(() =>
@@ -55,8 +60,9 @@ it('does not submit stale research fields after switching to an ordinary product
       return HttpResponse.json(schedule, { status: 201 });
     }),
   );
-  const { user } = renderApp('/reports', 'user');
+  const { user } = renderApp('/research/recurring', 'user');
   const form = within(await screen.findByRole('form', { name: 'New schedule' }));
+  await user.click(form.getByText('Advanced scope and sources'));
   await user.type(form.getByLabelText('Schedule name'), 'Daily overview');
   await user.selectOptions(form.getByLabelText('Product'), 'ask');
   await user.type(form.getByLabelText('Question'), 'Old question');
@@ -85,7 +91,7 @@ it('shows the saved question and research settings beside its standing order', a
       }),
     ),
   );
-  const { user } = renderApp('/reports', 'user');
+  const { user } = renderApp('/research/recurring', 'user');
   const table = within(await screen.findByRole('table', { name: 'Schedules' }));
   await user.click(table.getByText('Saved question'));
   expect(table.getByText('What changed at the port?')).toBeVisible();
@@ -108,7 +114,7 @@ it('shows the baseline summary without inventing an alert', async () => {
       }),
     ),
   );
-  renderApp('/reports', 'user');
+  renderApp('/research/recurring', 'user');
   expect(
     await screen.findByText(
       'Baseline established. Future runs compare frozen evidence and assessments.',

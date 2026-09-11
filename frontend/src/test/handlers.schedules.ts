@@ -22,4 +22,10 @@ export const scheduleHandlers = [
           { status: 404 },
         ),
   ),
+  http.put('/api/schedules/:id', async ({ request }) =>
+    HttpResponse.json({
+      ...schedule,
+      ...((await request.json()) as Record<string, unknown>),
+    }),
+  ),
 ];

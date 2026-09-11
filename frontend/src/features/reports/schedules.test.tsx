@@ -8,7 +8,7 @@ import { server } from '@/test/server';
 
 describe('schedules', () => {
   it('lists the standing orders with their cadence and last report', async () => {
-    renderApp('/reports', 'user');
+    renderApp('/research/recurring', 'user');
     const table = await screen.findByRole('table', { name: 'Schedules' });
     expect(within(table).getByText('Morning INTSUM')).toBeInTheDocument();
     expect(within(table).getByText('daily at 06:00 UTC')).toBeInTheDocument();
@@ -27,11 +27,13 @@ describe('schedules', () => {
         return HttpResponse.json(schedule, { status: 201 });
       }),
     );
-    const { user } = renderApp('/reports', 'user');
+    const { user } = renderApp('/research/recurring', 'user');
     const form = await screen.findByRole('form', { name: 'New schedule' });
+    await user.click(within(form).getByText('Advanced scope and sources'));
     await user.type(within(form).getByLabelText('Schedule name'), 'Monday roll-up');
     await user.selectOptions(within(form).getByLabelText('Product'), 'intsum');
-    await user.selectOptions(within(form).getByLabelText('Nation'), 'UA');
+    await user.click(within(form).getByText('Choose countries'));
+    await user.click(within(form).getByRole('checkbox', { name: /^Ukraine/ }));
     await user.selectOptions(within(form).getByLabelText('Hour'), '7');
     await user.selectOptions(within(form).getByLabelText('Cadence'), 'weekly');
     await user.selectOptions(within(form).getByLabelText('Weekday'), '0');
@@ -41,12 +43,16 @@ describe('schedules', () => {
         name: 'Monday roll-up',
         notify_on_change: false,
         research_focus: 'general',
+        research_web_search: false,
         enabled: true,
         template_id: 'intsum',
         country_iso: 'UA',
+        country_isos: ['UA'],
+        window_hours: 168,
         hour_utc: 7,
         cadence: 'weekly',
         weekday: 0,
+        monthday: 1,
       });
     });
   });

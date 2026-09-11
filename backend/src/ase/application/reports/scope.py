@@ -31,7 +31,7 @@ def report_title(
         return f"{template.title}: {plan.name}"
     if conflict is not None:
         return f"{template.title}: {conflict.name}"
-    place = country.name if country else request.country_iso
+    place = country.name if country else ", ".join(request.country_isos) or None
     if hazard is not None:
         where = f" in {place}" if place else ""
         return f"{template.title}: {HAZARD_TITLES[hazard].lower()}{where}"
@@ -67,6 +67,11 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
         "report_language": request.report_language,
         "report_style": request.report_style,
         "country": request.country_iso,
+        **(
+            {"countries": list(request.country_isos)}
+            if request.research_mode is not None or len(request.country_isos) > 1
+            else {}
+        ),
         "categories": [category.value for category in request.categories],
         "question": request.question,
         "window_hours": int(report_window(request, template).total_seconds() // 3600),
@@ -113,6 +118,7 @@ def report_scope(request: ReportRequest, template: Template) -> dict[str, Any]:
                     else {}
                 ),
                 "research_mode": request.research_mode.value,
+                "research_web_search": request.research_web_search,
                 "research_languages": list(request.research_languages),
                 "research_source_ids": list(request.research_source_ids)
                 if request.research_source_ids is not None

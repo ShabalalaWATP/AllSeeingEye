@@ -89,3 +89,7 @@ class ResearchInputStore(Protocol):
     def read(self, actor: User, input_id: UUID) -> StoredResearchInput:
         """Return only this current user's generation; expired/foreign ids raise NotFound."""
         ...
+
+    def discard(self, actor: User, input_id: UUID) -> None:
+        """Discard an owned working receipt and its derived receipts, never saved reports."""
+        ...

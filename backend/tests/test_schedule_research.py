@@ -72,6 +72,8 @@ async def test_saved_question_round_trip_update_and_scheduled_request(
         {"research_languages": ["en"] * 9},
         {"research_languages": ["en;bad"]},
         {"research_subject": "x" * 301},
+        {"research_subject": " "},
+        {"research_subject": None},
         {"research_mode": "unbounded"},
         {"research_focus": "private"},
         {"research_focus": "document"},

@@ -11,12 +11,12 @@ import type { ViewMode } from '@/stores/globe';
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
-  if (pathname.startsWith('/reports')) return 'Reports';
+  if (pathname.startsWith('/reports')) return 'Saved reports';
   if (pathname.startsWith('/research')) return 'Research';
   if (pathname.startsWith('/sources')) return 'Sources';
-  if (pathname.startsWith('/trackers')) return 'Trackers';
-  if (pathname.startsWith('/direction')) return 'Direction';
-  if (pathname.startsWith('/warning')) return 'Warning';
+  if (pathname.startsWith('/trackers')) return 'Live monitor';
+  if (pathname.startsWith('/direction')) return 'Plans & areas';
+  if (pathname.startsWith('/warning')) return 'Alerts';
   if (pathname.startsWith('/teams')) return 'Teams';
   if (pathname.startsWith('/account')) return 'Account';
   return 'The All Seeing Eye';

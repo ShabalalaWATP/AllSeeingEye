@@ -17,10 +17,11 @@ from ase.application.reports.templates import TEMPLATES
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_scope import MAX_RESEARCH_HOURS, normalise_countries
 from ase.domain.schedules import CADENCES, Schedule, next_run_after
 from ase.domain.users import User
 
-MAX_WINDOW_HOURS = 336
+MAX_WINDOW_HOURS = MAX_RESEARCH_HOURS
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +42,10 @@ class ScheduleInput:
     research_languages: tuple[str, ...] = ("en",)
     research_focus: ResearchFocus = ResearchFocus.GENERAL
     research_subject: str | None = None
+    country_isos: tuple[str, ...] = ()
+    monthday: int = 1
+    research_web_search: bool = False
+    research_source_ids: tuple[str, ...] | None = None
 
 
 def _research_question(data: ScheduleInput) -> str | None:
@@ -56,7 +61,11 @@ def _research_question(data: ScheduleInput) -> str | None:
         raise InvalidRequest("On-demand research requires a saved question.")
     if data.research_mode is not None and data.research_mode not in ResearchMode:
         raise InvalidRequest("Unknown research mode.")
-    if data.research_mode and data.research_focus != ResearchFocus.GENERAL and data.country_iso:
+    if (
+        data.research_mode
+        and data.research_focus != ResearchFocus.GENERAL
+        and (data.country_iso or data.country_isos)
+    ):
         raise InvalidRequest("Focused research uses its subject scope, not a nation filter.")
     if data.research_focus not in ResearchFocus:
         raise InvalidRequest("Unknown research focus.")
@@ -67,6 +76,23 @@ def _research_question(data: ScheduleInput) -> str | None:
         raise InvalidRequest("Provide between one and eight language codes.")
     if data.research_subject is not None and len(data.research_subject) > 300:
         raise InvalidRequest("The research subject must not exceed 300 characters.")
+    if (
+        data.research_mode
+        and data.research_focus in (ResearchFocus.COMPANY, ResearchFocus.DOMAIN)
+        and (not data.research_subject or not data.research_subject.strip())
+    ):
+        raise InvalidRequest("Focused research needs an organisation or domain subject.")
+    if (data.research_web_search or data.research_source_ids is not None) and (
+        data.research_mode is None or not question
+    ):
+        raise InvalidRequest("Web search and source choices require a saved research question.")
+    sources = data.research_source_ids
+    if sources is not None and (
+        len(sources) > 64
+        or len(set(sources)) != len(sources)
+        or any(not source.strip() or len(source) > 120 for source in sources)
+    ):
+        raise InvalidRequest("Choose up to 64 unique research source identifiers.")
     return question
 
 
@@ -90,34 +116,43 @@ def build_schedule(
     question = _research_question(data)
     if template.needs_question and data.plan_id is None and not question:
         raise InvalidRequest("Ask the Eye needs a question or collection plan.")
-    country = data.country_iso.strip().upper() if data.country_iso else None
-    if country is not None and len(country) != 2:
-        raise InvalidRequest("A nation is a two-letter ISO code.")
-    if template.needs_country and country is None:
-        raise InvalidRequest("This product needs a nation.")
+    try:
+        countries = normalise_countries(data.country_iso, data.country_isos)
+    except ValueError as exc:
+        raise InvalidRequest(str(exc)) from exc
+    country = countries[0] if len(countries) == 1 else None
+    if template.needs_country and len(countries) != 1:
+        raise InvalidRequest("This product needs exactly one nation.")
     if not (0 <= data.hour_utc <= 23):
         raise InvalidRequest("The hour must be between 0 and 23 UTC.")
     if data.cadence not in CADENCES:
-        raise InvalidRequest("The cadence is daily, weekdays or weekly.")
+        raise InvalidRequest("The cadence is daily, weekdays, weekly or monthly.")
     if not (0 <= data.weekday <= 6):
         raise InvalidRequest("The weekday must be between 0 (Monday) and 6 (Sunday).")
+    if not (1 <= data.monthday <= 31):
+        raise InvalidRequest("The day of the month must be between 1 and 31.")
     if data.window_hours is not None and not (1 <= data.window_hours <= MAX_WINDOW_HOURS):
-        raise InvalidRequest("The window must be between 1 and 336 hours.")
+        raise InvalidRequest("The lookback must be between 1 hour and 730 days.")
     if data.notify_on_change and not question and data.plan_id is None:
         raise InvalidRequest("Change monitoring requires a saved question or collection plan.")
-    reset = previous is None or any(
-        getattr(previous, key) != getattr(data, key)
-        for key in (
-            "question",
-            "research_mode",
-            "research_languages",
-            "research_focus",
-            "research_subject",
-            "country_iso",
-            "plan_id",
-            "window_hours",
-            "template_id",
-            "notify_on_change",
+    reset = (
+        previous is None
+        or previous.country_isos != countries
+        or any(
+            getattr(previous, key) != getattr(data, key)
+            for key in (
+                "question",
+                "research_mode",
+                "research_languages",
+                "research_focus",
+                "research_subject",
+                "research_web_search",
+                "research_source_ids",
+                "plan_id",
+                "window_hours",
+                "template_id",
+                "notify_on_change",
+            )
         )
     )
     return Schedule(
@@ -125,6 +160,7 @@ def build_schedule(
         name=name[:120],
         template_id=template.id,
         country_iso=country,
+        country_isos=countries,
         plan_id=data.plan_id,
         hour_utc=data.hour_utc,
         cadence=data.cadence,
@@ -133,7 +169,7 @@ def build_schedule(
         enabled=data.enabled,
         created_by=owner,
         created_at=created,
-        next_run_at=next_run_after(now, data.hour_utc, data.cadence, data.weekday),
+        next_run_at=next_run_after(now, data.hour_utc, data.cadence, data.weekday, data.monthday),
         last_run_at=None if previous is None else previous.last_run_at,
         last_report_id=None if previous is None else previous.last_report_id,
         last_error=None if previous is None else previous.last_error,
@@ -145,6 +181,9 @@ def build_schedule(
         research_languages=tuple(dict.fromkeys(code.lower() for code in data.research_languages)),
         research_focus=data.research_focus,
         research_subject=data.research_subject.strip() or None if data.research_subject else None,
+        monthday=data.monthday,
+        research_web_search=data.research_web_search,
+        research_source_ids=data.research_source_ids,
     )
 
 

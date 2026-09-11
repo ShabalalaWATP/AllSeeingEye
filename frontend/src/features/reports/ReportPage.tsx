@@ -34,6 +34,7 @@ import { StatusBadge } from './ReportsPage';
 import { ReportAssessmentSummary } from './ReportAssessmentSummary';
 import { ReportMethodology } from './ReportMethodology';
 import { ResearchCoverage } from './ResearchCoverage';
+import { FreshWebContext } from './FreshWebContext';
 import { CitationCheckMethod } from './CitationChecks';
 import { ResearchContextView } from './ResearchContext';
 import { ReportChallengeView } from './ReportChallenge';
@@ -288,6 +289,7 @@ export default function ReportPage() {
           latest={report.latest_version}
         />
         <ResearchCoverage receipt={version.research} />
+        <FreshWebContext record={version.research?.web_research} />
         <ResearchContextView context={version.research_context} />
         <ReportedRelationships evidence={version.evidence} />
         <CitationCheckMethod checks={version.citation_checks} />

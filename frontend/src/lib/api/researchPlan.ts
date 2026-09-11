@@ -43,6 +43,11 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
   subject: z.string().nullable(),
   country_iso: z.string().nullable(),
+  country_isos: z
+    .array(z.string().regex(/^[A-Z]{2}$/))
+    .max(8)
+    .default([]),
+  research_web_search: z.boolean().default(false),
   area: areaSchema.nullable().default(null),
   candidate_hypotheses: z
     .array(

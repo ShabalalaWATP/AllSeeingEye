@@ -1,3 +1,4 @@
+import { researchDateError } from './ResearchTimeScope';
 import { ProjectHistory, projectInterval, type ProjectHistoryState } from './ProjectHistory';
 import { useState, type SyntheticEvent } from 'react';
 import type { SavedMapView } from '@/lib/api/mapViews';
@@ -86,15 +87,17 @@ export function AreaResearchForm({
       ? 'Enter a research question.'
       : !Number.isFinite(duration) ||
           duration <= 0 ||
-          duration > (historical ? 10980 : 14) * 86_400_000
+          duration > (historical ? 10980 : 730) * 86_400_000
         ? historical
           ? 'Choose valid project years spanning at most 30 years.'
-          : 'Choose a positive UTC interval of at most 14 days.'
-        : !eligible
-          ? 'Preview this area and interval with at least one supported selected source.'
-          : !consent
-            ? 'Confirm disclosure of the area and interval before collection.'
-            : null;
+          : 'Choose a positive UTC interval of at most two years (730 days).'
+        : !historical && researchDateError({ since: fixedSince, until: fixedUntil })
+          ? researchDateError({ since: fixedSince, until: fixedUntil })
+          : !eligible
+            ? 'Preview this area and interval with at least one supported selected source.'
+            : !consent
+              ? 'Confirm disclosure of the area and interval before collection.'
+              : null;
     setError(message);
     if (message) return;
     void action.run({
@@ -102,6 +105,7 @@ export function AreaResearchForm({
       template: 'ask',
       question: question.trim(),
       research_mode: mode,
+      research_web_search: false,
       research_focus: 'general',
       research_languages: preferences.research_languages,
       report_language: language,
@@ -172,9 +176,9 @@ export function AreaResearchForm({
               />
             </div>
             <p className="text-xs text-muted">
-              At most 14 days. The start is included and the end excluded. Observations use
-              acquisition time; other reporting uses publication time. Map display filters are not
-              copied into this collection interval.
+              At most two years (730 days), subject to each source�s archive limits. The start is
+              included and the end excluded. Observations use acquisition time; other reporting uses
+              publication time. Map display filters are not copied into this collection interval.
             </p>
           </>
         )}

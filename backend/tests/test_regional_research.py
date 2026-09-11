@@ -56,8 +56,8 @@ async def test_country_routes_without_discarding_deliberate_cross_region_selecti
     result = await provider.collect(query)
     assert result.attempts[0].status is CollectionStatus.UNSUPPORTED and not feed.requests
     assert provider.supports(replace(query, source_ids=(provider.id,)))
-    assert provider.supports(replace(query, country_iso=None))
-    assert not provider.supports(replace(query, country_iso="RU", terms=()))
+    assert provider.supports(replace(query, country_iso=None, country_isos=()))
+    assert not provider.supports(replace(query, country_iso="RU", country_isos=(), terms=()))
     await feed.http.aclose()
 
 

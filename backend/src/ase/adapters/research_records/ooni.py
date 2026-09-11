@@ -49,6 +49,8 @@ class OoniAggregateProvider:
         self._allowed = allow_noncommercial_data
 
     def _country(self, query: ResearchQuery) -> str | None:
+        if len(query.country_isos) > 1:
+            return None
         subject = re.fullmatch(r"ooni:([A-Za-z]{2})", (query.subject or "").strip())
         if subject:
             country = subject[1].upper()

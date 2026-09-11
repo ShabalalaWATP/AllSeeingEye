@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 
 import { BrandMark } from '@/components/brand/BrandMark';
@@ -20,14 +20,20 @@ function RailLink({
   children: ReactNode;
   onNavigate?: (() => void) | undefined;
 }) {
+  const { pathname } = useLocation();
+  const active =
+    pathname === to ||
+    pathname.startsWith(`${to}/`) ||
+    (to === '/research' && pathname.startsWith('/direction'));
   return (
-    <NavLink
+    <Link
       to={to}
       onClick={onNavigate}
-      className={({ isActive }) => `${itemClass} ${isActive ? activeClass : idleClass}`}
+      aria-current={active ? 'page' : undefined}
+      className={`${itemClass} ${active ? activeClass : idleClass}`}
     >
       {children}
-    </NavLink>
+    </Link>
   );
 }
 
@@ -54,22 +60,19 @@ export function LeftRail({
           Map
         </RailLink>
         <RailLink to="/trackers" onNavigate={onNavigate}>
-          Trackers
+          Live monitor
         </RailLink>
         <RailLink to="/research" onNavigate={onNavigate}>
           Research
         </RailLink>
         <RailLink to="/reports" onNavigate={onNavigate}>
-          Reports
+          Saved reports
         </RailLink>
         <RailLink to="/sources" onNavigate={onNavigate}>
           Source catalogue
         </RailLink>
-        <RailLink to="/direction" onNavigate={onNavigate}>
-          Direction
-        </RailLink>
         <RailLink to="/warning" onNavigate={onNavigate}>
-          Warning
+          Alerts
         </RailLink>
         <RailLink to="/teams" onNavigate={onNavigate}>
           Teams

@@ -67,8 +67,7 @@ class RegionalFeedResearchProvider:
         )
         explicit = query.source_ids is not None and self.id in query.source_ids
         region = (
-            query.country_iso is None
-            or query.country_iso.upper() == REGIONAL_COUNTRIES[self._seed.spec.id]
+            not query.country_isos or REGIONAL_COUNTRIES[self._seed.spec.id] in query.country_isos
         )
         return (
             bool(search_terms(query))

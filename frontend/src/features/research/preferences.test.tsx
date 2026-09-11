@@ -39,7 +39,8 @@ it('loads defaults before editing, honours URL scope and preserves edits after p
   expect(screen.getByLabelText('Report style')).toHaveValue('briefing');
   expect(screen.getByRole('radio', { name: /Detailed/ })).toBeChecked();
   await user.click(screen.getByText('Scope and sources'));
-  expect(screen.getByLabelText('Country')).toHaveValue('UA');
+  await user.click(screen.getByText('Advanced source settings'));
+  expect(screen.getByRole('button', { name: 'Remove Ukraine' })).toBeVisible();
   expect(screen.getByLabelText('Reporting window')).toHaveValue('168');
   await user.selectOptions(screen.getByLabelText('Narrative language'), 'de');
   await user.selectOptions(screen.getByLabelText('Report style'), 'assessment');
@@ -51,7 +52,7 @@ it('loads defaults before editing, honours URL scope and preserves edits after p
   await user.click(screen.getByRole('button', { name: 'Start research' }));
   await waitFor(() =>
     expect(body).toMatchObject({
-      country: 'UA',
+      countries: ['UA'],
       window_hours: 168,
       research_languages: ['fr'],
       research_mode: 'detailed',

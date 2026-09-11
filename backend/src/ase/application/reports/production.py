@@ -20,6 +20,7 @@ from ase.application.reports.challenge import run_challenge
 from ase.application.reports.citation_checks import check_generated_report_citations
 from ase.application.reports.direction import direct
 from ase.application.reports.drafting import Draft, draft_body
+from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_completion import complete_production
 from ase.application.reports.production_result import ProductionResult
@@ -59,6 +60,7 @@ class Producer:
         research: ResearchCollection | None = None,
         private_store_factory: Callable[[], EventStore] | None = None,
         automatic_claims: AutomaticClaims | None = None,
+        web_research: FreshWebResearch | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -69,6 +71,7 @@ class Producer:
         self._research = research
         self._private_store_factory = private_store_factory
         self._automatic_claims = automatic_claims
+        self._web_research = web_research
 
     async def produce(
         self,
@@ -103,6 +106,7 @@ class Producer:
             gateway=self._gateway,
             cipher=self._cipher,
             profile_for=profile_for,
+            web_research=self._web_research,
         )
 
         def select(extra_terms: tuple[str, ...] = ()) -> Selection:

@@ -7,15 +7,22 @@ import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { ReportTemplate } from '@/lib/api/reports';
-import { createSchedule, deleteSchedule, fetchSchedules } from '@/lib/api/schedules';
-import type { ScheduleRequest } from '@/lib/api/schedules';
+import {
+  createSchedule,
+  deleteSchedule,
+  fetchSchedules,
+  scheduleRequest,
+  updateSchedule,
+} from '@/lib/api/schedules';
+import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
 import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import type { CollectionPlan } from '@/lib/api/direction';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
-import { ScheduleForm, describeCadence } from './ScheduleForm';
+import { ScheduleForm } from './ScheduleForm';
+import { describeCadence } from './ScheduleTiming';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
 export function SchedulesSection({
@@ -49,13 +56,27 @@ export function SchedulesSection({
       [reload],
     ),
   );
+  const toggle = useAsyncAction(
+    useCallback(
+      async (schedule: Schedule) => {
+        await updateSchedule(schedule.id, scheduleRequest(schedule, !schedule.enabled));
+        await reload();
+      },
+      [reload],
+    ),
+  );
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-base font-semibold">Schedules</h2>
+      <h2 className="text-base font-semibold">Your recurring research</h2>
+      <p className="text-sm text-muted">
+        A saved report from every run. Pause a schedule to stop future research while keeping its
+        history.
+      </p>
       {schedules.error === null ? null : (
         <Alert tone="error">{describeError(schedules.error)}</Alert>
       )}
       {remove.error === null ? null : <Alert tone="error">{describeError(remove.error)}</Alert>}
+      {toggle.error === null ? null : <Alert tone="error">{describeError(toggle.error)}</Alert>}
       {schedules.data === null ? (
         schedules.loading ? (
           <LoadingNote label="Loading schedules" />
@@ -105,15 +126,30 @@ export function SchedulesSection({
                       {item.research_subject && (
                         <p className="mt-1 text-muted">{item.research_subject}</p>
                       )}
+                      <p className="mt-1 text-muted">
+                        {item.window_hours
+                          ? `${item.window_hours / 24} days of lookback`
+                          : 'Default product lookback'}
+                        {item.research_web_search ? ' · Fresh web search included' : ''}
+                        {item.research_source_ids !== null
+                          ? ` · ${item.research_source_ids.length} selected sources`
+                          : ' · All supported sources'}
+                      </p>
                     </details>
                   )}
                 </Td>
                 <Td className="font-mono text-xs text-muted">
                   {item.template_id}
-                  {item.country_iso === null ? '' : ` · ${item.country_iso}`}
+                  {item.country_isos.length > 0
+                    ? ` · ${item.country_isos.join(', ')}`
+                    : item.country_iso === null
+                      ? ''
+                      : ` · ${item.country_iso}`}
                 </Td>
                 <Td className="text-xs">{describeCadence(item)}</Td>
-                <Td className="font-mono text-xs text-muted">{formatUtc(item.next_run_at)}</Td>
+                <Td className="font-mono text-xs text-muted">
+                  {item.enabled ? formatUtc(item.next_run_at) : 'Paused'}
+                </Td>
                 <Td className="text-xs">
                   {item.last_error !== null ? (
                     <span className="text-critical">{item.last_error}</span>
@@ -126,14 +162,24 @@ export function SchedulesSection({
                   )}
                 </Td>
                 <Td>
-                  <Button
-                    disabled={!workspaces.canManage(item)}
-                    variant="danger"
-                    busy={remove.busy}
-                    onClick={() => void remove.run(item.id)}
-                  >
-                    Delete
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      disabled={!workspaces.canManage(item)}
+                      variant="secondary"
+                      busy={toggle.busy}
+                      onClick={() => void toggle.run(item)}
+                    >
+                      {item.enabled ? 'Pause' : 'Resume'}
+                    </Button>
+                    <Button
+                      disabled={!workspaces.canManage(item)}
+                      variant="danger"
+                      busy={remove.busy}
+                      onClick={() => void remove.run(item.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </Td>
               </tr>
             ))}

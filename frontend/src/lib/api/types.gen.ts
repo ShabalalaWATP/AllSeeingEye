@@ -1402,6 +1402,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/research/inputs/{input_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Discard Input */
+        delete: operations["discard_input_api_research_inputs__input_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/inputs/{input_id}/geolocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Geolocate Photo */
+        post: operations["geolocate_photo_api_research_inputs__input_id__geolocation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/research/inputs/{input_id}/declaration-targets": {
         parameters: {
             query?: never;
@@ -6251,6 +6285,104 @@ export interface components {
              */
             retention_days: number;
         };
+        /** PhotoCandidate */
+        PhotoCandidate: {
+            /** Label */
+            label: string;
+            /** Country Iso */
+            country_iso: string | null;
+            /**
+             * Precision
+             * @enum {string}
+             */
+            precision: "country" | "region" | "city" | "landmark";
+            /** Supporting Clues */
+            supporting_clues: string[];
+            /** Contradictions */
+            contradictions: string[];
+            coordinates: components["schemas"]["PhotoCoordinates"] | null;
+        };
+        /** PhotoCoordinates */
+        PhotoCoordinates: {
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** Uncertainty Radius Km */
+            uncertainty_radius_km: number;
+            /** Basis */
+            basis: string;
+        };
+        /** PhotoGeolocationIn */
+        PhotoGeolocationIn: {
+            /**
+             * Question
+             * @default Where might this photograph have been taken?
+             */
+            question: string;
+            /**
+             * Hints
+             * @default
+             */
+            hints: string;
+            /** Team Id */
+            team_id?: string | null;
+            /**
+             * Consent To Send Image
+             * @constant
+             */
+            consent_to_send_image: true;
+        };
+        /** PhotoGeolocationOut */
+        PhotoGeolocationOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "candidates" | "unknown";
+            /** Summary */
+            summary: string;
+            /** Visual Clues */
+            visual_clues: string[];
+            /** Candidates */
+            candidates: components["schemas"]["PhotoCandidate"][];
+            /** Verification Steps */
+            verification_steps: string[];
+            /** Limitations */
+            limitations: string[];
+            input: components["schemas"]["ResearchInputOut"];
+            provenance: components["schemas"]["PhotoProvenance"];
+            /**
+             * Candidate Status
+             * @default unverified
+             * @constant
+             */
+            candidate_status: "unverified";
+        };
+        /** PhotoProvenance */
+        PhotoProvenance: {
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Revision */
+            profile_revision: number;
+            provider: components["schemas"]["LlmProvider"];
+            /** Configured Model */
+            configured_model: string;
+            /** Returned Model */
+            returned_model: string;
+            /**
+             * Analysed At
+             * Format: date-time
+             */
+            analysed_at: string;
+            /** Original Sha256 */
+            original_sha256: string;
+            /** Image Sha256 */
+            image_sha256: string;
+        };
         /** PirIn */
         PirIn: {
             /** Text */
@@ -6982,6 +7114,8 @@ export interface components {
             template: string;
             /** Country */
             country?: string | null;
+            /** Countries */
+            countries?: string[];
             /** Categories */
             categories?: components["schemas"]["Category"][];
             /** Question */
@@ -7016,6 +7150,11 @@ export interface components {
              */
             report_style: "briefing" | "assessment";
             research_mode?: components["schemas"]["ResearchMode"] | null;
+            /**
+             * Research Web Search
+             * @default false
+             */
+            research_web_search: boolean;
             /** Research Languages */
             research_languages?: string[];
             /** @default general */
@@ -7532,6 +7671,13 @@ export interface components {
             subject?: string | null;
             /** Country Iso */
             country_iso?: string | null;
+            /** Countries */
+            countries?: string[];
+            /**
+             * Research Web Search
+             * @default false
+             */
+            research_web_search: boolean;
             /** Source Ids */
             source_ids?: string[] | null;
             time_basis?: components["schemas"]["EvidenceTimeBasis"] | null;
@@ -7589,6 +7735,13 @@ export interface components {
             subject: string | null;
             /** Country Iso */
             country_iso: string | null;
+            /** Country Isos */
+            country_isos?: string[];
+            /**
+             * Research Web Search
+             * @default false
+             */
+            research_web_search: boolean;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
             area?: components["schemas"]["ResearchAreaOut"] | null;
             /** @default publication */
@@ -7638,6 +7791,13 @@ export interface components {
             subject: string | null;
             /** Country Iso */
             country_iso: string | null;
+            /** Country Isos */
+            country_isos?: string[];
+            /**
+             * Research Web Search
+             * @default false
+             */
+            research_web_search: boolean;
             translation?: components["schemas"]["QueryTransformationOut"] | null;
             area?: components["schemas"]["ResearchAreaOut"] | null;
             /** @default publication */
@@ -7685,6 +7845,7 @@ export interface components {
             plan?: components["schemas"]["ResearchPlanOut"] | null;
             /** Passes */
             passes?: components["schemas"]["CollectionPassOut"][];
+            web_research?: components["schemas"]["WebResearchOut"] | null;
         };
         /** ResearchRunOut */
         ResearchRunOut: {
@@ -7889,6 +8050,8 @@ export interface components {
             template_id: string;
             /** Country Iso */
             country_iso?: string | null;
+            /** Country Isos */
+            country_isos?: string[];
             /** Plan Id */
             plan_id?: string | null;
             /**
@@ -7906,6 +8069,11 @@ export interface components {
              * @default 0
              */
             weekday: number;
+            /**
+             * Monthday
+             * @default 1
+             */
+            monthday: number;
             /** Window Hours */
             window_hours?: number | null;
             /**
@@ -7929,6 +8097,13 @@ export interface components {
             research_focus: components["schemas"]["ResearchFocus"];
             /** Research Subject */
             research_subject?: string | null;
+            /**
+             * Research Web Search
+             * @default false
+             */
+            research_web_search: boolean;
+            /** Research Source Ids */
+            research_source_ids?: string[] | null;
         };
         /** ScheduleOut */
         ScheduleOut: {
@@ -7943,6 +8118,8 @@ export interface components {
             template_id: string;
             /** Country Iso */
             country_iso: string | null;
+            /** Country Isos */
+            country_isos: string[];
             /** Plan Id */
             plan_id: string | null;
             /** Hour Utc */
@@ -7951,6 +8128,8 @@ export interface components {
             cadence: string;
             /** Weekday */
             weekday: number;
+            /** Monthday */
+            monthday: number;
             /** Window Hours */
             window_hours: number | null;
             /** Enabled */
@@ -7991,6 +8170,10 @@ export interface components {
             research_focus: components["schemas"]["ResearchFocus"];
             /** Research Subject */
             research_subject: string | null;
+            /** Research Web Search */
+            research_web_search: boolean;
+            /** Research Source Ids */
+            research_source_ids: string[] | null;
         };
         /** SchedulesOut */
         SchedulesOut: {
@@ -8697,6 +8880,60 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WebCitationOut */
+        WebCitationOut: {
+            /** Url */
+            url: string;
+            /** Title */
+            title: string;
+            /** Start Index */
+            start_index: number;
+            /** End Index */
+            end_index: number;
+        };
+        /** WebResearchOut */
+        WebResearchOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "unavailable" | "unsupported" | "failed" | "timed_out" | "not_collected";
+            /** Explanation */
+            explanation: string;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Returned Model */
+            returned_model: string | null;
+            /** Profile Id */
+            profile_id: string | null;
+            /** Profile Revision */
+            profile_revision: number | null;
+            /** Synthesis */
+            synthesis: string;
+            /** Citations */
+            citations: components["schemas"]["WebCitationOut"][];
+            /** Consulted Urls */
+            consulted_urls: string[];
+            /** Tool Calls */
+            tool_calls: number;
+            /** Request Count */
+            request_count: number;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Policy Version */
+            policy_version: string;
+            /** Notice */
+            notice: string;
         };
         /** YardstickBandOut */
         YardstickBandOut: {
@@ -11878,6 +12115,70 @@ export interface operations {
                 };
                 content: {
                     "text/plain": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_input_api_research_inputs__input_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                input_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    geolocate_photo_api_research_inputs__input_id__geolocation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                input_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoGeolocationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoGeolocationOut"];
                 };
             };
             /** @description Validation Error */

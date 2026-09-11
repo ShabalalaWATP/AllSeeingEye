@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
@@ -37,14 +37,18 @@ from ase.domain.report_records import (
 )
 from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_scope import MAX_RESEARCH_HOURS, validate_research_interval
 
 
 class ReportCreateIn(BaseModel):
     template: str = Field(min_length=1, max_length=32)
     country: str | None = Field(default=None, min_length=2, max_length=2)
+    countries: list[Annotated[str, Field(min_length=2, max_length=2)]] = Field(
+        default_factory=list, max_length=8
+    )
     categories: list[Category] = Field(default_factory=list, max_length=11)
     question: str | None = Field(default=None, max_length=1000)
-    window_hours: int | None = Field(default=None, ge=1, le=24 * 14)
+    window_hours: int | None = Field(default=None, ge=1, le=MAX_RESEARCH_HOURS)
     profile_id: UUID | None = None
     devils_advocacy: bool = False
     hazard: str | None = Field(default=None, max_length=32)
@@ -54,6 +58,7 @@ class ReportCreateIn(BaseModel):
     report_language: ReportLanguage = "en"
     report_style: Literal["briefing", "assessment"] = "assessment"
     research_mode: ResearchMode | None = None
+    research_web_search: StrictBool = False
     research_languages: list[Annotated[str, Field(pattern=LANGUAGE_CODE_PATTERN)]] = Field(
         default_factory=lambda: ["en"], min_length=1, max_length=8
     )
@@ -82,6 +87,13 @@ class ReportCreateIn(BaseModel):
 
     @model_validator(mode="after")
     def research_requires_question(self) -> Self:
+        if self.research_since is not None and self.research_until is not None:
+            validate_research_interval(
+                self.research_since,
+                self.research_until,
+                recorded=self.research_time_basis is EvidenceTimeBasis.RECORDED,
+                now=datetime.now(UTC),
+            )
         if self.research_terms is not None and (
             any(not term.strip() for term in self.research_terms)
             or sum(map(len, self.research_terms)) > 1000
@@ -109,6 +121,8 @@ class ReportCreateIn(BaseModel):
         return ReportRequest(
             template_id=self.template.strip().lower(),
             country_iso=self.country.upper() if self.country else None,
+            country_isos=tuple(self.countries),
+            research_web_search=self.research_web_search,
             categories=tuple(self.categories),
             question=self.question.strip() if self.question else None,
             window_hours=self.window_hours,

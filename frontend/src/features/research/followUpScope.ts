@@ -3,15 +3,27 @@ import { queryVariantSchema } from '@/lib/api/sourceProvenance';
 import type { Report, ReportRequest } from '@/lib/api/reports';
 import { categorySchema } from '@/lib/api/eventSchemas';
 import { candidateHypothesisSchema, plannedQueryTaskSchema } from '@/lib/api/researchPlan';
+import { researchDateError } from './ResearchTimeScope';
+
+const countryCode = z.string().regex(/^[A-Z]{2}$/);
+const countryList = z
+  .array(countryCode)
+  .max(8)
+  .refine((codes) => new Set(codes).size === codes.length);
 
 const savedScope = z.object({
   report_language: z
     .enum(['en', 'fr', 'de', 'es', 'ar', 'ru', 'uk', 'zh', 'fa', 'zh-Hans', 'zh-Hant'])
     .optional(),
   report_style: z.enum(['briefing', 'assessment']).optional(),
-  country: z.string().nullable().optional(),
+  country: countryCode.nullable().optional(),
+  countries: countryList.optional(),
+  country_isos: countryList.optional(),
   categories: z.array(categorySchema).optional(),
-  window_hours: z.number().int().positive().optional(),
+  window_hours: z.number().int().nonnegative().optional(),
+  research_since: z.iso.datetime({ offset: true }).nullable().optional(),
+  research_until: z.iso.datetime({ offset: true }).nullable().optional(),
+  research_web_search: z.boolean().optional(),
   devils_advocacy: z.boolean().optional(),
   hazard: z.string().nullable().optional(),
   conflict: z.string().nullable().optional(),
@@ -40,6 +52,26 @@ export function followUpRequest(parent: Report): ReportRequest {
     );
   }
   const scope = savedScope.parse(parent.report.scope);
+  const countries = scope.countries ?? scope.country_isos ?? (scope.country ? [scope.country] : []);
+  if (
+    (scope.countries &&
+      scope.country_isos &&
+      [...scope.countries].sort().join() !== [...scope.country_isos].sort().join()) ||
+    (scope.country && (countries.length !== 1 || countries[0] !== scope.country))
+  )
+    throw new Error('The saved country scope is inconsistent. A follow-up cannot safely start.');
+  const fixed = scope.research_since ?? scope.research_until;
+  if (fixed) {
+    const error = researchDateError({
+      since: scope.research_since ?? '',
+      until: scope.research_until ?? '',
+    });
+    if (error) throw new Error(`The saved date scope cannot be preserved: ${error}`);
+  } else if (scope.window_hours === 0 || (scope.window_hours ?? 0) > 730 * 24) {
+    throw new Error('The saved reporting window is invalid. A follow-up cannot safely start.');
+  }
+  if (scope.research_web_search && ['document', 'media'].includes(scope.research_focus ?? ''))
+    throw new Error('Private attachment scope cannot include public web search.');
   if (
     (parent.report.scope.research_input || parent.report.scope.research_reuse) &&
     !['document', 'media'].includes(scope.research_focus ?? '')
@@ -53,12 +85,21 @@ export function followUpRequest(parent: Report): ReportRequest {
     report_language: scope.report_language ?? 'en',
     report_style: scope.report_style ?? 'assessment',
     country: scope.country ?? null,
+    countries,
+    research_web_search: scope.research_web_search ?? false,
     categories: scope.categories ?? [],
     hazard: scope.hazard ?? null,
     conflict: scope.conflict ?? null,
     plan: scope.plan ?? null,
     research_subject: scope.research_subject ?? null,
-    ...(scope.window_hours === undefined ? {} : { window_hours: scope.window_hours }),
+    ...(fixed
+      ? {
+          research_since: scope.research_since ?? null,
+          research_until: scope.research_until ?? null,
+        }
+      : scope.window_hours === undefined
+        ? {}
+        : { window_hours: scope.window_hours }),
     template: 'ask',
     parent_report_id: parent.report.id,
     team_id: parent.report.team_id,

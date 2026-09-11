@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import time
 from math import isfinite
@@ -33,7 +34,19 @@ def build_payload(request: LlmRequest) -> dict[str, Any]:
         raise LlmGatewayError("Bedrock received unsupported inference settings.")
     payload: dict[str, Any] = {
         "messages": [
-            {"role": message.role, "content": [{"text": message.content}]}
+            {
+                "role": message.role,
+                "content": [{"text": message.content}]
+                + [
+                    {
+                        "image": {
+                            "format": "png",
+                            "source": {"bytes": base64.b64encode(image.png).decode("ascii")},
+                        }
+                    }
+                    for image in message.images
+                ],
+            }
             for message in request.messages
             if message.role != "system"
         ],
@@ -196,6 +209,14 @@ class BedrockConverseGateway:
                 ) as response,
             ):
                 if response.status_code != 200:
+                    if response.status_code in (400, 415, 422) and any(
+                        message.images for message in request.messages
+                    ):
+                        raise LlmGatewayError(
+                            "The configured Bedrock model rejected image analysis or its "
+                            "structured output settings. Select a compatible vision model; "
+                            "no alternative provider was used."
+                        )
                     raise LlmGatewayError(f"Bedrock answered {response.status_code}.")
                 if response.headers.get("content-encoding", "identity").strip().lower() not in (
                     "",

@@ -63,6 +63,20 @@ class ImportResearchInput:
     def previews(self, actor: User, input_id: UUID) -> tuple[InputPreviewFrame, ...]:
         return self._store.read(actor, input_id).frames
 
+    async def discard(
+        self,
+        actor: User,
+        input_id: UUID,
+        *,
+        before_discard: BeforeRetain,
+    ) -> None:
+        try:
+            current = await self._access.context(actor, for_update=True)
+            await before_discard()
+            self._store.discard(current.actor, input_id)
+        finally:
+            await self._uow.rollback()
+
     async def declaration_targets(
         self,
         actor: User,

@@ -7,6 +7,7 @@ from uuid import UUID
 from ase.application.access import AccessPolicy
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.research_inputs import ResearchInputStore, StoredResearchInput
+from ase.application.reports.followup_scope import require_followup_scope
 from ase.application.reports.request import ReportRequest
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import Event
@@ -151,6 +152,7 @@ class ReportResearchInputs:
                 request.research_focus not in PRIVATE_FOCUS or request.research_mode is None
             ):
                 raise InvalidRequest("Private-source follow-ups require document or media research")
+            require_followup_scope(record.scope, request)
             evidence, judgements = version.evidence, version.body.key_judgements
             metadata.update(parent_report_id=str(parent.report_id), parent_version=parent.version)
         if previous is not None and request.research_focus in PRIVATE_FOCUS:

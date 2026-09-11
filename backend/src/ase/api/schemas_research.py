@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from ase.api.schemas_research_plan import QueryVariantIn, ResearchPlanOut
+from ase.api.schemas_web_research import WebResearchOut
 from ase.domain.registry_identifiers import RegistryLookup
 from ase.domain.research import CollectionStatus
 
@@ -52,3 +53,4 @@ class ResearchReceiptOut(BaseModel):
     plan: ResearchPlanOut | None = None
 
     passes: list[CollectionPassOut] = Field(default_factory=list, max_length=2)
+    web_research: WebResearchOut | None = None

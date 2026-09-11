@@ -86,37 +86,28 @@ def _pool(
     until: datetime | None,
     include_unknown_dates: bool,
 ) -> list[Event]:
-    """One query for the box or country, one per extra country, merged by event id."""
+    """Query selected scopes without a global fallback, under one aggregate pool cap."""
+    scopes = [(country_iso, bbox)] if bbox is not None or country_iso or not countries else []
+    scopes.extend((iso, None) for iso in dict.fromkeys(countries) if iso != country_iso)
+    per_scope = max(1, MAX_POOL // len(scopes))
     queries = [
         EventQuery(
             categories=categories,
-            country_iso=country_iso,
-            bbox=bbox,
-            since=since,
-            limit=MAX_POOL,
-            time_basis=time_basis,
-            until=until,
-            include_unknown_dates=include_unknown_dates,
-        )
-    ]
-    queries.extend(
-        EventQuery(
-            categories=categories,
             country_iso=iso,
+            bbox=bounds,
             since=since,
-            limit=MAX_POOL,
+            limit=per_scope,
             time_basis=time_basis,
             until=until,
             include_unknown_dates=include_unknown_dates,
         )
-        for iso in countries
-        if iso != country_iso
-    )
+        for iso, bounds in scopes
+    ]
     seen: dict[str, Event] = {}
     for query in queries:
         for event in store.query(query):
             seen.setdefault(event.id, event)
-    return list(seen.values())
+    return list(seen.values())[:MAX_POOL]
 
 
 def _organisation(event: Event, profiles: Mapping[str, SourceProfile]) -> tuple[str, str]:

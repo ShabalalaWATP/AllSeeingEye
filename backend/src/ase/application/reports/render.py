@@ -11,6 +11,7 @@ from ase.application.reports.context_export import context_sections
 from ase.application.reports.export_text import markdown_fields, plain_markdown, review_notice
 from ase.application.reports.markdown_annex import annex_lines
 from ase.application.reports.research_export import research_sections
+from ase.application.reports.web_research_export import web_context_markdown
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.challenge import ReportChallenge
 from ase.domain.citation_checks import ReportCitationChecks
@@ -171,12 +172,13 @@ def render_markdown(
         *_analysis_lines(body),
         *_advocacy_lines(advocacy if challenge is None else None),
         *_closing_lines(body),
+        *web_context_markdown(research.web_research if research else None),
         *[
             line
             for title, paragraphs in (
                 *assessment_sections(assessment),
                 *citation_sections(citation_checks),
-                *research_sections(research),
+                *research_sections(research, include_web=False),
                 *challenge_sections(challenge),
                 *context_sections(research_context),
             )

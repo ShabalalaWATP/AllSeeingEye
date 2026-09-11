@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router';
+import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -38,11 +39,12 @@ export default function DirectionPage() {
   );
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Direction</h1>
+      <h1 className="text-xl font-semibold">Plans & areas</h1>
       <p className="text-sm text-muted">
-        Areas of interest scope the picture; collection plans turn a question into requirements the
-        Eye gathers evidence against and answers on demand.
+        Save reusable geographic areas and structured questions for more detailed research. Start a
+        one-off question from New research.
       </p>
+      <ResearchNavigation />
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Areas of interest</h2>
         {areas.error === null ? null : <Alert tone="error">{describeError(areas.error)}</Alert>}

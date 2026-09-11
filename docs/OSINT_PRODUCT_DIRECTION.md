@@ -23,8 +23,8 @@ case-management or staff-management product.
 The existing report engine, frozen evidence, translation, watchlists, schedules,
 search and scoped sharing are useful foundations. The existing live-store Ask the
 Eye remains bounded by retained feeds. The new `/research` flow adds explicitly
-budgeted private collection from supported feeds/APIs; it is not unrestricted web
-search. A
+budgeted private collection from supported feeds/APIs; optional native fresh-web search adds separately labelled generated context
+through a compatible destination model. See [the workspace guide](RESEARCH_WORKSPACE_OPERATIONS.md). A
 convincing paragraph cannot compensate for information the application never
 collected.
 

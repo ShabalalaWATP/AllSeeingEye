@@ -98,7 +98,7 @@ it('previews and submits distinct translation and transliteration with exact ori
   );
   const followUp = followUpRequest({
     ...report,
-    report: { ...report.report, scope: { ...report.report.scope, ...submitted } },
+    report: { ...report.report, scope: { ...report.report.scope, ...submitted, country: null } },
   });
   expect(followUp.research_query_variants?.[1]).toMatchObject(previews[0]!.query_variants![1]!);
   expect(followUp.research_terms).toEqual([original]);

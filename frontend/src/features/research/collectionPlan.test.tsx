@@ -21,6 +21,8 @@ function preview(input: planApi.ResearchPlanInput): planApi.ResearchPlan {
     focus: input.focus,
     subject: input.subject ?? null,
     country_iso: input.country_iso ?? null,
+    country_isos: input.countries ?? [],
+    research_web_search: input.research_web_search,
     request_limit: 8,
     seconds_limit: 20,
     item_limit: 50,
@@ -96,6 +98,7 @@ describe('editable collection plan', () => {
     );
     const { user } = await openPlan();
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Research period'), 'history');
     await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
     await screen.findByText('Current preview');
@@ -116,6 +119,7 @@ describe('editable collection plan', () => {
     );
     const { user } = await openPlan();
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Research period'), 'history');
     await user.click(screen.getByRole('button', { name: 'Preview collection plan' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -135,6 +139,7 @@ describe('editable collection plan', () => {
     );
     const { user } = await openPlan();
     await user.click(screen.getByText('Scope and sources'));
+    await user.click(screen.getByText('Advanced source settings'));
     await user.selectOptions(screen.getByLabelText('Research period'), 'history');
     expect(screen.queryByLabelText('Reporting window')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Start research' }));
@@ -183,7 +188,7 @@ describe('editable collection plan', () => {
     expect(plans[0]).toMatchObject({
       terms: ['port closure'],
       query_variants: [{ language: 'en', terms: ['harbour disruption'] }],
-      country_iso: 'UA',
+      countries: ['UA'],
     });
     expect(Date.parse(plans[0]!.until) - Date.parse(plans[0]!.since)).toBe(72 * 3_600_000);
     await user.click(screen.getByRole('checkbox', { name: 'Wikipedia' }));

@@ -6,6 +6,7 @@ from dataclasses import replace
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.research import ResearchCollection
+from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.plan_queries import prepare_model_plan
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.application.reports.progress import Progress, reached
@@ -23,6 +24,7 @@ from ase.domain.research import ResearchQuery
 from ase.domain.research_records import ResearchReceipt
 from ase.domain.research_runs import ResearchStage
 from ase.domain.validation import Finding, Severity
+from ase.domain.web_research import WebResearchRecord
 
 
 async def prepare_collection(
@@ -37,6 +39,7 @@ async def prepare_collection(
     gateway: LlmGateway | None = None,
     cipher: SecretCipher | None = None,
     profile_for: ProfileLookup | None = None,
+    web_research: FreshWebResearch | None = None,
 ) -> tuple[EventStore, ResearchReceipt | None, ResearchQuery | None]:
     store = live_store
     receipt: ResearchReceipt | None = None
@@ -58,6 +61,8 @@ async def prepare_collection(
             mode=job.request.research_mode,
             focus=job.request.research_focus,
             country_iso=job.request.country_iso,
+            country_isos=job.request.country_isos,
+            research_web_search=job.request.research_web_search,
             subject=job.request.research_subject,
             area=job.request.effective_area,
         )
@@ -138,4 +143,13 @@ async def prepare_collection(
                     for row in receipt.passes
                 ),
             )
+        if query.research_web_search:
+            web = (
+                await web_research.collect(job, query, totals, cipher, profile_for)
+                if web_research is not None and cipher is not None and profile_for is not None
+                else WebResearchRecord(
+                    "unavailable", "Fresh web search is not configured in this runtime.", job.now
+                )
+            )
+            receipt = replace(receipt, web_research=web)
     return store, receipt, query

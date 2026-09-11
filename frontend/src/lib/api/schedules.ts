@@ -29,14 +29,18 @@ export const scheduleSchema = z.object({
   research_languages: z.array(z.string()),
   research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
   research_subject: z.string().nullable(),
+  research_web_search: z.boolean().default(false),
+  research_source_ids: z.array(z.string()).nullable().default(null),
   id: z.string(),
   name: z.string(),
   template_id: z.string(),
   country_iso: z.string().nullable(),
+  country_isos: z.array(z.string()).max(8).default([]),
   plan_id: z.string().nullable(),
   hour_utc: z.number().int(),
   cadence: z.string(),
   weekday: z.number().int(),
+  monthday: z.number().int().min(1).max(31).default(1),
   window_hours: z.number().int().nullable(),
   enabled: z.boolean(),
   created_by: z.string(),
@@ -67,4 +71,40 @@ export function deleteSchedule(id: string): Promise<void> {
   return scopedMutation(() =>
     apiSend(`/api/schedules/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   );
+}
+
+export function updateSchedule(id: string, request: ScheduleRequest): Promise<Schedule> {
+  return scopedMutation(() =>
+    apiCall(`/api/schedules/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: request,
+      schema: scheduleSchema,
+    }),
+  );
+}
+
+/** PUT is a full replacement. Preserve every saved option when changing run status. */
+export function scheduleRequest(schedule: Schedule, enabled: boolean): ScheduleRequest {
+  return {
+    name: schedule.name,
+    template_id: schedule.template_id,
+    country_iso: schedule.country_iso,
+    country_isos: schedule.country_isos,
+    plan_id: schedule.plan_id,
+    team_id: schedule.team_id,
+    hour_utc: schedule.hour_utc,
+    cadence: schedule.cadence,
+    weekday: schedule.weekday,
+    monthday: schedule.monthday,
+    window_hours: schedule.window_hours,
+    enabled,
+    notify_on_change: schedule.notify_on_change,
+    question: schedule.question,
+    research_mode: schedule.research_mode,
+    research_languages: schedule.research_languages,
+    research_focus: schedule.research_focus,
+    research_subject: schedule.research_subject,
+    research_web_search: schedule.research_web_search,
+    research_source_ids: schedule.research_source_ids,
+  };
 }

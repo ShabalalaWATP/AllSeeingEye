@@ -23,6 +23,11 @@ from ase.domain.research_continuation import continuation_from_dict
 from ase.domain.research_plan import QueryTransformation, ResearchPlan, ResearchTask
 from ase.domain.research_planning import planning_from_dict
 from ase.domain.research_tasks import candidate_from_dict
+from ase.domain.web_research import (
+    WebResearchRecord,
+    web_research_from_dict,
+    web_research_to_dict,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +45,7 @@ class ResearchReceipt:
     plan: ResearchPlan | None = None
     passes: tuple[CollectionPass, ...] = ()
     time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    web_research: WebResearchRecord | None = None
 
     @classmethod
     def build(
@@ -124,6 +130,7 @@ class ResearchReceipt:
             "sources do not establish absence of events. Collection does not verify claims."
             + hypotheses
             + tasks
+            + (self.web_research.describe() if self.web_research else "")
             + (
                 f" Model continuation (unverified): {self.plan.continuation.decision}; "
                 f"{self.plan.continuation.rationale}. "
@@ -141,6 +148,10 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
     result["since"] = receipt.since.isoformat()
     result["until"] = receipt.until.isoformat()
     result["time_basis"] = receipt.time_basis.value
+    if receipt.web_research is not None:
+        result["web_research"] = web_research_to_dict(receipt.web_research)
+    else:
+        result.pop("web_research", None)
     if receipt.plan is not None:
         result["plan"]["since"] = receipt.plan.since.isoformat()
         result["plan"]["until"] = receipt.plan.until.isoformat()
@@ -166,6 +177,7 @@ def research_to_dict(receipt: ResearchReceipt) -> dict[str, Any]:
 
 def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
     _omit_translation_defaults(plan)
+    _omit_scope_defaults(plan)
     for name in ("planning", "continuation"):
         if plan.get(name) is None:
             plan.pop(name, None)
@@ -186,6 +198,15 @@ def _omit_legacy_plan_defaults(plan: dict[str, Any]) -> None:
             candidate.pop("registry_identifiers", None)
         if candidate.get("origin") == "operator":
             candidate.pop("origin", None)
+
+
+def _omit_scope_defaults(plan: dict[str, Any]) -> None:
+    countries = plan.get("country_isos")
+    if countries and tuple(countries) == (plan.get("country_iso"),):
+        plan.pop("country_isos", None)
+    for key in ("research_web_search", "country_isos"):
+        if not plan.get(key):
+            plan.pop(key, None)
 
 
 def _omit_legacy_task_defaults(row: dict[str, Any]) -> None:
@@ -241,6 +262,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
         plan=plan_from_dict(data.get("plan")),
         passes=passes_from_dict(data.get("passes", ())),
         time_basis=EvidenceTimeBasis(data.get("time_basis", "publication")),
+        web_research=web_research_from_dict(data.get("web_research")),
     )
 
 

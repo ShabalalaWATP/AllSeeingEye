@@ -1,12 +1,15 @@
 """Shared frozen collection receipts, with no inference from empty or unavailable sources."""
 
+from ase.application.reports.web_research_export import web_context_sections
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.query_variant_records import describe_variant
 from ase.domain.registry_identifiers import describe_lookup
 from ase.domain.research_records import ResearchReceipt
 
 
-def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple[str, ...]], ...]:
+def research_sections(
+    receipt: ResearchReceipt | None, *, include_web: bool = True
+) -> tuple[tuple[str, tuple[str, ...]], ...]:
     if receipt is None:
         return (("Collection coverage", ("No collection receipt was saved for this version.",)),)
     period = (
@@ -117,7 +120,10 @@ def research_sections(receipt: ResearchReceipt | None) -> tuple[tuple[str, tuple
             + describe_lookup(attempt.registry_lookup)
             + describe_variant(attempt.query_variant)
         )
-    return (("Collection coverage", tuple(lines)),)
+    return (
+        ("Collection coverage", tuple(lines)),
+        *(web_context_sections(receipt.web_research) if include_web else ()),
+    )
 
 
 def transformation_lines(receipt: ResearchReceipt) -> list[str]:

@@ -1,5 +1,5 @@
 import { projectInterval, type ProjectHistoryState } from './ProjectHistory';
-import { useCallback, useRef, useState, type SyntheticEvent } from 'react';
+import { useCallback, useState, type SyntheticEvent } from 'react';
 
 import type { Profile } from '@/lib/api/profile';
 import { ReportOptions } from '@/components/reports/ReportOptions';
@@ -20,6 +20,8 @@ import { ResearchProgress } from './ResearchProgress';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
 import { useResearchPlan } from './useResearchPlan';
 import { recordScopeError } from './recordScope';
+import { ResearchDepth } from './ResearchDepth';
+import { MAX_RESEARCH_HOURS, researchDateError, type ResearchDates } from './ResearchTimeScope';
 
 export function ResearchForm({
   preferences,
@@ -43,12 +45,24 @@ export function ResearchForm({
   const scope = useWorkspaceSelection(workspaces);
   const action = useResearchRun();
   const { clearError } = action;
-  const advanced = useRef<HTMLDetailsElement>(null);
   const [question, setQuestion] = useState(initialQuestion);
   const [mode, setMode] = useState<NonNullable<ReportRequest['research_mode']>>(
     parent?.request.research_mode ?? preferences.research_mode,
   );
-  const [country, setCountry] = useState(parent?.request.country ?? (parent ? '' : initialCountry));
+  const [selectedCountries, setCountries] = useState<string[]>(
+    parent?.request.countries ??
+      (parent?.request.country
+        ? [parent.request.country]
+        : !parent && initialCountry
+          ? [initialCountry]
+          : []),
+  );
+  const [dates, setDates] = useState<ResearchDates | null>(
+    parent?.request.research_since && parent.request.research_until
+      ? { since: parent.request.research_since, until: parent.request.research_until }
+      : null,
+  );
+  const [webSearch, setWebSearch] = useState(parent?.request.research_web_search ?? false);
   const [windowHours, setWindowHours] = useState(
     String(parent?.request.window_hours ?? preferences.research_window_days * 24),
   );
@@ -85,7 +99,9 @@ export function ResearchForm({
     mode,
     focus,
     subject,
-    country: focus === 'general' ? country : '',
+    countries: focus === 'general' ? selectedCountries : [],
+    ...(dates && !historical ? { dates } : {}),
+    webSearch: webSearch && !['document', 'media'].includes(focus),
   });
   const [validation, setValidation] = useState<string | null>(null);
   const [inputId, setInputId] = useState<string | null>(null);
@@ -112,7 +128,7 @@ export function ResearchForm({
       inputBusy ||
       !template ||
       !ready ||
-      (!parent && country !== '' && countriesLoading)
+      (!parent && selectedCountries.length > 0 && countriesLoading)
     )
       return;
     const message = !question.trim()
@@ -121,9 +137,9 @@ export function ResearchForm({
         ? 'Keep your question within 1,000 characters.'
         : !parent &&
             focus === 'general' &&
-            country &&
-            !countries.some((item) => item.iso2 === country)
-          ? 'Choose an available country or all countries.'
+            (selectedCountries.length > 8 ||
+              selectedCountries.some((code) => !countries.some((item) => item.iso2 === code)))
+          ? 'Choose up to eight available countries, or use worldwide.'
           : selectedLanguages.length === 0
             ? 'Select at least one search language.'
             : (focus === 'company' || focus === 'domain') && !subject.trim()
@@ -135,6 +151,15 @@ export function ResearchForm({
                   : null;
     const scopeError =
       message ??
+      (!parent && !historical
+        ? dates
+          ? researchDateError(dates)
+          : !Number.isInteger(Number(windowHours)) ||
+              Number(windowHours) <= 0 ||
+              Number(windowHours) > MAX_RESEARCH_HOURS
+            ? 'Choose a valid search period of up to two years.'
+            : null
+        : null) ??
       (historical &&
       (!interval ||
         !collectionPlan.current ||
@@ -144,13 +169,9 @@ export function ResearchForm({
         ))
         ? 'Choose valid project years and preview a supported selected source.'
         : null) ??
-      (!parent && focus === 'general' ? recordScopeError(subject.trim(), country) : null);
+      (!parent && focus === 'general' ? recordScopeError(subject.trim(), selectedCountries) : null);
     setValidation(scopeError);
-    if (scopeError) {
-      if (question.trim() && question.trim().length <= 1000 && advanced.current)
-        advanced.current.open = true;
-      return;
-    }
+    if (scopeError) return;
     const request: ReportRequest = {
       disclose_area_to_provider: false,
       template: template.id,
@@ -167,9 +188,12 @@ export function ResearchForm({
             research_until: interval?.until ?? null,
             research_time_basis: 'recorded_time' as const,
           }
-        : { window_hours: Number(windowHours) }),
+        : dates
+          ? { research_since: dates.since, research_until: dates.until }
+          : { window_hours: Number(windowHours) }),
       devils_advocacy: mode === 'detailed',
-      ...(focus === 'general' && country ? { country } : {}),
+      ...(focus === 'general' ? { countries: selectedCountries } : {}),
+      research_web_search: !privateFocus && webSearch,
       ...(scope.teamId ? { team_id: scope.teamId } : {}),
       ...(!parent && !privateFocus ? collectionPlan.request : {}),
       ...parent?.request,
@@ -183,55 +207,20 @@ export function ResearchForm({
       aria-label="Research a question"
       onSubmit={submit}
       noValidate
-      className="flex min-w-0 flex-col gap-6"
+      className="flex min-w-0 flex-col gap-5"
     >
-      <fieldset disabled={action.busy} className="flex min-w-0 flex-col gap-6 disabled:opacity-70">
+      <fieldset disabled={action.busy} className="flex min-w-0 flex-col gap-5 disabled:opacity-70">
         <TextAreaField
           label="Your question"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           maxLength={1000}
           required
-          rows={5}
+          rows={3}
           placeholder="What has changed, what does it mean, and what should I watch next?"
-          className="min-h-40 resize-y bg-surface p-4 text-base leading-relaxed transition-colors focus:border-ember motion-reduce:transition-none"
+          className="min-h-28 resize-y bg-surface p-4 text-base leading-relaxed transition-colors focus:border-ember motion-reduce:transition-none"
         />
-        <fieldset
-          disabled={Boolean(parent)}
-          className="grid gap-x-6 gap-y-2 border-b border-line pb-5 sm:grid-cols-2"
-        >
-          <legend className="mb-2 text-sm font-medium">Research depth</legend>
-          {(
-            [
-              ['quick', 'Quick', 'A focused research run.'],
-              [
-                'detailed',
-                'Detailed',
-                'Broader research with a separate challenge to the judgements.',
-              ],
-            ] as const
-          ).map(([value, label, description]) => (
-            <label
-              key={value}
-              className="flex min-h-16 cursor-pointer items-start gap-3 rounded py-3"
-            >
-              <input
-                type="radio"
-                name="research-depth"
-                value={value}
-                checked={mode === value}
-                onChange={() => setMode(value)}
-                className="mt-1 h-4 w-4 shrink-0 accent-ember"
-              />
-              <span className="text-sm font-medium">
-                {label}
-                <span className="mt-1 block text-xs font-normal leading-relaxed text-muted">
-                  {description}
-                </span>
-              </span>
-            </label>
-          ))}
-        </fieldset>
+        <ResearchDepth value={mode} onChange={setMode} disabled={Boolean(parent)} />
         {parent ? (
           <FollowUpSummary
             parent={parent.report}
@@ -239,18 +228,8 @@ export function ResearchForm({
             workspaces={workspaces}
           />
         ) : (
-          <details ref={advanced} className="min-w-0 border-b border-line pb-4">
-            <summary className="cursor-pointer py-2 text-sm font-medium">Scope and sources</summary>
-            <p className="mt-1 break-words text-xs text-muted">
-              {workspaces.label(scope.teamId)} ·{' '}
-              {focus !== 'general'
-                ? `${focus} scope`
-                : country
-                  ? (countries.find((item) => item.iso2 === country)?.name ?? country)
-                  : 'All countries'}{' '}
-              · {selectedLanguages.length} search{' '}
-              {selectedLanguages.length === 1 ? 'language' : 'languages'}
-            </p>
+          <section aria-label="Scope and sources" className="min-w-0 border-b border-line pb-5">
+            <h2 className="text-sm font-medium">Scope and sources</h2>
             <ResearchScope
               history={history}
               setHistory={setHistory}
@@ -258,8 +237,12 @@ export function ResearchForm({
               teamId={scope.teamId}
               selectTeam={scope.select}
               countries={countries}
-              country={country}
-              setCountry={setCountry}
+              selectedCountries={selectedCountries}
+              setCountries={setCountries}
+              dates={dates}
+              setDates={setDates}
+              webSearch={webSearch}
+              setWebSearch={setWebSearch}
               windowHours={windowHours}
               setWindowHours={setWindowHours}
               selectedLanguages={selectedLanguages}
@@ -269,21 +252,23 @@ export function ResearchForm({
                 setFocus(value);
                 setSubject('');
                 setInputId(null);
+                if (value === 'document' || value === 'media') setWebSearch(false);
                 if (value !== 'general') {
-                  setCountry('');
+                  setCountries([]);
                   setHistory((previous) => ({ ...previous, enabled: false }));
                 }
               }}
               subject={subject}
               setSubject={setSubject}
             />
-          </details>
+          </section>
         )}
         {!parent && !privateFocus && (
           <ResearchPlanEditor
             plan={collectionPlan}
             languages={selectedLanguages}
             historical={historical}
+            fixed={Boolean(dates)}
           />
         )}
         <ReportOptions
@@ -328,7 +313,7 @@ export function ResearchForm({
             !ready ||
             collectionPlan.busy ||
             inputBusy ||
-            (!parent && country !== '' && countriesLoading)
+            (!parent && selectedCountries.length > 0 && countriesLoading)
           }
         >
           Start research

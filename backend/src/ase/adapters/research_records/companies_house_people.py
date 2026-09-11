@@ -50,7 +50,7 @@ class CompaniesHouseOfficersProvider(RegistryLookupCapability):
     def supports(self, query: ResearchQuery) -> bool:
         return (
             query.focus is ResearchFocus.COMPANY
-            and query.country_iso in {None, "GB"}
+            and (not query.country_isos or "GB" in query.country_isos)
             and explicit_company_number(query.subject) is not None
         )
 
