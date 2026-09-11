@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.reports.templates import EvidenceStrategy
+from ase.domain.country_subjects import matches_country_subject
 from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
 from ase.domain.evidence import EvidenceItem, injection_flags
 from ase.domain.evidence_time import EvidenceTimeBasis, evidence_time
@@ -85,6 +86,7 @@ def _pool(
     time_basis: EvidenceTimeBasis,
     until: datetime | None,
     include_unknown_dates: bool,
+    include_country_subjects: bool = False,
 ) -> list[Event]:
     """Query selected scopes without a global fallback, under one aggregate pool cap."""
     scopes = [(country_iso, bbox)] if bbox is not None or country_iso or not countries else []
@@ -107,6 +109,26 @@ def _pool(
     for query in queries:
         for event in store.query(query):
             seen.setdefault(event.id, event)
+    selected_countries = tuple(
+        dict.fromkeys((*(countries or ()), *((country_iso,) if country_iso else ())))
+    )
+    if include_country_subjects and selected_countries and bbox is None:
+        # This opt-in is only used on a report's bounded private pool. Fresh RSS
+        # items carry app-produced exact-span hints; retained live rows do not.
+        candidates = store.query(
+            EventQuery(
+                categories=categories,
+                since=since,
+                until=until,
+                time_basis=time_basis,
+                limit=MAX_POOL,
+            )
+        )
+        for event in candidates:
+            if len(seen) >= MAX_POOL:
+                break
+            if matches_country_subject(event, selected_countries):
+                seen.setdefault(event.id, event)
     return list(seen.values())[:MAX_POOL]
 
 
@@ -170,6 +192,7 @@ def select_evidence(
     until: datetime | None = None,
     since: datetime | None = None,
     include_unknown_dates: bool = False,
+    include_country_subjects: bool = False,
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
@@ -194,6 +217,7 @@ def select_evidence(
         time_basis,
         until,
         include_unknown_dates,
+        include_country_subjects,
     )
     if hazard is not None:
         pool = [event for event in pool if hazard_of(event) is hazard]

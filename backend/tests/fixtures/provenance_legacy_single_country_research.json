@@ -1,0 +1,76 @@
+{
+  "question": "What changed?",
+  "mode": "quick",
+  "focus": "general",
+  "languages": [
+    "en"
+  ],
+  "terms": [
+    "original"
+  ],
+  "since": "2026-09-05T00:00:00+00:00",
+  "until": "2026-09-06T00:00:00+00:00",
+  "attempts": [],
+  "collected_items": 0,
+  "policy_version": "ase-research-v1",
+  "plan": {
+    "question": "What changed?",
+    "since": "2026-09-05T00:00:00+00:00",
+    "until": "2026-09-06T00:00:00+00:00",
+    "languages": [
+      "en"
+    ],
+    "tasks": [
+      {
+        "source_id": "fixture",
+        "source_name": "Fixture",
+        "selected": true,
+        "supported": true,
+        "language": "en",
+        "terms": [
+          "variant"
+        ],
+        "provenance": "operator_supplied_variant",
+        "temporal_scope": "Bounded available records only; complete historical coverage is not established.",
+        "query_language": "en",
+        "spatial_supported": false,
+        "spatial_scope": "This source does not establish support for collection within an area.",
+        "task_id": "source:fixture"
+      }
+    ],
+    "request_limit": 6,
+    "seconds_limit": 45,
+    "item_limit": 200,
+    "policy_version": "ase-deterministic-plan-v1",
+    "model_calls": 0,
+    "translation_calls": 0,
+    "replans": 0,
+    "focus": "general",
+    "mode": "quick",
+    "subject": null,
+    "country_iso": "UA",
+    "translation": {
+      "original_terms": [
+        "original"
+      ],
+      "languages": [
+        "en"
+      ],
+      "model": "fixture-model",
+      "status": "completed",
+      "variants": [
+        {
+          "language": "en",
+          "terms": [
+            "variant"
+          ]
+        }
+      ],
+      "policy_version": "ase-query-translation-v1"
+    },
+    "area": null,
+    "time_basis": "publication"
+  },
+  "passes": [],
+  "time_basis": "publication"
+}

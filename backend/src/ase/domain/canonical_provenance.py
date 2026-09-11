@@ -1,7 +1,7 @@
 """Dataclass snapshots retaining pre-provenance canonical bytes for absent additions.
 
-Only newly introduced defaults are omitted, selected by record type. Arbitrary user
-dictionary keys and all pre-existing optional fields retain their historical shape.
+New defaults and redundant singleton scopes are omitted by record type. Arbitrary
+user dictionary keys and pre-existing optional fields retain their historical shape.
 """
 
 from dataclasses import fields, is_dataclass
@@ -9,7 +9,8 @@ from typing import Any
 
 from ase.domain.evidence import EvidenceItem
 from ase.domain.research import CollectionAttempt
-from ase.domain.research_plan import QueryVariant, ResearchTask
+from ase.domain.research_plan import QueryVariant, ResearchPlan, ResearchTask
+from ase.domain.research_records import ResearchReceipt
 
 
 def canonical_snapshot(value: Any) -> Any:
@@ -30,9 +31,21 @@ def canonical_snapshot(value: Any) -> Any:
             )
         elif isinstance(value, ResearchTask | CollectionAttempt):
             defaults = (("query_variant", None),)
+        elif isinstance(value, ResearchReceipt):
+            defaults = (("web_research", None),)
+        elif isinstance(value, ResearchPlan):
+            defaults = (("country_isos", ()), ("research_web_search", False))
         for key, default in defaults:
             if result[key] == default:
                 del result[key]
+        if (
+            isinstance(value, ResearchPlan)
+            and value.country_iso
+            and value.country_isos == (value.country_iso,)
+        ):
+            # The legacy singular field still binds this exact country. Keep
+            # genuinely plural choices, whose meaning it cannot represent.
+            result.pop("country_isos", None)
         return result
     if isinstance(value, dict):
         return {key: canonical_snapshot(item) for key, item in value.items()}

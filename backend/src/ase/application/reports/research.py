@@ -5,6 +5,7 @@ from collections.abc import Callable
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.research import ReplanCallback, ResearchCollection
 from ase.application.reports.request import ReportRequest
+from ase.domain.country_subjects import annotate_fresh_country_subject
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import Event
 from ase.domain.evidence_time import EvidenceTimeBasis
@@ -65,7 +66,15 @@ async def collect_report_evidence(
             ):
                 retained.setdefault(item.id, item)
         private.upsert(tuple(retained.values())[:1000])
-    private.upsert(batch.items)
+    private.upsert(
+        annotate_fresh_country_subject(item, query.country_isos)
+        if query.focus is ResearchFocus.GENERAL
+        and query.area is None
+        and query.effective_time_basis is not EvidenceTimeBasis.RECORDED
+        and query.country_isos
+        else item
+        for item in batch.items
+    )
     private.upsert(seed_events)
     return private, ResearchReceipt.build(
         query, (*seed_attempts, *batch.attempts), len(batch.items), batch.plan, batch.passes

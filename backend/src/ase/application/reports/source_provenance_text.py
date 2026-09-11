@@ -1,10 +1,15 @@
 """Shared readable source transformation/date provenance for Markdown and document exports."""
 
+from ase.domain.country_subjects import country_subject_lines
 from ase.domain.evidence import EvidenceItem
 
 
 def source_provenance_lines(item: EvidenceItem) -> tuple[str, ...]:
-    lines = []
+    lines = list(
+        country_subject_lines(
+            item.title, item.summary, {row.key: row.value for row in item.attributes}
+        )
+    )
     for row in item.transformations:
         lines.append(
             f"{row.kind.capitalize()} ({row.origin}, {row.review_status}): "
@@ -43,6 +48,9 @@ def source_provenance_prompt(item: EvidenceItem) -> str:
         f"{row.target_language}, method {row.method}, {row.review_status}): {row.transformed_text}"
         for row in item.transformations
     ]
+    lines[:0] = country_subject_lines(
+        item.title, item.summary, {row.key: row.value for row in item.attributes}
+    )
     lines.extend(
         f"Declared source date: {row.raw_text}, {row.role}, calendar {row.calendar}, "
         f"basis {row.basis}, {row.status}. Converted: "

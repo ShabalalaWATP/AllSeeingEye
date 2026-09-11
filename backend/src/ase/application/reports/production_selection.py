@@ -8,6 +8,7 @@ from ase.application.reports.production_types import Job
 from ase.application.reports.reused_evidence import with_reused_evidence
 from ase.application.reports.selection import Selection, select_evidence
 from ase.domain.direction import Direction
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.research import ResearchFocus, ResearchQuery
 
@@ -67,5 +68,14 @@ def select_for_job(
         since=job.period_from if job.request.research_since is not None else None,
         until=job.period_to if job.request.research_until is not None else None,
         include_unknown_dates=private,
+        include_country_subjects=(
+            job.request.research_mode is not None
+            and job.request.research_focus is ResearchFocus.GENERAL
+            and not area
+            and job.bbox is None
+            and not job.countries
+            and bool(job.request.country_isos)
+            and job.request.effective_time_basis is not EvidenceTimeBasis.RECORDED
+        ),
     )
     return with_reused_evidence(selected, job.reused_evidence)

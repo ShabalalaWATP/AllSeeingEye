@@ -12,9 +12,11 @@ from annotation_comparison_helpers import side
 from ase.application.reports.claim_export_integrity import export_content_digest
 from ase.application.reports.comparison_manifest import comparison_digest, comparison_json
 from ase.domain.annotation_comparison import COMPARISON_METHOD, AnnotationComparison
+from ase.domain.canonical_provenance import canonical_snapshot
 from ase.domain.research_records import research_from_dict
 from ase.domain.sec_filing_time import filing_source_date
 from ase.domain.source_dates import resolve_source_date
+from ase.domain.web_research import WebResearchRecord
 
 
 def records(monkeypatch):
@@ -86,3 +88,60 @@ def test_historical_nested_query_trace_digest_survives_new_variant_fields(monkey
         export_content_digest(record, restored)
         == "c4607ec62bd4ccb7b18798863400362f52bd7f7000ffe8740066e10f6be49757"
     )
+
+
+def test_nondefault_research_scope_and_web_choices_remain_bound_in_digest(monkeypatch):
+    record, version = records(monkeypatch)
+    payload = json.loads(
+        (Path(__file__).parent / "fixtures/provenance_legacy_research.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    receipt = research_from_dict(payload)
+    original = replace(version, research=receipt)
+    original_digest = export_content_digest(record, original)
+    variants = (
+        replace(receipt, plan=replace(receipt.plan, country_isos=("UA", "RU"))),
+        replace(receipt, plan=replace(receipt.plan, research_web_search=True)),
+        replace(
+            receipt,
+            web_research=WebResearchRecord("unavailable", "Provider unavailable", receipt.until),
+        ),
+    )
+    digests = {
+        export_content_digest(record, replace(version, research=variant)) for variant in variants
+    }
+    assert len(digests) == 3 and original_digest not in digests
+    # Default omission applies to the named domain records, never arbitrary metadata.
+    metadata = {"web_research": None, "country_isos": (), "research_web_search": False}
+    assert canonical_snapshot(metadata) == metadata
+
+
+def test_historical_single_country_digest_survives_redundant_plural_scope(monkeypatch):
+    record, version = records(monkeypatch)
+    payload = json.loads(
+        (
+            Path(__file__).parent / "fixtures/provenance_legacy_single_country_research.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert "country_isos" not in payload["plan"]
+    receipt = research_from_dict(payload)
+    assert receipt.plan.country_iso == "UA" and receipt.plan.country_isos == ("UA",)
+    restored = replace(version, research=receipt)
+    # Pinned legacy shape, before the redundant plural field was introduced.
+    original_digest = "3ae9cf30f118faf672afaa1e4537a80b6f607a69a40490ae55751738fb453a5d"
+    assert export_content_digest(record, restored) == original_digest
+    variants = (
+        replace(receipt.plan, country_iso="RU", country_isos=("RU",)),
+        replace(receipt.plan, country_iso=None, country_isos=("UA", "RU")),
+        replace(receipt.plan, country_iso=None, country_isos=("UA", "CN")),
+    )
+    digests = {
+        export_content_digest(record, replace(version, research=replace(receipt, plan=plan)))
+        for plan in variants
+    }
+    assert len(digests) == 3 and original_digest not in digests
+    plural = canonical_snapshot(variants[1])
+    assert plural["country_iso"] is None and plural["country_isos"] == ("UA", "RU")
+    metadata = {"country_iso": "UA", "country_isos": ("UA",)}
+    assert canonical_snapshot(metadata) == metadata
