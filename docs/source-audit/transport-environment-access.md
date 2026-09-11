@@ -219,6 +219,12 @@ preserve original provider credit. Coverage gaps, irregular reporting and unit
 differences should be explicit; measurements must not become a medical diagnosis
 or a fabricated continuous pollution surface. [Licence metadata](https://docs.openaq.org/resources/licenses).
 
+Implementation follow-up, 11 September: the operator's key is now verified and
+bounded latest-station area research is connected. The actual research service
+accepted six dated London observations with original units and licence credit.
+Historical series and complete station pagination remain outside this milestone.
+See [OpenAQ operations](../OPENAQ_RESEARCH.md) for bounds and dated verification.
+
 **Copernicus Data Space** provides dated Sentinel optical/radar products suitable
 for area/time discovery, clouds and acquisition-quality filtering, and selected
 before/after comparisons. Its [STAC catalogue](https://documentation.dataspace.copernicus.eu/APIs/STAC.html)

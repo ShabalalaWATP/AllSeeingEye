@@ -135,7 +135,7 @@ async def test_credentials_force_zero_redirects_even_when_caller_requests_more(
     await client.aclose()
 
 
-@pytest.mark.parametrize("header", ["Authorization", "x-ucdp-access-token"])
+@pytest.mark.parametrize("header", ["Authorization", "x-ucdp-access-token", "X-API-Key"])
 @pytest.mark.parametrize("mode", ["body", "json", "http", "transport", "not-modified"])
 async def test_authenticated_errors_never_expose_response_or_request_data(
     monkeypatch: pytest.MonkeyPatch, mode: str, header: str
@@ -169,6 +169,7 @@ async def test_authentication_is_not_accepted_on_shared_client() -> None:
     for client in (
         httpx.AsyncClient(headers={"Authorization": AUTH}),
         httpx.AsyncClient(headers={"x-ucdp-access-token": AUTH}),
+        httpx.AsyncClient(headers={"X-API-Key": AUTH}),
         httpx.AsyncClient(auth=("user", "password")),
     ):
         with pytest.raises(ValueError, match="global authorisation"):
@@ -203,7 +204,8 @@ async def test_credentials_ignore_existing_validators_and_do_not_persist_auth(
     await client.aclose()
 
 
-async def test_custom_header_stays_request_local():
+@pytest.mark.parametrize("header", ["x-ucdp-access-token", "X-API-Key"])
+async def test_custom_header_stays_request_local(header):
     requests = []
 
     def respond(request):
@@ -214,14 +216,12 @@ async def test_custom_header_stays_request_local():
         "test", client=httpx.AsyncClient(transport=httpx.MockTransport(respond))
     )
     try:
-        credential = FeedCredential(
-            "https://93.184.216.34", AUTH, header_name="x-ucdp-access-token"
-        )
+        credential = FeedCredential("https://93.184.216.34", AUTH, header_name=header)
         await client.get_json("https://93.184.216.34/one", credential=credential)
         await client.get_json("https://93.184.216.34/two")
-        assert requests[0].headers["x-ucdp-access-token"] == AUTH
+        assert requests[0].headers[header] == AUTH
         assert "authorization" not in requests[0].headers
-        assert "x-ucdp-access-token" not in requests[1].headers
+        assert header not in requests[1].headers
         assert AUTH not in repr(credential)
     finally:
         await client.aclose()

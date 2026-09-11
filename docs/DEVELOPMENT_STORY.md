@@ -3601,3 +3601,44 @@ verified general-client credentials separately in ignored `backend/.env` and
 verified the working AIS credentials were unchanged. General API adapters are
 still unimplemented; no additional feed activation or API restart was needed.
 Documented the reserved local credential names without recording their values.
+
+## 11 September 2026: OpenAQ air-quality area research
+
+Verified the operator's OpenAQ key against v3 and saved it only in ignored
+`backend/.env`. Added an optional server-side setting and an origin-bound
+`X-API-Key` credential through the existing guarded feed transport. Shared clients
+cannot carry that credential globally; redirects and validators remain disabled
+for authenticated requests. No account purchase or credential rotation occurred.
+
+Added an on-demand area capability, separate from scheduled map feeds. A bounded
+station page prioritises recent activity, then actual measurement coordinates
+and acquisition dates are checked against the exact area and interval. Mobile
+stations and unsupported reuse permissions are excluded. Original parameter
+units, source/owner attribution, dated licences and observation identities survive
+in frozen evidence and its exported summary. Source controls and private collection
+remain in force. One source admission can use up to eleven HTTP requests, with
+shared pacing and its own deadline; the preview and receipt disclose this cost.
+
+At 00:52 UTC the actual research service accepted six measurements from two London
+stations for the preceding 24 hours, with UK OGL attribution and original µg/m³
+units. An earlier station check returned one measurement from 2016 beside a newer
+sensor reading, confirming why station activity cannot stand in for sensor dates.
+This milestone supplies bounded latest values, not complete historical coverage,
+an air-quality index, a health judgement or real-model report evaluation.
+
+Acceptance: 109 focused OpenAQ/credential tests passed with 95.12% combined
+statement/branch coverage across the three new modules and the unchanged 90%
+gate. Another 106 integration tests passed. Four existing catalogue/order
+assertions were updated for the additional capability; no limits were relaxed.
+The independent reviewer confirmed the prompt retains key limitations and
+requested strict sensor-identifier validation, now covered by regressions.
+Frozen JSON and Markdown export preserve units, dates and licence attribution.
+No actionable correctness/security finding remained after review.
+
+Backend Ruff/format/mypy, both import contracts, scoped Bandit and file-length
+checks passed, with the existing untouched 380-line MapLibre warning. Configured
+secret-value checks found no values in proposed changes. The key is redacted in
+settings, and the existing OpenAlex/BarentsWatch credentials remain configured.
+Restarted the local API; `/api/health` and frontend login returned 200, while
+unauthenticated camera access returned 401. No full-suite/backend coverage,
+real-model report, remote push or production deployment is claimed.

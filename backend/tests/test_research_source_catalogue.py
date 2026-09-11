@@ -33,6 +33,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         *(f"research_publisher_{seed.spec.id}" for seed in PUBLISHER_SEEDS),
         "research-usgs-area",
         "research-eonet-area",
+        "research-openaq-area",
         "research-sec-submissions",
         "research-sec-company-directory",
         "research-companies-house",
@@ -72,6 +73,7 @@ def test_catalogue_covers_exact_provider_and_private_event_ids_without_assessmen
         assert spec.rating.scope and len(spec.rating.limitations) >= 3
         assert not spec.url and not spec.homepage
     assert {spec.id for spec in specs if spec.requires_key} == {
+        "research-openaq-area",
         "research-companies-house",
         "research-companies-house-officers",
         "research-companies-house-psc",

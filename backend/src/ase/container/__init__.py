@@ -179,6 +179,9 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             openalex_api_key=(
                 settings.openalex_api_key.get_secret_value() if settings.openalex_api_key else None
             ),
+            openaq_api_key=(
+                settings.openaq_api_key.get_secret_value() if settings.openaq_api_key else None
+            ),
         )
         self.connectors: list[FeedConnector] = (
             list(connectors)

@@ -8,6 +8,7 @@ from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.news import GoogleNewsResearchProvider
+from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
 from ase.adapters.research_records.aiddata_provider import AidDataProvider
@@ -63,10 +64,12 @@ def research_service(
     companies_house_key: str | None = None,
     certificate_transparency_key: str | None = None,
     openalex_api_key: str | None = None,
+    openaq_api_key: str | None = None,
 ) -> ResearchCollectionService:
     sec_client = sec_client or SecClient(http)
     # Preserve the credential-specific rolling request allowance across research runs.
     registry_client = CompaniesHouseClient(http, clock, companies_house_key)
+    openaq = OpenAqAreaResearchProvider(http, clock, openaq_api_key)
     companies_house = CompaniesHouseProvider(
         http, clock, companies_house_key, client=registry_client
     )
@@ -96,7 +99,11 @@ def research_service(
         if query.area is not None:
             # Fresh dated geometry wins duplicate identities from retained feeds.
             selected.extend(
-                (UsgsAreaResearchProvider(http, clock), EonetAreaResearchProvider(http, clock))
+                (
+                    UsgsAreaResearchProvider(http, clock),
+                    EonetAreaResearchProvider(http, clock),
+                    openaq,
+                )
             )
         if query.area is not None and retained_store is not None:
             selected.append(
@@ -163,6 +170,7 @@ def research_service(
                 RetainedAreaFeedProvider.id,
                 UsgsAreaResearchProvider.id,
                 EonetAreaResearchProvider.id,
+                OpenAqAreaResearchProvider.id,
             }
         ]
 

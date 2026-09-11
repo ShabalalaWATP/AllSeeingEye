@@ -47,6 +47,13 @@ research does not switch those layers on.
   14-day interval. Question terms do not filter these observations. Provider
   bounding-box/page limits mean overlapping or older records can be omitted.
   Fresh records precede retained duplicates; original source identities remain.
+- **OpenAQ air-quality observations:** optional keyed, on-demand collection of
+  stationary sensor readings. A bounded station page prioritises recently active
+  sites; each reading must match the exact area, measurement interval and permitted
+  dated licence. Original pollutant units and provider credit are retained. This
+  samples latest sensor values, not a complete historical series or an area-wide
+  air-quality assessment. One admitted source task can make up to 11 HTTP requests
+  within its own deadline and shared pacing. See [OpenAQ operations](OPENAQ_RESEARCH.md).
 - **Other capabilities:** unsupported scope and collection failures are recorded.
   The configured AidData historical-project flow uses its recorded-year policy;
   this recent-area drawer does not activate that mode. CCTV imagery, camera

@@ -66,10 +66,10 @@ class FeedCredential:
 
     origin: str
     authorization: str = field(repr=False)
-    header_name: Literal["Authorization", "x-ucdp-access-token"] = "Authorization"
+    header_name: Literal["Authorization", "x-ucdp-access-token", "X-API-Key"] = "Authorization"
 
     def __post_init__(self) -> None:
-        if self.header_name not in ("Authorization", "x-ucdp-access-token"):
+        if self.header_name not in ("Authorization", "x-ucdp-access-token", "X-API-Key"):
             raise ValueError("Unsupported credential header")
         try:
             parts = urlsplit(self.origin)
@@ -165,7 +165,10 @@ class FeedHttpClient:
     ) -> None:
         if client is not None and (
             client.auth is not None
-            or any(name in client.headers for name in ("authorization", "x-ucdp-access-token"))
+            or any(
+                name in client.headers
+                for name in ("authorization", "x-ucdp-access-token", "x-api-key")
+            )
         ):
             raise ValueError("Shared feed clients must not carry global authorisation.")
         self._max_bytes = max_bytes

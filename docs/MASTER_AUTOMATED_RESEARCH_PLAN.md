@@ -35,6 +35,11 @@ current delivery and research capability are separate acceptance criteria.
 - [x] Add bounded BarentsWatch snapshot polling, cached credentials, shared source
   controls and map attribution; production connector accepted 3,407 fresh positions
   on 11 September. The military label remains an unverified AIS assertion.
+- [x] Verify the operator's OpenAQ key and connect bounded area research with
+  exact station/measurement geometry, acquisition dates, original units and
+  per-dataset reuse/attribution checks. The actual research service accepted six
+  dated readings from two London stations on 11 September. Latest values are
+  partial coverage, not a historical series or health assessment.
 - [ ] Complete remaining free provider account linking. OS email is verified and other prepared
   registrations still require the operator's authentication steps.
 - [ ] Resolve disabled/untested AI profile readiness and complete real-model
@@ -43,7 +48,7 @@ current delivery and research capability are separate acceptance criteria.
 - [ ] Add approved OS/Companies House credentials, ReliefWeb appname/UCDP
   access, authorised camera keys and validated primary dataset imports.
 - [ ] Add regional context beside exact-area evidence; integrate fresh FIRMS,
-  BarentsWatch historical queries, MET Norway, OpenAQ, humanitarian aggregates and dated imagery
+  BarentsWatch historical queries, MET Norway, OpenAQ historical series, humanitarian aggregates and dated imagery
   in the priority order and within the rights recorded in the audit.
 - [ ] Measure geographic and temporal delivery, deduplicate original sources,
   and verify each new provider's source-disable and report citation behaviour.

@@ -35,8 +35,17 @@ blocked-signup notes below:
   The general `api` client also authenticated successfully at 00:39 UTC; its
   separately stored credentials are reserved for future general API adapters.
   This does not activate additional datasets or replace the working AIS client.
+- OpenAQ: operator supplied a development key, saved as `ASE_OPENAQ_API_KEY`
+  in ignored `backend/.env`. The official v3 locations endpoint returned HTTP 200
+  at 00:41 UTC on 11 September. Further authenticated checks returned licence
+  metadata and dated sensor readings. Some station readings were years old,
+  despite newer station activity, so discovery is not evidence of current coverage.
+  The new area-research capability accepted six dated readings from two London
+  stations through the actual research service at 00:52 UTC, with original units
+  and UK OGL attribution. It is a bounded latest-value sample with explicit gaps,
+  not a global live overlay or complete history. See [OpenAQ operations](OPENAQ_RESEARCH.md).
 - Ordnance Survey: email verified; remaining account steps await the operator.
-  OpenAQ and Alberta 511 forms were prepared. Companies
+  The Alberta 511 form was prepared. Companies
   House requires the operator's GOV.UK One Login. Their API access is not verified.
 
 OpenAlex remains optional and anonymous access still works without a key. The
@@ -62,6 +71,12 @@ new modules, plus full backend lint/format/type/architecture checks and scoped
 Bandit. Eighteen relevant frontend tests and type/lint/format checks passed.
 Independent review found no remaining issue after the static-name correction
 regression was fixed. The local API was restarted and health/login returned 200.
+
+OpenAQ acceptance passed 109 focused tests with 95.12% combined statement/branch
+coverage across its three new modules, plus 106 integration regressions. Backend
+static/architecture checks, scoped Bandit and independent review passed. Licence
+credit and original units/dates survive frozen JSON and Markdown export. The
+restarted local API and frontend login returned 200; the key remains outside Git.
 
 ## Findings that matter
 
@@ -182,6 +197,7 @@ secret values. All paths below are backend settings, not browser environment val
 | AidData projects | Catalogue path absent | Prepare the supported local catalogue with recorded years, provenance and actual project geometry |
 | OONI aggregates | Licence acknowledgement false | Confirm appropriate non-commercial use before enabling; no token is missing |
 | OpenAlex | Optional `ASE_OPENALEX_API_KEY` configured and live metadata query verified on 11 September | Keep bounded opt-in collection; anonymous access remains available when the key is unset |
+| OpenAQ | `ASE_OPENAQ_API_KEY` configured; six dated area observations accepted by the actual research service on 11 September | Select OpenAQ in area research; latest station samples have temporal, spatial and licence gaps |
 | WSDOT | `ASE_WSDOT_ACCESS_CODE` configured; 1,630 active snapshot cameras and one sample image verified on 11 September | Select WSDOT in CCTV providers; normal bounded catalogue refresh applies |
 | BarentsWatch AIS | Separate AIS client configured; production connector accepted 3,407 fresh positions on 11 September | Regional ship overlay; see connector checks in [operations](BARENTSWATCH_AIS.md) |
 | AI reports | Disabled, untested saved profile | Use the administrator model-discovery, test and activation journey with usable encryption configuration |
@@ -205,7 +221,7 @@ also does not establish redistribution rights, complete coverage or independence
 | 2 | BarentsWatch historical area research | Complements the current-position ship layer with dated local enquiries | New private research provider, bounded geometry and supported recent intervals |
 | 2 | MET Norway Locationforecast | Global forecast context without another key | New small-area sampling adapter, issue/valid times and attribution |
 | 2 | Copernicus Data Space imagery | Dated optical/radar evidence rather than more duplicate orbital elements | Existing footprints first; account, bounded preview processing and storage design for imagery |
-| 2 | OpenAQ | Adds actual environmental measurements | Free individual key, station coverage, units and per-dataset licence handling |
+| 2 | OpenAQ historical expansion | Key verified and bounded latest-station area research connected | Historical series and broader station pagination remain separate budgeted work |
 | 2 | HDX HAPI / IOM DTM | Administrative-level humanitarian needs and displacement | Identifier/subscription, new connectors; never infer household coordinates |
 | 2 | GLEIF discovery and primary sanctions imports | Improves company identity resolution and screening evidence | Reuse existing records adapters; add explicit identity-candidate discovery |
 | 3 | Cloudflare Radar | Adds another outage/traffic perspective to IODA/OONI | Least-privilege Radar Read token and adapter; observed sample, not all traffic |
