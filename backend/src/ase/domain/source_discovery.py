@@ -132,6 +132,13 @@ REGIONAL = {
         ("Baltic Sea",),
         "Finnish coastal AIS receiver coverage, not global vessel coverage or flag nationality.",
     ),
+    "barentswatch_ais": SourceCoverage(
+        "regional",
+        ("NO", "SJ"),
+        ("Norwegian economic zone", "Svalbard protection zone", "Jan Mayen protection zone"),
+        "Norwegian Coastal Administration open AIS maritime zones, not global vessel coverage "
+        "or flag nationality. Small fishing and leisure/sailing vessels are excluded.",
+    ),
     "nws_alerts": SourceCoverage(
         "regional",
         ("US",),

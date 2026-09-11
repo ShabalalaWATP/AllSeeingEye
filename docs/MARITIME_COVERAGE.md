@@ -56,9 +56,11 @@ errors are replaced with credential-safe health messages.
 ## Other sources investigated
 
 - [Norwegian Coastal Administration via BarentsWatch](https://developer.barentswatch.no/docs/AIS/live-ais-api/)
-  is useful additional Norwegian terrestrial and satellite coverage, but requires
-  an account, AIS client and OAuth client credentials. Its open feed excludes
-  small fishing vessels and leisure craft. It has not been integrated here.
+  now supplements the existing providers through a dedicated AIS client and
+  bounded snapshot polling. Its open feed excludes small fishing vessels and
+  leisure craft. See [BarentsWatch operations](BARENTSWATCH_AIS.md) for configuration,
+  regional limits and live verification. This 11 September update supersedes
+  the earlier account-pending status.
 - [NOAA AccessAIS](https://www.coast.noaa.gov/digitalcoast/tools/ais.html) provides
   downloadable research data. It is appropriate for historical analysis, not a
   substitute for current ship markers.

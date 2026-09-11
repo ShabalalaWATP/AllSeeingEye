@@ -5,12 +5,16 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
+from pydantic import SecretStr
+
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.adsb_global import AdsbGlobalConnector
 from ase.adapters.feeds.adsb_viewport import AdsbViewportConnector, AircraftInterestQueue
 from ase.adapters.feeds.adsb_watch import AdsbAreaConnector, AdsbSquawkConnector
 from ase.adapters.feeds.aisstream import AisStreamConnector
+from ase.adapters.feeds.barentswatch import BarentsWatchConnector
+from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
 from ase.adapters.feeds.cisa_kev import CisaKevConnector
 from ase.adapters.feeds.conflict_acled import AcledConnector
 from ase.adapters.feeds.conflict_reliefweb import ReliefWebReportsConnector
@@ -54,6 +58,9 @@ def build_connectors(
     *,
     firms_key: str | None = None,
     aisstream_key: str | None = None,
+    barentswatch_http: BarentsWatchHttpClient | None = None,
+    barentswatch_client_id: SecretStr | None = None,
+    barentswatch_client_secret: SecretStr | None = None,
     aircraft_interests: AircraftInterestQueue | None = None,
     firms_area: str = "world",
     digitraffic_http: FeedHttpClient | None = None,
@@ -140,6 +147,19 @@ def build_connectors(
         connectors.append(ReliefWebReportsConnector(http, clock, reliefweb_appname, iso3_to_iso2))
     if aisstream_key and AisStreamConnector.spec.id not in excluded:
         connectors.append(AisStreamConnector(aisstream_key, clock))
+    if (
+        barentswatch_http is not None
+        and barentswatch_client_id is not None
+        and barentswatch_client_id.get_secret_value().strip()
+        and barentswatch_client_secret is not None
+        and barentswatch_client_secret.get_secret_value().strip()
+        and BarentsWatchConnector.spec.id not in excluded
+    ):
+        connectors.append(
+            BarentsWatchConnector(
+                barentswatch_http, clock, barentswatch_client_id, barentswatch_client_secret
+            )
+        )
     if firms_key and FirmsConnector.spec.id not in excluded:
         for sensor in FIRMS_SENSORS:
             connectors.append(

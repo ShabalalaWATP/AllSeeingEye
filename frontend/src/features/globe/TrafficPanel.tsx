@@ -100,6 +100,13 @@ export function TrafficPanel({
             ? 'Classification comes from the public provider. Reception is incomplete; hidden transponders and aircraft outside receiver coverage are not shown. This filter does not establish a flight’s mission.'
             : 'Purple identifies reported military operations from AIS ship type or an explicit provider label. This does not verify naval ownership. Position and classification coverage vary.'}
         </p>
+        {kind === 'vessels' && (
+          <p className="mt-2 leading-relaxed">
+            AISStream provides worldwide receiver coverage where available. Fintraffic covers
+            Finnish waterways; BarentsWatch adds Norwegian and Arctic waters. Only configured
+            providers contribute positions. Reception is incomplete and old reports expire.
+          </p>
+        )}
       </details>
     </div>
   );

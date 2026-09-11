@@ -3554,3 +3554,43 @@ The source audit, active plan, camera operations and environment example now
 document the connection. Other provider registrations still need account
 completion or approved API access. The Ordnance Survey sign-in was prepared again
 after the browser restart; account completion and a usable map key remain unverified.
+
+## 11 September 2026: SSLMate and BarentsWatch AIS activation
+
+Configured the operator's SSLMate Bearer key in ignored `backend/.env` through
+the existing certificate-transparency adapter. Its exact-hostname live query
+returned seven current records for `example.com` at 00:22 UTC; 28 focused tests
+passed. No certificate purchase, CLI installation or raw key was committed.
+
+The operator completed a BarentsWatch general API client. Created a separate
+AIS client under the previously authorised free-provider onboarding scope and
+stored its generated secret only in the local environment. The general `api`
+client is separate from the `ais` scope required for vessel positions. Token
+verification succeeded and the snapshot endpoint returned 4,321 upstream records
+at 00:26 UTC. The actual connector accepted 3,407 fresh positions at 00:33 UTC,
+including 12 reporting AIS military-operations type 35. These are regional,
+reported observations, not verified military identities or global completeness.
+
+Added fixed-origin guarded OAuth form requests, in-memory token reuse with early
+expiry, two-minute snapshot polling, bounded payloads and record counts, source
+controls, freshness filtering and provider attribution. All existing store and
+browser limits remain. The map credit appears when BarentsWatch records are
+displayed; the vessel panel describes coverage. Source metadata retains the
+Norwegian Coastal Administration and BarentsWatch credit. No historical research
+adapter, expanded AIS permission or general BarentsWatch API integration is claimed.
+
+Independent review found a corrected-name update could be discarded when the
+position timestamp stayed unchanged. Added the bounded name to hashed attributes
+and a regression proving the stored event updates. No remaining security or
+correctness finding was reported. Final BarentsWatch acceptance: 216 targeted
+backend tests, 100% combined statement/branch coverage across the four new modules
+with the unchanged 90% gate; full backend Ruff/format/mypy, both import contracts,
+scoped Bandit and file-length checks passed. The existing untouched 380-line
+MapLibre warning remains. Eighteen frontend tests and scoped lint/format plus
+full TypeScript checks passed; no new live browser/GPU acceptance was performed.
+
+Credential scanning found no configured secrets in proposed changes. Updated the
+source audit, active implementation plan, maritime coverage, BarentsWatch guide
+and environment example. Restarted the local API with both connections: health
+and frontend login returned 200 and protected-camera access without authentication
+returned 401. No remote is configured; no push or production deployment occurred.

@@ -65,6 +65,8 @@ class Settings(BaseSettings):
         default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{1,99}$"
     )
     aisstream_api_key: SecretStr | None = None
+    barentswatch_client_id: SecretStr | None = None
+    barentswatch_client_secret: SecretStr | None = None
     firms_map_key: SecretStr | None = None
     firms_area: str = Field(default="world", min_length=1, max_length=100)
     live_store_memory_mb: int = Field(default=512, ge=16, le=8_192)

@@ -7,6 +7,7 @@ import { useConflictRegionSelection } from './useConflictRegionSelection';
 import { GlobeInspectors } from './GlobeInspectors';
 
 import { MapCanvas } from './MapCanvas';
+import { MaritimeAttribution } from './MaritimeAttribution';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useCameras } from './cameras/useCameras';
 import { useCameraSelection } from './cameras/useCameraSelection';
@@ -215,6 +216,7 @@ export default function GlobePage() {
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       {!opsRoom && <EventScopeStrip state={data} />}
       <WorldClocks />
+      <MaritimeAttribution events={quality.filtered} hidden={hidden.includes('maritime')} />
       {!opsRoom && (
         <GlobeControls
           onActiveChange={tools.activatePanel}

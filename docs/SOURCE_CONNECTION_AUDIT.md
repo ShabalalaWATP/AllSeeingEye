@@ -21,8 +21,19 @@ blocked-signup notes below:
   endpoint is replaced by the protected official API. A live check at 00:08 UTC
   on 11 September returned 1,630 active snapshot cameras and one sampled JPEG
   downloaded successfully. No continuous video streams were supplied by this API.
+- SSLMate: operator completed the account and supplied a development Bearer key.
+  Saved as `ASE_CERTIFICATE_TRANSPARENCY_KEY` in ignored `backend/.env`. The actual
+  research provider returned seven current certificate records for `example.com`
+  at 00:22 UTC on 11 September. The existing 20-record exact-hostname limits remain.
+- BarentsWatch: operator completed the account and general `api` client. A separate
+  AIS client with scope `ais` was created for the app and its credentials saved
+  locally. A guarded token request succeeded and the latest-position API returned
+  4,321 upstream records at 00:26 UTC. This is regional Norwegian/Arctic coverage.
+  At 00:33 UTC the production connector accepted 3,407 fresh positions, including
+  12 labelled by AIS as military operations. This is not verified naval identity.
+  See [BarentsWatch operations](BARENTSWATCH_AIS.md) for connector verification.
 - Ordnance Survey: email verified; remaining account steps await the operator.
-  OpenAQ, SSLMate, Alberta 511 and BarentsWatch forms were prepared. Companies
+  OpenAQ and Alberta 511 forms were prepared. Companies
   House requires the operator's GOV.UK One Login. Their API access is not verified.
 
 OpenAlex remains optional and anonymous access still works without a key. The
@@ -41,6 +52,13 @@ Inactive entries are excluded. The existing 15-minute catalogue cache, provider
 selection and 5,000-camera cap remain, with no redirect or credential-bearing
 URL exposure. This verifies one regional catalogue and one image, not every
 camera's freshness or worldwide coverage. See [camera operations](CAMERA_AMERICAS.md).
+
+SSLMate's existing connector passed 28 focused tests. The BarentsWatch acceptance
+group passed 216 targeted tests with 100% statement/branch coverage of its four
+new modules, plus full backend lint/format/type/architecture checks and scoped
+Bandit. Eighteen relevant frontend tests and type/lint/format checks passed.
+Independent review found no remaining issue after the static-name correction
+regression was fixed. The local API was restarted and health/login returned 200.
 
 ## Findings that matter
 
@@ -153,7 +171,7 @@ secret values. All paths below are backend settings, not browser environment val
 | NASA FIRMS | Environment key present, connection verified | Keep current configuration; encrypted administrator override is not active |
 | Ordnance Survey | `ASE_OS_MAPS_KEY` absent | Create an OS Data Hub **OpenData** project and Maps API key; existing proxy then needs an actual tile test |
 | Companies House | `ASE_COMPANIES_HOUSE_KEY` absent | Developer account/application and read-only REST key; test company, officers and PSC routes |
-| SSLMate CT Search | `ASE_CERTIFICATE_TRANSPARENCY_KEY` absent | Obtain the CT Search API credential; do not substitute a paid certificate-monitoring trial |
+| SSLMate CT Search | Key configured; seven records returned by the actual research provider on 11 September | Exact-hostname domain research, bounded first page of unexpired issuances |
 | UCDP | `ASE_UCDP_ACCESS_TOKEN` absent | Request authorised token access; retain the existing Candidate CSV fallback and its temporal limits |
 | ACLED | `ASE_ACLED_ACCESS_TOKEN` absent | Confirm event-level entitlement before configuring; Gmail Open access is aggregated and does not unlock the event adapter |
 | ReliefWeb | `ASE_RELIEFWEB_APPNAME` absent | Obtain an approved application name, not a publishing API key |
@@ -162,6 +180,7 @@ secret values. All paths below are backend settings, not browser environment val
 | OONI aggregates | Licence acknowledgement false | Confirm appropriate non-commercial use before enabling; no token is missing |
 | OpenAlex | Optional `ASE_OPENALEX_API_KEY` configured and live metadata query verified on 11 September | Keep bounded opt-in collection; anonymous access remains available when the key is unset |
 | WSDOT | `ASE_WSDOT_ACCESS_CODE` configured; 1,630 active snapshot cameras and one sample image verified on 11 September | Select WSDOT in CCTV providers; normal bounded catalogue refresh applies |
+| BarentsWatch AIS | Separate AIS client configured; production connector accepted 3,407 fresh positions on 11 September | Regional ship overlay; see connector checks in [operations](BARENTSWATCH_AIS.md) |
 | AI reports | Disabled, untested saved profile | Use the administrator model-discovery, test and activation journey with usable encryption configuration |
 
 See the [research access audit](source-audit/research-access-gaps.md) for official
@@ -180,7 +199,7 @@ also does not establish redistribution rights, complete coverage or independence
 | 1 | Alberta 511 | Repairs another North American camera gap; WSDOT now connected | Finish account and API access, then add protected credential support and live verification |
 | 1 | ReliefWeb and UCDP | Better humanitarian and documented conflict context | Approved appname/token, truthful geographic precision and freshness |
 | 1 | Fresh FIRMS area research | Uses the already verified key for requests beyond retained data | New private provider with credential-generation guard, sensor/date budgets and thermal uncertainty |
-| 2 | BarentsWatch AIS | Independent complementary Norwegian/Arctic terrestrial and satellite AIS | Account/OAuth client and new adapter; regional, not worldwide |
+| 2 | BarentsWatch historical area research | Complements the current-position ship layer with dated local enquiries | New private research provider, bounded geometry and supported recent intervals |
 | 2 | MET Norway Locationforecast | Global forecast context without another key | New small-area sampling adapter, issue/valid times and attribution |
 | 2 | Copernicus Data Space imagery | Dated optical/radar evidence rather than more duplicate orbital elements | Existing footprints first; account, bounded preview processing and storage design for imagery |
 | 2 | OpenAQ | Adds actual environmental measurements | Free individual key, station coverage, units and per-dataset licence handling |

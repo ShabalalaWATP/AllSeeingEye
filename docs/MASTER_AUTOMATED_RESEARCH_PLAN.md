@@ -28,15 +28,22 @@ current delivery and research capability are separate acceptance criteria.
 - [x] Connect WSDOT's official access-code API with protected credentials, existing
   camera cache/limits and live catalogue/sample-image verification: 1,630 active
   snapshot cameras on 11 September, no continuous video supplied by this API.
+- [x] Connect the operator's SSLMate CT Search account through the existing
+  exact-hostname provider, with a successful seven-record live query on 11 September.
+- [x] Create a dedicated BarentsWatch AIS client and verify its token and public
+  latest-position endpoint, separate from the operator's general `api` client.
+- [x] Add bounded BarentsWatch snapshot polling, cached credentials, shared source
+  controls and map attribution; production connector accepted 3,407 fresh positions
+  on 11 September. The military label remains an unverified AIS assertion.
 - [ ] Complete remaining free provider account linking. OS email is verified and other prepared
   registrations still require the operator's authentication steps.
 - [ ] Resolve disabled/untested AI profile readiness and complete real-model
   report evaluation through the administrator connection journey.
 - [ ] Extend secure administrator credential management beyond FIRMS and AI.
-- [ ] Add approved OS/Companies House/CT credentials, ReliefWeb appname/UCDP
+- [ ] Add approved OS/Companies House credentials, ReliefWeb appname/UCDP
   access, authorised camera keys and validated primary dataset imports.
 - [ ] Add regional context beside exact-area evidence; integrate fresh FIRMS,
-  BarentsWatch, MET Norway, OpenAQ, humanitarian aggregates and dated imagery
+  BarentsWatch historical queries, MET Norway, OpenAQ, humanitarian aggregates and dated imagery
   in the priority order and within the rights recorded in the audit.
 - [ ] Measure geographic and temporal delivery, deduplicate original sources,
   and verify each new provider's source-disable and report citation behaviour.

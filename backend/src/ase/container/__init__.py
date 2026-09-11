@@ -19,6 +19,7 @@ from ase.adapters.archive.wayback import NullArchiver, WaybackArchiver
 from ase.adapters.bus.memory import InMemoryEventBus
 from ase.adapters.feeds.adsb_viewport import AircraftInterestQueue
 from ase.adapters.feeds.adsb_watch import load_watch_areas
+from ase.adapters.feeds.barentswatch_http import BarentsWatchHttpClient
 from ase.adapters.feeds.digitraffic_http import DigitrafficHttpClient
 from ase.adapters.feeds.firms_runtime import ManagedFirmsConnector
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
@@ -148,6 +149,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
             SatelliteHttpClient(settings.feeds_user_agent),
         )
         self.initialise_sec_filings()
+        self.barentswatch_http = BarentsWatchHttpClient(settings.feeds_user_agent)
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
@@ -187,6 +189,9 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
                     self.clock,
                     settings.disabled_feed_ids,
                     digitraffic_http=self.marine_http,
+                    barentswatch_http=self.barentswatch_http,
+                    barentswatch_client_id=settings.barentswatch_client_id,
+                    barentswatch_client_secret=settings.barentswatch_client_secret,
                     aircraft_interests=self.aircraft_interests,
                     public_firms_http=self.public_firms_http,
                     satellite_http=self.satellite_http,
@@ -318,6 +323,7 @@ class Container(FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring
         await self.http.aclose()
         await self.satellite_http.aclose()
         await self.marine_http.aclose()
+        await self.barentswatch_http.aclose()
         await self.camera_http.aclose()
         await self.public_firms_http.aclose()
         await self.routing_http.aclose()
