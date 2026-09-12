@@ -15,7 +15,28 @@ INDICATORS = (
     ("growth", "GDP growth", "NY.GDP.MKTP.KD.ZG", "% annual change"),
     ("inflation", "Consumer price inflation", "FP.CPI.TOTL.ZG", "% annual change"),
     ("unemployment", "Unemployment", "SL.UEM.TOTL.ZS", "% of labour force"),
+    ("gdp_per_capita", "GDP per capita", "NY.GDP.PCAP.CD", "Current US dollars"),
+    ("population", "Population", "SP.POP.TOTL", "People"),
+    ("exports", "Exports of goods and services", "NE.EXP.GNFS.ZS", "% of GDP"),
+    ("imports", "Imports of goods and services", "NE.IMP.GNFS.ZS", "% of GDP"),
+    ("current_account", "Current account balance", "BN.CAB.XOKA.GD.ZS", "% of GDP"),
+    ("government_debt", "Central government debt", "GC.DOD.TOTL.GD.ZS", "% of GDP"),
+    ("investment", "Gross capital formation", "NE.GDI.TOTL.ZS", "% of GDP"),
+    ("manufacturing", "Manufacturing value added", "NV.IND.MANF.ZS", "% of GDP"),
 )
+ANNUAL_PERIODS = 12
+INDICATOR_NOTES = {
+    "gdp": "Current-dollar GDP is nominal, not an inflation-adjusted growth measure.",
+    "gdp_per_capita": "Output per person in current US dollars, not wages or household income.",
+    "exports": "Goods and services exported, as a share of GDP; not goods alone.",
+    "imports": "Goods and services imported, as a share of GDP; not goods alone.",
+    "current_account": "Includes trade, primary income and transfers; not the trade balance alone.",
+    "government_debt": "Central government only, not consolidated general-government debt. "
+    "Institutional coverage and reporting years can differ between countries.",
+    "investment": "Gross capital formation includes fixed assets and changes in inventories, "
+    "not purchases of financial investments.",
+    "manufacturing": "Manufacturing value added, not all industry or total industrial output.",
+}
 ECB_SOURCE = (
     "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/"
     "euro_reference_exchange_rates/html/index.en.html"
@@ -44,7 +65,7 @@ def empty_regions() -> tuple[EconomyRegion, ...]:
                     "World Bank",
                     f"https://data.worldbank.org/indicator/{indicator}?locations={code}",
                     "unavailable",
-                    ANNUAL_NOTE + " No observations are available from this connection.",
+                    annual_note(key) + " No observations are available from this connection.",
                     None,
                 )
                 for key, label, indicator, unit in INDICATORS
@@ -52,6 +73,10 @@ def empty_regions() -> tuple[EconomyRegion, ...]:
         )
         for region, name, code in REGIONS
     )
+
+
+def annual_note(indicator_id: str) -> str:
+    return " ".join(part for part in (ANNUAL_NOTE, INDICATOR_NOTES.get(indicator_id, "")) if part)
 
 
 def empty_fx() -> tuple[EconomySeries, ...]:

@@ -19,6 +19,7 @@ from ase.domain.reports import KeyJudgement
 from ase.domain.validation import Finding
 
 MAX_SUMMARY_CHARS = 600
+MAX_ECONOMIC_SUMMARY_CHARS = 2_000
 
 
 def doctrine_preamble() -> str:
@@ -71,8 +72,9 @@ def evidence_block(item: EvidenceItem) -> str:
         else "publication unknown"
     )
     summary = (item.summary or "").strip()
-    if len(summary) > MAX_SUMMARY_CHARS:
-        summary = summary[: MAX_SUMMARY_CHARS - 1].rstrip() + "…"
+    summary_limit = _summary_limit(item)
+    if len(summary) > summary_limit:
+        summary = summary[: summary_limit - 1].rstrip() + "…"
     body = f" {summary}" if summary else ""
     translation = (
         f" Machine-translated title (unverified): {item.title_en}." if item.title_en else ""
@@ -96,6 +98,19 @@ def evidence_block(item: EvidenceItem) -> str:
     return (
         f"{item.label} [{item.grade}, {item.source_name}, {item.category}{where}, {when}]"
         f"{flags}: {item.title}.{body}{translation}{provenance}"
+    )
+
+
+def _summary_limit(item: EvidenceItem) -> int:
+    # These internally assembled, fixed-provider snapshots carry dated numeric
+    # context for twelve series. Ordinary feed prose keeps its smaller budget.
+    marker = next((row.value for row in item.attributes if row.key == "record_kind"), None)
+    is_macro = item.source_id == "research-world-bank" and marker == "economic_region_snapshot"
+    is_fx = item.source_id == "economic-ecb" and marker == "economic_observation_snapshot"
+    return (
+        MAX_ECONOMIC_SUMMARY_CHARS
+        if item.category == "economic" and (is_macro or is_fx)
+        else MAX_SUMMARY_CHARS
     )
 
 

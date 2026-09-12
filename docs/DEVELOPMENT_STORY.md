@@ -4139,3 +4139,31 @@ two existing file-length target warnings remain. Dark/light desktop layouts,
 The restarted local API returned health 200 and unauthenticated Economy 401,
 and exposes all three new routes. Full backend coverage was not measured.
 No production deployment or remote push was performed; no remote is configured.
+
+## Deeper Economy analysis, 12 September 2026
+
+Expanded the economic workspace from four to twelve World Bank indicators, with
+grouped miniature histories, source-linked calculated readouts and precise annual
+changes. Added same-year country comparisons with explicit missing values and a
+currency-pair workbench calculated from matching ECB reference dates. All charts
+now activate automatically. The external market chart remains limited to one
+active frame and suspends in hidden tabs; pause/resume remains available.
+
+Daily economic reports now request fuller structural and country analysis. The
+page includes a larger cited assessment and conditions to watch. Fixed a source
+prompt truncation that could drop later indicators: internally assembled economic
+snapshots receive at most 2,000 characters, while ordinary feed summaries retain
+their 600-character limit. All twelve dated series fit bounded frozen evidence.
+Existing daily jobs retain their identity and are not regenerated on update.
+
+The public World Bank probe returned 864 rows in 197,553 bytes, below the unchanged
+512 KiB cap. All 68 backend regressions passed. The full frontend suite passed
+2,098 tests with one skip, measuring 95.25% statements, 90.38% branches, 93.68%
+functions and 96.49% lines. Backend Ruff/format, strict mypy and import contracts,
+frontend type checks, scoped lint/format and build, and file-length checks passed.
+Independent review found no material new security or numerical correctness issue.
+Desktop and mobile layouts were inspected using fixture APIs, alongside a real
+automatically loaded provider chart. Local services were restarted and health
+returned 200 with the twelve-indicator API contract. No new credentials, database
+migration, deployment or real-model evaluation was performed. Existing vendor
+chunk and file-length target warnings remain.

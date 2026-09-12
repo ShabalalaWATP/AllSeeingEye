@@ -52,7 +52,8 @@ export function formatEconomicValue(value: number | null, unit: string): string 
     }).format(value);
   }
   const number = new Intl.NumberFormat('en-GB', {
-    maximumFractionDigits: /per EUR/i.test(unit) ? 4 : 2,
+    notation: /people|persons|population/i.test(unit) ? 'compact' : 'standard',
+    maximumFractionDigits: /per [A-Z]{3}$/i.test(unit) ? 4 : 2,
   }).format(value);
   return /%|percent/i.test(unit) ? `${number}%` : number;
 }
@@ -62,6 +63,25 @@ export function latestObservation(series: EconomySeries) {
 }
 
 export function metricExplanation(id: string) {
+  const explanations: Record<string, string> = {
+    gdp_per_capita:
+      'Economic output divided by population, measured in current US dollars. This is not a typical salary or household income, and exchange-rate changes affect comparisons.',
+    population:
+      'The estimated total resident population. Annual percentage change reflects population growth, not income or living standards.',
+    exports:
+      'Exports of goods and services as a share of GDP. This measures external sales relative to economic output, not the growth rate of exports.',
+    imports:
+      'Imports of goods and services as a share of GDP. Imports can support production and consumption; a higher share is not automatically a weakness.',
+    current_account:
+      'The current-account balance includes trade in goods and services, primary income and transfers, as a share of GDP. A surplus or deficit alone does not establish economic health.',
+    government_debt:
+      'Central government debt as a share of GDP. Coverage can exclude local government and other public bodies, so this is not general government debt or a complete public-sector debt measure.',
+    investment:
+      'Gross capital formation as a share of GDP, including fixed assets and changes in inventories. This measures investment in production, not stock-market investment returns.',
+    manufacturing:
+      'Manufacturing value added as a share of GDP. A changing share can reflect changes in manufacturing or in the rest of the economy; it is not manufacturing output growth.',
+  };
+  if (explanations[id]) return explanations[id];
   if (/MKTP.CD|^gdp$/i.test(id))
     return 'The annual value of goods and services produced, measured in current US dollars.';
   if (/KD.ZG|growth/i.test(id))
@@ -70,5 +90,7 @@ export function metricExplanation(id: string) {
     return 'The annual change in consumer prices. A lower rate does not necessarily mean prices are falling.';
   if (/UEM|unemployment/i.test(id))
     return 'The share of the labour force without work, using the provider’s comparable estimate.';
-  return 'Units of this currency for one euro. Reference rates are daily observations, not trading quotes.';
+  if (/^(GBP|USD|CNY|RUB|IRR)$/.test(id))
+    return 'Units of this currency for one euro. Reference rates are daily observations, not trading quotes.';
+  return 'A published observation from the named provider. Read the stated unit, observation period and original methodology before comparing values.';
 }

@@ -25,15 +25,14 @@ function chart() {
 }
 
 describe('market workspace', () => {
-  it('contacts no chart provider until explicitly loaded, and stop removes the connection', async () => {
+  it('automatically loads the selected chart and lets the user stop and resume it', async () => {
     signIn();
     render(<MarketWorkspace region="US" />);
-    expect(chart()).toBeNull();
+    expect(screen.getByTitle('US 500 market chart')).toBeInTheDocument();
+    expect(chart()).toHaveAttribute('loading', 'eager');
     expect(document.querySelector('script[src]')).toBeNull();
-    expect(
-      screen.getByText(/receives your IP address and the selected public/),
-    ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
+    await userEvent.click(screen.getByText('Chart provider, timing & privacy'));
+    expect(screen.getByText(/receives your IP address and the selected public/)).toBeVisible();
     expect(chart()).toHaveAttribute('referrerpolicy', 'no-referrer');
     expect(chart()).toHaveAttribute(
       'sandbox',
@@ -44,12 +43,14 @@ describe('market workspace', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Stop charts' }));
     expect(chart()).toBeNull();
+    expect(screen.getByText('Market charts paused')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Resume charts' }));
+    expect(screen.getByTitle('US 500 market chart')).toBeInTheDocument();
   });
 
   it('switches curated instruments and regions with at most one mounted chart', async () => {
     signIn();
     const view = render(<MarketWorkspace region="US" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
     await userEvent.selectOptions(
       screen.getByRole('combobox', { name: 'Market instrument' }),
       'NASDAQ:AAPL',
@@ -64,10 +65,9 @@ describe('market workspace', () => {
     expect(chart()).toBeNull();
   });
 
-  it('unmounts hidden-tab charts and resumes only an already enabled workspace', async () => {
+  it('unmounts hidden-tab charts and resumes unless the user stopped charts', async () => {
     signIn();
     render(<MarketWorkspace region="GB" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
     act(() => setVisibility('hidden'));
     expect(chart()).toBeNull();
     expect(screen.getByText('Charts paused while this tab is hidden')).toBeInTheDocument();
@@ -79,14 +79,28 @@ describe('market workspace', () => {
     expect(chart()).toBeNull();
   });
 
-  it('resets connection permission on identity changes and removes inactive sessions', async () => {
+  it('does not connect while initially hidden and loads when the tab becomes visible', () => {
+    signIn();
+    setVisibility('hidden');
+    render(<MarketWorkspace region="GB" />);
+    expect(chart()).toBeNull();
+    act(() => setVisibility('visible'));
+    expect(screen.getByTitle('Pound / US dollar market chart')).toBeInTheDocument();
+  });
+
+  it('resets selections and pauses on identity changes and removes inactive sessions', async () => {
     signIn();
     render(<MarketWorkspace region="WORLD" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
-    act(() => useAuthStore.getState().setSession(tokenFor({ ...plainUser, id: 'another-user' })));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Market instrument' }),
+      'NASDAQ:AAPL',
+    );
+    expect(screen.getByTitle('Apple market chart')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Stop charts' }));
     expect(chart()).toBeNull();
-    expect(screen.getByRole('button', { name: 'Load market charts' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
+    act(() => useAuthStore.getState().setSession(tokenFor({ ...plainUser, id: 'another-user' })));
+    expect(screen.getByTitle('US 500 market chart')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Resume charts' })).not.toBeInTheDocument();
     act(() => useAuthStore.setState({ user: { ...plainUser, is_active: false } }));
     expect(chart()).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Prices & charts' })).not.toBeInTheDocument();
@@ -104,19 +118,18 @@ describe('market workspace', () => {
       render(<MarketWorkspace region={region} />);
       expect(screen.getByText(/No verified .* feed is available/)).toBeInTheDocument();
       expect(chart()).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Load market charts' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Resume charts' })).not.toBeInTheDocument();
       expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     },
   );
 
-  it('uses only the signed-in user’s chart theme', async () => {
+  it('uses only the signed-in user’s chart theme', () => {
     signIn();
     useProfileStore.setState({
       owner: 'someone-else',
       profile: { ...defaultProfile, appearance_theme: 'light' },
     });
     render(<MarketWorkspace region="GB" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
     expect(decodeURIComponent(chart()!.src)).toContain('"theme":"dark"');
     act(() =>
       useProfileStore.setState({
@@ -130,7 +143,6 @@ describe('market workspace', () => {
   it('offers a manual reload and provider fallback without claiming third-party health', async () => {
     signIn();
     render(<MarketWorkspace region="GB" />);
-    await userEvent.click(screen.getByRole('button', { name: 'Load market charts' }));
     const previousFrame = chart();
     await userEvent.click(screen.getByRole('button', { name: 'Reload chart' }));
     expect(chart()).not.toBe(previousFrame);

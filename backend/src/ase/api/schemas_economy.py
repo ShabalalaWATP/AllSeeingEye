@@ -32,7 +32,7 @@ class EconomyRegionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
-    series: list[EconomySeriesOut] = Field(max_length=4)
+    series: list[EconomySeriesOut] = Field(max_length=12)
 
 
 class EconomySnapshotOut(BaseModel):

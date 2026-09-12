@@ -9,7 +9,7 @@ import { useProfileStore } from '@/stores/profile';
 import { instrumentsForRegion, marketFrameUrl, marketProviderUrl } from './marketInstruments';
 import type { MarketInstrument, MarketRegion } from './marketInstruments';
 
-/** Session-keyed consent prevents another account inheriting an external connection. */
+/** Session-keyed controls keep chart selections and pauses within the active account. */
 export function MarketWorkspace({ region }: { region: MarketRegion }) {
   const owner = useAuthStore((state) =>
     state.status === 'authenticated' && state.user?.is_active ? state.user.id : null,
@@ -22,7 +22,7 @@ export function MarketWorkspace({ region }: { region: MarketRegion }) {
 }
 
 function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light' | 'dark' }) {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [selected, setSelected] = useState('');
   const visible = usePageVisible();
   const choices = instrumentsForRegion(region);
@@ -87,15 +87,15 @@ function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light'
             <div className="flex min-h-64 flex-col items-start justify-center gap-4 border-y border-line bg-surface/40 px-4 py-8 sm:px-8">
               <div>
                 <h3 className="text-lg font-medium text-text">
-                  {enabled ? 'Charts paused while this tab is hidden' : 'Explore market movements'}
+                  {enabled ? 'Charts paused while this tab is hidden' : 'Market charts paused'}
                 </h3>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-                  Load interactive TradingView charts for {instrument.name}. Your browser connects
-                  directly to TradingView, which receives your IP address and the selected public
-                  symbol. Your research and account details are not sent.
+                  {enabled
+                    ? 'The chart resumes automatically when you return to this tab.'
+                    : `Resume the interactive chart for ${instrument.name} when you are ready.`}
                 </p>
               </div>
-              {!enabled && <Button onClick={() => setEnabled(true)}>Load market charts</Button>}
+              {!enabled && <Button onClick={() => setEnabled(true)}>Resume charts</Button>}
             </div>
           )}
           <p className="mt-3 text-sm leading-relaxed text-muted">{instrument.explanation}</p>
@@ -110,6 +110,17 @@ function MarketSession({ region, theme }: { region: MarketRegion; theme: 'light'
             </a>
             <span>Chart prices are separate from the cited AI briefing.</span>
           </div>
+          <details className="mt-3 text-xs leading-relaxed text-muted">
+            <summary className="w-fit cursor-pointer underline underline-offset-4">
+              Chart provider, timing & privacy
+            </summary>
+            <p className="mt-2 max-w-3xl">
+              TradingView charts load automatically. Your browser connects directly to TradingView,
+              which receives your IP address and the selected public symbol. Your research and
+              account details are not sent. Stock and index prices may be delayed or end-of-day. One
+              interactive market chart runs at a time and pauses when this tab is hidden.
+            </p>
+          </details>
         </>
       )}
     </section>
@@ -133,7 +144,7 @@ function ProviderChart({
         className="h-[420px] w-full border-0 sm:h-[500px]"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         referrerPolicy="no-referrer"
-        loading="lazy"
+        loading="eager"
       />
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-3 py-2">
         <p className="max-w-2xl text-xs text-muted">

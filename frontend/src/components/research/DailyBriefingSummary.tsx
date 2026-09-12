@@ -5,17 +5,27 @@ import { SourceLink } from '@/components/ui/SourceLink';
 import type { Report } from '@/lib/api/reports';
 
 /** A compact cited preview, with the complete report and exports one click away. */
-export function DailyBriefingSummary({ report }: { report: Report }) {
+export function DailyBriefingSummary({
+  report,
+  detailed = false,
+}: {
+  report: Report;
+  detailed?: boolean;
+}) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const { body, evidence, status } = report.version;
   const summary = body.key_judgements.length
-    ? body.key_judgements.slice(0, 4).map((item) => ({
+    ? body.key_judgements.slice(0, detailed ? 8 : 4).map((item) => ({
         text: item.statement,
         evidence: [...item.supporting_evidence, ...item.contradicting_evidence],
       }))
     : body.assessment.slice(0, 3);
-  const news = body.reporting.flatMap((theme) => theme.items).slice(0, 6);
-  const usedLabels = new Set([...summary, ...news].flatMap((item) => item.evidence));
+  const news = body.reporting.flatMap((theme) => theme.items).slice(0, detailed ? 12 : 6);
+  const analysis = detailed ? body.assessment.slice(0, 8) : [];
+  const watch = detailed
+    ? [...new Set(body.key_judgements.slice(0, 8).flatMap((item) => item.indicators))].slice(0, 8)
+    : [];
+  const usedLabels = new Set([...summary, ...news, ...analysis].flatMap((item) => item.evidence));
   const references = evidence.filter((item) => usedLabels.has(item.label));
   const citations = (labels: readonly string[]) => {
     const numbers = [
@@ -74,11 +84,40 @@ export function DailyBriefingSummary({ report }: { report: Report }) {
           )}
         </section>
       </div>
+      {analysis.length > 0 && (
+        <section aria-label="Detailed assessment" className="space-y-5 border-t border-line pt-5">
+          <h3 className="text-base font-semibold">Analysis and implications</h3>
+          <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+            {analysis.map((item, index) => (
+              <section key={index} className="space-y-2">
+                <h4 className="text-sm font-semibold">{item.heading}</h4>
+                <p className="text-sm leading-6">
+                  {item.text}
+                  {citations(item.evidence)}
+                </p>
+              </section>
+            ))}
+          </div>
+        </section>
+      )}
+      {watch.length > 0 && (
+        <section aria-label="Developments to watch" className="border-t border-line pt-5">
+          <h3 className="text-base font-semibold">Developments to watch</h3>
+          <p className="mt-2 text-xs text-muted">
+            Conditions identified by the assessment to monitor, not confirmed future events.
+          </p>
+          <ul className="mt-3 grid list-disc gap-x-8 gap-y-2 pl-4 text-sm leading-6 lg:grid-cols-2">
+            {watch.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
       {body.gaps.length > 0 && (
         <p className="text-xs leading-5 text-muted">
           Coverage gaps:{' '}
           {body.gaps
-            .slice(0, 2)
+            .slice(0, detailed ? 8 : 2)
             .map((gap) => gap.text)
             .join(' ')}
         </p>

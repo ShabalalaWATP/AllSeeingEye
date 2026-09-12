@@ -12,7 +12,7 @@ from ase.adapters.economy.world_bank import MAX_ROWS, parse_world_bank, world_ba
 from ase.adapters.feeds.http import FeedFetchError
 from ase.application.economy_evidence import economy_evidence
 from ase.domain.economy import EconomySnapshot
-from ase.domain.economy_catalogue import INDICATORS, REGIONS
+from ase.domain.economy_catalogue import ANNUAL_PERIODS, INDICATORS, REGIONS
 from helpers import FakeClock
 
 NOW = datetime(2026, 9, 12, tzinfo=UTC)
@@ -49,6 +49,8 @@ def test_one_fixed_batch_query_and_twelve_observation_years():
     url = urlsplit(world_bank_url(NOW))
     assert url.hostname == "api.worldbank.org"
     assert "WLD;GBR;USA;RUS;CHN;IRN" in url.path
+    assert MAX_ROWS == 864
+    assert all(indicator in url.path for _, _, indicator, _ in INDICATORS)
     query = parse_qs(url.query)
     assert query == {
         "source": ["2"],
@@ -220,6 +222,7 @@ def test_macro_evidence_fits_source_cap_without_losing_any_region():
     assert len(macro) == 6
     for event in macro:
         assert len(event.summary) <= 2000
-        assert all(str(year) in event.summary for year in (2022, 2023, 2024, 2025))
+        assert all(str(year) in event.summary for year in range(2014, 2026))
         assert all(label in event.summary for _, label, _, _ in INDICATORS)
-        assert "source=2" in event.url and "per_page=48" in event.url
+        assert "source=2" in event.url
+        assert f"per_page={len(INDICATORS) * ANNUAL_PERIODS}" in event.url

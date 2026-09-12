@@ -5,12 +5,14 @@ from unittest.mock import AsyncMock
 
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.application.economy_briefing import economy_briefing_request
-from ase.domain.economy import EconomyPoint, EconomyRegion, EconomySeries, EconomySnapshot
+from ase.domain.economy import EconomyPoint, EconomySeries, EconomySnapshot
+from ase.domain.economy_catalogue import INDICATORS, REGIONS
 from ase.domain.events import Category
 from ase.domain.research import ResearchBatch, ResearchFocus, ResearchMode, ResearchQuery
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from report_job_api_helpers import job_settings, prepared, stored, work
+from test_economy_data import parse_world_bank, wb_payload, wb_row
 
 __all__ = ["job_settings"]
 
@@ -19,34 +21,15 @@ def macro_fixture(now):
     return EconomySnapshot(
         now,
         now + timedelta(hours=1),
-        tuple(
-            EconomyRegion(
-                code,
-                name,
-                (
-                    EconomySeries(
-                        "NY.GDP.MKTP.KD.ZG",
-                        "GDP growth",
-                        "% per year",
-                        "annual",
-                        "World Bank",
-                        "https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG",
-                        "stale",
-                        "Annual historical context; last refresh failed.",
-                        now - timedelta(days=2),
-                        (EconomyPoint("2024", 2.0),),
-                        "2026-08-01",
-                    ),
-                ),
-            )
-            for code, name in (
-                ("WORLD", "Worldwide"),
-                ("GB", "United Kingdom"),
-                ("US", "United States"),
-                ("RU", "Russia"),
-                ("CN", "China"),
-                ("IR", "Iran"),
-            )
+        parse_world_bank(
+            wb_payload(
+                *(
+                    wb_row(countryiso3code=code, indicator={"id": indicator}, date="2024")
+                    for _, _, code in REGIONS
+                    for _, _, indicator, _ in INDICATORS
+                )
+            ),
+            now,
         ),
         tuple(
             EconomySeries(
@@ -185,12 +168,15 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
     frozen = (await stored(container, job_id)).payload["input"]
     assert len(frozen["evidence"]) == 9
     assert all(
-        "observation 2024" in item["summary"] and "not the observation date" in item["summary"]
+        "2024=" in item["summary"] and "not the observation date" in item["summary"]
         for item in frozen["evidence"]
         if item["source_id"] == "research-world-bank"
     )
     assert sum(item["source_id"] == "research-world-bank" for item in frozen["evidence"]) == 6
     assert all(item["published_at"] is None for item in frozen["evidence"])
+    for item in frozen["evidence"]:
+        if item["source_id"] == "research-world-bank":
+            assert all(label in item["summary"] for _, label, _, _ in INDICATORS)
     again = await client.post("/api/economy/briefing", headers=headers)
     assert again.json()["job"]["id"] == job_id and snapshot.await_count == 1
     at = container.clock.now() - timedelta(minutes=1)
@@ -222,6 +208,11 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
         "economic-ecb",
     }
     assert version.body.cited_labels() <= {row.label for row in version.evidence}
+    model_context = " ".join(
+        message.content for _, request in gateway.calls for message in request.messages
+    )
+    assert "Manufacturing value added: 2024=" in model_context
+    assert "Debt covers central government only" in model_context
     assert collect.call_args.args[0].source_ids == tuple(
         key for key in economy_briefing_request().research_source_ids if key != unavailable_source
     )

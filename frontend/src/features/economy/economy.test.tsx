@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { economyNews, economySnapshot } from '@/test/fixtures.economy';
+import { economyDepthSnapshot } from '@/test/fixtures.economyDepth';
 import { report } from '@/test/fixtures';
 import { reportJob } from '@/test/reportJobFixture';
 import { renderApp } from '@/test/render';
@@ -19,6 +20,21 @@ beforeEach(() =>
     http.post('/api/economy/briefing', () => HttpResponse.json(briefing())),
   ),
 );
+
+it('loads every country metric history and the market chart without an activation step', async () => {
+  server.use(http.get('/api/economy', () => HttpResponse.json(economyDepthSnapshot)));
+  renderApp('/economy?region=GB', 'user');
+  const country = within(
+    await screen.findByRole('region', { name: 'United Kingdom economic indicators' }),
+  );
+  expect(
+    country.getAllByRole('button', { pressed: false }).length +
+      country.getAllByRole('button', { pressed: true }).length,
+  ).toBe(12);
+  expect(screen.getByTitle('Pound / US dollar market chart')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Load market charts' })).not.toBeInTheDocument();
+  expect(screen.getByRole('img', { name: /GBP \/ USD history/ })).toBeInTheDocument();
+});
 
 it('provides global headlines first, each country focus, explicit market gaps and one economic briefing', async () => {
   const { user } = renderApp('/economy', 'user');
@@ -77,6 +93,38 @@ it('shows sourced daily analysis and a full exportable report link', async () =>
     analysis.getAllByRole('link', { name: /Daily briefing reference/ }).length,
   ).toBeGreaterThan(0);
   expect(analysis.getByText(/Next refresh/)).toBeInTheDocument();
+});
+
+it('shows the deeper assessment and watch conditions with references', async () => {
+  const detailed = {
+    ...report,
+    version: {
+      ...report.version,
+      body: {
+        ...report.version.body,
+        assessment: [
+          {
+            heading: 'Trade exposure',
+            text: 'The dated trade evidence indicates external exposure.',
+            evidence: [report.version.evidence[0]!.label],
+          },
+        ],
+        key_judgements: report.version.body.key_judgements.map((item) => ({
+          ...item,
+          indicators: ['Watch the next official trade release.'],
+        })),
+      },
+    },
+  };
+  server.use(
+    http.post('/api/economy/briefing', () => HttpResponse.json(briefing('completed'))),
+    http.get('/api/reports/:id', () => HttpResponse.json(detailed)),
+  );
+  renderApp('/economy', 'user');
+  expect(await screen.findByRole('heading', { name: 'Trade exposure' })).toBeInTheDocument();
+  const analysis = within(screen.getByRole('region', { name: 'Detailed assessment' }));
+  expect(analysis.getByRole('link', { name: /Daily briefing reference/ })).toBeInTheDocument();
+  expect(screen.getByText('Watch the next official trade release.')).toBeInTheDocument();
 });
 
 it('shows active briefing work and explicitly retries a failed admission', async () => {

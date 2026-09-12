@@ -17,11 +17,23 @@ def economy_briefing_request() -> ReportRequest:
     return ReportRequest(
         template_id="ask",
         question=(
-            "Write a daily global economic situation report with an overall summary, latest "
-            "dated developments, and clearly named sections: United Kingdom, United States, "
-            "Russia, China, Iran. Cover growth, inflation, employment, monetary policy, trade, "
-            "energy and financial markets only where retained evidence supports them. Explain "
-            "what the developments mean in plain English for a reader new to economics. "
+            "Write a detailed daily economic report with sections: "
+            "Executive overview; Latest developments; United Kingdom; United States; Russia; "
+            "China; Iran; Cross-country comparison; Transmission channels; What to watch; "
+            "Coverage and method. Cover growth, inflation, employment, monetary policy, trade, "
+            "energy and financial markets only where retained evidence supports them. Use the "
+            "dated GDP per capita, population, goods-and-services exports and imports, current "
+            "account, central government debt, gross capital formation and manufacturing "
+            "observations as structural context where available. Compare countries only using "
+            "the same indicator, units and observation year; never rank different-year values "
+            "as if contemporaneous. Use a compact comparison table where evidence permits. "
+            "Calculate changes only from the supplied dated values, distinguish percentage "
+            "changes from percentage-point changes, and do not bridge missing years as annual "
+            "growth. Central government debt is not general-government debt; current-dollar "
+            "GDP and GDP per capita are nominal, and per-capita output is not household income. "
+            "Explain trade, currency and energy transmission mechanisms with cited evidence, "
+            "separating observed links from hypotheses; do not infer causation from correlation. "
+            "Explain each country's signals, exposure and gaps in plain English for a beginner. "
             "Use in-text citations and a reference list. Distinguish publisher reporting, "
             "official issuer statements, state-aligned perspectives and your own inference. "
             "Annual indicator observation periods and reference-rate dates must be explicit; "
@@ -49,5 +61,5 @@ def economy_briefing_request() -> ReportRequest:
             "oil",
             "market",
         ),
-        report_style="briefing",
+        report_style="assessment",
     )

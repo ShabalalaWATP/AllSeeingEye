@@ -16,6 +16,21 @@ it('rejects an oversized response instead of rendering an unbounded chart', asyn
   );
   await expect(fetchEconomy()).rejects.toMatchObject({ code: 'invalid_response' });
 });
+it('accepts twelve indicators and rejects a thirteenth', async () => {
+  const region = {
+    ...economySnapshot.regions[0]!,
+    series: Array.from({ length: 12 }, (_, index) => ({
+      ...economySnapshot.regions[0]!.series[0]!,
+      id: `metric-${index}`,
+    })),
+  };
+  server.use(
+    http.get('/api/economy', () => HttpResponse.json({ ...economySnapshot, regions: [region] })),
+  );
+  expect((await fetchEconomy()).regions[0]!.series).toHaveLength(12);
+  region.series.push({ ...region.series[0]!, id: 'too-many' });
+  await expect(fetchEconomy()).rejects.toMatchObject({ code: 'invalid_response' });
+});
 it('validates news region and publisher provenance', async () => {
   server.use(http.get('/api/economy/news', () => HttpResponse.json(economyNews)));
   expect(await fetchEconomyNews()).toEqual(economyNews);

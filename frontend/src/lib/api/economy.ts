@@ -25,7 +25,7 @@ const snapshotSchema: z.ZodType<EconomySnapshot> = z.object({
   fetched_at: z.iso.datetime({ offset: true }),
   refresh_after: z.iso.datetime({ offset: true }),
   regions: z
-    .array(z.object({ id: z.string(), name: z.string(), series: z.array(seriesSchema).max(4) }))
+    .array(z.object({ id: z.string(), name: z.string(), series: z.array(seriesSchema).max(12) }))
     .max(6),
   fx: z.array(seriesSchema).max(5),
 });

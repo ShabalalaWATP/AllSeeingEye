@@ -70,7 +70,7 @@ export function EconomyBriefing() {
           </Link>
         </Alert>
       )}
-      {report && <DailyBriefingSummary report={report} />}
+      {report && <DailyBriefingSummary report={report} detailed />}
       <p className="max-w-4xl text-xs leading-5 text-muted">
         {briefing?.coverage_note ??
           'Analysis uses collected economic reporting and published indicators. It does not see the external market chart. Source gaps and the observation dates of annual statistics remain part of the assessment.'}

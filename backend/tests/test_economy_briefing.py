@@ -22,6 +22,8 @@ from report_job_service_helpers import service_environment as _service_environme
 def test_economy_request_is_one_deep_global_report_with_named_country_sections():
     request = economy_briefing_request()
     assert request.research_mode is ResearchMode.DETAILED
+    assert request.report_style == "assessment"
+    assert len(request.question) <= 2000
     assert request.categories == (Category.ECONOMIC,) and request.window_hours == 24
     assert len(request.research_source_ids) == 9 and len(request.research_terms) <= 12
     assert request.team_id is None and not request.research_web_search
@@ -35,6 +37,13 @@ def test_economy_request_is_one_deep_global_report_with_named_country_sections()
         "observation periods",
         "missing or stale",
         "buy/sell",
+        "Cross-country comparison",
+        "same indicator, units and observation year",
+        "percentage-point changes",
+        "do not infer causation from correlation",
+        "central government debt",
+        "gross capital formation",
+        "Coverage and method",
     ):
         assert phrase in request.question
 

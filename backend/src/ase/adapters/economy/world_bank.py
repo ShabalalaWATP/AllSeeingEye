@@ -7,9 +7,15 @@ from typing import Any
 from urllib.parse import urlencode
 
 from ase.domain.economy import EconomyPoint, EconomyRegion
-from ase.domain.economy_catalogue import ANNUAL_NOTE, INDICATORS, REGIONS, empty_regions
+from ase.domain.economy_catalogue import (
+    ANNUAL_PERIODS,
+    INDICATORS,
+    REGIONS,
+    annual_note,
+    empty_regions,
+)
 
-MAX_ROWS = 6 * 4 * 12
+MAX_ROWS = len(REGIONS) * len(INDICATORS) * ANNUAL_PERIODS
 
 
 def world_bank_url(now: datetime) -> str:
@@ -19,7 +25,7 @@ def world_bank_url(now: datetime) -> str:
         {
             "source": 2,
             "format": "json",
-            "date": f"{now.year - 12}:{now.year - 1}",
+            "date": f"{now.year - ANNUAL_PERIODS}:{now.year - 1}",
             "per_page": MAX_ROWS,
             "page": 1,
         }
@@ -47,7 +53,7 @@ def parse_world_bank(data: Any, now: datetime) -> tuple[EconomyRegion, ...]:
         for item in region.series:
             points = tuple(
                 EconomyPoint(str(year), values.get((region.id, item.id, str(year))))
-                for year in range(now.year - 12, now.year)
+                for year in range(now.year - ANNUAL_PERIODS, now.year)
             )
             available = any(point.value is not None for point in points)
             series.append(
@@ -57,7 +63,7 @@ def parse_world_bank(data: Any, now: datetime) -> tuple[EconomyRegion, ...]:
                     status="available" if available else "unavailable",
                     updated_at=now,
                     source_updated_at=updated,
-                    note=ANNUAL_NOTE
+                    note=annual_note(item.id)
                     + (" No non-missing observations were supplied." if not available else ""),
                 )
             )
@@ -80,7 +86,7 @@ def _observations(rows: list[Any], now: datetime) -> dict[tuple[str, str, str], 
         year = row.get("date")
         if not isinstance(year, str) or len(year) != 4 or not year.isascii() or not year.isdigit():
             continue
-        if not now.year - 12 <= int(year) < now.year:
+        if not now.year - ANNUAL_PERIODS <= int(year) < now.year:
             continue
         value = row.get("value")
         if value is not None and (

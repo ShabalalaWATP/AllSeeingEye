@@ -12,6 +12,8 @@ import { CountryEconomy } from './CountryEconomy';
 import { CurrencyContext } from './CurrencyContext';
 import { MarketWorkspace } from './MarketWorkspace';
 import { EconomyBriefing } from './EconomyBriefing';
+import { CountryComparison } from './CountryComparison';
+import { CurrencyAnalysis } from './CurrencyAnalysis';
 
 export default function EconomyPage() {
   const [params, setParams] = useSearchParams();
@@ -81,7 +83,29 @@ export default function EconomyPage() {
           <h2 className="text-2xl font-semibold tracking-tight">{focus.name} focus</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted">{focus.detail}</p>
         </div>
-        <MarketWorkspace key={owner} region={focus.id} />
+        <nav
+          aria-label="Economic analysis sections"
+          className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted"
+        >
+          <a className="hover:text-ember" href="#economy-markets">
+            Markets
+          </a>
+          <a className="hover:text-ember" href="#economy-comparison">
+            Compare countries
+          </a>
+          <a className="hover:text-ember" href="#economy-country">
+            Country profile
+          </a>
+          <a className="hover:text-ember" href="#economy-analysis">
+            Daily analysis
+          </a>
+          <a className="hover:text-ember" href="#economy-currencies">
+            Currencies
+          </a>
+        </nav>
+        <div id="economy-markets">
+          <MarketWorkspace key={owner} region={focus.id} />
+        </div>
         {data.loading && !data.data && <LoadingNote label="Loading official economic indicators" />}
         {data.error && (
           <Alert tone="error">
@@ -92,10 +116,17 @@ export default function EconomyPage() {
           </Alert>
         )}
         {data.data && (
-          <CountryEconomy
-            key={focus.id}
-            region={data.data.regions.find((region) => region.id === focus.id)}
-          />
+          <div id="economy-comparison">
+            <CountryComparison regions={data.data.regions} focus={focus.id} />
+          </div>
+        )}
+        {data.data && (
+          <div id="economy-country">
+            <CountryEconomy
+              key={focus.id}
+              region={data.data.regions.find((region) => region.id === focus.id)}
+            />
+          </div>
         )}
         {focus.id !== 'WORLD' && (
           <EconomyNewsPanel
@@ -106,7 +137,14 @@ export default function EconomyPage() {
             onRetry={() => void news.reload()}
           />
         )}
-        <EconomyBriefing />
+        <div id="economy-analysis">
+          <EconomyBriefing />
+        </div>
+        {data.data && (
+          <div id="economy-currencies">
+            <CurrencyAnalysis items={data.data.fx} />
+          </div>
+        )}
         {data.data && <CurrencyContext items={data.data.fx} />}
         <details className="border-t border-line pt-5 text-xs leading-6 text-muted">
           <summary className="w-fit cursor-pointer font-medium hover:text-text">

@@ -26,10 +26,10 @@ remain gaps, never zeroes.
 
 | Source | Content | Refresh and limits |
 | --- | --- | --- |
-| World Bank Indicators API | GDP, growth, inflation and unemployment for the six focus regions | Annual observations, up to 12 years; shared 24-hour cache. Latest available year may differ by country and measure. |
+| World Bank Indicators API | Twelve measures covering output, people, prices, jobs, trade, industry, investment and central government debt | Six regions, up to 12 annual observations each; shared 24-hour cache. Latest available year may differ by country and measure. |
 | European Central Bank | GBP, USD and CNY per euro | Daily reference rates, up to 90 days; shared one-hour cache. RUB is suspended and IRR is not published. |
 | Publisher RSS | Economic headlines, dates and source links | Existing bounded feed collection; dashboard shows the past 72 hours with known publication dates. |
-| TradingView embedded chart | Selected equity, currency, commodity and index-proxy instruments | Explicit browser opt-in. Timing depends on the instrument, with delayed or end-of-day equities and clearly labelled CFD proxies. |
+| TradingView embedded chart | Selected equity, currency, commodity and index-proxy instruments | Loads automatically. Timing depends on the instrument, with delayed or end-of-day equities and clearly labelled CFD proxies. |
 
 Official documentation: [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation),
 [World Bank data terms](https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets),
@@ -42,13 +42,54 @@ The instrument list deliberately contains only verified symbols. US 500 and UK
 have economic statistics and reporting, but no supported direct local-equity
 chart in this selection. The app does not substitute unrelated prices.
 
-The external chart loads only after the user selects Load market charts. The
-disclosure explains that TradingView receives the browser connection and public
+The external chart loads automatically, as requested. The provider details
+explain that TradingView receives the browser connection and public
 symbol. It receives no application token, question, report or account identity.
 One fixed-origin sandboxed iframe is active at a time. Hidden tabs suspend it;
-Stop charts unmounts it. Login changes clear the local opt-in. The server CSP
+Stop charts unmounts it and Resume charts restores it. Login changes reset
+the selected instrument and pause state. The server CSP
 allows only the documented widget frame origin, without adding external scripts
 to the parent page. TradingView attribution remains visible.
+
+## Data analysis and comparisons
+
+Country profiles show all twelve miniature histories automatically, grouped by
+output/living standards, prices/jobs, trade/industry and public finances/investment.
+Selecting an indicator opens its larger chart, source and exact data table.
+Coverage counts distinguish available and missing series. Old observation years
+and cached snapshots remain labelled.
+
+The expanded indicators are GDP per capita (`NY.GDP.PCAP.CD`), population
+(`SP.POP.TOTL`), goods/services exports and imports as shares of GDP
+(`NE.EXP.GNFS.ZS`, `NE.IMP.GNFS.ZS`), current account balance (`BN.CAB.XOKA.GD.ZS`),
+central government debt (`GC.DOD.TOTL.GD.ZS`), gross capital formation
+(`NE.GDI.TOTL.ZS`) and manufacturing value added (`NV.IND.MANF.ZS`). These supplement
+the existing GDP, growth, inflation and unemployment measures. Each metric links
+to its World Bank definition. Debt coverage is central government, not necessarily
+all public bodies. Investment includes inventories. Nominal dollar changes are
+not real economic growth or household earnings.
+
+Calculated country insights use the supplied observations and source links, not
+generated guesses. Annual changes require adjacent years: rates and GDP shares
+use percentage points, while amounts use relative percentage change only from a
+positive base. Missing years are not interpolated. Inflation easing can still
+mean consumer prices rose. No composite health score or forecast is fabricated.
+
+Compare economies uses one indicator, unit and year across the five countries.
+The default chooses the year with widest coverage, breaking ties by recency.
+Users can choose another year; missing values remain explicit. Rankings describe
+only countries with observations for that period. Worldwide benchmarks are the
+provider's aggregates, not averages of the five countries. The underlying table
+retains values, preceding-year observations and source links.
+
+Currency movement analysis calculates quote units per base currency by dividing
+their ECB-per-euro rates on matching dates. EUR uses an exact reference of one.
+No rate is forward-filled or derived from non-positive inputs. The 30/90-day
+window ends at the latest matching date, with observed low/high, count and date
+shown. Change equals `(last / first - 1) * 100`; a rise means the base currency
+strengthened against the quote. One observation cannot produce a period change.
+These are daily reference calculations, not intraday extremes or executable
+quotes. Provider methodology: [ECB reference rates](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html).
 
 ## Economic reporting
 
@@ -97,6 +138,21 @@ Observation periods, retrieval times and provider update dates remain separate.
 Unknown publication times remain unknown; a recent fetch never makes a historical
 statistic a new event. Macro context is admitted through an explicit dated-context
 selection. The model cannot read or quote the external market chart.
+
+The expanded in-page assessment includes implications and conditions to watch,
+with references retained. Subsequent daily reports use a richer assessment
+request covering structural exposure, plausible transmission mechanisms and
+country-specific gaps. Existing jobs retain their original 24-hour identity and
+are not automatically regenerated when this feature is updated.
+
+Internally assembled economic snapshots receive a bounded 2,000-character source
+summary budget so later indicators do not disappear under the ordinary 600-character
+headline limit. Exact source, category and record-kind checks restrict this
+exception. Twelve-year numerical histories fit in the frozen evidence attributes;
+the model text carries the latest two available observations and their dates.
+Each regional snapshot remains within 38 attributes and the existing value bounds.
+The expanded public probe returned 864 rows in 197,553 bytes, within the unchanged
+512 KiB HTTP cap.
 
 ## Operational and security boundaries
 

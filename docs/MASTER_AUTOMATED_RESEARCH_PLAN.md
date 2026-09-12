@@ -473,3 +473,19 @@ privacy and operating behaviour. Real source probes succeeded; direct local stoc
 quotes for Russia and Iran remain unavailable in the selected widget. Daily
 analysis refreshes on a visible eligible visit. Unattended schedules use
 Subscriptions. No real-model quality evaluation or deployment is claimed.
+
+## Deeper economic analysis, 12 September 2026
+
+- [x] Load the market chart automatically, retaining pause/resume and hidden-tab suspension.
+- [x] Expand country profiles from four to twelve official indicators, with every miniature history visible by default.
+- [x] Add source-linked calculated insights, precise annual changes and explicit observation/coverage gaps.
+- [x] Compare countries using the same indicator, units and year, with selectable years and source tables.
+- [x] Derive currency pairs from matching ECB dates, showing period movement and observed daily ranges.
+- [x] Expand the cited daily assessment and watch conditions, retaining the existing 24-hour job lifecycle.
+- [x] Preserve all twelve measures in bounded frozen evidence and the model's source context.
+- [x] Verify numerical edge cases, access/data limits, desktop/mobile rendering and automatic chart loading.
+
+The expanded live World Bank probe returned 864 rows within the unchanged HTTP
+limit. Backend regressions passed 68 tests; the frontend suite passed 2,098 tests
+with one skip and unchanged coverage gates. Documentation and existing market
+coverage caveats are maintained in [Economy workspace](ECONOMY_WORKSPACE.md).
