@@ -243,6 +243,10 @@ class GenerateReportUseCase:
             if job.request.parent_report_id is not None and job.request.parent_version is not None
             else None
         )
+        if parent is None and job.subscription_baseline is not None:
+            parent = ParentReference(
+                job.subscription_baseline.report_id, job.subscription_baseline.number, job.actor.id
+            )
         await self._authorisation.finish(job.actor, job.request, None, plan, parent)
 
     async def regenerate(

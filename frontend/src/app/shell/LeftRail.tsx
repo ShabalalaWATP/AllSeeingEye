@@ -68,6 +68,9 @@ export function LeftRail({
         <RailLink to="/reports" onNavigate={onNavigate}>
           Saved reports
         </RailLink>
+        <RailLink to="/subscriptions" onNavigate={onNavigate}>
+          OSINT Subscriptions
+        </RailLink>
         <RailLink to="/geolocation" onNavigate={onNavigate}>
           Geolocation
         </RailLink>

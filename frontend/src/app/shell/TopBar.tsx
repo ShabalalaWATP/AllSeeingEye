@@ -12,6 +12,7 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/reports')) return 'Saved reports';
+  if (pathname.startsWith('/subscriptions')) return 'OSINT Subscriptions';
   if (pathname.startsWith('/research')) return 'Research';
   if (pathname.startsWith('/geolocation')) return 'Geolocation';
   if (pathname.startsWith('/sources')) return 'Sources';

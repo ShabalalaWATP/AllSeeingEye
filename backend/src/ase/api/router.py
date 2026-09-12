@@ -22,6 +22,7 @@ from ase.api.routers import (
     capabilities,
     claims,
     countries,
+    daily_briefing,
     direction,
     events,
     footprints,
@@ -60,6 +61,7 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(daily_briefing.router)
 api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)
 api_router.include_router(health.router)

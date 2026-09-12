@@ -435,3 +435,22 @@ ESLint, the production build and Prettier checks on all changed frontend files
 passed. PDF output passed visual page inspection. DOCX structural tests passed,
 but visual DOCX inspection remains open because the bundled LibreOffice runtime
 is unavailable. Final security review found no actionable findings.
+
+
+## Subscriptions and daily monitoring, 12 September 2026
+
+- [x] Clarify Research tabs: New research, Saved reports, Plans & areas, with a separate Research progress link.
+- [x] Introduce primary-navigation OSINT Subscriptions and preserve old recurring links.
+- [x] Add daily, weekly, monthly, three-monthly, six-monthly and annual topic updates, with calendar anchors and editable lookbacks.
+- [x] Reuse source choices, countries, conflicts, hazards and authorised saved areas, with explicit boundary disclosure.
+- [x] Prioritise new captured content using bounded per-subscription history; preserve context and no-material-update guidance.
+- [x] Add a cited Basic Live Monitor briefing reused for 24 hours, protected against duplicate tab admission and premature progress deletion.
+- [x] Link reusable research areas to the globe/map and save map drawings as labelled enclosing rectangles.
+- [x] Review access changes, date-line geometry, scope preservation and admission consent with focused regressions.
+
+See [research workspace operations](RESEARCH_WORKSPACE_OPERATIONS.md). Live Monitor
+refreshes on an eligible visible visit; subscriptions run unattended while the
+server is running. Delivery is in-app. Novelty comparison retains 500 content
+fingerprints, so it is not a complete semantic archive. Real-model briefing quality,
+source archive availability and long-running operator acceptance remain evaluation
+work, not outcomes established by fixture tests.

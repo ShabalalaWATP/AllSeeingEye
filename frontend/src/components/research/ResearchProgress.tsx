@@ -36,7 +36,7 @@ export function ResearchProgress({ snapshot, active, onCancel, onRetry }: Resear
         <p className="text-sm text-muted">
           {active
             ? 'Once accepted, research continues on the server when you leave this page.'
-            : 'The job may already be running. Check Research jobs before submitting again.'}
+            : 'The job may already be running. Check Research progress before submitting again.'}
         </p>
         <div className="flex flex-wrap gap-3">
           {active ? (
@@ -51,7 +51,7 @@ export function ResearchProgress({ snapshot, active, onCancel, onRetry }: Resear
             )
           )}
           <Link to="/research/jobs" className="py-2 text-sm text-ember underline">
-            Research jobs
+            Research progress
           </Link>
         </div>
         {!active && onRetry && (

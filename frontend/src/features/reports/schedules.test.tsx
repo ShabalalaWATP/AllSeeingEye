@@ -9,11 +9,11 @@ import { server } from '@/test/server';
 describe('schedules', () => {
   it('lists the standing orders with their cadence and last report', async () => {
     renderApp('/research/recurring', 'user');
-    const table = await screen.findByRole('table', { name: 'Schedules' });
+    const table = await screen.findByRole('table', { name: 'Subscriptions' });
     expect(within(table).getByText('Morning INTSUM')).toBeInTheDocument();
     expect(within(table).getByText('daily at 06:00 UTC')).toBeInTheDocument();
     expect(within(table).getByText('Intelligence summary · UA')).toBeInTheDocument();
-    expect(within(table).getByRole('link', { name: 'Latest report' })).toHaveAttribute(
+    expect(within(table).getByRole('link', { name: 'Latest update' })).toHaveAttribute(
       'href',
       `/reports/${schedule.last_report_id ?? ''}`,
     );
@@ -28,16 +28,16 @@ describe('schedules', () => {
       }),
     );
     const { user } = renderApp('/research/recurring', 'user');
-    const form = await screen.findByRole('form', { name: 'New schedule' });
+    const form = await screen.findByRole('form', { name: 'New subscription' });
     await user.click(within(form).getByText('Advanced scope and sources'));
-    await user.type(within(form).getByLabelText('Schedule name'), 'Monday roll-up');
+    await user.type(within(form).getByLabelText('Subscription name'), 'Monday roll-up');
     await user.selectOptions(within(form).getByLabelText('Product'), 'intsum');
     await user.click(within(form).getByText('Choose countries'));
     await user.click(within(form).getByRole('checkbox', { name: /^Ukraine/ }));
     await user.selectOptions(within(form).getByLabelText('Hour'), '7');
     await user.selectOptions(within(form).getByLabelText('Cadence'), 'weekly');
     await user.selectOptions(within(form).getByLabelText('Weekday'), '0');
-    await user.click(within(form).getByRole('button', { name: 'Add schedule' }));
+    await user.click(within(form).getByRole('button', { name: 'Create subscription' }));
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'Monday roll-up',
@@ -53,6 +53,12 @@ describe('schedules', () => {
         cadence: 'weekly',
         weekday: 0,
         monthday: 1,
+        anchor_month: expect.any(Number),
+        avoid_repetition: true,
+        conflict_id: null,
+        hazard: null,
+        research_area: null,
+        disclose_area_to_provider: false,
       });
     });
   });

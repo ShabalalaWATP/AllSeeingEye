@@ -29,18 +29,19 @@ describe('research workspace navigation', () => {
       'page',
     );
     const tools = screen.getByRole('navigation', { name: 'Research tools' });
-    expect(within(tools).getByRole('link', { name: 'Jobs' })).toHaveAttribute(
+    expect(within(tools).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
       'href',
-      '/research/jobs',
+      '/reports',
     );
     expect(within(tools).queryByRole('link', { name: /Geolocat/ })).not.toBeInTheDocument();
     expect(within(primary).getByRole('link', { name: 'Geolocation' })).toHaveAttribute(
       'href',
       '/geolocation',
     );
-    expect(within(tools).getByRole('link', { name: 'Recurring' })).toHaveAttribute(
+    expect(within(tools).queryByRole('link', { name: 'Recurring' })).not.toBeInTheDocument();
+    expect(within(primary).getByRole('link', { name: 'OSINT Subscriptions' })).toHaveAttribute(
       'href',
-      '/research/recurring',
+      '/subscriptions',
     );
   });
 
@@ -54,9 +55,13 @@ describe('research workspace navigation', () => {
     await screen.findByRole('table', { name: 'Reports' });
     expect(screen.queryByRole('form', { name: 'Generate a report' })).not.toBeInTheDocument();
     expect(boardRequest).not.toHaveBeenCalled();
-    expect(screen.getByRole('link', { name: 'Manage recurring research' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Research progress' })).toHaveAttribute(
       'href',
-      '/research/recurring',
+      '/research/jobs',
+    );
+    expect(screen.getByRole('link', { name: 'Manage OSINT subscriptions' })).toHaveAttribute(
+      'href',
+      '/subscriptions',
     );
   });
 });

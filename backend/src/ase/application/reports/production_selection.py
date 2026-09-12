@@ -8,6 +8,7 @@ from ase.application.reports.depth import depth_for
 from ase.application.reports.production_types import Job
 from ase.application.reports.reused_evidence import with_reused_evidence
 from ase.application.reports.selection import Selection, select_evidence
+from ase.application.reports.subscription_updates import previous_signatures
 from ase.domain.direction import Direction
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
@@ -88,6 +89,10 @@ def select_for_job(
             and not job.countries
             and bool(job.request.country_isos)
             and job.request.effective_time_basis is not EvidenceTimeBasis.RECORDED
+        ),
+        seen_content_signatures=(
+            previous_signatures(job.subscription_baseline)
+            | frozenset(job.request.subscription_seen_signatures)
         ),
     )
     return with_reused_evidence(selected, job.reused_evidence)

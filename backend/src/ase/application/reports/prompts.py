@@ -161,7 +161,7 @@ def compose_messages(
         parts.append("No evidence is available for this scope; say so in the judgements and gaps.")
     if previous:
         parts.append(
-            "This is a new version of an existing report. The previous version's key judgements "
+            "Compare with the previous saved assessment. The previous version's key judgements "
             "were the following; set change_from_previous on every judgement (new, unchanged, "
             "strengthened, weakened or reversed) relative to them:"
         )

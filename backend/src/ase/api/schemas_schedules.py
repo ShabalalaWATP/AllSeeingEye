@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
+from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
 from ase.application.schedules.manage import ScheduleInput
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_changes import ResearchChange
@@ -29,6 +30,12 @@ class ScheduleIn(BaseModel):
     cadence: str = Field(default="daily", max_length=16)
     weekday: int = Field(default=0, ge=0, le=6)
     monthday: int = Field(default=1, ge=1, le=31)
+    anchor_month: int = Field(default=1, ge=1, le=12)
+    conflict_id: str | None = Field(default=None, min_length=1, max_length=120)
+    hazard: str | None = Field(default=None, min_length=1, max_length=40)
+    research_area: ResearchAreaIn | None = None
+    disclose_area_to_provider: StrictBool = False
+    avoid_repetition: StrictBool = True
     window_hours: int | None = Field(default=None, ge=1, le=MAX_RESEARCH_HOURS)
     enabled: bool = True
     team_id: UUID | None = None
@@ -63,6 +70,12 @@ class ScheduleIn(BaseModel):
             cadence=self.cadence,
             weekday=self.weekday,
             monthday=self.monthday,
+            anchor_month=self.anchor_month,
+            conflict_id=self.conflict_id,
+            hazard=self.hazard,
+            research_area=self.research_area.to_domain() if self.research_area else None,
+            disclose_area_to_provider=self.disclose_area_to_provider,
+            avoid_repetition=self.avoid_repetition,
             window_hours=self.window_hours,
             enabled=self.enabled,
             team_id=self.team_id,
@@ -90,6 +103,12 @@ class ScheduleOut(BaseModel):
     cadence: str
     weekday: int
     monthday: int
+    anchor_month: int
+    conflict_id: str | None
+    hazard: str | None
+    research_area: ResearchAreaOut | None
+    disclose_area_to_provider: bool
+    avoid_repetition: bool
     window_hours: int | None
     enabled: bool
     created_by: UUID
@@ -123,6 +142,14 @@ class ScheduleOut(BaseModel):
             cadence=schedule.cadence,
             weekday=schedule.weekday,
             monthday=schedule.monthday,
+            anchor_month=schedule.anchor_month,
+            conflict_id=schedule.conflict_id,
+            hazard=schedule.hazard,
+            research_area=ResearchAreaOut.model_validate(schedule.research_area)
+            if schedule.research_area
+            else None,
+            disclose_area_to_provider=schedule.disclose_area_to_provider,
+            avoid_repetition=schedule.avoid_repetition,
             window_hours=schedule.window_hours,
             enabled=schedule.enabled,
             created_by=schedule.created_by,

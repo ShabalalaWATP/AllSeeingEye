@@ -113,13 +113,13 @@ describe('Personal and team creation', () => {
     await act(async () => {
       await router.navigate('/research/recurring');
     });
-    const schedule = await screen.findByRole('form', { name: 'New schedule' });
+    const schedule = await screen.findByRole('form', { name: 'New subscription' });
     await user.click(within(schedule).getByText('Advanced scope and sources'));
     await user.selectOptions(within(schedule).getByLabelText('Workspace'), team.id);
     await user.selectOptions(within(schedule).getByLabelText('Collection plan'), teamPlan.id);
-    await user.type(within(schedule).getByLabelText('Schedule name'), 'Desk update');
+    await user.type(within(schedule).getByLabelText('Subscription name'), 'Desk update');
     await user.type(within(schedule).getByLabelText('Question'), 'What changed in this area?');
-    await user.click(within(schedule).getByRole('button', { name: 'Add schedule' }));
+    await user.click(within(schedule).getByRole('button', { name: 'Create subscription' }));
     await waitFor(() => expect(writes).toHaveLength(2));
     expect(writes[1]).toMatchObject({ team_id: team.id, plan_id: teamPlan.id });
     await act(async () => {

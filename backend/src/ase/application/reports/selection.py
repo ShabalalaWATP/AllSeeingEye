@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from ase.application.ports.feeds import EventQuery, EventStore
+from ase.application.reports.subscription_updates import content_signature
 from ase.application.reports.templates import EvidenceStrategy
 from ase.domain.country_subjects import matches_country_subject
 from ase.domain.events import BoundingBox, Category, Credibility, Event, Reliability
@@ -193,6 +194,7 @@ def select_evidence(
     since: datetime | None = None,
     include_unknown_dates: bool = False,
     include_country_subjects: bool = False,
+    seen_content_signatures: frozenset[str] = frozenset(),
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
@@ -247,6 +249,15 @@ def select_evidence(
         )
     ]
     ranked = _diversify(sorted(safe, key=rank), profiles, lowered)
+    if seen_content_signatures:
+        # Preserve relevance ahead of novelty, and quality/diversity within each group.
+        # Repeated items may still supply essential context after new relevant evidence.
+        ranked.sort(
+            key=lambda event: (
+                not bool(term_matches(event, lowered)) if lowered else False,
+                content_signature(event) in seen_content_signatures,
+            )
+        )
     per_organisation: dict[tuple[str, str], int] = {}
     chosen: list[EvidenceItem] = []
     for event in ranked:

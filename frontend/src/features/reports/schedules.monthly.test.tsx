@@ -43,8 +43,8 @@ it('saves monthly multi-country research with a two-year lookback, web search an
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const form = within(await screen.findByRole('form', { name: 'New schedule' }));
-  await user.type(form.getByLabelText('Schedule name'), 'Monthly regional energy');
+  const form = within(await screen.findByRole('form', { name: 'New subscription' }));
+  await user.type(form.getByLabelText('Subscription name'), 'Monthly regional energy');
   await user.type(form.getByLabelText('Question'), 'What changed in energy policy?');
   await user.click(form.getByText('Choose countries'));
   await user.click(form.getByRole('checkbox', { name: /^Ukraine/ }));
@@ -55,14 +55,14 @@ it('saves monthly multi-country research with a two-year lookback, web search an
   expect(form.getByText(/For short months/)).toBeVisible();
   await user.clear(form.getByLabelText('Look back, days'));
   await user.type(form.getByLabelText('Look back, days'), '731');
-  expect(form.getByRole('button', { name: 'Add schedule' })).toBeDisabled();
+  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
   await user.clear(form.getByLabelText('Look back, days'));
   await user.type(form.getByLabelText('Look back, days'), '730');
   await user.click(form.getByRole('checkbox', { name: /^Include a fresh web search/ }));
   await user.click(form.getByText('Advanced scope and sources'));
   await user.click(form.getByRole('button', { name: 'Choose research sources' }));
   await user.click(await form.findByRole('checkbox', { name: /^Public news/ }));
-  await user.click(form.getByRole('button', { name: 'Add schedule' }));
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
   await waitFor(() =>
     expect(captured).toMatchObject({
       cadence: 'monthly',
@@ -103,7 +103,7 @@ it('pauses and resumes without losing saved countries, source choices or the mon
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   expect(table.getByText('day 31 each month at 06:00 UTC')).toBeVisible();
   await user.click(table.getByRole('button', { name: 'Pause' }));
   expect(await table.findByText('Paused')).toBeVisible();

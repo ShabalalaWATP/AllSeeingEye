@@ -50,6 +50,7 @@ class Job:
     seed_attempts: tuple[CollectionAttempt, ...] = ()
     reused_evidence: tuple[EvidenceItem, ...] = ()
     followup_judgements: tuple[KeyJudgement, ...] = ()
+    subscription_baseline: ReportVersion | None = None
 
     @property
     def period_from(self) -> datetime:

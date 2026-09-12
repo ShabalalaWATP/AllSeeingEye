@@ -1,11 +1,13 @@
 """Composition root for authenticated report admission and durable background work."""
 
+import asyncio
 from functools import cached_property
 from typing import TYPE_CHECKING, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
+from ase.application.daily_briefing import DailyBriefingService
 from ase.application.model_routing import RoleProfiles
 from ase.application.report_jobs.service import ReportJobService
 from ase.application.report_jobs.snapshots import freeze_job
@@ -20,6 +22,21 @@ if TYPE_CHECKING:
 
 
 class ReportJobWiring:
+    @cached_property
+    def daily_briefing_admission(self) -> asyncio.Lock:
+        # Single-process report workers: keep day-boundary admissions serial too.
+        return asyncio.Lock()
+
+    def daily_briefing(self, session: AsyncSession) -> DailyBriefingService:
+        container = cast("Container", self)
+        return DailyBriefingService(
+            container.report_jobs(session),
+            SqlReportJobRepository(session),
+            container.repositories(session).uow,
+            container.clock,
+            self.daily_briefing_admission,
+        )
+
     @cached_property
     def report_job_worker(self) -> ReportJobWorker:
         return ReportJobWorker(cast("Container", self))

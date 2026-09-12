@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/live-monitor/briefing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ensure Briefing */
+        post: operations["ensure_briefing_api_live_monitor_briefing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/report-jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -4356,6 +4373,17 @@ export interface components {
             /** Latest Kev */
             latest_kev: components["schemas"]["EventOut"][];
         };
+        /** DailyBriefingOut */
+        DailyBriefingOut: {
+            job: components["schemas"]["ReportJobOut"];
+            /**
+             * Next Refresh At
+             * Format: date-time
+             */
+            next_refresh_at: string;
+            /** Coverage Note */
+            coverage_note: string;
+        };
         /** DayBucketOut */
         DayBucketOut: {
             /**
@@ -8532,6 +8560,26 @@ export interface components {
              * @default 1
              */
             monthday: number;
+            /**
+             * Anchor Month
+             * @default 1
+             */
+            anchor_month: number;
+            /** Conflict Id */
+            conflict_id?: string | null;
+            /** Hazard */
+            hazard?: string | null;
+            research_area?: components["schemas"]["ResearchAreaIn"] | null;
+            /**
+             * Disclose Area To Provider
+             * @default false
+             */
+            disclose_area_to_provider: boolean;
+            /**
+             * Avoid Repetition
+             * @default true
+             */
+            avoid_repetition: boolean;
             /** Window Hours */
             window_hours?: number | null;
             /**
@@ -8588,6 +8636,17 @@ export interface components {
             weekday: number;
             /** Monthday */
             monthday: number;
+            /** Anchor Month */
+            anchor_month: number;
+            /** Conflict Id */
+            conflict_id: string | null;
+            /** Hazard */
+            hazard: string | null;
+            research_area: components["schemas"]["ResearchAreaOut"] | null;
+            /** Disclose Area To Provider */
+            disclose_area_to_provider: boolean;
+            /** Avoid Repetition */
+            avoid_repetition: boolean;
             /** Window Hours */
             window_hours: number | null;
             /** Enabled */
@@ -9424,6 +9483,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    ensure_briefing_api_live_monitor_briefing_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyBriefingOut"];
+                };
+            };
+        };
+    };
     get_job_api_report_jobs__job_id__get: {
         parameters: {
             query?: never;

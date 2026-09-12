@@ -34,15 +34,15 @@ it('edits report depth and timing, preserves sources and paused status, then sho
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   await user.click(table.getByRole('button', { name: 'Edit' }));
-  const form = within(await screen.findByRole('form', { name: 'Edit schedule' }));
+  const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
   expect(form.getByLabelText('Question')).toHaveValue(current.question);
   expect(form.getByRole('radio', { name: /^Deep/ })).toBeChecked();
   await user.click(form.getByRole('radio', { name: /^Advanced/ }));
   await user.selectOptions(form.getByLabelText('Hour'), '15');
   await user.click(form.getByRole('button', { name: 'Save changes' }));
-  await screen.findByText('Schedule updated.');
+  await screen.findByText('Subscription updated.');
   expect(updates[0]).toMatchObject({
     research_mode: 'advanced',
     hour_utc: 15,
@@ -71,25 +71,25 @@ it('retains the edit on failure and lets the operator cancel without another wri
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   await user.click(table.getByRole('button', { name: 'Edit' }));
-  const form = within(await screen.findByRole('form', { name: 'Edit schedule' }));
-  await user.clear(form.getByLabelText('Schedule name'));
-  await user.type(form.getByLabelText('Schedule name'), 'Updated schedule');
+  const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
+  await user.clear(form.getByLabelText('Subscription name'));
+  await user.type(form.getByLabelText('Subscription name'), 'Updated schedule');
   await user.click(form.getByRole('button', { name: 'Save changes' }));
   expect(await form.findByText('Could not save schedule')).toBeVisible();
-  expect(form.getByLabelText('Schedule name')).toHaveValue('Updated schedule');
+  expect(form.getByLabelText('Subscription name')).toHaveValue('Updated schedule');
   await user.click(form.getByRole('button', { name: 'Cancel' }));
-  await screen.findByRole('form', { name: 'New schedule' });
+  await screen.findByRole('form', { name: 'New subscription' });
   expect(writes).toBe(1);
 });
 
 it('filters the control panel and gives an explicit empty result', async () => {
   const { user } = renderApp('/research/recurring', 'user');
-  await screen.findByRole('table', { name: 'Schedules' });
-  await user.selectOptions(screen.getByLabelText('Show schedules'), 'attention');
-  expect(screen.getByText('No schedules match this status.')).toBeVisible();
-  await user.selectOptions(screen.getByLabelText('Show schedules'), 'active');
+  await screen.findByRole('table', { name: 'Subscriptions' });
+  await user.selectOptions(screen.getByLabelText('Show subscriptions'), 'attention');
+  expect(screen.getByText('No subscriptions match this status.')).toBeVisible();
+  await user.selectOptions(screen.getByLabelText('Show subscriptions'), 'active');
   expect(screen.getByText('Morning INTSUM')).toBeVisible();
 });
 
@@ -102,13 +102,13 @@ it('clears fresh collection choices when using existing evidence only', async ()
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const form = within(await screen.findByRole('form', { name: 'New schedule' }));
-  await user.type(form.getByLabelText('Schedule name'), 'Snapshot');
+  const form = within(await screen.findByRole('form', { name: 'New subscription' }));
+  await user.type(form.getByLabelText('Subscription name'), 'Snapshot');
   await user.type(form.getByLabelText('Question'), 'What is happening?');
   await user.click(form.getByRole('checkbox', { name: /^Include a fresh web search/ }));
   await user.click(form.getByRole('checkbox', { name: /^Use existing live evidence only/ }));
   expect(form.getByRole('radio', { name: /^Basic/ })).toBeDisabled();
-  await user.click(form.getByRole('button', { name: 'Add schedule' }));
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
   await waitFor(() => expect(captured).toMatchObject({ research_web_search: false }));
   expect(captured).not.toHaveProperty('research_mode');
 });
@@ -121,9 +121,9 @@ it('keeps the latest successful report accessible when a later scheduled run fai
     ),
   );
   renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   expect(table.getByText('The latest collection could not complete.')).toBeVisible();
-  expect(table.getByRole('link', { name: 'Latest report' })).toHaveAttribute(
+  expect(table.getByRole('link', { name: 'Latest update' })).toHaveAttribute(
     'href',
     `/reports/${schedule.last_report_id ?? ''}`,
   );
@@ -143,14 +143,14 @@ it.each([6, null])(
       }),
     );
     const { user } = renderApp('/research/recurring', 'user');
-    const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+    const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
     await user.click(table.getByRole('button', { name: 'Edit' }));
-    const form = within(await screen.findByRole('form', { name: 'Edit schedule' }));
+    const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
     if (windowHours === null) {
       expect(form.getByLabelText('Search period')).toHaveValue('default');
       expect(form.queryByLabelText('Look back, days')).not.toBeInTheDocument();
     } else expect(form.getByLabelText('Look back, hours')).toHaveValue(6);
-    await user.type(form.getByLabelText('Schedule name'), ' revised');
+    await user.type(form.getByLabelText('Subscription name'), ' revised');
     await user.click(form.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(captured).toHaveProperty('window_hours', windowHours));
   },
@@ -191,9 +191,9 @@ it('clears a hidden subject from general research and source preview after chang
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   await user.click(table.getByRole('button', { name: 'Edit' }));
-  const form = within(await screen.findByRole('form', { name: 'Edit schedule' }));
+  const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
   await user.click(form.getByText('Advanced scope and sources'));
   await user.selectOptions(form.getByLabelText('Research focus'), 'general');
   expect(form.queryByLabelText('Research subject')).not.toBeInTheDocument();
@@ -223,9 +223,9 @@ it('prevents edit saves while a pause request is running and preserves its resul
     }),
   );
   const { user } = renderApp('/research/recurring', 'user');
-  const table = within(await screen.findByRole('table', { name: 'Schedules' }));
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   await user.click(table.getByRole('button', { name: 'Edit' }));
-  const form = within(await screen.findByRole('form', { name: 'Edit schedule' }));
+  const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
   await user.click(table.getByRole('button', { name: 'Pause' }));
   await waitFor(() => expect(writes).toHaveLength(1));
   expect(form.getByRole('button', { name: 'Save changes' })).toBeDisabled();

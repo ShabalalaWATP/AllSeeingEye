@@ -12,10 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import CollectionPlanRow, ReportRow, ScheduleRow
 from ase.adapters.persistence.schedule_changes import record_change
+from ase.adapters.persistence.subscription_history import remember_evidence
 from ase.application.access import AccessContext, AccessPolicy
 from ase.domain.access import Visibility
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_changes import change_from_dict, change_to_dict
 from ase.domain.schedules import Schedule
 
@@ -53,6 +55,16 @@ def _from_row(row: ScheduleRow) -> Schedule:
         research_source_ids=tuple(options["source_ids"])
         if options.get("source_ids") is not None
         else None,
+        anchor_month=options.get("anchor_month", 1),
+        conflict_id=options.get("conflict_id"),
+        hazard=options.get("hazard"),
+        research_area=area_from_dict(options.get("research_area")),
+        disclose_area_to_provider=options.get("disclose_area_to_provider", False),
+        avoid_repetition=options.get("avoid_repetition", True),
+        seen_content_signatures=tuple(options.get("seen_content_signatures", ()))[:500],
+        baseline_report_id=UUID(options["baseline_report_id"])
+        if options.get("baseline_report_id")
+        else None,
     )
 
 
@@ -83,6 +95,16 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
         "subject": schedule.research_subject,
         "country_isos": list(schedule.country_isos),
         "monthday": schedule.monthday,
+        "anchor_month": schedule.anchor_month,
+        "conflict_id": schedule.conflict_id,
+        "hazard": schedule.hazard,
+        "research_area": area_to_dict(schedule.research_area),
+        "disclose_area_to_provider": schedule.disclose_area_to_provider,
+        "avoid_repetition": schedule.avoid_repetition,
+        "seen_content_signatures": list(schedule.seen_content_signatures),
+        "baseline_report_id": str(schedule.baseline_report_id)
+        if schedule.baseline_report_id
+        else None,
         "web_search": schedule.research_web_search,
         "source_ids": list(schedule.research_source_ids)
         if schedule.research_source_ids is not None
@@ -203,6 +225,7 @@ class SqlScheduleStore:
                 except (Forbidden, InvalidRequest, NotFound):
                     return
                 await record_change(session, row, report, access, ran_at)
+                await remember_evidence(session, row, report)
             row.last_run_at = ran_at
             row.next_run_at = next_run_at
             row.last_error = error

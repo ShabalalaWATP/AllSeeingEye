@@ -42,7 +42,8 @@ export default function DirectionPage() {
       <h1 className="text-xl font-semibold">Plans & areas</h1>
       <p className="text-sm text-muted">
         Save reusable geographic areas and structured questions for more detailed research. Start a
-        one-off question from New research.
+        one-off question from New research. Open saved areas on the map, or reuse them in OSINT
+        subscriptions. Save a drawn map area from the Research area tool.
       </p>
       <ResearchNavigation />
       <div className="flex flex-col gap-3">
@@ -73,6 +74,12 @@ export default function DirectionPage() {
                   </Td>
                   <Td className="font-mono text-xs text-muted">{describeArea(area)}</Td>
                   <Td>
+                    <Link
+                      to={`/?area=${encodeURIComponent(area.id)}`}
+                      className="mr-3 text-sm text-ember hover:underline"
+                    >
+                      Open on map
+                    </Link>
                     <Button
                       disabled={!workspaces.canManage(area)}
                       variant="danger"

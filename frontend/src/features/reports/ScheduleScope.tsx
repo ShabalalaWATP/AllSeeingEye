@@ -56,10 +56,14 @@ export function ScheduleScope({
           onChange={(value) => {
             scope.select(value);
             setPlanId('');
+            state.setResearchArea(null);
+            state.setDiscloseArea(false);
+            setSourceIds(null);
           }}
         />
         <SelectField
           label="Product"
+          disabled={Boolean(state.researchArea)}
           value={template}
           onChange={(event) => setTemplate(event.target.value)}
           options={templates
@@ -68,6 +72,7 @@ export function ScheduleScope({
         />
         <SelectField
           label="Collection plan"
+          disabled={Boolean(activeResearch && state.researchArea)}
           value={selectedPlan}
           onChange={(event) => setPlanId(event.target.value)}
           hint="Optional. Plans must use the same workspace."
@@ -88,6 +93,7 @@ export function ScheduleScope({
             />
             <SelectField
               label="Research focus"
+              disabled={Boolean(state.researchArea)}
               value={focus}
               onChange={(event) => {
                 setFocus(event.target.value as typeof focus);
@@ -126,6 +132,7 @@ export function ScheduleScope({
                   subject: focus === 'general' ? null : subject.trim() || null,
                   countries: countriesInScope,
                   research_web_search: webSearch,
+                  ...(state.researchArea ? { research_area: state.researchArea } : {}),
                 }}
                 lookback={previewLookbackDays}
                 value={sourceIds}

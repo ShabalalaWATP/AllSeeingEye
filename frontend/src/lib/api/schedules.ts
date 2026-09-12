@@ -8,6 +8,15 @@ import { apiCall, apiSend } from './client';
 
 export const scheduleSchema = z.object({
   team_id: z.uuid().nullable(),
+  anchor_month: z.number().int().min(1).max(12).default(1),
+  conflict_id: z.string().nullable().default(null),
+  hazard: z.string().nullable().default(null),
+  research_area: z
+    .object({ geometry: z.record(z.string(), z.unknown()), sha256: z.string() })
+    .nullable()
+    .default(null),
+  disclose_area_to_provider: z.boolean().default(false),
+  avoid_repetition: z.boolean().default(true),
   notify_on_change: z.boolean(),
   last_change_summary: z.string().nullable(),
   last_change: z
@@ -87,6 +96,12 @@ export function updateSchedule(id: string, request: ScheduleRequest): Promise<Sc
 export function scheduleRequest(schedule: Schedule, enabled: boolean): ScheduleRequest {
   return {
     name: schedule.name,
+    anchor_month: schedule.anchor_month,
+    conflict_id: schedule.conflict_id,
+    hazard: schedule.hazard,
+    research_area: schedule.research_area ? { geometry: schedule.research_area.geometry } : null,
+    disclose_area_to_provider: schedule.disclose_area_to_provider,
+    avoid_repetition: schedule.avoid_repetition,
     template_id: schedule.template_id,
     country_iso: schedule.country_iso,
     country_isos: schedule.country_isos,

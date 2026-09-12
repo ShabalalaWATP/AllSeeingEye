@@ -9,6 +9,7 @@ from ase.application.ports.reports import ReportRepository
 from ase.application.ports.research_inputs import ResearchInputStore, StoredResearchInput
 from ase.application.reports.followup_scope import require_followup_scope
 from ase.application.reports.request import ReportRequest
+from ase.application.reports.subscription_baseline import load_subscription_baseline
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.events import Event
 from ase.domain.evidence import EvidenceItem
@@ -38,6 +39,7 @@ class PreparedResearchInputs:
     attempts: tuple[CollectionAttempt, ...] = ()
     parent: ParentReference | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    subscription_baseline: ReportVersion | None = None
 
     def apply(self, job: "Job") -> "Job":
         return replace(
@@ -47,6 +49,7 @@ class PreparedResearchInputs:
             followup_judgements=self.judgements,
             seed_attempts=self.attempts,
             scope={**job.scope, **self.metadata},
+            subscription_baseline=self.subscription_baseline,
         )
 
 
@@ -107,6 +110,11 @@ class ReportResearchInputs:
         judgements: tuple[KeyJudgement, ...] = ()
         attempts: list[CollectionAttempt] = []
         metadata: dict[str, Any] = {}
+        baseline = await load_subscription_baseline(self._access, self._reports, actor, request)
+        if baseline is not None:
+            judgements = baseline.body.key_judgements
+            metadata["subscription_previous_report_id"] = str(baseline.report_id)
+            metadata["subscription_previous_version"] = baseline.number
         parent: ParentReference | None = None
         if request.research_input_id is not None:
             if (
@@ -190,5 +198,5 @@ class ReportResearchInputs:
                 "Document and media research requires a private input or an authorised saved report"
             )
         return PreparedResearchInputs(
-            events, evidence, judgements, tuple(attempts), parent, metadata
+            events, evidence, judgements, tuple(attempts), parent, metadata, baseline
         )

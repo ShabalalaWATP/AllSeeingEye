@@ -68,6 +68,9 @@ class ReportRequest:
     research_area: ResearchArea | None = None
     country_isos: tuple[str, ...] = ()
     research_web_search: bool = False
+    # Internal automation reference, deliberately absent from public report request schemas.
+    subscription_previous_report_id: UUID | None = None
+    subscription_seen_signatures: tuple[str, ...] = ()
 
     @property
     def effective_area(self) -> ResearchArea | None:

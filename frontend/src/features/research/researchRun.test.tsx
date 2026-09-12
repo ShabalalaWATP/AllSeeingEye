@@ -37,7 +37,7 @@ describe('research job submission integration', () => {
     expect(await screen.findByText(/The job may already be running/)).toBeVisible();
     expect(
       within(screen.getByRole('region', { name: 'Research progress' })).getByRole('link', {
-        name: 'Research jobs',
+        name: 'Research progress',
       }),
     ).toHaveAttribute('href', '/research/jobs');
     expect(submissionSignal?.aborted).toBe(true);

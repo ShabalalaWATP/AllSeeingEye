@@ -10,6 +10,7 @@ import { useResource } from '@/lib/hooks/useResource';
 import { ActivityCells } from './TrackerParts';
 import { ConflictMetrics, ConflictCoverageNote } from './ConflictMetrics';
 import { ConflictSourceCoverage } from './ConflictSourceCoverage';
+import { DailyBriefing } from './DailyBriefing';
 
 const MODULES = [
   {
@@ -114,24 +115,18 @@ export default function TrackersPage() {
   const disasters = useResource(fetchDisasterBoard);
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Live monitor</h1>
-      <p className="text-sm text-muted">
-        Browse recent activity from connected feeds by topic. Open an item to inspect it, or use{' '}
-        <Link to="/research" className="text-text underline">
-          Research
-        </Link>{' '}
-        to collect sources and answer a specific question.
-      </p>
-      <ul aria-label="Modules" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {MODULES.map((module) => (
-          <li key={module.to} className="rounded-card border border-line bg-surface p-3">
-            <Link to={module.to} className="font-medium text-text hover:underline">
-              {module.title}
-            </Link>
-            <p className="mt-1 text-xs text-muted">{module.blurb}</p>
-          </li>
-        ))}
-      </ul>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">Live monitor</h1>
+          <p className="mt-1 text-sm text-muted">
+            Daily analysis, with the latest collected activity below.
+          </p>
+        </div>
+        <Link to="/subscriptions" className="text-sm text-ember hover:underline">
+          Create an OSINT subscription
+        </Link>
+      </header>
+      <DailyBriefing />
       <div className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Conflicts</h2>
         <ConflictCoverageNote />
@@ -146,9 +141,16 @@ export default function TrackersPage() {
           <ConflictBoard items={conflicts.data} />
         )}
       </div>
-      <ConflictSourceCoverage />
+      <details>
+        <summary className="w-fit cursor-pointer text-sm text-muted hover:text-text">
+          Inspect conflict source coverage
+        </summary>
+        <div className="mt-3">
+          <ConflictSourceCoverage />
+        </div>
+      </details>
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Disasters</h2>
+        <h2 className="text-base font-semibold">Global disasters</h2>
         {disasters.error === null ? null : (
           <Alert tone="error">{describeError(disasters.error)}</Alert>
         )}
@@ -160,6 +162,22 @@ export default function TrackersPage() {
           <HazardBoard items={disasters.data} />
         )}
       </div>
+      <nav aria-label="Specialist monitoring" className="border-t border-line pt-5">
+        <h2 className="mb-3 text-base font-semibold">Explore connected feeds</h2>
+        <ul aria-label="Modules" className="grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-5">
+          {MODULES.map((module) => (
+            <li key={module.to}>
+              <Link
+                to={module.to}
+                className="font-medium text-text hover:text-ember hover:underline"
+              >
+                {module.title}
+              </Link>
+              <p className="mt-1 text-xs leading-5 text-muted">{module.blurb}</p>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </section>
   );
 }

@@ -17,7 +17,9 @@ describe('schedule states', () => {
     server.use(http.get('/api/schedules', () => HttpResponse.json({ items: [] })));
     renderApp('/research/recurring', 'user');
     expect(
-      await screen.findByText('No schedules yet. Create your first recurring report below.'),
+      await screen.findByText(
+        'No subscriptions yet. Choose a topic and create your first update below.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -54,7 +56,7 @@ describe('schedule states', () => {
       }),
     );
     const { user } = renderApp('/research/recurring', 'user');
-    const table = await screen.findByRole('table', { name: 'Schedules' });
+    const table = await screen.findByRole('table', { name: 'Subscriptions' });
     expect(within(table).getByText('weekdays at 09:00 UTC')).toBeInTheDocument();
     expect(within(table).getByText('Wednesday at 06:00 UTC')).toBeInTheDocument();
     expect(within(table).getByText('RuntimeError: boom')).toBeInTheDocument();
@@ -75,15 +77,15 @@ describe('schedule states', () => {
       }),
     );
     const { user } = renderApp('/research/recurring', 'user');
-    const form = await screen.findByRole('form', { name: 'New schedule' });
+    const form = await screen.findByRole('form', { name: 'New subscription' });
     await user.click(within(form).getByText('Advanced scope and sources'));
     await user.selectOptions(within(form).getByLabelText('Product'), 'intsum');
-    await user.type(within(form).getByLabelText('Schedule name'), 'World morning');
+    await user.type(within(form).getByLabelText('Subscription name'), 'World morning');
     await user.selectOptions(within(form).getByLabelText('Cadence'), 'weekly');
     expect(within(form).getByLabelText('Weekday')).toBeInTheDocument();
     await user.selectOptions(within(form).getByLabelText('Cadence'), 'daily');
     expect(within(form).queryByLabelText('Weekday')).not.toBeInTheDocument();
-    await user.click(within(form).getByRole('button', { name: 'Add schedule' }));
+    await user.click(within(form).getByRole('button', { name: 'Create subscription' }));
     await waitFor(() => {
       expect(captured).toEqual({
         name: 'World morning',
@@ -94,11 +96,17 @@ describe('schedule states', () => {
         template_id: 'intsum',
         country_iso: null,
         country_isos: [],
-        window_hours: 168,
+        window_hours: 24,
         hour_utc: 6,
         cadence: 'daily',
         weekday: 0,
         monthday: 1,
+        anchor_month: expect.any(Number),
+        avoid_repetition: true,
+        conflict_id: null,
+        hazard: null,
+        research_area: null,
+        disclose_area_to_provider: false,
       });
     });
   });

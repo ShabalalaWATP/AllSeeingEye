@@ -322,6 +322,13 @@ export const handlers = [
   ),
 
   ...directionHandlers,
+  http.post('/api/live-monitor/briefing', () =>
+    HttpResponse.json({
+      job: reportJob({ status: 'paused' }),
+      next_refresh_at: new Date(Date.now() + 86_400_000).toISOString(),
+      coverage_note: 'The briefing covers available connected sources only.',
+    }),
+  ),
   http.get('/api/report-jobs', () => HttpResponse.json({ items: [] })),
   http.get('/api/report-jobs/:id', ({ params }) =>
     HttpResponse.json(reportJob({ id: String(params.id) })),

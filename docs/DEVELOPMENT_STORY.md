@@ -4059,3 +4059,43 @@ coverage was not measured. Final frontend typing, scoped ESLint/Prettier and dif
 checks passed. The existing MapLibre vendor-size warning and 380-line engine warning
 remain. Both local services respond successfully; the live API advertises all
 three research modes and the six-photo request contract. No Git remote is configured.
+
+
+## 12 September 2026: subscriptions, daily briefings and reusable map areas
+
+Research navigation now separates completed reports from ongoing research progress.
+OSINT Subscriptions has its own primary navigation entry and replaces the recurring
+research page. The composer supports daily through annual intervals, calendar
+anchors, cadence-matched or custom lookbacks, topic/source selection and reusable
+areas. Completed editions remain normal cited, exportable reports.
+
+Subscription collection prioritises new content against up to 500 per-subscription
+fingerprints and the last non-empty successful edition. Empty or failed runs retain
+history; scope changes reset it. Prior-report access is checked before model work
+and again before saving. No new raw-event archive or database migration was added.
+
+Live Monitor requests a personal Basic conflict/disaster/humanitarian briefing,
+shows an overall situation and latest news with citations, and reuses its durable
+job for 24 hours. Hidden tabs defer admission. Current briefing progress cannot be
+deleted before expiry, preventing inadvertent paid regeneration on the next visit.
+The feature refreshes when visible; unattended recurring work uses subscriptions.
+
+Plans & areas now has explicit map links. Geometry is loaded through authorised
+APIs and disappears on access changes. Map research drawings can be saved as
+labelled enclosing rectangles. Review found and fixed antimeridian conversion,
+silent scope loss during mode changes, oversized country selections and missing
+enabled-area disclosure consent. Independent review also covered admission reuse
+and prior-report scope. No live model calls were used for acceptance.
+
+Validation completed with 33 final backend regressions covering daily briefings
+and subscriptions, in addition to the earlier schedule, report, selection and job
+service batches. Backend Ruff, formatting, strict typing and import contracts pass.
+Full backend coverage was not measured. The full frontend suite passes with
+95.13% statements, 90.15% branches, 93.47% functions and 96.39% lines, meeting the
+unchanged thresholds. Frontend typing, scoped ESLint/Prettier, build and diff
+checks pass. Desktop and 390-pixel layouts were inspected with fixture APIs in a
+real browser. The existing vendor chunk warning remains; file-length checks pass
+with the existing map-engine warning and a 351-line shared test-handler exception.
+The restarted local API responds successfully and exposes the new contracts.
+No live-model evaluation, database migration or deployment was performed. No Git
+remote is configured.

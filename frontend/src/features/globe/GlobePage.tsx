@@ -1,5 +1,7 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useSavedMapArea } from './useSavedMapArea';
+import { SavedMapAreaNotice } from './SavedMapAreaNotice';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
 import { useInfrastructureSelection } from './infrastructure/useInfrastructureSelection';
 import { useConflictRegions } from './useConflictRegions';
@@ -21,15 +23,12 @@ import { eventControlPanels } from './eventControlPanels';
 import { useDashboardFocus } from './useDashboardFocus';
 import { useGlobePreferences } from './useGlobePreferences';
 
-import { CoordinateReadout } from './CoordinateReadout';
+import { MapStatusReadouts } from './MapStatusReadouts';
 import { useBritishGrid } from './useBritishGrid';
 import { GlobeControls } from './GlobeControls';
-import { MeasurementReadout } from './MeasurementReadout';
-import { RfMapReadout } from './RfMapReadout';
 import { MapLayerRail } from './MapLayerRail';
 import { MapNavigationTools } from './MapNavigationTools';
 import { ModeToolbar } from './ModeToolbar';
-import { WorldClocks } from './WorldClocks';
 import { useMapWorkspaceTools } from './useMapWorkspaceTools';
 import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
@@ -51,7 +50,6 @@ import { useEyeMapContext } from './useEyeMapContext';
 
 export { FOCUS_ZOOM } from './useMapFocus';
 import { useMapFocus } from './useMapFocus';
-
 export default function GlobePage() {
   const {
     mode,
@@ -81,12 +79,16 @@ export default function GlobePage() {
   useLiveEvents();
   useViewportCoverage(engine, supported && visible);
   const tools = useMapWorkspaceTools(engine, supported && !opsRoom, mode);
-  const { measurement } = tools;
   const now = useNow();
   const gnssFilters = useGnssFilters(gnss.cells, gnss.receivedAt, now);
   const { zoom, symbolMode } = useMapRenderView(engine, mode);
   const { osMaps, osLoading, osError, recheckOs, countries, countryByIso, countriesError } =
     useMapReferenceData(baseLayer, setBaseLayer);
+  const savedArea = useSavedMapArea(engine, countryByIso, mode === 'map');
+  const toolLayers = useMemo(
+    () => [...tools.layers, ...savedArea.layers],
+    [tools.layers, savedArea.layers],
+  );
 
   const data = useDashboardEvents(now);
   const {
@@ -190,7 +192,7 @@ export default function GlobePage() {
     infrastructureLayers,
     conflictRegionLayers: regionSelection.layers,
     contextLayers: context.layers,
-    measured: tools.layers,
+    measured: toolLayers,
     supported,
     terminator,
     lite,
@@ -217,7 +219,7 @@ export default function GlobePage() {
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
       {!opsRoom && <EventScopeStrip state={data} />}
-      <WorldClocks />
+      {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
       <MaritimeAttribution events={quality.filtered} hidden={hidden.includes('maritime')} />
       {!opsRoom && (
         <GlobeControls
@@ -318,13 +320,13 @@ export default function GlobePage() {
           {eventControlPanels(data, selectContext)}
         </GlobeControls>
       )}
-      <MeasurementReadout value={measurement} />
-      {!opsRoom && !tools.picking && (
-        <RfMapReadout analysis={tools.rf.analysis} estimate={tools.rf.estimate} />
-      )}
-      {supported && !opsRoom && !tools.picking && (
-        <CoordinateReadout engine={engine} bng={britishGrid.enabled} />
-      )}
+      <MapStatusReadouts
+        tools={tools}
+        engine={engine}
+        supported={supported}
+        opsRoom={opsRoom}
+        bng={britishGrid.enabled}
+      />
       {!opsRoom && !tools.picking && (
         <GlobeInspectors
           regions={regions}

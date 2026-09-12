@@ -277,14 +277,16 @@ class FeatureWiring(ReportWiring):
     def create_schedule(self, session: AsyncSession) -> CreateScheduleUseCase:
         r = self.repositories(session)
         return CreateScheduleUseCase(
-            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session)
-        )
+            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
+            self.conflicts,
+        )  # fmt: skip
 
     def update_schedule(self, session: AsyncSession) -> UpdateScheduleUseCase:
         r = self.repositories(session)
         return UpdateScheduleUseCase(
-            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session)
-        )
+            r.schedules, r.plans, self.clock, self._auditor(r), r.uow, self.access_policy(session),
+            self.conflicts,
+        )  # fmt: skip
 
     def delete_schedule(self, session: AsyncSession) -> DeleteScheduleUseCase:
         r = self.repositories(session)

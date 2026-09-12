@@ -19,7 +19,7 @@ export default function ReportJobPage() {
       <div className="report-jobs-workspace">
         <ResearchNavigation />
         <Link to="/research/jobs" className="job-back">
-          ← Research jobs
+          ← Research progress
         </Link>
         {resource.loading && <LoadingNote label="Loading research job" />}
         {resource.error && (

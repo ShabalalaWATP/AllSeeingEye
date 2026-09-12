@@ -8,10 +8,12 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_area import ResearchArea
 from ase.domain.research_changes import ResearchChange
 from ase.domain.research_scope import normalise_countries
 
-CADENCES = ("daily", "weekdays", "weekly", "monthly")
+CADENCES = ("daily", "weekdays", "weekly", "monthly", "quarterly", "semiannual", "annual")
+MONTH_INTERVALS = {"monthly": 1, "quarterly": 3, "semiannual": 6, "annual": 12}
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +46,14 @@ class Schedule:
     monthday: int = 1
     research_web_search: bool = False
     research_source_ids: tuple[str, ...] | None = None
+    anchor_month: int = 1
+    conflict_id: str | None = None
+    hazard: str | None = None
+    research_area: ResearchArea | None = None
+    disclose_area_to_provider: bool = False
+    avoid_repetition: bool = True
+    seen_content_signatures: tuple[str, ...] = ()
+    baseline_report_id: UUID | None = None
 
     def __post_init__(self) -> None:
         countries = normalise_countries(self.country_iso, self.country_isos)
@@ -52,28 +62,32 @@ class Schedule:
 
 
 def next_run_after(
-    now: datetime, hour_utc: int, cadence: str, weekday: int = 0, monthday: int = 1
+    now: datetime,
+    hour_utc: int,
+    cadence: str,
+    weekday: int = 0,
+    monthday: int = 1,
+    anchor_month: int = 1,
 ) -> datetime:
     """The first moment strictly after `now` at hour_utc:00 UTC that the cadence allows."""
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("The schedule clock must be timezone-aware")
     if cadence not in CADENCES or not 0 <= hour_utc <= 23:
         raise ValueError("Invalid schedule cadence or UTC hour")
-    if not 0 <= weekday <= 6 or not 1 <= monthday <= 31:
+    if not 0 <= weekday <= 6 or not 1 <= monthday <= 31 or not 1 <= anchor_month <= 12:
         raise ValueError("Invalid schedule weekday or day of month")
     now = now.astimezone(UTC)
-    if cadence == "monthly":
+    if cadence in MONTH_INTERVALS:
         # Keep the requested day. A short February must not turn future runs into the 28th.
         year, month = now.year, now.month
-        candidate = datetime(
-            year, month, min(monthday, monthrange(year, month)[1]), hour_utc, tzinfo=UTC
-        )
-        if candidate <= now:
-            year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+        for _ in range(13):
             candidate = datetime(
                 year, month, min(monthday, monthrange(year, month)[1]), hour_utc, tzinfo=UTC
             )
-        return candidate
+            if candidate > now and (month - anchor_month) % MONTH_INTERVALS[cadence] == 0:
+                return candidate
+            year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+        raise ValueError("Unable to resolve calendar recurrence")  # pragma: no cover
     candidate = now.replace(hour=hour_utc, minute=0, second=0, microsecond=0)
     if candidate <= now:
         candidate += timedelta(days=1)

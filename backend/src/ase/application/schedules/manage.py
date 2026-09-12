@@ -13,10 +13,13 @@ from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
 from ase.application.ports.direction import PlanRepository
 from ase.application.ports.schedules import ScheduleRepository
+from ase.application.ports.trackers import ConflictDirectory
 from ase.application.reports.templates import TEMPLATES
+from ase.application.schedules.validation import validate_subscription_scope
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_area import ResearchArea
 from ase.domain.research_scope import MAX_RESEARCH_HOURS, normalise_countries
 from ase.domain.schedules import CADENCES, Schedule, next_run_after
 from ase.domain.users import User
@@ -46,6 +49,12 @@ class ScheduleInput:
     monthday: int = 1
     research_web_search: bool = False
     research_source_ids: tuple[str, ...] | None = None
+    anchor_month: int = 1
+    conflict_id: str | None = None
+    hazard: str | None = None
+    research_area: ResearchArea | None = None
+    disclose_area_to_provider: bool = False
+    avoid_repetition: bool = True
 
 
 def _research_question(data: ScheduleInput) -> str | None:
@@ -111,8 +120,7 @@ def build_schedule(
     template = TEMPLATES.get(data.template_id)
     if template is None:
         raise InvalidRequest("Unknown report template.")
-    if template.needs_conflict or template.needs_hazard:
-        raise InvalidRequest("This product cannot be scheduled yet.")
+    validate_subscription_scope(data, template)
     question = _research_question(data)
     if template.needs_question and data.plan_id is None and not question:
         raise InvalidRequest("Ask the Eye needs a question or collection plan.")
@@ -126,11 +134,13 @@ def build_schedule(
     if not (0 <= data.hour_utc <= 23):
         raise InvalidRequest("The hour must be between 0 and 23 UTC.")
     if data.cadence not in CADENCES:
-        raise InvalidRequest("The cadence is daily, weekdays, weekly or monthly.")
+        raise InvalidRequest("Choose a supported daily, weekly or calendar-month subscription.")
     if not (0 <= data.weekday <= 6):
         raise InvalidRequest("The weekday must be between 0 (Monday) and 6 (Sunday).")
     if not (1 <= data.monthday <= 31):
         raise InvalidRequest("The day of the month must be between 1 and 31.")
+    if not (1 <= data.anchor_month <= 12):
+        raise InvalidRequest("The anchor month must be between 1 and 12.")
     if data.window_hours is not None and not (1 <= data.window_hours <= MAX_WINDOW_HOURS):
         raise InvalidRequest("The lookback must be between 1 hour and 730 days.")
     if data.notify_on_change and not question and data.plan_id is None:
@@ -152,6 +162,10 @@ def build_schedule(
                 "window_hours",
                 "template_id",
                 "notify_on_change",
+                "conflict_id",
+                "hazard",
+                "research_area",
+                "avoid_repetition",
             )
         )
     )
@@ -169,9 +183,11 @@ def build_schedule(
         enabled=data.enabled,
         created_by=owner,
         created_at=created,
-        next_run_at=next_run_after(now, data.hour_utc, data.cadence, data.weekday, data.monthday),
+        next_run_at=next_run_after(
+            now, data.hour_utc, data.cadence, data.weekday, data.monthday, data.anchor_month
+        ),
         last_run_at=None if previous is None else previous.last_run_at,
-        last_report_id=None if previous is None else previous.last_report_id,
+        last_report_id=None if reset or previous is None else previous.last_report_id,
         last_error=None if previous is None else previous.last_error,
         team_id=data.team_id,
         notify_on_change=data.notify_on_change,
@@ -184,6 +200,16 @@ def build_schedule(
         monthday=data.monthday,
         research_web_search=data.research_web_search,
         research_source_ids=data.research_source_ids,
+        anchor_month=data.anchor_month,
+        conflict_id=data.conflict_id,
+        hazard=data.hazard,
+        research_area=data.research_area,
+        disclose_area_to_provider=data.disclose_area_to_provider,
+        avoid_repetition=data.avoid_repetition,
+        seen_content_signatures=()
+        if reset or previous is None
+        else previous.seen_content_signatures,
+        baseline_report_id=None if reset or previous is None else previous.baseline_report_id,
     )
 
 
@@ -196,6 +222,7 @@ class _ScheduleUseCase:
         auditor: Auditor,
         uow: UnitOfWork,
         access: AccessPolicy,
+        conflicts: ConflictDirectory | None = None,
     ) -> None:
         self._schedules = schedules
         self._plans = plans
@@ -203,8 +230,13 @@ class _ScheduleUseCase:
         self._auditor = auditor
         self._uow = uow
         self._access = access
+        self._conflicts = conflicts
 
     async def _check_plan(self, data: ScheduleInput, owner: UUID, access: AccessContext) -> None:
+        if data.conflict_id is not None and (
+            self._conflicts is None or self._conflicts.get(data.conflict_id) is None
+        ):
+            raise InvalidRequest("Choose a conflict from the tracker list.")
         if data.plan_id is None:
             return
         plan = await self._plans.get(data.plan_id)

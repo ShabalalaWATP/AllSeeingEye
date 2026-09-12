@@ -7,6 +7,7 @@ import type { LocalCollection } from '@/lib/map/geoJsonTypes';
 import { RESEARCH_DEPTHS } from '@/components/research/ResearchDepth';
 import { ResearchProgress } from '@/components/research/ResearchProgress';
 import { MapToolIntro } from './MapToolIntro';
+import { SaveResearchArea } from './SaveResearchArea';
 import { AreaResearchSources } from './AreaResearchSources';
 import { AREA_PERIODS, useAreaResearch } from './useAreaResearch';
 
@@ -62,6 +63,9 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
       <fieldset disabled={action.busy} className="map-tool-section min-w-0">
         <legend className="map-tool-section-title mb-2">1 · Choose an area</legend>
         {children}
+        {area && !areaError && !picking && (
+          <SaveResearchArea key={JSON.stringify(area)} area={area} />
+        )}
         {areaError && (
           <p className="map-tool-notice" role="alert">
             {areaError}

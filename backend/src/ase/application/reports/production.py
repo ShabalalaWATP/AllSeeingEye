@@ -33,6 +33,7 @@ from ase.application.reports.progress import Progress, reached
 from ase.application.reports.reused_evidence import REUSE_NOTICE
 from ase.application.reports.sections import draft_sections
 from ase.application.reports.selection import Selection
+from ase.application.reports.subscription_updates import update_guidance
 from ase.domain.advocacy import DevilsAdvocacy
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, quality_of_information
@@ -182,6 +183,14 @@ class Producer:
                             job.background,
                             receipt.describe() if receipt else None,
                             REUSE_NOTICE if job.reused_evidence else None,
+                            update_guidance(
+                                job.subscription_baseline,
+                                selected.items,
+                                frozenset(job.request.subscription_seen_signatures),
+                                previous_missing=job.request.subscription_previous_report_id
+                                is not None
+                                and job.subscription_baseline is None,
+                            ),
                         ),
                     )
                 )

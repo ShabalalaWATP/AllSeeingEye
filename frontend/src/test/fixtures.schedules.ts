@@ -3,6 +3,12 @@ import type { Schedule } from '@/lib/api/schedules';
 
 export const schedule: Schedule = {
   team_id: null,
+  anchor_month: 1,
+  conflict_id: null,
+  hazard: null,
+  research_area: null,
+  disclose_area_to_provider: false,
+  avoid_repetition: true,
   question: null,
   notify_on_change: false,
   last_change: null,

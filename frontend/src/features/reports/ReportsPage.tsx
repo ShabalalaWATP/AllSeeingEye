@@ -59,8 +59,8 @@ export default function ReportsPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Saved reports</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Find previous answers, inspect frozen evidence and export your findings. Recurring
-            research saves each run here too.
+            Find previous answers, inspect frozen evidence and export your findings. Subscription
+            updates and daily briefings are saved here too.
           </p>
         </div>
         <Link
@@ -71,8 +71,11 @@ export default function ReportsPage() {
         </Link>
       </header>
       <div className="flex flex-wrap gap-4 text-sm">
-        <Link to="/research/recurring" className="text-muted underline hover:text-text">
-          Manage recurring research
+        <Link to="/research/jobs" className="text-muted underline hover:text-text">
+          Research progress
+        </Link>
+        <Link to="/subscriptions" className="text-muted underline hover:text-text">
+          Manage OSINT subscriptions
         </Link>
         <Button
           variant="ghost"

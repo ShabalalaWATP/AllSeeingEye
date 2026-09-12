@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { Country } from '@/lib/api/geoSchemas';
+import { SubscriptionCoverage } from './SubscriptionCoverage';
 import { ScheduleScope } from './ScheduleScope';
 import { ScheduleTiming } from './ScheduleTiming';
 import { useScheduleForm, type ScheduleFormStateProps } from './useScheduleForm';
@@ -57,16 +58,16 @@ export function ScheduleForm(
   return (
     <form
       onSubmit={submit}
-      aria-label={initial ? 'Edit schedule' : 'New schedule'}
+      aria-label={initial ? 'Edit subscription' : 'New subscription'}
       className="min-w-0 border-t border-line pt-7"
     >
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold">
-            {initial ? 'Edit scheduled research' : 'Create scheduled research'}
+            {initial ? 'Edit subscription' : 'Create a subscription'}
           </h2>
           <p className="mt-2 text-sm text-muted">
-            Set up a research report, then choose when it repeats.
+            Choose what you want to follow, the report depth and how often to receive an update.
           </p>
         </div>
         {onCancel && (
@@ -87,7 +88,7 @@ export function ScheduleForm(
             </Alert>
           )}
           <TextField
-            label="Schedule name"
+            label="Subscription name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
@@ -97,6 +98,7 @@ export function ScheduleForm(
           {needsQuestion && (
             <TextAreaField
               label="Question"
+              hint="Any topic: a conflict, natural disaster, industry, organisation or local situation."
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               rows={3}
@@ -125,9 +127,10 @@ export function ScheduleForm(
               countries={countries}
               value={countriesInScope}
               onChange={setCountries}
-              disabled={subjectScoped}
+              disabled={subjectScoped || Boolean(activeResearch && state.researchArea)}
             />
           )}
+          {needsQuestion && !subjectScoped && <SubscriptionCoverage state={state} />}
           {subjectScoped && (
             <p className="text-xs text-muted">
               This focused search uses the organisation or domain rather than country filters.
@@ -140,12 +143,15 @@ export function ScheduleForm(
                 type="checkbox"
                 className="mt-1 h-4 w-4 accent-ember"
                 checked={liveOnly}
+                disabled={Boolean(state.researchArea)}
                 onChange={(event) => setLiveOnly(event.target.checked)}
               />
               <span>
                 Use existing live evidence only
                 <span className="mt-1 block text-xs text-muted">
-                  Skip new source collection and use the live evidence already available.
+                  {state.researchArea
+                    ? 'Clear the fixed boundary first to change collection mode.'
+                    : 'Skip new source collection and use the live evidence already available.'}
                 </span>
               </span>
             </label>
@@ -175,15 +181,15 @@ export function ScheduleForm(
           />
         </div>
         <aside
-          aria-label="Schedule controls"
+          aria-label="Subscription timing"
           className="min-w-0 space-y-5 self-start rounded-xl bg-surface p-5 xl:sticky xl:top-4"
         >
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-ember">
-              Repeat this report
+              Your update schedule
             </p>
             <p className="mt-2 text-sm text-muted">
-              Each run saves a complete report with citations and export options.
+              Updates appear in the app as complete reports with citations and export options.
             </p>
           </div>
           <ScheduleTiming
@@ -191,6 +197,8 @@ export function ScheduleForm(
             hour={hour}
             weekday={weekday}
             monthday={monthday}
+            anchorMonth={state.anchorMonth}
+            onAnchorMonth={state.setAnchorMonth}
             lookback={lookback}
             lookbackUnit={lookbackUnit}
             onLookbackUnit={changeLookbackUnit}
@@ -201,6 +209,21 @@ export function ScheduleForm(
             onLookback={setLookback}
           />
 
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 accent-ember"
+              checked={state.avoidRepetition}
+              onChange={(event) => state.setAvoidRepetition(event.target.checked)}
+            />
+            <span>
+              Prioritise new and changed information
+              <span className="mt-1 block text-xs text-muted">
+                Compare with previous updates. Retain earlier evidence when needed for context or a
+                changed assessment; quiet periods may have no material update.
+              </span>
+            </span>
+          </label>
           {needsQuestion && (
             <div className="border-t border-line pt-5">
               <label className="flex items-start gap-3 text-sm">
@@ -223,12 +246,12 @@ export function ScheduleForm(
           <p className="border-t border-line pt-4 text-xs text-muted">
             Saved to {workspaces.label(scope.teamId || null)}.{' '}
             {initial?.enabled === false
-              ? 'This schedule remains paused until you resume it.'
+              ? 'This subscription remains paused until you resume it.'
               : 'Pause future runs at any time.'}
           </p>
           {error !== null && <Alert tone="error">{error}</Alert>}
           <Button type="submit" className="w-full min-h-11" busy={busy} disabled={invalid}>
-            {initial ? 'Save changes' : 'Add schedule'}
+            {initial ? 'Save changes' : 'Create subscription'}
           </Button>
         </aside>
       </fieldset>

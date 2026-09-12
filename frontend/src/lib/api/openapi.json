@@ -5,6 +5,32 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/live-monitor/briefing": {
+      "post": {
+        "tags": [
+          "live-monitor"
+        ],
+        "summary": "Ensure Briefing",
+        "operationId": "ensure_briefing_api_live_monitor_briefing_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyBriefingOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/report-jobs/{job_id}": {
       "delete": {
         "tags": [
@@ -13890,6 +13916,29 @@
         ],
         "title": "CyberBoardOut"
       },
+      "DailyBriefingOut": {
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/ReportJobOut"
+          },
+          "next_refresh_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Refresh At"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "next_refresh_at",
+          "coverage_note"
+        ],
+        "title": "DailyBriefingOut"
+      },
       "DayBucketOut": {
         "properties": {
           "day": {
@@ -25863,6 +25912,59 @@
             "title": "Monthday",
             "default": 1
           },
+          "anchor_month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Anchor Month",
+            "default": 1
+          },
+          "conflict_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conflict Id"
+          },
+          "hazard": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hazard"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclose_area_to_provider": {
+            "type": "boolean",
+            "title": "Disclose Area To Provider",
+            "default": false
+          },
+          "avoid_repetition": {
+            "type": "boolean",
+            "title": "Avoid Repetition",
+            "default": true
+          },
           "window_hours": {
             "anyOf": [
               {
@@ -26037,6 +26139,50 @@
           "monthday": {
             "type": "integer",
             "title": "Monthday"
+          },
+          "anchor_month": {
+            "type": "integer",
+            "title": "Anchor Month"
+          },
+          "conflict_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conflict Id"
+          },
+          "hazard": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hazard"
+          },
+          "research_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchAreaOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclose_area_to_provider": {
+            "type": "boolean",
+            "title": "Disclose Area To Provider"
+          },
+          "avoid_repetition": {
+            "type": "boolean",
+            "title": "Avoid Repetition"
           },
           "window_hours": {
             "anyOf": [
@@ -26213,6 +26359,12 @@
           "cadence",
           "weekday",
           "monthday",
+          "anchor_month",
+          "conflict_id",
+          "hazard",
+          "research_area",
+          "disclose_area_to_provider",
+          "avoid_repetition",
           "window_hours",
           "enabled",
           "created_by",

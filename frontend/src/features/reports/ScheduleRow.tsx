@@ -28,9 +28,14 @@ export function ScheduleRow({
       <Td className="font-medium">
         {item.name}
         <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
-        {item.notify_on_change && (
+        {(item.notify_on_change || item.avoid_repetition) && (
           <p className="mt-2 text-xs font-normal text-muted">
-            {item.last_change_summary ?? 'Change monitoring enabled. Awaiting baseline.'}
+            {item.last_change_summary ?? 'Comparison details will appear here when available.'}
+          </p>
+        )}
+        {item.last_change?.status === 'unchanged' && (
+          <p className="mt-2 text-xs text-muted">
+            No material change identified in the latest comparison.
           </p>
         )}
         {item.last_change?.previous_report_id && (
@@ -38,7 +43,7 @@ export function ScheduleRow({
             className="mt-1 block text-xs font-normal underline"
             to={`/reports/${item.last_change.previous_report_id}`}
           >
-            Previous compared report
+            Previous update
           </Link>
         )}
         {item.question && (
@@ -50,13 +55,16 @@ export function ScheduleRow({
                 ? `${({ quick: 'Basic', detailed: 'Deep', advanced: 'Advanced' } as const)[item.research_mode]} research, ${item.research_languages.join(', ')}, ${item.research_focus}`
                 : 'Existing live evidence'}
             </p>
+            {item.conflict_id && <p className="mt-1 text-muted">Conflict: {item.conflict_id}</p>}
+            {item.hazard && <p className="mt-1 text-muted">Disaster: {item.hazard}</p>}
+            {item.research_area && <p className="mt-1 text-muted">Fixed area boundary</p>}
             {item.research_subject && <p className="mt-1 text-muted">{item.research_subject}</p>}
             <p className="mt-1 text-muted">
               {item.window_hours
                 ? item.window_hours % 24 === 0
                   ? `${item.window_hours / 24} days of lookback`
                   : `${item.window_hours} hours of lookback`
-                : 'Default product lookback'}
+                : 'Search period matches update frequency'}
               {item.research_web_search ? ' · Fresh web search included' : ''}
               {item.research_source_ids !== null
                 ? ` · ${item.research_source_ids.length} selected sources`
@@ -81,7 +89,7 @@ export function ScheduleRow({
         {item.last_error !== null && <p className="mb-2 text-critical">{item.last_error}</p>}
         {item.last_report_id !== null ? (
           <Link to={`/reports/${item.last_report_id}`} className="hover:underline">
-            Latest report
+            Latest update
           </Link>
         ) : item.last_error === null ? (
           <span className="text-muted">not yet</span>

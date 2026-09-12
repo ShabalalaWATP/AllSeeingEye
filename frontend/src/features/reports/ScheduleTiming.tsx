@@ -2,7 +2,24 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import type { Schedule } from '@/lib/api/schedules';
 
 export type LookbackUnit = 'days' | 'hours' | 'default';
-export type Cadence = 'daily' | 'weekdays' | 'weekly' | 'monthly';
+export type Cadence =
+  'daily' | 'weekdays' | 'weekly' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+export const calendarCadence = (cadence: Cadence) =>
+  ['monthly', 'quarterly', 'semiannual', 'annual'].includes(cadence);
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const HOURS = Array.from({ length: 24 }, (_, hour) => ({
   value: String(hour),
@@ -12,6 +29,15 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => ({
 export function describeCadence(schedule: Schedule): string {
   const at = `${String(schedule.hour_utc).padStart(2, '0')}:00 UTC`;
   if (schedule.cadence === 'monthly') return `day ${schedule.monthday} each month at ${at}`;
+  if (['quarterly', 'semiannual', 'annual'].includes(schedule.cadence)) {
+    const period =
+      schedule.cadence === 'quarterly'
+        ? '3 months'
+        : schedule.cadence === 'semiannual'
+          ? '6 months'
+          : 'year';
+    return `day ${schedule.monthday} every ${period}, from ${MONTHS[schedule.anchor_month - 1]} at ${at}`;
+  }
   if (schedule.cadence === 'weekly') return `${WEEKDAYS[schedule.weekday] ?? ''} at ${at}`;
   if (schedule.cadence === 'weekdays') return `weekdays at ${at}`;
   return `daily at ${at}`;
@@ -22,6 +48,8 @@ export function ScheduleTiming({
   hour,
   weekday,
   monthday,
+  anchorMonth,
+  onAnchorMonth,
   lookback,
   lookbackUnit,
   onLookbackUnit,
@@ -35,6 +63,8 @@ export function ScheduleTiming({
   hour: string;
   weekday: string;
   monthday: string;
+  anchorMonth: string;
+  onAnchorMonth: (value: string) => void;
   lookback: string;
   lookbackUnit: LookbackUnit;
   onLookbackUnit: (value: LookbackUnit) => void;
@@ -53,10 +83,15 @@ export function ScheduleTiming({
           value={cadence}
           onChange={(event) => onCadence(event.target.value as Cadence)}
           options={[
-            { value: 'weekly', label: 'Every week' },
-            { value: 'monthly', label: 'Every month' },
-            { value: 'daily', label: 'Every day' },
-            { value: 'weekdays', label: 'Weekdays' },
+            { value: 'daily', label: 'Daily' },
+            { value: 'weekly', label: 'Weekly' },
+            { value: 'monthly', label: 'Monthly' },
+            { value: 'quarterly', label: '3 monthly' },
+            { value: 'semiannual', label: '6 monthly' },
+            { value: 'annual', label: 'Annual' },
+            ...(cadence === 'weekdays'
+              ? [{ value: 'weekdays', label: 'Weekdays (existing)' }]
+              : []),
           ]}
         />
         <SelectField
@@ -73,7 +108,7 @@ export function ScheduleTiming({
             options={WEEKDAYS.map((label, index) => ({ value: String(index), label }))}
           />
         )}
-        {cadence === 'monthly' && (
+        {calendarCadence(cadence) && (
           <TextField
             label="Day of month"
             type="number"
@@ -85,6 +120,15 @@ export function ScheduleTiming({
             hint="For short months, runs on the last day. Later months keep your chosen day."
           />
         )}
+        {['quarterly', 'semiannual', 'annual'].includes(cadence) && (
+          <SelectField
+            label="Starting month"
+            value={anchorMonth}
+            onChange={(event) => onAnchorMonth(event.target.value)}
+            options={MONTHS.map((label, index) => ({ value: String(index + 1), label }))}
+            hint="The first upcoming matching date is used. The next run shows the exact date."
+          />
+        )}
         <SelectField
           label="Search period"
           value={lookbackUnit}
@@ -92,7 +136,7 @@ export function ScheduleTiming({
           options={[
             { value: 'days', label: 'Number of days' },
             { value: 'hours', label: 'Number of hours' },
-            { value: 'default', label: 'Report default' },
+            { value: 'default', label: 'Match update frequency' },
           ]}
         />
         {lookbackUnit !== 'default' ? (
@@ -108,12 +152,14 @@ export function ScheduleTiming({
           />
         ) : (
           <p className="text-xs text-muted">
-            Uses the selected report product's default search period.
+            Uses a search period matching the update frequency, within each source's available
+            history.
           </p>
         )}
       </div>
       <p className="text-xs text-muted">
-        Times use UTC all year. The server must be running. Each completed run saves a report.
+        Times use UTC all year. The server must be running. Updates are saved in the app, not
+        emailed.
       </p>
     </fieldset>
   );

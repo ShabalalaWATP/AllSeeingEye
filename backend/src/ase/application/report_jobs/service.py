@@ -20,6 +20,7 @@ from ase.application.report_jobs.controls import (
 from ase.application.report_jobs.views import error_message, job_view, refresh_summary
 from ase.application.reports.production_types import Job
 from ase.application.reports.request import ReportRequest
+from ase.domain.daily_briefing import retains_daily_admission
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound
 from ase.domain.report_jobs import ReportJob
 from ase.domain.users import User
@@ -324,6 +325,11 @@ class ReportJobService:
             if job is None:
                 raise NotFound()
             access.require_write(job.owner_id, job.team_id)
+            if retains_daily_admission(job, self._clock.now()):
+                raise InvalidRequest(
+                    "Keep this daily briefing's progress until its 24-hour refresh time "
+                    "to prevent an automatic duplicate generation. You can pause it instead."
+                )
             if job.status in {"queued", "running"}:
                 raise InvalidRequest("Pause this report job before discarding its progress.")
             await check_session()

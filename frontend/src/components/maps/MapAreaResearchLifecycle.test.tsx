@@ -147,7 +147,7 @@ it.each(['cancel', 'boundary', 'unmount', 'workspace'] as const)(
     if (cause === 'cancel')
       expect(
         within(screen.getByRole('region', { name: 'Research progress' })).getByRole('link', {
-          name: 'Research jobs',
+          name: 'Research progress',
         }),
       ).toBeVisible();
   },

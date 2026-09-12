@@ -55,7 +55,12 @@ class ScheduleRunner:
                 schedule.id,
                 ran_at=now,
                 next_run_at=next_run_after(
-                    now, schedule.hour_utc, schedule.cadence, schedule.weekday, schedule.monthday
+                    now,
+                    schedule.hour_utc,
+                    schedule.cadence,
+                    schedule.weekday,
+                    schedule.monthday,
+                    schedule.anchor_month,
                 ),
                 report_id=report_id,
                 error=error,

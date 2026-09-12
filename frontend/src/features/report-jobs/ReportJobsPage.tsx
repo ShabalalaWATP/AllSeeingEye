@@ -16,7 +16,7 @@ export default function ReportJobsPage() {
       <div className="report-jobs-workspace">
         <header className="job-list-heading">
           <div>
-            <h1>Research jobs</h1>
+            <h1>Research progress</h1>
             <p>Follow ongoing research, review partial sections and return to completed reports.</p>
           </div>
           <Link to="/research" className="job-report-link">
@@ -24,30 +24,30 @@ export default function ReportJobsPage() {
           </Link>
         </header>
         <ResearchNavigation />
-        {resource.loading && <LoadingNote label="Loading research jobs" />}
+        {resource.loading && <LoadingNote label="Loading research progress" />}
         {resource.error && (
           <Alert tone="error">
             {describeError(resource.error)}{' '}
             <Button variant="secondary" onClick={resource.reload}>
-              Retry research jobs
+              Retry research progress
             </Button>
           </Alert>
         )}
         {resource.data && (
           <>
             <div className="job-list-caption">
-              <p>Your latest {resource.data.length} jobs</p>
+              <p>Your latest {resource.data.length} research runs</p>
               <Button variant="ghost" onClick={resource.reload}>
                 Refresh
               </Button>
             </div>
             {resource.data.length === 0 ? (
               <div className="job-empty">
-                <h2>No research jobs yet</h2>
+                <h2>No research runs yet</h2>
                 <p>Start a question from New research. Its progress will stay available here.</p>
               </div>
             ) : (
-              <ul className="job-list" aria-label="Research jobs">
+              <ul className="job-list" aria-label="Research runs">
                 {resource.data.map((job) => (
                   <li key={job.id}>
                     <Link to={`/research/jobs/${job.id}`}>

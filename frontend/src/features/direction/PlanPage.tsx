@@ -46,6 +46,14 @@ export default function PlanPage() {
           items considered
         </p>
         <div className="flex flex-wrap gap-2">
+          {aoi && (
+            <Link
+              to={`/?area=${encodeURIComponent(aoi.id)}`}
+              className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
+            >
+              Open area on map
+            </Link>
+          )}
           <Link
             to={`/reports?template=ask&plan=${plan.id}`}
             className="rounded-md border border-line bg-surface-2 px-3 py-2 text-sm text-text hover:bg-surface"
