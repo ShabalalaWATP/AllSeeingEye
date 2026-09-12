@@ -8,7 +8,6 @@ import pytest
 from ase.adapters.reports import html_document
 from ase.adapters.reports.html_document import render_html
 from ase.application.reports.document import DocumentBuilder, build_document
-from ase.application.reports.export_text import evidence_metadata
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import BlockKind, DocumentBlock, DocumentInline, ReportDocument
 from report_documents_helpers import document_records
@@ -17,7 +16,7 @@ from report_documents_helpers import document_records
 class Inspection(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.tags, self.blocks, self.isolates = [], [], []
+        self.tags, self.blocks, self.isolates, self.text = [], [], [], []
         self.current = self.isolate = None
 
     def handle_starttag(self, tag, attrs):
@@ -28,6 +27,7 @@ class Inspection(HTMLParser):
             self.isolate = [dict(attrs)["dir"], ""]
 
     def handle_data(self, data):
+        self.text.append(data)
         if self.current is not None:
             self.current += data
         if self.isolate is not None:
@@ -51,23 +51,22 @@ def inspect(document):
 @pytest.mark.parametrize("language", ["ar", "fa"])
 def test_report_preserves_mixed_script_text_and_structured_citations(language):
     record, version = document_records()
-    record.scope = {"report_language": language}
     statement = "پژوهش‌گر فارسی ۱۲۳؛ النَّصّ العربي ١٢٣ [E99] https://example.test/literal"
+    record.scope = {"report_language": language, "question": statement}
     first = replace(
         version.body.key_judgements[0], statement=statement, supporting_evidence=("E1", "E2")
     )
     version = replace(version, body=replace(version.body, key_judgements=(first,)))
     document = build_document(record, version)
     parsed = inspect(document)
-    assert parsed.blocks == [block.text for block in document.blocks]
-    assert ("ltr", "[E1, E2]") in parsed.isolates
-    assert ("auto", statement) in parsed.isolates
+    assert statement in "".join(parsed.text)
+    assert ("ltr", "[1, 2]") in parsed.isolates
+    assert any(direction == "auto" and statement in text for direction, text in parsed.isolates)
     assert ("ltr", "[E99]") not in parsed.isolates
-    assert ("ltr", version.evidence[0].url) in parsed.isolates
-    assert ("ltr", version.evidence[0].content_hash) in parsed.isolates
-    assert ("ltr", version.evidence[0].published_at.isoformat()) in parsed.isolates
+    assert any(
+        tag == "a" and attrs.get("href") == version.evidence[0].url for tag, attrs in parsed.tags
+    )
     assert ("html", {"lang": language, "dir": "rtl"}) in parsed.tags
-    assert "\n".join(evidence_metadata(version.evidence[0])) in parsed.blocks
 
 
 def test_malicious_content_cannot_create_resources_or_attributes():

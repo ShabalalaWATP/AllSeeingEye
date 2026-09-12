@@ -10,7 +10,12 @@ from ase.application.ports.llm import LlmGatewayError
 from ase.application.ports.section_checkpoints import SectionCheckpoint
 from ase.application.reports.sections import SectionIncomplete
 from ase.application.reports.sections.checkpoints import metadata
-from ase.application.reports.sections.planning import packet_digest, plan_topics
+from ase.application.reports.sections.planning import (
+    LEGACY_METHOD_VERSION,
+    PREVIOUS_METHOD_VERSION,
+    packet_digest,
+    plan_topics,
+)
 from ase.application.reports.sections.synthesis_contracts import (
     CONTEXT,
     CONTEXT_SCHEMA,
@@ -81,6 +86,43 @@ async def test_old_four_completed_topics_keep_digest_and_only_new_final_parts_ru
         row = checkpoints.rows[digest, part]
         assert row.status == "completed" and row.payload["parent"] == "synthesis"
     assert checkpoints.rows[digest, "synthesis"].status == "completed"
+
+
+@pytest.mark.parametrize("method_version", [LEGACY_METHOD_VERSION, PREVIOUS_METHOD_VERSION])
+async def test_prior_packet_digest_and_topics_resume_without_replanning_or_rewriting(
+    method_version,
+):
+    checkpoints = Checkpoints()
+    evidence = items(4)
+    digest = packet_digest(
+        PROFILE,
+        TEMPLATES["ask"],
+        HEADER,
+        "What does the supplied evidence establish?",
+        quality_of_information(evidence),
+        evidence,
+        (),
+        None,
+        None,
+        method_version=method_version,
+    )
+    for topic in plan_topics(evidence, None, method_version=method_version):
+        checkpoints.rows[digest, topic.id] = SectionCheckpoint(
+            "completed",
+            {**metadata(topic, topic.evidence_labels), "body": topic_body(topic.evidence_labels)},
+        )
+    checkpoints.rows[digest, "synthesis"] = SectionCheckpoint(
+        "incomplete",
+        metadata(None, tuple(row.label for row in evidence)),
+        "provider_error",
+    )
+
+    gateway = Gateway(checkpoints)
+    draft = await run(gateway, checkpoints, evidence)
+
+    assert draft.body and not draft.has_errors
+    assert [name for name, *_ in gateway.calls] == [JUDGEMENTS, CONTEXT]
+    assert {key[0] for key in checkpoints.rows} == {digest}
 
 
 async def test_existing_completed_omnibus_is_reused_without_calls_or_child_replacement():

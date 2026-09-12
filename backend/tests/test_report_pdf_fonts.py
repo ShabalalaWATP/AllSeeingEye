@@ -29,6 +29,12 @@ def foreign_document() -> ReportDocument:
         replace(version.evidence[1], title=LATIN, language="fr"),
     )
     version = replace(version, evidence=evidence, direction=Direction(QUESTION, (), (), ()))
+    record.scope = {"question": QUESTION}
+    first = replace(
+        version.body.key_judgements[0],
+        statement=f"{version.body.key_judgements[0].statement} {GREEK}",
+    )
+    version = replace(version, body=replace(version.body, key_judgements=(first,)))
     return build_document(record, version)
 
 

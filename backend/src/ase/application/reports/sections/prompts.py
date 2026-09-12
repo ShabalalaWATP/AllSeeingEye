@@ -97,6 +97,13 @@ class PromptContext:
                 + task
             )
         else:
+            binding_guidance = (
+                "The topic's requirement_evidence pairs each EEI with the only evidence IDs "
+                "assigned to it; do not use one requirement's evidence to answer another "
+                "folded requirement. "
+                if topic and topic.requirement_evidence
+                else ""
+            )
             system = (
                 PROVENANCE
                 + presentation
@@ -110,9 +117,15 @@ class PromptContext:
                     "supplied E IDs on each reporting item and assessment. Copy cited grades "
                     "without upgrading them. If this packet cannot support the topic, use a "
                     "specific gap and empty reporting/assessment; do not attach unrelated "
-                    "citations to fill sections. At most one gap is needed in this topic."
+                    "citations to fill sections. "
+                    + binding_guidance
+                    + "At most one gap is needed in this topic."
                 )
             )
+        topic_data = asdict(topic) if topic else None
+        if topic_data is not None and not topic_data["requirement_evidence"]:
+            # Preserve the exact v1/v2 prompt shape for partially completed packets.
+            topic_data.pop("requirement_evidence")
         data = {
             "product": {"title": self.template.title, "purpose": self.template.purpose},
             "header": asdict(self.header),
@@ -120,7 +133,7 @@ class PromptContext:
             "direction": self.direction.lines() if self.direction else [],
             "quality_metadata": self.quality.describe(),
             "background_context_not_evidence": self.background,
-            "topic": asdict(topic) if topic else None,
+            "topic": topic_data,
             "original_frozen_evidence": [evidence_block(item) for item in selected],
             "generated_sections_not_evidence": list(completed) if synthesis else [],
             "previous_generated_judgements": [asdict(row) for row in self.previous]

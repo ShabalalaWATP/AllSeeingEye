@@ -13,12 +13,14 @@ from ase.api.schemas_citation_checks import ReportCitationChecksOut
 from ase.api.schemas_claim_ledger import ClaimLedgerOut
 from ase.api.schemas_model_routing import ModelRoutingOut
 from ase.api.schemas_report_assessment import ReportAssessmentOut
+from ase.api.schemas_report_documents import ReportPublicationOut
 from ase.api.schemas_report_evidence import ReportEvidenceOut
 from ase.api.schemas_research import ResearchReceiptOut
 from ase.api.schemas_research_area import ResearchAreaIn
 from ase.api.schemas_research_context import ResearchContextOut
 from ase.api.schemas_research_plan import QueryVariantIn
 from ase.api.schemas_research_tasks import PlannedQueryTaskIn, ResearchCandidateIn
+from ase.application.reports.document import build_document
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import TEMPLATES, Template
 from ase.domain.advocacy import advocacy_to_dict
@@ -226,6 +228,7 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    publication: ReportPublicationOut | None = None
     claim_generation: ClaimGenerationReceipt | None = None
     claim_ledger: ClaimLedgerOut | None = None
     model_routing: ModelRoutingOut | None = None
@@ -254,8 +257,13 @@ class ReportVersionOut(BaseModel):
     devils_advocacy: dict[str, Any] | None
 
     @classmethod
-    def from_version(cls, version: ReportVersion) -> Self:
+    def from_version(cls, version: ReportVersion, record: ReportRecord | None = None) -> Self:
         return cls(
+            publication=(
+                ReportPublicationOut.from_document(build_document(record, version))
+                if record is not None
+                else None
+            ),
             claim_ledger=ClaimLedgerOut.model_validate(build_claim_ledger(version)),
             claim_generation=version.claim_generation,
             model_routing=ModelRoutingOut.model_validate(version.model_routing)
@@ -311,5 +319,5 @@ class ReportOut(BaseModel):
     def build(cls, record: ReportRecord, version: ReportVersion) -> Self:
         return cls(
             report=ReportSummaryOut.from_record(record),
-            version=ReportVersionOut.from_version(version),
+            version=ReportVersionOut.from_version(version, record),
         )

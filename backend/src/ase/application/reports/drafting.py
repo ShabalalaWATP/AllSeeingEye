@@ -30,6 +30,7 @@ class Draft:
     completion_tokens: int | None = None
     latency_ms: float = 0.0
     attempts: int = 0
+    supported_requirements: frozenset[str] | None = None
 
     @property
     def has_errors(self) -> bool:

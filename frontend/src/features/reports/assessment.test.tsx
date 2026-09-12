@@ -22,6 +22,9 @@ describe('saved report evidence assessment', () => {
   it('displays saved judgement counts, ceiling and final confidence without recalculating', async () => {
     serveAssessment();
     const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
+    await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Assessment' }));
     const summary = await screen.findByRole('region', { name: 'Evidence strength' });
     expect(within(summary).getByText('Supported judgements').nextElementSibling).toHaveTextContent(
       '0',
@@ -70,7 +73,10 @@ describe('saved report evidence assessment', () => {
           }),
         ),
       );
-      renderApp(`/reports/${reportSummary.id}`, 'user');
+      const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
+      await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+      await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+      await user.click(await screen.findByRole('button', { name: 'Assessment' }));
       expect(
         await screen.findByText(/Assessment not recorded for this version/),
       ).toBeInTheDocument();
@@ -92,7 +98,10 @@ describe('saved report evidence assessment', () => {
         contested_judgements: 0,
       },
     });
-    renderApp(`/reports/${reportSummary.id}`, 'user');
+    const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
+    await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Assessment' }));
     expect(
       await screen.findByText('No key judgements were recorded for assessment.'),
     ).toBeInTheDocument();

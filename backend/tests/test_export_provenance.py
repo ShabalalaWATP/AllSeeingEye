@@ -41,7 +41,7 @@ def test_markdown_links_cannot_break_out_of_the_destination() -> None:
     assert "https://example.org/a%29b%5Bc%5D?q=x%28y%29" in markdown
 
 
-def test_all_export_content_retains_original_translation_and_location_precision() -> None:
+def test_reader_references_retain_titles_while_diagnostics_stay_in_supporting_data() -> None:
     record, version = document_records()
     source = replace(
         version.evidence[0],
@@ -55,27 +55,28 @@ def test_all_export_content_retains_original_translation_and_location_precision(
     )
     revised = replace(version, evidence=(source,))
     markdown = render_markdown(record.header, revised.body, revised.evidence, revised.quality)
-    document = "\n".join(block.text for block in build_document(record, revised).blocks)
-    for text in (markdown, document):
-        for expected in (
-            "Original source title",
-            "English title",
-            "Translation (unverified)",
-            "Language: uk",
-            "Location precision: country",
-            "Observed:",
-            "Captured:",
-            source.content_hash,
-            "Grade rationale:",
-            "Declared organisation:",
-            "independent sourcing not verified",
-            "topic-cluster-1",
-            "automated checks",
-        ):
-            assert expected in text, expected
+    document = build_document(record, revised)
+    text = "\n".join(block.text for block in document.blocks)
+    assert document.references[0].title == "English title"
+    assert document.references[0].original_title == "Original source title"
+    assert document.references[0].language == "uk"
+    assert "English title" in text and "Original source title" in text
+    for expected in (
+        "Translation (unverified)",
+        "Language: uk",
+        "Location precision: country",
+        "Observed:",
+        "Captured:",
+        source.content_hash,
+        "Grade rationale:",
+        "Declared organisation:",
+        "topic-cluster-1",
+    ):
+        assert expected in markdown
+        assert expected not in text
 
 
-def test_legacy_missing_provenance_is_unknown_not_an_invented_precision() -> None:
+def test_legacy_missing_provenance_remains_in_supporting_data_not_reader_report() -> None:
     record, version = document_records()
     source = replace(
         version.evidence[0],
@@ -87,11 +88,12 @@ def test_legacy_missing_provenance_is_unknown_not_an_invented_precision() -> Non
         independence_key="",
     )
     revised = replace(version, evidence=(source,))
-    text = "\n".join(block.text for block in build_document(record, revised).blocks)
-    assert "Location precision: unknown" in text
-    assert "Observed: unknown" in text
-    assert "Language: unknown" in text
-    assert "Declared organisation: unknown" in text
+    document = build_document(record, revised)
+    text = "\n".join(block.text for block in document.blocks)
+    assert document.references[0].language is None
+    assert document.references[0].original_title is None
+    assert "Location precision:" not in text
+    assert "Observed:" not in text
 
 
 async def test_delayed_archival_keeps_frozen_period_and_archives_advocacy_only_citations() -> None:

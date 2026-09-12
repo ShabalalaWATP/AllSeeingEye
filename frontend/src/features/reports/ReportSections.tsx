@@ -5,15 +5,13 @@ import { probabilityTerm } from '@/lib/doctrine';
 import type { ReportAssessment } from '@/lib/api/reportAssessment';
 
 import { Labels } from './EvidenceLinks';
-import { JudgementEvidence } from './JudgementEvidence';
-import { JudgementCitationChecks } from './CitationChecks';
 import type { CitationChecks } from '@/lib/api/reportResearch';
 export { EvidenceAnnex } from './EvidenceAnnex';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section aria-label={title} className="flex flex-col gap-2">
-      <h2 className="text-base font-semibold text-text">{title}</h2>
+    <section aria-label={title} className="report-reader-section">
+      <h2>{title}</h2>
       {children}
     </section>
   );
@@ -70,73 +68,60 @@ export function AdvocacyView({ advocacy }: { advocacy: DevilsAdvocacy | null }) 
 /** The body of a report, judgements first, every claim with its evidence labels. */
 export function ReportBodyView({
   body,
-  assessment,
-  citationChecks,
 }: {
   body: ReportBody;
   assessment?: ReportAssessment | null | undefined;
   citationChecks?: CitationChecks | null | undefined;
 }) {
   return (
-    <div className="flex flex-col gap-6 text-sm text-text">
+    <div className="text-[0.94rem]">
       {body.key_judgements.length > 0 && (
-        <Section title="Key judgements">
-          <ol className="flex flex-col gap-3">
-            {body.key_judgements.map((judgement) => {
-              const rating = assessment?.judgements.find(
-                (item) => item.judgement_id === judgement.id,
-              );
-              return (
-                <li key={judgement.id} className="rounded-card border border-line bg-surface p-3">
-                  <p className="font-medium">
-                    <span className="mr-2 font-mono text-xs text-muted">{judgement.id}</span>
+        <Section title="Executive summary">
+          <ol className="mt-4 space-y-5">
+            {body.key_judgements.map((judgement, index) => (
+              <li key={judgement.id} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-3">
+                <span className="pt-0.5 font-mono text-xs text-[#9b3b18]">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <div>
+                  <p className="font-semibold leading-7">
                     {judgement.statement}
                     <Labels labels={judgement.supporting_evidence} />
                   </p>
-                  <p className="mt-1 text-xs text-muted">
-                    <span className="rounded bg-ember/15 px-1.5 py-0.5 font-mono text-ember">
+                  <p className="mt-1.5 text-xs leading-5 text-[#6d675e]">
+                    <span className="font-semibold text-[#9b3b18]">
                       {probabilityTerm(judgement.probability)}
-                    </span>{' '}
-                    <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono">
-                      {judgement.confidence} confidence
-                    </span>{' '}
+                    </span>
+                    {' · '}
+                    <span>{judgement.confidence} confidence</span> ·{' '}
                     {judgement.confidence_statement}
                   </p>
                   {judgement.contradicting_evidence.length > 0 && (
-                    <p className="mt-1 text-xs text-muted">
-                      Contradicting: <Labels labels={judgement.contradicting_evidence} />
+                    <p className="mt-1 text-xs leading-5 text-[#6d675e]">
+                      Contrary evidence: <Labels labels={judgement.contradicting_evidence} />
                     </p>
                   )}
                   {judgement.indicators.length > 0 && (
-                    <p className="mt-1 text-xs text-muted">
-                      Indicators: {judgement.indicators.join('; ')}
+                    <p className="mt-1 text-xs leading-5 text-[#6d675e]">
+                      Watch for: {judgement.indicators.join('; ')}
                     </p>
                   )}
-                  {rating && <JudgementEvidence assessment={rating} />}
-                  <JudgementCitationChecks
-                    check={citationChecks?.judgements.find(
-                      (item) => item.judgement_id === judgement.id,
-                    )}
-                  />
-                </li>
-              );
-            })}
+                </div>
+              </li>
+            ))}
           </ol>
         </Section>
       )}
       {body.reporting.length > 0 && (
-        <Section title="Reporting">
+        <Section title="Findings">
           {body.reporting.map((theme) => (
-            <div key={theme.theme}>
-              <h3 className="text-sm font-semibold text-muted">{theme.theme}</h3>
-              <ul className="list-disc pl-5">
+            <div key={theme.theme} className="mt-5">
+              <h3 className="report-reader-subheading">{theme.theme}</h3>
+              <ul className="mt-2 list-disc space-y-1.5 pl-5 marker:text-[#b9633e]">
                 {theme.items.map((item, index) => (
                   <li key={index}>
                     {item.text}
                     <Labels labels={item.evidence} />
-                    {item.grade && (
-                      <span className="ml-1 font-mono text-[10px] text-muted">{item.grade}</span>
-                    )}
                   </li>
                 ))}
               </ul>
@@ -145,11 +130,11 @@ export function ReportBodyView({
         </Section>
       )}
       {body.assessment.length > 0 && (
-        <Section title="Assessment">
+        <Section title="Analysis">
           {body.assessment.map((section) => (
-            <div key={section.heading}>
-              <h3 className="text-sm font-semibold text-muted">{section.heading}</h3>
-              <p>
+            <div key={section.heading} className="mt-5">
+              <h3 className="report-reader-subheading">{section.heading}</h3>
+              <p className="report-reader-paragraph">
                 {section.text}
                 <Labels labels={section.evidence} />
               </p>
@@ -159,37 +144,41 @@ export function ReportBodyView({
       )}
       {body.assumptions.length > 0 && (
         <Section title="Assumptions">
-          <ul className="list-disc pl-5">
+          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
             {body.assumptions.map((assumption) => (
               <li key={assumption.id}>
-                <span className="mr-1 font-mono text-xs text-muted">{assumption.id}</span>
                 {assumption.text}
-                {assumption.lynchpin && <span className="ml-1 text-xs text-ember">(lynchpin)</span>}
+                {assumption.lynchpin && (
+                  <span className="ml-1 text-xs font-medium text-[#9b3b18]">(critical)</span>
+                )}
               </li>
             ))}
           </ul>
         </Section>
       )}
       {body.alternative_hypotheses.length > 0 && (
-        <Section title="Alternative hypotheses">
-          <ul className="list-disc pl-5">
+        <Section title="Alternative explanations">
+          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
             {body.alternative_hypotheses.map((alternative, index) => (
               <li key={index}>
                 {alternative.text}
                 <Labels labels={alternative.evidence} />
-                <span className="text-muted"> Why less likely: {alternative.why_less_likely}</span>
+                <span className="text-[#6d675e]">
+                  {' '}
+                  Why it is less likely: {alternative.why_less_likely}
+                </span>
               </li>
             ))}
           </ul>
         </Section>
       )}
       <Section title="Indicators and warning">
-        <p>
-          Watch condition:{' '}
-          <span className="font-mono uppercase">{body.indicators_and_warning.watch_condition}</span>
+        <p className="report-reader-paragraph">
+          Current watch condition:{' '}
+          <strong className="capitalize">{body.indicators_and_warning.watch_condition}</strong>
         </p>
         {body.indicators_and_warning.changes.length > 0 && (
-          <ul className="list-disc pl-5">
+          <ul className="mt-2 list-disc space-y-1 pl-5 marker:text-[#b9633e]">
             {body.indicators_and_warning.changes.map((change, index) => (
               <li key={index}>{change}</li>
             ))}
@@ -197,13 +186,10 @@ export function ReportBodyView({
         )}
       </Section>
       {(body.gaps.length > 0 || body.collection_recommendations.length > 0) && (
-        <Section title="Gaps and collection">
-          <ul className="list-disc pl-5">
+        <Section title="Limitations and further research">
+          <ul className="mt-3 list-disc space-y-2 pl-5 marker:text-[#b9633e]">
             {body.gaps.map((gap, index) => (
-              <li key={`gap-${index}`}>
-                {gap.eei && <span className="mr-1 font-mono text-xs text-muted">{gap.eei}</span>}
-                {gap.text}
-              </li>
+              <li key={`gap-${index}`}>{gap.text}</li>
             ))}
             {body.collection_recommendations.map((item, index) => (
               <li key={`rec-${index}`}>Recommend: {item}</li>
@@ -211,9 +197,11 @@ export function ReportBodyView({
           </ul>
         </Section>
       )}
-      <Section title="Sourcing statement">
-        <p>{body.sourcing_statement || 'Not provided.'}</p>
-      </Section>
+      {body.sourcing_statement && (
+        <Section title="Source note">
+          <p className="report-reader-paragraph">{body.sourcing_statement}</p>
+        </Section>
+      )}
     </div>
   );
 }

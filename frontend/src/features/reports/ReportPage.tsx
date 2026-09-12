@@ -1,44 +1,26 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { CopyButton } from '@/components/ui/CopyButton';
-import { EvidencePackageDownload } from '@/components/reports/EvidencePackageDownload';
-import { ClaimAnnotations } from '@/components/reports/ClaimAnnotations';
-import { RelationshipReviews } from '@/components/reports/RelationshipReviews';
-import { IdentityReviews } from '@/components/reports/IdentityReviews';
-import { OriginalAssets } from '@/components/reports/OriginalAssets';
-import { ClaimExportSelection } from '@/components/reports/ClaimExportSelection';
-import { ClaimLedgerView } from '@/components/reports/ClaimLedgerView';
-import ReportEvidenceMap from '@/components/maps/ReportEvidenceMap';
-import { useMapRequest } from '@/components/maps/useMapRequest';
-import { fetchMapView } from '@/lib/api/mapViews';
 import { ApiError, describeError } from '@/lib/api/errors';
+import { fetchMapView } from '@/lib/api/mapViews';
 import { deleteReport, fetchReport, regenerateReport } from '@/lib/api/reports';
-import { useProfile } from '@/stores/profile';
-import { useAuthStore } from '@/stores/auth';
 import { formatPersonalDate, formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useMapRequest } from '@/components/maps/useMapRequest';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+import { useAuthStore } from '@/stores/auth';
+import { useProfile } from '@/stores/profile';
 
-import { AdvocacyView, DirectionView, ReportBodyView } from './ReportSections';
-import { EvidenceAnnex } from './EvidenceAnnex';
 import { EvidenceNavigation } from './EvidenceLinks';
-import { ReportReviewStatus } from './ReportReviewStatus';
-import { AnnotationMonitorsSection } from './AnnotationMonitorsSection';
-import { ReportDiff } from './ReportDiff';
+import { LegacyReportReferences } from './LegacyReportReferences';
 import { ReportExports } from './ReportExports';
-import { StatusBadge } from './ReportsPage';
-import { ReportAssessmentSummary } from './ReportAssessmentSummary';
-import { ReportMethodology } from './ReportMethodology';
-import { ResearchCoverage } from './ResearchCoverage';
-import { FreshWebContext } from './FreshWebContext';
-import { CitationCheckMethod } from './CitationChecks';
-import { ResearchContextView } from './ResearchContext';
-import { ReportChallengeView } from './ReportChallenge';
-import { ReportedRelationships } from './ReportedRelationships';
+import { ReportPublicationView, publicationContents } from './ReportPublication';
+import { ReportReviewStatus } from './ReportReviewStatus';
+import { ReportBodyView } from './ReportSections';
+import { ReportWorkspaceDrawer } from './ReportWorkspaceDrawer';
+import './reportReader.css';
 
 function versionFromQuery(value: string | null): number | undefined {
   const parsed = Number(value);
@@ -56,6 +38,8 @@ export default function ReportPage() {
   const mapRevision = params.get('map_revision');
   const mapRequest = useMapRequest();
   const navigate = useNavigate();
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const closeWorkspace = useCallback(() => setWorkspaceOpen(false), []);
   const loader = useCallback(async () => {
     const signal = mapRequest();
     const savedMap =
@@ -104,205 +88,155 @@ export default function ReportPage() {
     !report.team_id ||
     workspaces.teams.some((entry) => entry.team.id === report.team_id && entry.team.is_active);
   const versions = Array.from({ length: report.latest_version }, (_, index) => index + 1);
+  const contents = version.publication ? publicationContents(version.publication) : [];
+  const period =
+    version.period_from && version.period_to
+      ? `${formatUtc(version.period_from)} to ${formatUtc(version.period_to)}`
+      : 'Reporting period unknown for this legacy version';
   const actionError = remove.error ?? regenerate.error;
   return (
     <EvidenceNavigation evidence={version.evidence}>
-      <article className="flex h-full min-w-0 flex-col gap-6 overflow-y-auto p-4 sm:p-6">
-        <header className="flex flex-col gap-2">
-          <Link to="/reports" className="text-xs text-muted hover:underline">
-            All reports
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-semibold">{report.title}</h1>
-            <StatusBadge status={version.status} />
-          </div>
-          <p className="font-mono text-xs text-muted">
-            {workspaces.label(report.team_id)} · {report.template} ·{' '}
-            {version.period_from && version.period_to
-              ? `${formatUtc(version.period_from)} to ${formatUtc(version.period_to)}`
-              : 'Reporting period unknown for this legacy version'}
-          </p>
-          <p className="text-xs text-muted">
-            Version created: {formatPersonalDate(version.created_at, preferences.profile)}
-          </p>
-          <ReportReviewStatus status={version.status} />
-          <details className="text-xs text-muted">
-            <summary className="cursor-pointer">Generation details</summary>
-            <p className="mt-2 font-mono">
-              {version.model} · {version.attempts} attempt{version.attempts === 1 ? '' : 's'} ·{' '}
-              {version.prompt_tokens ?? 'Unknown'} input / {version.completion_tokens ?? 'Unknown'}{' '}
-              output tokens · {Math.round(version.latency_ms)} ms
+      <section
+        aria-label="Report reader"
+        className="report-reader-shell h-full min-w-0 overflow-y-auto"
+      >
+        <div className="report-reader-frame px-3 py-4 sm:px-6 sm:py-6">
+          <header className="mb-5 flex flex-col gap-4 border-b border-line pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <Link
+                  to="/reports"
+                  className="rounded px-2 py-2 text-sm text-muted transition-colors hover:bg-surface hover:text-text motion-reduce:transition-none"
+                >
+                  ← Reports
+                </Link>
+                <span className="hidden h-4 w-px bg-line sm:block" aria-hidden="true" />
+                <p className="truncate text-xs text-muted">
+                  {workspaces.label(report.team_id)} · Version {version.number}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-md border border-line px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none"
+                  onClick={() => setWorkspaceOpen(true)}
+                >
+                  Sources &amp; methods
+                </button>
+                <ReportExports
+                  language={
+                    typeof report.scope.report_language === 'string'
+                      ? report.scope.report_language
+                      : undefined
+                  }
+                  preferred={preferences.profile?.export_format ?? 'pdf'}
+                  id={id}
+                  version={version.number}
+                  title={report.title}
+                />
+              </div>
+            </div>
+            <p className="font-mono text-[11px] leading-5 text-muted">
+              {period} · Version created:{' '}
+              {formatPersonalDate(version.created_at, preferences.profile)}
             </p>
-            <p className="mt-1">
-              Data cut-off: {version.data_cutoff ? formatUtc(version.data_cutoff) : 'Unknown'}
-            </p>
-          </details>
-          <nav aria-label="Versions" className="flex flex-wrap items-center gap-1 text-xs">
-            <span className="text-muted">Version</span>
-            {versions.map((number) => (
-              <Link
-                key={number}
-                to={`/reports/${id}?version=${String(number)}`}
-                aria-current={number === version.number ? 'page' : undefined}
-                className={`rounded px-1.5 py-0.5 font-mono ${
-                  number === version.number
-                    ? 'bg-surface-2 text-text'
-                    : 'text-muted hover:text-text'
-                }`}
-              >
-                {number}
-              </Link>
-            ))}
-          </nav>
-          {actionError === null ? null : <Alert tone="error">{describeError(actionError)}</Alert>}
-        </header>
-        {version.status !== 'ready' && (
-          <Alert
-            tone={version.status === 'failed' ? 'error' : 'warning'}
-            title="Validator findings"
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <ReportReviewStatus status={version.status} />
+              <nav aria-label="Versions" className="flex flex-wrap items-center gap-1 text-xs">
+                <span className="mr-1 text-muted">Versions</span>
+                {versions.map((number) => (
+                  <Link
+                    key={number}
+                    to={`/reports/${id}?version=${String(number)}`}
+                    aria-current={number === version.number ? 'page' : undefined}
+                    className={`rounded px-2 py-1 font-mono transition-colors motion-reduce:transition-none ${
+                      number === version.number
+                        ? 'bg-surface-2 text-text'
+                        : 'text-muted hover:text-text'
+                    }`}
+                  >
+                    {number}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </header>
+
+          <div
+            className={contents.length ? 'lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8' : ''}
           >
-            <ul className="list-disc pl-5">
-              {version.findings.map((finding, index) => (
-                <li key={index}>
-                  <span className="font-mono text-xs">{finding.severity}</span> {finding.location}:{' '}
-                  {finding.message}
-                </li>
-              ))}
-            </ul>
-          </Alert>
-        )}
-        <ReportBodyView
-          body={version.body}
-          assessment={version.assessment}
-          citationChecks={version.citation_checks}
-        />
-        <ClaimLedgerView ledger={version.claim_ledger} />
-        <ClaimExportSelection reportId={id} version={version.number}>
-          <ClaimAnnotations
-            sharedSelection
-            key={`${resource.key}:${id}:${version.number}`}
-            reportId={id}
-            version={version.number}
-            evidence={version.evidence}
-            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
-            generation={version.claim_generation}
-            canManage={(root) => mapWritable && workspaces.canManage(root)}
-          />
-          <IdentityReviews
-            reportId={id}
-            version={version.number}
-            subject={
-              report.scope.research_focus === 'company' &&
-              typeof report.scope.research_subject === 'string'
-                ? report.scope.research_subject
-                : null
-            }
-            candidates={version.research_context?.identity_candidates ?? []}
-            evidence={version.evidence}
-            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
-            canManage={(root) => mapWritable && workspaces.canManage(root)}
-          />
-          <RelationshipReviews
-            reportId={id}
-            version={version.number}
-            evidence={version.evidence}
-            canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
-            canManage={(root) => mapWritable && workspaces.canManage(root)}
-          />
-          <OriginalAssets
-            reportId={id}
-            version={version.number}
-            evidence={version.evidence}
-            canEdit={canEdit}
-          />
-        </ClaimExportSelection>
-        <AnnotationMonitorsSection
-          reportId={id}
-          version={version.number}
-          canCreate={mapWritable && workspaces.canAcknowledge(report.team_id)}
-        />
-        <ReportEvidenceMap
-          key={`${resource.key}:${id}:${String(version.number)}:${mapId}:${mapRevision}`}
-          reportId={id}
-          version={version.number}
-          initialTimeBasis={version.research?.time_basis ?? 'publication'}
-          initialResearchArea={version.research?.plan?.area ?? null}
-          evidence={version.evidence}
-          savedView={data.savedMap}
-          scopeLabel={workspaces.label(report.team_id)}
-          canCreateView={mapWritable && workspaces.canAcknowledge(report.team_id)}
-          canManageView={(view) => mapWritable && workspaces.canManage(view)}
-        />
-        {version.challenge ? (
-          <ReportChallengeView challenge={version.challenge} />
-        ) : (
-          <AdvocacyView advocacy={version.devils_advocacy} />
-        )}
-        <Link
-          to={version.research?.plan?.area ? '/' : `/research?parent=${encodeURIComponent(id)}`}
-          className="w-fit rounded border border-line px-4 py-3 text-sm font-medium hover:bg-surface-2"
-        >
-          {version.research?.plan?.area
-            ? 'Research another area on the map'
-            : 'Ask a follow-up question'}
-        </Link>
-        <section aria-label="Report actions" className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {canEdit && (
-              <Button
-                variant="secondary"
-                busy={regenerate.busy}
-                onClick={() => void regenerate.run()}
-              >
-                Regenerate
-              </Button>
+            {contents.length > 0 && (
+              <aside className="hidden lg:block" aria-label="Report contents">
+                <nav className="sticky top-6 border-l border-line pl-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+                    Contents
+                  </p>
+                  <ol className="mt-3 space-y-2.5 text-xs leading-5 text-muted">
+                    {contents.map((entry, index) => (
+                      <li key={entry.id}>
+                        <a className="transition-colors hover:text-text" href={`#${entry.id}`}>
+                          <span className="mr-2 font-mono text-[10px] text-ember">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          {entry.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+              </aside>
             )}
-            <CopyButton value={version.markdown} label="Copy Markdown" />
-            {canEdit && (
-              <Button variant="danger" busy={remove.busy} onClick={() => void remove.run()}>
-                Delete
-              </Button>
-            )}
+            <article className="report-reader-paper report-reader-enter min-w-0 overflow-hidden rounded-card">
+              <div className="report-reader-content">
+                {version.publication ? (
+                  <ReportPublicationView publication={version.publication} />
+                ) : (
+                  <>
+                    <h1 className="text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.045em] text-[#171512]">
+                      {report.title}
+                    </h1>
+                    <ReportBodyView body={version.body} />
+                    {!workspaceOpen && <LegacyReportReferences evidence={version.evidence} />}
+                  </>
+                )}
+              </div>
+            </article>
           </div>
-          <ReportExports
-            language={
-              typeof report.scope.report_language === 'string'
-                ? report.scope.report_language
-                : undefined
-            }
-            preferred={preferences.profile?.export_format ?? 'pdf'}
-            id={id}
-            version={version.number}
-            title={report.title}
-          />
-          <EvidencePackageDownload
-            key={`${id}:${String(version.number)}`}
-            id={id}
-            version={version.number}
-            title={report.title}
-          />
-        </section>
-        <ReportDiff
-          key={`${id}:${String(version.number)}`}
-          id={id}
-          current={version.number}
-          latest={report.latest_version}
-        />
-        <ResearchCoverage receipt={version.research} />
-        <FreshWebContext record={version.research?.web_research} />
-        <ResearchContextView context={version.research_context} />
-        <ReportedRelationships evidence={version.evidence} />
-        <CitationCheckMethod checks={version.citation_checks} />
-        <ReportAssessmentSummary assessment={version.assessment} />
-        <ReportMethodology savedMethod={version.assessment?.method_version} />
-        <DirectionView direction={version.direction} />
-        <EvidenceAnnex
-          evidence={version.evidence}
-          findings={version.findings}
-          status={version.status}
-          assessment={version.assessment}
-        />
-      </article>
+
+          <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-xs text-muted">
+            <span>
+              {version.evidence.length} retained source item
+              {version.evidence.length === 1 ? '' : 's'} · Exact version {version.number}
+            </span>
+            <Link
+              to={version.research?.plan?.area ? '/' : `/research?parent=${encodeURIComponent(id)}`}
+              className="rounded px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none"
+            >
+              {version.research?.plan?.area
+                ? 'Research another map area →'
+                : 'Ask a follow-up question →'}
+            </Link>
+          </footer>
+        </div>
+      </section>
+      <ReportWorkspaceDrawer
+        open={workspaceOpen}
+        onClose={closeWorkspace}
+        workspace={{
+          reportId: id,
+          report,
+          version,
+          savedMap: data.savedMap,
+          workspaces,
+          canEdit,
+          mapWritable,
+          actionError: actionError ? describeError(actionError) : null,
+          regenerating: regenerate.busy,
+          deleting: remove.busy,
+          onRegenerate: () => void regenerate.run(),
+          onDelete: () => void remove.run(),
+        }}
+      />
     </EvidenceNavigation>
   );
 }

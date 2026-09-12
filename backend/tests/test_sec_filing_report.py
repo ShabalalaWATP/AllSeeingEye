@@ -127,7 +127,7 @@ async def test_selected_filing_text_is_saved_as_report_evidence_without_public_c
         assert doc.status_code == 200, doc.text
 
         readable = "\n".join(p.text for p in Document(io.BytesIO(doc.content)).paragraphs)
-        assert "filingDate" in readable and "2026-08-31" in readable
-        assert "source_spec" in readable and "calendar-day interval" in readable
+        assert "2026-08-31" in readable
+        assert "filingDate" not in readable and "source_spec" not in readable
     finally:
         await transport.http.aclose()

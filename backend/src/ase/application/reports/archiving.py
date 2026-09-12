@@ -11,9 +11,9 @@ from dataclasses import replace
 from ase.application.ports import UnitOfWork
 from ase.application.ports.archive import Archiver
 from ase.application.ports.reports import ReportRepository
+from ase.application.reports.document import build_document
 from ase.application.reports.export_text import safe_url
-from ase.application.reports.frozen_header import frozen_period_line
-from ase.application.reports.render import render_markdown
+from ase.application.reports.publication_markdown import render_document_markdown
 from ase.domain.evidence import EvidenceItem
 from ase.domain.report_records import ReportVersion
 
@@ -52,23 +52,7 @@ async def archive_evidence(
         replace(item, archive_url=archives.get(item.label, item.archive_url))
         for item in version.evidence
     )
-    requirements = version.direction.requirement_ids() if version.direction else ()
-    markdown = render_markdown(
-        replace(record.header, requirements=requirements),
-        version.body,
-        evidence,
-        version.quality,
-        version.findings,
-        direction=version.direction,
-        advocacy=version.advocacy,
-        status=version.status,
-        assessment=version.assessment,
-        citation_checks=version.citation_checks,
-        research=version.research,
-        challenge=version.challenge,
-        research_context=version.research_context,
-        period_line=frozen_period_line(record, version),
-    )
+    markdown = render_document_markdown(build_document(record, replace(version, evidence=evidence)))
     await reports.set_archives(version.id, archives, markdown)
     await uow.commit()
     return len(archives)

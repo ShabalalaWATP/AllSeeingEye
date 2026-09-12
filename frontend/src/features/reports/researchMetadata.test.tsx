@@ -32,17 +32,19 @@ describe('saved research metadata', () => {
       ),
     );
     const { user, container } = renderApp(`/reports/${report.report.id}`, 'user');
-    const answer = await screen.findByRole('heading', { name: 'Key judgements' });
-    const coverage = screen.getByText(/Collection coverage · 4 source task outcomes/);
-    expect(
-      answer.compareDocumentPosition(coverage) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    const answer = await screen.findByRole('heading', { name: 'Executive summary' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Assessment' }));
+    expect(answer).toBeInTheDocument();
     await user.click(screen.getByText('Citation excerpts · Review required'));
     expect(screen.getByText('Overnight shelling.', { selector: 'blockquote' })).toBeVisible();
     expect(screen.getByText(/not contradiction findings/)).toBeVisible();
     expect(screen.getByText('Claim values: 12')).toBeVisible();
     await user.click(screen.getByText('Exact excerpt provenance'));
     expect(screen.getByText('qa-excerpt-hash')).toBeVisible();
+    expect(container.querySelector('blockquote')).toHaveTextContent('Overnight shelling.');
+    await user.click(screen.getByRole('button', { name: 'Collection' }));
+    const coverage = await screen.findByText(/Collection coverage · 4 source task outcomes/);
     await user.click(coverage);
     for (const state of ['Completed', 'Empty', 'Unavailable', 'Failed'])
       expect(screen.getByText(new RegExp(`${state} ·`, 'i'))).toBeVisible();
@@ -50,7 +52,6 @@ describe('saved research metadata', () => {
     expect(screen.getByText('Ukraine, shelling')).toBeVisible();
     expect(screen.getByText(/do not establish absence of events/)).toBeVisible();
     expect(sourceRequests).toBe(0);
-    expect(container.querySelector('blockquote')).toHaveTextContent('Overnight shelling.');
   });
 
   it('shows frozen rating basis and scalar provenance without converting values into markup', async () => {

@@ -101,11 +101,14 @@ describe('report evidence navigation and review meaning', () => {
     await screen.findByText('Automated checks passed');
     expect(screen.getByText(/1 Aug 2026/)).toHaveTextContent('2 Aug 2026');
     expect(screen.queryByText(/3 Sept 2026/)).not.toBeInTheDocument();
-    await user.click(screen.getByText('Generation details'));
-    expect(screen.getByText(/Data cut-off:/)).toHaveTextContent('2 Aug 2026, 01:00 UTC');
-    const region = screen.getByRole('region', { name: 'Key judgements' });
+    expect(screen.queryByText('Generation details')).not.toBeInTheDocument();
+    const region = screen.getByRole('region', { name: 'Executive summary' });
     await user.click(within(region).getByRole('link', { name: 'View evidence E1' }));
     expect(screen.getByText('Overnight shelling.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Review' }));
+    await user.click(screen.getByText('Generation details'));
+    expect(screen.getByText(/Data cut-off:/)).toHaveTextContent('2 Aug 2026, 01:00 UTC');
   });
 
   it('labels a legacy missing period without borrowing the current report dates', async () => {
@@ -133,6 +136,8 @@ describe('report evidence navigation and review meaning', () => {
     );
     const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
     await screen.findByText('Generation failed');
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Review' }));
     await user.click(screen.getByText('Generation details'));
     expect(screen.getByText(/Unknown input/)).toHaveTextContent('2 attempts');
     expect(screen.getByText(/Unknown input/)).toHaveTextContent('Unknown output tokens');

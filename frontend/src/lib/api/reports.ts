@@ -151,7 +151,93 @@ export const findingSchema = z.object({
 });
 export type Finding = z.infer<typeof findingSchema>;
 
+const documentInlineSchema = z.object({
+  text: z.string().max(16_000),
+  direction: z.enum(['auto', 'ltr', 'rtl']),
+  citation_numbers: z.array(z.number().int().positive()).max(32),
+});
+
+const documentListItemSchema = z.object({
+  text: z.string(),
+  inlines: z.array(documentInlineSchema),
+});
+
+const documentTableCellSchema = z.object({
+  text: z.string(),
+  inlines: z.array(documentInlineSchema),
+});
+
+const documentTableSchema = z.object({
+  title: z.string(),
+  columns: z.array(z.string()).min(1).max(20),
+  rows: z.array(z.array(documentTableCellSchema)).max(500),
+  caption: z.string(),
+});
+
+const documentFigureSchema = z.object({
+  title: z.string(),
+  caption: z.string(),
+  alt_text: z.string(),
+  content_base64: z
+    .string()
+    .min(1)
+    .max(13_400_000)
+    .regex(/^[A-Za-z0-9+/]*={0,2}$/),
+  media_type: z.enum(['image/png', 'image/jpeg']),
+  width_px: z.number().int().min(1).max(10_000),
+  height_px: z.number().int().min(1).max(10_000),
+  citation_numbers: z.array(z.number().int().positive()).max(32),
+});
+
+const documentBlockSchema = z.object({
+  kind: z.enum([
+    'title',
+    'heading',
+    'annex',
+    'subheading',
+    'text',
+    'warning',
+    'metadata',
+    'list',
+    'table',
+    'figure',
+    'reference',
+  ]),
+  text: z.string(),
+  inlines: z.array(documentInlineSchema),
+  items: z.array(documentListItemSchema),
+  ordered: z.boolean(),
+  table: documentTableSchema.nullable(),
+  figure: documentFigureSchema.nullable(),
+});
+
+export const reportPublicationSchema = z.object({
+  schema_version: z.number().int().positive(),
+  title: z.string(),
+  reference: z.string(),
+  language: z.string(),
+  blocks: z.array(documentBlockSchema).max(2_000),
+  references: z
+    .array(
+      z.object({
+        number: z.number().int().positive(),
+        evidence_label: z.string(),
+        title: z.string(),
+        original_title: z.string().nullable(),
+        publisher: z.string(),
+        language: z.string().nullable(),
+        published_at: z.string().nullable(),
+        accessed_at: z.string(),
+        url: z.string().nullable(),
+        archive_url: z.string().nullable(),
+      }),
+    )
+    .max(500),
+});
+export type ReportPublication = z.infer<typeof reportPublicationSchema>;
+
 export const reportVersionSchema = z.object({
+  publication: reportPublicationSchema.nullable().optional(),
   claim_ledger: claimLedgerSchema.nullable().optional(),
   claim_generation: claimGenerationSchema.nullable().optional(),
   research_context: researchContextSchema.nullable().optional(),

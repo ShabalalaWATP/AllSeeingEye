@@ -19,10 +19,13 @@ it('resolves the exact immutable view before requesting its anchored report vers
       return HttpResponse.json({ ...report, report: { ...report.report, latest_version: 3 } });
     }),
   );
-  renderApp(
+  const { user } = renderApp(
     `/reports/${report.report.id}?version=1&map_view=view-1&map_revision=revision-1`,
     'user',
   );
+  await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+  await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+  await user.click(await screen.findByRole('button', { name: 'Evidence map' }));
   await screen.findByRole('heading', { name: 'Map and timeline' });
   expect(requests.slice(0, 2)).toEqual(['map', '?version=1']);
   expect(screen.getByLabelText('Map view title')).toHaveValue('Saved geography');
@@ -76,7 +79,10 @@ it.each([true, false])(
         }),
       ),
     );
-    renderApp(`/reports/${report.report.id}`, 'user');
+    const { user } = renderApp(`/reports/${report.report.id}`, 'user');
+    await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Evidence map' }));
     await screen.findByRole('heading', { name: 'Map and timeline' });
     if (active) expect(await screen.findByRole('button', { name: 'Save map view' })).toBeEnabled();
     else expect(screen.queryByRole('button', { name: 'Save map view' })).not.toBeInTheDocument();
@@ -126,10 +132,13 @@ it('keeps an owned map in an archived team readable without offering writes', as
       }),
     ),
   );
-  renderApp(
+  const { user } = renderApp(
     `/reports/${report.report.id}?version=1&map_view=view-1&map_revision=revision-1`,
     'user',
   );
+  await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+  await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+  await user.click(await screen.findByRole('button', { name: 'Evidence map' }));
   await screen.findByRole('heading', { name: 'Map and timeline' });
   expect(screen.getByLabelText('Map view title')).toHaveValue('Saved geography');
   for (const name of ['Save separate copy', 'Save new revision', 'Archive view'])
@@ -170,10 +179,13 @@ it('opens the anchored report when a retained overlay cannot be displayed', asyn
       }),
     ),
   );
-  renderApp(
+  const { user } = renderApp(
     `/reports/${report.report.id}?version=1&map_view=view-1&map_revision=revision-1`,
     'user',
   );
+  await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+  await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+  await user.click(await screen.findByRole('button', { name: 'Evidence map' }));
   await screen.findByRole('heading', { name: 'Map and timeline' });
   expect(screen.getByLabelText('Map view title')).toHaveValue('Saved geography');
   expect(screen.getByRole('button', { name: 'Open evidence map' })).toBeVisible();

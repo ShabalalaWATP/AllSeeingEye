@@ -136,22 +136,24 @@ async def test_challenge_and_context_export_plain_text_and_archive_all_views():
     word = renderer.render(doc, ExportFormat.DOCX)
     pdf_text = " ".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf)).pages)
     word_text = " ".join(row.text for row in Document(io.BytesIO(word)).paragraphs)
-    for text in (markdown, pdf_text, word_text):
-        for expected in (
-            "saved-challenge-v0",
-            "budget exhausted",
-            "contrarian view",
-            "Recorded publication timeline",
-            "Declared source chains",
-        ):
-            assert expected in text
+    for expected in (
+        "saved-challenge-v0",
+        "budget exhausted",
+        "contrarian view",
+        "Recorded publication timeline",
+        "Declared source chains",
+    ):
+        assert expected in markdown
+        assert expected not in pdf_text
+        assert expected not in word_text
     assert "<script>" not in markdown and "[bad](javascript" not in markdown
-    assert hostile in word_text
+    assert hostile not in word_text
     repo, archiver, uow = AsyncMock(), AsyncMock(), AsyncMock()
     repo.get.return_value = record
     archiver.archive.return_value = "https://example.org/snapshot"
     await archive_evidence(archiver, repo, uow, version)
-    assert "saved-challenge-v0" in repo.set_archives.await_args.args[2]
+    assert "## References" in repo.set_archives.await_args.args[2]
+    assert "saved-challenge-v0" not in repo.set_archives.await_args.args[2]
     assert version.evidence[2].url in [call.args[0] for call in archiver.archive.await_args_list]
 
 

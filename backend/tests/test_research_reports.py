@@ -84,7 +84,8 @@ async def test_research_api_saves_receipt_without_publishing_live_items(
     assert len(payload["version"]["evidence"]) == 3
     assert payload["version"]["research"]["collected_items"] == 3
     assert payload["version"]["research"]["attempts"][0]["language"] == "fr"
-    assert "Collection coverage" in payload["version"]["markdown"]
+    assert "Collection coverage" not in payload["version"]["markdown"]
+    assert "Collection coverage" not in str(payload["version"]["publication"])
     assert "do not establish absence" in gateway.requests[1].messages[1].content
     assert container.store.get("research-0") is None
     report_id = payload["report"]["id"]

@@ -30,7 +30,7 @@ from ase.domain.users import User
 from report_documents_helpers import document_records
 
 
-def test_structured_exports_contain_headers_warnings_citations_and_frozen_provenance() -> None:
+def test_structured_exports_share_professional_content_and_hide_operational_detail() -> None:
     record, version = document_records()
     document = build_document(record, version)
     renderer = ReportDocumentRenderer()
@@ -44,24 +44,19 @@ def test_structured_exports_contain_headers_warnings_citations_and_frozen_proven
             record.title,
             "version 1",
             "NEEDS REVIEW",
-            "Key judgements",
-            "Direction",
-            "PIR-1",
-            "Devil's advocacy",
-            "Gaps and collection",
-            "Quality of information",
-            "Validator findings",
-            "Frozen evidence annex",
-            "Captured:",
-            "Content hash:",
-            "[E1, E2]",
-            "Reliability:",
-            "Archive URL:",
-            "Flags:",
-            version.evidence[0].content_hash,
+            "Executive summary",
+            "Findings and analysis",
+            "Source chronology",
+            "Alternative explanations",
+            "Limitations and confidence",
+            "References",
+            "[1, 2]",
+            "https://example.org/report",
         ):
             assert value in text, value
-    assert len(pdf.pages) >= 3
+        for operational in ("Model:", "Attempts:", "Validator findings", "Content hash:"):
+            assert operational not in text
+    assert word.tables and word.tables[0].cell(0, 0).text == "Date"
     assert word.paragraphs[0].style.name == "Title"
     assert any(p.style.name == "Heading 1" for p in word.paragraphs)
     assert "version 1" in word.sections[0].footer.paragraphs[0].text
@@ -80,13 +75,14 @@ def test_markup_is_literal_no_external_resources_and_unicode_remains_recoverable
         relationships = "\n".join(
             archive.read(name).decode() for name in archive.namelist() if name.endswith(".rels")
         )
-        assert 'TargetMode="External"' not in relationships
+        assert "private.test" not in relationships
+        assert "https://example.org/report" in relationships
         assert not any(name.startswith("word/media/") for name in archive.namelist())
     pdf = PdfReader(io.BytesIO(renderer.render(document, ExportFormat.PDF)))
     text = "\n".join(page.extract_text() for page in pdf.pages)
     assert '<img src="file:///etc/passwd"/>' in text
     assert "[U+79D8][U+5BC6]" in text
-    assert all(not page.get("/Annots") for page in pdf.pages)
+    assert all("private.test" not in str(page.get("/Annots")) for page in pdf.pages)
 
 
 def test_old_version_keeps_its_frozen_period_and_failed_empty_documents_are_explicit() -> None:
@@ -108,9 +104,9 @@ def test_old_version_keeps_its_frozen_period_and_failed_empty_documents_are_expl
     )
     document = build_document(record, failed)
     text = "\n".join(b.text for b in document.blocks)
-    assert (
-        "FAILED GENERATION" in text and "No key judgements" in text and "No frozen evidence" in text
-    )
+    assert "FAILED GENERATION" in text
+    assert "No assessed conclusion was produced" in text
+    assert "References" not in text
     assert "Template: intsum" in text
     assert ReportDocumentRenderer().render(document, ExportFormat.PDF).startswith(b"%PDF")
 

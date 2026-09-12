@@ -1,0 +1,172 @@
+.report-reader-shell {
+  background: radial-gradient(circle at 78% 8%, rgb(255 111 55 / 0.08), transparent 28rem), #0a0a0f;
+}
+
+.report-reader-frame {
+  width: min(100%, 92rem);
+  margin-inline: auto;
+}
+
+.report-reader-paper {
+  color-scheme: light;
+  color: #292722;
+  background: #f7f4ed;
+  border: 1px solid #d9d2c5;
+  box-shadow: 0 32px 80px -38px rgb(0 0 0 / 0.9);
+}
+
+.report-reader-paper::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #ff6f37 0 7rem, #24211d 7rem 100%);
+}
+
+.report-reader-content {
+  width: min(100%, 49rem);
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 5.5rem) clamp(1.25rem, 5vw, 5rem) 6rem;
+}
+
+.report-reader-content p,
+.report-reader-content li,
+.report-reader-content td {
+  line-height: 1.75;
+}
+
+.report-reader-section {
+  scroll-margin-top: 6rem;
+  padding-top: 2.35rem;
+}
+
+.report-reader-section + .report-reader-section {
+  margin-top: 2.35rem;
+  border-top: 1px solid #d8d1c5;
+}
+
+.report-reader-section > h2 {
+  color: #1d1b18;
+  font-size: 1.22rem;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+
+.report-reader-section > h3,
+.report-reader-subheading {
+  color: #3e3932;
+  font-size: 0.96rem;
+  font-weight: 680;
+}
+
+.report-reader-paragraph {
+  margin-top: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.report-reader-citation {
+  margin-left: 0.18rem;
+  color: #a63e17;
+  font-size: 0.72em;
+  font-weight: 700;
+  text-decoration: none;
+  vertical-align: super;
+}
+
+.report-reader-citation:hover {
+  text-decoration: underline;
+}
+
+.report-reader-citation a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.report-reader-paper a[aria-label^='View evidence'] {
+  background: #ebe5da;
+  color: #923913;
+}
+
+.report-reader-table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border-block: 1px solid #cfc7ba;
+}
+
+.report-reader-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.report-reader-table th {
+  padding: 0.75rem 0.8rem;
+  background: #ebe6dc;
+  color: #4b453c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.report-reader-table td {
+  padding: 0.8rem;
+  border-top: 1px solid #ded7ca;
+  vertical-align: top;
+}
+
+.report-reader-reference {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding-block: 0.7rem;
+  border-top: 1px solid #ded7ca;
+  font-size: 0.82rem;
+  scroll-margin-top: 5rem;
+}
+
+.report-reader-reference a {
+  color: #8f3515;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: rgb(143 53 21 / 0.35);
+  text-underline-offset: 0.15rem;
+}
+
+.report-reader-legacy-reference {
+  padding-block: 0.7rem;
+  border-top: 1px solid #ded7ca;
+  font-size: 0.82rem;
+}
+
+.report-reader-enter {
+  animation: report-reader-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes report-reader-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .report-reader-paper {
+    border-inline: 0;
+  }
+
+  .report-reader-content {
+    padding-bottom: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-reader-enter {
+    animation: none;
+  }
+}

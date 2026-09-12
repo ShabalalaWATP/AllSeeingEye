@@ -11117,6 +11117,23 @@
         ],
         "title": "AviationBoardOut"
       },
+      "BlockKind": {
+        "type": "string",
+        "enum": [
+          "title",
+          "heading",
+          "annex",
+          "subheading",
+          "text",
+          "warning",
+          "metadata",
+          "list",
+          "table",
+          "figure",
+          "reference"
+        ],
+        "title": "BlockKind"
+      },
       "CableOut": {
         "properties": {
           "id": {
@@ -13915,6 +13932,315 @@
           "url"
         ],
         "title": "DoctrineReferenceOut"
+      },
+      "DocumentBlockOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/BlockKind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "inlines": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentInlineOut"
+            },
+            "type": "array",
+            "title": "Inlines"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentListItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "ordered": {
+            "type": "boolean",
+            "title": "Ordered"
+          },
+          "table": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentTableOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "figure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentFigureOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "inlines",
+          "items",
+          "ordered",
+          "table",
+          "figure"
+        ],
+        "title": "DocumentBlockOut"
+      },
+      "DocumentFigureOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption"
+          },
+          "alt_text": {
+            "type": "string",
+            "title": "Alt Text"
+          },
+          "content_base64": {
+            "type": "string",
+            "title": "Content Base64"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "width_px": {
+            "type": "integer",
+            "title": "Width Px"
+          },
+          "height_px": {
+            "type": "integer",
+            "title": "Height Px"
+          },
+          "citation_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Citation Numbers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "caption",
+          "alt_text",
+          "content_base64",
+          "media_type",
+          "width_px",
+          "height_px",
+          "citation_numbers"
+        ],
+        "title": "DocumentFigureOut"
+      },
+      "DocumentInlineOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "direction": {
+            "type": "string",
+            "title": "Direction"
+          },
+          "citation_numbers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Citation Numbers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "direction",
+          "citation_numbers"
+        ],
+        "title": "DocumentInlineOut"
+      },
+      "DocumentListItemOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "inlines": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentInlineOut"
+            },
+            "type": "array",
+            "title": "Inlines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "inlines"
+        ],
+        "title": "DocumentListItemOut"
+      },
+      "DocumentReferenceOut": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "evidence_label": {
+            "type": "string",
+            "title": "Evidence Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "publisher": {
+            "type": "string",
+            "title": "Publisher"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "accessed_at": {
+            "type": "string",
+            "title": "Accessed At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "archive_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive Url"
+          },
+          "original_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Title"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "evidence_label",
+          "title",
+          "publisher",
+          "published_at",
+          "accessed_at",
+          "url",
+          "archive_url",
+          "original_title",
+          "language"
+        ],
+        "title": "DocumentReferenceOut"
+      },
+      "DocumentTableCellOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "inlines": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentInlineOut"
+            },
+            "type": "array",
+            "title": "Inlines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "inlines"
+        ],
+        "title": "DocumentTableCellOut"
+      },
+      "DocumentTableOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/DocumentTableCellOut"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Caption"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "columns",
+          "rows",
+          "caption"
+        ],
+        "title": "DocumentTableOut"
       },
       "DraftModelDiscoveryIn": {
         "properties": {
@@ -23090,6 +23416,50 @@
         ],
         "title": "ReportOut"
       },
+      "ReportPublicationOut": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentBlockOut"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentReferenceOut"
+            },
+            "type": "array",
+            "title": "References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_version",
+          "title",
+          "reference",
+          "language",
+          "blocks",
+          "references"
+        ],
+        "title": "ReportPublicationOut"
+      },
       "ReportSearchHitOut": {
         "properties": {
           "report": {
@@ -23276,6 +23646,16 @@
       },
       "ReportVersionOut": {
         "properties": {
+          "publication": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportPublicationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "claim_generation": {
             "anyOf": [
               {

@@ -3399,6 +3399,11 @@ export interface components {
             /** Jam Updated At */
             jam_updated_at: string | null;
         };
+        /**
+         * BlockKind
+         * @enum {string}
+         */
+        BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "reference";
         /** CableOut */
         CableOut: {
             /** Id */
@@ -4369,6 +4374,96 @@ export interface components {
             title: string;
             /** Url */
             url: string;
+        };
+        /** DocumentBlockOut */
+        DocumentBlockOut: {
+            kind: components["schemas"]["BlockKind"];
+            /** Text */
+            text: string;
+            /** Inlines */
+            inlines: components["schemas"]["DocumentInlineOut"][];
+            /** Items */
+            items: components["schemas"]["DocumentListItemOut"][];
+            /** Ordered */
+            ordered: boolean;
+            table: components["schemas"]["DocumentTableOut"] | null;
+            figure: components["schemas"]["DocumentFigureOut"] | null;
+        };
+        /** DocumentFigureOut */
+        DocumentFigureOut: {
+            /** Title */
+            title: string;
+            /** Caption */
+            caption: string;
+            /** Alt Text */
+            alt_text: string;
+            /** Content Base64 */
+            content_base64: string;
+            /** Media Type */
+            media_type: string;
+            /** Width Px */
+            width_px: number;
+            /** Height Px */
+            height_px: number;
+            /** Citation Numbers */
+            citation_numbers: number[];
+        };
+        /** DocumentInlineOut */
+        DocumentInlineOut: {
+            /** Text */
+            text: string;
+            /** Direction */
+            direction: string;
+            /** Citation Numbers */
+            citation_numbers: number[];
+        };
+        /** DocumentListItemOut */
+        DocumentListItemOut: {
+            /** Text */
+            text: string;
+            /** Inlines */
+            inlines: components["schemas"]["DocumentInlineOut"][];
+        };
+        /** DocumentReferenceOut */
+        DocumentReferenceOut: {
+            /** Number */
+            number: number;
+            /** Evidence Label */
+            evidence_label: string;
+            /** Title */
+            title: string;
+            /** Publisher */
+            publisher: string;
+            /** Published At */
+            published_at: string | null;
+            /** Accessed At */
+            accessed_at: string;
+            /** Url */
+            url: string | null;
+            /** Archive Url */
+            archive_url: string | null;
+            /** Original Title */
+            original_title: string | null;
+            /** Language */
+            language: string | null;
+        };
+        /** DocumentTableCellOut */
+        DocumentTableCellOut: {
+            /** Text */
+            text: string;
+            /** Inlines */
+            inlines: components["schemas"]["DocumentInlineOut"][];
+        };
+        /** DocumentTableOut */
+        DocumentTableOut: {
+            /** Title */
+            title: string;
+            /** Columns */
+            columns: string[];
+            /** Rows */
+            rows: components["schemas"]["DocumentTableCellOut"][][];
+            /** Caption */
+            caption: string;
         };
         /** DraftModelDiscoveryIn */
         DraftModelDiscoveryIn: {
@@ -7603,6 +7698,21 @@ export interface components {
             report: components["schemas"]["ReportSummaryOut"];
             version: components["schemas"]["ReportVersionOut"];
         };
+        /** ReportPublicationOut */
+        ReportPublicationOut: {
+            /** Schema Version */
+            schema_version: number;
+            /** Title */
+            title: string;
+            /** Reference */
+            reference: string;
+            /** Language */
+            language: string;
+            /** Blocks */
+            blocks: components["schemas"]["DocumentBlockOut"][];
+            /** References */
+            references: components["schemas"]["DocumentReferenceOut"][];
+        };
         /** ReportSearchHitOut */
         ReportSearchHitOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -7689,6 +7799,7 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            publication?: components["schemas"]["ReportPublicationOut"] | null;
             claim_generation?: components["schemas"]["ClaimGenerationReceipt"] | null;
             claim_ledger?: components["schemas"]["ClaimLedgerOut"] | null;
             model_routing?: components["schemas"]["ModelRoutingOut"] | null;

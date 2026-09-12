@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -88,7 +89,11 @@ describe('ReportPage', () => {
     );
     renderApp(`/reports/${reportSummary.id}`, role);
     await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
-    expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeInTheDocument();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    expect(screen.getByRole('menuitem', { name: 'Download Markdown' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Review' }));
     for (const name of ['Regenerate', 'Delete']) {
       if (role === 'admin') expect(screen.getByRole('button', { name })).toBeInTheDocument();
       else expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
@@ -100,19 +105,31 @@ describe('ReportPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' }),
     ).toBeInTheDocument();
-    const judgements = screen.getByRole('region', { name: 'Key judgements' });
+    const judgements = screen.getByRole('region', { name: 'Executive summary' });
     expect(within(judgements).getByText(/highly likely that fighting/)).toBeInTheDocument();
     expect(within(judgements).getByText('highly likely')).toBeInTheDocument();
     expect(within(judgements).getByText('moderate confidence')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Reporting' })).toHaveTextContent(
+    expect(screen.getByRole('region', { name: 'Findings' })).toHaveTextContent(
       'Shelling was reported overnight.',
     );
-    expect(screen.getByRole('region', { name: 'Assumptions' })).toHaveTextContent('(lynchpin)');
+    expect(screen.getByRole('region', { name: 'Assumptions' })).toHaveTextContent('(critical)');
     expect(screen.getByRole('region', { name: 'Indicators and warning' })).toHaveTextContent(
       'elevated',
     );
-    expect(screen.getByRole('region', { name: 'Gaps and collection' })).toHaveTextContent('EEI-1');
-    const annex = screen.getByRole('region', { name: 'Evidence annex' });
+    expect(
+      screen.getByRole('region', { name: 'Limitations and further research' }),
+    ).toHaveTextContent('No reporting on the eastern road.');
+    expect(screen.queryByText(/llama3\.1:8b/)).not.toBeInTheDocument();
+    await user.click(within(judgements).getByRole('link', { name: 'View evidence E1' }));
+    const legacyReference = document.getElementById('evidence-E1');
+    expect(legacyReference).toBeInstanceOf(HTMLDetailsElement);
+    expect(legacyReference).toHaveAttribute('open');
+    expect(legacyReference?.querySelector('summary')).toHaveFocus();
+    expect(screen.getByRole('region', { name: 'References' })).toHaveTextContent(
+      'Shelling in Kharkiv',
+    );
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    const annex = await screen.findByRole('region', { name: 'Evidence annex' });
     await user.click(within(annex).getByText('Shelling in Kharkiv'));
     expect(within(annex).getByRole('link', { name: 'Open source' })).toHaveAttribute(
       'href',
@@ -124,7 +141,7 @@ describe('ReportPage', () => {
     await user.click(within(annex).getByText('Ministry statement'));
     expect(within(annex).getByText('Source flags: state controlled')).toBeVisible();
     expect(screen.getByText('1 validator note(s)')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy Markdown' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Saved reports' })).toBeInTheDocument();
@@ -147,9 +164,12 @@ describe('ReportPage', () => {
       ),
     );
     renderApp(`/reports/${reportSummary.id}`, 'user');
-    expect(await screen.findByText('Validator findings')).toBeInTheDocument();
+    expect(await screen.findByText('Review required')).toBeInTheDocument();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Review' }));
+    expect(await screen.findByText('Review findings')).toBeInTheDocument();
     expect(screen.getByText(/Two terms/)).toBeInTheDocument();
-    expect(screen.getByText('Needs review')).toBeInTheDocument();
     server.use(http.get('/api/reports/:id', () => apiError(404, 'not_found', 'Report not found.')));
     renderApp('/reports/missing', 'user');
     expect(await screen.findByText('Report not found.')).toBeInTheDocument();

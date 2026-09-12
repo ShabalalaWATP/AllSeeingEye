@@ -3915,3 +3915,74 @@ pixels, no launcher box, drag, focus return and retained drafts at 1440 by 900,
 390 by 844 and 320 by 568. A bounded peer review found no actionable UI or
 lifecycle issue. No backend, permission, source, provider or model change was
 made, and no paid model call was used for these UI checks.
+
+### 12 September 2026: professional report product planning
+
+Reviewed the report reader, separate web context, publication assembly and
+Word/PDF/Markdown paths. The existing exports include operational material and
+do not share one content model; their document types also lack native tables,
+figures and a common citation/reference structure.
+
+Recorded a proposed reader-first report plan in
+PROFESSIONAL_REPORT_PRODUCT_PLAN.md, with shared versioned content, a reference
+registry, bounded editorial checks, supporting evidence views and consistent
+exports. The plan preserves material uncertainty, source provenance, durable
+resume and late export authorisation, and records current language/rendering
+limits. An independent read-only backend audit informed the design.
+
+Only planning documentation changed. No application behaviour, provider setting,
+database or service was changed, and no live model or application test run was
+performed for this proposal.
+
+### 12 September 2026: professional report product implemented
+
+Implemented one canonical, versioned publication document for the saved-report
+reader and PDF, DOCX and Markdown exports. Reports now lead with the question,
+scope and reporting period, then present an executive summary, findings and
+analysis, alternatives, outlook and indicators, limitations, confidence and one
+reference list. Stable numbered citations link findings to retained evidence;
+references preserve both the public source and archived copy, original titles
+and languages. A resolved declared source date is used when a publication
+timestamp is unavailable.
+
+Publication quality now checks evidence coverage by requirement instead of
+allowing loosely related evidence to support every question. Unsupported
+requirements remain visible as neutral gaps, weak or incomplete coverage keeps a
+report in Needs review, and later assembly cannot silently remove those gaps.
+Fresh model-generated web context remains supporting material and cannot become
+retained evidence or increase corroboration.
+
+The report route now opens on a calm, publication-style reading surface with
+linked citations, native tables and bounded figures. Sources, assessment,
+collection, evidence map and review diagnostics moved into a lazy supporting
+drawer so operational detail stays available without obscuring the product.
+Exact-version PDF, DOCX and Markdown exports share the canonical content. The
+renderers provide editable Word tables, searchable PDF text, repeated table
+headers and accessible captions. Image decoding, dimensions, pixel counts and
+aggregate bytes are bounded; remote image fetching and arbitrary report markup
+remain disallowed.
+
+Export authorisation is checked again immediately before every released format,
+including Markdown, closing a release race found during security review. No
+actionable issue remained after the final security recheck.
+
+The broad report-focused backend run executed 1,017 tests: 1,015 passed and its
+two failures identified regressions that were corrected. The two regressions and
+publication selection then passed 9 of 9. This was not the full backend suite.
+The full frontend suite passed 1,968 tests with one skipped, measuring 95.1%
+statements, 90.07% branches, 93.28% functions and 96.32% lines. Type checks,
+linting, backend static checks and the production build passed. Repository-wide
+Prettier still reports 11 pre-existing unrelated files; every changed frontend
+file passes formatting.
+
+Rendered PDF pages were visually inspected with no clipping, overlap or broken
+tables. Bundled LibreOffice is absent, so a visual DOCX render was unavailable;
+structural DOCX and export tests passed. No full backend coverage figure or live
+model acceptance run is claimed for this milestone.
+
+Final combined review found that contrary evidence, judgement change and warning
+fields were missing from the shared projection, legacy directional checkpoints
+could gain false gaps, and PDF/HTML exposed only one of two retained reference
+links. All three paths were corrected and their focused 39-test set passed. The
+publication builder was then split by responsibility to remain within the source
+file length target.

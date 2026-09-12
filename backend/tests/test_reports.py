@@ -162,7 +162,10 @@ async def test_generate_read_export_and_delete(
     assert version["body"]["key_judgements"][0]["probability"] == "highly_likely"
     assert not any(f["rule"] == "citation" for f in version["findings"])
     assert not any(f["severity"] == "error" for f in version["findings"])
-    assert "## Evidence annex" in version["markdown"]
+    assert "## Executive summary" in version["markdown"]
+    assert "## References" in version["markdown"]
+    assert "## Evidence annex" not in version["markdown"]
+    assert version["publication"]["schema_version"] == 1
     prompt = gateway.requests[0]
     assert prompt.json_schema is not None and prompt.messages[0].role == "system"
     assert "E1 [" in prompt.messages[1].content and "Kharkiv" in prompt.messages[1].content

@@ -25,11 +25,11 @@ describe('frozen context and challenge reader', () => {
       ),
     );
     const { user, container } = renderApp(`/reports/${report.report.id}`, 'user');
-    const answer = await screen.findByRole('heading', { name: 'Key judgements' });
-    const disclosure = screen.getByText('Timeline and source context');
-    expect(
-      answer.compareDocumentPosition(disclosure) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    const answer = await screen.findByRole('heading', { name: 'Executive summary' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Assessment' }));
+    const disclosure = await screen.findByText('Timeline and source context');
+    expect(answer).toBeInTheDocument();
     await user.click(disclosure);
     expect(screen.getByText('registry_snapshot')).toBeVisible();
     expect(screen.getByText('registered_date_raw')).toBeVisible();
@@ -47,7 +47,7 @@ describe('frozen context and challenge reader', () => {
     expect(screen.getByText('Initial judgement wording.')).toBeVisible();
     expect(screen.getByText(/QA feed · budget exhausted/)).toBeVisible();
     expect(screen.getByText(/Missing counterevidence does not confirm/)).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Ask a follow-up question' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Ask a follow-up question/ })).toHaveAttribute(
       'href',
       `/research?parent=${report.report.id}`,
     );

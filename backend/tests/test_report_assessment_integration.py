@@ -135,7 +135,7 @@ async def test_sql_and_api_keep_each_versions_assessment_and_legacy_absence(
         assert saved is not None and saved.assessment == second.assessment
 
 
-def test_every_export_contains_the_same_frozen_assessment() -> None:
+def test_reader_exports_hide_frozen_assessment_diagnostics() -> None:
     record, version = document_records()
     assessment = build_report_assessment(version.body, version.evidence, version.findings)
     assessment = replace(assessment, method_version="saved-policy-v0")
@@ -151,20 +151,20 @@ def test_every_export_contains_the_same_frozen_assessment() -> None:
     renderer = ReportDocumentRenderer()
     word = Document(io.BytesIO(renderer.render(document, ExportFormat.DOCX)))
     pdf = PdfReader(io.BytesIO(renderer.render(document, ExportFormat.PDF)))
-    texts = [
-        markdown,
+    reader_texts = [
         "\n".join(p.text for p in word.paragraphs),
         " ".join(page.extract_text() for page in pdf.pages),
     ]
-    for text in texts:
+    operational = " ".join(markdown.split())
+    assert "saved-policy-v0" in operational
+    assert "not an accuracy percentage" in operational
+    assert "does not verify that citations support the claims" in operational
+    for text in reader_texts:
         normal = " ".join(text.split())
-        assert "saved-policy-v0" in text
-        assert "not an accuracy percentage" in normal
-        assert "does not verify that citations support the claims" in normal
-        assert "Source contributions:" in normal
-        assert "support groups (model-assigned):" in normal
-        assert "Improve:" in normal
-    assert all(
+        assert "saved-policy-v0" not in normal
+        assert "Source contributions:" not in normal
+        assert "support groups (model-assigned):" not in normal
+    assert not any(
         paragraph in [block.text for block in document.blocks]
         for _, paragraphs in assessment_sections(assessment)
         for paragraph in paragraphs
@@ -190,7 +190,9 @@ async def test_late_archive_preserves_the_saved_assessment_and_version_compariso
     repository.get.return_value = record
     archiver.archive.return_value = "https://example.org/snapshot"
     assert await archive_evidence(archiver, repository, uow, version) > 0
-    assert "saved-policy-v0" in repository.set_archives.await_args.args[2]
+    archived_markdown = repository.set_archives.await_args.args[2]
+    assert "## References" in archived_markdown
+    assert "saved-policy-v0" not in archived_markdown
     changed = replace(version, assessment=replace(assessment, method_version="saved-policy-v1"))
     comparison = compare_versions(record, version, changed)
     assert [(c.section, c.path, c.before, c.after) for c in comparison.changes] == [
@@ -237,7 +239,8 @@ async def test_production_assesses_final_body_before_late_authorisation_and_usag
         version.findings,
     )
     assert version.assessment is not None
-    assert version.assessment.method_version in version.markdown
+    assert version.assessment.method_version not in version.markdown
+    assert "## Executive summary" in version.markdown
 
 
 async def test_failed_generation_still_has_an_honest_frozen_assessment(
@@ -261,4 +264,5 @@ async def test_failed_generation_still_has_an_honest_frozen_assessment(
     assert version.assessment is not None
     assert version.assessment.tallies.judgements == 0
     assert version.assessment.validation_errors > 0
-    assert "Judgements: 0" in version.markdown
+    assert "FAILED GENERATION" in version.markdown
+    assert "No assessed conclusion was produced" in version.markdown

@@ -8,11 +8,29 @@ import pytest
 
 from ase.application.ports.llm import LlmGatewayError
 from ase.application.reports.sections import SectionIncomplete
-from ase.application.reports.sections.planning import plan_topics
+from ase.application.reports.sections.checkpoints import metadata, write_state
+from ase.application.reports.sections.planning import (
+    LEGACY_METHOD_VERSION,
+    PREVIOUS_METHOD_VERSION,
+    packet_digest,
+    plan_topics,
+)
 from ase.application.reports.sections.synthesis_contracts import CONTEXT, JUDGEMENTS
+from ase.application.reports.templates import TEMPLATES
+from ase.domain.direction import Direction
+from ase.domain.evidence import quality_of_information
 from ase.domain.llm import LlmProvider, ReasoningEffort
 from assistant_model_helpers import PROFILE
-from section_model_helpers import Checkpoints, Gateway, exhausted, items, run, synthesis_part_body
+from section_model_helpers import (
+    HEADER,
+    Checkpoints,
+    Gateway,
+    exhausted,
+    items,
+    run,
+    synthesis_part_body,
+    topic_body,
+)
 
 
 async def test_assembly_keeps_topic_text_citations_and_can_resume_without_any_calls():
@@ -30,6 +48,53 @@ async def test_assembly_keeps_topic_text_citations_and_can_resume_without_any_ca
     resumed = await run(gateway, checkpoints)
     assert resumed.body == first.body and len(gateway.calls) == 5 and resumed.attempts == 0
     assert resumed.prompt_tokens is None and resumed.completion_tokens is None
+
+
+async def test_one_item_packet_preserves_supported_requirement_without_a_false_gap():
+    selected = (replace(items(1)[0], title="Nuclear inspection completed"),)
+    direction = Direction("What changed?", eeis=("Which nuclear inspection was completed?",))
+    checkpoints = Checkpoints()
+
+    draft = await run(Gateway(checkpoints), checkpoints, selected, direction=direction)
+
+    assert draft.body and draft.supported_requirements == {"EEI-1"}
+    assert not any(gap.eei == "EEI-1" for gap in draft.body.gaps)
+
+
+@pytest.mark.parametrize("method_version", [PREVIOUS_METHOD_VERSION, LEGACY_METHOD_VERSION])
+async def test_legacy_directional_resume_uses_body_inference_without_false_gaps(method_version):
+    original = items()
+    selected = (replace(original[0], title="Nuclear inspection completed"), *original[1:])
+    direction = Direction("What changed?", eeis=("Which nuclear inspection was completed?",))
+    quality = quality_of_information(selected)
+    question = "What does the supplied evidence establish?"
+    topics = plan_topics(selected, direction, method_version=method_version)
+    digest = packet_digest(
+        PROFILE,
+        TEMPLATES["ask"],
+        HEADER,
+        question,
+        quality,
+        selected,
+        (),
+        direction,
+        None,
+        method_version=method_version,
+    )
+    checkpoints = Checkpoints()
+    first = topics[0]
+    await write_state(
+        checkpoints,
+        digest,
+        metadata(first, first.evidence_labels),
+        "completed",
+        body=topic_body(first.evidence_labels),
+    )
+
+    draft = await run(Gateway(checkpoints), checkpoints, selected, direction=direction)
+
+    assert draft.body and draft.supported_requirements is None
+    assert not any(gap.eei == "EEI-1" for gap in draft.body.gaps)
 
 
 async def test_topic_exhaustion_splits_once_and_accounts_failed_paid_attempt():

@@ -364,14 +364,48 @@ reached its existing deadline and retained an unknown-usage reservation.
 
 Next report-quality work identified by this acceptance:
 
-- [ ] Add an explicit requirement-completeness check and Needs review outcome for
+- [x] Add an explicit requirement-completeness check and Needs review outcome for
   unaddressed EEIs, with neutral "not separately assessed" notices.
-- [ ] Stop final context from copying existing gaps. Improve new-job topic matching
+- [x] Stop final context from copying existing gaps. Improve new-job topic matching
   so common country terms cannot assign unrelated evidence to the first EEI.
-- [ ] Collect richer original source material; keep generated web context separate
-  until original-source retrieval and provenance checks support its use as evidence.
+- [ ] Collect richer original source material across providers.
+- [x] Keep generated web context separate until original-source retrieval and
+  provenance checks support its use as retained evidence.
 - [ ] Align optional claim-extraction admission/deadlines with Max reasoning and
   report its incomplete outcome without repeating completed report sections.
 
 See [durable research operations](DURABLE_RESEARCH_JOBS.md). Existing direct report
 generation and recurring schedules keep their earlier pipeline in this milestone.
+
+## Professional report product plan, 12 September 2026
+
+[Professional report product plan](PROFESSIONAL_REPORT_PRODUCT_PLAN.md) records
+one coherent reader document with in-text citations and a numbered reference
+list, shared by the browser and Word, PDF and Markdown exports. Supporting
+evidence and operational diagnostics now sit outside the default report. The
+implemented boundary also covers bounded editorial assembly, requirement
+completeness, native tables, safe figures, immutable versions and export
+authorisation.
+
+- [x] Shared reader product, reference registry and consistent text exports.
+- [x] Editorial quality, retained-original-source boundaries and completeness gates.
+- [x] Native chronology tables and safe semantic figure rendering in the browser,
+  Word and PDF.
+- [x] PDF page inspection, automated compatibility checks and security review.
+- [ ] Deterministic source-backed figure/area-map generation and an offline
+  Markdown figure bundle.
+- [ ] Complete browser and Word visual acceptance, plus multilingual export checks.
+
+The stable affected backend set is clean: a report-focused run passed 1,015 of
+1,017 tests before two final compatibility fixes, then the two regressions and
+publication coverage passed 9 of 9. The full 5,920-test backend suite was not run.
+Backend Ruff, type checking, import contracts and file-length checks passed.
+After final combined review fixes for contrary evidence, legacy resume and
+reference parity, the focused 39-test report set also passed.
+
+The full frontend suite passed 1,968 tests with one skip and measured 95.1%
+statements, 90.07% branches, 93.28% functions and 96.32% lines. TypeScript,
+ESLint, the production build and Prettier checks on all changed frontend files
+passed. PDF output passed visual page inspection. DOCX structural tests passed,
+but visual DOCX inspection remains open because the bundled LibreOffice runtime
+is unavailable. Final security review found no actionable findings.

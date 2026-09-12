@@ -7,7 +7,7 @@ const messages: Record<ReportStatus, [string, string]> = {
   ],
   needs_review: [
     'Review required',
-    'Required automated checks found unresolved issues. Inspect the findings and cited evidence.',
+    'Some checks found unresolved evidence or coverage issues. Treat the affected findings with caution.',
   ],
   failed: [
     'Generation failed',
@@ -15,12 +15,18 @@ const messages: Record<ReportStatus, [string, string]> = {
   ],
 };
 
+const tones: Record<ReportStatus, string> = {
+  ready: 'border-[#a9a397] bg-[#f1ede4] text-[#49453f]',
+  needs_review: 'border-[#c58a24] bg-[#fff7e6] text-[#62440e]',
+  failed: 'border-[#b7554b] bg-[#fff0ed] text-[#702b25]',
+};
+
 export function ReportReviewStatus({ status }: { status: ReportStatus }) {
   const [title, detail] = messages[status];
   return (
-    <div aria-label="Review status" className="border-l-2 border-ember/60 py-1 pl-3 text-sm">
-      <p className="font-medium">{title}</p>
-      <p className="mt-1 text-xs text-muted">{detail}</p>
+    <div aria-label="Review status" className={`border-l-2 px-3 py-2 text-sm ${tones[status]}`}>
+      <p className="font-semibold">{title}</p>
+      <p className="mt-0.5 text-xs leading-5 opacity-80">{detail}</p>
     </div>
   );
 }

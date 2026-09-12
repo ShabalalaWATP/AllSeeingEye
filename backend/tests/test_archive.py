@@ -155,7 +155,9 @@ async def test_cited_evidence_is_archived_after_generation(
         == "https://web.archive.org/web/20260905000000/https://example.com/e"
     )
     assert evidence[1]["archive_url"] is None
+    markdown = fetched.json()["version"]["markdown"]
+    assert "[Open source](https://example.com/e)" in markdown
     assert (
-        "[archive](https://web.archive.org/web/20260905000000/https://example.com/e)"
-        in (fetched.json()["version"]["markdown"])
+        "[Archived copy](https://web.archive.org/web/20260905000000/https://example.com/e)"
+        in markdown
     )

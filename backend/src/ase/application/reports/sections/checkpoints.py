@@ -9,13 +9,19 @@ from ase.application.reports.sections.synthesis_contracts import PARTS, TITLES, 
 
 
 def metadata(topic: Topic | None, labels: tuple[str, ...]) -> dict[str, Any]:
-    return {
+    value: dict[str, Any] = {
         "id": topic.id if topic else "synthesis",
         "title": topic.title if topic else "Final synthesis",
         "kind": "topic" if topic else "synthesis",
         "evidence_labels": list(labels),
         "parent": topic.parent if topic else None,
     }
+    if topic and topic.requirement_evidence:
+        value["requirement_evidence"] = [
+            {"requirement_id": requirement_id, "evidence_labels": list(evidence_labels)}
+            for requirement_id, evidence_labels in topic.requirement_evidence
+        ]
+    return value
 
 
 def synthesis_metadata(part: str, labels: tuple[str, ...]) -> dict[str, Any]:

@@ -41,6 +41,7 @@ async def test_web_context_flows_through_drafting_freezing_read_and_export(clien
     assert web["status"] == "completed" and web["synthesis"] == TEXT
     assert web["citations"][0]["url"] == URL and web["notice"].startswith("AI-generated")
     assert payload["report"]["scope"]["research_web_search"] is True
+    assert payload["report"]["status"] == "needs_review"
     assert payload["version"]["evidence"] == []
     assert payload["version"]["quality"]["items"] == 0
     drafts = [request for request in container.llm.requests if request.schema_name == "report"]
@@ -51,8 +52,14 @@ async def test_web_context_flows_through_drafting_freezing_read_and_export(clien
     assert fetched.status_code == 200
     assert fetched.json()["version"]["research"]["web_research"] == web
     exported = await client.get(f"/api/reports/{report_id}/markdown", headers=bearer(token))
-    assert "## Fresh web context" in exported.text
-    assert "[Climate report](https://example.org/climate-report)" in exported.text
+    assert exported.status_code == 200
+    assert "NEEDS REVIEW" in exported.text
+    assert "The report draws on 0 retained source item(s)" in exported.text
+    assert "## Fresh web context" not in exported.text
+    assert TEXT not in exported.text
+    assert URL not in exported.text
+    assert web["returned_model"] not in exported.text
+    assert "tool calls" not in exported.text.lower()
     assert len(native.calls) == 1
     async with container.session_factory() as session:
         usage = await container.repositories(session).llm_usage.list_recent(50)

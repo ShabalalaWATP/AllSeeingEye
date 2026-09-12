@@ -98,8 +98,8 @@ def test_legacy_report_does_not_invent_citation_checks_or_collection_coverage():
     assert version.citation_checks is None
     assert ReportVersionOut.from_version(version).model_dump()["citation_checks"] is None
     text = "\n".join(block.text for block in build_document(record, version).blocks)
-    assert "No citation checks were saved" in text
-    assert "No collection receipt was saved" in text
+    assert "citation checks" not in text.lower()
+    assert "collection receipt" not in text.lower()
 
 
 def test_citation_checks_roundtrip_exactly_and_reject_corrupt_types():
@@ -143,7 +143,7 @@ async def test_database_and_api_preserve_frozen_checks_receipts_and_legacy_absen
         assert stored.research == second.research
 
 
-def test_every_export_shows_same_checks_collection_receipts_and_plain_hostile_text():
+def test_reader_exports_hide_checks_receipts_and_untrusted_operational_text():
     record, version = frozen_records()
     hostile = "<script>alert(1)</script> [forged](javascript:alert(1))"
     version = replace(version, research=replace(version.research, question=hostile))
@@ -159,27 +159,26 @@ def test_every_export_shows_same_checks_collection_receipts_and_plain_hostile_te
     renderer = ReportDocumentRenderer()
     word = Document(io.BytesIO(renderer.render(document, ExportFormat.DOCX)))
     pdf = PdfReader(io.BytesIO(renderer.render(document, ExportFormat.PDF)))
-    texts = [
-        markdown,
+    operational_values = (
+        "saved-citation-v0",
+        "KJ1: literal citation checks",
+        "KJ2: literal citation checks",
+        "number mismatch",
+        "Excerpt SHA-256",
+        "Collection coverage",
+        "3 additional items",
+        "Unavailable source",
+        "does not establish semantic entailment",
+    )
+    for value in operational_values:
+        assert value in " ".join(markdown.split())
+    for text in (
         "\n".join(row.text for row in word.paragraphs),
         "\n".join(page.extract_text() for page in pdf.pages),
-    ]
-    for text in texts:
-        normal = " ".join(text.split())
-        for value in (
-            "saved-citation-v0",
-            "KJ1: literal citation checks",
-            "KJ2: literal citation checks",
-            "number mismatch",
-            "Excerpt SHA-256",
-            "Collection coverage",
-            "3 additional items",
-            "Unavailable source",
-            "does not establish semantic entailment",
-        ):
-            assert value in normal
+    ):
+        assert all(value not in " ".join(text.split()) for value in operational_values)
     assert "<script>" not in markdown and "[forged](javascript" not in markdown
-    assert hostile in "\n".join(block.text for block in document.blocks)
+    assert hostile not in "\n".join(block.text for block in document.blocks)
 
 
 async def test_delayed_archival_keeps_saved_checks_and_collection_receipts():
@@ -192,7 +191,8 @@ async def test_delayed_archival_keeps_saved_checks_and_collection_receipts():
     archiver.archive.return_value = "https://example.org/snapshot"
     await archive_evidence(archiver, repo, uow, version)
     markdown = repo.set_archives.await_args.args[2]
-    assert "saved-citation-v0" in markdown and "Unavailable source" in markdown
+    assert "## References" in markdown
+    assert "saved-citation-v0" not in markdown and "Unavailable source" not in markdown
     revised = replace(
         version,
         citation_checks=replace(version.citation_checks, method_version="saved-v1"),
@@ -273,8 +273,9 @@ async def test_research_generation_freezes_checks_cutoff_receipt_and_missing_que
     assert (version.period_from, version.period_to) == (job.now - job.window, job.now)
     assert version.research is not None
     assert any(finding.rule == "research_query_plan" for finding in version.findings)
-    assert version.markdown.count("## Collection coverage") == 1
-    assert "Query planning is missing" in version.markdown
+    assert version.markdown.count("## Executive summary") == 1
+    assert "## References" in version.markdown
+    assert "Collection coverage" not in version.markdown
 
 
 @pytest.mark.parametrize("focus", ["company", "domain", "document", "media"])

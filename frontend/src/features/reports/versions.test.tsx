@@ -41,6 +41,8 @@ describe('report versions', () => {
     await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
     const versions = screen.getByRole('navigation', { name: 'Versions' });
     expect(within(versions).getAllByRole('link')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    await user.click(await screen.findByRole('button', { name: 'Review' }));
     await user.click(screen.getByRole('button', { name: 'Regenerate' }));
     await waitFor(() => {
       expect(within(versions).getAllByRole('link')).toHaveLength(2);
@@ -70,7 +72,8 @@ describe('report versions', () => {
       .mockImplementation(() => undefined);
     const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
     await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
-    await user.click(screen.getByRole('button', { name: 'Download Markdown' }));
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(screen.getByRole('menuitem', { name: /Markdown/ }));
     await waitFor(() => {
       expect(click).toHaveBeenCalledTimes(1);
     });

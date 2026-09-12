@@ -19,13 +19,16 @@ from ase.application.reports.sections.contracts import (
 )
 from ase.application.reports.sections.outcomes import SectionIncomplete, StepExhausted
 from ase.application.reports.sections.planning import (
+    LEGACY_METHOD_VERSION,
     MAX_TOPIC_LEAVES,
+    PREVIOUS_METHOD_VERSION,
     Topic,
     packet_digest,
     plan_topics,
     split_topic,
 )
 from ase.application.reports.sections.prompts import PromptContext
+from ase.application.reports.sections.quality import requirement_support_from_topics
 from ase.application.reports.sections.synthesis import collect_synthesis
 from ase.application.reports.sections.synthesis_contracts import (
     SCHEMA_NAMES,
@@ -48,6 +51,7 @@ class _Runner:
         api_key: str,
         context: PromptContext,
         checkpoints: SectionCheckpoints,
+        digest: str,
     ) -> None:
         self.gateway, self.profile, self.api_key = gateway, profile, api_key
         self.context, self.checkpoints = context, checkpoints
@@ -57,17 +61,7 @@ class _Runner:
             if context.direction
             else frozenset()
         )
-        self.digest = packet_digest(
-            profile,
-            context.template,
-            context.header,
-            context.question,
-            context.quality,
-            context.evidence,
-            context.previous,
-            context.direction,
-            context.background,
-        )
+        self.digest = digest
         self.completed: list[tuple[Topic, dict[str, Any]]] = []
         self.leaves = 0
 
@@ -91,7 +85,7 @@ class _Runner:
                 pause=self.pause,
                 previous_exists=bool(self.context.previous),
             )
-            raw = assemble(self.completed, synthesis)
+            raw = assemble(self.completed, synthesis, self.context.direction)
         except (ValueError, TypeError, RecursionError):
             await self.pause(expected, "invalid_synthesis")
         checked = validate_body(
@@ -102,6 +96,7 @@ class _Runner:
             evidence_items=self.context.evidence,
         )
         self.draft.body = checked.body
+        self.draft.supported_requirements = requirement_support_from_topics(self.completed)
         self.draft.findings.extend(checked.findings)
         if not checked.passed:
             await self.pause(expected, "invalid_synthesis")
@@ -303,8 +298,52 @@ async def draft_sections(
         template, header, question, quality, tuple(evidence), tuple(previous), direction, background
     )
     try:
-        runner = _Runner(gateway, profile, api_key, context, checkpoints)
-        topics = plan_topics(context.evidence, context.direction)
+        topics, digest = await _select_plan(context, profile, checkpoints)
+        runner = _Runner(gateway, profile, api_key, context, checkpoints, digest)
     except (ValueError, TypeError, RecursionError):
         raise SectionIncomplete("planning", "invalid_packet", Draft(model=profile.model)) from None
     return await runner.run(topics)
+
+
+async def _select_plan(
+    context: PromptContext,
+    profile: LlmProfile,
+    checkpoints: SectionCheckpoints,
+) -> tuple[tuple[Topic, ...], str]:
+    """Resume v1 packets in place; use improved v2 matching for new packets."""
+    values = (
+        profile,
+        context.template,
+        context.header,
+        context.question,
+        context.quality,
+        context.evidence,
+        context.previous,
+        context.direction,
+        context.background,
+    )
+    topics = plan_topics(context.evidence, context.direction)
+    digest = packet_digest(*values)
+    if await _has_checkpoint(checkpoints, digest, topics):
+        return topics, digest
+    for method_version in (PREVIOUS_METHOD_VERSION, LEGACY_METHOD_VERSION):
+        legacy_topics = plan_topics(
+            context.evidence,
+            context.direction,
+            method_version=method_version,
+        )
+        legacy_digest = packet_digest(*values, method_version=method_version)
+        if await _has_checkpoint(checkpoints, legacy_digest, legacy_topics):
+            return legacy_topics, legacy_digest
+    return topics, digest
+
+
+async def _has_checkpoint(
+    checkpoints: SectionCheckpoints,
+    digest: str,
+    topics: Sequence[Topic],
+) -> bool:
+    for section_id in ("synthesis", *(topic.id for topic in topics)):
+        if await checkpoints.load(digest, section_id) is not None:
+            return True
+    return False

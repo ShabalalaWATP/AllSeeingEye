@@ -182,6 +182,7 @@ it.each(['sec', 'local'] as const)(
     await userEvent.click(screen.getByRole('button', { name: 'Start research' }));
     await waitFor(() => expect(requests[0]?.research_input_id).toBe(derived.id));
     await userEvent.click(await screen.findByRole('link', { name: /Open completed report/ }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Sources & methods' }));
     const annex = await screen.findByRole('region', { name: 'Evidence annex' });
     await userEvent.click(within(annex).getAllByText(original)[0]!);
     expect(within(annex).getByText('Declared rendering')).toBeVisible();

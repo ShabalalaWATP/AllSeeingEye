@@ -4,7 +4,13 @@ from dataclasses import replace
 
 import pytest
 
-from ase.application.reports.sections.planning import packet_digest, plan_topics, split_topic
+from ase.application.reports.sections.planning import (
+    LEGACY_METHOD_VERSION,
+    packet_digest,
+    plan_topics,
+    split_topic,
+)
+from ase.application.reports.sections.quality import requirement_support_from_topics
 from ase.application.reports.templates import TEMPLATES
 from ase.domain.direction import Direction
 from ase.domain.evidence import quality_of_information
@@ -42,6 +48,73 @@ def test_topics_use_matching_eeis_and_declared_category_country_without_guessing
     assert any(topic.eei_ids == ("EEI-1",) for topic in topics)
     assert not any("Unknown topic" in topic.title for topic in topics)
     assert any("Maritime (GB)" in topic.title for topic in topics)
+
+
+def test_common_country_context_cannot_assign_every_item_to_the_first_eei():
+    evidence = tuple(
+        replace(
+            row,
+            country_iso="RU",
+            title="Russia nuclear inspection" if index == 0 else f"Russia general update {index}",
+        )
+        for index, row in enumerate(items(12))
+    )
+    direction = Direction(
+        "What changed?",
+        eeis=(
+            "Which nuclear inspections occurred in Russia?",
+            "Which military satellite movements occurred in Russia?",
+        ),
+    )
+    topics = plan_topics(evidence, direction)
+    first = next(topic for topic in topics if topic.eei_ids == ("EEI-1",))
+    assert first.evidence_labels == ("E1",)
+    assert not any(topic.eei_ids == ("EEI-2",) for topic in topics)
+
+    legacy = plan_topics(evidence, direction, method_version=LEGACY_METHOD_VERSION)
+    assert {
+        label for topic in legacy if topic.eei_ids == ("EEI-1",) for label in topic.evidence_labels
+    } == {row.label for row in evidence}
+
+
+def test_small_packet_keeps_unambiguous_requirement_evidence_binding():
+    evidence = (replace(items(1)[0], title="Nuclear inspection completed"),)
+    direction = Direction("What changed?", eeis=("Which nuclear inspection was completed?",))
+
+    topic = plan_topics(evidence, direction)[0]
+    support = requirement_support_from_topics(
+        [(topic, {"reporting": [{"evidence": ["E1"]}], "assessment": []})]
+    )
+
+    assert topic.title == "Supplied evidence"
+    assert topic.requirement_evidence == (("EEI-1", ("E1",)),)
+    assert support == {"EEI-1"}
+
+
+def test_folded_topic_supports_only_requirements_whose_bound_evidence_is_cited():
+    subjects = ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel")
+    evidence = tuple(
+        replace(row, title=f"{subject} observation", category=f"category-{index}")
+        for index, (row, subject) in enumerate(zip(items(8), subjects, strict=True))
+    )
+    direction = Direction(
+        "What changed?",
+        eeis=tuple(f"What does {subject} establish?" for subject in subjects),
+    )
+
+    folded = plan_topics(evidence, direction)[-1]
+    cited_requirement, cited_labels = folded.requirement_evidence[0]
+    support = requirement_support_from_topics(
+        [
+            (
+                folded,
+                {"reporting": [{"evidence": [cited_labels[0]]}], "assessment": []},
+            )
+        ]
+    )
+
+    assert len(folded.requirement_evidence) == 3
+    assert support == {cited_requirement}
 
 
 def test_many_categories_merge_tail_without_dropping_or_duplicate_labels():

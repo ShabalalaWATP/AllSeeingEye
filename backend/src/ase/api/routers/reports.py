@@ -18,6 +18,10 @@ from ase.api.schemas_reports import (
     TemplatesOut,
 )
 from ase.api.session_guard import validate_request_session
+from ase.application.reports.document import build_document
+from ase.application.reports.document_release import release_document
+from ase.application.reports.publication_markdown import render_document_markdown
+from ase.domain.report_documents import ReportFile
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -106,12 +110,37 @@ async def get_report(
 async def report_markdown(
     report_id: UUID,
     user: CurrentUser,
+    claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
 ) -> PlainTextResponse:
-    _, found = await container.get_report(session).execute(user, report_id, version)
-    return PlainTextResponse(found.markdown, media_type="text/markdown; charset=utf-8")
+    record, found = await container.get_report(session).execute(user, report_id, version)
+    markdown = render_document_markdown(build_document(record, found))
+    rendered = ReportFile(
+        content=markdown.encode("utf-8"),
+        media_type="text/markdown; charset=utf-8",
+        filename=f"report-{report_id}-v{found.number}.md",
+        report_version_id=found.id,
+        version_number=found.number,
+    )
+    repositories = container.repositories(session)
+    await release_document(
+        claims,
+        report_id,
+        rendered,
+        users=repositories.users,
+        refresh=repositories.refresh_tokens,
+        reports=repositories.reports,
+        access=container.access_policy(session),
+        clock=container.clock,
+        uow=repositories.uow,
+    )
+    return PlainTextResponse(
+        markdown,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @router.delete("/{report_id}", status_code=204, response_class=Response)

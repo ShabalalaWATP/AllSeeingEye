@@ -15,7 +15,8 @@ from ase.application.reports.production import Producer
 from ase.application.reports.production_checkpoint import collection_from_dict, collection_to_dict
 from ase.application.reports.sections import SectionIncomplete
 from ase.domain.challenge import ChallengeReview
-from ase.domain.reports import parse_body
+from ase.domain.direction import Direction
+from ase.domain.reports import ReportStatus, parse_body
 from ase.domain.research import ResearchMode, ResearchQuery
 from production_integration_helpers import RecordingUsage, StageGateway, production_job
 from report_helpers import filled_store, good_body
@@ -73,6 +74,44 @@ async def test_initial_packet_saved_before_draft_and_resume_does_not_recollect(c
     assert checkpoints.writes == 1
     assert gateway.calls == ["direction"]
     assert (await checkpoints.load_collection()).totals.prompt_tokens == 5
+
+
+async def test_unanswered_section_requirement_publishes_as_needs_review(container, user):
+    job = production_job(user, container.cipher)
+    job = replace(
+        job,
+        direction=Direction("What changed?", eeis=("What happened?", "Who verified it?")),
+        request=replace(job.request, devils_advocacy=False),
+    )
+    draft = Draft(
+        body=parse_body(good_body()),
+        supported_requirements=frozenset({"EEI-1"}),
+    )
+    checkpoints = Checkpoints()
+    producer = Producer(
+        store=filled_store(),
+        source_profiles={},
+        cipher=container.cipher,
+        gateway=StageGateway(),
+        usage=RecordingUsage(),
+    )
+
+    async def profile_for(_role):
+        return job.profile
+
+    with patch("ase.application.reports.production.draft_sections", AsyncMock(return_value=draft)):
+        version = await producer.produce(job, profile_for, checkpoints=checkpoints)
+
+    assert version.status is ReportStatus.NEEDS_REVIEW
+    assert any(
+        gap.eei == "EEI-2"
+        and gap.text == "Not separately assessed from the retained evidence: Who verified it?"
+        for gap in version.body.gaps
+    )
+    assert any(
+        finding.rule == "requirement_coverage" and finding.location == "EEI-2"
+        for finding in version.findings
+    )
 
 
 async def test_incomplete_section_propagates_with_collection_checkpoint_intact(container, user):

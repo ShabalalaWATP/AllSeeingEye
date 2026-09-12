@@ -1,5 +1,6 @@
 """Rendered document bytes require a live request session at release."""
 
+import asyncio
 from dataclasses import replace
 from datetime import timedelta
 from uuid import UUID, uuid4
@@ -7,6 +8,7 @@ from uuid import UUID, uuid4
 import pytest
 from httpx import AsyncClient
 
+from ase.api.routers import reports as reports_router
 from ase.application.reports.exports import ExportReportUseCase
 from ase.container import Container
 from ase.domain.report_documents import ExportFormat, ReportFile
@@ -113,3 +115,40 @@ async def test_document_release_requires_exact_rendered_version_metadata(
     response = await client.get(f"/api/reports/{record.id}/export/docx", headers=bearer(token))
     assert response.status_code == 409
     assert "content-disposition" not in response.headers
+
+
+async def test_markdown_release_refuses_committed_concurrent_membership_removal(
+    client: AsyncClient,
+    container: Container,
+    user: User,
+    admin: User,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    team = await team_for(container, admin, user)
+    record, version = document_records(admin.id)
+    record.team_id = team.id
+    async with container.session_factory() as session:
+        await container.repositories(session).reports.add(record, version)
+        await session.commit()
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    release = reports_router.release_document
+    removal_committed = asyncio.Event()
+
+    async def remove_membership() -> None:
+        async with team_service(container) as service:
+            await service.remove_member(admin, team.id, user.id, CONTEXT)
+        removal_committed.set()
+
+    async def remove_then_release(*args, **kwargs) -> None:
+        removal = asyncio.create_task(remove_membership())
+        await removal_committed.wait()
+        await removal
+        await release(*args, **kwargs)
+
+    monkeypatch.setattr(reports_router, "release_document", remove_then_release)
+    response = await client.get(f"/api/reports/{record.id}/markdown", headers=bearer(token))
+
+    assert removal_committed.is_set()
+    assert response.status_code == 404
+    assert "Executive summary" not in response.text
+    assert "text/markdown" not in response.headers.get("content-type", "")

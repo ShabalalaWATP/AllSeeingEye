@@ -59,11 +59,13 @@ describe('report documents', () => {
       .mockImplementation(() => undefined);
     render(<ReportExports id="report" version={2} title="Ukraine" />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Download PDF' }));
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Download PDF' }));
     await waitFor(() => {
       expect(click).toHaveBeenCalledTimes(1);
     });
-    await user.click(screen.getByRole('button', { name: 'Download DOCX' }));
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Download DOCX' }));
     await waitFor(() => {
       expect(click).toHaveBeenCalledTimes(2);
     });
@@ -81,28 +83,60 @@ describe('report documents', () => {
       }),
     );
     render(<ReportExports id="report" version={3} title="Title" preferred="md" />);
-    const buttons = screen.getAllByRole('button');
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: 'Export' });
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+    await user.click(trigger);
+    const buttons = screen.getAllByRole('menuitem');
     expect(buttons[0]).toHaveAccessibleName('Download Markdown');
-    expect(screen.getAllByRole('button', { name: 'Download Markdown' })).toHaveLength(1);
-    await userEvent.setup().click(buttons[0]!);
+    expect(screen.getAllByRole('menuitem', { name: 'Download Markdown' })).toHaveLength(1);
+    expect(screen.getByRole('menuitem', { name: 'Download PDF' })).toBeVisible();
+    expect(screen.getByRole('menuitem', { name: 'Download DOCX' })).toBeVisible();
+    await user.click(buttons[0]!);
     await waitFor(() => expect(saveTextFile).toHaveBeenCalledWith('title-v3.md', 'Saved report'));
     expect(requested).toContain('version=3');
-    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Download DOCX' })).toBeVisible();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('manages export menu focus for Escape and Tab navigation', async () => {
+    render(
+      <div>
+        <ReportExports id="report" version={1} title="Title" />
+        <button type="button">Following action</button>
+      </div>,
+    );
+    const user = userEvent.setup();
+    const trigger = screen.getByRole('button', { name: 'Export' });
+    await user.click(trigger);
+    expect(screen.getByRole('menuitem', { name: 'Download PDF' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+    expect(screen.getByRole('menuitem', { name: 'Download PDF' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('menuitem', { name: 'Download DOCX' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('menuitem', { name: 'Download Markdown' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Following action' })).toHaveFocus();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it.each(['ar', 'fa'])(
     'warns before downloading unsupported PDF text for %s without hiding alternatives',
-    (language) => {
+    async (language) => {
       render(
         <ReportExports id="report" version={3} title="Title" preferred="pdf" language={language} />,
       );
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Export' }));
       expect(screen.getByRole('status')).toHaveTextContent(
         'replace unsupported characters with code labels',
       );
       expect(screen.getByRole('status')).toHaveTextContent('Choose DOCX or Markdown');
-      expect(screen.getByRole('button', { name: 'Download DOCX' })).toBeEnabled();
-      expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeEnabled();
+      expect(screen.getByRole('menuitem', { name: 'Download DOCX' })).toBeEnabled();
+      expect(screen.getByRole('menuitem', { name: 'Download Markdown' })).toBeEnabled();
     },
   );
 
@@ -111,7 +145,9 @@ describe('report documents', () => {
       http.get('/api/reports/:id/export/:format', () => new HttpResponse(null, { status: 503 })),
     );
     render(<ReportExports id="report" version={1} title="Title" />);
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Download PDF' }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Download PDF' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('503');
     const revoke = vi.fn();
     Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:failure'), revokeObjectURL: revoke });
