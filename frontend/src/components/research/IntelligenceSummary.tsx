@@ -3,8 +3,109 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { SourceLink } from '@/components/ui/SourceLink';
+import { SourceRatingDetails } from '@/components/sources/SourceRatingDetails';
 import type { Report } from '@/lib/api/reports';
-import { intelligenceSummaryModel } from './intelligenceSummaryModel';
+import { probabilityTerm } from '@/lib/doctrine';
+import {
+  intelligenceSummaryModel,
+  sourceGradeDescription,
+  type SummaryJudgement,
+} from './intelligenceSummaryModel';
+
+function JudgementContext({
+  judgements,
+  citations,
+}: {
+  judgements: SummaryJudgement[] | undefined;
+  citations: (labels: readonly string[]) => ReactNode;
+}) {
+  if (!judgements?.length) return null;
+  return (
+    <div className="mt-3 max-w-[70ch] space-y-4">
+      {judgements.map((judgement) => (
+        <section key={judgement.id} aria-label={`Confidence and likelihood for ${judgement.id}`}>
+          <dl className="flex flex-wrap gap-x-7 gap-y-2 text-xs leading-5">
+            <div>
+              <dt className="text-muted">Assessed likelihood</dt>
+              <dd className="font-medium capitalize text-ember">
+                {probabilityTerm(judgement.probability) || 'Not recorded'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Analytical confidence</dt>
+              <dd className="font-medium capitalize">
+                {judgement.assessment?.final_confidence ?? (judgement.confidence || 'Not recorded')}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-2 text-xs leading-6 text-muted">
+            <span className="font-medium text-text">Confidence rationale: </span>
+            {judgement.rationale || 'Not recorded for this judgement.'}
+          </p>
+          {judgement.supportingEvidence.length > 0 && (
+            <p className="mt-1 text-xs leading-6 text-muted">
+              Supporting evidence cited{citations(judgement.supportingEvidence)}
+            </p>
+          )}
+          {judgement.contraryEvidence.length > 0 && (
+            <p className="mt-1 text-xs leading-6 text-muted">
+              Contrary evidence cited{citations(judgement.contraryEvidence)}
+            </p>
+          )}
+          {judgement.assessment && (
+            <details className="mt-2 text-xs leading-6 text-muted">
+              <summary className="w-fit cursor-pointer text-ember">Evidence review</summary>
+              <p className="mt-2">
+                <span className="capitalize">{judgement.assessment.status}</span> judgement.
+                Recorded confidence ceiling: {judgement.assessment.confidence_ceiling}.
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                {judgement.assessment.explanation.map((text, index) => (
+                  <li key={index}>{text}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function AssessmentGuide() {
+  return (
+    <details className="max-w-[75ch] text-xs leading-6 text-muted">
+      <summary className="w-fit cursor-pointer font-medium text-text">
+        Understanding likelihood, confidence and source grades
+      </summary>
+      <div className="mt-3 space-y-3">
+        <p>
+          Likelihood describes how likely a judgement is to be true or occur. Analytical confidence
+          describes the strength and stability of its basis. A highly likely judgement can still
+          have low confidence.
+        </p>
+        <p>
+          The app uses the UK probability yardstick and separate source reliability (A to F) and
+          information credibility (1 to 6) grades. F and 6 mean there is not enough basis to judge,
+          not that the information is false. Grades shown here were saved with this report.
+        </p>
+        <p>
+          Repeated articles do not provide independent confirmation. Stronger evidence can outweigh
+          several weak sources; grades are not calculated truth percentages. The app applies its own
+          evidence policy informed by public doctrine, not an official NATO scoring algorithm.
+        </p>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <SourceLink url="https://www.gov.uk/government/publications/explaining-uncertainty-in-uk-intelligence-assessment/explaining-uncertainty-in-uk-intelligence-assessment">
+            UK probability yardstick and confidence guidance
+          </SourceLink>
+          <SourceLink url="https://assets.publishing.service.gov.uk/media/653a4b0780884d0013f71bb0/JDP_2_00_Ed_4_web.pdf">
+            UK MOD intelligence doctrine (JDP 2-00)
+          </SourceLink>
+        </div>
+      </div>
+    </details>
+  );
+}
 
 /** Preserve the author's paragraphs rather than guessing sentence or claim boundaries. */
 function AuthoredProse({
@@ -66,11 +167,14 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
       <section aria-label="Executive summary" className="space-y-3">
         <h3 className="text-base font-semibold">Executive summary</h3>
         {summary.lead ? (
-          <AuthoredProse
-            text={summary.lead.text}
-            citations={citations(summary.lead.evidence)}
-            lead
-          />
+          <>
+            <AuthoredProse
+              text={summary.lead.text}
+              citations={citations(summary.lead.evidence)}
+              lead
+            />
+            <JudgementContext judgements={summary.lead.judgements} citations={citations} />
+          </>
         ) : (
           <p className="text-sm leading-6 text-muted">
             There is not enough evidence for an overall {subject.toLowerCase()} assessment.
@@ -84,6 +188,7 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
             {summary.keyPoints.map((item, index) => (
               <li key={index} className="pl-1">
                 <AuthoredProse text={item.text} citations={citations(item.evidence)} />
+                <JudgementContext judgements={item.judgements} citations={citations} />
               </li>
             ))}
           </ul>
@@ -151,6 +256,7 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
         </section>
       )}
       <footer className="space-y-4 border-t border-line pt-5">
+        <AssessmentGuide />
         <Link
           to={`/reports/${report.report.id}`}
           className="text-sm font-medium text-ember hover:underline"
@@ -170,6 +276,12 @@ export function IntelligenceSummary({ report, subject }: { report: Report; subje
                 <li key={item.label} id={`${sourceId}-reference-${index + 1}`}>
                   [{index + 1}] {item.source_name}: {item.title}.{' '}
                   <SourceLink url={item.url}>Open source</SourceLink>
+                  <p className="mt-1 font-medium text-text">
+                    Saved evidence grade: {item.grade || 'Not recorded'}
+                  </p>
+                  {item.grade && <p>{sourceGradeDescription(item.grade)}</p>}
+                  <p>{item.grade_rationale || 'Grade rationale not recorded.'}</p>
+                  <SourceRatingDetails rating={item.source_rating} frozen />
                 </li>
               ))}
             </ol>

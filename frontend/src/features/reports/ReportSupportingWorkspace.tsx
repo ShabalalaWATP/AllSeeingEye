@@ -140,6 +140,7 @@ export default function ReportSupportingWorkspace({
 
         {view === 'analysis' && (
           <>
+            <ReportMethodology savedMethod={version.assessment?.method_version} />
             <ReportAssessmentSummary assessment={version.assessment} />
             {version.body.key_judgements.map((judgement) => {
               const assessment = version.assessment?.judgements.find(
@@ -174,7 +175,6 @@ export default function ReportSupportingWorkspace({
           <>
             <ResearchCoverage receipt={version.research} />
             <FreshWebContext record={version.research?.web_research} />
-            <ReportMethodology savedMethod={version.assessment?.method_version} />
           </>
         )}
 

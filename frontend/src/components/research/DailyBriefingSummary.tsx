@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Link } from 'react-router';
 
 import { SourceLink } from '@/components/ui/SourceLink';
+import { SourceRatingDetails } from '@/components/sources/SourceRatingDetails';
 import type { Report } from '@/lib/api/reports';
+import { probabilityTerm } from '@/lib/doctrine';
+import { sourceGradeDescription } from './intelligenceSummaryModel';
 
 /** A compact cited preview, with the complete report and exports one click away. */
 export function DailyBriefingSummary({
@@ -13,20 +16,36 @@ export function DailyBriefingSummary({
   detailed?: boolean;
 }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const sourceId = useId();
   const { body, evidence, status } = report.version;
   const summary = body.key_judgements.length
     ? body.key_judgements.slice(0, detailed ? 8 : 4).map((item) => ({
         text: item.statement,
-        evidence: [...item.supporting_evidence, ...item.contradicting_evidence],
+        evidence: item.supporting_evidence,
+        contrary: item.contradicting_evidence,
+        judgement: item,
+        confidence:
+          report.version.assessment?.judgements.find((saved) => saved.judgement_id === item.id)
+            ?.final_confidence ?? item.confidence,
       }))
-    : body.assessment.slice(0, 3);
+    : body.assessment.slice(0, 3).map((item) => ({
+        ...item,
+        contrary: [],
+        judgement: null,
+        confidence: '',
+      }));
   const news = body.reporting.flatMap((theme) => theme.items).slice(0, detailed ? 12 : 6);
   const analysis = detailed ? body.assessment.slice(0, 8) : [];
   const watch = detailed
     ? [...new Set(body.key_judgements.slice(0, 8).flatMap((item) => item.indicators))].slice(0, 8)
     : [];
-  const usedLabels = new Set([...summary, ...news, ...analysis].flatMap((item) => item.evidence));
+  const usedLabels = new Set([
+    ...summary.flatMap((item) => [...item.evidence, ...item.contrary]),
+    ...[...news, ...analysis].flatMap((item) => item.evidence),
+  ]);
   const references = evidence.filter((item) => usedLabels.has(item.label));
+  const knownLabels = new Set(references.map((item) => item.label));
+  const missingReferences = [...usedLabels].some((label) => !knownLabels.has(label));
   const citations = (labels: readonly string[]) => {
     const numbers = [
       ...new Set(labels.map((label) => references.findIndex((item) => item.label === label) + 1)),
@@ -34,7 +53,7 @@ export function DailyBriefingSummary({
     return numbers.map((number) => (
       <a
         key={number}
-        href={`#briefing-reference-${number}`}
+        href={`#${sourceId}-briefing-reference-${number}`}
         className="ml-1 text-xs text-ember hover:underline"
         onClick={() => setSourcesOpen(true)}
         aria-label={`Daily briefing reference ${number}`}
@@ -50,15 +69,59 @@ export function DailyBriefingSummary({
           This briefing needs review. Check its evidence and limitations before relying on it.
         </p>
       )}
+      {missingReferences && (
+        <p className="text-xs leading-5 text-amber">
+          Some references could not be matched to the saved evidence. Check the full report.
+        </p>
+      )}
       <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
         <section aria-label="Overall situation">
           <h3 className="mb-3 text-base font-semibold">Overall situation</h3>
+          {body.key_judgements.length > 0 && (
+            <p className="mb-3 text-xs leading-5 text-muted">
+              Likelihood uses the UK probability yardstick. Confidence describes the strength of the
+              judgement's basis.
+            </p>
+          )}
           {summary.length ? (
             <ul className="space-y-3 text-sm leading-6">
               {summary.map((item, index) => (
                 <li key={index}>
-                  {item.text}
-                  {citations(item.evidence)}
+                  <p>
+                    {item.text}
+                    {!item.judgement && citations(item.evidence)}
+                  </p>
+                  {item.judgement && (
+                    <section
+                      aria-label={`Confidence and likelihood for ${item.judgement.id}`}
+                      className="mt-2 space-y-1 text-xs leading-5"
+                    >
+                      <dl className="flex flex-wrap gap-x-5 gap-y-2">
+                        <div>
+                          <dt className="text-muted">Assessed likelihood</dt>
+                          <dd className="font-medium capitalize text-ember">
+                            {probabilityTerm(item.judgement.probability) || 'Not recorded'}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted">Analytical confidence</dt>
+                          <dd className="font-medium capitalize">
+                            {item.confidence || 'Not recorded'}
+                          </dd>
+                        </div>
+                      </dl>
+                      <p className="pt-1 text-muted">
+                        Confidence rationale:{' '}
+                        {item.judgement.confidence_statement || 'Not recorded for this judgement.'}
+                      </p>
+                      {item.evidence.length > 0 && (
+                        <p className="text-muted">Supporting evidence{citations(item.evidence)}</p>
+                      )}
+                      {item.contrary.length > 0 && (
+                        <p className="text-muted">Contrary evidence{citations(item.contrary)}</p>
+                      )}
+                    </section>
+                  )}
                 </li>
               ))}
             </ul>
@@ -138,11 +201,22 @@ export function DailyBriefingSummary({
             <summary className="w-fit cursor-pointer text-xs text-muted hover:text-text">
               Sources cited in this summary ({references.length})
             </summary>
+            <p className="mt-3 max-w-3xl text-xs leading-5 text-muted">
+              Saved grades separate source reliability (A to F) from information credibility (1 to
+              6). F and 6 mean there was not enough basis to judge, not that the information is
+              false.
+            </p>
             <ol className="mt-3 space-y-2 text-xs text-muted">
               {references.map((item, index) => (
-                <li key={item.label} id={`briefing-reference-${index + 1}`}>
+                <li key={item.label} id={`${sourceId}-briefing-reference-${index + 1}`}>
                   [{index + 1}] {item.source_name}: {item.title}.{' '}
                   <SourceLink url={item.url}>Open source</SourceLink>
+                  <p className="mt-1 font-medium text-text">
+                    Saved evidence grade: {item.grade || 'Not recorded'}
+                  </p>
+                  {item.grade && <p>{sourceGradeDescription(item.grade)}</p>}
+                  <p>{item.grade_rationale || 'Grade rationale not recorded.'}</p>
+                  <SourceRatingDetails rating={item.source_rating} frozen />
                 </li>
               ))}
             </ol>

@@ -181,6 +181,11 @@ export function EvidenceAnnex({
           Open a source to inspect its frozen metadata and snippet. Full source content and
           translations are not independently verified.
         </p>
+        <p className="mb-4 max-w-3xl text-xs leading-6 text-muted">
+          Each saved grade separates source reliability (A to F) from information credibility (1 to
+          6). F6 means there was not enough basis to judge, not that the report was false. Open the
+          Assessment tab for confidence limits and the UK probability yardstick.
+        </p>
         {evidence.length === 0 ? (
           <p className="text-sm text-muted">No frozen evidence was saved for this version.</p>
         ) : (

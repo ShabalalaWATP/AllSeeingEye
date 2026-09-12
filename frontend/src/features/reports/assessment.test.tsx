@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
 import { report, reportSummary } from '@/test/fixtures';
-import { reportAssessment } from '@/test/fixtures.reportAssessment';
+import { reportAssessment, reportMethodology } from '@/test/fixtures.reportAssessment';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -19,6 +19,21 @@ function serveAssessment(assessment: unknown = reportAssessment) {
 }
 
 describe('saved report evidence assessment', () => {
+  it('makes the UK probability yardstick discoverable alongside the saved assessment', async () => {
+    serveAssessment();
+    server.use(http.get('/api/report-methodology', () => HttpResponse.json(reportMethodology)));
+    const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');
+    await screen.findByRole('heading', { name: 'Intelligence summary: Ukraine' });
+    await user.click(screen.getByRole('button', { name: 'Sources & methods' }));
+    expect(await screen.findByText(/Each saved grade separates source reliability/)).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Assessment' }));
+    await user.click(screen.getByText('How evidence is weighed'));
+    expect(await screen.findByRole('region', { name: 'Probability yardstick' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Evidence strength' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Collection' }));
+    expect(screen.queryByText('How evidence is weighed')).not.toBeInTheDocument();
+  });
+
   it('displays saved judgement counts, ceiling and final confidence without recalculating', async () => {
     serveAssessment();
     const { user } = renderApp(`/reports/${reportSummary.id}`, 'user');

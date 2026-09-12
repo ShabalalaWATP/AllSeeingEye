@@ -1,0 +1,182 @@
+"""Reader-facing doctrine and assessments, projected only from the saved report version."""
+
+from ase.application.reports.document_builder import DocumentBuilder
+from ase.domain.doctrine import YARDSTICK, Probability
+from ase.domain.evidence import EvidenceItem
+from ase.domain.report_documents import BlockKind, DocumentTable, DocumentTableCell
+from ase.domain.report_records import ReportVersion
+from ase.domain.reports import KeyJudgement
+
+RELIABILITY_LABELS = dict(
+    zip(
+        "ABCDEF",
+        (
+            "Completely reliable",
+            "Usually reliable",
+            "Fairly reliable",
+            "Not usually reliable",
+            "Unreliable",
+            "Cannot be judged",
+        ),
+        strict=True,
+    )
+)
+CREDIBILITY_LABELS = dict(
+    enumerate(
+        (
+            "Confirmed by other sources",
+            "Probably true",
+            "Possibly true",
+            "Doubtful",
+            "Improbable",
+            "Cannot be judged",
+        ),
+        start=1,
+    )
+)
+
+
+def likelihood_label(probability: Probability) -> str:
+    band = next(band for band in YARDSTICK if band.probability is probability)
+    return f"{band.term} ({band.range_description})"
+
+
+def confidence_rationale(judgement: KeyJudgement, version: ReportVersion) -> str:
+    """Remove a known generated preface only when its assessment is retained separately."""
+    statement = judgement.confidence_statement
+    marker = "Model rationale (unverified): "
+    saved_judgement = version.assessment is not None and any(
+        item.judgement_id == judgement.id for item in version.assessment.judgements
+    )
+    if (
+        saved_judgement
+        and statement.startswith("Engine confidence ceiling: ")
+        and marker in statement
+    ):
+        return statement.partition(marker)[2]
+    return statement
+
+
+def source_assessment(doc: DocumentBuilder, version: ReportVersion) -> None:
+    doc.heading("Source assessment")
+    numbers = doc.citation_numbers()
+    evidence = sorted(
+        (item for item in version.evidence if item.label in numbers),
+        key=lambda item: numbers[item.label],
+    )
+    if not evidence:
+        doc.add("No cited source items are available to display for this version.")
+        return
+    doc.add(
+        "The recorded letter describes source reliability; the number describes this item's "
+        "information credibility. These are separate assessments. F and 6 mean there are "
+        "insufficient grounds to judge, not that the information is false."
+    )
+    # Short tables keep native PDF rows readable; longer recorded explanations are prose.
+    for offset in range(0, len(evidence), 8):
+        rows = []
+        for item in evidence[offset : offset + 8]:
+            runs = doc.cited_runs(
+                f"{item.source_name}: {item.title_en or item.title}", (item.label,)
+            )
+            rows.append(
+                (
+                    DocumentTableCell("".join(run.text for run in runs), runs),
+                    DocumentTableCell(_reliability(item)),
+                    DocumentTableCell(
+                        f"{item.credibility}: "
+                        f"{CREDIBILITY_LABELS.get(item.credibility, 'Not recorded')}"
+                    ),
+                )
+            )
+        doc.table(
+            DocumentTable(
+                "Recorded source grades" if offset == 0 else "Recorded source grades (continued)",
+                ("Source item", "Source reliability", "Information credibility"),
+                tuple(rows),
+                "Grades are preserved from this report version; "
+                "no source has been regraded on read.",
+            )
+        )
+    doc.add("Recorded grading basis", BlockKind.SUBHEADING)
+    for item in evidence:
+        doc.cited(_basis(item), (item.label,))
+
+
+def _reliability(item: EvidenceItem) -> str:
+    label = f"{item.reliability}: {RELIABILITY_LABELS.get(item.reliability, 'Not recorded')}"
+    rating = item.source_rating
+    if rating is None:
+        return f"Retained {item.reliability} grade. Source assessment basis not recorded."
+    if rating.status == "unassessed":
+        return f"Retained {item.reliability} feed grade; publisher reliability unassessed."
+    return label + ". Recorded editorial assessment."
+
+
+def _basis(item: EvidenceItem) -> str:
+    rating = item.source_rating
+    source = (
+        f"Source assessment ({rating.status}): {rating.basis}"
+        if rating is not None
+        else "Source assessment basis was not recorded in this version."
+    )
+    if rating is not None and not rating.publisher_reliability_assessed:
+        source += " This is not an assessment of the individual publisher or author."
+    return (
+        f"{item.source_name}. {source} "
+        f"Item grading basis: {item.grade_rationale or 'Not recorded in this version.'}"
+    )
+
+
+def assessment_method(doc: DocumentBuilder, version: ReportVersion) -> None:
+    doc.heading("Assessment method")
+    doc.add(
+        "Likelihood uses the UK PHIA probability yardstick. Its approximate bands describe "
+        "an assessed likelihood, not a measured probability calculated from source grades. "
+        "Analytical confidence (low, moderate or high) describes the strength and stability "
+        "of the basis for a judgement and is separate from likelihood."
+    )
+    doc.add(
+        "Source reliability (A to F) and information credibility (1 to 6) follow the separate "
+        "intelligence grading dimensions described in UK MOD JDP 2-00, fourth edition, "
+        "Table 3.1. This application is informed by public UK and NATO doctrine; it is not "
+        "NATO-accredited and does not establish full doctrinal compliance."
+    )
+    assessment = version.assessment
+    if assessment is None:
+        doc.add(
+            "A detailed evidence assessment was not recorded for this version. The saved "
+            "judgements and item grades are shown as recorded; no confidence limit or "
+            "corroboration assessment has been inferred retrospectively."
+        )
+        return
+    doc.add(
+        "The recorded evidence assessment is retained below. More articles do not automatically "
+        "mean stronger support: copies and shared reporting origins are not independent "
+        "confirmation, and weaker reporting does not outvote stronger evidence. "
+        "The application constrains confidence from the information base; it cannot establish "
+        "analytical rigour or fully measure complexity and volatility."
+    )
+    saved = {item.judgement_id: item for item in assessment.judgements}
+    for index, judgement in enumerate(version.body.key_judgements, start=1):
+        recorded = saved.get(judgement.id)
+        doc.add(f"Judgement {index}: evidence and confidence", BlockKind.SUBHEADING)
+        if recorded is None:
+            doc.add("A detailed evidence assessment was not recorded for this judgement.")
+            continue
+        doc.add(
+            f"Recorded evidence confidence limit: {recorded.confidence_ceiling.value}. "
+            f"Recorded final analytical confidence: {recorded.final_confidence.value}."
+        )
+        labels = (*recorded.supporting_labels, *recorded.contradicting_labels)
+        for explanation in recorded.explanation:
+            doc.cited(explanation, labels)
+        for limitation in recorded.limitations:
+            if limitation not in assessment.limitations:
+                doc.add(limitation)
+        if recorded.improvements:
+            doc.add("What would strengthen the assessment", BlockKind.SUBHEADING)
+            doc.list([(text, ()) for text in recorded.improvements])
+    if assessment.limitations:
+        doc.add("Method limitations", BlockKind.SUBHEADING)
+        doc.list([(text, ()) for text in assessment.limitations])
