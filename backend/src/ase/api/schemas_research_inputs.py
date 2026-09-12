@@ -29,6 +29,7 @@ class ResearchInputOut(BaseModel):
     preview: str = Field(max_length=1000)
     limitations: list[str] = Field(max_length=20)
     parent_input_id: UUID | None = None
+    parent_input_ids: list[UUID] = Field(default_factory=list, max_length=6)
     previews: list[ResearchInputPreviewOut] = Field(default_factory=list, max_length=3)
 
     @classmethod

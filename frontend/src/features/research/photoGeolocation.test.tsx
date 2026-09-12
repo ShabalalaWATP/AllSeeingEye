@@ -44,7 +44,7 @@ const analyse = vi.mocked(geolocateResearchInput);
 const discard = vi.mocked(discardResearchInput);
 
 function choose(name = 'landmark.jpg') {
-  fireEvent.change(screen.getByLabelText('Photograph'), {
+  fireEvent.change(screen.getByLabelText(/^Photographs?$/), {
     target: { files: [new File(['photo'], name, { type: 'image/jpeg' })] },
   });
 }
@@ -55,7 +55,7 @@ async function ready() {
 }
 async function begin() {
   await ready();
-  fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+  fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
 }
 
 describe('photo geolocation workspace', () => {
@@ -74,17 +74,17 @@ describe('photo geolocation workspace', () => {
 
   it('requires explicit consent for this photo, shows a sanitised preview and validates candidate uncertainty', async () => {
     render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
-    expect(screen.getByRole('button', { name: 'Analyse photo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Analyse photos?$/ })).toBeDisabled();
     choose();
     const image = await screen.findByRole('img');
     expect(image).toHaveAttribute('src', 'data:image/png;base64,iVBORw0KGgo=');
     expect(analyse).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Analyse photo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Analyse photos?$/ })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Context or location hints'), {
       target: { value: 'Possibly England' },
     });
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await screen.findByText('Unverified location candidates');
     expect(analyse).toHaveBeenCalledWith(
       photoId,
@@ -106,7 +106,7 @@ describe('photo geolocation workspace', () => {
     render(<PhotoGeolocationPanel workspaces={photoWorkspaces()} />);
     fireEvent.change(screen.getByLabelText('Workspace'), { target: { value: photoTeamId } });
     await waitFor(() => expect(screen.getByLabelText('Workspace')).toHaveValue(photoTeamId));
-    fireEvent.change(screen.getByLabelText('Question about the photo'), {
+    fireEvent.change(screen.getByLabelText(/^Question about the photos?$/), {
       target: { value: 'Where is this tower?' },
     });
     await begin();
@@ -154,7 +154,7 @@ describe('photo geolocation workspace', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'The configured model does not support images.',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await screen.findByText('Unverified location candidates');
     expect(analyse).toHaveBeenCalledTimes(2);
   });
@@ -208,7 +208,7 @@ describe('photo geolocation workspace', () => {
       await Promise.resolve();
     });
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await act(async () => {
       await Promise.resolve();
     });
@@ -230,7 +230,7 @@ describe('photo geolocation workspace', () => {
     choose('replacement.png');
     await screen.findByText('Photo ready: replacement.png');
     expect(screen.getByRole('checkbox')).not.toBeChecked();
-    expect(screen.getByRole('button', { name: 'Analyse photo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Analyse photos?$/ })).toBeDisabled();
   });
 
   it('aborts in-flight model analysis when its panel unmounts', async () => {
@@ -265,7 +265,7 @@ describe('photo geolocation workspace', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('The photo cannot be decoded.');
     upload.mockResolvedValue(photoReceipt({ previews: [] }));
     await ready();
-    expect(screen.getByRole('button', { name: 'Analyse photo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Analyse photos?$/ })).toBeDisabled();
     expect(analyse).not.toHaveBeenCalled();
   });
 
@@ -285,7 +285,7 @@ describe('photo geolocation workspace', () => {
       await Promise.resolve();
     });
     fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await act(async () => {
       await Promise.resolve();
     });
@@ -329,7 +329,7 @@ describe('photo geolocation workspace', () => {
     choose('not-a-photo.pdf');
     await waitFor(() => expect(discard).toHaveBeenCalledWith(photoId, expect.any(AbortSignal)));
     await ready();
-    fireEvent.click(screen.getByRole('button', { name: 'Analyse photo' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Analyse photos?$/ }));
     await screen.findByText('Unverified location candidates');
     fireEvent.change(screen.getByLabelText('Workspace'), { target: { value: photoTeamId } });
     await waitFor(() => expect(screen.getByLabelText('Workspace')).toHaveValue(photoTeamId));

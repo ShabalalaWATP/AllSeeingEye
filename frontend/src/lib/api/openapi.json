@@ -20146,6 +20146,15 @@
             "type": "boolean",
             "const": true,
             "title": "Consent To Send Image"
+          },
+          "additional_input_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Additional Input Ids"
           }
         },
         "additionalProperties": false,
@@ -20205,6 +20214,27 @@
             "minItems": 1,
             "title": "Limitations"
           },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoObservation"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Photos"
+          },
+          "cross_photo_analysis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cross Photo Analysis"
+          },
           "input": {
             "$ref": "#/components/schemas/ResearchInputOut"
           },
@@ -20231,6 +20261,73 @@
           "provenance"
         ],
         "title": "PhotoGeolocationOut"
+      },
+      "PhotoImageProvenance": {
+        "properties": {
+          "photo_id": {
+            "type": "string",
+            "pattern": "^photo-[1-6]$",
+            "title": "Photo Id"
+          },
+          "input_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Input Id"
+          },
+          "original_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Original Sha256"
+          },
+          "image_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Image Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "photo_id",
+          "input_id",
+          "original_sha256",
+          "image_sha256"
+        ],
+        "title": "PhotoImageProvenance"
+      },
+      "PhotoObservation": {
+        "properties": {
+          "photo_id": {
+            "type": "string",
+            "pattern": "^photo-[1-6]$",
+            "title": "Photo Id"
+          },
+          "visual_clues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Visual Clues"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "photo_id",
+          "visual_clues",
+          "limitations"
+        ],
+        "title": "PhotoObservation"
       },
       "PhotoProvenance": {
         "properties": {
@@ -20266,6 +20363,14 @@
           "image_sha256": {
             "type": "string",
             "title": "Image Sha256"
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoImageProvenance"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Photos"
           }
         },
         "additionalProperties": false,
@@ -20838,7 +20943,8 @@
             "type": "string",
             "enum": [
               "quick",
-              "detailed"
+              "detailed",
+              "advanced"
             ],
             "title": "Research Mode"
           },
@@ -20970,7 +21076,8 @@
                 "type": "string",
                 "enum": [
                   "quick",
-                  "detailed"
+                  "detailed",
+                  "advanced"
                 ]
               },
               {
@@ -24403,6 +24510,15 @@
             ],
             "title": "Parent Input Id"
           },
+          "parent_input_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Parent Input Ids"
+          },
           "previews": {
             "items": {
               "$ref": "#/components/schemas/ResearchInputPreviewOut"
@@ -24459,7 +24575,8 @@
         "type": "string",
         "enum": [
           "quick",
-          "detailed"
+          "detailed",
+          "advanced"
         ],
         "title": "ResearchMode"
       },

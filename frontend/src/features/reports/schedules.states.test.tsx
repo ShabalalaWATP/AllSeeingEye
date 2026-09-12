@@ -16,7 +16,9 @@ describe('schedule states', () => {
     expect(await screen.findByText('Schedules boom')).toBeInTheDocument();
     server.use(http.get('/api/schedules', () => HttpResponse.json({ items: [] })));
     renderApp('/research/recurring', 'user');
-    expect(await screen.findByText('No standing orders yet.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('No schedules yet. Create your first recurring report below.'),
+    ).toBeInTheDocument();
   });
 
   it('describes weekday and weekly orders with their last outcome, and deletes one', async () => {
@@ -57,7 +59,7 @@ describe('schedule states', () => {
     expect(within(table).getByText('Wednesday at 06:00 UTC')).toBeInTheDocument();
     expect(within(table).getByText('RuntimeError: boom')).toBeInTheDocument();
     expect(within(table).getByText('not yet')).toBeInTheDocument();
-    expect(within(table).getByText('intsum')).toBeInTheDocument();
+    expect(within(table).getByText('Intelligence summary')).toBeInTheDocument();
     await user.click(within(table).getAllByRole('button', { name: 'Delete' })[1]!);
     await waitFor(() => {
       expect(deleted).toBe('e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4');

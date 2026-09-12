@@ -36,7 +36,7 @@ function owned(key: string) {
 export function rememberPhotoReceipt(key: string, receipt: ResearchInputReceipt) {
   if (!owned(key) || references.has(receipt.id) || Date.parse(receipt.expires_at) <= Date.now())
     return;
-  // The server permits two receipts per account; this defensive bound also covers short overlaps.
+  // Six original photos plus derived evidence fit within this defensive bound.
   if (references.size >= MAX_REFERENCES) return;
   references.set(receipt.id, {
     id: receipt.id,

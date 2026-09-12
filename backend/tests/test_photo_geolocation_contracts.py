@@ -51,7 +51,7 @@ def test_images_are_bounded_and_only_in_user_messages(case: str) -> None:
         elif case == "message_count":
             LlmMessage("user", "user", (LlmImage(PNG), LlmImage(PNG)))
         else:
-            replace(REQUEST, messages=REQUEST.messages * 2)
+            replace(REQUEST, messages=REQUEST.messages * 7)
 
 
 @pytest.mark.parametrize("native", [False, True])

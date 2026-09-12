@@ -41,7 +41,7 @@ describe('regional and specialist research scope', () => {
       const body = captureReport();
       const { user } = renderApp('/research?question=What%20changed%3F', 'user');
       await screen.findByLabelText('Your question');
-      await user.click(screen.getByRole('radio', { name: /Detailed/ }));
+      await user.click(screen.getByRole('radio', { name: /Deep/ }));
       await user.click(screen.getByText('Scope and sources'));
       await user.click(screen.getByText('Advanced source settings'));
       await screen.findByRole('button', { name: 'Iran' });

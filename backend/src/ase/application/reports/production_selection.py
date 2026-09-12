@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 
 from ase.application.ports.feeds import EventStore
+from ase.application.reports.depth import depth_for
 from ase.application.reports.production_types import Job
 from ase.application.reports.reused_evidence import with_reused_evidence
 from ase.application.reports.selection import Selection, select_evidence
@@ -37,6 +38,17 @@ def select_for_job(
         window_hours=window,
         categories=frozenset() if private else job.template.strategy.categories,
     )
+    depth = depth_for(job.request.research_mode)
+    if depth is not None:
+        strategy = replace(
+            strategy, max_items=depth.evidence_items, per_source_cap=depth.per_source_cap
+        )
+    if private:
+        # Private sections are parts of one supplied input, not competing publishers.
+        # A diversity cap would discard later photographs, contradictions and caveats.
+        # Preserve the complete bounded assessment within the report's 100-item ceiling;
+        # original grades and the lack of independent corroboration remain unchanged.
+        strategy = replace(strategy, max_items=100, per_source_cap=100)
     selected = select_evidence(
         store,
         profiles,

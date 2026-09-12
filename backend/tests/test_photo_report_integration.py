@@ -2,28 +2,38 @@
 
 import json
 
+import pytest
 from httpx import AsyncClient
 
 from ase.container import Container
 from ase.domain.users import User
 from photo_helpers import Vision, upload
 from report_input_helpers import CallbackGateway, actor_headers, model_setup, report_payload
+from test_photo_geolocation_batch import assessment
 
 
+@pytest.mark.parametrize("photo_count", [1, 6])
 async def test_photo_assessment_report_survives_working_receipt_discard(
     client: AsyncClient,
     container: Container,
     admin: User,
     user: User,
+    photo_count: int,
 ) -> None:
     collection = await model_setup(client, container, admin)
     original_id = upload(container, user)
+    additional_ids = [upload(container, user) for _ in range(photo_count - 1)]
     headers = await actor_headers(client, user)
     container.llm = Vision()
+    if photo_count > 1:
+        container.llm.content = json.dumps(assessment(photo_count))
     analysed = await client.post(
         f"/api/research/inputs/{original_id}/geolocation",
         headers=headers,
-        json={"consent_to_send_image": True},
+        json={
+            "consent_to_send_image": True,
+            "additional_input_ids": list(map(str, additional_ids)),
+        },
     )
     assert analysed.status_code == 201, analysed.text
     derived_id = analysed.json()["input"]["id"]
@@ -42,6 +52,12 @@ async def test_photo_assessment_report_survives_working_receipt_discard(
     assert "png_base64" not in report.text and "data:image" not in report.text
     assert derived_id not in report.text and str(original_id) not in report.text
     assert "Private EXIF" not in report.text
+    if photo_count > 1:
+        assert len(frozen) > 6
+        for index in range(1, photo_count + 1):
+            assert f"Observations: photo-{index}" in text
+        assert "Matching labels do not establish a shared real location." in text
+        assert all(row["grade"] == "F6" for row in frozen)
     discarded = await client.delete(f"/api/research/inputs/{original_id}", headers=headers)
     assert discarded.status_code == 204
     saved = await client.get(f"/api/reports/{report.json()['report']['id']}", headers=headers)

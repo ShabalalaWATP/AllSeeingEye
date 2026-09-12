@@ -8,15 +8,18 @@ from httpx import AsyncClient
 from ase.application.dto import RequestContext
 from ase.container import Container
 from ase.domain.errors import Unauthenticated
+from ase.domain.research import ResearchMode
 from ase.domain.users import Role, User
 from helpers import ADMIN_PASSWORD, USER_PASSWORD, bearer, create_user, login_token
 
 
 @pytest.mark.parametrize("role", list(Role))
+@pytest.mark.parametrize("mode", list(ResearchMode))
 async def test_every_role_can_save_own_profile(
     client: AsyncClient,
     container: Container,
     role: Role,
+    mode: ResearchMode,
 ) -> None:
     user = await create_user(
         container, email="profile@example.com", password=USER_PASSWORD, role=role
@@ -30,7 +33,7 @@ async def test_every_role_can_save_own_profile(
         "display_name": "  Analyst One  ",
         "timezone": "Europe/London",
         "date_format": "iso",
-        "research_mode": "detailed",
+        "research_mode": mode.value,
         "research_languages": ["en", "fr", "en"],
         "research_country": "GB",
         "research_window_days": 14,

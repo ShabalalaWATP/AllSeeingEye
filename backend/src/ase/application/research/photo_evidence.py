@@ -24,8 +24,15 @@ def photo_events(assessment: PhotoAssessment, provenance: PhotoProvenance) -> tu
         ("Visible clues", "\n".join(assessment.visual_clues)),
         ("Verification steps", "\n".join(assessment.verification_steps)),
         ("Limitations", "\n".join((*LIMITATIONS, *assessment.limitations))),
-        ("Analysis provenance", provenance.model_dump_json()),
+        (
+            "Analysis provenance",
+            provenance.model_dump_json(exclude={"photos": {"__all__": {"input_id"}}}),
+        ),
     ]
+    for photo in assessment.photos:
+        sections.append((f"Observations: {photo.photo_id}", photo.model_dump_json()))
+    if assessment.cross_photo_analysis:
+        sections.append(("Cross-photo analysis", assessment.cross_photo_analysis))
     for candidate in assessment.candidates:
         sections.append(("Unverified candidate: " + candidate.label, candidate.model_dump_json()))
     events: list[Event] = []

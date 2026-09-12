@@ -37,7 +37,7 @@ it('loads defaults before editing, honours URL scope and preserves edits after p
   release();
   expect(await screen.findByLabelText('Narrative language')).toHaveValue('fr');
   expect(screen.getByLabelText('Report style')).toHaveValue('briefing');
-  expect(screen.getByRole('radio', { name: /Detailed/ })).toBeChecked();
+  expect(screen.getByRole('radio', { name: /Deep/ })).toBeChecked();
   await user.click(screen.getByText('Scope and sources'));
   await user.click(screen.getByText('Advanced source settings'));
   expect(screen.getByRole('button', { name: 'Remove Ukraine' })).toBeVisible();

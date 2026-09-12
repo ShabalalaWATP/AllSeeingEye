@@ -20,7 +20,8 @@ from ase.domain.errors import InvalidRequest, RateLimited, Unauthenticated
 from ase.domain.input_declarations import InputPassageDeclaration, apply_declarations
 from ase.domain.users import User
 
-INPUT_ATTEMPTS_PER_WINDOW = 6
+# One six-photo set plus a replacement/retry round, still shared with other private uploads.
+INPUT_ATTEMPTS_PER_WINDOW = 12
 BeforeRetain = Callable[[], Awaitable[None]]
 
 

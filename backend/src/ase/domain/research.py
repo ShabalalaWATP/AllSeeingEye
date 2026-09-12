@@ -23,6 +23,11 @@ from ase.domain.research_tasks import (
 class ResearchMode(StrEnum):
     QUICK = "quick"
     DETAILED = "detailed"
+    ADVANCED = "advanced"
+
+    @property
+    def requires_challenge(self) -> bool:
+        return self in {self.DETAILED, self.ADVANCED}
 
 
 class ResearchFocus(StrEnum):

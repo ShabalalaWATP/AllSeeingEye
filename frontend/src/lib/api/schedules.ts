@@ -25,7 +25,7 @@ export const scheduleSchema = z.object({
     })
     .nullable(),
   question: z.string().nullable(),
-  research_mode: z.enum(['quick', 'detailed']).nullable(),
+  research_mode: z.enum(['quick', 'detailed', 'advanced']).nullable(),
   research_languages: z.array(z.string()),
   research_focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
   research_subject: z.string().nullable(),

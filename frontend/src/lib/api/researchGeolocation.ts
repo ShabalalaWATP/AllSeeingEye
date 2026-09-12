@@ -20,6 +20,17 @@ export const researchGeolocationSchema: z.ZodType<ResearchGeolocation> = z
     status: z.enum(['candidates', 'unknown']),
     summary: z.string().min(1).max(1200),
     visual_clues: notes,
+    photos: z
+      .array(
+        z.object({
+          photo_id: z.string().regex(/^photo-[1-6]$/),
+          visual_clues: notes,
+          limitations: notes,
+        }),
+      )
+      .max(6)
+      .default([]),
+    cross_photo_analysis: z.string().min(1).max(2000).nullable().default(null),
     candidates: z
       .array(
         z.object({
@@ -53,9 +64,28 @@ export const researchGeolocationSchema: z.ZodType<ResearchGeolocation> = z
       analysed_at: z.iso.datetime({ offset: true }),
       original_sha256: hash,
       image_sha256: hash,
+      photos: z
+        .array(
+          z.object({
+            photo_id: z.string().regex(/^photo-[1-6]$/),
+            input_id: z.uuid(),
+            original_sha256: hash,
+            image_sha256: hash,
+          }),
+        )
+        .max(6)
+        .default([]),
     }),
   })
-  .refine((value) => (value.status === 'candidates') === value.candidates.length > 0);
+  .refine((value) => (value.status === 'candidates') === value.candidates.length > 0)
+  .refine(
+    (value) => new Set(value.photos.map((photo) => photo.photo_id)).size === value.photos.length,
+  )
+  .refine(
+    (value) =>
+      new Set(value.provenance.photos.map((photo) => photo.photo_id)).size ===
+      value.provenance.photos.length,
+  );
 
 export function geolocateResearchInput(
   inputId: string,

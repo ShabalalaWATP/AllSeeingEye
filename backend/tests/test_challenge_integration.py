@@ -157,12 +157,15 @@ async def test_challenge_and_context_export_plain_text_and_archive_all_views():
     assert version.evidence[2].url in [call.args[0] for call in archiver.archive.await_args_list]
 
 
-async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews(container, user):
+@pytest.mark.parametrize("mode", [ResearchMode.DETAILED, ResearchMode.ADVANCED])
+async def test_detailed_production_redrafts_with_new_evidence_before_all_reviews(
+    container, user, mode
+):
     job = production_job(user, container.cipher)
     job = replace(
         job,
         now=job.now + timedelta(hours=1),
-        request=replace(job.request, research_mode=ResearchMode.DETAILED),
+        request=replace(job.request, research_mode=mode),
     )
     initial = good_body()
     changed = good_body(

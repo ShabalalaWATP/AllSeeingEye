@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from ase.application.reports.depth import depth_for
 from ase.application.reports.prompts import doctrine_preamble, evidence_block, output_guidance
 from ase.application.reports.sections.planning import Topic, canonical_json
 from ase.application.reports.sections.synthesis_contracts import JUDGEMENTS, PARTS
@@ -58,6 +59,11 @@ class PromptContext:
             str(self.header.scope.get("report_language", "en")),
             str(self.header.scope.get("report_style", "assessment")),
         )
+        depth = depth_for(self.header.scope.get("research_mode"))
+        if depth is not None:
+            presentation += "\n" + depth.guidance(
+                share=None if synthesis else len(selected) / max(1, len(self.evidence))
+            )
         if synthesis:
             if synthesis_step not in PARTS:
                 raise ValueError("Choose a bounded final assessment step")
@@ -111,8 +117,10 @@ class PromptContext:
                 + (
                     "This call writes only one topic's reporting, assessment and gaps. Other "
                     "steps provide the final judgements, assumptions and synthesis. Do not write "
-                    "a complete report. Prefer one to three brief reporting items and one short "
-                    "assessment paragraph explaining limitations and implications. Reporting "
+                    "a complete report. Use up to four reporting items and one assessment "
+                    "paragraph explaining limitations and implications within the requested "
+                    "topic allowance. When no research depth is requested, keep these brief. "
+                    "Reporting "
                     "states what sources report without likelihood yardstick terms. Cite exact "
                     "supplied E IDs on each reporting item and assessment. Copy cited grades "
                     "without upgrading them. If this packet cannot support the topic, use a "

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 
+from ase.application.reports.depth import depth_for
 from ase.application.reports.observation_text import observation_lines
 from ase.application.reports.source_provenance_text import source_provenance_prompt
 from ase.application.reports.templates import Template
@@ -114,10 +115,14 @@ def compose_messages(
     report_language: str = "en",
     report_style: str = "assessment",
     data_cutoff: datetime | None = None,
+    research_mode: object = None,
 ) -> tuple[LlmMessage, ...]:
     """The system and user messages for one generation attempt."""
     system = f"{doctrine_preamble()}\n\n{template_guidance(template)}"
     system += "\n\n" + output_guidance(report_language, report_style)
+    depth = depth_for(research_mode)
+    if depth is not None:
+        system += "\n\n" + depth.guidance()
     parts = [
         f"Scope: {scope_line}",
         f"Period: {period_from.strftime('%Y-%m-%d %H:%M')} to "

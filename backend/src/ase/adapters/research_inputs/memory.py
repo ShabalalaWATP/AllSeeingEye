@@ -22,8 +22,9 @@ from ase.domain.events import Event
 from ase.domain.source_provenance_records import provenance_size
 from ase.domain.users import User
 
-MAX_GLOBAL_SLOTS = 8
-MAX_USER_SLOTS = 2
+MAX_GLOBAL_SLOTS = 24
+MAX_USER_SLOTS = 8
+MAX_PENDING_SLOTS = 8
 MAX_ESTIMATED_BYTES = 8 * 1024 * 1024
 MAX_SLOT_ESTIMATED_BYTES = 2 * 1024 * 1024
 
@@ -99,7 +100,12 @@ class BoundedResearchInputStore:
         if not actor.is_active:
             raise NotFound()
         owned = sum(item.owner_id == actor.id for item in self._reservations.values())
-        if len(self._reservations) >= MAX_GLOBAL_SLOTS or owned >= MAX_USER_SLOTS:
+        pending = len(self._reservations) - len(self._ready)
+        if (
+            len(self._reservations) >= MAX_GLOBAL_SLOTS
+            or owned >= MAX_USER_SLOTS
+            or pending >= MAX_PENDING_SLOTS
+        ):
             raise RateLimited(INPUT_TTL_SECONDS)
         reservation = InputReservation(
             uuid4(),
@@ -121,8 +127,13 @@ class BoundedResearchInputStore:
     ) -> StoredResearchInput:
         self.require_pending(reservation)
         expires_at = reservation.expires_at
+        parents = set(extraction.parent_input_ids)
         if extraction.parent_input_id is not None:
-            parent = self._reservations.get(extraction.parent_input_id)
+            parents.add(extraction.parent_input_id)
+        if len(extraction.parent_input_ids) > 6 or len(parents) > 6:
+            raise InvalidRequest("Derived evidence may reference at most six source inputs.")
+        for parent_id in parents:
+            parent = self._reservations.get(parent_id)
             if (
                 parent is None
                 or parent.id not in self._ready
@@ -130,7 +141,7 @@ class BoundedResearchInputStore:
                 or parent.security_version != reservation.security_version
             ):
                 raise NotFound()
-            expires_at = min(reservation.expires_at, parent.expires_at)
+            expires_at = min(expires_at, parent.expires_at)
         if extraction.filename != reservation.filename:
             raise InvalidRequest("The extracted input does not match the reserved filename.")
         events, estimate = _freeze_and_measure(extraction)
@@ -150,6 +161,7 @@ class BoundedResearchInputStore:
             preview="\n".join(event.summary or "" for event in events)[:MAX_PREVIEW_CHARACTERS],
             limitations=tuple(extraction.limitations),
             parent_input_id=extraction.parent_input_id,
+            parent_input_ids=tuple(extraction.parent_input_ids),
         )
         result = StoredResearchInput(receipt, events, tuple(extraction.frames))
         self._ready[reservation.id] = result
@@ -179,12 +191,15 @@ class BoundedResearchInputStore:
     def discard(self, actor: User, input_id: UUID) -> None:
         self.read(actor, input_id)
         discarded = {input_id}
-        # At most eight receipts exist. Descendants are derived only from matching owners.
+        # Fixed slots bound traversal. Descendants have matching owners and security versions.
         while True:
             children = {
                 key
                 for key, stored in self._ready.items()
-                if stored.receipt.parent_input_id in discarded
+                if (
+                    stored.receipt.parent_input_id in discarded
+                    or discarded.intersection(stored.receipt.parent_input_ids)
+                )
                 and self._reservations[key].owner_id == actor.id
             }
             if children <= discarded:

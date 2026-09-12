@@ -196,8 +196,8 @@ class LlmRequest:
     profile_id: UUID | None = None
 
     def __post_init__(self) -> None:
-        if sum(len(message.images) for message in self.messages) > 1:
-            raise ValueError("A model request may contain at most one sanitised image.")
+        if sum(len(message.images) for message in self.messages) > 6:
+            raise ValueError("A model request may contain at most six sanitised images.")
 
 
 @dataclass(frozen=True, slots=True)

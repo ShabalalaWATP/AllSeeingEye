@@ -1,6 +1,7 @@
 import { SelectField, TextField } from '@/components/ui/Field';
 import type { Schedule } from '@/lib/api/schedules';
 
+export type LookbackUnit = 'days' | 'hours' | 'default';
 export type Cadence = 'daily' | 'weekdays' | 'weekly' | 'monthly';
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const HOURS = Array.from({ length: 24 }, (_, hour) => ({
@@ -22,6 +23,8 @@ export function ScheduleTiming({
   weekday,
   monthday,
   lookback,
+  lookbackUnit,
+  onLookbackUnit,
   onCadence,
   onHour,
   onWeekday,
@@ -33,6 +36,8 @@ export function ScheduleTiming({
   weekday: string;
   monthday: string;
   lookback: string;
+  lookbackUnit: LookbackUnit;
+  onLookbackUnit: (value: LookbackUnit) => void;
   onCadence: (value: Cadence) => void;
   onHour: (value: string) => void;
   onWeekday: (value: string) => void;
@@ -80,16 +85,32 @@ export function ScheduleTiming({
             hint="For short months, runs on the last day. Later months keep your chosen day."
           />
         )}
-        <TextField
-          label="Look back, days"
-          type="number"
-          min={1}
-          max={730}
-          required
-          value={lookback}
-          onChange={(event) => onLookback(event.target.value)}
-          hint="Search the preceding 1 to 730 days at each run, within each source's available history."
+        <SelectField
+          label="Search period"
+          value={lookbackUnit}
+          onChange={(event) => onLookbackUnit(event.target.value as LookbackUnit)}
+          options={[
+            { value: 'days', label: 'Number of days' },
+            { value: 'hours', label: 'Number of hours' },
+            { value: 'default', label: 'Report default' },
+          ]}
         />
+        {lookbackUnit !== 'default' ? (
+          <TextField
+            label={lookbackUnit === 'hours' ? 'Look back, hours' : 'Look back, days'}
+            type="number"
+            min={1}
+            max={lookbackUnit === 'hours' ? 17520 : 730}
+            required
+            value={lookback}
+            onChange={(event) => onLookback(event.target.value)}
+            hint="Search this period before each run, within each source's available history. Maximum two years."
+          />
+        ) : (
+          <p className="text-xs text-muted">
+            Uses the selected report product's default search period.
+          </p>
+        )}
       </div>
       <p className="text-xs text-muted">
         Times use UTC all year. The server must be running. Each completed run saves a report.

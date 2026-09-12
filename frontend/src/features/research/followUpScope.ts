@@ -28,7 +28,7 @@ const savedScope = z.object({
   hazard: z.string().nullable().optional(),
   conflict: z.string().nullable().optional(),
   plan: z.string().nullable().optional(),
-  research_mode: z.enum(['quick', 'detailed']).optional(),
+  research_mode: z.enum(['quick', 'detailed', 'advanced']).optional(),
   research_languages: z.array(z.string()).min(1).max(8).optional(),
   research_source_ids: z.array(z.string()).nullable().optional(),
   research_terms: z.array(z.string()).nullable().optional(),

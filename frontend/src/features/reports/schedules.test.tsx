@@ -12,8 +12,8 @@ describe('schedules', () => {
     const table = await screen.findByRole('table', { name: 'Schedules' });
     expect(within(table).getByText('Morning INTSUM')).toBeInTheDocument();
     expect(within(table).getByText('daily at 06:00 UTC')).toBeInTheDocument();
-    expect(within(table).getByText('intsum · UA')).toBeInTheDocument();
-    expect(within(table).getByRole('link', { name: 'Report' })).toHaveAttribute(
+    expect(within(table).getByText('Intelligence summary · UA')).toBeInTheDocument();
+    expect(within(table).getByRole('link', { name: 'Latest report' })).toHaveAttribute(
       'href',
       `/reports/${schedule.last_report_id ?? ''}`,
     );

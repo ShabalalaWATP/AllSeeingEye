@@ -31,6 +31,8 @@ class CollectionBudget:
 
     @classmethod
     def for_mode(cls, mode: ResearchMode) -> "CollectionBudget":
+        if mode == ResearchMode.ADVANCED:
+            return cls(requests=32, seconds=240, per_request_seconds=20, items=1000)
         if mode == ResearchMode.DETAILED:
             return cls(requests=24, seconds=180, per_request_seconds=20, items=800)
         return cls(requests=6, seconds=45, per_request_seconds=12, items=200)

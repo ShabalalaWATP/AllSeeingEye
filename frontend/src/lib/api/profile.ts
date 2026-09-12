@@ -9,7 +9,7 @@ export const profileSchema: z.ZodType<Profile> = z.object({
   display_name: z.string().min(1).max(120),
   timezone: z.string(),
   date_format: z.enum(['day_first', 'month_first', 'iso']),
-  research_mode: z.enum(['quick', 'detailed']),
+  research_mode: z.enum(['quick', 'detailed', 'advanced']),
   research_languages: z.array(z.string()).min(1).max(8),
   research_window_days: z.union([z.literal(1), z.literal(3), z.literal(7), z.literal(14)]),
   research_country: z.string().nullable(),

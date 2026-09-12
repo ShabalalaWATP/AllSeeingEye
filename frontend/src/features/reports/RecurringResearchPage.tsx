@@ -24,12 +24,12 @@ export default function RecurringResearchPage() {
   const options = useScopedResource(loadOptions);
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-8 sm:px-8">
-      <div className="mx-auto max-w-5xl space-y-7">
+      <div className="mx-auto max-w-7xl space-y-7">
         <header>
-          <h1 className="text-3xl font-semibold tracking-tight">Recurring research</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Scheduled research</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-            Revisit a saved question automatically. Each run creates a report with fresh collection,
-            its sources and coverage gaps.
+            Your regular research reports, delivered on a repeating schedule. Manage questions,
+            report depth and timing in one place.
           </p>
         </header>
         <ResearchNavigation />

@@ -7,7 +7,8 @@ import { describeError } from '@/lib/api/errors';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
+import { TextAreaField, TextField } from '@/components/ui/Field';
+import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { ReportOptions } from '@/components/reports/ReportOptions';
 import { useAuthStore } from '@/stores/auth';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
@@ -110,7 +111,7 @@ export function AreaResearchForm({
       research_languages: preferences.research_languages,
       report_language: language,
       report_style: style,
-      devils_advocacy: mode === 'detailed',
+      devils_advocacy: mode !== 'quick',
       team_id: teamId,
       map_view_id: saved.view.id,
       map_revision_id: saved.revision.id,
@@ -182,15 +183,7 @@ export function AreaResearchForm({
             </p>
           </>
         )}
-        <SelectField
-          label="Area research depth"
-          value={mode}
-          onChange={(e) => setMode(e.target.value === 'detailed' ? 'detailed' : 'quick')}
-          options={[
-            { value: 'quick', label: 'Quick' },
-            { value: 'detailed', label: 'Detailed' },
-          ]}
-        />
+        <ResearchDepth value={mode} onChange={setMode} />
         <ResearchPlanEditor plan={plan} languages={preferences.research_languages} area />
         <ReportOptions
           language={language}

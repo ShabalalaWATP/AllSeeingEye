@@ -40,7 +40,6 @@ from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmRole
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import ReportBody
-from ase.domain.research import ResearchMode
 from ase.domain.research_runs import ResearchStage
 from ase.domain.validation import Finding, Severity
 
@@ -202,7 +201,7 @@ class Producer:
         body = draft.body or ReportBody()
         advocacy: DevilsAdvocacy | None = None
         challenge = None
-        if query is not None and query.mode is ResearchMode.DETAILED and checkpoints is not None:
+        if query is not None and query.mode.requires_challenge and checkpoints is not None:
             body, challenge = await review_frozen(
                 job,
                 body,
@@ -214,7 +213,7 @@ class Producer:
                 progress=progress,
             )
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
-        elif query is not None and query.mode is ResearchMode.DETAILED:
+        elif query is not None and query.mode.requires_challenge:
             original_findings = tuple(draft.findings)
             outcome = await run_challenge(
                 job,

@@ -62,6 +62,7 @@ async def geolocate_photo(
         container.photo_geolocation(session).execute(
             user,
             input_id,
+            additional_input_ids=tuple(body.additional_input_ids),
             question=body.question,
             hints=body.hints,
             team_id=body.team_id,

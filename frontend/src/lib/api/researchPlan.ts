@@ -39,7 +39,7 @@ export const planSchema: z.ZodType<ResearchPlan> = z.object({
   since: z.string(),
   until: z.string(),
   languages: z.array(z.string()),
-  mode: z.enum(['quick', 'detailed']),
+  mode: z.enum(['quick', 'detailed', 'advanced']),
   focus: z.enum(['general', 'company', 'domain', 'document', 'media']),
   subject: z.string().nullable(),
   country_iso: z.string().nullable(),

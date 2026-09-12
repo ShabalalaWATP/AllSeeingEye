@@ -1,9 +1,8 @@
-import { useCallback } from 'react';
-import { Link } from 'react-router';
+import { useCallback, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Table, Td, Th } from '@/components/ui/Table';
+import { Table, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
 import type { Country } from '@/lib/api/geoSchemas';
 import type { ReportTemplate } from '@/lib/api/reports';
@@ -15,14 +14,14 @@ import {
   updateSchedule,
 } from '@/lib/api/schedules';
 import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
-import { formatUtc } from '@/lib/format';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import type { CollectionPlan } from '@/lib/api/direction';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { ScheduleForm } from './ScheduleForm';
-import { describeCadence } from './ScheduleTiming';
+import { ScheduleRow } from './ScheduleRow';
+import { SelectField } from '@/components/ui/Field';
 
 /** Standing orders for products, produced by the server as their owner at the chosen hour. */
 export function SchedulesSection({
@@ -36,21 +35,34 @@ export function SchedulesSection({
   workspaces: Workspaces;
   countries: readonly Country[];
 }) {
+  const [editing, setEditing] = useState<Schedule | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  const [status, setStatus] = useState('all');
   const schedules = useScopedResource(fetchSchedules);
   const reload = schedules.reload;
-  const create = useAsyncAction(
+  const save = useAsyncAction(
     useCallback(
       async (request: ScheduleRequest) => {
-        await createSchedule(request);
+        if (editing) await updateSchedule(editing.id, request);
+        else await createSchedule(request);
+        setNotice(
+          editing
+            ? 'Schedule updated.'
+            : 'Schedule created. Your first report will appear after the next scheduled run.',
+        );
+        setEditing(null);
+        setRevision((value) => value + 1);
         await reload();
       },
-      [reload],
+      [reload, editing],
     ),
   );
   const remove = useAsyncAction(
     useCallback(
       async (id: string) => {
         await deleteSchedule(id);
+        setEditing((current) => (current?.id === id ? null : current));
         await reload();
       },
       [reload],
@@ -59,21 +71,62 @@ export function SchedulesSection({
   const toggle = useAsyncAction(
     useCallback(
       async (schedule: Schedule) => {
-        await updateSchedule(schedule.id, scheduleRequest(schedule, !schedule.enabled));
+        const updated = await updateSchedule(
+          schedule.id,
+          scheduleRequest(schedule, !schedule.enabled),
+        );
+        setEditing((current) => (current?.id === updated.id ? updated : current));
         await reload();
       },
       [reload],
     ),
   );
+  const visibleSchedules =
+    schedules.data?.filter(
+      (item) =>
+        status === 'all' ||
+        (status === 'active' && item.enabled) ||
+        (status === 'paused' && !item.enabled) ||
+        (status === 'attention' && item.last_error !== null),
+    ) ?? [];
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-base font-semibold">Your recurring research</h2>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold">Schedule control panel</h2>
+          <p className="mt-1 text-xs text-muted">
+            {schedules.data?.filter((item) => item.enabled).length ?? 0} active ·{' '}
+            {schedules.data?.filter((item) => !item.enabled).length ?? 0} paused
+          </p>
+        </div>
+        <SelectField
+          label="Show schedules"
+          value={status}
+          onChange={(event) => setStatus(event.target.value)}
+          options={[
+            { value: 'all', label: 'All schedules' },
+            { value: 'active', label: 'Active' },
+            { value: 'paused', label: 'Paused' },
+            { value: 'attention', label: 'Needs attention' },
+          ]}
+        />
+      </div>
       <p className="text-sm text-muted">
         A saved report from every run. Pause a schedule to stop future research while keeping its
         history.
       </p>
-      {schedules.error === null ? null : (
-        <Alert tone="error">{describeError(schedules.error)}</Alert>
+      {schedules.error && (
+        <Alert tone="error">
+          {describeError(schedules.error)}{' '}
+          <Button variant="secondary" onClick={() => void reload()}>
+            Retry schedules
+          </Button>
+        </Alert>
+      )}
+      {notice && (
+        <p role="status" className="py-2 text-sm text-ember">
+          {notice}
+        </p>
       )}
       {remove.error === null ? null : <Alert tone="error">{describeError(remove.error)}</Alert>}
       {toggle.error === null ? null : <Alert tone="error">{describeError(toggle.error)}</Alert>}
@@ -82,7 +135,9 @@ export function SchedulesSection({
           <LoadingNote label="Loading schedules" />
         ) : null
       ) : schedules.data.length === 0 ? (
-        <p className="text-sm text-muted">No standing orders yet.</p>
+        <p className="text-sm text-muted">
+          No schedules yet. Create your first recurring report below.
+        </p>
       ) : (
         <Table caption="Schedules">
           <thead>
@@ -92,109 +147,57 @@ export function SchedulesSection({
               <Th>When</Th>
               <Th>Next run</Th>
               <Th>Last run</Th>
-              <Th />
+              <Th>Controls</Th>
             </tr>
           </thead>
           <tbody>
-            {schedules.data.map((item) => (
-              <tr key={item.id} className={item.enabled ? '' : 'opacity-60'}>
-                <Td className="font-medium">
-                  {item.name}
-                  <div className="text-xs text-muted">{workspaces.label(item.team_id)}</div>
-                  {item.notify_on_change && (
-                    <p className="mt-2 text-xs font-normal text-muted">
-                      {item.last_change_summary ?? 'Change monitoring enabled. Awaiting baseline.'}
-                    </p>
-                  )}
-                  {item.last_change?.previous_report_id && (
-                    <Link
-                      className="mt-1 block text-xs font-normal underline"
-                      to={`/reports/${item.last_change.previous_report_id}`}
-                    >
-                      Previous compared report
-                    </Link>
-                  )}
-                  {item.question && (
-                    <details className="mt-2 text-xs font-normal">
-                      <summary className="cursor-pointer">Saved question</summary>
-                      <p className="mt-2 whitespace-pre-wrap">{item.question}</p>
-                      <p className="mt-1 text-muted">
-                        {item.research_mode
-                          ? `${item.research_mode} research, ${item.research_languages.join(', ')}, ${item.research_focus}`
-                          : 'Existing live evidence'}
-                      </p>
-                      {item.research_subject && (
-                        <p className="mt-1 text-muted">{item.research_subject}</p>
-                      )}
-                      <p className="mt-1 text-muted">
-                        {item.window_hours
-                          ? `${item.window_hours / 24} days of lookback`
-                          : 'Default product lookback'}
-                        {item.research_web_search ? ' · Fresh web search included' : ''}
-                        {item.research_source_ids !== null
-                          ? ` · ${item.research_source_ids.length} selected sources`
-                          : ' · All supported sources'}
-                      </p>
-                    </details>
-                  )}
-                </Td>
-                <Td className="font-mono text-xs text-muted">
-                  {item.template_id}
-                  {item.country_isos.length > 0
-                    ? ` · ${item.country_isos.join(', ')}`
-                    : item.country_iso === null
-                      ? ''
-                      : ` · ${item.country_iso}`}
-                </Td>
-                <Td className="text-xs">{describeCadence(item)}</Td>
-                <Td className="font-mono text-xs text-muted">
-                  {item.enabled ? formatUtc(item.next_run_at) : 'Paused'}
-                </Td>
-                <Td className="text-xs">
-                  {item.last_error !== null ? (
-                    <span className="text-critical">{item.last_error}</span>
-                  ) : item.last_report_id !== null ? (
-                    <Link to={`/reports/${item.last_report_id}`} className="hover:underline">
-                      Report
-                    </Link>
-                  ) : (
-                    <span className="text-muted">not yet</span>
-                  )}
-                </Td>
-                <Td>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      disabled={!workspaces.canManage(item)}
-                      variant="secondary"
-                      busy={toggle.busy}
-                      onClick={() => void toggle.run(item)}
-                    >
-                      {item.enabled ? 'Pause' : 'Resume'}
-                    </Button>
-                    <Button
-                      disabled={!workspaces.canManage(item)}
-                      variant="danger"
-                      busy={remove.busy}
-                      onClick={() => void remove.run(item.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </Td>
-              </tr>
+            {visibleSchedules.map((item) => (
+              <ScheduleRow
+                key={item.id}
+                item={item}
+                workspaces={workspaces}
+                productTitle={
+                  templates.find((template) => template.id === item.template_id)?.title ??
+                  'Research report'
+                }
+                busy={toggle.busy || remove.busy || save.busy}
+                onToggle={(item) => void toggle.run(item)}
+                onRemove={(id) => void remove.run(id)}
+                onEdit={(item) => {
+                  setEditing(item);
+                  save.clearError();
+                  setNotice(null);
+                }}
+              />
             ))}
+            {visibleSchedules.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-5 text-sm text-muted">
+                  No schedules match this status.
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       )}
       <ScheduleForm
-        key={workspaces.key}
+        key={`${workspaces.key}:${editing?.id ?? 'new'}:${revision}`}
+        initial={editing ?? undefined}
+        onCancel={
+          editing
+            ? () => {
+                setEditing(null);
+                save.clearError();
+              }
+            : undefined
+        }
         workspaces={workspaces}
         plans={plans}
         templates={templates}
         countries={countries}
-        busy={create.busy}
-        error={create.error === null ? null : describeError(create.error)}
-        onSubmit={(request) => void create.run(request)}
+        busy={save.busy || toggle.busy || remove.busy}
+        error={save.error === null ? null : describeError(save.error)}
+        onSubmit={(request) => void save.run(request)}
       />
     </div>
   );

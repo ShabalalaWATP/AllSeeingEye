@@ -17,7 +17,7 @@ class PersonalProfile:
     display_name: str
     timezone: str = "UTC"
     date_format: DateFormat = "day_first"
-    research_mode: Literal["quick", "detailed"] = "quick"
+    research_mode: Literal["quick", "detailed", "advanced"] = "quick"
     research_languages: tuple[str, ...] = ("en",)
     research_window_days: Literal[1, 3, 7, 14] = 3
     research_country: str | None = None
@@ -41,7 +41,7 @@ class PersonalProfile:
             raise ValueError("Choose a valid IANA timezone") from exc
         if self.date_format not in ("day_first", "month_first", "iso"):
             raise ValueError("Invalid date format")
-        if self.research_mode not in ("quick", "detailed"):
+        if self.research_mode not in ("quick", "detailed", "advanced"):
             raise ValueError("Invalid research mode")
         if self.research_window_days not in (1, 3, 7, 14):
             raise ValueError("Research window must be 1, 3, 7 or 14 days")

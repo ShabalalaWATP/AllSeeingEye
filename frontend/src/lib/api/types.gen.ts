@@ -6641,6 +6641,8 @@ export interface components {
              * @constant
              */
             consent_to_send_image: true;
+            /** Additional Input Ids */
+            additional_input_ids?: string[];
         };
         /** PhotoGeolocationOut */
         PhotoGeolocationOut: {
@@ -6659,6 +6661,10 @@ export interface components {
             verification_steps: string[];
             /** Limitations */
             limitations: string[];
+            /** Photos */
+            photos?: components["schemas"]["PhotoObservation"][];
+            /** Cross Photo Analysis */
+            cross_photo_analysis?: string | null;
             input: components["schemas"]["ResearchInputOut"];
             provenance: components["schemas"]["PhotoProvenance"];
             /**
@@ -6667,6 +6673,29 @@ export interface components {
              * @constant
              */
             candidate_status: "unverified";
+        };
+        /** PhotoImageProvenance */
+        PhotoImageProvenance: {
+            /** Photo Id */
+            photo_id: string;
+            /**
+             * Input Id
+             * Format: uuid
+             */
+            input_id: string;
+            /** Original Sha256 */
+            original_sha256: string;
+            /** Image Sha256 */
+            image_sha256: string;
+        };
+        /** PhotoObservation */
+        PhotoObservation: {
+            /** Photo Id */
+            photo_id: string;
+            /** Visual Clues */
+            visual_clues: string[];
+            /** Limitations */
+            limitations: string[];
         };
         /** PhotoProvenance */
         PhotoProvenance: {
@@ -6691,6 +6720,8 @@ export interface components {
             original_sha256: string;
             /** Image Sha256 */
             image_sha256: string;
+            /** Photos */
+            photos?: components["schemas"]["PhotoImageProvenance"][];
         };
         /** PirIn */
         PirIn: {
@@ -6892,7 +6923,7 @@ export interface components {
              * Research Mode
              * @enum {string}
              */
-            research_mode: "quick" | "detailed";
+            research_mode: "quick" | "detailed" | "advanced";
             /** Research Languages */
             research_languages: string[];
             /**
@@ -6927,7 +6958,7 @@ export interface components {
             /** Date Format */
             date_format?: ("day_first" | "month_first" | "iso") | null;
             /** Research Mode */
-            research_mode?: ("quick" | "detailed") | null;
+            research_mode?: ("quick" | "detailed" | "advanced") | null;
             /** Research Languages */
             research_languages?: string[] | null;
             /** Research Window Days */
@@ -8053,6 +8084,8 @@ export interface components {
             limitations: string[];
             /** Parent Input Id */
             parent_input_id?: string | null;
+            /** Parent Input Ids */
+            parent_input_ids?: string[];
             /** Previews */
             previews?: components["schemas"]["ResearchInputPreviewOut"][];
         };
@@ -8069,7 +8102,7 @@ export interface components {
          * ResearchMode
          * @enum {string}
          */
-        ResearchMode: "quick" | "detailed";
+        ResearchMode: "quick" | "detailed" | "advanced";
         /** ResearchPlanIn */
         ResearchPlanIn: {
             /** Question */

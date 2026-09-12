@@ -6,6 +6,20 @@ import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
 describe('research workspace navigation', () => {
+  it('redirects old photo links to the standalone geolocation workspace', async () => {
+    const { router } = renderApp('/research/photo', 'user');
+    await screen.findByRole('heading', { name: 'Geolocation' });
+    expect(router.state.location.pathname).toBe('/geolocation');
+    expect(screen.queryByRole('navigation', { name: 'Research tools' })).not.toBeInTheDocument();
+    const primary = screen.getByRole('navigation', { name: 'Primary' });
+    expect(within(primary).getByRole('link', { name: 'Geolocation' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(primary).getByRole('link', { name: 'Research' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
   it('keeps reusable plans under Research and exposes the next research tools', async () => {
     renderApp('/direction', 'user');
     await screen.findByRole('heading', { name: 'Plans & areas' });
@@ -19,9 +33,10 @@ describe('research workspace navigation', () => {
       'href',
       '/research/jobs',
     );
-    expect(within(tools).getByRole('link', { name: 'Geolocate a photo' })).toHaveAttribute(
+    expect(within(tools).queryByRole('link', { name: /Geolocat/ })).not.toBeInTheDocument();
+    expect(within(primary).getByRole('link', { name: 'Geolocation' })).toHaveAttribute(
       'href',
-      '/research/photo',
+      '/geolocation',
     );
     expect(within(tools).getByRole('link', { name: 'Recurring' })).toHaveAttribute(
       'href',

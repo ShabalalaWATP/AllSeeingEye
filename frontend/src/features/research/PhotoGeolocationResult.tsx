@@ -35,7 +35,30 @@ export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation
         </h3>
         <p className="mt-2 break-words text-sm leading-relaxed text-muted">{result.summary}</p>
       </header>
+      {result.cross_photo_analysis && (
+        <div className="border-l-2 border-ember pl-4">
+          <h4 className="text-sm font-semibold">How the photos fit together</h4>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted">
+            {result.cross_photo_analysis}
+          </p>
+        </div>
+      )}
       <ClueList title="Visible clues" items={result.visual_clues} />
+      {!!result.photos?.length && (
+        <div className="divide-y divide-line border-y border-line">
+          {result.photos.map((photo) => (
+            <details key={photo.photo_id} className="py-3">
+              <summary className="cursor-pointer text-sm font-medium">
+                Photo {photo.photo_id.replace('photo-', '')}: visual evidence
+              </summary>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <ClueList title="What is visible" items={photo.visual_clues} />
+                <ClueList title="What remains uncertain" items={photo.limitations} />
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
       {result.candidates.length > 0 && (
         <ol className="divide-y divide-line border-y border-line">
           {result.candidates.map((candidate, index) => (
@@ -104,6 +127,18 @@ export function PhotoGeolocationResult({ result }: { result: ResearchGeolocation
             <dt>Analysed preview SHA-256</dt>
             <dd className="mt-1 break-all font-mono">{result.provenance.image_sha256}</dd>
           </div>
+          {result.provenance.photos?.map((photo) => (
+            <div key={photo.photo_id}>
+              <dt>
+                Photo {photo.photo_id.replace('photo-', '')} original / analysed preview SHA-256
+              </dt>
+              <dd className="mt-1 break-all font-mono">
+                {photo.original_sha256}
+                <br />
+                {photo.image_sha256}
+              </dd>
+            </div>
+          ))}
         </dl>
       </details>
     </section>

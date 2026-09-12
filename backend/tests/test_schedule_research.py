@@ -28,18 +28,20 @@ OPTIONS = {
 }
 
 
+@pytest.mark.parametrize("mode", list(ResearchMode))
 async def test_saved_question_round_trip_update_and_scheduled_request(
-    client: AsyncClient, container: Container, user: User
+    client: AsyncClient, container: Container, user: User, mode: ResearchMode
 ) -> None:
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    created = await client.post("/api/schedules", json=OPTIONS, headers=bearer(token))
+    options = {**OPTIONS, "research_mode": mode.value}
+    created = await client.post("/api/schedules", json=options, headers=bearer(token))
     assert created.status_code == 201, created.text
-    for key, value in OPTIONS.items():
+    for key, value in options.items():
         assert created.json()[key] == value
     schedule_id = created.json()["id"]
     edited = await client.put(
         f"/api/schedules/{schedule_id}",
-        json={**OPTIONS, "question": "What changed this week?", "research_languages": ["EN", "en"]},
+        json={**options, "question": "What changed this week?", "research_languages": ["EN", "en"]},
         headers=bearer(token),
     )
     assert edited.status_code == 200
@@ -57,7 +59,7 @@ async def test_saved_question_round_trip_update_and_scheduled_request(
     actor, request, _ = execute.call_args.args
     assert actor.id == user.id and request.automation is True
     assert request.question == "What changed this week?"
-    assert request.research_mode is ResearchMode.DETAILED
+    assert request.research_mode is mode
     assert request.research_languages == ("en",)
     assert request.research_focus is ResearchFocus.COMPANY
     assert request.research_subject == "Example Port"

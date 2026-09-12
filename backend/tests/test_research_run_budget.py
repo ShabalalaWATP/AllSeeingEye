@@ -23,7 +23,7 @@ class Clock:
         return self.now
 
 
-@pytest.mark.parametrize("mode", [ResearchMode.QUICK, ResearchMode.DETAILED])
+@pytest.mark.parametrize("mode", list(ResearchMode))
 async def test_two_passes_share_mode_request_ceiling_and_reserve_capacity(mode) -> None:
     limits = CollectionBudget.for_mode(mode)
     state = CollectionRunBudget(limits)

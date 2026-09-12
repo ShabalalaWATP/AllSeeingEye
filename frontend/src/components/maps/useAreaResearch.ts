@@ -37,7 +37,7 @@ export function useAreaResearch(
 ) {
   const [question, setQuestion] = useState('');
   const [days, setDays] = useState<AreaPeriod>(1);
-  const [mode, setMode] = useState<'quick' | 'detailed'>('detailed');
+  const [mode, setMode] = useState<Profile['research_mode']>('detailed');
   const [checked, setChecked] = useState<CheckedArea | null>(null);
   const [approved, setApproved] = useState<CheckedArea | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -153,7 +153,7 @@ export function useAreaResearch(
       research_source_ids: null,
       report_language: preferences.report_language,
       report_style: preferences.report_style,
-      devils_advocacy: mode === 'detailed',
+      devils_advocacy: mode !== 'quick',
       team_id: null,
       disclose_area_to_provider: true,
     });

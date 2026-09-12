@@ -60,16 +60,30 @@ def test_pending_and_complete_inputs_share_user_and_global_slot_budgets() -> Non
     harness = Harness()
     first = harness.store.reserve(harness.actor, "notes.txt")
     second = harness.store.reserve(harness.actor, "notes.txt")
+    for _ in range(memory.MAX_USER_SLOTS - 2):
+        harness.store.reserve(harness.actor, "notes.txt")
     harness.store.put(first, extracted())
     with pytest.raises(RateLimited):
         harness.store.reserve(harness.actor, "notes.txt")
-    for _ in range(6):
-        harness.store.reserve(actor(), "notes.txt")
+    for _ in range(memory.MAX_GLOBAL_SLOTS - memory.MAX_USER_SLOTS):
+        reserved = harness.store.reserve(actor(), "notes.txt")
+        harness.store.put(reserved, extracted())
     with pytest.raises(RateLimited):
         harness.store.reserve(actor(), "notes.txt")
     harness.store.release(second)
     harness.store.reserve(actor(), "notes.txt")
     assert harness.store.read(harness.actor, first.id)
+
+
+def test_raw_upload_admission_keeps_the_original_eight_pending_slot_bound() -> None:
+    harness = Harness()
+    reservations = [
+        harness.store.reserve(actor(), "notes.txt") for _ in range(memory.MAX_PENDING_SLOTS)
+    ]
+    with pytest.raises(RateLimited):
+        harness.store.reserve(actor(), "notes.txt")
+    harness.store.release(reservations[0])
+    assert harness.store.reserve(actor(), "notes.txt")
 
 
 def test_expired_or_reused_reservation_cannot_store_or_start_extraction() -> None:

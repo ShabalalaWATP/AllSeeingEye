@@ -20,7 +20,7 @@ import { ResearchProgress } from './ResearchProgress';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
 import { useResearchPlan } from './useResearchPlan';
 import { recordScopeError } from './recordScope';
-import { ResearchDepth } from './ResearchDepth';
+import { ResearchDepth } from '@/components/research/ResearchDepth';
 import { MAX_RESEARCH_HOURS, researchDateError, type ResearchDates } from './ResearchTimeScope';
 
 export function ResearchForm({
@@ -191,7 +191,7 @@ export function ResearchForm({
         : dates
           ? { research_since: dates.since, research_until: dates.until }
           : { window_hours: Number(windowHours) }),
-      devils_advocacy: mode === 'detailed',
+      devils_advocacy: mode !== 'quick',
       ...(focus === 'general' ? { countries: selectedCountries } : {}),
       research_web_search: !privateFocus && webSearch,
       ...(scope.teamId ? { team_id: scope.teamId } : {}),

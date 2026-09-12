@@ -4005,3 +4005,57 @@ production build passed. A competing-load globe test timed out once but passed
 in isolation and in the clean full run. Independent correctness and security
 rechecks found no remaining actionable issue. The full backend suite, visual
 DOCX rendering and production deployment were not performed.
+
+
+## Research types, scheduled reports and standalone geolocation, 12 September 2026
+
+Research now offers Basic, Deep and Advanced. The choices control bounded source
+collection, evidence breadth and indicative narrative length. Existing Quick and
+Detailed saved values remain compatible. One-off questions, map areas, personal
+defaults, schedules and resumed report stages use the same choices. Sparse evidence
+must produce shorter writing rather than padding to a quota.
+
+Scheduled research now uses a normal question/depth composer with a separate
+repeat panel and a control panel for editing, pausing, resuming and deleting runs.
+Operators can filter by status and open the latest successful report after a later
+failure. Editing preserves legacy hourly and default lookbacks, source choices
+and paused state. General research clears irrelevant hidden subjects. Shared
+mutation state prevents overlapping save/pause/delete requests from reverting edits.
+
+Geolocation is now a primary navigation destination. The former research/photo
+route redirects to it. Operators can select six labelled photographs, consent to
+one combined vision request, inspect per-photo observations and shared or conflicting
+clues, and save a report. The model must allow unrelated images and unknown locations.
+Every source image retains ownership, security-generation, integrity and expiry
+checks. Removing any parent invalidates the derived working assessment. Original
+images are not retained in saved reports. The working store keeps its 8 MiB memory
+ceiling and eight pending-upload ceiling while allowing sufficient receipt slots.
+
+Review caught a public-source diversity cap that truncated private photo evidence.
+Private-input selection now preserves the bounded assessment within the existing
+100-item report ceiling, retaining F6 grades and uncertainty. Integration tests
+confirm all six photo observations and the cross-photo conclusions survive report
+saving. Review also exposed Bedrock's rejection of nested schema references; the
+fixed bounded photo schema is expanded before dispatch. Temporary receipt IDs are
+excluded from durable provenance; image hashes remain.
+
+The final selected backend suite passed 209 tests. Ruff, formatting, strict typing
+and both architecture import contracts passed. The production frontend build passed.
+Desktop and 390-pixel mobile layouts were visually checked in a real browser using
+fixture APIs, not live model output. Independent code and security reviews completed;
+all four correctness findings were corrected and rechecked. Globe tests exposed
+cold-route wait limits and snapshot-refresh fixture races; their assertions were
+retained while wait budgets and fixture delivery were corrected.
+
+No migration, new production dependency, live model evaluation or deployment was
+performed. Actual report length and geolocation accuracy still require evaluation
+against known examples. Operational guidance and the implementation plan are updated.
+
+
+Final frontend acceptance passed all 1,993 tests with one existing skip. Coverage
+was 95.09% statements, 90% branches, 93.32% functions and 96.32% lines, meeting the
+unchanged thresholds. The final selected backend run passed 209 tests; full backend
+coverage was not measured. Final frontend typing, scoped ESLint/Prettier and diff
+checks passed. The existing MapLibre vendor-size warning and 380-line engine warning
+remain. Both local services respond successfully; the live API advertises all
+three research modes and the six-photo request contract. No Git remote is configured.

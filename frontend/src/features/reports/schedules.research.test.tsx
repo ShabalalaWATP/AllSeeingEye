@@ -24,7 +24,7 @@ it('saves an explicit question and bounded research options for each scheduled r
   expect(
     form.getByRole('checkbox', { name: /^Notify in app when evidence changes/ }),
   ).toBeChecked();
-  await user.selectOptions(form.getByLabelText('Collection depth'), 'detailed');
+  await user.click(form.getByRole('radio', { name: /^Deep/ }));
   await user.clear(form.getByLabelText('Research languages'));
   await user.type(form.getByLabelText('Research languages'), 'en; bad');
   expect(form.getByRole('button', { name: 'Add schedule' })).toBeDisabled();
@@ -66,7 +66,7 @@ it('does not submit stale research fields after switching to an ordinary product
   await user.type(form.getByLabelText('Schedule name'), 'Daily overview');
   await user.selectOptions(form.getByLabelText('Product'), 'ask');
   await user.type(form.getByLabelText('Question'), 'Old question');
-  await user.selectOptions(form.getByLabelText('Collection depth'), 'quick');
+  await user.click(form.getByRole('radio', { name: /^Basic/ }));
   await user.selectOptions(form.getByLabelText('Product'), 'intsum');
   await user.click(form.getByRole('button', { name: 'Add schedule' }));
   await waitFor(() => expect(captured).toMatchObject({ template_id: 'intsum' }));
@@ -95,7 +95,7 @@ it('shows the saved question and research settings beside its standing order', a
   const table = within(await screen.findByRole('table', { name: 'Schedules' }));
   await user.click(table.getByText('Saved question'));
   expect(table.getByText('What changed at the port?')).toBeVisible();
-  expect(table.getByText('detailed research, en, uk, company')).toBeVisible();
+  expect(table.getByText('Deep research, en, uk, company')).toBeVisible();
   expect(table.getByText('Example Port')).toBeVisible();
 });
 

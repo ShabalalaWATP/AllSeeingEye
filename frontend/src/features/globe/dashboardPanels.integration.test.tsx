@@ -41,8 +41,15 @@ beforeEach(() => {
 });
 
 it('uses one drawer and keeps aircraft search separate from boats, with a visible reset chip', async () => {
+  // Layer changes may refresh the snapshot. Keep test traffic in that source as well
+  // as stream updates so a legitimate refresh cannot race away these fixtures.
+  server.use(
+    http.get('/api/events', () => HttpResponse.json({ items: [aircraft, vessel], count: 2 })),
+  );
   const { user } = renderApp('/', 'user');
-  await screen.findByRole('button', { name: 'Flight filters' });
+  // The first render loads the lazy globe and its tool modules. Coverage instrumentation
+  // can exceed the shared four-second wait before the controls are mounted.
+  await screen.findByRole('button', { name: 'Flight filters' }, { timeout: 10_000 });
   act(() => useEventsStore.getState().applyUpsert([aircraft, vessel]));
   const flights = screen.getByRole('button', { name: 'Flight filters' });
   await user.click(flights);

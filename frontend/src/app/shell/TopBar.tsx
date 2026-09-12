@@ -13,6 +13,7 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/reports')) return 'Saved reports';
   if (pathname.startsWith('/research')) return 'Research';
+  if (pathname.startsWith('/geolocation')) return 'Geolocation';
   if (pathname.startsWith('/sources')) return 'Sources';
   if (pathname.startsWith('/trackers')) return 'Live monitor';
   if (pathname.startsWith('/direction')) return 'Plans & areas';

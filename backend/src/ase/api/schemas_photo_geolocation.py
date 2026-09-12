@@ -15,6 +15,7 @@ class PhotoGeolocationIn(BaseModel):
     hints: str = Field(default="", max_length=1000)
     team_id: UUID | None = None
     consent_to_send_image: Literal[True]
+    additional_input_ids: list[UUID] = Field(default_factory=list, max_length=5)
 
 
 class PhotoGeolocationOut(PhotoAssessment):

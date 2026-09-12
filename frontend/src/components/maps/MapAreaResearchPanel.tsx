@@ -4,6 +4,7 @@ import { useProfile } from '@/stores/profile';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { describeError } from '@/lib/api/errors';
 import type { LocalCollection } from '@/lib/map/geoJsonTypes';
+import { RESEARCH_DEPTHS } from '@/components/research/ResearchDepth';
 import { ResearchProgress } from '@/components/research/ResearchProgress';
 import { MapToolIntro } from './MapToolIntro';
 import { AreaResearchSources } from './AreaResearchSources';
@@ -106,11 +107,16 @@ function AreaResearchWorkspace({ area, areaError, picking, onStopDrawing, childr
             className="map-tool-input"
             value={research.mode}
             onChange={(event) =>
-              research.setMode(event.target.value === 'quick' ? 'quick' : 'detailed')
+              research.setMode(
+                RESEARCH_DEPTHS.find((item) => item.value === event.target.value)?.value ?? 'quick',
+              )
             }
           >
-            <option value="detailed">Detailed, broader collection</option>
-            <option value="quick">Quick, smaller collection</option>
+            {RESEARCH_DEPTHS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label} � {item.length}
+              </option>
+            ))}
           </select>
         </label>
       </fieldset>

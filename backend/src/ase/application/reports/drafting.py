@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, LlmTokenBudgetExhausted
+from ase.application.reports.depth import depth_for
 from ase.application.reports.prompts import compose_messages
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
@@ -54,6 +55,7 @@ async def draft_body(
     draft = Draft()
     labels = frozenset(item.label for item in evidence)
     urls = {item.label: item.url for item in evidence}
+    depth = depth_for(header.scope.get("research_mode"))
     for attempt in range(1, MAX_ATTEMPTS + 1):
         draft.attempts = attempt
         messages = compose_messages(
@@ -71,10 +73,13 @@ async def draft_body(
             background=background,
             report_language=str(header.scope.get("report_language", "en")),
             report_style=str(header.scope.get("report_style", "assessment")),
+            research_mode=header.scope.get("research_mode"),
         )
         llm_request = LlmRequest(
             messages=messages,
-            max_output_tokens=profile.token_budget(template.token_budget),
+            max_output_tokens=profile.token_budget(
+                depth.output_tokens if depth is not None else template.token_budget
+            ),
             temperature=profile.temperature,
             reasoning_effort=profile.reasoning_effort,
             provider=profile.provider,

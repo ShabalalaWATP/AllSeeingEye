@@ -84,7 +84,7 @@ describe('question-led research', () => {
       await screen.findByLabelText('Your question'),
       'Assess recent changes at Example Company.',
     );
-    await user.click(screen.getByRole('radio', { name: /Detailed/ }));
+    await user.click(screen.getByRole('radio', { name: /Deep/ }));
     await user.click(screen.getByText('Scope and sources'));
     await user.click(screen.getByText('Advanced source settings'));
     await screen.findByRole('option', { name: `Team: ${team.name}` });

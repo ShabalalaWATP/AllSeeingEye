@@ -1,3 +1,4 @@
+import { RESEARCH_DEPTHS } from '@/components/research/ResearchDepth';
 import { NarrativeLanguageField } from '@/components/languages/NarrativeLanguageField';
 import { SourceLanguagePicker } from '@/components/languages/SourceLanguagePicker';
 import { useEffect, useState } from 'react';
@@ -72,10 +73,7 @@ export function PreferenceFields({
           onChange={(event) =>
             onChange('research_mode', event.target.value as Profile['research_mode'])
           }
-          options={[
-            { value: 'quick', label: 'Quick research' },
-            { value: 'detailed', label: 'Detailed research' },
-          ]}
+          options={RESEARCH_DEPTHS.map(({ value, label }) => ({ value, label }))}
         />
         <SelectField
           label="Default date window"

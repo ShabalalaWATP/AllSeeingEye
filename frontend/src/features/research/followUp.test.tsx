@@ -145,8 +145,8 @@ describe('private and follow-up research', () => {
       await screen.findByLabelText('Your question'),
       'What would change this assessment?',
     );
-    expect(screen.getByRole('radio', { name: /Detailed/ })).toBeChecked();
-    expect(screen.getByRole('radio', { name: /Quick/ })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: /Deep/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Basic/ })).toBeDisabled();
     expect(screen.queryByLabelText('Workspace')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Research focus')).not.toBeInTheDocument();
     expect(screen.getByText(/No public search is started/)).toBeVisible();

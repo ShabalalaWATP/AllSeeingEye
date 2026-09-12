@@ -27,6 +27,13 @@ class PhotoCandidate(BaseModel):
     coordinates: PhotoCoordinates | None
 
 
+class PhotoObservation(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    photo_id: str = Field(pattern=r"^photo-[1-6]$")
+    visual_clues: list[str] = Field(max_length=8)
+    limitations: list[str] = Field(min_length=1, max_length=6)
+
+
 class PhotoAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     status: Literal["candidates", "unknown"]
@@ -35,12 +42,18 @@ class PhotoAssessment(BaseModel):
     candidates: list[PhotoCandidate] = Field(max_length=3)
     verification_steps: list[str] = Field(min_length=1, max_length=10)
     limitations: list[str] = Field(min_length=1, max_length=10)
+    photos: list[PhotoObservation] = Field(default_factory=list, max_length=6)
+    cross_photo_analysis: str | None = Field(default=None, min_length=1, max_length=2000)
 
     @model_validator(mode="after")
     def validate_hypotheses(self) -> "PhotoAssessment":
         if (self.status == "candidates") != bool(self.candidates):
             raise ValueError("Candidates and assessment status disagree.")
         values = self.visual_clues + self.verification_steps + self.limitations
+        if len({photo.photo_id for photo in self.photos}) != len(self.photos):
+            raise ValueError("Each photograph must appear only once in the assessment.")
+        for photo in self.photos:
+            values += photo.visual_clues + photo.limitations
         for candidate in self.candidates:
             values += candidate.supporting_clues + candidate.contradictions
             if candidate.coordinates is not None:
@@ -50,6 +63,14 @@ class PhotoAssessment(BaseModel):
         if any(not value.strip() or len(value) > 500 for value in values):
             raise ValueError("Geolocation clues must be bounded, non-empty text.")
         return self
+
+
+class PhotoImageProvenance(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    photo_id: str = Field(pattern=r"^photo-[1-6]$")
+    input_id: UUID
+    original_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    image_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
 
 
 class PhotoProvenance(BaseModel):
@@ -62,3 +83,4 @@ class PhotoProvenance(BaseModel):
     analysed_at: datetime
     original_sha256: str
     image_sha256: str
+    photos: list[PhotoImageProvenance] = Field(default_factory=list, max_length=6)

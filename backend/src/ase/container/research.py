@@ -44,7 +44,7 @@ from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.service import ResearchCollectionService
 from ase.application.research.source_admission import ControlledResearchProvider
 from ase.container.research_feeds import public_research_feeds
-from ase.domain.research import ResearchFocus, ResearchMode, ResearchQuery
+from ase.domain.research import ResearchFocus, ResearchQuery
 from ase.domain.source_controls import source_control_keys
 
 
@@ -124,7 +124,7 @@ def research_service(
             )
         elif query.focus == ResearchFocus.DOMAIN:
             selected.extend((RdapResearchProvider(http, clock), certificates))
-            dns_types = ("A", "AAAA", "MX", "NS") if query.mode is ResearchMode.DETAILED else ("A",)
+            dns_types = ("A", "AAAA", "MX", "NS") if query.mode.requires_challenge else ("A",)
             selected.extend(DnsResearchProvider(http, clock, kind) for kind in dns_types)
         if GOOGLE_NEWS_SPEC.id not in disabled:
             selected.extend(

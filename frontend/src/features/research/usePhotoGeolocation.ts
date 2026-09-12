@@ -28,11 +28,13 @@ const empty = (key: string, status: Status = 'idle'): Snapshot => ({
 
 /** Responses never survive an attachment, destination, account or authority change. */
 export function usePhotoGeolocation(
-  receipt: ResearchInputReceipt | null,
+  receipt: ResearchInputReceipt | readonly ResearchInputReceipt[] | null,
   authorityKey: string,
   teamId: string,
 ) {
-  const key = `${authorityKey}:${receipt?.id ?? ''}:${teamId}`;
+  const receipts: readonly ResearchInputReceipt[] =
+    receipt === null ? [] : Array.isArray(receipt) ? receipt : [receipt as ResearchInputReceipt];
+  const key = `${authorityKey}:${receipts.map((item) => item.id).join(',')}:${teamId}`;
   const [snapshot, setSnapshot] = useState(() => empty(key));
   const state = snapshot.key === key ? snapshot : empty(key);
   const sequence = useRef(0);
@@ -61,8 +63,9 @@ export function usePhotoGeolocation(
   );
 
   const analyse = async (question: string, hints: string, consent: boolean) => {
-    if (controller.current || !receipt || !consent) return;
-    if (Date.parse(receipt.expires_at) <= Date.now()) {
+    const first = receipts[0];
+    if (controller.current || !first || !consent) return;
+    if (receipts.some((item) => Date.parse(item.expires_at) <= Date.now())) {
       setSnapshot({ ...empty(key, 'error'), error: 'This photo has expired. Upload it again.' });
       return;
     }
@@ -90,12 +93,19 @@ export function usePhotoGeolocation(
         derivedReceipt.current = null;
       }
       const result = await geolocateResearchInput(
-        receipt.id,
+        first.id,
         {
-          question: question.trim() || 'Where might this photograph have been taken?',
+          question:
+            question.trim() ||
+            (receipts.length > 1
+              ? 'Where might these photographs have been taken? Compare their clues and test whether they show the same location.'
+              : 'Where might this photograph have been taken?'),
           hints: hints.trim(),
           team_id: teamId || null,
           consent_to_send_image: true,
+          ...(receipts.length > 1
+            ? { additional_input_ids: receipts.slice(1).map((item) => item.id) }
+            : {}),
         },
         abort.signal,
       );

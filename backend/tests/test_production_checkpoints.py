@@ -139,9 +139,10 @@ async def test_incomplete_section_propagates_with_collection_checkpoint_intact(c
     assert checkpoints.writes == 1 and checkpoints.value is not None
 
 
-async def test_detailed_resume_reviews_frozen_labels_without_new_collection(container, user):
+@pytest.mark.parametrize("mode", [ResearchMode.DETAILED, ResearchMode.ADVANCED])
+async def test_detailed_resume_reviews_frozen_labels_without_new_collection(container, user, mode):
     job = production_job(user, container.cipher)
-    job = replace(job, request=replace(job.request, research_mode=ResearchMode.DETAILED))
+    job = replace(job, request=replace(job.request, research_mode=mode))
     checkpoints = Checkpoints()
     producer = Producer(
         store=filled_store(),
@@ -155,9 +156,7 @@ async def test_detailed_resume_reviews_frozen_labels_without_new_collection(cont
         return job.profile
 
     draft = Draft(body=parse_body(good_body()))
-    query = ResearchQuery(
-        "What changed?", job.period_from, job.period_to, mode=ResearchMode.DETAILED
-    )
+    query = ResearchQuery("What changed?", job.period_from, job.period_to, mode=mode)
     prepared = AsyncMock(return_value=(filled_store(), None, query))
     reviews = tuple(
         ChallengeReview(row.id, row.statement, "completed") for row in draft.body.key_judgements

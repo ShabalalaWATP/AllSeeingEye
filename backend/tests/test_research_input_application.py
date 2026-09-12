@@ -9,6 +9,7 @@ import pytest
 from ase.adapters.research_imports.models import ImportRejected
 from ase.adapters.research_inputs.importer import DocumentResearchImporter
 from ase.application.ports.research_inputs import INPUT_TTL_SECONDS, MAX_INPUT_BYTES
+from ase.application.research.inputs import INPUT_ATTEMPTS_PER_WINDOW
 from ase.domain.errors import InvalidRequest, NotFound, RateLimited, Unauthenticated
 from research_input_helpers import NOW, Harness
 
@@ -56,13 +57,13 @@ async def test_parser_failure_and_cancellation_release_pending_slot(error: BaseE
 async def test_repeated_failures_use_shared_per_user_rate_budget() -> None:
     harness = Harness()
     harness.extractor.error = InvalidRequest()
-    for _ in range(6):
+    for _ in range(INPUT_ATTEMPTS_PER_WINDOW):
         with pytest.raises(InvalidRequest):
             await harness.service.execute(harness.actor, "notes.txt", b"bad")
     with pytest.raises(RateLimited) as error:
         await harness.service.execute(harness.actor, "notes.txt", b"bad")
     assert error.value.retry_after == INPUT_TTL_SECONDS
-    assert harness.extractor.calls == 6
+    assert harness.extractor.calls == INPUT_ATTEMPTS_PER_WINDOW
 
 
 @pytest.mark.parametrize("filename", ["../notes.txt", "notes\n.txt", "C:notes.txt", "   "])

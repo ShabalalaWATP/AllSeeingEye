@@ -32,6 +32,7 @@ class InputExtraction:
     limitations: tuple[str, ...]
     frames: tuple[InputPreviewFrame, ...] = ()
     parent_input_id: UUID | None = None
+    parent_input_ids: tuple[UUID, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +57,7 @@ class ResearchInputReceipt:
     preview: str
     limitations: tuple[str, ...]
     parent_input_id: UUID | None = None
+    parent_input_ids: tuple[UUID, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

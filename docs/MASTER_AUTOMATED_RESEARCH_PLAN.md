@@ -5,6 +5,32 @@ subject matching in `b9f9050`. The local OpenAI connection is active; successful
 long-report completion and wider model-quality evaluation remain open. Checked items below describe
 implemented behaviour within the documented limits, not measured research accuracy.
 
+## Research types, schedules and photo workspace, 12 September 2026
+
+- [x] Offer Basic, Deep and Advanced with distinct collection/evidence limits and
+  indicative narrative targets; preserve saved Quick/Detailed wire values.
+- [x] Apply the same choices to one-off, drawn/saved-area research, preferences
+  and recurring schedules, including regeneration and resumed drafting.
+- [x] Give scheduled research a normal report composer and separate timing panel,
+  with edit/pause/resume/delete, status filters and latest successful report access.
+- [x] Preserve legacy hourly/template-default windows and clear irrelevant hidden
+  subject fields when scope changes; serialise local schedule controls.
+- [x] Move photo geolocation to its own primary navigation destination with an
+  old-route redirect, six-photo preview set and one combined vision analysis.
+- [x] Retain per-photo findings, cross-photo contradictions, bounded candidate
+  locations and independent verification steps in the derived report evidence.
+- [x] Bind every parent photo to current ownership/security generation, consent,
+  expiry and deletion. Keep previews transient and original photos out of reports.
+- [ ] Evaluate actual Basic/Deep/Advanced lengths and geolocation accuracy against
+  known examples using a configured live model. Unit/fixture tests do not establish
+  real-world accuracy or guarantee narrative length.
+
+See [the workspace guide](RESEARCH_WORKSPACE_OPERATIONS.md) for operator behaviour
+and limits. Acceptance: 209 selected backend tests and 1,993 frontend tests pass
+(one frontend skip); statement/branch coverage is 95.09%/90%. Static checks, build
+and desktop/mobile fixture-browser checks pass. No schema migration or new runtime
+dependency is required.
+
 ## Eye assistant, 11 September 2026
 
 The implemented interactive slice is the [floating Eye assistant](EYE_ASSISTANT.md),

@@ -4,7 +4,8 @@
 | --- | --- |
 | Map | Explore spatial observations and start research for a drawn area. |
 | Live monitor | Browse recent connected-feed activity by topic. |
-| Research | Ask a question, geolocate a photo or configure recurring research. |
+| Research | Ask a question or configure scheduled research. |
+| Geolocation | Compare up to six photos and assess candidate locations. |
 | Saved reports | Read previous outputs, inspect frozen evidence, compare and export. |
 | Alerts | Review notifications and configure rules over feed activity. |
 | Plans & areas | Reuse geographic areas and structured questions, within Research. |
@@ -15,7 +16,7 @@ contextual report links remain usable.
 
 ## Questions and scope
 
-Enter a question and choose Quick or Detailed, the destination and up to eight
+Enter a question and choose Basic, Deep or Advanced, the destination and up to eight
 countries. No selected countries means worldwide. Choose a rolling period or a
 fixed UTC range, with inclusive start and exclusive end. Ordinary intervals allow
 730 days. This limits duration, not the age of a saved historical interval.
@@ -36,13 +37,29 @@ native citations appear separately from scored evidence. See
 Follow-ups preserve the original countries and fixed interval. Rolling windows
 can move forward. Start new research to change the scope.
 
+## Report types
+
+| Type | Indicative narrative length | Research approach |
+| --- | --- | --- |
+| Basic | 500–900 words | Focused collection and the strongest relevant findings. |
+| Deep | 1,200–2,000 words | Broader collection, fuller reasoning and challenge review. |
+| Advanced | 2,500–4,000 words | Extended collection, competing explanations and synthesis. |
+
+These are evidence-dependent targets, excluding references, not guaranteed lengths.
+Sparse evidence produces a shorter report. Provider limits and schema bounds still
+apply. More depth consumes more time and provider capacity. Existing saved `quick`
+and `detailed` values mean Basic and Deep respectively; `advanced` is additive.
+These choices also apply to area research, personal defaults and schedules.
+
 ## Photo geolocation
 
-Open Research, Geolocate a photo. Select the destination and upload one PNG, JPEG
-or WebP up to 8 MiB, 8 megapixels and 8,192 pixels per edge, with no animation.
+Open Geolocation in the left navigation. Old `/research/photo` links redirect to
+`/geolocation`. Select the destination and choose up to six PNG, JPEG or WebP photos
+together. Each permits up to 8 MiB, 8 megapixels and 8,192 pixels per edge, with no animation.
 Optional questions and hints describe what to examine. Confirm
 that the sanitised preview and supplied context may be sent to the configured AI,
-then select Analyse photo.
+then start analysis. The photos are labelled in order and sent in one model request.
+Changing the set clears the result and requires fresh disclosure consent.
 
 The vision call receives a sanitised preview of at most 512 pixels per dimension,
 not the original filename, private EXIF or extracted OCR. Fine text and distant
@@ -50,20 +67,30 @@ details can be lost. It does not perform public reverse-image search. OpenAI and
 Bedrock image payloads are supported, subject to the chosen model accepting images.
 
 Results contain up to three unverified candidate places or an unknown result,
-visible clues, contradictions, uncertainty and verification steps. Hints are claims
+visible clues, contradictions, uncertainty and verification steps. Multi-photo
+results include clues for each photo and a comparison across the set. The model
+must not assume that every photo shows the same place. Hints are claims
 to test. Candidate coordinates are not automatically added to the live map.
 
 Create saved report preserves selected extracted text and visual findings with
 model/hash provenance and uncertainty, without image bytes. Original uploads are
 discarded after extraction; working previews and assessments expire after 15 minutes.
-Replace/remove cleans up working receipts. Returning to the tool retains only
+The combined analysis expires with its earliest parent photo; removing any parent
+invalidates the derived receipt. Replace/remove cleans up working receipts.
+Uploads run sequentially, and the server retains its global 8 MiB working-store cap,
+so other active uploads may temporarily limit capacity. Returning to the tool retains only
 bounded in-memory receipt references for cleanup. Pending report requests protect
 their input until they settle. Account/access changes clear client references.
 
 ## Recurring research
 
-Save a question, country scope, lookback, source choices and optional fresh-web
-choice under Research, Recurring. Weekly and calendar-monthly runs are supported
+Create a normal research brief under Research, Recurring: question, report type,
+country scope, lookback, source choices and optional fresh-web search. A separate
+timing panel sets when the brief repeats. The control panel filters active, paused
+and attention-needed schedules; edit reuses the same composer. It shows the next
+run, recent outcome and latest successful report. Changing settings preserves the
+paused state until explicitly resumed. Lookback can use days, hours or the report
+template default; editing preserves existing values. Weekly and calendar-monthly runs are supported
 alongside daily/weekdays. Times remain UTC throughout the year. Monthly day 31
 uses February's final day, then returns to day 31 in March.
 

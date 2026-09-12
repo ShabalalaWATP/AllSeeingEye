@@ -83,6 +83,54 @@ describe('private photo geolocation contract', () => {
     ).toBe(true);
   });
 
+  it('sends all batch references through one authenticated image-consent request', async () => {
+    const additional = '10000000-0000-4000-8000-000000000008';
+    server.use(
+      http.post('/api/research/inputs/:id/geolocation', async ({ request }) => {
+        expect(await request.json()).toMatchObject({
+          additional_input_ids: [additional],
+          consent_to_send_image: true,
+        });
+        return HttpResponse.json(
+          photoAssessment({
+            photos: [
+              { photo_id: 'photo-1', visual_clues: ['Clock tower.'], limitations: ['Unverified.'] },
+            ],
+            cross_photo_analysis: 'Only the first photograph contains a recognisable landmark.',
+          }),
+        );
+      }),
+    );
+    const result = await geolocateResearchInput(
+      photoId,
+      {
+        additional_input_ids: [additional],
+        consent_to_send_image: true,
+        question: 'Compare these photographs.',
+        hints: '',
+      },
+      new AbortController().signal,
+    );
+    expect(result.photos?.[0]?.photo_id).toBe('photo-1');
+    expect(result.cross_photo_analysis).toContain('Only the first');
+  });
+
+  it.each(['duplicate', 'unrecognised', 'oversized'] as const)(
+    'rejects %s photo observations',
+    (kind) => {
+      const observation = {
+        photo_id: 'photo-1',
+        visual_clues: ['Clock tower.'],
+        limitations: ['Unverified.'],
+      };
+      const result = photoAssessment({ photos: [observation] });
+      if (kind === 'duplicate') result.photos = [observation, observation];
+      else if (kind === 'unrecognised') observation.photo_id = 'photo-99';
+      else observation.visual_clues = ['x'.repeat(501)];
+      expect(researchGeolocationSchema.safeParse(result).success).toBe(false);
+    },
+  );
+
   it.each([204, 404])(
     'accepts explicit cleanup status %s without changing workspace authority',
     async (status) => {
