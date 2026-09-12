@@ -10,6 +10,8 @@ import { ConflictOverviewPanel } from './ConflictOverviewPanel';
 import { HazardFilterPanel } from './HazardFilterPanel';
 import { GnssPanel } from './GnssPanel';
 import { CyberFilterPanel } from './CyberFilterPanel';
+import { FiresFilterPanel } from './FiresFilterPanel';
+import { NewsPanel } from './NewsPanel';
 import { useMemo, type ComponentProps } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { ContextTabs } from './context/ContextTabs';
@@ -60,6 +62,8 @@ export function catalogueControlPanels({
   selectedId,
   qualityFilter,
   cyber,
+  fires,
+  news,
 }: {
   infrastructure: ReturnType<typeof useInfrastructure>;
   focusInfrastructure: ReturnType<typeof useInfrastructureSelection>['focus'];
@@ -74,8 +78,16 @@ export function catalogueControlPanels({
   selectedId: string | null;
   qualityFilter: LocationQualityFilter;
   cyber: ComponentProps<typeof CyberFilterPanel>;
+  fires: ComponentProps<typeof FiresFilterPanel>;
+  news: ComponentProps<typeof NewsPanel>;
 }) {
   return [
+    <ControlPanel key="fires" side="left" label="Fires" icon="firms" entry={false}>
+      <FiresFilterPanel {...fires} />
+    </ControlPanel>,
+    <ControlPanel key="news" side="left" label="News briefing" icon="news" entry={false}>
+      <NewsPanel {...news} />
+    </ControlPanel>,
     <ControlPanel
       key="cyber"
       side="left"

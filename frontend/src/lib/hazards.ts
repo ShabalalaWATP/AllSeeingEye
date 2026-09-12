@@ -1,33 +1,31 @@
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 export const HAZARD_GROUPS = [
-  { value: 'all', label: 'All natural hazards' },
   { value: 'earthquake', label: 'Earthquakes' },
   { value: 'weather', label: 'Severe weather / cyclones' },
   { value: 'flood', label: 'Floods' },
   { value: 'volcano', label: 'Volcanoes' },
-  { value: 'fires', label: 'Fires' },
-  { value: 'wildfire', label: 'Wildfire alerts' },
-  { value: 'thermal', label: 'Satellite thermal detections' },
   { value: 'tsunami', label: 'Tsunamis' },
   { value: 'drought', label: 'Drought' },
   { value: 'landslide', label: 'Landslides' },
   { value: 'ice', label: 'Sea and lake ice' },
   { value: 'other', label: 'Other / unclassified' },
 ] as const;
-export type HazardGroup = (typeof HAZARD_GROUPS)[number]['value'];
-export type HazardKind = Exclude<HazardGroup, 'all' | 'fires'>;
+export type NaturalHazardKind = (typeof HAZARD_GROUPS)[number]['value'];
+export type HazardGroup = NaturalHazardKind | 'all';
+export type FireKind = 'wildfire' | 'thermal';
+export type HazardKind = NaturalHazardKind | FireKind;
 export type HazardWindow = 'all' | '24' | '72' | '168';
 export type HazardAlert = 'all' | 'orange_red' | 'red';
 export interface HazardOptions {
-  group: HazardGroup;
+  groups: readonly NaturalHazardKind[];
   hours: HazardWindow;
   minimumMagnitude: number;
   alert: HazardAlert;
   includeUnknown: boolean;
 }
 export const DEFAULT_HAZARD_OPTIONS: HazardOptions = {
-  group: 'all',
+  groups: HAZARD_GROUPS.map(({ value }) => value),
   hours: 'all',
   minimumMagnitude: 0,
   alert: 'all',
@@ -72,17 +70,24 @@ export function hazardKind(event: LiveEvent): HazardKind | null {
   }
 }
 
-/** Composite display groups do not change a source's event classification. */
-export function matchesHazardGroup(event: LiveEvent, group: HazardGroup): boolean {
+/** Fire evidence is controlled independently from other natural hazards. */
+export function fireKind(event: LiveEvent): FireKind | null {
   const kind = hazardKind(event);
-  if (kind === null || group === 'all') return true;
-  return group === 'fires' ? kind === 'wildfire' || kind === 'thermal' : group === kind;
+  return kind === 'wildfire' || kind === 'thermal' ? kind : null;
+}
+
+export function matchesHazardGroups(
+  event: LiveEvent,
+  groups: readonly NaturalHazardKind[],
+): boolean {
+  const kind = hazardKind(event);
+  return kind === null || kind === 'wildfire' || kind === 'thermal' || groups.includes(kind);
 }
 
 export function matchesHazard(event: LiveEvent, options: HazardOptions, now: number): boolean {
   const kind = hazardKind(event);
-  if (kind === null) return true;
-  if (!matchesHazardGroup(event, options.group)) return false;
+  if (kind === null || kind === 'wildfire' || kind === 'thermal') return true;
+  if (!matchesHazardGroups(event, options.groups)) return false;
   if (options.hours !== 'all') {
     const timestamp = event.published_at ? Date.parse(event.published_at) : NaN;
     if (!Number.isFinite(timestamp)) {
@@ -105,18 +110,52 @@ export function matchesHazard(event: LiveEvent, options: HazardOptions, now: num
   return true;
 }
 
-export function countHazards(events: LiveEvent[]): Record<HazardGroup, number> {
-  const counts = Object.fromEntries(HAZARD_GROUPS.map(({ value }) => [value, 0])) as Record<
-    HazardGroup,
-    number
-  >;
+export function countHazards(events: readonly LiveEvent[]): Record<HazardGroup, number> {
+  const counts = Object.fromEntries([
+    ['all', 0],
+    ...HAZARD_GROUPS.map(({ value }) => [value, 0]),
+  ]) as Record<HazardGroup, number>;
   for (const event of events) {
     const kind = hazardKind(event);
-    if (kind !== null) {
+    if (kind !== null && kind !== 'wildfire' && kind !== 'thermal') {
       counts.all++;
       counts[kind]++;
-      if (kind === 'wildfire' || kind === 'thermal') counts.fires++;
     }
   }
   return counts;
+}
+
+export interface FiresOptions {
+  thermal: boolean;
+  wildfire: boolean;
+}
+export const DEFAULT_FIRES_OPTIONS: FiresOptions = { thermal: true, wildfire: true };
+
+export function matchesFires(event: LiveEvent, options: FiresOptions, enabled: boolean): boolean {
+  const kind = fireKind(event);
+  return kind === null || (enabled && options[kind]);
+}
+
+export function countFires(events: readonly LiveEvent[]): Record<FireKind | 'all', number> {
+  const counts = { all: 0, thermal: 0, wildfire: 0 };
+  for (const event of events) {
+    const kind = fireKind(event);
+    if (kind) {
+      counts.all++;
+      counts[kind]++;
+    }
+  }
+  return counts;
+}
+
+/** Compare values so selecting every checkbox again restores the default scope. */
+export function hazardFiltersRefined(options: HazardOptions): boolean {
+  return (
+    options.groups.length !== HAZARD_GROUPS.length ||
+    HAZARD_GROUPS.some(({ value }) => !options.groups.includes(value)) ||
+    options.hours !== 'all' ||
+    options.minimumMagnitude !== 0 ||
+    options.alert !== 'all' ||
+    !options.includeUnknown
+  );
 }

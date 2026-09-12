@@ -4,6 +4,13 @@ Status: current implementation and explicitly separated proposals, reviewed agai
 
 The app uses doctrine to organise questions, source metadata, judgements and uncertainty. It cannot verify an event merely because several headlines concern the same topic. See [ADR 0009](adr/0009-analytical-integrity.md) for the resulting engineering decisions.
 
+13 September 2026 update: the professional reader, exports and briefing previews
+now expose saved likelihood, confidence, item grades and assessment methodology.
+See [Map news and evidence assessment](MAP_NEWS_AND_EVIDENCE.md) for the repaired
+presentation, historical-data handling and current NATO AJP-2.9 catalogue
+reference. The older NATO documents below remain design references, not a claim
+of conformance to the current controlled edition.
+
 ## 1. Doctrine informing the app
 
 | Document | Edition recorded in the design | Relevant concepts |

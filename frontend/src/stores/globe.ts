@@ -5,12 +5,11 @@
  */
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { DEFAULT_BASE_LAYER, type BaseLayer } from '@/lib/map/baseLayers';
 
 export type ViewMode = 'globe' | 'map';
 
-/** What is drawn under the data: keyless vector styles, imagery, or OS raster tiles. */
-export type BaseLayer =
-  'dark' | 'streets' | 'light' | 'satellite' | 'hybrid' | 'os_road' | 'os_outdoor' | 'os_light';
+export type { BaseLayer } from '@/lib/map/baseLayers';
 
 export const GLOBE_PREFS_KEY = 'ase-globe-prefs';
 
@@ -38,7 +37,7 @@ export const useGlobeStore = create<GlobeState>()(
   persist(
     (set) => ({
       mode: 'globe',
-      baseLayer: 'dark',
+      baseLayer: DEFAULT_BASE_LAYER,
       terminator: false,
       lite: false,
       interference: false,

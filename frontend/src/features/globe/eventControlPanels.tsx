@@ -19,16 +19,14 @@ export function eventControlPanels(
     >
       <ConnectivityPanel country={data.country} onSelect={onContextSelect} />
     </ControlPanel>,
-    <ControlPanel key="topics" side="left" label="Topics & time" icon="topics">
+    <ControlPanel key="time" side="right" label="Event time" caption="Time" icon="time">
       <LayerPanel
         counts={data.counts}
-        hidden={data.hidden}
         stats={data.stats}
         status={data.status}
         error={data.error}
         windowHours={data.windowHours}
         onWindow={data.setWindow}
-        onToggle={data.toggleCategory}
       />
     </ControlPanel>,
   ];

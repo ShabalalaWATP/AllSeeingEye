@@ -1,11 +1,18 @@
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { liveEvent } from '@/test/fixtures';
-import { countHazards, DEFAULT_HAZARD_OPTIONS, matchesHazard } from '@/lib/hazards';
+import {
+  countFires,
+  countHazards,
+  DEFAULT_HAZARD_OPTIONS,
+  fireKind,
+  matchesHazard,
+} from '@/lib/hazards';
 import { useEventsStore } from '@/stores/events';
 import { HazardFilterPanel } from './HazardFilterPanel';
+import { FiresFilterPanel } from './FiresFilterPanel';
 import { useHazardFilters } from './useHazardFilters';
-import { filterObservations } from './ObservationControls';
+import { useFiresFilters } from './useFiresFilters';
 import { buildEventLayers } from './layers/registry';
 
 const wildfire = liveEvent({
@@ -32,68 +39,106 @@ const events = [wildfire, alert, thermal, volcano, plane];
 
 afterEach(() => useEventsStore.getState().reset());
 
-it('combines reported wildfires and heat observations once without admitting other disasters', () => {
-  const options = { ...DEFAULT_HAZARD_OPTIONS, group: 'fires' as const };
-  expect(events.filter((event) => matchesHazard(event, options, Date.now()))).toEqual([
-    wildfire,
-    alert,
-    thermal,
-    plane,
-  ]);
-  expect(countHazards(events)).toMatchObject({ all: 4, fires: 3, wildfire: 2, thermal: 1 });
-  expect(
-    matchesHazard(
-      liveEvent({ category: 'disaster', subtype: 'wildfires_unconfirmed' }),
-      options,
-      Date.now(),
-    ),
-  ).toBe(false);
+it('separates wildfire reports and thermal detections from natural hazard counts and source refinements', () => {
+  const options = {
+    ...DEFAULT_HAZARD_OPTIONS,
+    groups: [],
+    hours: '24' as const,
+    alert: 'red' as const,
+    includeUnknown: false,
+  };
+  const olderFire = {
+    ...alert,
+    published_at: '2020-01-01T00:00:00Z',
+    attributes: { alert_level: 'green' },
+  };
+  expect(matchesHazard(olderFire, options, Date.now())).toBe(true);
+  expect(countHazards(events)).toMatchObject({ all: 1, volcano: 1 });
+  expect(countFires(events)).toEqual({ all: 3, wildfire: 2, thermal: 1 });
+  expect(fireKind({ ...wildfire, subtype: 'wildfires_unconfirmed' })).toBeNull();
 });
 
-it('offers a combined Fires choice and narrower source-type choices while preserving other layers', () => {
+it('starts Fires off, remembers source choices and allows either source or both independently from natural hazards', () => {
   function Harness() {
-    const filters = useHazardFilters(events);
+    const hazards = useHazardFilters(events);
+    const fires = useFiresFilters(hazards.filtered);
     return (
       <>
-        <HazardFilterPanel {...filters} />
+        <HazardFilterPanel {...hazards} />
+        <FiresFilterPanel {...fires} />
+        <button type="button" onClick={fires.toggleEnabled}>
+          Toggle Fires master
+        </button>
         <output aria-label="Visible IDs">
-          {filters.filtered.map((event) => event.id).join(',')}
+          {fires.filtered.map((event) => event.id).join(',')}
         </output>
       </>
     );
   }
   render(<Harness />);
-  fireEvent.click(screen.getByRole('radio', { name: /^Fires:/ }));
-  expect(screen.getByLabelText('Visible IDs')).toHaveTextContent('wildfire,alert,thermal,plane');
-  fireEvent.click(screen.getByRole('radio', { name: /Wildfire alerts/ }));
-  expect(screen.getByLabelText('Visible IDs')).toHaveTextContent('wildfire,alert,plane');
-  fireEvent.click(screen.getByRole('radio', { name: /Satellite thermal detections/ }));
-  expect(screen.getByLabelText('Visible IDs')).toHaveTextContent('thermal,plane');
-  fireEvent.click(screen.getByRole('button', { name: 'Reset hazard filters' }));
-  expect(screen.getByLabelText('Visible IDs')).toHaveTextContent(
-    'wildfire,alert,thermal,volcano,plane',
-  );
-});
-
-it('retains selection within Fires, clears excluded hazards and honours existing switches', () => {
-  useEventsStore.getState().applyUpsert(events);
-  useEventsStore.getState().select('thermal');
-  const { result } = renderHook(() => useHazardFilters(events));
-  act(() => result.current.updateOptions({ group: 'fires' }));
-  expect(useEventsStore.getState().selectedId).toBe('thermal');
-  act(() => result.current.updateOptions({ group: 'wildfire' }));
-  expect(useEventsStore.getState().selectedId).toBeNull();
-  const withoutFirms = filterObservations(events, { aircraft: true, vessels: true, firms: false });
-  const { result: hidden } = renderHook(() => useHazardFilters(withoutFirms));
-  act(() => hidden.current.updateOptions({ group: 'fires' }));
-  expect(hidden.current.filtered).toEqual([wildfire, alert, plane]);
-  expect(hidden.current.counts).toMatchObject({ fires: 2, thermal: 0 });
-  const mapLayers = buildEventLayers(hidden.current.filtered, ['disaster'], vi.fn(), null);
-  expect(
-    mapLayers.every(
-      (layer) =>
-        !(layer.props.data as typeof events).some((event) => event.category === 'disaster'),
-    ),
-  ).toBe(true);
+  const shown = () => screen.getByLabelText('Visible IDs').textContent;
+  expect(shown()).toBe('volcano,plane');
+  expect(screen.getByText(/Fires is off/)).toBeInTheDocument();
+  expect(screen.getByRole('checkbox', { name: /^FIRMS thermal detections/ })).toBeChecked();
+  expect(screen.getByRole('checkbox', { name: /^Reported wildfires/ })).toBeChecked();
+  fireEvent.click(screen.getByRole('button', { name: 'Clear hazard types' }));
+  expect(shown()).toBe('plane');
+  fireEvent.click(screen.getByRole('button', { name: 'Toggle Fires master' }));
+  expect(shown()).toBe('wildfire,alert,thermal,plane');
+  fireEvent.click(screen.getByRole('checkbox', { name: /^FIRMS thermal detections/ }));
+  expect(shown()).toBe('wildfire,alert,plane');
+  fireEvent.click(screen.getByRole('checkbox', { name: /^Reported wildfires/ }));
+  expect(shown()).toBe('plane');
+  expect(screen.getByText('No fire evidence types selected.')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('checkbox', { name: /^FIRMS thermal detections/ }));
+  expect(shown()).toBe('thermal,plane');
+  fireEvent.click(screen.getByRole('button', { name: 'Select all hazard types' }));
+  expect(shown()).toBe('thermal,volcano,plane');
+  fireEvent.click(screen.getByRole('button', { name: 'Toggle Fires master' }));
+  expect(shown()).toBe('volcano,plane');
+  fireEvent.click(screen.getByRole('button', { name: 'Toggle Fires master' }));
+  expect(shown()).toBe('thermal,volcano,plane');
   expect(useEventsStore.getState().hidden).toContain('disaster');
 });
+
+it('clears excluded fire selections without clearing unrelated selections or restoring disabled source choices', () => {
+  useEventsStore.getState().applyUpsert(events);
+  const { result } = renderHook(() => useFiresFilters(events));
+  act(() => result.current.toggleEnabled());
+  act(() => useEventsStore.getState().select('thermal'));
+  act(() => result.current.updateOptions({ thermal: false }));
+  expect(useEventsStore.getState().selectedId).toBeNull();
+  act(() => useEventsStore.getState().select('plane'));
+  act(() => result.current.toggleEnabled());
+  expect(useEventsStore.getState().selectedId).toBe('plane');
+  act(() => result.current.toggleEnabled());
+  expect(result.current.options.thermal).toBe(false);
+  expect(result.current.filtered).toEqual([wildfire, alert, volcano, plane]);
+  act(() => useEventsStore.getState().select('wildfire'));
+  act(() => result.current.toggleEnabled());
+  expect(useEventsStore.getState().selectedId).toBeNull();
+});
+
+it.each([false, true])(
+  'uses independently filtered source rows in map/globe rendering (globe=%s)',
+  (globe) => {
+    const { result } = renderHook(() => {
+      const hazards = useHazardFilters(events);
+      const fires = useFiresFilters(hazards.filtered);
+      return { hazards, fires };
+    });
+    act(() => result.current.hazards.updateOptions({ groups: [] }));
+    act(() => result.current.fires.toggleEnabled());
+    const icons = () =>
+      buildEventLayers(result.current.fires.filtered, [], vi.fn(), null, {
+        zoom: 10,
+        globe,
+        onCluster: vi.fn(),
+      }).find((layer) => layer.id === 'event-icons')?.props.data;
+    expect(icons()).toEqual([wildfire, alert, thermal, plane]);
+    act(() => result.current.fires.updateOptions({ wildfire: false }));
+    expect(icons()).toEqual([thermal, plane]);
+    act(() => result.current.fires.updateOptions({ thermal: false, wildfire: true }));
+    expect(icons()).toEqual([wildfire, alert, plane]);
+  },
+);

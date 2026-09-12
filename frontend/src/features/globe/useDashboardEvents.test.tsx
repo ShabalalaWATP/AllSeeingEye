@@ -26,12 +26,13 @@ beforeEach(() => {
 
 it('clears a hidden observation and does not revive its selection when the switch returns', () => {
   const { result } = renderHook(() => useDashboardEvents(now));
+  act(() => result.current.fires.toggleEnabled());
   act(() => result.current.select('thermal'));
   expect(result.current.selected?.id).toBe('thermal');
-  act(() => result.current.observations.toggle('firms'));
+  act(() => result.current.fires.toggleEnabled());
   expect(result.current.selected).toBeNull();
   expect(useEventsStore.getState().selectedId).toBeNull();
-  act(() => result.current.observations.toggle('firms'));
+  act(() => result.current.fires.toggleEnabled());
   expect(result.current.quality.filtered).toContainEqual(thermal);
   expect(result.current.selected).toBeNull();
 });

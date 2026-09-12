@@ -2,9 +2,7 @@
 import { MapOverlayController } from './MapOverlayController';
 import { MapSketchInteraction } from './MapSketchInteraction';
 import type { Layer } from '@deck.gl/core';
-import { Map as MapLibreMap } from 'maplibre-gl';
-import type { RequestParameters } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import type { Map as MapLibreMap } from 'maplibre-gl';
 
 import type {
   CursorHandler,
@@ -21,24 +19,17 @@ import type {
   SketchMode,
   SketchDragHandler,
 } from './MapEngine';
-import { DARK_STYLE_URL, isApiRequest, vectorStyleFor } from './baseLayers';
+import { DARK_STYLE_URL, DEFAULT_BASE_LAYER, vectorStyleFor } from './baseLayers';
 import type { BaseLayer } from './baseLayers';
-import {
-  CAMERA_MAX_PITCH,
-  CAMERA_MAX_ZOOM,
-  normaliseCamera,
-  normaliseViewport,
-  validateBounds,
-  validateFitOptions,
-} from './camera';
+import { normaliseCamera, normaliseViewport, validateBounds, validateFitOptions } from './camera';
 
 import { GLOBE_SKY, PAINT_OVERRIDES, applyRasterLayer } from './mapAppearance';
 import { captureMapImage } from './mapCapture';
+import { createBaseMap } from './mapInitialisation';
 
 export { GLOBE_SKY, PAINT_OVERRIDES } from './mapAppearance';
 export { DARK_STYLE_URL };
-export const INITIAL_CENTER: [number, number] = [10, 30];
-export const INITIAL_ZOOM = 1.6;
+export { INITIAL_CENTER, INITIAL_ZOOM } from './mapInitialisation';
 export const SPIN_DEGREES = 15;
 export const SPIN_STEP_MS = 30_000;
 
@@ -51,7 +42,7 @@ export class MapLibreEngine implements MapEngine {
     return this.overlays?.overlay ?? null;
   }
   private projection: Projection = 'globe';
-  private baseLayer: BaseLayer = 'dark';
+  private baseLayer: BaseLayer = DEFAULT_BASE_LAYER;
   private styleUrl = DARK_STYLE_URL;
   private lite = false;
   private styleReady = false;
@@ -68,27 +59,7 @@ export class MapLibreEngine implements MapEngine {
   mount(container: HTMLElement): void {
     if (this.map !== null) return;
     this.styleUrl = vectorStyleFor(this.baseLayer);
-    const map = new MapLibreMap({
-      container,
-      style: this.styleUrl,
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
-      minZoom: 0,
-      maxZoom: CAMERA_MAX_ZOOM,
-      minPitch: 0,
-      maxPitch: CAMERA_MAX_PITCH,
-      // Two WebGL canvases at native 3x DPR need nine times the framebuffer memory.
-      pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
-      maxTileCacheSize: 128,
-      ...(this.options.captureEnabled
-        ? {
-            interactive: false,
-            pixelRatio: 1,
-            canvasContextAttributes: { preserveDrawingBuffer: true },
-          }
-        : {}),
-      transformRequest: (url) => this.transformRequest(url),
-    });
+    const map = createBaseMap(container, this.styleUrl, this.options);
     this.map = map;
     if (!this.options.captureEnabled) {
       this.sketch = new MapSketchInteraction(map, () => this.spin(false));
@@ -349,13 +320,6 @@ export class MapLibreEngine implements MapEngine {
       if (debug.__aseMap === removedMap) delete debug.__aseMap;
     }
     this.styleReady = false;
-  }
-
-  /** Our own tile proxy needs the session token; third-party tiles must never see it. */
-  private transformRequest(url: string): RequestParameters {
-    const token = this.options.authHeader?.() ?? null;
-    if (token === null || !isApiRequest(url, window.location.origin)) return { url };
-    return { url, headers: { Authorization: `Bearer ${token}` } };
   }
 
   private applySky(): void {

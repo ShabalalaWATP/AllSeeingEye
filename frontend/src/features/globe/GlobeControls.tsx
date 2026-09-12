@@ -7,7 +7,7 @@ import './mapToolShell.css';
 
 const CAPTIONS: Readonly<Record<string, string>> = {
   'Map style': 'Style',
-  'Topics & time': 'Topics',
+  'Event time': 'Time',
   Measure: 'Measure',
   'Route planner': 'Route',
   'RF coverage': 'RF',

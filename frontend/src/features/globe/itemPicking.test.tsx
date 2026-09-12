@@ -40,8 +40,9 @@ it.each(['globe', 'map'] as const)(
   'opens flight, vessel, thermal and satellite details on the %s',
   async (mode) => {
     useGlobeStore.setState({ mode });
-    renderApp('/', 'user');
+    const { user } = renderApp('/', 'user');
     await waitFor(() => expect(layer('events-disaster')).toBeDefined());
+    await user.click(screen.getByRole('switch', { name: /^Fires / }));
     const events = [
       { category: 'aviation', subtype: 'aircraft_position', title: 'Flight details' },
       { category: 'maritime', subtype: 'vessel_position', title: 'Vessel details' },

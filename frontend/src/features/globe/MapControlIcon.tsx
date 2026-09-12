@@ -17,7 +17,7 @@ export type ControlIcon =
   | 'gnss'
   | 'layers'
   | 'measure'
-  | 'topics'
+  | 'time'
   | 'filter'
   | 'nation'
   | 'settings'
@@ -46,7 +46,7 @@ const paths: Record<ControlIcon, string> = {
   gnss: 'M12 2v3m0 14v3M2 12h3m14 0h3M18 7a8 8 0 0 1-11 11M6 17A8 8 0 0 1 17 6M3 3l18 18M9 9l6 6',
   layers: 'm12 3 10 5-10 5L2 8l10-5ZM2 12l10 5 10-5M2 16l10 5 10-5',
   measure: 'm3 16 13-13 5 5L8 21l-5-5Zm5-5 3 3m1-7 3 3m1-7 3 3',
-  topics: 'M3 4h5v5H3V4Zm10 1h8m-8 3h5M3 15h5v5H3v-5Zm10 1h8m-8 3h5',
+  time: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7v5l3 2',
   filter: 'M3 4h18l-7 9v7l-4-2v-5L3 4Z',
   nation: 'M3 21V3m0 1c6-5 12 5 18 0v11c-6 5-12-5-18 0',
   settings: 'M4 5h16M4 12h16M4 19h16M8 2v6m8 1v6m-6 1v6',

@@ -1,6 +1,7 @@
 import type { useDashboardEvents } from './useDashboardEvents';
 import { QUALITY_LABELS } from './geographicPrecision';
-import { DEFAULT_HAZARD_OPTIONS } from '@/lib/hazards';
+import { DEFAULT_FIRES_OPTIONS, DEFAULT_HAZARD_OPTIONS, hazardFiltersRefined } from '@/lib/hazards';
+import { DEFAULT_NEWS_OPTIONS } from './newsFilters';
 import { useCyberFiltersStore } from '@/stores/cyberFilters';
 
 /** Describes event filtering only; static catalogues have separate scopes. */
@@ -8,11 +9,9 @@ export function EventScopeStrip({ state }: { state: ReturnType<typeof useDashboa
   const { country, setCountry, windowHours, setWindow, coverageBounds, quality } = state;
   const button =
     'shrink-0 rounded px-2 py-1 text-[11px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan';
-  const { observations, satellites, hazards, conflicts } = state;
+  const { observations, satellites, hazards, conflicts, news, fires } = state;
   const cyber = useCyberFiltersStore();
-  const hazardRefined = Object.entries(DEFAULT_HAZARD_OPTIONS).some(
-    ([key, value]) => hazards.options[key as keyof typeof DEFAULT_HAZARD_OPTIONS] !== value,
-  );
+  const hazardRefined = hazardFiltersRefined(hazards.options);
   const conflictRefined =
     conflicts.group !== 'all' ||
     conflicts.query !== '' ||
@@ -129,6 +128,27 @@ export function EventScopeStrip({ state }: { state: ReturnType<typeof useDashboa
           title="Reset conflict report filters"
         >
           Conflicts: filtered{conflicts.includeUnreviewed ? ', unreviewed included' : ''} ×
+        </button>
+      )}
+      {fires.enabled && (!fires.options.thermal || !fires.options.wildfire) && (
+        <button
+          className={button}
+          onClick={() => fires.updateOptions(DEFAULT_FIRES_OPTIONS)}
+          title="Reset fire sources"
+        >
+          Fires: filtered ×
+        </button>
+      )}
+      {(news.options.query ||
+        news.options.source ||
+        news.options.categories.length !== 1 ||
+        news.options.categories[0] !== 'news') && (
+        <button
+          className={button}
+          onClick={() => news.setOptions(DEFAULT_NEWS_OPTIONS)}
+          title="Reset news filters"
+        >
+          News: filtered ×
         </button>
       )}
       {(cyber.kind !== 'all' || cyber.query !== '') && (

@@ -60,44 +60,36 @@ it('explains automated conflict and unrest coding without labelling it verified'
 });
 
 describe('LayerPanel', () => {
-  it('lists additional topics with counts and reports the live connection and budget', async () => {
-    const onToggle = vi.fn();
+  it('reports the live connection and reveals retained coverage beside the shared time controls', async () => {
     const onWindow = vi.fn();
     render(
       <LayerPanel
         counts={{ disaster: 3 }}
-        hidden={['social']}
         stats={storeStats}
         status="live"
         error={null}
         windowHours={null}
         onWindow={onWindow}
-        onToggle={onToggle}
       />,
     );
-    const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(4);
-    expect(screen.getByRole('switch', { name: 'Social 0' })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
+    expect(screen.getByRole('radiogroup', { name: 'Time window' })).toBeInTheDocument();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Live');
-    expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('switch', { name: 'Social 0' }));
-    expect(onToggle).toHaveBeenCalledWith('social');
+    expect(screen.getByText('2 events, 0.0 of 1 MB')).not.toBeVisible();
+    await userEvent.click(screen.getByText('Connection and coverage'));
+    expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeVisible();
+    expect(onWindow).not.toHaveBeenCalled();
   });
 
   it('shows the load error and no budget line before the first load', () => {
     render(
       <LayerPanel
         counts={{}}
-        hidden={[]}
         stats={null}
         status="offline"
         error="Down."
         windowHours={24}
         onWindow={vi.fn()}
-        onToggle={vi.fn()}
       />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Down.');

@@ -156,8 +156,8 @@ describe('BaseLayerToolbar', () => {
 });
 
 describe('globe store base layer', () => {
-  it('starts dark and remembers the choice', () => {
-    expect(useGlobeStore.getState().baseLayer).toBe('dark');
+  it('starts hybrid and remembers the choice', () => {
+    expect(useGlobeStore.getState().baseLayer).toBe('hybrid');
     useGlobeStore.getState().setBaseLayer('os_light');
     expect(useGlobeStore.getState().baseLayer).toBe('os_light');
   });

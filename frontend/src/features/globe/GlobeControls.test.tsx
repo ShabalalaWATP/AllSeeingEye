@@ -50,7 +50,7 @@ it('closes through the explicit control or the same rail button', async () => {
   expect(screen.queryByRole('button', { name: 'Choose layer' })).not.toBeInTheDocument();
 });
 
-it('keeps configuration on the left and opens its panel beside that rail', async () => {
+it('respects an explicit left-side panel and opens each tool beside its rail', async () => {
   const user = userEvent.setup();
   render(<Fixture />);
   const left = screen.getByRole('group', { name: 'Map layers' });
@@ -64,16 +64,24 @@ it('keeps configuration on the left and opens its panel beside that rail', async
   expect(screen.getByRole('region', { name: 'Measure' })).toHaveAttribute('data-side', 'right');
 });
 
-it('identifies topic and time options with a persistent caption and accessible panel name', async () => {
+it('identifies Event time on the right with a persistent caption and accessible panel name', async () => {
   const user = userEvent.setup();
   render(
     <GlobeControls layers={null}>
-      <ControlPanel label="Topics & time" icon="topics" side="left">
-        <p>Topic options</p>
+      <ControlPanel label="Event time" icon="time" side="right">
+        <p>Time options</p>
       </ControlPanel>
     </GlobeControls>,
   );
-  expect(screen.getByText('Topics')).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'Topics & time' }));
-  expect(screen.getByRole('region', { name: 'Topics & time' })).toHaveTextContent('Topic options');
+  const tools = screen.getByRole('group', { name: 'Map tools' });
+  expect(within(tools).getByText('Time')).toBeVisible();
+  expect(
+    within(screen.getByRole('group', { name: 'Map layers' })).queryByRole('button', {
+      name: 'Event time',
+    }),
+  ).not.toBeInTheDocument();
+  await user.click(within(tools).getByRole('button', { name: 'Event time' }));
+  const panel = screen.getByRole('region', { name: 'Event time' });
+  expect(panel).toHaveTextContent('Time options');
+  expect(panel).toHaveAttribute('data-side', 'right');
 });

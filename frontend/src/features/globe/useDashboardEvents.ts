@@ -6,6 +6,9 @@ import { useHazardFilters } from './useHazardFilters';
 import { useConflictFilters } from './useConflictFilters';
 import { useLocationQuality } from './useLocationQuality';
 import { useCyberFilters } from './useCyberFilters';
+import { useFiresFilters } from './useFiresFilters';
+import { fireKind } from '@/lib/hazards';
+import { isNewsCategory, useNewsFilters } from './newsFilters';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -28,12 +31,27 @@ export function useDashboardEvents(now: number) {
     [countryEvents, windowHours, now],
   );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
-  const observations = useObservationFilters(scoped);
+  // Fires and News have independent UI ownership while keeping source categories intact.
+  const categoryScope = useMemo(
+    () =>
+      scoped.filter(
+        (event) =>
+          event.category !== 'disaster' || fireKind(event) !== null || !hidden.includes('disaster'),
+      ),
+    [scoped, hidden],
+  );
+  const observations = useObservationFilters(categoryScope);
   const satellites = useSatelliteFilters(observations.filtered);
   const hazards = useHazardFilters(satellites.filtered);
-  const conflicts = useConflictFilters(hazards.filtered);
+  const fires = useFiresFilters(hazards.filtered);
+  const news = useNewsFilters(fires.filtered, !hidden.includes('news'));
+  const conflicts = useConflictFilters(news.filtered);
   const cyberFiltered = useCyberFilters(conflicts.filtered);
-  const quality = useLocationQuality(cyberFiltered, hidden);
+  const renderHidden = useMemo(
+    () => hidden.filter((category) => category !== 'disaster' && !isNewsCategory(category)),
+    [hidden],
+  );
+  const quality = useLocationQuality(cyberFiltered, renderHidden);
   // Unplotted records remain inspectable. Selection follows filtered membership,
   // not whether the record has coordinates. Invalid selections cannot revive later.
   const selected = quality.filtered.find((event) => event.id === requestedId) ?? null;
@@ -50,6 +68,7 @@ export function useDashboardEvents(now: number) {
   );
   return {
     hidden,
+    renderHidden,
     country,
     selectedId: selected?.id ?? null,
     selected,
@@ -68,6 +87,8 @@ export function useDashboardEvents(now: number) {
     observations,
     satellites,
     hazards,
+    fires,
+    news,
     conflicts,
     quality,
     storySize,

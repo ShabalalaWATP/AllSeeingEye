@@ -1,5 +1,5 @@
 /** Full-canvas globe with on-demand layer and measurement tools. */
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSavedMapArea } from './useSavedMapArea';
 import { SavedMapAreaNotice } from './SavedMapAreaNotice';
 import { useInfrastructure } from './infrastructure/useInfrastructure';
@@ -28,14 +28,14 @@ import { useGlobePreferences } from './useGlobePreferences';
 import { MapStatusReadouts } from './MapStatusReadouts';
 import { useBritishGrid } from './useBritishGrid';
 import { GlobeControls } from './GlobeControls';
-import { MapLayerRail } from './MapLayerRail';
+import { DashboardLayerRail } from './DashboardLayerRail';
+import { useNewsSelectionGuard } from './useNewsSelectionGuard';
 import { MapNavigationTools } from './MapNavigationTools';
 import { ModeToolbar } from './ModeToolbar';
 import { useMapWorkspaceTools } from './useMapWorkspaceTools';
 import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
 import './dashboard.css';
-import { createEngine } from './globeEngineFactory';
 import { useInterference } from './useInterference';
 import { useGnssFilters } from './useGnssFilters';
 import { useGlobeScene } from './useGlobeScene';
@@ -43,10 +43,9 @@ import { useMapPicking } from './useMapPicking';
 import { useTrafficSelection } from './useTrafficSelection';
 
 import { useMapRenderView } from './useMapRenderView';
-import { useGlobeEngine } from './useGlobeEngine';
+import { useDashboardEngine } from './useDashboardEngine';
 import { useViewportCoverage } from './useViewportCoverage';
 import { useLiveEvents } from './useLiveEvents';
-import { hasWebGl2 } from './webgl';
 import { useEyeMapContext } from './useEyeMapContext';
 
 export { FOCUS_ZOOM } from './useMapFocus';
@@ -67,15 +66,7 @@ export default function GlobePage() {
   const reducedMotion = useReducedMotion();
   const visible = usePageVisible();
   const gnss = useInterference(interference && visible);
-  const [supported] = useState(() => hasWebGl2());
-  const containerRef = useRef<HTMLDivElement>(null);
-  const engine = useGlobeEngine(containerRef, {
-    enabled: supported,
-    mode,
-    baseLayer,
-    lite,
-    createEngine,
-  });
+  const { supported, containerRef, engine } = useDashboardEngine({ mode, baseLayer, lite });
   const britishGrid = useBritishGrid(engine);
   useLiveEvents();
   useViewportCoverage(engine, supported && visible);
@@ -100,8 +91,6 @@ export default function GlobePage() {
     select,
     setCountry,
     toggleCategory,
-    scoped,
-    counts,
     observations,
     quality,
     storySize,
@@ -120,6 +109,12 @@ export default function GlobePage() {
   const cameras = useCameras();
   const infrastructure = useInfrastructure();
   const context = useContextSelection(country, tools.picking, symbolMode);
+  useNewsSelectionGuard({
+    context,
+    options: data.news.options,
+    windowHours: data.windowHours,
+    now,
+  });
   useEyeMapContext(engine, supported, selected ?? context.event, cameras, infrastructure);
   const closeContext = context.close;
   const closeCamera = cameras.close;
@@ -142,7 +137,14 @@ export default function GlobePage() {
     onPick,
     onCluster,
     onJam,
-  } = useMapPicking(quality.filtered, hidden, tools.picking, select, engine, closeCatalogues);
+  } = useMapPicking(
+    quality.filtered,
+    data.renderHidden,
+    tools.picking,
+    select,
+    engine,
+    closeCatalogues,
+  );
   const cyberSelection = useCyberMapSelection({
     cyber,
     enabled: !hidden.includes('cyber'),
@@ -199,7 +201,7 @@ export default function GlobePage() {
   useGlobeScene({
     engine,
     events: quality.filtered,
-    hidden,
+    hidden: data.renderHidden,
     selectedId,
     highlightedId,
     onPick,
@@ -246,20 +248,14 @@ export default function GlobePage() {
         <GlobeControls
           onActiveChange={tools.activatePanel}
           layers={(openPanel, activePanel) => (
-            <MapLayerRail
+            <DashboardLayerRail
+              data={data}
+              cyberCount={cyber.events.length}
               openPanel={openPanel}
               activePanel={activePanel}
               gnssCount={gnssFilters.filtered.length}
-              events={scoped}
-              counts={{ ...counts, cyber: cyber.events.length }}
-              visibility={observations.visibility}
-              onToggle={observations.toggle}
-              flightFilter={observations.flightFilter}
-              onFlightFilter={observations.setFlightFilter}
               onTrafficSelect={selectTraffic}
               selectionDisabled={tools.picking}
-              vesselFilter={observations.vesselFilter}
-              onVesselFilter={observations.setVesselFilter}
             />
           )}
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}

@@ -12,6 +12,9 @@ import { FlightLayerControl } from './FlightLayerControl';
 import { isMilitaryFlight, matchesFlightFilter, matchesVesselFilter } from './flightFilters';
 import type { FlightFilter } from './flightFilters';
 import { isMilitaryVessel } from '@/lib/traffic';
+import type { useFiresFilters } from './useFiresFilters';
+import type { useNewsFilters } from './newsFilters';
+import { fireKind } from '@/lib/hazards';
 
 const compactCount = new Intl.NumberFormat('en-GB', {
   notation: 'compact',
@@ -72,6 +75,8 @@ export function MapLayerRail({
   openPanel,
   activePanel,
   gnssCount = 0,
+  fires,
+  news,
 }: {
   events: readonly LiveEvent[];
   counts: Partial<Record<Category, number>>;
@@ -83,6 +88,8 @@ export function MapLayerRail({
   openPanel?: (label: string, button: HTMLButtonElement) => void;
   activePanel?: string | null;
   gnssCount?: number;
+  fires?: ReturnType<typeof useFiresFilters>;
+  news?: ReturnType<typeof useNewsFilters>;
   flightFilter?: FlightFilter;
   onFlightFilter?: (value: FlightFilter) => void;
   onTrafficSelect?: (event: LiveEvent) => void;
@@ -95,7 +102,6 @@ export function MapLayerRail({
   const observations = [
     { kind: 'aircraft', label: 'Flights' },
     { kind: 'vessels', label: 'Boats' },
-    { kind: 'firms', label: 'FIRMS' },
   ] as const;
   return (
     <>
@@ -183,28 +189,63 @@ export function MapLayerRail({
           button
         );
       })}
+      {fires && (
+        <div className="flex flex-col items-center">
+          <LayerButton
+            label="Fires"
+            caption="Fires"
+            icon="firms"
+            active={fires.enabled}
+            count={fires.counts.all}
+            onClick={fires.toggleEnabled}
+          />
+          {openPanel && (
+            <button
+              type="button"
+              aria-label="Fire filters"
+              aria-expanded={activePanel === 'Fires'}
+              className="flex h-6 w-11 items-center justify-center whitespace-nowrap rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
+              onClick={(event) => openPanel('Fires', event.currentTarget)}
+            >
+              FILTERS <span aria-hidden="true"> ›</span>
+            </button>
+          )}
+        </div>
+      )}
       {(['space', 'disaster', 'conflict', 'cyber', 'news'] as const).map((category) => (
         <div key={category} className="flex flex-col items-center">
           <LayerButton
             label={category === 'disaster' ? 'Natural hazards' : CATEGORY_STYLES[category].label}
             icon={category}
-            {...(category === 'cyber' ? { caption: 'Cyber' } : {})}
-            count={counts[category] ?? 0}
+            {...(category === 'cyber'
+              ? { caption: 'Cyber' }
+              : category === 'news'
+                ? { caption: 'News' }
+                : {})}
+            count={
+              category === 'disaster'
+                ? events.filter((event) => event.category === 'disaster' && !fireKind(event)).length
+                : category === 'news' && news
+                  ? news.count
+                  : (counts[category] ?? 0)
+            }
             active={!hidden.includes(category)}
             onClick={() => toggleCategory(category)}
           />
-          {openPanel && category !== 'news' && (
+          {openPanel && (
             <button
               type="button"
               className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
               aria-label={
-                category === 'space'
-                  ? 'Space filters'
-                  : category === 'disaster'
-                    ? 'Natural hazard filters'
-                    : category === 'cyber'
-                      ? 'Cyber filters'
-                      : 'Conflict report filters'
+                category === 'news'
+                  ? 'News briefing'
+                  : category === 'space'
+                    ? 'Space filters'
+                    : category === 'disaster'
+                      ? 'Natural hazard filters'
+                      : category === 'cyber'
+                        ? 'Cyber filters'
+                        : 'Conflict report filters'
               }
               aria-expanded={
                 activePanel ===
@@ -214,6 +255,7 @@ export function MapLayerRail({
                     disaster: 'Natural hazards',
                     conflict: 'Conflict reports',
                     cyber: 'Cyber threat intelligence',
+                    news: 'News briefing',
                   } as const
                 )[category]
               }
@@ -225,13 +267,14 @@ export function MapLayerRail({
                       disaster: 'Natural hazards',
                       conflict: 'Conflict reports',
                       cyber: 'Cyber threat intelligence',
+                      news: 'News briefing',
                     } as const
                   )[category],
                   event.currentTarget,
                 )
               }
             >
-              FILTERS <span aria-hidden="true"> ›</span>
+              {category === 'news' ? 'BRIEF' : 'FILTERS'} <span aria-hidden="true"> ›</span>
             </button>
           )}
         </div>

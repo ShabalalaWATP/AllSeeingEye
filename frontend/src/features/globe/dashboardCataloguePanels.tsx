@@ -40,6 +40,13 @@ export function dashboardCataloguePanels({
       focusInfrastructure,
       conflictOverview,
       cyber,
+      fires: data.fires,
+      news: {
+        filters: data.news,
+        country: data.country,
+        windowHours: data.windowHours,
+        onSelect: onContextSelect,
+      },
       onContextSelect,
       onSatelliteSelect,
       satellites: data.satellites,

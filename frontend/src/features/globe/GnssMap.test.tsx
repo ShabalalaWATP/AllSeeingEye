@@ -84,21 +84,23 @@ it.each(['globe', 'map'] as const)(
   },
 );
 
-it('gives shared filters and appearance one owner on their respective rails', async () => {
+it('keeps shared time and appearance controls on the right without duplicating layer switches', async () => {
   const { user } = renderApp('/', 'user');
-  await user.click(await screen.findByRole('button', { name: 'Topics & time' }));
-  const filters = screen.getByRole('region', { name: 'Topics & time' });
-  expect(within(filters).getAllByRole('switch')).toHaveLength(4);
-  expect(
-    within(filters).queryByRole('switch', {
-      name: /Cyber|GNSS|Flights|Boats|Day and night|graphics/,
-    }),
-  ).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'Layers and settings' })).not.toBeInTheDocument();
+  const timeButton = await screen.findByRole('button', { name: 'Event time' });
   const tools = screen.getByRole('group', { name: 'Map tools' });
+  const layers = screen.getByRole('group', { name: 'Map layers' });
+  expect(within(tools).getByRole('button', { name: 'Event time' })).toBe(timeButton);
+  expect(within(layers).queryByRole('button', { name: 'Event time' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Topics & time' })).not.toBeInTheDocument();
+  await user.click(timeButton);
+  const filters = screen.getByRole('region', { name: 'Event time' });
+  expect(filters).toHaveAttribute('data-side', 'right');
+  expect(within(filters).queryByRole('switch')).not.toBeInTheDocument();
+  expect(within(filters).getByRole('radiogroup', { name: 'Time window' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Layers and settings' })).not.toBeInTheDocument();
   expect(within(tools).getByRole('button', { name: 'British National Grid' })).toBeInTheDocument();
   await user.click(within(tools).getByRole('button', { name: 'Map style' }));
-  expect(screen.queryByRole('region', { name: 'Topics & time' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Event time' })).not.toBeInTheDocument();
   const style = screen.getByRole('region', { name: 'Map style' });
   expect(within(style).getByRole('switch', { name: 'Day and night' })).toBeInTheDocument();
   expect(within(style).getByRole('switch', { name: 'Reduce graphics load' })).toBeInTheDocument();

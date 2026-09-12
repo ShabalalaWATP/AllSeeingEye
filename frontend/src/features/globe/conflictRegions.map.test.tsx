@@ -51,15 +51,11 @@ it('starts with only conflicts visible, without GNSS, cameras, infrastructure or
     );
   }
   expect(layers()!.every((item) => item.id.startsWith('conflict-region-'))).toBe(true);
-  await user.click(screen.getByRole('button', { name: 'Topics & time' }));
-  for (const toggle of within(screen.getByRole('region', { name: 'Topics & time' })).getAllByRole(
-    'switch',
-  )) {
-    expect(toggle).toHaveAttribute(
-      'aria-checked',
-      toggle.textContent.includes('Conflict') ? 'true' : 'false',
-    );
-  }
+  await user.click(screen.getByRole('button', { name: 'Event time' }));
+  const time = screen.getByRole('region', { name: 'Event time' });
+  expect(within(time).queryByRole('switch')).not.toBeInTheDocument();
+  expect(within(time).getByRole('radio', { name: 'All' })).toBeChecked();
+  expect(layers()!.every((item) => item.id.startsWith('conflict-region-'))).toBe(true);
 });
 
 it.each(['globe', 'map'] as const)(

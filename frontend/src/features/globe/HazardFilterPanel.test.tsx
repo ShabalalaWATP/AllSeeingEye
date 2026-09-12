@@ -37,9 +37,12 @@ it('exposes truthful type labels, counts and magnitude controls without hiding o
     target: { value: '4' },
   });
   expect(screen.getByLabelText('Shown IDs')).toHaveTextContent('thermal,plane');
-  fireEvent.click(screen.getByRole('radio', { name: /Satellite thermal detections/ }));
+  fireEvent.click(screen.getByRole('checkbox', { name: /Earthquakes:/ }));
   expect(screen.getByLabelText('Shown IDs')).toHaveTextContent('thermal,plane');
-  expect(screen.getByText(/Thermal pixels do not establish a wildfire/)).toBeInTheDocument();
+  expect(
+    screen.queryByRole('checkbox', { name: /thermal|wildfire|Fires/i }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByRole('radio')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Reset hazard filters' }));
   expect(screen.getByLabelText('Shown IDs')).toHaveTextContent('quake,thermal,plane');
 });
@@ -50,13 +53,41 @@ it('clears excluded hazard selections and preserves other selections and layer s
   useEventsStore.getState().select('quake');
   useEventsStore.getState().toggleCategory('disaster');
   const { result } = renderHook(() => useHazardFilters(events));
-  act(() => result.current.updateOptions({ group: 'thermal' }));
+  act(() => result.current.updateOptions({ groups: [] }));
   expect(useEventsStore.getState().selectedId).toBeNull();
   expect(useEventsStore.getState().hidden).toContain('disaster');
   act(() => useEventsStore.getState().select('plane'));
-  act(() => result.current.updateOptions({ group: 'earthquake' }));
+  act(() => result.current.updateOptions({ groups: ['earthquake'] }));
   expect(useEventsStore.getState().selectedId).toBe('plane');
-  expect(result.current.counts.all).toBe(2);
+  expect(result.current.counts.all).toBe(1);
+});
+
+it('allows multiple hazard types at once, including none, without altering fire evidence', () => {
+  const flood = liveEvent({ id: 'flood', category: 'disaster', subtype: 'flood' });
+  function Harness() {
+    const filters = useHazardFilters([quake, flood, thermal, plane]);
+    return (
+      <>
+        <HazardFilterPanel {...filters} />
+        <output aria-label="Combined IDs">
+          {filters.filtered.map((event) => event.id).join(',')}
+        </output>
+      </>
+    );
+  }
+  render(<Harness />);
+  const shown = () => screen.getByLabelText('Combined IDs').textContent;
+  fireEvent.click(screen.getByRole('button', { name: 'Clear hazard types' }));
+  expect(shown()).toBe('thermal,plane');
+  expect(screen.getByText('No natural hazard types selected.')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('checkbox', { name: /^Earthquakes:/ }));
+  expect(shown()).toBe('quake,thermal,plane');
+  fireEvent.click(screen.getByRole('checkbox', { name: /^Floods:/ }));
+  expect(shown()).toBe('quake,flood,thermal,plane');
+  fireEvent.click(screen.getByRole('checkbox', { name: /^Earthquakes:/ }));
+  expect(shown()).toBe('flood,thermal,plane');
+  fireEvent.click(screen.getByRole('button', { name: 'Reset hazard filters' }));
+  expect(shown()).toBe('quake,flood,thermal,plane');
 });
 
 it('keeps provider scales separate and handles missing values explicitly', () => {

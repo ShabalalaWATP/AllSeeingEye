@@ -532,3 +532,24 @@ coverage caveats are maintained in [Economy workspace](ECONOMY_WORKSPACE.md).
 See [Economy workspace](ECONOMY_WORKSPACE.md). Publisher archives and retained
 feeds may cover less than the selected interval. Model quality across the four
 periods still needs live operator evaluation; fixture tests do not establish it.
+
+## Map news, fire controls and visible evidence assessment, 13 September 2026
+
+- [x] Select multiple natural hazards independently, with All and Clear actions.
+- [x] Give FIRMS detections and reported wildfires one independent Fires category with either/both choices.
+- [x] Replace duplicated Topics controls with Event time on the right and news subjects inside News.
+- [x] Add a bounded, searchable News briefing with grouped headlines, source details, research drafts and honest map selection.
+- [x] Add and verify 38 public headline feeds, including 14 UK and 24 international feeds.
+- [x] Preserve unassessed source status, original publisher organisations and existing retention/request limits.
+- [x] Separate larger research catalogue metadata from unchanged operator and collection budgets, fixing existing multilingual source-audit regressions.
+- [x] Restore saved probability, confidence, evidence grades and assessment basis throughout report readers, briefing previews and Word/PDF/Markdown exports.
+- [x] Preserve historical assessment values and state missing metadata explicitly.
+- [x] Default new map preferences to Hybrid and close attribution initially while retaining usable provider credits.
+- [x] Complete focused regression, doctrine/security review, desktop/mobile and PDF layout checks.
+- [x] Pass the full frontend suite: 2,284 tests, one existing skip, with all four coverage gates above 90%.
+
+See [Map news and evidence](MAP_NEWS_AND_EVIDENCE.md) and the verified
+[source inventory](NEWS_SOURCE_COVERAGE.md). The public-doctrine review separates
+PHIA likelihood, analytical confidence and evidence grades. No claim of full
+NATO conformance or automatic factual verification is made. The new feeds do
+not provide complete archives or inferred incident coordinates.

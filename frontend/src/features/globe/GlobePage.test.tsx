@@ -41,7 +41,7 @@ describe('GlobePage', () => {
     FakeEventStreamClient.reset();
   });
 
-  it('mounts the engine on the globe projection by default and switches to Mercator', async () => {
+  it('starts with Hybrid on the globe projection and switches to Mercator', async () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('region', { name: '3D globe' })).toBeInTheDocument();
@@ -49,6 +49,8 @@ describe('GlobePage', () => {
       expect(FakeMap.instances).toHaveLength(1);
     });
     const map = FakeMap.instances[0]!;
+    expect(useGlobeStore.getState().baseLayer).toBe('hybrid');
+    // Hybrid imagery retains the dark vector style for roads and place labels.
     expect(map.options).toMatchObject({
       style: 'https://tiles.openfreemap.org/styles/dark',
       center: [10, 30],
@@ -83,7 +85,7 @@ describe('GlobePage', () => {
     mockWebGl2(true);
     const { user } = renderApp('/', 'user');
     expect(await screen.findByRole('switch', { name: 'Natural hazards 1' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Topics & time' }));
+    await user.click(screen.getByRole('button', { name: 'Event time' }));
     expect(screen.getByRole('switch', { name: 'Cyber 1' })).toBeInTheDocument();
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
@@ -122,7 +124,7 @@ describe('GlobePage', () => {
         id: null,
       });
     });
-    await user.click(screen.getByRole('button', { name: 'Topics & time' }));
+    await user.click(screen.getByRole('button', { name: 'Event time' }));
     expect(screen.getByText('Live').closest('[role="status"]')).toHaveTextContent('Live');
     await user.click(screen.getByRole('button', { name: 'Close tool' }));
     expect(await screen.findByRole('switch', { name: 'Natural hazards 2' })).toBeInTheDocument();

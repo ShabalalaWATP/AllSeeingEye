@@ -4287,3 +4287,69 @@ country-only list record now highlights its existing reference badge, without
 opening a second inspector or introducing an incident point. Closing details
 or excluding the record clears that highlight. Seven focused regression tests,
 scoped ESLint and frontend type checks passed after this narrow final fix.
+
+## 13 September 2026: clearer map layers, broader news and visible report grading
+
+Natural hazards now allows independent checkbox combinations. FIRMS thermal
+detections and reported wildfires share one separate Fires flame control, with
+either source family or both selectable. The defaults still enable only
+Conflicts. Removed the duplicate Topics control, retained Event time on the
+right and moved additional reporting subjects into the News briefing.
+
+News now has a panel-only snapshot of up to 300 retained records, initially
+showing 15 grouped stories. Search, publisher and subject controls refine the
+list and news pins. Unlocated reporting stays readable, selection uses actual
+reported positions and changing filters clears excluded details. Safe source
+links, stored grades, related reporting and a research-draft action are available
+without an automatic model call or another continuous poll.
+
+Added 38 verified headline feeds, 14 UK and 24 international, bringing seeded
+RSS sources to 92. Live adapter probes produced 1,506 dated and linked records.
+All new publishers remain explicitly unassessed; parent organisation identity
+is preserved. Collection retains headline metadata, not article bodies or
+inferred geography. Existing request, response and shared memory bounds remain.
+
+Source auditing reproduced three research failures against the preceding HEAD.
+A 64-row limit had been used for both inventory metadata and collection choices.
+The repair separates 128 catalogue providers and 136 plan/receipt rows from the
+unchanged 64 explicit sources, eight tasks and quick/detailed/advanced work
+budgets. Unsupported and unselected source rows remain visible without becoming
+extra network requests. The private publisher-provider inventory is unchanged.
+
+The doctrine audit found that professional report projection and compact
+briefings omitted saved assessment metadata. The reader and Word/PDF/Markdown
+exports now show PHIA likelihood, separate analytical confidence and rationale,
+reporting grades, source assessment tables and frozen evidence-confidence limits.
+Economy, Cyber and daily situation previews retain the same dimensions and
+separate supporting from contrary citations. Historical values remain frozen;
+missing assessment metadata is explicit. A review found and fixed a partial
+historical assessment that could otherwise lose its saved confidence preface.
+
+Hybrid is now the default for fresh map preferences, preserving chosen styles.
+Native attribution starts closed and remains expandable with updating credits.
+Browser acceptance found that the Eye launcher could cover the expanded close
+control, so attribution now sits at the bottom left. Selected hazard/fire rows
+use the existing theme colours rather than unavailable palette shades.
+
+Validation: the final full frontend run passed 2,284 tests with one existing
+skip. Coverage was 95.32% statements, 90.66% branches, 93.72% functions and 96.49%
+lines. The initial full run found three test assumptions about the former FIRMS
+control; those were updated and the full run passed. Focused backend batches
+passed 139 feed tests, 195 research regressions and 34 report/document tests,
+with subsequent capacity and historical-report regressions also passing. These
+overlapping batches are not a full backend coverage measurement.
+
+Backend Ruff, formatting and strict mypy passed across 900 source files; both
+import contracts passed. Frontend types, scoped lint/format and production build
+passed. File lengths passed, retaining one untouched 351-line test-helper target
+warning. Browser checks covered both projections, independent fire choices,
+multiple hazards, attribution toggling and 390-pixel mobile layout. Four pages
+of the synthetic PDF were visually checked, including source tables and numbered
+references. No new live model evaluation is claimed.
+
+Focused news/capacity security and report-doctrine reviews reported no remaining
+material finding after the fixes. The staged Gitleaks scan passed. Local health,
+readiness and login returned HTTP 200 after the backend restart. No dependency,
+credential or database migration was added. Documentation includes the active
+plan, source inventory, map/evidence guide, doctrine update and focused security
+review. No Git remote is configured; changes remain on local main.

@@ -60,8 +60,10 @@
   }
 }
 
-/* Expanded source attribution must remain above dashboard instruments. */
+/* Keep credits clear of the floating Eye launcher and above dashboard instruments. */
 .globe-dashboard .maplibregl-ctrl-bottom-right {
+  right: auto;
+  left: 10px;
   z-index: 20;
 }
 .map-layer-rail,

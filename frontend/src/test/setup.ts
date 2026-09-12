@@ -11,6 +11,7 @@ import { initialCapabilitiesState, useCapabilitiesStore } from '@/stores/capabil
 import { initialCountriesState, useCountriesStore } from '@/stores/countries';
 import { initialEventsState, useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
+import { DEFAULT_BASE_LAYER } from '@/lib/map/baseLayers';
 
 import { clearCookies, mockMatchMedia, mockWebGl2, resetVisibility } from './env';
 import { server } from './server';
@@ -56,7 +57,7 @@ afterEach(() => {
   useAuthStore.setState(initialAuthState);
   useGlobeStore.setState({
     mode: 'globe',
-    baseLayer: 'dark',
+    baseLayer: DEFAULT_BASE_LAYER,
     terminator: false,
     lite: false,
     interference: false,

@@ -5,7 +5,7 @@ import {
   DEFAULT_HAZARD_OPTIONS,
   hazardKind,
   matchesHazard,
-  matchesHazardGroup,
+  matchesHazardGroups,
   type HazardOptions,
 } from '@/lib/hazards';
 import { useEventsStore } from '@/stores/events';
@@ -23,13 +23,16 @@ export function useHazardFilters(events: LiveEvent[]) {
     setOptions((previous) => ({ ...previous, ...patch }));
   };
   const scoped = useMemo(
-    () => events.filter((event) => matchesHazard(event, { ...options, group: 'all' }, now)),
+    () =>
+      events.filter((event) =>
+        matchesHazard(event, { ...options, groups: DEFAULT_HAZARD_OPTIONS.groups }, now),
+      ),
     [events, options, now],
   );
   const counts = useMemo(() => countHazards(scoped), [scoped]);
   const filtered = useMemo(
-    () => scoped.filter((event) => matchesHazardGroup(event, options.group)),
-    [scoped, options.group],
+    () => scoped.filter((event) => matchesHazardGroups(event, options.groups)),
+    [scoped, options.groups],
   );
   const selectedId = useEventsStore((state) => state.selectedId);
   const select = useEventsStore((state) => state.select);

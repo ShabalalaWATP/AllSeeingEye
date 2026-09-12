@@ -30,6 +30,22 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     ratio.mockRestore();
   });
 
+  it.each(['globe', 'mercator'] as const)(
+    'starts the %s projection with hybrid imagery and visible labels',
+    (projection) => {
+      const engine = createMapLibreEngine();
+      engine.setProjection(projection);
+      engine.mount(document.createElement('div'));
+      const map = FakeMap.instances[0]!;
+      expect(map.options.attributionControl).toMatchObject({ compact: true });
+      map.fire('style.load');
+      expect(map.getSource(RASTER_SOURCE_ID)).toMatchObject({ tiles: [EOX_TILES] });
+      expect(map.setLayoutProperty).toHaveBeenCalledWith('place_city', 'visibility', 'visible');
+      expect(map.setProjection).toHaveBeenLastCalledWith({ type: projection });
+      engine.destroy();
+    },
+  );
+
   it('mounts once, applies the projection after the style loads, flies and subscribes', () => {
     const engine = createMapLibreEngine();
     const container = document.createElement('div');
@@ -176,6 +192,7 @@ describe('MapLibreEngine (mocked maplibre-gl smoke test)', () => {
     engine.setLayers([{ id: 'events' }]);
     map.setPaintProperty.mockClear();
     map.setLayoutProperty.mockClear();
+    map.addSource.mockClear();
     engine.setBaseLayer('streets');
     expect(map.setStyle).toHaveBeenLastCalledWith('https://tiles.openfreemap.org/styles/liberty', {
       diff: false,

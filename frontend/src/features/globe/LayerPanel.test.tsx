@@ -3,26 +3,21 @@ import userEvent from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
 import { LayerPanel } from './LayerPanel';
 
-it('owns additional topics and the shared time window without repeating category or appearance switches', async () => {
-  const toggleCategory = vi.fn();
+it('owns the shared time window without repeating layer or appearance controls', async () => {
   const changeWindow = vi.fn();
   const props = {
     counts: { social: 7 },
-    hidden: [],
     stats: null,
     status: 'live' as const,
     error: null,
     onWindow: changeWindow,
-    onToggle: toggleCategory,
   };
   const { rerender } = render(<LayerPanel {...props} windowHours={null} />);
   const user = userEvent.setup();
-  expect(screen.getAllByRole('switch')).toHaveLength(4);
-  expect(
-    screen.queryByRole('switch', { name: /Cyber|FIRMS|Flights|Boats|GNSS|Day and night|graphics/ }),
-  ).not.toBeInTheDocument();
-  await user.click(screen.getByRole('switch', { name: 'Social 7' }));
-  expect(toggleCategory).toHaveBeenCalledExactlyOnceWith('social');
+  expect(screen.getByRole('region', { name: 'Event time controls' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Event time' })).toBeVisible();
+  expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Show all topics' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Clear time filter' })).toBeDisabled();
   await user.click(screen.getByRole('radio', { name: '6 h' }));
   expect(changeWindow).toHaveBeenCalledExactlyOnceWith(6);
@@ -34,23 +29,24 @@ it('owns additional topics and the shared time window without repeating category
   expect(screen.getByRole('button', { name: 'Reload live events' })).toBeVisible();
 });
 
-it('restores only hidden additional topics without changing main layers or time', async () => {
-  const toggle = vi.fn();
-  const window = vi.fn();
+it('opens connection coverage without changing the selected time window', async () => {
+  const changeWindow = vi.fn();
   const user = userEvent.setup();
   render(
     <LayerPanel
       counts={{}}
-      hidden={['cyber', 'political', 'aviation']}
       stats={null}
       status="live"
       error={null}
       windowHours={6}
-      onWindow={window}
-      onToggle={toggle}
+      onWindow={changeWindow}
     />,
   );
-  await user.click(screen.getByRole('button', { name: 'Show all topics' }));
-  expect(toggle.mock.calls).toEqual([['political']]);
-  expect(window).not.toHaveBeenCalled();
+  expect(screen.getByRole('radio', { name: '6 h' })).toBeChecked();
+  await user.click(screen.getByText('Connection and coverage'));
+  expect(screen.getByRole('button', { name: 'Reload live events' })).toBeVisible();
+  await user.click(screen.getByText('Connection and coverage'));
+  expect(screen.getByRole('button', { name: 'Reload live events' })).not.toBeVisible();
+  expect(screen.getByRole('radio', { name: '6 h' })).toBeChecked();
+  expect(changeWindow).not.toHaveBeenCalled();
 });

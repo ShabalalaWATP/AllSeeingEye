@@ -5,9 +5,11 @@
  */
 import type { RasterSourceSpecification } from 'maplibre-gl';
 
-import type { BaseLayer } from '@/stores/globe';
+/** What is drawn under data in either globe or flat-map projection. */
+export type BaseLayer =
+  'dark' | 'streets' | 'light' | 'satellite' | 'hybrid' | 'os_road' | 'os_outdoor' | 'os_light';
 
-export type { BaseLayer };
+export const DEFAULT_BASE_LAYER: BaseLayer = 'hybrid';
 
 export interface BaseLayerOption {
   id: BaseLayer;
