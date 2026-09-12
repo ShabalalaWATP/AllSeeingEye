@@ -183,11 +183,12 @@ export function MapLayerRail({
           button
         );
       })}
-      {(['space', 'disaster', 'conflict', 'news'] as const).map((category) => (
+      {(['space', 'disaster', 'conflict', 'cyber', 'news'] as const).map((category) => (
         <div key={category} className="flex flex-col items-center">
           <LayerButton
             label={category === 'disaster' ? 'Natural hazards' : CATEGORY_STYLES[category].label}
             icon={category}
+            {...(category === 'cyber' ? { caption: 'Cyber' } : {})}
             count={counts[category] ?? 0}
             active={!hidden.includes(category)}
             onClick={() => toggleCategory(category)}
@@ -201,7 +202,9 @@ export function MapLayerRail({
                   ? 'Space filters'
                   : category === 'disaster'
                     ? 'Natural hazard filters'
-                    : 'Conflict report filters'
+                    : category === 'cyber'
+                      ? 'Cyber filters'
+                      : 'Conflict report filters'
               }
               aria-expanded={
                 activePanel ===
@@ -210,6 +213,7 @@ export function MapLayerRail({
                     space: 'Space',
                     disaster: 'Natural hazards',
                     conflict: 'Conflict reports',
+                    cyber: 'Cyber threat intelligence',
                   } as const
                 )[category]
               }
@@ -220,6 +224,7 @@ export function MapLayerRail({
                       space: 'Space',
                       disaster: 'Natural hazards',
                       conflict: 'Conflict reports',
+                      cyber: 'Cyber threat intelligence',
                     } as const
                   )[category],
                   event.currentTarget,

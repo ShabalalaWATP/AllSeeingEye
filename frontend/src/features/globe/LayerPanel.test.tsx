@@ -7,7 +7,7 @@ it('owns additional topics and the shared time window without repeating category
   const toggleCategory = vi.fn();
   const changeWindow = vi.fn();
   const props = {
-    counts: { cyber: 7 },
+    counts: { social: 7 },
     hidden: [],
     stats: null,
     status: 'live' as const,
@@ -17,12 +17,12 @@ it('owns additional topics and the shared time window without repeating category
   };
   const { rerender } = render(<LayerPanel {...props} windowHours={null} />);
   const user = userEvent.setup();
-  expect(screen.getAllByRole('switch')).toHaveLength(5);
+  expect(screen.getAllByRole('switch')).toHaveLength(4);
   expect(
-    screen.queryByRole('switch', { name: /FIRMS|Flights|Boats|GNSS|Day and night|graphics/ }),
+    screen.queryByRole('switch', { name: /Cyber|FIRMS|Flights|Boats|GNSS|Day and night|graphics/ }),
   ).not.toBeInTheDocument();
-  await user.click(screen.getByRole('switch', { name: 'Cyber 7' }));
-  expect(toggleCategory).toHaveBeenCalledExactlyOnceWith('cyber');
+  await user.click(screen.getByRole('switch', { name: 'Social 7' }));
+  expect(toggleCategory).toHaveBeenCalledExactlyOnceWith('social');
   expect(screen.getByRole('button', { name: 'Clear time filter' })).toBeDisabled();
   await user.click(screen.getByRole('radio', { name: '6 h' }));
   expect(changeWindow).toHaveBeenCalledExactlyOnceWith(6);
@@ -51,6 +51,6 @@ it('restores only hidden additional topics without changing main layers or time'
     />,
   );
   await user.click(screen.getByRole('button', { name: 'Show all topics' }));
-  expect(toggle.mock.calls).toEqual([['cyber'], ['political']]);
+  expect(toggle.mock.calls).toEqual([['political']]);
   expect(window).not.toHaveBeenCalled();
 });

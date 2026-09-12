@@ -10,6 +10,7 @@ from xml.etree.ElementTree import Element  # nosec B405
 
 from defusedxml.ElementTree import fromstring
 
+from ase.adapters.feeds.cyber_rss import cyber_publication
 from ase.adapters.feeds.http import FeedHttpClient, is_public_address
 from ase.adapters.feeds.rss import (
     MAX_ITEMS,
@@ -114,6 +115,9 @@ class ResearchFeedParser(RssConnector):
         event = super()._to_event(item, now)
         if event is None:
             return None
+        if "cyber_publication" in self._options.tags:
+            # Source-specific declared date conventions apply before interval filtering.
+            event = cyber_publication(event, self.spec)
         sources = children(item, "source")
         publisher = child_text(item, "source") or None
         publisher_url = web_url(sources[0].get("url", "")) if sources else None

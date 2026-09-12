@@ -74,6 +74,9 @@ export function LeftRail({
         <RailLink to="/economy" onNavigate={onNavigate}>
           Economy
         </RailLink>
+        <RailLink to="/cyber" onNavigate={onNavigate}>
+          Cyber intelligence
+        </RailLink>
         {isAdmin && (
           <div className="mt-4 border-t border-line pt-4">
             <RailLink to="/admin" onNavigate={onNavigate}>

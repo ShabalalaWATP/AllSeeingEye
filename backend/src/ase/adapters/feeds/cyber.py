@@ -1,17 +1,18 @@
 """Cyber feeds: ransomware victim claims (ransomware.live) and internet outage alerts (IODA).
 
-Both are country-level, so events carry a country code without coordinates and the
-pipeline places them at the nation's centroid with country-level geo confidence.
+Country references describe source-reported scope, without incident coordinates.
+Outage measurements do not establish a cyberattack or a responsible actor.
 """
 
 from __future__ import annotations
 
+import math
 import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.parse import urlsplit
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
-from ase.application.feeds.pipeline import strip_html
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.application.ports import Clock
 from ase.domain.events import (
     Category,
@@ -55,14 +56,34 @@ IODA_SEVERITY = {"critical": 0.8, "warning": 0.5}
 MAX_ITEMS = 300
 
 
-def _when(value: object, fallback: datetime) -> datetime:
+def _when(value: object) -> datetime | None:
     if not isinstance(value, str):
-        return fallback
+        return None
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00").replace(" ", "T"))
+        return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    except (ValueError, OverflowError):
+        return None
+
+
+def _claim_reference(value: object) -> str | None:
+    """Only the clearweb aggregator record is retained, never a criminal leak link."""
+    if not isinstance(value, str) or len(value) > 1500:
+        return None
+    try:
+        parts = urlsplit(value)
+        if (
+            parts.scheme != "https"
+            or parts.hostname != "www.ransomware.live"
+            or parts.username is not None
+            or parts.password is not None
+            or parts.port not in (None, 443)
+            or not re.fullmatch(r"/id/[A-Za-z0-9_+=-]{1,1024}", parts.path)
+        ):
+            return None
+        return f"https://www.ransomware.live{parts.path}"
     except ValueError:
-        return fallback
-    return (parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+        return None
 
 
 class RansomwareConnector:
@@ -78,8 +99,13 @@ class RansomwareConnector:
         except NotModified:
             return []
         now = self._clock.now()
-        items = [item for item in data if isinstance(item, dict)] if isinstance(data, list) else []
-        return [event for item in items[:MAX_ITEMS] if (event := self._to_event(item, now))]
+        if not isinstance(data, list):
+            raise FeedFetchError("Ransomware.live response is not a victim metadata list")
+        return [
+            event
+            for item in data[:MAX_ITEMS]
+            if isinstance(item, dict) and (event := self._to_event(item, now))
+        ]
 
     def _to_event(self, item: dict[str, Any], now: datetime) -> Event | None:
         victim = str(item.get("victim") or "").strip()
@@ -88,8 +114,8 @@ class RansomwareConnector:
             return None
         country = str(item.get("country") or "").strip().upper()
         iso = country if re.fullmatch(r"[A-Z]{2}", country) else None
-        page = str(item.get("url") or "")
-        key = page.rsplit("/", 1)[-1] if page else f"{victim}@{group}"
+        page = _claim_reference(item.get("url"))
+        key = page.rsplit("/", 1)[-1] if page else f"{victim}@{group}@{item.get('discovered')}"
         activity = str(item.get("activity") or "").strip()
         return Event(
             id=event_id(self.spec.id, key),
@@ -97,9 +123,11 @@ class RansomwareConnector:
             category=Category.CYBER,
             subtype="ransomware",
             title=f"{victim}: claimed by {group}" + (f" ({activity})" if activity else ""),
-            summary=(strip_html(str(item.get("description") or "")) or "")[:2_000] or None,
+            summary=(
+                "Unverified victim claim relayed by ransomware.live; no stolen content collected."
+            ),
             url=page or self.spec.homepage,
-            published_at=_when(item.get("discovered"), now),
+            published_at=_when(item.get("discovered")),
             observed_at=now,
             geo_confidence=GeoConfidence.COUNTRY if iso else GeoConfidence.NONE,
             country_iso=iso,
@@ -113,8 +141,11 @@ class RansomwareConnector:
                     "victim": victim,
                     "group": group,
                     "sector": activity or None,
-                    "domain": item.get("domain") or None,
-                    "attack_date": item.get("attackdate"),
+                    "domain": str(item.get("domain") or "") or None,
+                    "attack_date": str(item.get("attackdate") or "") or None,
+                    "date_basis": "Aggregator discovery time; attack/publication time unconfirmed",
+                    "geography_basis": "Aggregator-reported victim country; no coordinates",
+                    "attribution_status": "Unverified criminal claim",
                 }
             ),
             content_hash=content_hash(key, str(item.get("discovered"))),
@@ -147,27 +178,42 @@ class IodaConnector:
             data = await self._http.get_json(url, conditional=False)
         except NotModified:
             return []
-        items = data.get("data", []) if isinstance(data, dict) else []
+        if (
+            not isinstance(data, dict)
+            or data.get("error")
+            or not isinstance(data.get("data"), list)
+        ):
+            raise FeedFetchError("IODA response does not contain a valid alert list")
+        items = data["data"]
         return [
             event
-            for item in items
+            for item in items[:MAX_ITEMS]
             if isinstance(item, dict) and (event := self._to_event(item, now))
         ]
 
     def _to_event(self, item: dict[str, Any], now: datetime) -> Event | None:
         entity = item.get("entity") or {}
+        if not isinstance(entity, dict):
+            return None
         level = str(item.get("level") or "").lower()
         if level not in IODA_SEVERITY:
             return None
         kind = str(entity.get("type") or "")
         code = str(entity.get("code") or "")
+        if kind not in {"country", "region", "asn", "geoasn"} or not re.fullmatch(
+            r"[A-Za-z0-9-]{1,100}", code
+        ):
+            return None
         name = str(entity.get("name") or code)
         source = str(item.get("datasource") or "signal")
         stamp = item.get("time")
-        when = datetime.fromtimestamp(int(stamp), tz=UTC) if isinstance(stamp, int | float) else now
+        when = _measurement_time(stamp)
         country = _country_of(entity)
         return Event(
-            id=event_id(self.spec.id, f"{source}-{kind}-{code}-{int(when.timestamp())}"),
+            id=event_id(
+                self.spec.id,
+                f"{source}-{kind}-{code}-{int(when.timestamp()) if when else 'unknown'}",
+            ),
             source_id=self.spec.id,
             category=Category.CYBER,
             subtype="outage",
@@ -185,7 +231,9 @@ class IodaConnector:
             severity=IODA_SEVERITY[level],
             reliability=self.spec.reliability,
             credibility=Credibility.PROBABLY_TRUE,
-            grade_rationale="Automated measurement from several vantage points",
+            grade_rationale=(
+                "Automated connectivity measurement; cause and attribution not established"
+            ),
             attributes=freeze_attributes(
                 {
                     "entity_type": kind,
@@ -194,7 +242,20 @@ class IodaConnector:
                     "level": level,
                     "value": item.get("value"),
                     "history_value": item.get("historyValue"),
+                    "date_basis": "IODA measurement time; unknown when absent or invalid",
+                    "attribution_status": "Connectivity signal, not evidence of a cyberattack",
                 }
             ),
             content_hash=content_hash(source, kind, code, str(stamp), level),
         )
+
+
+def _measurement_time(value: object) -> datetime | None:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    try:
+        if not math.isfinite(value):
+            return None
+        return datetime.fromtimestamp(value, tz=UTC)
+    except (ValueError, OverflowError, OSError):
+        return None

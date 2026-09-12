@@ -1,4 +1,5 @@
 import { CONFLICT_SYMBOLS } from '@/lib/conflictSymbols';
+import { CYBER_SHIELD_PATH } from '@/lib/cyber';
 
 export type ControlIcon =
   | 'aircraft'
@@ -8,6 +9,7 @@ export type ControlIcon =
   | 'space'
   | 'disaster'
   | 'conflict'
+  | 'cyber'
   | 'news'
   | 'night'
   | 'signal'
@@ -36,6 +38,7 @@ const paths: Record<ControlIcon, string> = {
   space: 'm9 9 6 6 4-4-6-6-4 4Zm-6 3 5 5-3 3-5-5 3-3Zm13-12 5 5-3 3-5-5 3-3ZM8 16l-4 4M16 16l4 4',
   disaster: 'm12 3 10 18H2L12 3Zm0 6v5m0 3v1',
   conflict: CONFLICT_SYMBOLS.armed_clashes.path,
+  cyber: CYBER_SHIELD_PATH,
   news: 'M4 3h16v18H4V3Zm4 4h8M8 11h8m-8 4h3m2 0h3',
   night: 'M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z',
   signal: 'M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14M8 8a6 6 0 0 0 0 8m8-8a6 6 0 0 1 0 8M12 11v2',

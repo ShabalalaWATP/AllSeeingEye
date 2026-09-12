@@ -16,8 +16,10 @@ import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
 import { useMapReferenceData } from './useMapReferenceData';
 import { useDashboardEvents } from './useDashboardEvents';
+import { useCyberCountryContext } from './useCyberCountryContext';
+import { useCyberMapSelection } from './useCyberMapSelection';
 import { EventScopeStrip } from './EventScopeStrip';
-import { trafficControlPanels } from './trafficControlPanels';
+import { dashboardCataloguePanels } from './dashboardCataloguePanels';
 import { useContextSelection } from './context/useContextSelection';
 import { eventControlPanels } from './eventControlPanels';
 import { useDashboardFocus } from './useDashboardFocus';
@@ -32,7 +34,6 @@ import { ModeToolbar } from './ModeToolbar';
 import { useMapWorkspaceTools } from './useMapWorkspaceTools';
 import { mapPlanningPanels } from './MapPlanningPanels';
 import { mapReferencePanels } from './MapReferencePanels';
-import { catalogueControlPanels } from './catalogueControlPanels';
 import './dashboard.css';
 import { createEngine } from './globeEngineFactory';
 import { useInterference } from './useInterference';
@@ -96,36 +97,42 @@ export default function GlobePage() {
     country,
     selectedId,
     selected,
-    stats,
     select,
     setCountry,
     toggleCategory,
     scoped,
     counts,
     observations,
-    satellites,
-    hazards,
-    conflicts,
     quality,
     storySize,
   } = data;
   const regions = useConflictRegions(supported && !hidden.includes('conflict'), country);
+  const cyber = useCyberCountryContext(
+    !hidden.includes('cyber') && visible,
+    countryByIso,
+    country,
+    data.windowHours,
+    now,
+    quality.filter,
+  );
   const nation = country === null ? null : (countryByIso[country] ?? null);
 
   const cameras = useCameras();
   const infrastructure = useInfrastructure();
-  const context = useContextSelection(country, tools.picking);
+  const context = useContextSelection(country, tools.picking, symbolMode);
   useEyeMapContext(engine, supported, selected ?? context.event, cameras, infrastructure);
   const closeContext = context.close;
   const closeCamera = cameras.close;
   const closeInfrastructure = infrastructure.close;
   const closeRegion = regions.close;
+  const closeCyber = cyber.close;
   const closeCatalogues = useCallback(() => {
     closeCamera();
     closeInfrastructure();
     closeRegion();
     closeContext();
-  }, [closeCamera, closeInfrastructure, closeRegion, closeContext]);
+    closeCyber();
+  }, [closeCamera, closeInfrastructure, closeRegion, closeContext, closeCyber]);
   const {
     details,
     highlightedId,
@@ -136,6 +143,19 @@ export default function GlobePage() {
     onCluster,
     onJam,
   } = useMapPicking(quality.filtered, hidden, tools.picking, select, engine, closeCatalogues);
+  const cyberSelection = useCyberMapSelection({
+    cyber,
+    enabled: !hidden.includes('cyber'),
+    picking: tools.picking,
+    closeOthers: close,
+    engine,
+    mode: symbolMode,
+    context,
+    countries: countryByIso,
+    quality: quality.filter,
+    windowHours: data.windowHours,
+    now,
+  });
   const { selectContext, selectSatellite } = useDashboardFocus({
     engine,
     picking: tools.picking,
@@ -192,6 +212,7 @@ export default function GlobePage() {
     infrastructureLayers,
     conflictRegionLayers: regionSelection.layers,
     contextLayers: context.layers,
+    cyberCountryLayers: cyberSelection.layers,
     measured: toolLayers,
     supported,
     terminator,
@@ -230,7 +251,7 @@ export default function GlobePage() {
               activePanel={activePanel}
               gnssCount={gnssFilters.filtered.length}
               events={scoped}
-              counts={counts}
+              counts={{ ...counts, cyber: cyber.events.length }}
               visibility={observations.visibility}
               onToggle={observations.toggle}
               flightFilter={observations.flightFilter}
@@ -243,48 +264,24 @@ export default function GlobePage() {
           )}
           navigation={<MapNavigationTools engine={engine} enabled={supported} />}
         >
-          {catalogueControlPanels({
+          {dashboardCataloguePanels({
+            data,
             infrastructure,
             focusInfrastructure,
-            satellites,
-            country,
             onContextSelect: selectContext,
             onSatelliteSelect: selectSatellite,
-            selectedId,
-            qualityFilter: quality.filter,
-            conflicts,
+            onTrafficSelect: selectTraffic,
+            picking: tools.picking,
+            engine,
+            onJam,
             conflictOverview: { regions, onSelect: regionSelection.focus },
-            hazards,
+            cyber: { cyber, onSelect: cyberSelection.selectRecord, picking: tools.picking },
             gnss: {
               enabled: interference,
               data: gnss,
               filters: gnssFilters,
               selected: details?.kind === 'jam' ? details.cell : null,
-              selectionDisabled: tools.picking,
-              onSelect: (cell) => {
-                if (tools.picking) return;
-                onJam(cell);
-                engine.flyTo({ center: [cell.lon, cell.lat], zoom: 6 });
-              },
             },
-          })}
-          {trafficControlPanels({
-            events: scoped,
-            observations,
-            onSelect: selectTraffic,
-            selectionDisabled: tools.picking,
-            country,
-            onContextSelect: selectContext,
-            qualityFilter: quality.filter,
-            available: Object.fromEntries(
-              (stats?.per_category ?? []).flatMap((item) =>
-                item.category === 'aviation'
-                  ? [['aircraft', item.count]]
-                  : item.category === 'maritime'
-                    ? [['vessels', item.count]]
-                    : [],
-              ),
-            ),
           })}
           {mapReferencePanels({
             display: {
@@ -329,6 +326,7 @@ export default function GlobePage() {
       />
       {!opsRoom && !tools.picking && (
         <GlobeInspectors
+          cyber={{ state: cyber, onSelect: cyberSelection.selectRecord }}
           regions={regions}
           infrastructure={infrastructure}
           cameras={cameras}

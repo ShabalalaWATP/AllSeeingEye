@@ -25,6 +25,7 @@ interface Scene {
   infrastructureLayers?: readonly Layer[];
   conflictRegionLayers?: readonly Layer[];
   contextLayers?: readonly Layer[];
+  cyberCountryLayers?: readonly Layer[];
   measured: readonly Layer[];
   supported: boolean;
   terminator: boolean;
@@ -56,6 +57,7 @@ export function useGlobeScene({
   infrastructureLayers,
   conflictRegionLayers,
   contextLayers,
+  cyberCountryLayers,
   measured,
   supported,
   terminator,
@@ -99,6 +101,7 @@ export function useGlobeScene({
         ...(conflictRegionLayers ?? []),
         ...cameraLayers,
         ...(contextLayers ?? []),
+        ...(cyberCountryLayers ?? []),
         ...measured,
       ]);
   }, [
@@ -113,6 +116,7 @@ export function useGlobeScene({
     infrastructureLayers,
     conflictRegionLayers,
     contextLayers,
+    cyberCountryLayers,
   ]);
 
   // The wall screen turns the globe slowly; lite mode and the flat map keep it still.

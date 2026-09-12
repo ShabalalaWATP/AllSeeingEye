@@ -2,7 +2,8 @@
 
 ## Navigation
 
-The main sidebar contains Map, Research, Subscriptions, Geolocation and Economy.
+The main sidebar contains Map, Research, Subscriptions, Geolocation, Economy and
+Cyber intelligence. See [the cyber workspace guide](CYBER_THREAT_INTELLIGENCE.md).
 Research contains New research, Saved reports, Daily briefing and Plans & areas.
 The profile icon opens identity, security and team sharing. The settings icon
 opens personal preferences and links to the source catalogue and alert rules.

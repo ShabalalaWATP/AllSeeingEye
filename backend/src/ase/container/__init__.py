@@ -81,6 +81,7 @@ from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
 from ase.container.conflict_screening import build_conflict_screening
+from ase.container.cyber import CyberWiring
 from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.email import build_email_sender
@@ -108,6 +109,7 @@ class Container(
     AssistantWiring,
     EconomyWiring,
     EconomyBriefingWiring,
+    CyberWiring,
 ):
     def __init__(
         self,
@@ -133,6 +135,7 @@ class Container(
         self.links = PublicLinkBuilder(settings.public_base_url)
         self.limits = settings.rate_limits
         self.initialise_research_inputs(settings)
+        self.initialise_cyber()
         self.refresh_ttl = timedelta(days=settings.refresh_token_days)
         # Verified against on unknown emails so login timing does not reveal existence.
         self._dummy_hash = self.hasher.hash(secrets.token_urlsafe(16))

@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/cyber": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cyber Snapshot */
+        get: operations["cyber_snapshot_api_cyber_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cyber/actors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cyber Actors */
+        get: operations["cyber_actors_api_cyber_actors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cyber/briefing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cyber Briefing */
+        post: operations["cyber_briefing_api_cyber_briefing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/economy": {
         parameters: {
             query?: never;
@@ -4403,6 +4454,81 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** CyberActorCatalogueOut */
+        CyberActorCatalogueOut: {
+            /** Source Id */
+            source_id: string;
+            /** Version */
+            version: string;
+            /**
+             * Released At
+             * Format: date-time
+             */
+            released_at: string;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Source Url */
+            source_url: string;
+            /** Source Sha256 */
+            source_sha256: string;
+            /** Licence Url */
+            licence_url: string;
+            /** Attribution */
+            attribution: string;
+            /** Limitations */
+            limitations: string;
+            /** Actors */
+            actors: components["schemas"]["CyberActorOut"][];
+        };
+        /** CyberActorMentionOut */
+        CyberActorMentionOut: {
+            /** Group Id */
+            group_id: string;
+            /** Matched Name */
+            matched_name: string;
+        };
+        /** CyberActorOut */
+        CyberActorOut: {
+            /** Group Id */
+            group_id: string;
+            /** Name */
+            name: string;
+            /** Associated Names */
+            associated_names: string[];
+            /** Description */
+            description: string;
+            /** Url */
+            url: string;
+            /**
+             * Modified At
+             * Format: date-time
+             */
+            modified_at: string;
+            /** Technique Ids */
+            technique_ids: string[];
+            /** Technique Count */
+            technique_count: number;
+        };
+        /** CyberActorTallyOut */
+        CyberActorTallyOut: {
+            /** Group Id */
+            group_id: string;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
+        };
+        /** CyberActorsOut */
+        CyberActorsOut: {
+            /** Available */
+            available: boolean;
+            catalogue: components["schemas"]["CyberActorCatalogueOut"] | null;
+            /** Coverage Note */
+            coverage_note: string;
+        };
         /** CyberBoardOut */
         CyberBoardOut: {
             /** Outages 24H */
@@ -4424,6 +4550,177 @@ export interface components {
             /** Latest Kev */
             latest_kev: components["schemas"]["EventOut"][];
         };
+        /** CyberBriefingOut */
+        CyberBriefingOut: {
+            job: components["schemas"]["ReportJobOut"];
+            /**
+             * Next Refresh At
+             * Format: date-time
+             */
+            next_refresh_at: string;
+            /** Coverage Note */
+            coverage_note: string;
+            window_days: components["schemas"]["CyberWindowDays"];
+            /**
+             * Period From
+             * Format: date-time
+             */
+            period_from: string;
+            /**
+             * Period To
+             * Format: date-time
+             */
+            period_to: string;
+        };
+        /** CyberDailyCountOut */
+        CyberDailyCountOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Total */
+            total: number;
+            /** Counts */
+            counts: components["schemas"]["CyberKindCountOut"][];
+        };
+        /** CyberItemOut */
+        CyberItemOut: {
+            /** Id */
+            id: string;
+            kind: components["schemas"]["CyberKind"];
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string | null;
+            /** Url */
+            url: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Organisation */
+            organisation: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Country Iso */
+            country_iso: string | null;
+            /** Grade */
+            grade: string;
+            /** Actor Mentions */
+            actor_mentions: components["schemas"]["CyberActorMentionOut"][];
+            kev: components["schemas"]["CyberKevOut"] | null;
+        };
+        /** CyberKevOut */
+        CyberKevOut: {
+            /** Cve */
+            cve: string;
+            /** Vendor */
+            vendor: string;
+            /** Product */
+            product: string;
+            /**
+             * Date Added
+             * Format: date
+             */
+            date_added: string;
+            /** Due Date */
+            due_date: string;
+            /** Ransomware Use */
+            ransomware_use: string;
+            /** Cwes */
+            cwes: string;
+            /** Required Action */
+            required_action: string;
+        };
+        /**
+         * CyberKind
+         * @enum {string}
+         */
+        CyberKind: "ransomware_claim" | "outage_signal" | "known_exploited_vulnerability" | "advisory" | "threat_report" | "other";
+        /** CyberKindCountOut */
+        CyberKindCountOut: {
+            kind: components["schemas"]["CyberKind"];
+            /** Count */
+            count: number;
+        };
+        /** CyberSnapshotOut */
+        CyberSnapshotOut: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            window_days: components["schemas"]["CyberWindowDays"];
+            /**
+             * Period From
+             * Format: date-time
+             */
+            period_from: string;
+            /**
+             * Period To
+             * Format: date-time
+             */
+            period_to: string;
+            /** Coverage Note */
+            coverage_note: string;
+            /** Retained Count */
+            retained_count: number;
+            /** Returned Count */
+            returned_count: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Counts */
+            counts: components["schemas"]["CyberKindCountOut"][];
+            /** Timeline */
+            timeline: components["schemas"]["CyberDailyCountOut"][];
+            /** Top Countries */
+            top_countries: components["schemas"]["CyberTallyOut"][];
+            /** Actor Mentions */
+            actor_mentions: components["schemas"]["CyberActorTallyOut"][];
+            /** Sources */
+            sources: components["schemas"]["CyberSourceOut"][];
+            /** Items */
+            items: components["schemas"]["CyberItemOut"][];
+        };
+        /** CyberSourceOut */
+        CyberSourceOut: {
+            /** Source Id */
+            source_id: string;
+            /** Name */
+            name: string;
+            /** Organisation */
+            organisation: string;
+            /** Url */
+            url: string;
+            status: components["schemas"]["SourceStatus"];
+            /** Last Success */
+            last_success: string | null;
+            /** Last Error At */
+            last_error_at: string | null;
+            /** Retained Count */
+            retained_count: number;
+        };
+        /** CyberTallyOut */
+        CyberTallyOut: {
+            /** Key */
+            key: string;
+            /** Count */
+            count: number;
+        };
+        /**
+         * CyberWindowDays
+         * @enum {integer}
+         */
+        CyberWindowDays: 2 | 5 | 7 | 14;
         /** DailyBriefingOut */
         DailyBriefingOut: {
             job: components["schemas"]["ReportJobOut"];
@@ -9683,6 +9980,88 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    cyber_snapshot_api_cyber_get: {
+        parameters: {
+            query?: {
+                days?: components["schemas"]["CyberWindowDays"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CyberSnapshotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cyber_actors_api_cyber_actors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CyberActorsOut"];
+                };
+            };
+        };
+    };
+    cyber_briefing_api_cyber_briefing_post: {
+        parameters: {
+            query?: {
+                days?: components["schemas"]["CyberWindowDays"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CyberBriefingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     economy_api_economy_get: {
         parameters: {
             query?: never;

@@ -72,7 +72,7 @@ it('applies every period to both sources and research, preserving it when changi
 });
 
 it('hides a completed report immediately on period change, before the next response', async () => {
-  let release = () => {
+  let release: () => void = () => {
     throw new Error('Response gate was not initialised');
   };
   const gate = new Promise<void>((resolve) => {
@@ -101,7 +101,7 @@ it('hides a completed report immediately on period change, before the next respo
 });
 
 it('ignores a late response from an abandoned period', async () => {
-  let release = () => {
+  let release: () => void = () => {
     throw new Error('Response gate was not initialised');
   };
   let seen = false;

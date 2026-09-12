@@ -5,9 +5,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from ase.adapters.feeds.http import FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.application.feeds.pipeline import clean_text
 from ase.application.ports import Clock
 from ase.domain.events import (
+    MAX_ATTRIBUTE_CHARS,
     Category,
     Credibility,
     Event,
@@ -59,14 +61,16 @@ class CisaKevConnector:
             return []
         now = self._clock.now()
         cutoff = now - timedelta(days=RECENT_DAYS)
-        items = data.get("vulnerabilities", []) if isinstance(data, dict) else []
+        if not isinstance(data, dict) or not isinstance(data.get("vulnerabilities"), list):
+            raise FeedFetchError("CISA KEV response does not contain a vulnerability catalogue")
+        items = data["vulnerabilities"]
         events = []
         for item in items:
-            event = self._to_event(item, now)
+            event = self._to_event(item, now) if isinstance(item, dict) else None
             if (
                 event is not None
                 and event.published_at is not None
-                and event.published_at >= cutoff
+                and cutoff <= event.published_at <= now
             ):
                 events.append(event)
         return events
@@ -82,6 +86,8 @@ class CisaKevConnector:
             return None
         ransomware = str(item.get("knownRansomwareCampaignUse") or "Unknown")
         name = str(item.get("vulnerabilityName") or "Known exploited vulnerability")
+        raw_action = item.get("requiredAction")
+        required_action = raw_action if isinstance(raw_action, str) else ""
         return Event(
             id=event_id(self.spec.id, cve),
             source_id=self.spec.id,
@@ -105,7 +111,10 @@ class CisaKevConnector:
                     "due_date": str(item.get("dueDate") or ""),
                     "ransomware": ransomware,
                     "cwes": ", ".join(str(c) for c in item.get("cwes") or []),
+                    "required_action": clean_text(required_action, MAX_ATTRIBUTE_CHARS) or "",
                 }
             ),
-            content_hash=content_hash(cve, str(item.get("dueDate")), ransomware, name),
+            content_hash=content_hash(
+                cve, str(item.get("dueDate")), ransomware, name, required_action
+            ),
         )

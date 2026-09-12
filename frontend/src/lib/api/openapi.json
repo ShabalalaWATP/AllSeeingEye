@@ -5,6 +5,126 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/cyber": {
+      "get": {
+        "tags": [
+          "cyber"
+        ],
+        "summary": "Cyber Snapshot",
+        "operationId": "cyber_snapshot_api_cyber_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/CyberWindowDays",
+              "default": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CyberSnapshotOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cyber/actors": {
+      "get": {
+        "tags": [
+          "cyber"
+        ],
+        "summary": "Cyber Actors",
+        "operationId": "cyber_actors_api_cyber_actors_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CyberActorsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/cyber/briefing": {
+      "post": {
+        "tags": [
+          "cyber"
+        ],
+        "summary": "Cyber Briefing",
+        "operationId": "cyber_briefing_api_cyber_briefing_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/CyberWindowDays",
+              "default": 2
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CyberBriefingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/economy": {
       "get": {
         "tags": [
@@ -13995,6 +14115,194 @@
         ],
         "title": "CredibilityLabelOut"
       },
+      "CyberActorCatalogueOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "released_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Released At"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "source_sha256": {
+            "type": "string",
+            "title": "Source Sha256"
+          },
+          "licence_url": {
+            "type": "string",
+            "title": "Licence Url"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          },
+          "actors": {
+            "items": {
+              "$ref": "#/components/schemas/CyberActorOut"
+            },
+            "type": "array",
+            "title": "Actors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "version",
+          "released_at",
+          "retrieved_at",
+          "source_url",
+          "source_sha256",
+          "licence_url",
+          "attribution",
+          "limitations",
+          "actors"
+        ],
+        "title": "CyberActorCatalogueOut"
+      },
+      "CyberActorMentionOut": {
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "title": "Group Id"
+          },
+          "matched_name": {
+            "type": "string",
+            "title": "Matched Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group_id",
+          "matched_name"
+        ],
+        "title": "CyberActorMentionOut"
+      },
+      "CyberActorOut": {
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "title": "Group Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "associated_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Associated Names"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Modified At"
+          },
+          "technique_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Technique Ids"
+          },
+          "technique_count": {
+            "type": "integer",
+            "title": "Technique Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group_id",
+          "name",
+          "associated_names",
+          "description",
+          "url",
+          "modified_at",
+          "technique_ids",
+          "technique_count"
+        ],
+        "title": "CyberActorOut"
+      },
+      "CyberActorTallyOut": {
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "title": "Group Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group_id",
+          "name",
+          "count"
+        ],
+        "title": "CyberActorTallyOut"
+      },
+      "CyberActorsOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "catalogue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CyberActorCatalogueOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "catalogue",
+          "coverage_note"
+        ],
+        "title": "CyberActorsOut"
+      },
       "CyberBoardOut": {
         "properties": {
           "outages_24h": {
@@ -14065,6 +14373,441 @@
           "latest_kev"
         ],
         "title": "CyberBoardOut"
+      },
+      "CyberBriefingOut": {
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/ReportJobOut"
+          },
+          "next_refresh_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Refresh At"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          },
+          "window_days": {
+            "$ref": "#/components/schemas/CyberWindowDays"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period From"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "next_refresh_at",
+          "coverage_note",
+          "window_days",
+          "period_from",
+          "period_to"
+        ],
+        "title": "CyberBriefingOut"
+      },
+      "CyberDailyCountOut": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "counts": {
+            "items": {
+              "$ref": "#/components/schemas/CyberKindCountOut"
+            },
+            "type": "array",
+            "title": "Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "total",
+          "counts"
+        ],
+        "title": "CyberDailyCountOut"
+      },
+      "CyberItemOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CyberKind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Published At"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "actor_mentions": {
+            "items": {
+              "$ref": "#/components/schemas/CyberActorMentionOut"
+            },
+            "type": "array",
+            "title": "Actor Mentions"
+          },
+          "kev": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CyberKevOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "summary",
+          "url",
+          "source_id",
+          "source_name",
+          "organisation",
+          "published_at",
+          "observed_at",
+          "country_iso",
+          "grade",
+          "actor_mentions",
+          "kev"
+        ],
+        "title": "CyberItemOut"
+      },
+      "CyberKevOut": {
+        "properties": {
+          "cve": {
+            "type": "string",
+            "title": "Cve"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "date_added": {
+            "type": "string",
+            "format": "date",
+            "title": "Date Added"
+          },
+          "due_date": {
+            "type": "string",
+            "title": "Due Date"
+          },
+          "ransomware_use": {
+            "type": "string",
+            "title": "Ransomware Use"
+          },
+          "cwes": {
+            "type": "string",
+            "title": "Cwes"
+          },
+          "required_action": {
+            "type": "string",
+            "title": "Required Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cve",
+          "vendor",
+          "product",
+          "date_added",
+          "due_date",
+          "ransomware_use",
+          "cwes",
+          "required_action"
+        ],
+        "title": "CyberKevOut"
+      },
+      "CyberKind": {
+        "type": "string",
+        "enum": [
+          "ransomware_claim",
+          "outage_signal",
+          "known_exploited_vulnerability",
+          "advisory",
+          "threat_report",
+          "other"
+        ],
+        "title": "CyberKind"
+      },
+      "CyberKindCountOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/CyberKind"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "count"
+        ],
+        "title": "CyberKindCountOut"
+      },
+      "CyberSnapshotOut": {
+        "properties": {
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "window_days": {
+            "$ref": "#/components/schemas/CyberWindowDays"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period From"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period To"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          },
+          "retained_count": {
+            "type": "integer",
+            "title": "Retained Count"
+          },
+          "returned_count": {
+            "type": "integer",
+            "title": "Returned Count"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "counts": {
+            "items": {
+              "$ref": "#/components/schemas/CyberKindCountOut"
+            },
+            "type": "array",
+            "title": "Counts"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/CyberDailyCountOut"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "top_countries": {
+            "items": {
+              "$ref": "#/components/schemas/CyberTallyOut"
+            },
+            "type": "array",
+            "title": "Top Countries"
+          },
+          "actor_mentions": {
+            "items": {
+              "$ref": "#/components/schemas/CyberActorTallyOut"
+            },
+            "type": "array",
+            "title": "Actor Mentions"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/CyberSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CyberItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "window_days",
+          "period_from",
+          "period_to",
+          "coverage_note",
+          "retained_count",
+          "returned_count",
+          "truncated",
+          "counts",
+          "timeline",
+          "top_countries",
+          "actor_mentions",
+          "sources",
+          "items"
+        ],
+        "title": "CyberSnapshotOut"
+      },
+      "CyberSourceOut": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SourceStatus"
+          },
+          "last_success": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success"
+          },
+          "last_error_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error At"
+          },
+          "retained_count": {
+            "type": "integer",
+            "title": "Retained Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "name",
+          "organisation",
+          "url",
+          "status",
+          "last_success",
+          "last_error_at",
+          "retained_count"
+        ],
+        "title": "CyberSourceOut"
+      },
+      "CyberTallyOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "count"
+        ],
+        "title": "CyberTallyOut"
+      },
+      "CyberWindowDays": {
+        "type": "integer",
+        "enum": [
+          2,
+          5,
+          7,
+          14
+        ],
+        "title": "CyberWindowDays"
       },
       "DailyBriefingOut": {
         "properties": {

@@ -7,9 +7,11 @@ NHK World, ISW, Kyodo) are left out until their URLs are confirmed.
 
 from __future__ import annotations
 
+from ase.adapters.feeds.cyber_rss import CyberRssConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
 from ase.adapters.feeds.rss_seeds import US_ADVISORY, RssSeed
+from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
 from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
@@ -25,8 +27,14 @@ RSS_SEEDS: tuple[RssSeed, ...] = (
     *SOCIAL_SEEDS,
     *REGIONAL_SEEDS,
     *ECONOMY_SEEDS,
+    *CYBER_SEEDS,
 )
 
 
 def build_rss_connectors(http: FeedHttpClient, clock: Clock) -> list[RssConnector]:
-    return [RssConnector(http, clock, seed.spec, seed.options) for seed in RSS_SEEDS]
+    return [
+        (CyberRssConnector if seed in CYBER_SEEDS else RssConnector)(
+            http, clock, seed.spec, seed.options
+        )
+        for seed in RSS_SEEDS
+    ]

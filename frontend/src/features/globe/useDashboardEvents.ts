@@ -5,6 +5,7 @@ import { useSatelliteFilters } from './useSatelliteFilters';
 import { useHazardFilters } from './useHazardFilters';
 import { useConflictFilters } from './useConflictFilters';
 import { useLocationQuality } from './useLocationQuality';
+import { useCyberFilters } from './useCyberFilters';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -31,7 +32,8 @@ export function useDashboardEvents(now: number) {
   const satellites = useSatelliteFilters(observations.filtered);
   const hazards = useHazardFilters(satellites.filtered);
   const conflicts = useConflictFilters(hazards.filtered);
-  const quality = useLocationQuality(conflicts.filtered, hidden);
+  const cyberFiltered = useCyberFilters(conflicts.filtered);
+  const quality = useLocationQuality(cyberFiltered, hidden);
   // Unplotted records remain inspectable. Selection follows filtered membership,
   // not whether the record has coordinates. Invalid selections cannot revive later.
   const selected = quality.filtered.find((event) => event.id === requestedId) ?? null;

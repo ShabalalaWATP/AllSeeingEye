@@ -3,6 +3,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid5
 
+from ase.domain.cyber import CyberWindowDays, cyber_window
 from ase.domain.economy_periods import EconomyWindowDays, economy_window
 from ase.domain.report_jobs import ReportJob
 
@@ -26,6 +27,12 @@ def economy_briefing_key(
     return uuid5(owner_id, f"ase:economy-briefing:{version}:{day}")
 
 
+def cyber_briefing_key(owner_id: UUID, now: datetime, days: CyberWindowDays) -> UUID:
+    """A personal daily admission key for one explicit cyber reporting window."""
+    day = now.astimezone(UTC).date().isoformat()
+    return uuid5(owner_id, f"ase:cyber-briefing:v1:{int(cyber_window(days))}d:{day}")
+
+
 def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
     """Keep the marker even if work is paused, failed or already published.
 
@@ -41,6 +48,7 @@ def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
                 briefing_key(job.owner_id, instant),
                 economy_briefing_key(job.owner_id, instant),
                 *(economy_briefing_key(job.owner_id, instant, days) for days in EconomyWindowDays),
+                *(cyber_briefing_key(job.owner_id, instant, days) for days in CyberWindowDays),
             }
             for instant in (job.created_at, job.created_at - REFRESH_INTERVAL)
         )

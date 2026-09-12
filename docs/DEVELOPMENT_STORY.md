@@ -4215,3 +4215,75 @@ archive depth and real-model summary quality across the four periods still need
 operator evaluation.
 
 The staged Gitleaks secret scan passed before committing this milestone.
+
+## Cyber threat intelligence, 12 September 2026
+
+Added a dedicated Cyber intelligence workspace with explicit 2/5/7/14-day
+periods, typed activity reporting, publication-volume charts, source coverage,
+actor reference and a personal cited daily briefing. The existing professional
+summary reader now lives in shared components for Economy and Cyber. Reports
+retain frozen dates, references and the existing Word/PDF/Markdown export path.
+Display filters do not silently change or regenerate the worldwide briefing.
+
+Seven public publisher feeds add NCSC reports/news, Microsoft, Cisco Talos,
+Google/Mandiant, CERT-EU and ACSC. All returned usable XML in bounded probes;
+the NCSC threat-report feed's newest item was old and CISA RSS returned 403.
+Existing API probes returned 100 ransomware claims, 44 recent KEV additions and
+146 IODA warning/critical signals. Repaired current ransomware fields, bounded
+IODA envelopes and carried CISA required actions through to the snapshot. New
+publisher headlines retain explicit unassessed grades and original organisation
+identity; publisher geography is not incident geography.
+
+Packaged 176 historical MITRE Enterprise ATT&CK v19.2 profiles with 4,628 direct
+technique associations, a pinned upstream checksum, complete licence and offline
+importer. Conservative title-name matching provides research leads rather than
+confirmed attribution. Disabling the reference source hides derived matches too.
+Source counts, unavailable activity and an observed zero remain separate states.
+
+The map and globe have a dedicated, off-by-default Cyber shield category with
+type/search filters and opt-in labelled country-centre reference markers. These
+represent source-attributed ransomware victim/outage countries, not exact attack
+locations or attacker origins. Existing precision filters, selected highlights,
+inspector closing and session/access isolation remain in force. Cyber's duplicate
+toggle was removed from Topics & time.
+
+Review found and fixed synchronous actor matching inside a shared guard,
+truncated actor tallies, mismatched client mention bounds, missing KEV actions,
+busy responses during rapid period switching and unavailable counts rendered as
+zero. Preparation now runs outside the event loop and source-control guard, with
+fresh access/source filtering before release. A synthetic 5,000-record check
+measured 2.492 seconds preparation and 0.004 seconds guarded release. Read-only
+busy retries are bounded and cancelled when period or authority changes.
+
+Validation: the full frontend suite passed 2,210 tests with one skip, measuring
+95.25% statements, 90.48% branches, 93.58% functions and 96.44% lines. Sixteen
+focused UI tests passed again after final copy/spacing corrections. The CTI
+backend suite passed 67 checks with 99.33% scoped coverage; 58 shared regressions,
+64 actor reference tests and the focused feed/KEV suites also passed. These
+overlapping suites are not a full backend coverage measurement.
+
+Backend Ruff, strict mypy (892 files), both import contracts and file-length
+checks passed. Frontend type checks, scoped lint/format and production build
+passed. The pre-existing source-rating test for `adsb_global` still expects
+editorial status where the baseline returns unassessed; it was reproduced against
+an isolated HEAD checkout and was not disguised by upgrading an unassessed grade.
+Existing vendor chunk and two untouched source-length target warnings remain.
+
+Desktop, 390-pixel mobile, actor detail and formatted briefing layouts were
+inspected with fixture APIs, including the light theme. Local API health returned
+200 after restart, all three new routes appeared in OpenAPI, and anonymous cyber
+requests returned 401. No new dependency, credentials, schema migration,
+production deployment or real-model quality evaluation was performed. No Git
+remote is configured. The active plan, Economy navigation guide and dedicated
+Cyber workspace/source guide were updated.
+
+The staged Gitleaks secret scan passed. Browser checks also exercised the Cyber
+filter panel, labelled country markers, source details and projection switching
+on both map and globe. These checks used deterministic fixture records rather
+than presenting invented activity as live intelligence.
+
+Final browser acceptance caught a country-record selection gap. Selecting a
+country-only list record now highlights its existing reference badge, without
+opening a second inspector or introducing an incident point. Closing details
+or excluding the record clears that highlight. Seven focused regression tests,
+scoped ESLint and frontend type checks passed after this narrow final fix.

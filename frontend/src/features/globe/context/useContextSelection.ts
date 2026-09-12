@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { ScatterplotLayer } from '@deck.gl/layers';
+import type { Layer } from '@deck.gl/core';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { isMappedEvent } from '../geographicPrecision';
+import type { ViewMode } from '@/stores/globe';
+import { buildIconLayer } from '../layers/icons';
 
 /** One explicit snapshot selection, separate from the bounded viewport collection. */
-export function useContextSelection(country: string | null, picking: boolean) {
+export function useContextSelection(
+  country: string | null,
+  picking: boolean,
+  mode: ViewMode = 'map',
+) {
   const actor = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
   );
@@ -61,5 +68,14 @@ export function useContextSelection(country: string | null, picking: boolean) {
         : [],
     [event],
   );
-  return { event, choose, close, layers };
+  const cyberIcon = useMemo<Layer | null>(() => {
+    if (event?.category !== 'cyber' || !isMappedEvent(event)) return null;
+    const icon = buildIconLayer([event], () => undefined, event.id, mode === 'globe');
+    return icon ? (icon.clone({ id: 'context-selected-cyber', pickable: false }) as Layer) : null;
+  }, [event, mode]);
+  const combined = useMemo(
+    () => (cyberIcon ? [...layers, cyberIcon] : layers),
+    [layers, cyberIcon],
+  );
+  return { event, choose, close, layers: combined };
 }

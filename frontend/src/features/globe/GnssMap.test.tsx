@@ -88,9 +88,11 @@ it('gives shared filters and appearance one owner on their respective rails', as
   const { user } = renderApp('/', 'user');
   await user.click(await screen.findByRole('button', { name: 'Topics & time' }));
   const filters = screen.getByRole('region', { name: 'Topics & time' });
-  expect(within(filters).getAllByRole('switch')).toHaveLength(5);
+  expect(within(filters).getAllByRole('switch')).toHaveLength(4);
   expect(
-    within(filters).queryByRole('switch', { name: /GNSS|Flights|Boats|Day and night|graphics/ }),
+    within(filters).queryByRole('switch', {
+      name: /Cyber|GNSS|Flights|Boats|Day and night|graphics/,
+    }),
   ).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Layers and settings' })).not.toBeInTheDocument();
   const tools = screen.getByRole('group', { name: 'Map tools' });

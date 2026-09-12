@@ -9,6 +9,7 @@ import { SatelliteFilterPanel } from './SatelliteFilterPanel';
 import { ConflictOverviewPanel } from './ConflictOverviewPanel';
 import { HazardFilterPanel } from './HazardFilterPanel';
 import { GnssPanel } from './GnssPanel';
+import { CyberFilterPanel } from './CyberFilterPanel';
 import { useMemo, type ComponentProps } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { ContextTabs } from './context/ContextTabs';
@@ -58,6 +59,7 @@ export function catalogueControlPanels({
   onSatelliteSelect,
   selectedId,
   qualityFilter,
+  cyber,
 }: {
   infrastructure: ReturnType<typeof useInfrastructure>;
   focusInfrastructure: ReturnType<typeof useInfrastructureSelection>['focus'];
@@ -71,8 +73,18 @@ export function catalogueControlPanels({
   onSatelliteSelect: (event: LiveEvent) => void;
   selectedId: string | null;
   qualityFilter: LocationQualityFilter;
+  cyber: ComponentProps<typeof CyberFilterPanel>;
 }) {
   return [
+    <ControlPanel
+      key="cyber"
+      side="left"
+      label="Cyber threat intelligence"
+      icon="cyber"
+      entry={false}
+    >
+      <CyberFilterPanel {...cyber} />
+    </ControlPanel>,
     <ControlPanel key="gnss" side="left" label="GNSS interference" icon="gnss" entry={false}>
       <GnssPanel {...gnss} />
     </ControlPanel>,

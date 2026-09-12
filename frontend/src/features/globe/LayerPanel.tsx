@@ -7,7 +7,7 @@ import type { StreamStatus } from '@/lib/sse';
 import { ConnectionStatus } from './ConnectionStatus';
 import { CATEGORY_STYLES } from '@/lib/categories';
 
-const OTHER_TOPICS = ['cyber', 'social', 'political', 'humanitarian', 'economic'] as const;
+const OTHER_TOPICS = ['social', 'political', 'humanitarian', 'economic'] as const;
 
 export interface LayerPanelProps {
   counts: Partial<Record<Category, number>>;

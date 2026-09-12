@@ -5,6 +5,34 @@ subject matching in `b9f9050`. The local OpenAI connection is active; successful
 long-report completion and wider model-quality evaluation remain open. Checked items below describe
 implemented behaviour within the documented limits, not measured research accuracy.
 
+## Cyber threat intelligence, 12 September 2026
+
+- [x] Add a dedicated CTI workspace with 2/5/7/14-day periods, typed source
+  reporting, daily volume charts, search and source-supplied country context.
+- [x] Connect seven official/vendor publisher feeds to existing collection and
+  private research; repair current ransomware fields, IODA bounds and KEV actions.
+- [x] Package 176 licensed MITRE Enterprise ATT&CK actor profiles with historical
+  dates, technique links and conservative name matching, not automatic attribution.
+- [x] Reuse owner/window-scoped daily research for a cited cyber briefing and the
+  professional report reader with existing exports.
+- [x] Add an off-by-default Cyber shield layer and filters to map/globe, including
+  explicitly labelled, opt-in country reference markers and selection clearing.
+- [x] Keep aggregation bounded and outside the shared source-control lock; recheck
+  source/session access before release and preserve unknown evidence states.
+- [ ] Evaluate configured-model cyber briefing quality and factual attribution
+  against representative source sets. Wider archives and geographical coverage
+  require explicit source evaluation.
+
+See [the cyber workspace guide](CYBER_THREAT_INTELLIGENCE.md) for source checks,
+operator controls, performance limits and evidence semantics.
+
+Acceptance: 2,210 frontend tests pass with one skip and 95.25% statement/90.48%
+branch coverage. The CTI backend slice passed 67 tests with 99.33% scoped coverage;
+actor/feed/shared suites also passed. Static checks, build, fixture-browser views
+and anonymous API rejection were verified. One unrelated source-rating baseline
+failure remains documented in the development story. Real-model evaluation is
+still an open acceptance item.
+
 ## Research types, schedules and photo workspace, 12 September 2026
 
 - [x] Offer Basic, Deep and Advanced with distinct collection/evidence limits and

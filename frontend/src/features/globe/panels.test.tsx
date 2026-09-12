@@ -66,7 +66,7 @@ describe('LayerPanel', () => {
     render(
       <LayerPanel
         counts={{ disaster: 3 }}
-        hidden={['cyber']}
+        hidden={['social']}
         stats={storeStats}
         status="live"
         error={null}
@@ -76,15 +76,15 @@ describe('LayerPanel', () => {
       />,
     );
     const switches = screen.getAllByRole('switch');
-    expect(switches).toHaveLength(5);
-    expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveAttribute(
+    expect(switches).toHaveLength(4);
+    expect(screen.getByRole('switch', { name: 'Social 0' })).toHaveAttribute(
       'aria-checked',
       'false',
     );
     expect(screen.getByRole('status')).toHaveTextContent('Live');
     expect(screen.getByText('2 events, 0.0 of 1 MB')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('switch', { name: 'Cyber 0' }));
-    expect(onToggle).toHaveBeenCalledWith('cyber');
+    await userEvent.click(screen.getByRole('switch', { name: 'Social 0' }));
+    expect(onToggle).toHaveBeenCalledWith('social');
   });
 
   it('shows the load error and no budget line before the first load', () => {

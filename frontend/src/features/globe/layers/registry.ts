@@ -128,13 +128,13 @@ export function buildEventLayers(
       selectedId,
     ),
   );
-  // Approximate conflict and wildfire reports retain their location ring and gain a type symbol.
+  // Approximate reports retain their location ring and gain a type symbol.
   // They do not enter the exact-point cluster path or acquire more precise geography.
   const iconEvents = [
     ...loose,
     ...visible.filter(
       (event) =>
-        (event.category === 'conflict' || iconFor(event) === 'wildfire') &&
+        (['conflict', 'cyber'].includes(event.category) || iconFor(event) === 'wildfire') &&
         event.geo_confidence !== 'exact',
     ),
   ];

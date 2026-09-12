@@ -36,7 +36,7 @@ it('uses one tab stop and native arrow selection for the time window', async () 
   await user.keyboard('{ArrowUp}');
   expect(screen.getByRole('radio', { name: '7 d' })).toBeChecked();
   await user.tab();
-  expect(screen.getByRole('switch', { name: 'Cyber 0' })).toHaveFocus();
+  expect(screen.getByRole('switch', { name: 'Social 0' })).toHaveFocus();
   await user.tab({ shift: true });
   expect(screen.getByRole('radio', { name: '7 d' })).toHaveFocus();
 });

@@ -1,6 +1,7 @@
 import type { useDashboardEvents } from './useDashboardEvents';
 import { QUALITY_LABELS } from './geographicPrecision';
 import { DEFAULT_HAZARD_OPTIONS } from '@/lib/hazards';
+import { useCyberFiltersStore } from '@/stores/cyberFilters';
 
 /** Describes event filtering only; static catalogues have separate scopes. */
 export function EventScopeStrip({ state }: { state: ReturnType<typeof useDashboardEvents> }) {
@@ -8,6 +9,7 @@ export function EventScopeStrip({ state }: { state: ReturnType<typeof useDashboa
   const button =
     'shrink-0 rounded px-2 py-1 text-[11px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan';
   const { observations, satellites, hazards, conflicts } = state;
+  const cyber = useCyberFiltersStore();
   const hazardRefined = Object.entries(DEFAULT_HAZARD_OPTIONS).some(
     ([key, value]) => hazards.options[key as keyof typeof DEFAULT_HAZARD_OPTIONS] !== value,
   );
@@ -127,6 +129,18 @@ export function EventScopeStrip({ state }: { state: ReturnType<typeof useDashboa
           title="Reset conflict report filters"
         >
           Conflicts: filtered{conflicts.includeUnreviewed ? ', unreviewed included' : ''} ×
+        </button>
+      )}
+      {(cyber.kind !== 'all' || cyber.query !== '') && (
+        <button
+          className={button}
+          onClick={() => {
+            cyber.setKind('all');
+            cyber.setQuery('');
+          }}
+          title="Reset cyber filters"
+        >
+          Cyber: filtered ×
         </button>
       )}
       <span className="shrink-0 px-2 font-mono text-[10px] text-cyan">

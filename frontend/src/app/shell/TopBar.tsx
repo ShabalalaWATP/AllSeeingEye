@@ -14,6 +14,7 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname.startsWith('/reports')) return 'Saved reports';
   if (pathname.startsWith('/subscriptions')) return 'Subscriptions';
   if (pathname.startsWith('/economy')) return 'Economy';
+  if (pathname.startsWith('/cyber')) return 'Cyber intelligence';
   if (pathname.startsWith('/settings')) return 'Your settings';
   if (pathname.startsWith('/research')) return 'Research';
   if (pathname.startsWith('/geolocation')) return 'Geolocation';

@@ -2,8 +2,10 @@
 
 from dataclasses import replace
 
+from ase.adapters.feeds.cyber_rss import cyber_publication
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss_seeds import RssSeed
+from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
 from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
@@ -12,7 +14,7 @@ from ase.application.ports import Clock
 from ase.domain.events import freeze_attributes
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
-PUBLISHER_SEEDS = OFFICIAL_SEEDS + OUTLET_SEEDS + ECONOMY_SEEDS
+PUBLISHER_SEEDS = OFFICIAL_SEEDS + OUTLET_SEEDS + ECONOMY_SEEDS + CYBER_SEEDS
 LIMITATIONS = (
     "One public publisher RSS/Atom snapshot, not a complete archive or news search. "
     "At most the first 200 items are checked. Only headline, publication date, source "
@@ -92,6 +94,8 @@ class PublisherFeedResearchProvider:
             )
             for event in batch.items
         )
+        if self._seed in CYBER_SEEDS:
+            items = tuple(cyber_publication(event, original) for event in items)
         return replace(
             batch,
             items=items,

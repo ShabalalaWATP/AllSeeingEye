@@ -10,6 +10,7 @@ import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 
 import { CATEGORY_STYLES } from '@/lib/categories';
+import { CYBER_SHIELD_MASK } from '@/lib/cyber';
 import { conflictKind, type ConflictKind } from '@/lib/conflicts';
 import { CONFLICT_ICON_SHAPES, CONFLICT_SYMBOLS } from '@/lib/conflictSymbols';
 import {
@@ -27,6 +28,7 @@ export type IconKind =
   | 'volcano'
   | 'wildfire'
   | 'thermal'
+  | 'cyber'
   | ConflictKind;
 
 const ICON_SIZE = 64;
@@ -34,6 +36,7 @@ const ICON_SIZE = 64;
 /** White-on-transparent SVG masks; deck.gl tints them with the category colour. */
 const SHAPES: Record<IconKind, string> = {
   ...CONFLICT_ICON_SHAPES,
+  cyber: `<g transform="scale(2.666667)">${CYBER_SHIELD_MASK}</g>`,
   wildfire:
     '<path d="M34 4c3 16-13 19-9 30 5-2 9-7 10-12 9 7 15 15 15 23a18 18 0 0 1-36 0c0-10 8-17 7-27 4 3 5 6 6 8C35 17 29 12 34 4Z" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>',
   vessel_unknown:
@@ -61,6 +64,7 @@ const DATA_URIS: Record<IconKind, string> = Object.fromEntries(
 
 /** Which icon, if any, an event should be drawn with. */
 export function iconFor(event: LiveEvent): IconKind | null {
+  if (event.category === 'cyber') return 'cyber';
   if (event.category === 'conflict') return conflictKind(event);
   if (event.category === 'disaster' && ['wildfire', 'wildfires'].includes(event.subtype))
     return 'wildfire';
