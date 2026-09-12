@@ -6,10 +6,12 @@ evidence and the Markdown is rendered again so the export carries them too.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import replace
 
 from ase.application.ports import UnitOfWork
 from ase.application.ports.archive import Archiver
+from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.ports.reports import ReportRepository
 from ase.application.reports.document import build_document
 from ase.application.reports.export_text import safe_url
@@ -23,7 +25,11 @@ def archivable(item: EvidenceItem) -> bool:
 
 
 async def archive_evidence(
-    archiver: Archiver, reports: ReportRepository, uow: UnitOfWork, version: ReportVersion
+    archiver: Archiver,
+    reports: ReportRepository,
+    uow: UnitOfWork,
+    version: ReportVersion,
+    projector: AsyncReportProjector | None = None,
 ) -> int:
     """Archive every cited item that can be archived; the number of snapshots is returned."""
     record = await reports.get(version.report_id)
@@ -52,7 +58,13 @@ async def archive_evidence(
         replace(item, archive_url=archives.get(item.label, item.archive_url))
         for item in version.evidence
     )
-    markdown = render_document_markdown(build_document(record, replace(version, evidence=evidence)))
+    archived_version = replace(version, evidence=evidence)
+    document = (
+        await projector.build(record, archived_version)
+        if projector is not None
+        else await asyncio.to_thread(build_document, record, archived_version)
+    )
+    markdown = render_document_markdown(document)
     await reports.set_archives(version.id, archives, markdown)
     await uow.commit()
     return len(archives)

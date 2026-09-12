@@ -13,7 +13,7 @@ import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 const formatLabels = {
   pdf: ['PDF', 'Fixed layout for reading and printing'],
   docx: ['Word (.docx)', 'Editable document with native headings and tables'],
-  md: ['Markdown', 'Portable plain-text report with linked references'],
+  md: ['Markdown', 'Portable report; figures include local images in a ZIP'],
 } as const;
 
 export function ReportExports({
@@ -39,8 +39,16 @@ export function ReportExports({
   };
   const download = useAsyncAction(async (format: ReportExportFormat | 'md') => {
     if (format === 'md') {
-      const text = await fetchReportMarkdown(id, version);
-      saveTextFile(fileNameFor(`${title}-v${String(version)}`, 'md'), text);
+      const file = await fetchReportMarkdown(id, version);
+      const fallback = fileNameFor(
+        `${title}-v${String(version)}`,
+        file.blob.type === 'application/zip' ? 'zip' : 'md',
+      );
+      if (file.blob.type === 'application/zip') {
+        saveBinaryFile(file.filename ?? fallback, file.blob);
+      } else {
+        saveTextFile(file.filename ?? fallback, await file.blob.text());
+      }
     } else {
       const blob = await fetchReportFile(id, version, format);
       saveBinaryFile(fileNameFor(`${title}-v${String(version)}`, format), blob);

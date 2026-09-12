@@ -13,6 +13,7 @@ from functools import partial
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
+from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.ports.research import ResearchCollection
 from ase.application.reports.advocacy import advocate, apply_advocacy
 from ase.application.reports.automatic_claims import AutomaticClaims
@@ -60,6 +61,7 @@ class Producer:
         private_store_factory: Callable[[], EventStore] | None = None,
         automatic_claims: AutomaticClaims | None = None,
         web_research: FreshWebResearch | None = None,
+        projector: AsyncReportProjector | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -71,6 +73,7 @@ class Producer:
         self._private_store_factory = private_store_factory
         self._automatic_claims = automatic_claims
         self._web_research = web_research
+        self._projector = projector
 
     async def produce(
         self,
@@ -254,6 +257,7 @@ class Producer:
             challenge=challenge,
             url_resolver=self._url_resolver,
             progress=progress,
+            projector=self._projector,
         )
         return await complete_production(
             version,

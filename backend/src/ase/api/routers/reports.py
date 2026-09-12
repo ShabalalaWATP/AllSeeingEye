@@ -6,8 +6,9 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Header, Query, Request, Response
-from fastapi.responses import PlainTextResponse
 
+from ase.adapters.reports.async_documents import run_bounded_thread
+from ase.adapters.reports.markdown_package import render_markdown_export
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.report_run import run_generation
 from ase.api.schemas_reports import (
@@ -20,10 +21,31 @@ from ase.api.schemas_reports import (
 from ase.api.session_guard import validate_request_session
 from ase.application.reports.document import build_document
 from ase.application.reports.document_release import release_document
-from ase.application.reports.publication_markdown import render_document_markdown
-from ase.domain.report_documents import ReportFile
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+def _media_quality(value: str, expected: str) -> float:
+    accepted = 0.0
+    for media_range in value.split(","):
+        parts = [part.strip() for part in media_range.split(";")]
+        if not parts or parts[0].casefold() != expected:
+            continue
+        quality = 1.0
+        for parameter in parts[1:]:
+            name, separator, raw_value = parameter.partition("=")
+            if separator and name.strip().casefold() == "q":
+                try:
+                    quality = float(raw_value.strip())
+                except ValueError:
+                    quality = 0.0
+        if 0.0 <= quality <= 1.0:
+            accepted = max(accepted, quality)
+    return accepted
+
+
+def _prefers_zip(value: str) -> bool:
+    return _media_quality(value, "application/zip") > _media_quality(value, "text/markdown")
 
 
 @router.get("/templates")
@@ -65,7 +87,7 @@ async def create_report(
         before_save=lambda: validate_request_session(container, claims),
     )
     background.add_task(container.archive_report_version, version)
-    return ReportOut.build(record, version)
+    return await run_bounded_thread(lambda: ReportOut.build(record, version), wait_for_slot=True)
 
 
 @router.post("/{report_id}/versions", status_code=201)
@@ -91,7 +113,7 @@ async def regenerate_report(
         before_save=lambda: validate_request_session(container, claims),
     )
     background.add_task(container.archive_report_version, version)
-    return ReportOut.build(record, version)
+    return await run_bounded_thread(lambda: ReportOut.build(record, version), wait_for_slot=True)
 
 
 @router.get("/{report_id}")
@@ -103,26 +125,40 @@ async def get_report(
     version: Annotated[int | None, Query(ge=1)] = None,
 ) -> ReportOut:
     record, found = await container.get_report(session).execute(user, report_id, version)
-    return ReportOut.build(record, found)
+    return await run_bounded_thread(lambda: ReportOut.build(record, found))
 
 
-@router.get("/{report_id}/markdown", response_class=PlainTextResponse)
+@router.get(
+    "/{report_id}/markdown",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {
+                "text/markdown": {"schema": {"type": "string"}},
+                "application/zip": {"schema": {"type": "string", "format": "binary"}},
+            }
+        }
+    },
+)
 async def report_markdown(
     report_id: UUID,
+    request: Request,
     user: CurrentUser,
     claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
-) -> PlainTextResponse:
+) -> Response:
     record, found = await container.get_report(session).execute(user, report_id, version)
-    markdown = render_document_markdown(build_document(record, found))
-    rendered = ReportFile(
-        content=markdown.encode("utf-8"),
-        media_type="text/markdown; charset=utf-8",
-        filename=f"report-{report_id}-v{found.number}.md",
-        report_version_id=found.id,
-        version_number=found.number,
+    package_figures = _prefers_zip(request.headers.get("accept", ""))
+    rendered = await run_bounded_thread(
+        lambda: render_markdown_export(
+            build_document(record, found),
+            report_id,
+            found.id,
+            found.number,
+            package_figures=package_figures,
+        )
     )
     repositories = container.repositories(session)
     await release_document(
@@ -136,10 +172,14 @@ async def report_markdown(
         clock=container.clock,
         uow=repositories.uow,
     )
-    return PlainTextResponse(
-        markdown,
-        media_type="text/markdown; charset=utf-8",
-        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+    return Response(
+        rendered.content,
+        media_type=rendered.media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{rendered.filename}"',
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
     )
 
 

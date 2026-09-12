@@ -5,7 +5,8 @@ import threading
 
 import pytest
 
-from ase.adapters.reports.async_documents import AsyncReportDocumentRenderer
+from ase.adapters.reports import async_documents
+from ase.adapters.reports.async_documents import AsyncReportDocumentRenderer, run_bounded_thread
 from ase.domain.errors import RateLimited
 from ase.domain.report_documents import ExportFormat, ReportDocument
 
@@ -70,3 +71,37 @@ async def test_configured_worker_routes_only_arabic_persian_pdf_and_propagates_c
     with pytest.raises(asyncio.CancelledError):
         await task
     assert stopped.is_set()
+
+
+async def test_generic_document_work_runs_off_loop_and_settles_cancellation():
+    started = threading.Event()
+    release = threading.Event()
+
+    def render_package():
+        started.set()
+        release.wait(5)
+        return "package"
+
+    task = asyncio.create_task(run_bounded_thread(render_package))
+    assert await asyncio.to_thread(started.wait, 2)
+    task.cancel()
+    await asyncio.sleep(0)
+    assert not task.done()
+    release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert await run_bounded_thread(lambda: "next") == "next"
+
+
+async def test_internal_document_work_waits_for_shared_capacity(monkeypatch):
+    slots = threading.BoundedSemaphore(2)
+    monkeypatch.setattr(async_documents, "_SLOTS", slots)
+    assert slots.acquire(blocking=False)
+    assert slots.acquire(blocking=False)
+
+    waiting = asyncio.create_task(run_bounded_thread(lambda: "finished", wait_for_slot=True))
+    await asyncio.sleep(0.1)
+    assert not waiting.done()
+    slots.release()
+    assert await asyncio.wait_for(waiting, 2) == "finished"
+    slots.release()

@@ -17,6 +17,7 @@ from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewR
 from ase.adapters.persistence.report_search import SqlReportEmbeddingRepository
 from ase.adapters.persistence.research_library import SqlResearchLibraryRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
+from ase.adapters.reports.async_projection import AsyncReportDocumentProjector
 from ase.adapters.reports.claim_evidence_package import SelectedClaimPackageRenderer
 from ase.adapters.reports.evidence_package import FrozenEvidencePackageRenderer
 from ase.adapters.reports.map_image import SavedMapImageRenderer
@@ -122,7 +123,9 @@ class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
         try:
             async with self.session_factory() as session:
                 r = self.repositories(session)
-                await archive_evidence(self.archiver, r.reports, r.uow, version)
+                await archive_evidence(
+                    self.archiver, r.reports, r.uow, version, self.internal_report_projector
+                )
         except Exception:
             log.warning("archive.job_failed", report_version=str(version.id), exc_info=True)
 
@@ -235,8 +238,18 @@ class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
     def report_renderer(self) -> AsyncReportRenderer:
         return build_report_renderer(self.settings.report_pdf_runtime)
 
+    @cached_property
+    def report_projector(self) -> AsyncReportDocumentProjector:
+        return AsyncReportDocumentProjector()
+
+    @cached_property
+    def internal_report_projector(self) -> AsyncReportDocumentProjector:
+        return AsyncReportDocumentProjector(wait_for_slot=True)
+
     def export_report(self, session: AsyncSession) -> ExportReportUseCase:
-        return ExportReportUseCase(self.get_report(session), self.report_renderer)
+        return ExportReportUseCase(
+            self.get_report(session), self.report_renderer, self.report_projector
+        )
 
     def original_assets(self, session: AsyncSession) -> OriginalAssets:
         r = self.repositories(session)

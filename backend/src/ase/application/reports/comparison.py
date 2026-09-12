@@ -46,8 +46,8 @@ def compare_versions(
     record: ReportRecord, before: ReportVersion, after: ReportVersion
 ) -> ReportComparison:
     # Bound the same persisted inputs before producing potentially large diff responses.
-    build_document(record, before)
-    build_document(record, after)
+    build_document(record, before, include_generated_figures=False)
+    build_document(record, after, include_generated_figures=False)
     changes = _changes("Content", _leaves(asdict(before.body)), _leaves(asdict(after.body)))
     for section, old, new in (
         ("Direction", before.direction, after.direction),

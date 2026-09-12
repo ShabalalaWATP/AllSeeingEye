@@ -3986,3 +3986,22 @@ could gain false gaps, and PDF/HTML exposed only one of two retained reference
 links. All three paths were corrected and their focused 39-test set passed. The
 publication builder was then split by responsibility to remain within the source
 file length target.
+
+Reports with a useful citation graph now add a deterministic evidence
+relationship diagram showing which retained references support or contradict
+each key judgement. Markdown export remains a plain file when no figure exists;
+reports with figures receive a deterministic, self-contained ZIP containing
+`report.md` and bounded local image assets. Fixed archive paths and timestamps,
+validated image content and byte limits keep the package portable and safe.
+Focused backend export and frontend reader checks passed, and actual rendered
+output was visually inspected to confirm the diagram, captions and citation links
+remain legible in the report.
+
+Final acceptance passed all 1,035 report-focused backend tests and the clean
+frontend run passed 1,970 tests with one skip. Frontend coverage was 95.11%
+statements and 90.06% branches. Ruff, formatting, strict mypy over 850 source
+files, both import contracts, frontend typing, scoped ESLint/Prettier and the
+production build passed. A competing-load globe test timed out once but passed
+in isolation and in the clean full run. Independent correctness and security
+rechecks found no remaining actionable issue. The full backend suite, visual
+DOCX rendering and production deployment were not performed.

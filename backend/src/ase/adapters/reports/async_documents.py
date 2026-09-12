@@ -2,6 +2,7 @@
 
 import asyncio
 import threading
+from collections.abc import Callable
 from typing import Protocol
 
 from ase.adapters.reports.documents import ReportDocumentRenderer
@@ -16,7 +17,7 @@ class PdfWorker(Protocol):
     async def render(self, document: ReportDocument) -> bytes: ...
 
 
-async def settle(task: asyncio.Task[bytes]) -> bytes:
+async def settle[T](task: asyncio.Task[T]) -> T:
     """Do not release admission while cancellation leaves a renderer running."""
     cancelled = False
     try:
@@ -30,6 +31,19 @@ async def settle(task: asyncio.Task[bytes]) -> bytes:
     finally:
         if cancelled:
             raise asyncio.CancelledError
+
+
+async def run_bounded_thread[T](operation: Callable[[], T], *, wait_for_slot: bool = False) -> T:
+    """Run CPU-heavy document work off-loop within shared export admission."""
+    if wait_for_slot:
+        while not _SLOTS.acquire(blocking=False):
+            await asyncio.sleep(0.05)
+    elif not _SLOTS.acquire(blocking=False):
+        raise RateLimited(5)
+    try:
+        return await settle(asyncio.create_task(asyncio.to_thread(operation)))
+    finally:
+        _SLOTS.release()
 
 
 class AsyncReportDocumentRenderer:

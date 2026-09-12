@@ -47,6 +47,14 @@ async def _spawn(directory: Path) -> asyncio.subprocess.Process:
     )
 
 
+async def _render_html(document: ReportDocument) -> bytes:
+    task = asyncio.create_task(asyncio.to_thread(render_print_html, document))
+    html, was_cancelled = await _settle(task)
+    if was_cancelled:
+        raise asyncio.CancelledError
+    return html
+
+
 class ChromiumPdfWorker:
     def __init__(self, policy: LinuxChromiumPolicy, *, timeout: float = MAX_SECONDS) -> None:
         if not 0 < timeout <= MAX_SECONDS:
@@ -56,7 +64,7 @@ class ChromiumPdfWorker:
     async def render(self, document: ReportDocument) -> bytes:
         if self.unhealthy:
             raise InvalidRequest("The isolated PDF runtime requires operator recovery.")
-        html = render_print_html(document)
+        html = await _render_html(document)
         directory = Path(tempfile.mkdtemp(prefix="ase-pdf-")).resolve()
         try:
             job: RenderCgroup | None = None

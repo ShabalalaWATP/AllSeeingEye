@@ -88,6 +88,29 @@ async def test_bounded_owned_worker_completes_and_reaps(runtime):
     assert not runtime.jobs[0].path.exists()
 
 
+async def test_html_preparation_runs_off_loop_and_settles_cancellation(runtime, monkeypatch):
+    main_thread = threading.get_ident()
+    started = threading.Event()
+    release = threading.Event()
+
+    def prepare_html(document):
+        assert threading.get_ident() != main_thread
+        started.set()
+        release.wait(5)
+        return b"<html></html>"
+
+    monkeypatch.setattr(chromium, "render_print_html", prepare_html)
+    task = asyncio.create_task(ChromiumPdfWorker(runtime).render(DOC))
+    assert await asyncio.to_thread(started.wait, 2)
+    task.cancel()
+    await asyncio.sleep(0)
+    assert not task.done()
+    release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert runtime.jobs == []
+
+
 @pytest.mark.parametrize("outcome", ["cancel", "deadline", "delayed_spawn"])
 async def test_cancel_and_deadline_reap_spawned_process(runtime, monkeypatch, outcome):
     entered, release = asyncio.Event(), asyncio.Event()

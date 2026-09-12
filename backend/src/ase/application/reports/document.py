@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 from ase.application.reports.export_text import review_notice
 from ase.application.reports.frozen_header import frozen_period_line
+from ase.application.reports.publication_figures import build_evidence_relationship_figure
 from ase.application.reports.reference_projection import build_references, reference_text
 from ase.domain.doctrine import term_for
 from ase.domain.errors import InvalidRequest
@@ -14,6 +15,7 @@ from ase.domain.evidence import EvidenceItem
 from ase.domain.report_documents import (
     BlockKind,
     DocumentBlock,
+    DocumentFigure,
     DocumentInline,
     DocumentListItem,
     DocumentReference,
@@ -82,6 +84,14 @@ class DocumentBuilder:
 
     def heading(self, text: str) -> None:
         self.add(text, BlockKind.HEADING)
+
+    def figure(self, figure: DocumentFigure) -> None:
+        self.blocks.append(
+            DocumentBlock(BlockKind.FIGURE, self._bounded(figure.caption), figure=figure)
+        )
+
+    def citation_numbers(self) -> dict[str, int]:
+        return dict(self._numbers)
 
     def _citations(self, labels: Sequence[str]) -> tuple[int, ...]:
         numbers: list[int] = []
@@ -279,7 +289,12 @@ def _limitations(doc: DocumentBuilder, version: ReportVersion) -> None:
         doc.add(version.body.sourcing_statement)
 
 
-def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocument:
+def build_document(
+    record: ReportRecord,
+    version: ReportVersion,
+    *,
+    include_generated_figures: bool = True,
+) -> ReportDocument:
     """Build the canonical product for the exact frozen version without new research."""
     if len(version.markdown) > MAX_DOCUMENT_CHARS * 2:
         raise InvalidRequest("This report exceeds the document export size limit.")
@@ -295,6 +310,10 @@ def build_document(record: ReportRecord, version: ReportVersion) -> ReportDocume
     if version.status is ReportStatus.FAILED:
         doc.add(review_notice(version.status), BlockKind.WARNING)
     _summary(doc, version.body)
+    if include_generated_figures:
+        figure = build_evidence_relationship_figure(version.body, doc.citation_numbers())
+        if figure is not None:
+            doc.figure(figure)
     _findings(doc, version.body)
     cited = version.body.cited_labels()
     doc.chronology([item for item in version.evidence if item.label in cited])

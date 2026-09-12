@@ -5540,9 +5540,15 @@
           "200": {
             "description": "Successful Response",
             "content": {
-              "text/plain": {
+              "text/markdown": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }

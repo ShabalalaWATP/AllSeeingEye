@@ -56,4 +56,5 @@ class ReportGenerationWiring:
             uow=r.uow,
             url_resolver=GoogleNewsUrlResolver(),
             access=container.access_policy(session),
+            projector=container.internal_report_projector,
         )

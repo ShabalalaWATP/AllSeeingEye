@@ -28,6 +28,7 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.map_views import MapViewRepository
+from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.ports.reports import ReportRepository
 from ase.application.ports.research import ResearchCollection
 from ase.application.ports.research_inputs import ResearchInputStore
@@ -88,6 +89,7 @@ class GenerateReportUseCase:
         map_views: MapViewRepository | None = None,
         claims: ClaimRepository | None = None,
         web_research: FreshWebResearch | None = None,
+        projector: AsyncReportProjector | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -103,6 +105,7 @@ class GenerateReportUseCase:
             automatic_claims=AutomaticClaims(gateway, cipher, clock, limiter)
             if claims is not None
             else None,
+            projector=projector,
         )
         self._builder = ReportJobBuilder(countries, conflicts, aois, self._backgrounds)
         self._plans = plans

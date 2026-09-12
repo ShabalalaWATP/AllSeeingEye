@@ -808,3 +808,28 @@ See [map tool panels](MAP_TOOLS_AND_LAYERS.md#compact-tool-panels).
 See [area research](AREA_RESEARCH.md) for capabilities, explicit coverage gaps,
 budgets and access controls. Retained feeds are not a complete historical archive
 or a fresh search of every source catalogue entry.
+
+## 12 September 2026: professional research report product
+
+- [x] Project each frozen report version into one canonical reader document used
+  by the browser and PDF, DOCX and Markdown exports.
+- [x] Present a concise professional report with stable in-text citations, one
+  reference list, native tables and plain-language uncertainty and review state.
+- [x] Keep provider, model, reasoning, token and audit detail in the supporting
+  workspace rather than the reader product and shared exports.
+- [x] Preserve contradictory evidence, evidence gaps, warning changes, indicators
+  and access-controlled supporting records across legacy and current versions.
+- [x] Add bounded PNG/JPEG figure handling and deterministic evidence relationship
+  diagrams when a multi-judgement citation graph adds useful information.
+- [x] Export reports without figures as Markdown and reports with figures as a
+  deterministic portable ZIP with `report.md` and fixed relative image paths.
+- [x] Recheck exact-version authorisation immediately before releasing every
+  format, and complete focused correctness and security review.
+- [ ] Add source-backed timeline figures and frozen area maps when retained data
+  justifies them.
+- [ ] Complete the wider browser, Word and multilingual visual acceptance matrix;
+  PDF output and automated DOCX structure have been verified locally.
+
+See [professional research report product](PROFESSIONAL_REPORT_PRODUCT_PLAN.md)
+for the product boundary, report structure, export contract and verification
+record. No production deployment or live model acceptance run is claimed.

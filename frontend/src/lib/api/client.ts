@@ -85,6 +85,23 @@ export async function apiBlob(path: string, options: CallOptions = {}): Promise<
   return response.blob();
 }
 
+export interface DownloadedFile {
+  blob: Blob;
+  filename: string | null;
+}
+
+/** Fetches a binary or text download together with its safe server-provided file name. */
+export async function apiFile(path: string, options: CallOptions = {}): Promise<DownloadedFile> {
+  const response = await execute(path, {
+    ...options,
+    headers: { Accept: 'application/octet-stream', ...options.headers },
+  });
+  return {
+    blob: await response.blob(),
+    filename: safeDownloadFilename(response.headers.get('Content-Disposition')),
+  };
+}
+
 /** Performs a request whose successful response has no body of interest (for example 204). */
 export async function apiSend(path: string, options: CallOptions = {}): Promise<void> {
   await execute(path, options);
@@ -171,6 +188,15 @@ async function toApiError(response: Response): Promise<ApiError> {
     {},
     retryAfter,
   );
+}
+
+function safeDownloadFilename(disposition: string | null): string | null {
+  if (disposition === null) return null;
+  const match = /(?:^|;)\s*filename="([^"]+)"(?:;|$)/i.exec(disposition);
+  const filename = match?.[1];
+  return filename !== undefined && /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(filename)
+    ? filename
+    : null;
 }
 
 function parseRetryAfter(value: string | null): number | null {

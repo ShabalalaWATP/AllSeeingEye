@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { scopedMutation } from '@/lib/workspaceAccess';
 import type { components } from './types.gen';
 
-import { apiCall, apiSend, apiText } from './client';
+import { apiCall, apiFile, apiSend } from './client';
+import type { DownloadedFile } from './client';
 import { reportAssessmentSchema } from './reportAssessment';
 import { claimLedgerSchema } from './claimLedger';
 import { claimGenerationSchema } from './claimGeneration';
@@ -317,9 +318,11 @@ export function regenerateReport(id: string): Promise<Report> {
   );
 }
 
-export function fetchReportMarkdown(id: string, version?: number): Promise<string> {
+export function fetchReportMarkdown(id: string, version?: number): Promise<DownloadedFile> {
   const suffix = version === undefined ? '' : `?version=${String(version)}`;
-  return apiText(`/api/reports/${encodeURIComponent(id)}/markdown${suffix}`);
+  return apiFile(`/api/reports/${encodeURIComponent(id)}/markdown${suffix}`, {
+    headers: { Accept: 'application/zip, text/markdown;q=0.9' },
+  });
 }
 
 export function deleteReport(id: string): Promise<void> {

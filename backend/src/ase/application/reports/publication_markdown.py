@@ -56,7 +56,7 @@ def _table_lines(block: DocumentBlock) -> list[str]:
     return [*lines, ""]
 
 
-def _figure_lines(block: DocumentBlock) -> list[str]:
+def _figure_lines(block: DocumentBlock, image_path: str | None = None) -> list[str]:
     figure = block.figure
     if figure is None:
         return []
@@ -65,17 +65,19 @@ def _figure_lines(block: DocumentBlock) -> list[str]:
         citation = " " + ", ".join(
             f"[{number}](#reference-{number})" for number in figure.citation_numbers
         )
-    return [
+    lines = [
         f"### {plain_markdown(figure.title)}",
         "",
-        plain_markdown(figure.alt_text),
-        "",
-        f"*{plain_markdown(figure.caption)}*{citation}",
-        "",
     ]
+    if image_path is None:
+        lines.extend((plain_markdown(figure.alt_text), ""))
+    else:
+        lines.extend((f"![{plain_markdown(figure.alt_text)}]({image_path})", ""))
+    lines.extend((f"*{plain_markdown(figure.caption)}*{citation}", ""))
+    return lines
 
 
-def _block_lines(block: DocumentBlock) -> list[str]:
+def _block_lines(block: DocumentBlock, image_path: str | None = None) -> list[str]:
     kind = block.kind
     text = block.text
     if kind is BlockKind.TITLE:
@@ -93,21 +95,27 @@ def _block_lines(block: DocumentBlock) -> list[str]:
     elif kind is BlockKind.TABLE:
         lines = _table_lines(block)
     elif kind is BlockKind.FIGURE:
-        lines = _figure_lines(block)
+        lines = _figure_lines(block, image_path)
     else:
         lines = [_inline(block.inlines, text), ""]
     return lines
 
 
-def render_document_markdown(document: ReportDocument) -> str:
+def render_document_markdown(document: ReportDocument, figure_paths: tuple[str, ...] = ()) -> str:
     """Render the ordered publication without interpreting any source or model markup."""
     lines: list[str] = []
     reference_index = 0
+    figure_index = 0
     for block in document.blocks:
         if block.kind is BlockKind.REFERENCE:
             if reference_index < len(document.references):
                 lines.extend(_reference(document.references[reference_index]))
                 reference_index += 1
             continue
-        lines.extend(_block_lines(block))
+        image_path = None
+        if block.kind is BlockKind.FIGURE:
+            if figure_index < len(figure_paths):
+                image_path = figure_paths[figure_index]
+            figure_index += 1
+        lines.extend(_block_lines(block, image_path))
     return "\n".join(lines).rstrip() + "\n"

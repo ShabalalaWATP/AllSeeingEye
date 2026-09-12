@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 from uuid import UUID
 
-from ase.application.ports.report_export import AsyncReportRenderer
+from ase.application.ports.report_export import AsyncReportProjector, AsyncReportRenderer
 from ase.application.reports.access import GetReportUseCase
 from ase.application.reports.comparison import compare_versions
 from ase.application.reports.document import build_document
@@ -19,9 +20,15 @@ MEDIA_TYPES = {
 
 
 class ExportReportUseCase:
-    def __init__(self, reader: GetReportUseCase, renderer: AsyncReportRenderer) -> None:
+    def __init__(
+        self,
+        reader: GetReportUseCase,
+        renderer: AsyncReportRenderer,
+        projector: AsyncReportProjector | None = None,
+    ) -> None:
         self._reader = reader
         self._renderer = renderer
+        self._projector = projector
 
     async def execute(
         self, actor: User, report_id: UUID, format: ExportFormat, number: int | None = None
@@ -29,7 +36,11 @@ class ExportReportUseCase:
         if number is not None and number < 1:
             raise InvalidRequest("A report version must be positive.")
         record, version = await self._reader.execute(actor, report_id, number)
-        document = build_document(record, version)
+        document = (
+            await self._projector.build(record, version)
+            if self._projector is not None
+            else await asyncio.to_thread(build_document, record, version)
+        )
         content = await self._renderer.render(document, format)
         await self._reader.recheck(actor, report_id, version.number)
         return ReportFile(

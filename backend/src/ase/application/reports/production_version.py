@@ -1,8 +1,10 @@
 """Assemble final provenance, citation checks and the frozen report version."""
 
+import asyncio
 from uuid import uuid4
 
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
+from ase.application.ports.report_export import AsyncReportProjector
 from ase.application.reports.citation_checks import check_generated_report_citations
 from ase.application.reports.document import build_document
 from ase.application.reports.drafting import Draft
@@ -49,6 +51,7 @@ async def build_version(
     challenge: ReportChallenge | None,
     url_resolver: EvidenceUrlResolver | None,
     progress: Progress | None,
+    projector: AsyncReportProjector | None = None,
 ) -> ReportVersion:
     evidence = selection.items
     quality = quality_of_information(evidence, selection.flagged)
@@ -119,5 +122,10 @@ async def build_version(
         latest_version=version.number,
         team_id=job.request.team_id,
     )
-    version.markdown = render_document_markdown(build_document(record, version))
+    document = (
+        await projector.build(record, version)
+        if projector is not None
+        else await asyncio.to_thread(build_document, record, version)
+    )
+    version.markdown = render_document_markdown(document)
     return version

@@ -1,9 +1,9 @@
 # Professional research report product
 
-Status: first production-quality milestone implemented and locally verified,
-12 September 2026. Advanced visual generation and the remaining cross-format
-visual and language acceptance are tracked below. No production deployment is
-authorised or claimed.
+Status: production-quality milestone implemented and locally verified,
+12 September 2026. Timeline and geographic visual generation, and the remaining
+cross-format visual and language acceptance, are tracked below. No production
+deployment is authorised or claimed.
 
 ## Outcome
 
@@ -39,7 +39,12 @@ outside the report. Important limitations remain visible in ordinary language.
 - Word has editable native tables, repeating table headers, bookmarks, linked
   references and bounded PNG/JPEG figures. PDF has searchable text, bookmarks,
   linked references, repeating table headers and bounded figures. Markdown has
-  semantic tables and linked references; figure assets are not yet packaged.
+  semantic tables and linked references; reports with figures download as a
+  portable ZIP with fixed local asset paths.
+- Reports with a meaningful multi-judgement citation graph include a deterministic
+  evidence relationship diagram. It shows supporting and contradictory links,
+  preserves reference numbering and is omitted when it would add no useful
+  analytical information.
 - Figure decoding and re-encoding, aggregate byte and pixel limits, escaped HTML,
   restrictive renderer policy and late export authorisation protect the expanded
   document boundary. The final security review found no actionable findings.
@@ -230,9 +235,11 @@ Interrupted editorial work resumes without redoing completed topic sections.
 - [x] Add native, cited chronology tables to the canonical publication.
 - [x] Define and validate bounded source-linked figure data, and render tables and
   figures in the browser, Word and PDF with captions and text alternatives.
-- [ ] Add deterministic timeline/relationship figures and frozen area maps when
-  retained geographic evidence justifies them.
-- [ ] Package frozen figure assets with Markdown and use working relative links.
+- [x] Add deterministic source-backed relationship figures when the retained
+  citation graph is sufficiently informative.
+- [ ] Add deterministic timeline figures and frozen area maps when retained
+  temporal or geographic evidence justifies them.
+- [x] Package frozen figure assets with Markdown and use working relative links.
 
 Acceptance: every visual has traceable data and citations; tables are editable
 in Word, paginate correctly in PDF and remain useful in Markdown.
@@ -303,3 +310,15 @@ Required regression evidence:
   remains open because the bundled LibreOffice runtime is unavailable.
 - Final security review found no actionable findings. The review covered safe
   figure handling, output escaping, reference links and late export authorisation.
+- The final visual enhancement passed its focused backend and frontend tests.
+  A representative relationship diagram and its two-page PDF were rendered and
+  visually inspected; the deterministic Markdown ZIP was inspected for fixed,
+  working local asset paths and citation parity.
+- The final report-focused backend regression passed all 1,035 tests. The clean
+  full frontend run passed 1,970 tests with one skip, measuring 95.11% statements,
+  90.06% branches, 93.28% functions and 96.32% lines. A competing-load globe
+  test timeout passed alone and on that clean full run.
+- Heavy figure projection and export preparation run off the API event loop with
+  bounded admission and cancellation settlement. Internal generation and archive
+  projection wait for capacity; interactive reads and exports fail fast. Final
+  correctness and security rechecks found no actionable findings.

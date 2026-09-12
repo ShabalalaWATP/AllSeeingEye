@@ -12758,7 +12758,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/plain": string;
+                    "text/markdown": string;
+                    "application/zip": string;
                 };
             };
             /** @description Validation Error */
