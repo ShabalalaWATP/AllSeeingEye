@@ -25,7 +25,7 @@ export default function RecurringResearchPage() {
     <section className="h-full min-w-0 overflow-y-auto px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-7xl space-y-7">
         <header>
-          <h1 className="text-3xl font-semibold tracking-tight">OSINT Subscriptions</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Subscriptions</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
             Follow a topic, conflict, disaster or area. Receive cited updates that prioritise what
             has changed.

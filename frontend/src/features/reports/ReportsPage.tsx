@@ -75,7 +75,7 @@ export default function ReportsPage() {
           Research progress
         </Link>
         <Link to="/subscriptions" className="text-muted underline hover:text-text">
-          Manage OSINT subscriptions
+          Manage subscriptions
         </Link>
         <Button
           variant="ghost"

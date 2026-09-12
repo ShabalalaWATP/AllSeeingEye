@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.daily_briefing import DailyBriefingService
 from ase.application.model_routing import RoleProfiles
-from ase.application.report_jobs.service import ReportJobService
+from ase.application.report_jobs.service import PrepareJob, ReportJobService
 from ase.application.report_jobs.snapshots import freeze_job
 from ase.application.reports.production_types import Job
 from ase.container.report_job_gate import check_job, release_job
@@ -46,7 +46,9 @@ class ReportJobWiring:
     ) -> tuple[Job, RoleProfiles]:
         return await check_job(cast("Container", self), session, stored)
 
-    def report_jobs(self, session: AsyncSession) -> ReportJobService:
+    def report_jobs(
+        self, session: AsyncSession, *, prepare_job: PrepareJob | None = None
+    ) -> ReportJobService:
         container = cast("Container", self)
         repos = container.repositories(session)
 
@@ -61,7 +63,7 @@ class ReportJobWiring:
             access=container.access_policy(session),
             uow=repos.uow,
             clock=container.clock,
-            prepare_job=container.generate_report(session).prepare_job,
+            prepare_job=prepare_job or container.generate_report(session).prepare_job,
             freeze=lambda job, routing: freeze_job(
                 job, routing, container.source_profiles, private_research_store
             ),

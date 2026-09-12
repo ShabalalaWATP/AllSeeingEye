@@ -1,9 +1,11 @@
 """Once-daily personal briefings through the authorised, durable report pipeline."""
 
+from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
+from uuid import UUID
 
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork
@@ -65,9 +67,15 @@ class DailyBriefingService:
         uow: UnitOfWork,
         clock: Clock,
         admission_guard: AbstractAsyncContextManager[None],
+        *,
+        identity: Callable[[UUID, datetime], UUID] = briefing_key,
+        request_factory: Callable[[], ReportRequest] = briefing_request,
+        coverage_note: str = COVERAGE_NOTE,
     ) -> None:
         self._jobs, self._repo, self._uow, self._clock = jobs, repo, uow, clock
         self._admission_guard = admission_guard
+        self._identity, self._request_factory = identity, request_factory
+        self._coverage_note = coverage_note
 
     async def ensure(
         self,
@@ -91,7 +99,7 @@ class DailyBriefingService:
         try:
             for instant in (now, now - REFRESH_INTERVAL, now - 2 * REFRESH_INTERVAL):
                 existing = await self._repo.get_by_request(
-                    actor.id, briefing_key(actor.id, instant)
+                    actor.id, self._identity(actor.id, instant)
                 )
                 if existing is not None and now < existing.created_at + REFRESH_INTERVAL:
                     break
@@ -105,12 +113,12 @@ class DailyBriefingService:
         else:
             view = await self._jobs.create(
                 actor,
-                briefing_key(actor.id, now),
-                briefing_request(),
+                self._identity(actor.id, now),
+                self._request_factory(),
                 context,
                 check_session=check_session,
             )
         created_at = view["created_at"]
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
-        return DailyBriefing(view, created_at + REFRESH_INTERVAL)
+        return DailyBriefing(view, created_at + REFRESH_INTERVAL, self._coverage_note)

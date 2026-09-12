@@ -5,7 +5,7 @@
   overscroll-behavior: contain;
   padding: 18px 16px;
   scrollbar-width: thin;
-  scrollbar-color: #42505c transparent;
+  scrollbar-color: var(--color-muted) transparent;
 }
 .eye-welcome h3 {
   font-size: 15px;
@@ -13,7 +13,7 @@
 }
 .eye-welcome > p {
   margin-top: 10px;
-  color: #aab2be;
+  color: var(--color-muted);
   line-height: 1.65;
   font-size: 12px;
 }
@@ -24,27 +24,27 @@
   margin-top: 18px;
 }
 .eye-suggestions button {
-  border: 1px solid #ffffff22;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   padding: 9px 10px;
-  color: #c6d1da;
+  color: var(--color-text);
   font-size: 11px;
   transition: background 120ms;
 }
 .eye-suggestions button:hover {
-  background: #79d8eb0b;
-  border-color: #79d8eb50;
+  background: color-mix(in srgb, var(--color-cyan) 8%, transparent);
+  border-color: var(--color-cyan);
 }
 .eye-turn + .eye-turn {
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid #ffffff10;
+  border-top: 1px solid var(--color-line);
 }
 .eye-question {
   margin: 0 0 16px 24px;
   padding: 10px 12px;
   border-radius: 10px 10px 2px 10px;
-  background: #19222a;
+  background: var(--color-surface-2);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   line-height: 1.6;
@@ -64,7 +64,7 @@
     monospace;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a7bec9;
+  color: var(--color-muted);
   margin-bottom: 4px;
 }
 .eye-citations {
@@ -79,24 +79,24 @@
   color: var(--eye-accent);
 }
 .eye-source-details {
-  border-top: 1px solid #ffffff18;
+  border-top: 1px solid var(--color-line);
   margin-top: 16px;
   padding-top: 10px;
 }
 .eye-source-details summary {
   cursor: pointer;
-  color: #bfcbd4;
+  color: var(--color-text);
   font-size: 11px;
 }
 .eye-source-details summary span {
   display: block;
-  color: #919da8;
+  color: var(--color-muted);
   font-size: 10px;
   margin-top: 2px;
 }
 .eye-coverage {
   margin-top: 10px;
-  color: #aab3bd;
+  color: var(--color-muted);
   font-size: 10px;
 }
 .eye-coverage > p + p {
@@ -105,12 +105,12 @@
 .eye-source {
   margin-top: 12px;
   padding-top: 9px;
-  border-top: 1px solid #ffffff0d;
+  border-top: 1px solid var(--color-line);
   display: grid;
   gap: 3px;
 }
 .eye-source strong {
-  color: #c9d3da;
+  color: var(--color-text);
   font-weight: 500;
 }
 .eye-source-actions {
@@ -124,7 +124,7 @@
   text-underline-offset: 3px;
 }
 .eye-answer-meta {
-  color: #8e99a5;
+  color: var(--color-muted);
   font-size: 9px;
   margin-top: 10px;
 }
@@ -133,7 +133,7 @@
   gap: 9px;
   align-items: center;
   font-size: 11px;
-  color: #b1c3cd;
+  color: var(--color-muted);
 }
 .eye-pending span {
   width: 5px;

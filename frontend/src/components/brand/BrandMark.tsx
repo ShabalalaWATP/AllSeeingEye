@@ -29,6 +29,7 @@ export function BrandMark({ size = 40, decorative = false, still = false }: Bran
       style={{ width: size * 1.4, height: size }}
     >
       <EvilEye
+        transparent
         scale={0.6}
         pupilFollow={0}
         backgroundColor={BRAND_GROUND}

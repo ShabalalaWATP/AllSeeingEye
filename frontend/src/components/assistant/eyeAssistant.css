@@ -1,6 +1,6 @@
 .eye-assistant {
-  --eye-accent: #79d8eb;
-  color: #e5e7eb;
+  --eye-accent: var(--color-cyan);
+  color: var(--color-text);
 }
 .eye-assistant button:focus-visible,
 .eye-assistant a:focus-visible,
@@ -21,10 +21,10 @@
   min-height: 0;
   max-width: calc(100vw - 24px);
   max-height: calc(100dvh - 32px);
-  border: 1px solid #ffffff24;
+  border: 1px solid var(--color-line);
   border-radius: 16px;
-  background: #0b0e12;
-  box-shadow: 0 18px 60px #000b;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
   animation: eye-panel-arrive 150ms ease-out;
   font-size: 13px;
@@ -36,7 +36,7 @@
   min-height: 64px;
   flex-shrink: 0;
   padding: 10px 14px;
-  border-bottom: 1px solid #ffffff16;
+  border-bottom: 1px solid var(--color-line);
 }
 .eye-assistant-heading img {
   width: 42px;
@@ -52,7 +52,7 @@
 }
 .eye-assistant-heading p {
   margin-top: 2px;
-  color: #a0a9b5;
+  color: var(--color-muted);
   font-size: 11px;
 }
 .eye-window-actions {
@@ -69,19 +69,19 @@
   padding: 0 8px;
   border-radius: 8px;
   font-size: 10px;
-  color: #bfcbd4;
+  color: var(--color-text);
 }
 .eye-icon-action {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  color: #a0a9b5;
+  color: var(--color-muted);
   font-size: 24px;
 }
 .eye-icon-action:hover,
 .eye-size-action:hover {
-  background: #ffffff0a;
-  color: #fff;
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 .eye-assistant-tools {
   display: flex;
@@ -89,8 +89,8 @@
   align-items: center;
   flex-shrink: 0;
   padding: 4px 16px;
-  border-bottom: 1px solid #ffffff10;
-  color: #a0a9b5;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-muted);
   font-size: 10px;
 }
 .eye-assistant-tools button {
@@ -101,13 +101,13 @@
 }
 .eye-assistant-tools > span {
   margin-left: auto;
-  color: #88919c;
+  color: var(--color-muted);
 }
 .eye-composer {
   flex: 0 0 auto;
   padding: 12px;
-  border-top: 1px solid #ffffff1a;
-  background: #0d1116;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface-2);
 }
 .eye-scope {
   display: flex;
@@ -115,23 +115,23 @@
   gap: 8px;
   margin-bottom: 8px;
   font-size: 10px;
-  color: #9eacb7;
+  color: var(--color-muted);
 }
 .eye-scope select {
   min-width: 0;
   flex: 1;
   height: 30px;
-  background: #121920;
-  color: #bfcbd4;
+  background: var(--color-surface-2);
+  color: var(--color-text);
   padding: 0 7px;
-  border: 1px solid #ffffff17;
+  border: 1px solid var(--color-line);
   border-radius: 5px;
   font-size: 10px;
 }
 .eye-scope-note {
   margin: 0 0 8px;
   font-size: 10px;
-  color: #a3b7c2;
+  color: var(--color-muted);
   line-height: 1.5;
 }
 .eye-composer textarea {
@@ -140,15 +140,15 @@
   max-height: 130px;
   padding: 10px;
   resize: vertical;
-  background: #080b0f;
-  border: 1px solid #ffffff21;
+  background: var(--color-ground);
+  border: 1px solid var(--color-line);
   border-radius: 8px;
-  color: #e5e7eb;
+  color: var(--color-text);
   font-size: 12px;
   line-height: 1.6;
 }
 .eye-composer textarea::placeholder {
-  color: #808e9b;
+  color: var(--color-muted);
 }
 .eye-composer-actions {
   display: flex;
@@ -159,14 +159,14 @@
 }
 .eye-composer-actions > span {
   font-size: 8px;
-  color: #8f9aa7;
+  color: var(--color-muted);
 }
 .eye-send {
   min-height: 34px;
   padding: 6px 12px;
   border-radius: 6px;
   background: var(--eye-accent);
-  color: #071015;
+  color: var(--color-ground);
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
@@ -175,7 +175,7 @@
   padding-left: 5px;
 }
 .eye-error {
-  color: #f7a1a1;
+  color: var(--color-critical);
   font-size: 11px;
   line-height: 1.5;
   margin-top: 8px;
@@ -187,7 +187,7 @@
   align-items: center;
   margin-top: 11px;
   font-size: 9px;
-  color: #8795a2;
+  color: var(--color-muted);
 }
 @keyframes eye-panel-arrive {
   from {

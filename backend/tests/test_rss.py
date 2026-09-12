@@ -131,6 +131,7 @@ def test_seeds_are_sound() -> None:
             Category.POLITICAL,
             Category.HUMANITARIAN,
             Category.SOCIAL,
+            Category.ECONOMIC,
         )
         if "state_controlled" in spec.flags:
             assert seed.options.credibility is Credibility.DOUBTFUL

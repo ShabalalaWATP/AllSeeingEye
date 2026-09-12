@@ -16,6 +16,8 @@ export const defaultProfile: Profile = {
   report_language: 'en',
   report_style: 'assessment',
   export_format: 'pdf',
+  appearance_theme: 'obsidian',
+  reduced_motion: false,
 };
 export const profileHandlers = [
   http.get('/api/me/profile/languages', () => HttpResponse.json(languageCatalogue)),

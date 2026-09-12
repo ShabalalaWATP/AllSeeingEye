@@ -1,6 +1,6 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useGlobeStore } from '@/stores/globe';
 import { alert } from '@/test/fixtures';
@@ -11,8 +11,10 @@ import { useAuthStore } from '@/stores/auth';
 import { adminUser, tokenFor } from '@/test/fixtures';
 import * as warningApi from '@/lib/api/warning';
 
-describe('alert count and ops-room strip', () => {
-  it('hides revoked counts immediately and discards a late response from an older revision', async () => {
+afterEach(() => useGlobeStore.setState({ opsRoom: false }));
+
+describe('ops-room alert strip', () => {
+  it('hides revoked alerts immediately and discards a late response from an older revision', async () => {
     let release: () => void = () => undefined;
     const pending = new Promise<void>((resolve) => {
       release = resolve;
@@ -24,13 +26,16 @@ describe('alert count and ops-room strip', () => {
       .mockResolvedValueOnce(oldPage)
       .mockReturnValueOnce(delayedPage)
       .mockResolvedValue({ items: [], unacknowledged: 0 });
-    renderApp('/reports', 'user');
-    expect(await screen.findByRole('link', { name: 'Alerts, 1 unacknowledged' })).toBeVisible();
+    useGlobeStore.setState({ opsRoom: true });
+    renderApp('/', 'user');
+    expect(
+      await screen.findByRole('complementary', { name: 'Unacknowledged alerts' }),
+    ).toBeVisible();
     act(() => {
       invalidateWorkspaceAccess();
     });
     expect(
-      screen.queryByRole('link', { name: 'Alerts, 1 unacknowledged' }),
+      screen.queryByRole('complementary', { name: 'Unacknowledged alerts' }),
     ).not.toBeInTheDocument();
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledTimes(2);
@@ -38,13 +43,13 @@ describe('alert count and ops-room strip', () => {
     act(() => {
       invalidateWorkspaceAccess();
     });
-    expect(await screen.findByRole('link', { name: 'Alerts, 0 unacknowledged' })).toBeVisible();
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
     await act(async () => {
       release();
       await delayedPage;
     });
     expect(
-      screen.queryByRole('link', { name: 'Alerts, 1 unacknowledged' }),
+      screen.queryByRole('complementary', { name: 'Unacknowledged alerts' }),
     ).not.toBeInTheDocument();
   });
 
@@ -63,20 +68,12 @@ describe('alert count and ops-room strip', () => {
     ).not.toBeInTheDocument();
     useGlobeStore.setState({ opsRoom: false });
   });
-  it('stays quiet when the count cannot be fetched or is zero', async () => {
-    server.use(
-      http.get('/api/warning/alerts', () =>
-        HttpResponse.json({ error: { code: 'server_error', message: 'Boom' } }, { status: 500 }),
-      ),
-    );
+  it('does not fetch alerts in the regular workspace', async () => {
+    const fetch = vi.spyOn(warningApi, 'fetchAlerts');
     renderApp('/reports', 'user');
-    const bell = await within(screen.getByRole('banner')).findByRole('link', { name: 'Alerts' });
-    expect(bell).toHaveAttribute('href', '/warning');
-    server.use(
-      http.get('/api/warning/alerts', () => HttpResponse.json({ items: [], unacknowledged: 0 })),
-    );
-    renderApp('/reports', 'user');
-    expect(await screen.findByRole('link', { name: 'Alerts, 0 unacknowledged' })).toBeVisible();
+    await screen.findByRole('heading', { name: 'Saved reports' });
+    expect(screen.queryByRole('link', { name: /Alerts/ })).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('shows three alerts on the wall and counts the rest', async () => {

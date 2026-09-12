@@ -1,10 +1,10 @@
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/Button';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useAuthStore } from '@/stores/auth';
 
-import { AlertBell } from './AlertBell';
+import { PersonalLinks } from './PersonalLinks';
 import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
 
@@ -12,7 +12,9 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/reports')) return 'Saved reports';
-  if (pathname.startsWith('/subscriptions')) return 'OSINT Subscriptions';
+  if (pathname.startsWith('/subscriptions')) return 'Subscriptions';
+  if (pathname.startsWith('/economy')) return 'Economy';
+  if (pathname.startsWith('/settings')) return 'Your settings';
   if (pathname.startsWith('/research')) return 'Research';
   if (pathname.startsWith('/geolocation')) return 'Geolocation';
   if (pathname.startsWith('/sources')) return 'Sources';
@@ -28,7 +30,6 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const mode = useGlobeStore((state) => state.mode);
-  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { run, busy } = useAsyncAction(async () => {
     await logout();
@@ -64,28 +65,7 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-3">
-        <AlertBell />
-        <Link
-          to="/account"
-          aria-label="Account settings"
-          title="Account settings"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-2 text-text hover:bg-surface-2"
-        >
-          <svg
-            className="md:hidden"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="8" r="3.5" />
-            <path d="M5 21v-2a7 7 0 0 1 14 0v2" />
-          </svg>
-          <span className="hidden max-w-40 truncate md:inline">{user?.display_name}</span>
-        </Link>
+        <PersonalLinks />
         <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
           Logout
         </Button>

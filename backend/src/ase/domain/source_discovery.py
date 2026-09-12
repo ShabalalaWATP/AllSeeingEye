@@ -99,6 +99,10 @@ GLOBAL_IDS = frozenset(
         "research-openalex",
         "research-crossref",
         "research-world-bank",
+        "economic-ecb",
+        "economic_bbc_business",
+        "economic_guardian_business",
+        "economic_cgtn_business",
         "research-copernicus-footprints",
         "research-retained-area-feeds",
         "research-aiddata-projects",
@@ -111,6 +115,12 @@ GLOBAL_IDS = frozenset(
 )
 
 REGIONAL = {
+    "economic_bank_england": _jurisdiction("GB"),
+    "economic_hm_treasury": _jurisdiction("GB"),
+    "economic_federal_reserve": _jurisdiction("US"),
+    "economic_bank_russia": _jurisdiction("RU"),
+    "economic_scmp_china": _focus("CN"),
+    "economic_tehran_times": _focus("IR"),
     "meduza_en": _focus("RU"),
     "meduza_ru": _focus("RU"),
     "mediazona_ru": _focus("RU"),
@@ -160,7 +170,7 @@ REGIONAL = {
 
 def source_coverage(source_id: str) -> SourceCoverage:
     """Derivatives inherit configured feed scope, never their language or edition."""
-    for prefix in ("research_regional_", "research_social_"):
+    for prefix in ("research_regional_", "research_social_", "research_publisher_"):
         if source_id.startswith(prefix):
             source_id = source_id.removeprefix(prefix)
             break

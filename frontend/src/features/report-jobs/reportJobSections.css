@@ -4,16 +4,16 @@
   letter-spacing: -0.02em;
 }
 .job-sections header > p {
-  color: #9aa4b3;
+  color: var(--color-muted);
   margin: 7px 0 18px;
   font-size: 12px;
   line-height: 1.6;
 }
 .job-section {
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--color-line);
 }
 .job-section:last-child {
-  border-bottom: 1px solid #ffffff12;
+  border-bottom: 1px solid var(--color-line);
 }
 .job-section summary {
   display: flex;
@@ -28,13 +28,13 @@
   display: none;
 }
 .job-section summary:hover {
-  background: #ffffff03;
+  background: var(--color-surface-2);
 }
 .job-section-number {
   font:
     11px 'JetBrains Mono',
     monospace;
-  color: #75808e;
+  color: var(--color-muted);
 }
 .job-section-title {
   flex: 1;
@@ -47,16 +47,16 @@
   display: block;
   margin-top: 5px;
   font-size: 11px;
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-weight: 400;
 }
 .job-section-indicator {
   font-size: 19px;
   margin-inline: 10px;
-  color: #8794a5;
+  color: var(--color-muted);
 }
 .job-section-indicator[data-complete='true'] {
-  color: #79d8eb;
+  color: var(--color-cyan);
   font-size: 15px;
 }
 .job-section-body {
@@ -73,7 +73,7 @@
 }
 .job-section-body h3 {
   margin-bottom: 6px;
-  color: #a5afbd;
+  color: var(--color-muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   font-size: 10px;
@@ -83,14 +83,14 @@
 }
 .job-citations,
 .job-section-note {
-  color: #a5afbd;
+  color: var(--color-muted);
   font-size: 12px;
   line-height: 1.7;
 }
 .job-budget {
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--color-line);
   padding-top: 18px;
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .job-budget summary {
@@ -108,7 +108,7 @@
 }
 .job-budget dd {
   margin-top: 4px;
-  color: #d2d9e2;
+  color: var(--color-text);
   overflow-wrap: anywhere;
 }
 .job-budget > p {

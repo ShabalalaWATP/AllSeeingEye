@@ -14,11 +14,11 @@
 .job-back {
   width: fit-content;
   font-size: 12px;
-  color: #9aa4b3;
+  color: var(--color-muted);
   transition: color 150ms;
 }
 .job-back:hover {
-  color: #79d8eb;
+  color: var(--color-cyan);
 }
 .job-heading h1,
 .job-list-heading h1 {
@@ -36,27 +36,27 @@
   margin-bottom: 12px;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #9aa4b3;
+  color: var(--color-muted);
   text-transform: uppercase;
 }
 .job-eyebrow span {
-  color: #79d8eb;
+  color: var(--color-cyan);
 }
 .job-connection {
   margin-top: 12px;
-  color: #b3bbc8;
+  color: var(--color-muted);
   font-size: 12px;
   overflow-wrap: anywhere;
 }
 .job-continuity,
 .job-list-heading p {
-  color: #9aa4b3;
+  color: var(--color-muted);
   margin-top: 10px;
   font-size: 13px;
   line-height: 1.6;
 }
 .job-progress {
-  border-block: 1px solid #ffffff16;
+  border-block: 1px solid var(--color-line);
   padding: 22px 0;
 }
 .job-progress-label {
@@ -67,7 +67,7 @@
   font-size: 14px;
 }
 .job-progress-label span {
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .job-progress progress {
@@ -79,20 +79,20 @@
   border: 0;
   border-radius: 3px;
   overflow: hidden;
-  background: #ffffff12;
+  background: var(--color-line);
 }
 .job-progress progress::-webkit-progress-bar {
-  background: #ffffff12;
+  background: var(--color-line);
 }
 .job-progress progress:indeterminate::-webkit-progress-bar {
-  background: #79d8eb44;
+  background: color-mix(in srgb, var(--color-cyan) 25%, transparent);
 }
 .job-progress progress::-webkit-progress-value {
-  background: #79d8eb;
+  background: var(--color-cyan);
   transition: width 240ms ease;
 }
 .job-progress progress::-moz-progress-bar {
-  background: #79d8eb;
+  background: var(--color-cyan);
 }
 .job-progress[data-running='true'] progress {
   animation: job-progress-pulse 2.4s ease-in-out infinite;
@@ -105,11 +105,11 @@
   margin-top: 18px;
 }
 .job-actions > span {
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .job-report-link {
-  color: #79d8eb;
+  color: var(--color-cyan);
   font-size: 13px;
   width: fit-content;
   padding-block: 8px;
@@ -129,7 +129,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .job-list {
@@ -138,10 +138,10 @@
   padding: 0;
 }
 .job-list li {
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--color-line);
 }
 .job-list li:last-child {
-  border-bottom: 1px solid #ffffff12;
+  border-bottom: 1px solid var(--color-line);
 }
 .job-list a {
   display: flex;
@@ -151,7 +151,7 @@
   transition: background 150ms;
 }
 .job-list a:hover {
-  background: #ffffff04;
+  background: var(--color-surface-2);
 }
 .job-row-main {
   flex: 1;
@@ -167,7 +167,7 @@
 .job-row-context time {
   display: block;
   font-size: 11px;
-  color: #9aa4b3;
+  color: var(--color-muted);
   margin-top: 7px;
 }
 .job-row-context {
@@ -175,31 +175,31 @@
   text-align: right;
 }
 .job-row-context > span {
-  color: #79d8eb;
+  color: var(--color-cyan);
 }
 .job-row-arrow {
-  color: #9aa4b3;
+  color: var(--color-muted);
 }
 .job-empty {
   padding: 28px 0;
-  color: #9aa4b3;
+  color: var(--color-muted);
   font-size: 13px;
   line-height: 1.7;
 }
 .job-empty h2 {
-  color: #d2d9e2;
+  color: var(--color-text);
   font-size: 16px;
   margin-bottom: 8px;
 }
 .job-discard {
   scroll-margin-bottom: 96px;
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--color-line);
   padding-top: 18px;
 }
 .job-discard > p {
   font-size: 12px;
   line-height: 1.7;
-  color: #b3bbc8;
+  color: var(--color-muted);
   max-width: 620px;
 }
 .job-discard > div {

@@ -5,6 +5,9 @@
  */
 import { useSyncExternalStore } from 'react';
 
+import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
+
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 function mediaQuery(): MediaQueryList | null {
@@ -26,7 +29,12 @@ function readReducedMotion(): boolean {
 }
 
 export function useReducedMotion(): boolean {
-  return useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => false);
+  const actorId = useAuthStore((state) => state.user?.id);
+  const preference = useProfileStore(
+    (state) => state.owner === actorId && (state.profile?.reduced_motion ?? false),
+  );
+  const system = useSyncExternalStore(subscribeReducedMotion, readReducedMotion, () => false);
+  return system || preference;
 }
 
 function subscribeVisibility(onChange: () => void): () => void {

@@ -7,12 +7,12 @@ import { useAuthStore } from '@/stores/auth';
 
 import { AdminNavigation } from './AdminNavigation';
 import { NavigationDialog } from './NavigationDialog';
+import { PersonalLinks } from './PersonalLinks';
 
 /** Administration deliberately has no research alerts or globe controls. */
 export function AdminHeader({ narrow }: { narrow: boolean }) {
   const { key } = useLocation();
   const [openedAt, setOpenedAt] = useState<string | null>(null);
-  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const { run, busy } = useAsyncAction(async () => {
@@ -49,7 +49,7 @@ export function AdminHeader({ narrow }: { narrow: boolean }) {
           </p>
         </div>
         <div className="flex min-w-0 items-center gap-3 text-sm">
-          <span className="hidden max-w-48 truncate text-muted sm:block">{user?.display_name}</span>
+          <PersonalLinks />
           <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
             Logout
           </Button>

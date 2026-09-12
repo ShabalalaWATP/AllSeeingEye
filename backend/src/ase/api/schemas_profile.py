@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ase.domain.languages import LANGUAGE_CODE_PATTERN, ReportLanguage
-from ase.domain.profile import DateFormat, ExportFormat, ReportStyle
+from ase.domain.profile import AppearanceTheme, DateFormat, ExportFormat, ReportStyle
 
 LanguageCode = Annotated[str, Field(pattern=LANGUAGE_CODE_PATTERN)]
 
@@ -24,6 +24,8 @@ class ProfileOut(BaseModel):
     report_language: ReportLanguage
     report_style: ReportStyle
     export_format: ExportFormat
+    appearance_theme: AppearanceTheme
+    reduced_motion: bool
 
 
 class ProfileUpdateIn(BaseModel):
@@ -39,6 +41,8 @@ class ProfileUpdateIn(BaseModel):
     report_language: ReportLanguage | None = None
     report_style: ReportStyle | None = None
     export_format: ExportFormat | None = None
+    appearance_theme: AppearanceTheme | None = None
+    reduced_motion: bool | None = None
 
     @field_validator("research_window_days", mode="before")
     @classmethod

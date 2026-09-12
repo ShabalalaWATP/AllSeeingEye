@@ -1,0 +1,81 @@
+"""Authenticated economic headlines and explicit durable briefing admission."""
+
+from datetime import datetime
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Query, Response
+from pydantic import BaseModel, ConfigDict
+
+from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.routers.daily_briefing import DailyBriefingOut
+from ase.api.schemas_report_jobs import public_job
+from ase.api.session_guard import validate_request_expiry, validate_request_session
+from ase.domain.economy_news import EconomyRegion, PublisherViewpoint
+
+router = APIRouter(prefix="/economy", tags=["economy"])
+
+
+class EconomyNewsItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    title: str
+    url: str
+    source_id: str
+    source_name: str
+    organisation: str
+    published_at: datetime
+    region_codes: list[Literal["GB", "US", "RU", "CN", "IR"]]
+    viewpoint: PublisherViewpoint
+
+
+class EconomyNewsOut(BaseModel):
+    items: list[EconomyNewsItemOut]
+    as_of: datetime
+    window_hours: int
+    coverage_note: str
+
+
+@router.get("/news")
+async def economic_news(
+    user: CurrentUser,
+    claims: ClaimsDep,
+    container: ContainerDep,
+    response: Response,
+    region: EconomyRegion = "WORLD",
+    limit: Annotated[int, Query(ge=1, le=100)] = 60,
+) -> EconomyNewsOut:
+    result = await container.economy_news.read(region, limit)
+    async with container.source_admission.guard():
+        result = await container.economy_news.refilter(result)
+        await validate_request_session(container, claims)
+        validate_request_expiry(container, claims)
+        response.headers["Cache-Control"] = "private, no-store"
+        return EconomyNewsOut(
+            items=[EconomyNewsItemOut.model_validate(row) for row in result.items],
+            as_of=result.as_of,
+            window_hours=result.window_hours,
+            coverage_note=result.coverage_note,
+        )
+
+
+@router.post("/briefing", status_code=202)
+async def economic_briefing(
+    user: CurrentUser,
+    claims: ClaimsDep,
+    container: ContainerDep,
+    session: SessionDep,
+    context: ContextDep,
+    response: Response,
+) -> DailyBriefingOut:
+    result = await container.economy_briefing(session).ensure(
+        user,
+        context,
+        check_session=lambda: validate_request_session(container, claims),
+    )
+    response.headers["Cache-Control"] = "private, no-store"
+    validate_request_expiry(container, claims)
+    return DailyBriefingOut(
+        job=public_job(result.job),
+        next_refresh_at=result.next_refresh_at,
+        coverage_note=result.coverage_note,
+    )

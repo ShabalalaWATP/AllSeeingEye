@@ -1,5 +1,5 @@
 .report-reader-shell {
-  background: radial-gradient(circle at 78% 8%, rgb(255 111 55 / 0.08), transparent 28rem), #0a0a0f;
+  background: var(--color-ground);
 }
 
 .report-reader-frame {

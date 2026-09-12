@@ -32,17 +32,16 @@ describe('AppShell', () => {
     expect(screen.getByText('The All Seeing Eye')).toBeInTheDocument();
     expect(screen.getByText('Uma User')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(nav).getByRole('link', { name: 'Saved reports' })).toHaveAttribute(
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Map', 'Research', 'Subscriptions', 'Geolocation', 'Economy']);
+    expect(screen.getByRole('link', { name: 'Your profile' })).toHaveAttribute('href', '/account');
+    expect(screen.getByRole('link', { name: 'Your settings' })).toHaveAttribute(
       'href',
-      '/reports',
+      '/settings',
     );
-    expect(within(nav).getByRole('link', { name: 'Live monitor' })).toHaveAttribute(
-      'href',
-      '/trackers',
-    );
-    expect(within(nav).queryByRole('link', { name: 'Direction' })).not.toBeInTheDocument();
-    expect(within(nav).getByRole('link', { name: 'Alerts' })).toHaveAttribute('href', '/warning');
-    expect(within(nav).queryByRole('link', { name: 'Users' })).not.toBeInTheDocument();
     expect(screen.getByText('Globe', { selector: 'p' })).toBeInTheDocument();
   });
 
@@ -110,6 +109,9 @@ describe('AppShell', () => {
     expect(viewTitle('/', 'globe')).toBe('Globe');
     expect(viewTitle('/', 'map')).toBe('Map');
     expect(viewTitle('/admin/audit', 'globe')).toBe('Admin');
+    expect(viewTitle('/subscriptions', 'globe')).toBe('Subscriptions');
+    expect(viewTitle('/economy', 'globe')).toBe('Economy');
+    expect(viewTitle('/settings', 'globe')).toBe('Your settings');
     expect(viewTitle('/warning', 'globe')).toBe('Alerts');
     expect(viewTitle('/elsewhere', 'globe')).toBe('The All Seeing Eye');
 

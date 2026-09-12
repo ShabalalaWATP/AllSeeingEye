@@ -24,7 +24,10 @@ function RailLink({
   const active =
     pathname === to ||
     pathname.startsWith(`${to}/`) ||
-    (to === '/research' && pathname.startsWith('/direction'));
+    (to === '/research' &&
+      ['/direction', '/reports', '/trackers', '/annotation-monitors'].some(
+        (path) => pathname === path || pathname.startsWith(`${path}/`),
+      ));
   return (
     <Link
       to={to}
@@ -59,29 +62,17 @@ export function LeftRail({
         <RailLink to="/" onNavigate={onNavigate}>
           Map
         </RailLink>
-        <RailLink to="/trackers" onNavigate={onNavigate}>
-          Live monitor
-        </RailLink>
         <RailLink to="/research" onNavigate={onNavigate}>
           Research
         </RailLink>
-        <RailLink to="/reports" onNavigate={onNavigate}>
-          Saved reports
-        </RailLink>
         <RailLink to="/subscriptions" onNavigate={onNavigate}>
-          OSINT Subscriptions
+          Subscriptions
         </RailLink>
         <RailLink to="/geolocation" onNavigate={onNavigate}>
           Geolocation
         </RailLink>
-        <RailLink to="/sources" onNavigate={onNavigate}>
-          Source catalogue
-        </RailLink>
-        <RailLink to="/warning" onNavigate={onNavigate}>
-          Alerts
-        </RailLink>
-        <RailLink to="/teams" onNavigate={onNavigate}>
-          Teams
+        <RailLink to="/economy" onNavigate={onNavigate}>
+          Economy
         </RailLink>
         {isAdmin && (
           <div className="mt-4 border-t border-line pt-4">

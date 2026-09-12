@@ -5,6 +5,126 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/economy": {
+      "get": {
+        "tags": [
+          "economy"
+        ],
+        "summary": "Economy",
+        "operationId": "economy_api_economy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EconomySnapshotOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/economy/news": {
+      "get": {
+        "tags": [
+          "economy"
+        ],
+        "summary": "Economic News",
+        "operationId": "economic_news_api_economy_news_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "WORLD",
+                "GB",
+                "US",
+                "RU",
+                "CN",
+                "IR"
+              ],
+              "type": "string",
+              "default": "WORLD",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 60,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EconomyNewsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/economy/briefing": {
+      "post": {
+        "tags": [
+          "economy"
+        ],
+        "summary": "Economic Briefing",
+        "operationId": "economic_briefing_api_economy_briefing_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyBriefingOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/live-monitor/briefing": {
       "post": {
         "tags": [
@@ -14345,6 +14465,290 @@
         ],
         "title": "DraftModelDiscoveryIn"
       },
+      "EconomyNewsItemOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Published At"
+          },
+          "region_codes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "GB",
+                "US",
+                "RU",
+                "CN",
+                "IR"
+              ]
+            },
+            "type": "array",
+            "title": "Region Codes"
+          },
+          "viewpoint": {
+            "type": "string",
+            "enum": [
+              "official_issuer",
+              "state_aligned",
+              "publisher"
+            ],
+            "title": "Viewpoint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "url",
+          "source_id",
+          "source_name",
+          "organisation",
+          "published_at",
+          "region_codes",
+          "viewpoint"
+        ],
+        "title": "EconomyNewsItemOut"
+      },
+      "EconomyNewsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EconomyNewsItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "window_hours": {
+            "type": "integer",
+            "title": "Window Hours"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "as_of",
+          "window_hours",
+          "coverage_note"
+        ],
+        "title": "EconomyNewsOut"
+      },
+      "EconomyPointOut": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "value"
+        ],
+        "title": "EconomyPointOut"
+      },
+      "EconomyRegionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/EconomySeriesOut"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "series"
+        ],
+        "title": "EconomyRegionOut"
+      },
+      "EconomySeriesOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "annual",
+              "daily"
+            ],
+            "title": "Frequency"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "stale",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At",
+            "description": "Last successful retrieval of this series."
+          },
+          "source_updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Updated At",
+            "description": "Provider publication date when supplied."
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/EconomyPointOut"
+            },
+            "type": "array",
+            "maxItems": 90,
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "unit",
+          "frequency",
+          "provider",
+          "source_url",
+          "status",
+          "note",
+          "updated_at",
+          "source_updated_at",
+          "points"
+        ],
+        "title": "EconomySeriesOut"
+      },
+      "EconomySnapshotOut": {
+        "properties": {
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fetched At"
+          },
+          "refresh_after": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Refresh After"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/EconomyRegionOut"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Regions"
+          },
+          "fx": {
+            "items": {
+              "$ref": "#/components/schemas/EconomySeriesOut"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Fx"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fetched_at",
+          "refresh_after",
+          "regions",
+          "fx"
+        ],
+        "title": "EconomySnapshotOut"
+      },
       "EventOut": {
         "properties": {
           "id": {
@@ -21058,6 +21462,19 @@
               "md"
             ],
             "title": "Export Format"
+          },
+          "appearance_theme": {
+            "type": "string",
+            "enum": [
+              "obsidian",
+              "slate",
+              "light"
+            ],
+            "title": "Appearance Theme"
+          },
+          "reduced_motion": {
+            "type": "boolean",
+            "title": "Reduced Motion"
           }
         },
         "type": "object",
@@ -21071,7 +21488,9 @@
           "research_country",
           "report_language",
           "report_style",
-          "export_format"
+          "export_format",
+          "appearance_theme",
+          "reduced_motion"
         ],
         "title": "ProfileOut"
       },
@@ -21235,6 +21654,33 @@
               }
             ],
             "title": "Export Format"
+          },
+          "appearance_theme": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "obsidian",
+                  "slate",
+                  "light"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appearance Theme"
+          },
+          "reduced_motion": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reduced Motion"
           }
         },
         "additionalProperties": false,

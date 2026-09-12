@@ -4,6 +4,7 @@ const destinations = [
   ['/research', 'New research'],
   ['/reports', 'Saved reports'],
   ['/direction', 'Plans & areas'],
+  ['/trackers', 'Daily briefing'],
 ] as const;
 
 /** Shared navigation keeps research tools together without coupling features. */

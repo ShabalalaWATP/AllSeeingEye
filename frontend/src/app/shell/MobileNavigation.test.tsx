@@ -67,11 +67,9 @@ describe('mobile navigation', () => {
   it('closes on a destination and on a same-page view change', async () => {
     const { user, router } = renderApp('/', 'user');
     await user.click(await screen.findByRole('button', { name: 'Open navigation' }));
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('link', { name: 'Saved reports' }),
-    );
+    await user.click(within(screen.getByRole('dialog')).getByRole('link', { name: 'Research' }));
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/reports');
+      expect(router.state.location.pathname).toBe('/research');
     });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open navigation' }));

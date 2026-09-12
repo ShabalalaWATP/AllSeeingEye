@@ -15,8 +15,19 @@ const dailyBriefingSchema: z.ZodType<DailyBriefing> = z.object({
 
 /** The server reuses the daily job, including across tabs and page visits. */
 export function ensureDailyBriefing(signal: AbortSignal): Promise<DailyBriefing> {
+  return requestBriefing('/api/live-monitor/briefing', signal);
+}
+
+export function ensureEconomyBriefing(signal: AbortSignal): Promise<DailyBriefing> {
+  return requestBriefing('/api/economy/briefing', signal);
+}
+
+function requestBriefing(
+  path: '/api/live-monitor/briefing' | '/api/economy/briefing',
+  signal: AbortSignal,
+): Promise<DailyBriefing> {
   return scopedMutation(() =>
-    apiCall('/api/live-monitor/briefing', {
+    apiCall(path, {
       method: 'POST',
       schema: dailyBriefingSchema,
       signal,

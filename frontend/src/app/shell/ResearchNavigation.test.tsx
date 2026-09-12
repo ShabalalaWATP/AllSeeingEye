@@ -39,9 +39,13 @@ describe('research workspace navigation', () => {
       '/geolocation',
     );
     expect(within(tools).queryByRole('link', { name: 'Recurring' })).not.toBeInTheDocument();
-    expect(within(primary).getByRole('link', { name: 'OSINT Subscriptions' })).toHaveAttribute(
+    expect(within(primary).getByRole('link', { name: 'Subscriptions' })).toHaveAttribute(
       'href',
       '/subscriptions',
+    );
+    expect(within(tools).getByRole('link', { name: 'Daily briefing' })).toHaveAttribute(
+      'href',
+      '/trackers',
     );
   });
 
@@ -53,15 +57,32 @@ describe('research workspace navigation', () => {
     );
     renderApp('/reports', 'user');
     await screen.findByRole('table', { name: 'Reports' });
+    const primary = screen.getByRole('navigation', { name: 'Primary' });
+    expect(within(primary).getByRole('link', { name: 'Research' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
     expect(screen.queryByRole('form', { name: 'Generate a report' })).not.toBeInTheDocument();
     expect(boardRequest).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Research progress' })).toHaveAttribute(
       'href',
       '/research/jobs',
     );
-    expect(screen.getByRole('link', { name: 'Manage OSINT subscriptions' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Manage subscriptions' })).toHaveAttribute(
       'href',
       '/subscriptions',
+    );
+  });
+
+  it('preserves old subscription links while displaying the shorter destination name', async () => {
+    const { router } = renderApp('/research/recurring?scope=personal', 'user');
+    await screen.findByRole('heading', { name: 'Subscriptions', level: 1 });
+    expect(router.state.location.pathname).toBe('/subscriptions');
+    expect(router.state.location.search).toBe('?scope=personal');
+    expect(screen.queryByRole('navigation', { name: 'Research tools' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Subscriptions' })).toHaveAttribute(
+      'aria-current',
+      'page',
     );
   });
 });

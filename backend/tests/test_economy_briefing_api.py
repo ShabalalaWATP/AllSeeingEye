@@ -1,0 +1,227 @@
+"""Real routing, durable frozen context and authentication with network-free providers."""
+
+from datetime import timedelta
+from unittest.mock import AsyncMock
+
+from ase.adapters.persistence.source_controls import SqlSourceControlRepository
+from ase.application.economy_briefing import economy_briefing_request
+from ase.domain.economy import EconomyPoint, EconomyRegion, EconomySeries, EconomySnapshot
+from ase.domain.events import Category
+from ase.domain.research import ResearchBatch, ResearchFocus, ResearchMode, ResearchQuery
+from feeds_helpers import make_event
+from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
+from report_job_api_helpers import job_settings, prepared, stored, work
+
+__all__ = ["job_settings"]
+
+
+def macro_fixture(now):
+    return EconomySnapshot(
+        now,
+        now + timedelta(hours=1),
+        tuple(
+            EconomyRegion(
+                code,
+                name,
+                (
+                    EconomySeries(
+                        "NY.GDP.MKTP.KD.ZG",
+                        "GDP growth",
+                        "% per year",
+                        "annual",
+                        "World Bank",
+                        "https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG",
+                        "stale",
+                        "Annual historical context; last refresh failed.",
+                        now - timedelta(days=2),
+                        (EconomyPoint("2024", 2.0),),
+                        "2026-08-01",
+                    ),
+                ),
+            )
+            for code, name in (
+                ("WORLD", "Worldwide"),
+                ("GB", "United Kingdom"),
+                ("US", "United States"),
+                ("RU", "Russia"),
+                ("CN", "China"),
+                ("IR", "Iran"),
+            )
+        ),
+        tuple(
+            EconomySeries(
+                code,
+                f"{code} per EUR",
+                "currency per euro",
+                "daily",
+                "ECB",
+                "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml",
+                "available",
+                "Reference rate, not a transaction price.",
+                now,
+                (EconomyPoint("2026-08-31", value),),
+            )
+            for code, value in (("GBP", 0.8), ("USD", 1.1), ("CNY", 7.2))
+        ),
+    )
+
+
+async def test_economy_news_authentication_scope_and_bounded_query(client, user, container):
+    headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
+    denied = await client.get("/api/economy/news")
+    assert denied.status_code == 401
+    at = container.clock.now() - timedelta(minutes=1)
+    economic = make_event(
+        "economic-article",
+        source_id="economic_scmp_china",
+        category=Category.ECONOMIC,
+        title="Exports increased",
+        published_at=at,
+        observed_at=at,
+        point=None,
+    )
+    container.store.upsert((economic, make_event("unrelated-conflict", category=Category.CONFLICT)))
+    response = await client.get("/api/economy/news?region=CN", headers=headers)
+    assert response.status_code == 200, response.text
+    assert response.headers["cache-control"] == "private, no-store"
+    assert response.json()["items"][0]["id"] == economic.id
+    assert response.json()["items"][0]["region_codes"] == ["CN"]
+    assert len(response.json()["items"]) == 1
+    assert (await client.get("/api/economy/news?region=GB", headers=headers)).json()["items"] == []
+    assert (await client.get("/api/economy/news?limit=101", headers=headers)).status_code == 422
+    assert (await client.get("/api/economy/news?region=ZZ", headers=headers)).status_code == 422
+
+
+async def test_news_disabled_between_preparation_and_release_is_removed(
+    client,
+    user,
+    container,
+    monkeypatch,
+):
+    headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
+    at = container.clock.now() - timedelta(minutes=1)
+    container.store.upsert(
+        (
+            make_event(
+                "headline",
+                source_id="economic_bbc_business",
+                category=Category.ECONOMIC,
+                title="Inflation latest",
+                published_at=at,
+                observed_at=at,
+            ),
+        )
+    )
+    original = container.economy_news.read
+
+    async def disable_after_read(*args):
+        result = await original(*args)
+        assert result.items
+        async with container.source_admission.guard(), container.session_factory() as session:
+            await SqlSourceControlRepository(session).set(
+                "economic_bbc_business",
+                False,
+                container.clock.now(),
+                user.id,
+            )
+            await session.commit()
+        return result
+
+    monkeypatch.setattr(container.economy_news, "read", disable_after_read)
+    response = await client.get("/api/economy/news", headers=headers)
+    assert response.status_code == 200 and response.json()["items"] == []
+
+
+def test_expanded_inventory_keeps_economic_selection_and_multilingual_company_plans(container):
+    request = economy_briefing_request()
+    query = ResearchQuery(
+        question=request.question,
+        since=container.clock.now() - timedelta(hours=24),
+        until=container.clock.now(),
+        terms=request.research_terms,
+        source_ids=request.research_source_ids,
+        mode=ResearchMode.DETAILED,
+    )
+    plan = container.research.plan(query)
+    assert {row.source_id for row in plan.tasks if row.selected} == set(request.research_source_ids)
+    assert all(row.supported for row in plan.tasks if row.selected)
+    company = container.research.plan(
+        ResearchQuery(
+            question="Company filing review",
+            since=query.since,
+            until=query.until,
+            languages=("en", "ru", "zh", "fa", "fr", "de", "es", "ar"),
+            terms=("company",),
+            focus=ResearchFocus.COMPANY,
+            subject="0000320193",
+        )
+    )
+    assert len(company.tasks) <= 64
+    assert any(row.source_id == "research-sec-submissions" for row in company.tasks)
+
+
+async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_financial_news(
+    client,
+    user,
+    container,
+    monkeypatch,
+):
+    gateway, headers = await prepared(container, client)
+    # A deployment-disabled publisher is absent from the research catalogue.
+    # Automatic briefing admission must keep using the remaining providers.
+    unavailable_source = "research_publisher_economic_hm_treasury"
+    container.research_sources = tuple(
+        spec for spec in container.research_sources if spec.id != unavailable_source
+    )
+    snapshot = AsyncMock(return_value=macro_fixture(container.clock.now()))
+    monkeypatch.setattr(container.economy, "snapshot", snapshot)
+    assert (await client.post("/api/economy/briefing")).status_code == 401
+    assert (await client.get("/api/economy/briefing", headers=headers)).status_code == 405
+    response = await client.post("/api/economy/briefing", headers=headers)
+    assert response.status_code == 202, response.text
+    job_id = response.json()["job"]["id"]
+    assert response.json()["job"]["title"] == "Daily economic briefing"
+    assert not gateway.calls
+    frozen = (await stored(container, job_id)).payload["input"]
+    assert len(frozen["evidence"]) == 9
+    assert all(
+        "observation 2024" in item["summary"] and "not the observation date" in item["summary"]
+        for item in frozen["evidence"]
+        if item["source_id"] == "research-world-bank"
+    )
+    assert sum(item["source_id"] == "research-world-bank" for item in frozen["evidence"]) == 6
+    assert all(item["published_at"] is None for item in frozen["evidence"])
+    again = await client.post("/api/economy/briefing", headers=headers)
+    assert again.json()["job"]["id"] == job_id and snapshot.await_count == 1
+    at = container.clock.now() - timedelta(minutes=1)
+    collect = AsyncMock(
+        return_value=ResearchBatch(
+            items=(
+                make_event(
+                    "financial",
+                    source_id="economic_bbc_business",
+                    category=Category.ECONOMIC,
+                    title="Global inflation rises",
+                    published_at=at,
+                    observed_at=at,
+                    point=None,
+                ),
+            )
+        )
+    )
+    monkeypatch.setattr(container.research, "collect", collect)
+    await work(container)
+    current = await stored(container, job_id)
+    assert current.status in {"completed", "needs_review"}, (current.status, current.error)
+    async with container.session_factory() as session:
+        version = await container.repositories(session).reports.get_version(current.report_id, 1)
+    assert len(version.evidence) == 10
+    assert {row.source_id for row in version.evidence} == {
+        "research-world-bank",
+        "economic_bbc_business",
+        "economic-ecb",
+    }
+    assert version.body.cited_labels() <= {row.label for row in version.evidence}
+    assert collect.call_args.args[0].source_ids == tuple(
+        key for key in economy_briefing_request().research_source_ids if key != unavailable_source
+    )

@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useGlobeStore } from '@/stores/globe';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
+import { PersonalAppearance } from '@/components/account/PersonalAppearance';
 
 import { LeftRail } from './LeftRail';
 import { OpsRoomOverlay } from './OpsRoomOverlay';
@@ -22,6 +23,7 @@ export function AppShell() {
 
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-ground text-text">
+      <PersonalAppearance />
       <a
         href="#main-content"
         onClick={() => mainRef.current?.focus()}

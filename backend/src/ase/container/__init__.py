@@ -81,8 +81,11 @@ from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
 from ase.container.conflict_screening import build_conflict_screening
+from ase.container.economy import EconomyWiring
+from ase.container.economy_briefing import EconomyBriefingWiring
 from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
+from ase.container.lifecycle import dispose_resources
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -97,7 +100,14 @@ log = structlog.get_logger(__name__)
 
 
 class Container(
-    FeatureWiring, ResearchInputWiring, SecFilingWiring, AdminWiring, AuthWiring, AssistantWiring
+    FeatureWiring,
+    ResearchInputWiring,
+    SecFilingWiring,
+    AdminWiring,
+    AuthWiring,
+    AssistantWiring,
+    EconomyWiring,
+    EconomyBriefingWiring,
 ):
     def __init__(
         self,
@@ -154,6 +164,7 @@ class Container(
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
+        self.initialise_economy()
         self._initialise_map_catalogues()
         self.research = research_service(
             self.http,
@@ -321,21 +332,7 @@ class Container(
         )
 
     async def dispose(self) -> None:
-        await self.http.aclose()
-        await self.satellite_http.aclose()
-        await self.marine_http.aclose()
-        await self.barentswatch_http.aclose()
-        await self.camera_http.aclose()
-        await self.public_firms_http.aclose()
-        await self.routing_http.aclose()
-        await self.terrain_gateway.aclose()
-        await self.terrain_http.aclose()
-        await self._llm_gateway.aclose()
-        await self.close_web_search()
-        await self._embedding_gateway.aclose()
-        await self.tiles.aclose()
-        await self.archiver.aclose()
-        await self.engine.dispose()
+        await dispose_resources(self)
 
     def repositories(self, session: AsyncSession) -> Repositories:
         return build_repositories(session)

@@ -235,7 +235,7 @@ async def test_empty_headline_match_has_a_truthful_receipt(monkeypatch: pytest.M
 
 
 def test_reviewed_seeds_are_distinct_and_inherit_original_admission() -> None:
-    assert len(PUBLISHER_SEEDS) == len(SEEDS) == 21
+    assert len(PUBLISHER_SEEDS) == len(SEEDS) == 30
     assert not SEEDS.keys() & {seed.spec.id for seed in (*REGIONAL_SEEDS, *SOCIAL_SEEDS)}
     for source_id in SEEDS:
         derived = f"research_publisher_{source_id}"

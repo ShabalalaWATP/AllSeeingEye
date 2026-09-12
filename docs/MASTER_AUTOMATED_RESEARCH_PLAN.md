@@ -454,3 +454,22 @@ server is running. Delivery is in-app. Novelty comparison retains 500 content
 fingerprints, so it is not a complete semantic archive. Real-model briefing quality,
 source archive availability and long-running operator acceptance remain evaluation
 work, not outcomes established by fixture tests.
+
+## Economy and personal navigation, 12 September 2026
+
+- [x] Reduce primary navigation to Map, Research, Subscriptions, Geolocation and Economy.
+- [x] Keep saved reports, daily monitoring and map-linked areas within Research.
+- [x] Add separate profile/settings controls; place team sharing under profile and the source catalogue and alert rules in settings.
+- [x] Save per-user Obsidian, Slate and Daylight themes, reduced motion and existing research/report/regional defaults.
+- [x] Add global economic headlines and UK, USA, Russia, China and Iran focus controls.
+- [x] Connect bounded World Bank annual indicators and ECB daily reference rates, with native histories and exact data tables.
+- [x] Add an opt-in, isolated TradingView chart with verified instruments, timing labels and explicit unsupported-market states.
+- [x] Add nine public economic feeds, retaining conservative grading, publisher independence and issuer/state-affiliated labels.
+- [x] Produce a personal cited Deep economic briefing reused for 24 hours, with historical macro context and normal professional exports.
+- [x] Verify source-disable races, observation dates, account isolation, hidden-tab behaviour and existing briefing compatibility.
+
+See [Economy and personal workspace](ECONOMY_WORKSPACE.md) for sources, coverage,
+privacy and operating behaviour. Real source probes succeeded; direct local stock
+quotes for Russia and Iran remain unavailable in the selected widget. Daily
+analysis refreshes on a visible eligible visit. Unattended schedules use
+Subscriptions. No real-model quality evaluation or deployment is claimed.

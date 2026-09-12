@@ -29,6 +29,8 @@ const TotpSettingsPage = lazy(() => import('@/features/auth/TotpSettingsPage'));
 const SocialPage = lazy(() => import('@/features/trackers/SocialPage'));
 const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
 const AccountPage = lazy(() => import('@/features/account/AccountPage'));
+const SettingsPage = lazy(() => import('@/features/account/SettingsPage'));
+const EconomyPage = lazy(() => import('@/features/economy/EconomyPage'));
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 const ResearchPage = lazy(() => import('@/features/research/ResearchPage'));
 const ReportJobsPage = lazy(() => import('@/features/report-jobs/ReportJobsPage'));
@@ -110,6 +112,8 @@ export const routes: RouteObject[] = [
           { path: 'warning', element: <WarningPage /> },
           { path: 'teams', element: <TeamsPage /> },
           { path: 'account', element: <AccountPage /> },
+          { path: 'settings', element: <SettingsPage /> },
+          { path: 'economy', element: <EconomyPage /> },
           { path: 'account/security', element: <TotpSettingsPage /> },
         ],
       },

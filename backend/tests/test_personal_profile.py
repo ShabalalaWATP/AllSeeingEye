@@ -29,6 +29,8 @@ async def test_every_role_can_save_own_profile(
     assert default.status_code == 200
     assert default.headers["cache-control"] == "no-store"
     assert default.json()["research_window_days"] == 3
+    assert default.json()["appearance_theme"] == "obsidian"
+    assert default.json()["reduced_motion"] is False
     changes = {
         "display_name": "  Analyst One  ",
         "timezone": "Europe/London",
@@ -40,12 +42,16 @@ async def test_every_role_can_save_own_profile(
         "report_language": "fr",
         "report_style": "briefing",
         "export_format": "docx",
+        "appearance_theme": "slate",
+        "reduced_motion": True,
     }
     response = await client.patch("/api/me/profile", headers=headers, json=changes)
     assert response.status_code == 200, response.text
     result = response.json()
     assert result["display_name"] == "Analyst One"
     assert result["research_languages"] == ["en", "fr"]
+    assert result["appearance_theme"] == "slate"
+    assert result["reduced_motion"] is True
     assert (await client.get("/api/me/profile", headers=headers)).json() == result
     me = (await client.get("/api/me", headers=headers)).json()
     assert me["display_name"] == "Analyst One" and me["role"] == role.value
@@ -63,11 +69,17 @@ async def test_profiles_are_private_even_from_other_admins(
     admin: User,
 ) -> None:
     owner = bearer(await login_token(client, user.email, USER_PASSWORD))
-    await client.patch("/api/me/profile", headers=owner, json={"research_languages": ["uk"]})
+    await client.patch(
+        "/api/me/profile",
+        headers=owner,
+        json={"research_languages": ["uk"], "appearance_theme": "light", "reduced_motion": True},
+    )
     other = await create_user(container, email="other@example.com", password=USER_PASSWORD)
     theirs = bearer(await login_token(client, other.email, USER_PASSWORD))
     result = await client.get("/api/me/profile", headers=theirs)
     assert result.json()["research_languages"] == ["en"]
+    assert result.json()["appearance_theme"] == "obsidian"
+    assert result.json()["reduced_motion"] is False
     assert (await client.get(f"/api/me/profile/{user.id}", headers=theirs)).status_code == 404
     admin_headers = bearer(await login_token(client, admin.email, ADMIN_PASSWORD))
     assert (await client.get("/api/me/profile", headers=admin_headers)).json()[
@@ -100,6 +112,11 @@ async def test_profiles_are_private_even_from_other_admins(
         {"date_format": None},
         {"display_name": None},
         {"research_mode": None},
+        {"appearance_theme": "arbitrary-css"},
+        {"appearance_theme": None},
+        {"reduced_motion": "yes"},
+        {"reduced_motion": 1},
+        {"reduced_motion": None},
     ],
 )
 async def test_invalid_profile_changes_are_rejected(

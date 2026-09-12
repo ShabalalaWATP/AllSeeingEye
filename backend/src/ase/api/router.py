@@ -24,6 +24,8 @@ from ase.api.routers import (
     countries,
     daily_briefing,
     direction,
+    economy,
+    economy_news,
     events,
     footprints,
     health,
@@ -61,6 +63,8 @@ from ase.api.routers import (
 )
 
 api_router = APIRouter()
+api_router.include_router(economy.router)
+api_router.include_router(economy_news.router)
 api_router.include_router(daily_briefing.router)
 api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)

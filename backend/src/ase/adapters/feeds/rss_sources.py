@@ -10,6 +10,7 @@ from __future__ import annotations
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
 from ase.adapters.feeds.rss_seeds import US_ADVISORY, RssSeed
+from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
@@ -18,7 +19,13 @@ from ase.application.ports import Clock
 
 __all__ = ["RSS_SEEDS", "US_ADVISORY", "RssSeed", "build_rss_connectors"]
 
-RSS_SEEDS: tuple[RssSeed, ...] = (*OFFICIAL_SEEDS, *OUTLET_SEEDS, *SOCIAL_SEEDS, *REGIONAL_SEEDS)
+RSS_SEEDS: tuple[RssSeed, ...] = (
+    *OFFICIAL_SEEDS,
+    *OUTLET_SEEDS,
+    *SOCIAL_SEEDS,
+    *REGIONAL_SEEDS,
+    *ECONOMY_SEEDS,
+)
 
 
 def build_rss_connectors(http: FeedHttpClient, clock: Clock) -> list[RssConnector]:

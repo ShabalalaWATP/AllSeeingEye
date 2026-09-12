@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/economy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Economy */
+        get: operations["economy_api_economy_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/economy/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Economic News */
+        get: operations["economic_news_api_economy_news_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/economy/briefing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Economic Briefing */
+        post: operations["economic_briefing_api_economy_briefing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/live-monitor/briefing": {
         parameters: {
             query?: never;
@@ -4508,6 +4559,117 @@ export interface components {
             /** Profile Id */
             profile_id?: string | null;
         };
+        /** EconomyNewsItemOut */
+        EconomyNewsItemOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Name */
+            source_name: string;
+            /** Organisation */
+            organisation: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Region Codes */
+            region_codes: ("GB" | "US" | "RU" | "CN" | "IR")[];
+            /**
+             * Viewpoint
+             * @enum {string}
+             */
+            viewpoint: "official_issuer" | "state_aligned" | "publisher";
+        };
+        /** EconomyNewsOut */
+        EconomyNewsOut: {
+            /** Items */
+            items: components["schemas"]["EconomyNewsItemOut"][];
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Window Hours */
+            window_hours: number;
+            /** Coverage Note */
+            coverage_note: string;
+        };
+        /** EconomyPointOut */
+        EconomyPointOut: {
+            /** Date */
+            date: string;
+            /** Value */
+            value: number | null;
+        };
+        /** EconomyRegionOut */
+        EconomyRegionOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Series */
+            series: components["schemas"]["EconomySeriesOut"][];
+        };
+        /** EconomySeriesOut */
+        EconomySeriesOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Frequency
+             * @enum {string}
+             */
+            frequency: "annual" | "daily";
+            /** Provider */
+            provider: string;
+            /** Source Url */
+            source_url: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "available" | "stale" | "unavailable";
+            /** Note */
+            note: string;
+            /**
+             * Updated At
+             * @description Last successful retrieval of this series.
+             */
+            updated_at: string | null;
+            /**
+             * Source Updated At
+             * @description Provider publication date when supplied.
+             */
+            source_updated_at: string | null;
+            /** Points */
+            points: components["schemas"]["EconomyPointOut"][];
+        };
+        /** EconomySnapshotOut */
+        EconomySnapshotOut: {
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /**
+             * Refresh After
+             * Format: date-time
+             */
+            refresh_after: string;
+            /** Regions */
+            regions: components["schemas"]["EconomyRegionOut"][];
+            /** Fx */
+            fx: components["schemas"]["EconomySeriesOut"][];
+        };
         /** EventOut */
         EventOut: {
             /** Id */
@@ -6976,6 +7138,13 @@ export interface components {
              * @enum {string}
              */
             export_format: "pdf" | "docx" | "md";
+            /**
+             * Appearance Theme
+             * @enum {string}
+             */
+            appearance_theme: "obsidian" | "slate" | "light";
+            /** Reduced Motion */
+            reduced_motion: boolean;
         };
         /** ProfileUpdateIn */
         ProfileUpdateIn: {
@@ -6999,6 +7168,10 @@ export interface components {
             report_style?: ("briefing" | "assessment") | null;
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
+            /** Appearance Theme */
+            appearance_theme?: ("obsidian" | "slate" | "light") | null;
+            /** Reduced Motion */
+            reduced_motion?: boolean | null;
         };
         /** ProjectMetadata */
         ProjectMetadata: {
@@ -9483,6 +9656,78 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    economy_api_economy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EconomySnapshotOut"];
+                };
+            };
+        };
+    };
+    economic_news_api_economy_news_get: {
+        parameters: {
+            query?: {
+                region?: "WORLD" | "GB" | "US" | "RU" | "CN" | "IR";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EconomyNewsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    economic_briefing_api_economy_briefing_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyBriefingOut"];
+                };
+            };
+        };
+    };
     ensure_briefing_api_live_monitor_briefing_post: {
         parameters: {
             query?: never;

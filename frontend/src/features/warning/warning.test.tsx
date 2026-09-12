@@ -67,9 +67,18 @@ describe('warning', () => {
     });
   });
 
-  it('shows the unacknowledged count in the shell', async () => {
-    renderApp('/', 'user');
-    const bell = await screen.findByRole('link', { name: 'Alerts, 1 unacknowledged' });
-    expect(bell).toHaveAttribute('href', '/warning');
+  it('keeps alerts accessible through personal settings without a primary navigation entry', async () => {
+    const { user } = renderApp('/settings', 'user');
+    const alerts = await screen.findByRole('link', { name: /^Alerts & rules/ });
+    expect(alerts).toHaveAttribute('href', '/warning');
+    expect(
+      within(screen.getByRole('navigation', { name: 'Primary' })).queryByRole('link', {
+        name: /Alerts/,
+      }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /unacknowledged/ })).not.toBeInTheDocument();
+    await user.click(alerts);
+    const list = await screen.findByRole('list', { name: 'Alerts' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
   });
 });

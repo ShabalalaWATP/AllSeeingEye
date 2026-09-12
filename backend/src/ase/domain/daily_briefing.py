@@ -13,6 +13,11 @@ def briefing_key(owner_id: UUID, now: datetime) -> UUID:
     return uuid5(owner_id, f"ase:daily-briefing:v1:{now.astimezone(UTC).date().isoformat()}")
 
 
+def economy_briefing_key(owner_id: UUID, now: datetime) -> UUID:
+    """Economic analysis has its own admission identity, separate from conflict monitoring."""
+    return uuid5(owner_id, f"ase:economy-briefing:v1:{now.astimezone(UTC).date().isoformat()}")
+
+
 def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
     """Keep the marker even if work is paused, failed or already published.
 
@@ -24,7 +29,8 @@ def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
         and now < job.created_at + REFRESH_INTERVAL
         and job.request_key
         in {
-            briefing_key(job.owner_id, job.created_at),
-            briefing_key(job.owner_id, job.created_at - REFRESH_INTERVAL),
+            identity(job.owner_id, instant)
+            for identity in (briefing_key, economy_briefing_key)
+            for instant in (job.created_at, job.created_at - REFRESH_INTERVAL)
         }
     )

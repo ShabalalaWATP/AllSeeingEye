@@ -1,6 +1,6 @@
 /*
- * Theme tokens for The All Seeing Eye. Dark only: obsidian ground, one ember
- * accent taken from the Evil Eye, cyan for live data, amber for warnings.
+ * Theme tokens for The All Seeing Eye. Obsidian is the public/default theme;
+ * authenticated accounts can choose a personal slate or light workspace.
  * Fonts are self-hosted through Fontsource; nothing is fetched at runtime.
  */
 @import 'tailwindcss';
@@ -38,6 +38,44 @@
     background-color: var(--color-ground);
   }
 
+  html[data-appearance='slate'] {
+    --color-ground: #0b1420;
+    --color-surface: #132131;
+    --color-surface-2: #1b2d40;
+    --color-line: #3b5065;
+    --color-text: #edf5fa;
+    --color-muted: #adbfce;
+    --color-ember: #72dcec;
+    --color-cyan: #72dcec;
+  }
+
+  html[data-appearance='light'] {
+    color-scheme: light;
+    --color-ground: #f5f6f8;
+    --color-surface: #ffffff;
+    --color-surface-2: #e7ebef;
+    --color-line: #788592;
+    --color-text: #17212d;
+    --color-muted: #536171;
+    --color-ember: #a63d13;
+    --color-cyan: #086a80;
+    --color-amber: #895800;
+    --color-good: #13734c;
+    --color-critical: #bb2638;
+    --shadow-card: 0 14px 36px -20px rgb(20 34 50 / 0.25);
+  }
+
+  /* The map keeps its own contrast and data palette over satellite imagery. */
+  html[data-appearance='light'] .globe-dashboard,
+  html[data-appearance='light'] .globe-dashboard-controls {
+    --color-cyan: #22d3ee;
+    --color-amber: #f5b53f;
+    --color-good: #5cd39b;
+    --color-critical: #ff5a5a;
+    color-scheme: dark;
+    color: var(--color-text);
+  }
+
   body {
     margin: 0;
     min-height: 100dvh;
@@ -69,6 +107,15 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  html[data-reduced-motion='true'] *,
+  html[data-reduced-motion='true'] *::before,
+  html[data-reduced-motion='true'] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -146,9 +146,16 @@ def research_service(
                 ),
             )
         )
-        # All 21 publishers fit the 64-provider bound, including eight company
-        # lookups and eight language editions. Never truncate operator selection.
         selected.extend(public_research_feeds(http, clock, spatial=query.area is not None))
+        if len(selected) > 64:
+            # New topic feeds must not break multilingual/record research. Drop
+            # only unselected presentation rows or unsupported automatic choices.
+            chosen = set(query.source_ids or ()) | {task.source_id for task in query.planned_tasks}
+            selected = [
+                p
+                for p in selected
+                if p.id in chosen or (query.source_ids is None and p.supports(query))
+            ]
         return [
             ControlledResearchProvider(provider, admission)
             if admission is not None and not isinstance(provider, RetainedAreaFeedProvider)

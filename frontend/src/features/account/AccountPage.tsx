@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router';
+import { Link, Navigate, useSearchParams } from 'react-router';
 
 import { ProfileSecurity } from '@/components/account/ProfileSecurity';
 import { useAuthStore } from '@/stores/auth';
@@ -9,8 +9,6 @@ import { ProfilePreferences } from './ProfilePreferences';
 const sections = [
   { id: 'profile', label: 'Profile', detail: 'Your identity and region' },
   { id: 'security', label: 'Security', detail: 'Sign-in and active sessions' },
-  { id: 'research', label: 'Research defaults', detail: 'Start with your preferences' },
-  { id: 'reports', label: 'Reports', detail: 'Language and presentation' },
 ] as const;
 export type ProfileSection = (typeof sections)[number]['id'];
 
@@ -20,6 +18,9 @@ export default function AccountPage() {
   const [params] = useSearchParams();
   const selected = sections.find((item) => item.id === params.get('section')) ?? sections[0];
   if (!user) return null;
+  const legacySection = params.get('section');
+  if (legacySection === 'research' || legacySection === 'reports')
+    return <Navigate to={`/settings?section=${legacySection}`} replace />;
   const initials = user.display_name
     .trim()
     .split(/\s+/)
@@ -64,6 +65,12 @@ export default function AccountPage() {
               className="min-h-11 shrink-0 rounded-md px-3 py-3 text-sm text-muted hover:text-text md:mt-5"
             >
               View your teams
+            </Link>
+            <Link
+              to="/settings"
+              className="min-h-11 shrink-0 rounded-md px-3 py-3 text-sm text-muted hover:text-text"
+            >
+              Personal settings
             </Link>
           </nav>
           <div className="min-w-0" key={user.id}>

@@ -3,6 +3,7 @@ import { Outlet } from 'react-router';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { EyeAssistant } from '@/components/assistant/EyeAssistant';
+import { PersonalAppearance } from '@/components/account/PersonalAppearance';
 
 import { AdminHeader } from './AdminHeader';
 import { AdminNavigation } from './AdminNavigation';
@@ -14,6 +15,7 @@ export function AdminShell() {
   const mainRef = useRef<HTMLElement>(null);
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-ground text-text">
+      <PersonalAppearance />
       <a
         href="#main-content"
         onClick={() => mainRef.current?.focus()}

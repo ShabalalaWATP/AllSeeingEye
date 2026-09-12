@@ -14,6 +14,10 @@ const content = {
     title: 'Personal details',
     description: 'Choose how your name and dates appear in the app.',
   },
+  region: {
+    title: 'Time & region',
+    description: 'Choose your timezone and the date format used across the app.',
+  },
   research: {
     title: 'Research defaults',
     description: 'Start new research with these settings. Adjust them for each question.',
@@ -45,6 +49,7 @@ export function ProfilePreferences({ section }: { section: EditableSection }) {
 }
 
 function sectionInput(section: EditableSection, profile: Profile): ProfileInput {
+  if (section === 'region') return { timezone: profile.timezone, date_format: profile.date_format };
   if (section === 'profile')
     return {
       display_name: profile.display_name.trim(),

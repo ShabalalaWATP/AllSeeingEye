@@ -4099,3 +4099,43 @@ with the existing map-engine warning and a 351-line shared test-handler exceptio
 The restarted local API responds successfully and exposes the new contracts.
 No live-model evaluation, database migration or deployment was performed. No Git
 remote is configured.
+
+## Economy and personal workspace, 12 September 2026
+
+Simplified the research sidebar to Map, Research, Subscriptions, Geolocation and
+Economy. Saved reports, daily monitoring and plans/areas remain within Research.
+Separate profile and settings controls now provide identity/security/team sharing
+and personal preferences. Settings includes the source catalogue and existing
+alert rules. Three account-scoped colour themes and reduced motion apply across
+the authenticated workspace, with logout and account-change isolation.
+
+Built an Economy workspace with worldwide headlines, five country focus views,
+verified market charts, dated World Bank indicators, ECB currency context and a
+cited daily Deep briefing. Nine economic feeds include business publishers,
+central banks, Treasury releases and labelled state-aligned perspectives. Shared
+publisher identities prevent related feeds from overstating independent support.
+The chart uses one opt-in sandboxed provider frame and pauses when hidden. Native
+indicator charts retain missing-data gaps and exact values without new libraries.
+
+Public probes verified World Bank, ECB and all nine feed endpoints, and a real
+browser rendered the market chart. API/AI report integration and visual states
+were tested with fixtures, not a real model. Review corrected a source-disable
+release race and preserved actual observation dates separately from retrieval.
+Existing and new daily jobs retain separate identities and 24-hour admission
+protection. No database migration or additional credentials were needed.
+
+Added docs/ECONOMY_WORKSPACE.md and updated research workspace operations and the
+active implementation plan. Direct Russia/Iran stock quotes, commercial publisher
+reuse approval and real-model evaluation remain explicit limitations.
+
+Final validation: 123 combined backend regressions passed. The full frontend
+suite passed 2,072 tests with one skip, measuring 95.19% statements, 90.23%
+branches, 93.57% functions and 96.43% lines against unchanged thresholds.
+Backend Ruff, formatting, strict typing and both import contracts passed;
+frontend typing, scoped ESLint/Prettier and production build passed. File-length
+and staged Gitleaks checks passed. The existing large vendor chunk warning and
+two existing file-length target warnings remain. Dark/light desktop layouts,
+390-pixel mobile layout, themes and a live provider chart were inspected.
+The restarted local API returned health 200 and unauthenticated Economy 401,
+and exposes all three new routes. Full backend coverage was not measured.
+No production deployment or remote push was performed; no remote is configured.

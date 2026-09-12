@@ -3,17 +3,19 @@
 | View | Purpose |
 | --- | --- |
 | Map | Explore spatial observations and start research for a drawn area. |
-| Live monitor | Read a daily global briefing and browse connected-feed activity by topic. |
-| Research | Ask a question, open saved reports or reuse plans and areas. |
-| OSINT Subscriptions | Schedule repeated research on a topic, conflict, disaster or area. |
+| Research | Ask a question, open saved reports, read the daily briefing or reuse plans and areas. |
+| Subscriptions | Schedule repeated research on a topic, conflict, disaster or area. |
 | Geolocation | Compare up to six photos and assess candidate locations. |
-| Saved reports | Read previous outputs, inspect frozen evidence, compare and export. |
-| Alerts | Review notifications and configure rules over feed activity. |
-| Plans & areas | Reuse geographic areas and structured questions, within Research. |
+| Economy | Explore markets, country indicators, economic news and daily cited analysis. |
 
 Administration remains separate and restricted to administrators. Teams define
 sharing and model destinations. Existing tracker/direction/warning routes and
 contextual report links remain usable.
+
+The top-bar profile icon opens identity, security and team sharing. Personal
+settings contain appearance, time and region, research/report defaults, and links
+to the source catalogue and alert rules. These preferences apply per user. See
+[Economy and personal workspace](ECONOMY_WORKSPACE.md).
 
 ## Questions and scope
 
@@ -83,9 +85,9 @@ so other active uploads may temporarily limit capacity. Returning to the tool re
 bounded in-memory receipt references for cleanup. Pending report requests protect
 their input until they settle. Account/access changes clear client references.
 
-## OSINT Subscriptions
+## Subscriptions
 
-Create a normal research brief under OSINT Subscriptions: question, report type,
+Create a normal research brief under Subscriptions: question, report type,
 country scope, lookback, source choices and optional fresh-web search. A separate
 timing panel sets when the brief repeats. The control panel filters active, paused
 and attention-needed schedules; edit reuses the same composer. It shows the next
@@ -125,7 +127,7 @@ using prior evidence and before saving.
 
 ## Daily Live Monitor
 
-Opening Live Monitor ensures one personal Basic briefing covering the previous
+Opening Daily briefing within Research ensures one personal Basic briefing covering the previous
 24 hours of available conflict, disaster, humanitarian and news evidence. It uses
 the durable research pipeline and saves a cited report. Multiple tabs and repeat
 visits reuse the same job for 24 hours, including paused or failed jobs. The page
@@ -135,13 +137,13 @@ an automatic retry loop.
 
 The next briefing is requested when the page is visible at its refresh time or
 on the next visit after expiry. It does not run daily while the page is closed.
-Use OSINT Subscriptions for unattended recurring research. Hidden tabs pause
+Use Subscriptions for unattended recurring research. Hidden tabs pause
 polling. Source and model availability determine the result; fixture tests do not
 establish real-model briefing quality.
 
 ## Reusing map areas
 
-The research tabs are New research, Saved reports and Plans & areas. Running,
+The research tabs are New research, Saved reports, Daily briefing and Plans & areas. Running,
 failed and paused work remains accessible through Research progress from Saved
 reports. Plans & areas stores reusable geographic definitions. Open on map links
 use `/?area=<id>` and fetch authorised geometry before focusing and drawing it on

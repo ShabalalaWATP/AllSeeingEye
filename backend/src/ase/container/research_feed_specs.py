@@ -1,5 +1,7 @@
 """Additional private feed capabilities, preserving their original publisher families."""
 
+from dataclasses import replace
+
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
 from ase.adapters.research.publisher import LIMITATIONS, PUBLISHER_SEEDS
@@ -12,17 +14,20 @@ from ase.domain.sources import SourceKind, SourceSpec
 
 def additional_feed_specs() -> tuple[SourceSpec, ...]:
     publishers = tuple(
-        research_spec(
-            f"research_publisher_{seed.spec.id}",
-            seed.spec.name,
-            seed.spec.category,
-            "Publisher-supplied headlines; official publication does not verify the claims.",
-            "Local headline matching in the existing public feed and publication interval.",
-            LIMITATIONS,
-            seed.spec.licence_note,
-            organisation=seed.spec.organisation,
-            language=seed.spec.language,
-            kind=SourceKind.RSS,
+        replace(
+            research_spec(
+                f"research_publisher_{seed.spec.id}",
+                seed.spec.name,
+                seed.spec.category,
+                "Publisher-supplied headlines; official publication does not verify the claims.",
+                "Local headline matching in the existing public feed and publication interval.",
+                LIMITATIONS,
+                seed.spec.licence_note,
+                organisation=seed.spec.organisation,
+                language=seed.spec.language,
+                kind=SourceKind.RSS,
+            ),
+            flags=frozenset({"on_demand", "unassessed"}) | seed.spec.flags,
         )
         for seed in PUBLISHER_SEEDS
     )

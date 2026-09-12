@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.rss_seeds import RssSeed
+from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
 from ase.adapters.feeds.rss_seeds_outlets import OUTLET_SEEDS
 from ase.adapters.research.feed import collect_feed, receipt, search_terms
@@ -11,7 +12,7 @@ from ase.application.ports import Clock
 from ase.domain.events import freeze_attributes
 from ase.domain.research import CollectionStatus, ResearchBatch, ResearchQuery
 
-PUBLISHER_SEEDS = OFFICIAL_SEEDS + OUTLET_SEEDS
+PUBLISHER_SEEDS = OFFICIAL_SEEDS + OUTLET_SEEDS + ECONOMY_SEEDS
 LIMITATIONS = (
     "One public publisher RSS/Atom snapshot, not a complete archive or news search. "
     "At most the first 200 items are checked. Only headline, publication date, source "

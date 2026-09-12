@@ -8,7 +8,7 @@ import { SelectField, TextField } from '@/components/ui/Field';
 import type { Profile } from '@/lib/api/profile';
 import { useCountriesStore } from '@/stores/countries';
 
-export type EditableSection = 'profile' | 'research' | 'reports';
+export type EditableSection = 'profile' | 'region' | 'research' | 'reports';
 interface Props {
   section: EditableSection;
   draft: Profile;
@@ -33,17 +33,19 @@ export function PreferenceFields({
   useEffect(() => {
     if (section === 'research') void loadCountries();
   }, [section, loadCountries]);
-  if (section === 'profile')
+  if (section === 'profile' || section === 'region')
     return (
       <>
-        <TextField
-          label="Display name"
-          autoComplete="name"
-          required
-          maxLength={120}
-          value={draft.display_name}
-          onChange={(event) => onChange('display_name', event.target.value)}
-        />
+        {section === 'profile' && (
+          <TextField
+            label="Display name"
+            autoComplete="name"
+            required
+            maxLength={120}
+            value={draft.display_name}
+            onChange={(event) => onChange('display_name', event.target.value)}
+          />
+        )}
         <SelectField
           label="Timezone"
           value={draft.timezone}

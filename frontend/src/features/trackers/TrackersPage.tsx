@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 
+import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
@@ -115,6 +116,7 @@ export default function TrackersPage() {
   const disasters = useResource(fetchDisasterBoard);
   return (
     <section className="flex h-full flex-col gap-6 overflow-y-auto p-6">
+      <ResearchNavigation />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">Live monitor</h1>
@@ -123,7 +125,7 @@ export default function TrackersPage() {
           </p>
         </div>
         <Link to="/subscriptions" className="text-sm text-ember hover:underline">
-          Create an OSINT subscription
+          Create a subscription
         </Link>
       </header>
       <DailyBriefing />
