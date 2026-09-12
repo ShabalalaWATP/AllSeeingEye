@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -14,12 +14,19 @@ import { MarketWorkspace } from './MarketWorkspace';
 import { EconomyBriefing } from './EconomyBriefing';
 import { CountryComparison } from './CountryComparison';
 import { CurrencyAnalysis } from './CurrencyAnalysis';
+import { parseEconomyDays } from '@/lib/api/economyBriefing';
+import { EconomyPeriodPicker } from './EconomyPeriodPicker';
+import { useEconomyBriefing } from './useEconomyBriefing';
 
 export default function EconomyPage() {
   const [params, setParams] = useSearchParams();
+  const days = parseEconomyDays(params.get('days'));
   const focus = REGIONS.find((item) => item.id === params.get('region')) ?? REGIONS[0];
   const data = useScopedResource(fetchEconomy);
-  const news = useScopedResource(fetchEconomyNews);
+  const loadNews = useCallback(() => fetchEconomyNews(days), [days]);
+  const news = useScopedResource(loadNews);
+  const currentNews = news.data?.window_hours === days * 24 ? news.data : null;
+  const briefingState = useEconomyBriefing(days);
   const [refreshing, setRefreshing] = useState(false);
   const owner = useAuthStore((state) => state.user?.id);
   const refreshData = data.refresh;
@@ -55,11 +62,24 @@ export default function EconomyPage() {
             Refresh news & indicators
           </Button>
         </header>
+        <EconomyPeriodPicker
+          days={days}
+          onChange={(value) =>
+            setParams((previous) => {
+              previous.set('days', String(value));
+              return previous;
+            })
+          }
+        />
         <EconomyNewsPanel
-          items={news.data?.items ?? []}
+          items={currentNews?.items ?? []}
           loading={news.loading}
           error={news.error ? describeError(news.error) : null}
-          coverage={news.data?.coverage_note}
+          coverage={currentNews?.coverage_note}
+          days={days}
+          asOf={currentNews?.as_of}
+          report={briefingState.report}
+          briefing={briefingState.briefing}
           region="WORLD"
           onRetry={() => void news.reload()}
         />
@@ -72,7 +92,13 @@ export default function EconomyPage() {
               key={region.id}
               type="button"
               aria-pressed={focus.id === region.id}
-              onClick={() => setParams(region.id === 'WORLD' ? {} : { region: region.id })}
+              onClick={() =>
+                setParams((previous) => {
+                  if (region.id === 'WORLD') previous.delete('region');
+                  else previous.set('region', region.id);
+                  return previous;
+                })
+              }
               className={`min-h-11 rounded-md px-4 text-sm transition-colors ${focus.id === region.id ? 'bg-surface-2 text-ember' : 'text-muted hover:bg-surface-2 hover:text-text'}`}
             >
               {region.short}
@@ -97,7 +123,7 @@ export default function EconomyPage() {
             Country profile
           </a>
           <a className="hover:text-ember" href="#economy-analysis">
-            Daily analysis
+            Economic summary
           </a>
           <a className="hover:text-ember" href="#economy-currencies">
             Currencies
@@ -130,15 +156,19 @@ export default function EconomyPage() {
         )}
         {focus.id !== 'WORLD' && (
           <EconomyNewsPanel
-            items={news.data?.items ?? []}
+            items={currentNews?.items ?? []}
             loading={news.loading}
             error={news.error ? describeError(news.error) : null}
             region={focus.id}
+            days={days}
+            asOf={currentNews?.as_of}
+            report={briefingState.report}
+            briefing={briefingState.briefing}
             onRetry={() => void news.reload()}
           />
         )}
         <div id="economy-analysis">
-          <EconomyBriefing />
+          <EconomyBriefing days={days} state={briefingState} />
         </div>
         {data.data && (
           <div id="economy-currencies">

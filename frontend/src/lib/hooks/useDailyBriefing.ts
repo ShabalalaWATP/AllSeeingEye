@@ -7,27 +7,34 @@ import { fetchReport, type Report } from '@/lib/api/reports';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
-interface State {
-  briefing: DailyBriefing | null;
+interface State<T extends DailyBriefing> {
+  briefing: T | null;
   report: Report | null;
   error: ApiError | null;
   loading: boolean;
   owner: string | undefined;
   access: number;
+  loader: (signal: AbortSignal) => Promise<T>;
 }
 
 /** Poll only the active job; a completed briefing is checked again once its day expires. */
 export function useDailyBriefing(ensure: typeof ensureDailyBriefing = ensureDailyBriefing) {
+  return useBriefing(ensure);
+}
+
+/** A changed loader identifies a different report scope, so previous content hides immediately. */
+export function useBriefing<T extends DailyBriefing>(ensure: (signal: AbortSignal) => Promise<T>) {
   const owner = useAuthStore((state) => state.user?.id);
   const access = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
   const [attempt, setAttempt] = useState(0);
-  const [state, setState] = useState<State>({
+  const [state, setState] = useState<State<T>>({
     briefing: null,
     report: null,
     error: null,
     loading: true,
     owner,
     access,
+    loader: ensure,
   });
 
   useEffect(() => {
@@ -36,10 +43,10 @@ export function useDailyBriefing(ensure: typeof ensureDailyBriefing = ensureDail
     let timer: ReturnType<typeof setTimeout> | undefined;
     let startDeferred = false;
     const signal = controller.signal;
-    const update = (value: Omit<State, 'owner' | 'access'>) => {
-      if (!signal.aborted) setState({ ...value, owner, access: effectAccess });
+    const update = (value: Omit<State<T>, 'owner' | 'access' | 'loader'>) => {
+      if (!signal.aborted) setState({ ...value, owner, access: effectAccess, loader: ensure });
     };
-    const inspect = async (briefing: DailyBriefing) => {
+    const inspect = async (briefing: T) => {
       try {
         if (signal.aborted) return;
         const job = briefing.job;
@@ -73,7 +80,7 @@ export function useDailyBriefing(ensure: typeof ensureDailyBriefing = ensureDail
         update({ briefing, report: null, error: asApiError(error), loading: false });
       }
     };
-    const poll = async (briefing: DailyBriefing) => {
+    const poll = async (briefing: T) => {
       try {
         if (document.visibilityState === 'hidden') {
           timer = setTimeout(() => {
@@ -112,6 +119,7 @@ export function useDailyBriefing(ensure: typeof ensureDailyBriefing = ensureDail
         loading: false,
         owner,
         access: workspaceRevision(),
+        loader: ensure,
         error: new ApiError(
           409,
           'access_changed',
@@ -128,14 +136,22 @@ export function useDailyBriefing(ensure: typeof ensureDailyBriefing = ensureDail
     };
   }, [owner, attempt, ensure]);
 
-  const visible = state.owner === owner && state.access === access;
+  const visible = state.owner === owner && state.access === access && state.loader === ensure;
   return {
     briefing: visible ? state.briefing : null,
     report: visible ? state.report : null,
     error: visible ? state.error : null,
     loading: !visible || state.loading,
     retry: () => {
-      setState({ briefing: null, report: null, error: null, loading: true, owner, access });
+      setState({
+        briefing: null,
+        report: null,
+        error: null,
+        loading: true,
+        owner,
+        access,
+        loader: ensure,
+      });
       setAttempt((value) => value + 1);
     },
   };

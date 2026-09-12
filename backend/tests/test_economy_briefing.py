@@ -24,7 +24,7 @@ def test_economy_request_is_one_deep_global_report_with_named_country_sections()
     assert request.research_mode is ResearchMode.DETAILED
     assert request.report_style == "assessment"
     assert len(request.question) <= 2000
-    assert request.categories == (Category.ECONOMIC,) and request.window_hours == 24
+    assert request.categories == (Category.ECONOMIC,) and request.window_hours == 48
     assert len(request.research_source_ids) == 9 and len(request.research_terms) <= 12
     assert request.team_id is None and not request.research_web_search
     for phrase in (

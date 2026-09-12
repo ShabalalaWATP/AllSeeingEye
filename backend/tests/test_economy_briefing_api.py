@@ -3,6 +3,8 @@
 from datetime import timedelta
 from unittest.mock import AsyncMock
 
+import pytest
+
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.application.economy_briefing import economy_briefing_request
 from ase.domain.economy import EconomyPoint, EconomySeries, EconomySnapshot
@@ -143,11 +145,13 @@ def test_expanded_inventory_keeps_economic_selection_and_multilingual_company_pl
     assert any(row.source_id == "research-sec-submissions" for row in company.tasks)
 
 
-async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_financial_news(
+@pytest.mark.parametrize("days", [2, 14])
+async def test_economic_briefing_freezes_dated_context_and_collects_financial_news_in_period(
     client,
     user,
     container,
     monkeypatch,
+    days,
 ):
     gateway, headers = await prepared(container, client)
     # A deployment-disabled publisher is absent from the research catalogue.
@@ -160,10 +164,10 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
     monkeypatch.setattr(container.economy, "snapshot", snapshot)
     assert (await client.post("/api/economy/briefing")).status_code == 401
     assert (await client.get("/api/economy/briefing", headers=headers)).status_code == 405
-    response = await client.post("/api/economy/briefing", headers=headers)
+    response = await client.post(f"/api/economy/briefing?days={days}", headers=headers)
     assert response.status_code == 202, response.text
     job_id = response.json()["job"]["id"]
-    assert response.json()["job"]["title"] == "Daily economic briefing"
+    assert response.json()["job"]["title"] == f"{days} day economic summary"
     assert not gateway.calls
     frozen = (await stored(container, job_id)).payload["input"]
     assert len(frozen["evidence"]) == 9
@@ -177,7 +181,7 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
     for item in frozen["evidence"]:
         if item["source_id"] == "research-world-bank":
             assert all(label in item["summary"] for _, label, _, _ in INDICATORS)
-    again = await client.post("/api/economy/briefing", headers=headers)
+    again = await client.post(f"/api/economy/briefing?days={days}", headers=headers)
     assert again.json()["job"]["id"] == job_id and snapshot.await_count == 1
     at = container.clock.now() - timedelta(minutes=1)
     collect = AsyncMock(
@@ -192,6 +196,18 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
                     observed_at=at,
                     point=None,
                 ),
+                *(
+                    make_event(
+                        f"financial-{age}-days",
+                        source_id="economic_bbc_business",
+                        category=Category.ECONOMIC,
+                        title=f"Policy rate decision {age} days earlier",
+                        published_at=container.clock.now() - timedelta(days=age),
+                        observed_at=at,
+                        point=None,
+                    )
+                    for age in (10, 15)
+                ),
             )
         )
     )
@@ -201,7 +217,7 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
     assert current.status in {"completed", "needs_review"}, (current.status, current.error)
     async with container.session_factory() as session:
         version = await container.repositories(session).reports.get_version(current.report_id, 1)
-    assert len(version.evidence) == 10
+    assert len(version.evidence) == (11 if days == 14 else 10)
     assert {row.source_id for row in version.evidence} == {
         "research-world-bank",
         "economic_bbc_business",
@@ -213,6 +229,9 @@ async def test_economic_briefing_freezes_six_dated_regions_and_only_collects_fin
     )
     assert "Manufacturing value added: 2024=" in model_context
     assert "Debt covers central government only" in model_context
+    assert f"{days} day economic summary" in model_context
+    assert collect.call_args.args[0].since == container.clock.now() - timedelta(days=days)
+    assert collect.call_args.args[0].until == container.clock.now()
     assert collect.call_args.args[0].source_ids == tuple(
         key for key in economy_briefing_request().research_source_ids if key != unavailable_source
     )

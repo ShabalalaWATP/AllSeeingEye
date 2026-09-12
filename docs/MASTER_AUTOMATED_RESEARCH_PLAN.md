@@ -489,3 +489,18 @@ The expanded live World Bank probe returned 864 rows within the unchanged HTTP
 limit. Backend regressions passed 68 tests; the frontend suite passed 2,098 tests
 with one skip and unchanged coverage gates. Documentation and existing market
 coverage caveats are maintained in [Economy workspace](ECONOMY_WORKSPACE.md).
+
+## Explicit economic reporting periods, 12 September 2026
+
+- [x] Offer 2, 5, 7 and 14-day summaries, with matching news windows and exact reporting dates.
+- [x] Keep the 24-hour refresh cycle separate from the reporting window, with personal per-period job reuse.
+- [x] Hide prior-window content immediately and reject mismatched response dates or durations.
+- [x] Add a short cited overview above six worldwide headlines and above country reporting.
+- [x] Present executive prose, clear assessment sections, retained references and conditions to watch.
+- [x] Introduce source-linked country overviews, with annual observation years and unavailable-data handling.
+- [x] Extend bounded economic cache retention to 14 days without changing its item or global memory caps.
+- [x] Verify period isolation, frozen dates, source filtering, late responses and shared briefing compatibility.
+
+See [Economy workspace](ECONOMY_WORKSPACE.md). Publisher archives and retained
+feeds may cover less than the selected interval. Model quality across the four
+periods still needs live operator evaluation; fixture tests do not establish it.

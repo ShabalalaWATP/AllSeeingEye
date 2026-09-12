@@ -4,6 +4,7 @@ import { SourceLink } from '@/components/ui/SourceLink';
 import { EconomicChart } from './EconomicChart';
 import { CountryIndicators } from './CountryIndicators';
 import { CountryInsights } from './CountryInsights';
+import { CountryOverview } from './CountryOverview';
 import { latestObservation, metricExplanation } from './economyPresentation';
 
 export function CountryEconomy({ region }: { region: EconomyRegion | undefined }) {
@@ -29,6 +30,7 @@ export function CountryEconomy({ region }: { region: EconomyRegion | undefined }
           Annual official indicators
         </span>
       </header>
+      <CountryOverview region={region} />
       <div className="flex flex-wrap gap-x-6 gap-y-2 border-l-2 border-ember pl-4 text-xs leading-5 text-muted">
         <span>
           <strong className="font-mono font-medium text-text">

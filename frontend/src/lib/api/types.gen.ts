@@ -4559,6 +4559,28 @@ export interface components {
             /** Profile Id */
             profile_id?: string | null;
         };
+        /** EconomyBriefingOut */
+        EconomyBriefingOut: {
+            job: components["schemas"]["ReportJobOut"];
+            /**
+             * Next Refresh At
+             * Format: date-time
+             */
+            next_refresh_at: string;
+            /** Coverage Note */
+            coverage_note: string;
+            window_days: components["schemas"]["EconomyWindowDays"];
+            /**
+             * Period From
+             * Format: date-time
+             */
+            period_from: string;
+            /**
+             * Period To
+             * Format: date-time
+             */
+            period_to: string;
+        };
         /** EconomyNewsItemOut */
         EconomyNewsItemOut: {
             /** Id */
@@ -4670,6 +4692,11 @@ export interface components {
             /** Fx */
             fx: components["schemas"]["EconomySeriesOut"][];
         };
+        /**
+         * EconomyWindowDays
+         * @enum {integer}
+         */
+        EconomyWindowDays: 2 | 5 | 7 | 14;
         /** EventOut */
         EventOut: {
             /** Id */
@@ -9681,6 +9708,7 @@ export interface operations {
             query?: {
                 region?: "WORLD" | "GB" | "US" | "RU" | "CN" | "IR";
                 limit?: number;
+                days?: components["schemas"]["EconomyWindowDays"];
             };
             header?: never;
             path?: never;
@@ -9710,7 +9738,9 @@ export interface operations {
     };
     economic_briefing_api_economy_briefing_post: {
         parameters: {
-            query?: never;
+            query?: {
+                days?: components["schemas"]["EconomyWindowDays"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -9723,7 +9753,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DailyBriefingOut"];
+                    "application/json": components["schemas"]["EconomyBriefingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

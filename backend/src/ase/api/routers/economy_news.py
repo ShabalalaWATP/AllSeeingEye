@@ -11,6 +11,7 @@ from ase.api.routers.daily_briefing import DailyBriefingOut
 from ase.api.schemas_report_jobs import public_job
 from ase.api.session_guard import validate_request_expiry, validate_request_session
 from ase.domain.economy_news import EconomyRegion, PublisherViewpoint
+from ase.domain.economy_periods import EconomyWindowDays
 
 router = APIRouter(prefix="/economy", tags=["economy"])
 
@@ -35,6 +36,12 @@ class EconomyNewsOut(BaseModel):
     coverage_note: str
 
 
+class EconomyBriefingOut(DailyBriefingOut):
+    window_days: EconomyWindowDays
+    period_from: datetime
+    period_to: datetime
+
+
 @router.get("/news")
 async def economic_news(
     user: CurrentUser,
@@ -43,8 +50,9 @@ async def economic_news(
     response: Response,
     region: EconomyRegion = "WORLD",
     limit: Annotated[int, Query(ge=1, le=100)] = 60,
+    days: EconomyWindowDays = EconomyWindowDays.TWO,
 ) -> EconomyNewsOut:
-    result = await container.economy_news.read(region, limit)
+    result = await container.economy_news.read(region, limit, days)
     async with container.source_admission.guard():
         result = await container.economy_news.refilter(result)
         await validate_request_session(container, claims)
@@ -66,16 +74,20 @@ async def economic_briefing(
     session: SessionDep,
     context: ContextDep,
     response: Response,
-) -> DailyBriefingOut:
-    result = await container.economy_briefing(session).ensure(
+    days: EconomyWindowDays = EconomyWindowDays.TWO,
+) -> EconomyBriefingOut:
+    result = await container.economy_briefing(session, days).ensure(
         user,
         context,
         check_session=lambda: validate_request_session(container, claims),
     )
     response.headers["Cache-Control"] = "private, no-store"
     validate_request_expiry(container, claims)
-    return DailyBriefingOut(
+    return EconomyBriefingOut(
         job=public_job(result.job),
         next_refresh_at=result.next_refresh_at,
         coverage_note=result.coverage_note,
+        window_days=days,
+        period_from=result.job["period_from"],
+        period_to=result.job["period_to"],
     )

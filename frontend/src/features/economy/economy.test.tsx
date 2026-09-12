@@ -12,6 +12,9 @@ const briefing = (status: 'paused' | 'running' | 'completed' = 'paused') => ({
   job: reportJob({ status, report_id: status === 'completed' ? report.report.id : null }),
   next_refresh_at: new Date(Date.now() + 86_400_000).toISOString(),
   coverage_note: 'Official economic context and collected reporting; chart prices are separate.',
+  window_days: 2,
+  period_from: '2026-09-10T12:00:00Z',
+  period_to: '2026-09-12T12:00:00Z',
 });
 beforeEach(() =>
   server.use(
@@ -52,10 +55,9 @@ it('provides global headlines first, each country focus, explicit market gaps an
   ).toBeInTheDocument();
   expect(screen.getByText('Iranian exchange feed unavailable')).toBeInTheDocument();
   const news = within(screen.getByRole('region', { name: 'Iran reporting' }));
-  expect(news.getByRole('link', { name: 'Iran reports new trade figures' })).toHaveAttribute(
-    'href',
-    'https://www.tehrantimes.com/economy',
-  );
+  expect(
+    within(news.getByRole('list')).getByRole('link', { name: 'Iran reports new trade figures' }),
+  ).toHaveAttribute('href', 'https://www.tehrantimes.com/economy');
   expect(news.queryByText(/UK economic release/)).not.toBeInTheDocument();
   expect(news.getByText('State-affiliated source')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Review research progress' })).toBeInTheDocument();
@@ -141,7 +143,7 @@ it('shows active briefing work and explicitly retries a failed admission', async
   server.use(http.post('/api/economy/briefing', () => HttpResponse.json(briefing('running'))));
   await user.click(screen.getByRole('button', { name: 'Retry economic briefing' }));
   expect(
-    await screen.findByText(/Collecting evidence and preparing your daily economic briefing/),
+    await screen.findByText(/Collecting evidence and preparing your 2-day economic summary/),
   ).toBeInTheDocument();
 });
 

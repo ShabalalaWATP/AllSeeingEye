@@ -18,12 +18,8 @@ export function ensureDailyBriefing(signal: AbortSignal): Promise<DailyBriefing>
   return requestBriefing('/api/live-monitor/briefing', signal);
 }
 
-export function ensureEconomyBriefing(signal: AbortSignal): Promise<DailyBriefing> {
-  return requestBriefing('/api/economy/briefing', signal);
-}
-
 function requestBriefing(
-  path: '/api/live-monitor/briefing' | '/api/economy/briefing',
+  path: '/api/live-monitor/briefing',
   signal: AbortSignal,
 ): Promise<DailyBriefing> {
   return scopedMutation(() =>

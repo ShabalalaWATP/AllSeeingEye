@@ -4175,3 +4175,43 @@ An exact-value regression preserves the source numbers while verifying the line
 stays flat. Twenty focused chart/analysis tests, lint, type checks and the build
 passed after this fix; the mobile chart was re-inspected. The full-suite coverage
 figures above were measured before this final narrow rendering correction.
+
+## Economic reporting periods and readable summaries, 12 September 2026
+
+Added 2, 5, 7 and 14-day choices to Economy, applying the selection to both news
+and the personal research briefing. Reports show their frozen start/end dates;
+the 24-hour refresh interval remains separate. Each user/window has its own
+durable admission identity. Period switches abort old client work and hide its
+content immediately. Country changes and ordinary data refresh reuse the same
+briefing. Existing Live Monitor and legacy admission protection are retained.
+
+Worldwide news now begins with a cited takeaway above six stories. Country
+reporting reuses its opening assessment paragraph, with attributed headline
+extracts while analysis is unavailable. The report preview now separates
+executive prose, distinct key points, developments, assessments, watch conditions
+and references. Country fundamentals start with a source-linked written overview;
+actual annual observation dates remain explicit, and unavailable retained values
+cannot enter the narrative. Economic feed retention is now 14 days with existing
+item and global memory caps. This does not recover missing publisher archives.
+
+Validation: the full frontend suite passed 2,139 tests with one skip, measuring
+95.27% statements, 90.42% branches, 93.71% functions and 96.50% lines. Backend
+verification passed 72 economy/domain/API checks, five final workflow tests and
+75 shared report-view/store regressions. Full backend mypy (879 files), scoped
+Ruff/format and both import contracts passed. Frontend type checks, scoped
+ESLint/Prettier, production build and file-length checks passed. Independent
+correctness/security review found no material issue. No dependency was added.
+
+Desktop and 390-pixel mobile news, period switching, country profiles and report
+layouts were inspected with fixture APIs. A stale Vite rename cache was cleared
+by restarting the development server. The restarted API returned health 200,
+exposed the supported period enum and frozen-date response fields, and rejected
+unauthenticated economic news with 401. No paid model call, full backend coverage
+run, production deployment or remote push is claimed. Existing large vendor
+chunk warnings and two unrelated source-length target warnings remain.
+
+Updated the active research plan and Economy workspace documentation. Source
+archive depth and real-model summary quality across the four periods still need
+operator evaluation.
+
+The staged Gitleaks secret scan passed before committing this milestone.

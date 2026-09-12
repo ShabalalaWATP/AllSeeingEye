@@ -28,7 +28,7 @@ remain gaps, never zeroes.
 | --- | --- | --- |
 | World Bank Indicators API | Twelve measures covering output, people, prices, jobs, trade, industry, investment and central government debt | Six regions, up to 12 annual observations each; shared 24-hour cache. Latest available year may differ by country and measure. |
 | European Central Bank | GBP, USD and CNY per euro | Daily reference rates, up to 90 days; shared one-hour cache. RUB is suspended and IRR is not published. |
-| Publisher RSS | Economic headlines, dates and source links | Existing bounded feed collection; dashboard shows the past 72 hours with known publication dates. |
+| Publisher RSS | Economic headlines, dates and source links | Select 2, 5, 7 or 14 days. Only known publication dates inside the selected period appear; economic cache retention is 14 days, within existing item and global memory caps. |
 | TradingView embedded chart | Selected equity, currency, commodity and index-proxy instruments | Loads automatically. Timing depends on the instrument, with delayed or end-of-day equities and clearly labelled CFD proxies. |
 
 Official documentation: [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation),
@@ -52,6 +52,12 @@ allows only the documented widget frame origin, without adding external scripts
 to the parent page. TradingView attribution remains visible.
 
 ## Data analysis and comparisons
+
+Country profiles start with a short source-linked overview of the available
+growth, prices, employment and external-balance observations. Each value keeps
+its own observation year. Unavailable retained points are excluded from narrative
+analysis, and historical/cached data remains distinct from recent reporting.
+Calculated insights separate the recorded fact from its explanation.
 
 Country profiles show all twelve miniature histories automatically, grouped by
 output/living standards, prices/jobs, trade/industry and public finances/investment.
@@ -117,16 +123,33 @@ perspectives are labelled, not automatically promoted in credibility. Existing
 publisher organisation keys keep business and general feeds from the same
 publisher from being counted as independent corroboration.
 
-## Daily AI analysis
+## Reporting periods and AI summaries
 
-Opening Economy admits one personal Deep research briefing covering worldwide
-developments and the five countries. It uses the existing cited professional
+The summary-period control offers 2 Day, 5 Day, 7 Day and 14 Day, defaulting to
+2 Day. It applies to news and the personal Deep research briefing covering
+worldwide developments and the five countries. The URL preserves the selected
+period when changing country. Annual indicators and the currency chart retain
+their separately labelled observation dates and controls.
+
+Each report shows its exact frozen start and end dates. News shows its own
+snapshot window, which can advance after the report was prepared. The 24-hour
+refresh cycle is independent of the number of days covered. News uses publication
+times, never a recent retrieval time as a substitute for an old publication.
+
+The briefing uses the existing cited professional
 report pipeline, with full-report and Word, PDF and Markdown export links. The
-page shows progress, a readable summary, references and the next refresh time.
-The request asks for plain explanations, comparisons, uncertainty and coverage
-gaps. It does not request investment recommendations or invented market prices.
+page presents an executive paragraph, distinct key points, themed developments,
+readable country assessments, conditions to watch and references. The full report
+remains available. The worldwide news section starts with a cited briefing
+takeaway above six stories. Regional reporting reuses the opening cited country
+paragraph. While the briefing is unavailable, these introductions attribute the
+leading available headlines rather than invent an analysis. The request asks for
+plain explanations, comparisons, uncertainty and coverage gaps, not investment
+recommendations or invented market prices.
 
-The same durable job is reused for 24 hours, including failed and paused work.
+The same durable job is reused for 24 hours per user and reporting period,
+including failed and paused work. Switching period starts or reuses that period's
+job and immediately hides the old report; late responses cannot overwrite it.
 It refreshes when the page is visible or on the next eligible visit. Use
 Subscriptions for unattended scheduled research while the server is running.
 Ordinary data refresh does not regenerate the AI report. The existing configured
@@ -139,11 +162,15 @@ Unknown publication times remain unknown; a recent fetch never makes a historica
 statistic a new event. Macro context is admitted through an explicit dated-context
 selection. The model cannot read or quote the external market chart.
 
-The expanded in-page assessment includes implications and conditions to watch,
-with references retained. Subsequent daily reports use a richer assessment
-request covering structural exposure, plausible transmission mechanisms and
-country-specific gaps. Existing jobs retain their original 24-hour identity and
-are not automatically regenerated when this feature is updated.
+The reporting-period identities are distinct from the former one-day briefing.
+Existing saved reports remain accessible, and their original admission markers
+retain deletion protection. The first visit to a new period can create a new
+briefing. Repeated visits, country switches and public-panel refreshes reuse it.
+
+A 14-day selection cannot restore articles no longer supplied by a publisher or
+lost on a process restart. The economic feed cache retains at most 14 days and
+5,000 items, subject to the existing global memory cap. Historical source coverage
+remains explicit; these windows do not promise a complete publisher archive.
 
 Internally assembled economic snapshots receive a bounded 2,000-character source
 summary budget so later indicators do not disappear under the ordinary 600-character
@@ -156,12 +183,17 @@ The expanded public probe returned 864 rows in 197,553 bytes, within the unchang
 
 ## Operational and security boundaries
 
-`GET /api/economy`, `GET /api/economy/news` and `POST /api/economy/briefing`
+`GET /api/economy`, `GET /api/economy/news?days=2` and `POST /api/economy/briefing?days=2`
 require a current authenticated session. Public collection happens outside the
 source lock; final source filtering, session revalidation and response construction
 hold the source admission guard. Disabling a source during a request therefore
 prevents its release. Personal report ownership is checked by the existing jobs
 and report services before preparation, persistence and delivery.
+
+The two period-aware endpoints validate `days` against 2, 5, 7 and 14. Briefing
+responses return `window_days`, `period_from` and `period_to` from authorised
+frozen job input. These fields do not widen the generic progress response or
+change Live Monitor's existing behaviour.
 
 World Bank and ECB requests use fixed URLs, bounded responses, finite-value
 validation and hardened XML parsing. Each provider has one in-flight request,

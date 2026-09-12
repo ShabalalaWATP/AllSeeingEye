@@ -47,27 +47,40 @@ export function observationAge(date: string, currentYear = new Date().getUTCFull
 export interface EconomicInsight {
   title: string;
   text: string;
+  explanation: string;
   series: EconomySeries;
+}
+
+/** A retained or malformed observation must not become an available annual fact. */
+export function annualIndicator(region: EconomyRegion, id: string) {
+  const series = region.series.find(
+    (item) => item.id === id && item.frequency === 'annual' && item.status !== 'unavailable',
+  );
+  const point = series && latestObservation(series);
+  if (!series || point?.value == null || !/^\d{4}$/.test(point.date)) return null;
+  return { series, point: { date: point.date, value: point.value } };
 }
 
 export function countryInsights(region: EconomyRegion): EconomicInsight[] {
   const result: EconomicInsight[] = [];
-  const find = (id: string) => region.series.find((series) => series.id === id);
-  const growth = find('growth');
-  const growthPoint = growth && latestObservation(growth);
-  if (growth && growthPoint && growthPoint.value !== null) {
+  const growthIndicator = annualIndicator(region, 'growth');
+  if (growthIndicator) {
+    const { series: growth, point: growthPoint } = growthIndicator;
     const state =
       growthPoint.value < 0 ? 'contracted' : growthPoint.value > 0 ? 'expanded' : 'was unchanged';
     const change = annualChange(growth);
     result.push({
       title: 'Real economic activity',
-      text: `Output ${state} in ${growthPoint.date}, with inflation-adjusted annual growth of ${formatEconomicValue(growthPoint.value, growth.unit)}.${change ? ` The growth rate changed by ${formatAnnualChange(change)}.` : ' Comparable preceding-year growth is unavailable.'}`,
+      text: `Output ${state} in ${growthPoint.date}, with inflation-adjusted annual growth of ${formatEconomicValue(growthPoint.value, growth.unit)}.`,
+      explanation: change
+        ? `The growth rate changed by ${formatAnnualChange(change)}.`
+        : 'Comparable preceding-year growth is unavailable.',
       series: growth,
     });
   }
-  const inflation = find('inflation');
-  const inflationPoint = inflation && latestObservation(inflation);
-  if (inflation && inflationPoint && inflationPoint.value !== null) {
+  const inflationIndicator = annualIndicator(region, 'inflation');
+  if (inflationIndicator) {
+    const { series: inflation, point: inflationPoint } = inflationIndicator;
     const change = annualChange(inflation);
     const direction =
       inflationPoint.value < 0
@@ -77,26 +90,41 @@ export function countryInsights(region: EconomyRegion): EconomicInsight[] {
           : 'Average consumer prices were unchanged over the year.';
     result.push({
       title: 'Household price pressure',
-      text: `Inflation was ${formatEconomicValue(inflationPoint.value, inflation.unit)} in ${inflationPoint.date}. ${direction}${change ? ` The rate ${change.value < 0 ? 'eased' : change.value > 0 ? 'increased' : 'was unchanged'} (${formatAnnualChange(change)}).` : ''}`,
+      text: `Inflation was ${formatEconomicValue(inflationPoint.value, inflation.unit)} in ${inflationPoint.date}.`,
+      explanation: `${direction}${change ? ` The rate ${change.value < 0 ? 'eased' : change.value > 0 ? 'increased' : 'was unchanged'} (${formatAnnualChange(change)}).` : ''}`,
       series: inflation,
     });
   }
-  const account = find('current_account');
-  const accountPoint = account && latestObservation(account);
-  if (account && accountPoint && accountPoint.value !== null) {
+  const accountIndicator = annualIndicator(region, 'current_account');
+  if (accountIndicator) {
+    const { series: account, point: accountPoint } = accountIndicator;
     result.push({
       title: 'External balance',
-      text: `The current account recorded ${accountPoint.value > 0 ? 'a surplus' : accountPoint.value < 0 ? 'a deficit' : 'a balance'} of ${formatEconomicValue(Math.abs(accountPoint.value), account.unit)} of GDP in ${accountPoint.date}. This includes trade, income and transfers; it is not a standalone risk rating.`,
+      text: `The current account recorded ${accountPoint.value > 0 ? 'a surplus' : accountPoint.value < 0 ? 'a deficit' : 'a balance'} of ${formatEconomicValue(Math.abs(accountPoint.value), account.unit)} of GDP in ${accountPoint.date}.`,
+      explanation: 'This includes trade, income and transfers; it is not a standalone risk rating.',
       series: account,
     });
   }
-  const debt = find('government_debt');
-  const debtPoint = debt && latestObservation(debt);
-  if (debt && debtPoint && debtPoint.value !== null) {
+  const debtIndicator = annualIndicator(region, 'government_debt');
+  if (debtIndicator) {
+    const { series: debt, point: debtPoint } = debtIndicator;
     result.push({
       title: 'Public finance scope',
-      text: `Reported central government debt was ${formatEconomicValue(debtPoint.value, debt.unit)} of GDP in ${debtPoint.date}. It may exclude other government bodies, so cross-country debt comparisons require care.`,
+      text: `Reported central government debt was ${formatEconomicValue(debtPoint.value, debt.unit)} of GDP in ${debtPoint.date}.`,
+      explanation:
+        'It may exclude other government bodies, so cross-country debt comparisons require care.',
       series: debt,
+    });
+  }
+  const employment = annualIndicator(region, 'unemployment');
+  if (employment) {
+    const { series, point } = employment;
+    result.push({
+      title: 'Employment context',
+      text: `Unemployment was ${formatEconomicValue(point.value, series.unit)} of the labour force in ${point.date}.`,
+      explanation:
+        'This is a share of people working or seeking work, not of the whole population.',
+      series,
     });
   }
   return result;

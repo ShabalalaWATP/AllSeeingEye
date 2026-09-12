@@ -73,6 +73,15 @@
               "default": 60,
               "title": "Limit"
             }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EconomyWindowDays",
+              "default": 2
+            }
           }
         ],
         "responses": {
@@ -106,23 +115,44 @@
         ],
         "summary": "Economic Briefing",
         "operationId": "economic_briefing_api_economy_briefing_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EconomyWindowDays",
+              "default": 2
+            }
+          }
+        ],
         "responses": {
           "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DailyBriefingOut"
+                  "$ref": "#/components/schemas/EconomyBriefingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/live-monitor/briefing": {
@@ -14465,6 +14495,45 @@
         ],
         "title": "DraftModelDiscoveryIn"
       },
+      "EconomyBriefingOut": {
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/ReportJobOut"
+          },
+          "next_refresh_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Refresh At"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          },
+          "window_days": {
+            "$ref": "#/components/schemas/EconomyWindowDays"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period From"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "next_refresh_at",
+          "coverage_note",
+          "window_days",
+          "period_from",
+          "period_to"
+        ],
+        "title": "EconomyBriefingOut"
+      },
       "EconomyNewsItemOut": {
         "properties": {
           "id": {
@@ -14748,6 +14817,16 @@
           "fx"
         ],
         "title": "EconomySnapshotOut"
+      },
+      "EconomyWindowDays": {
+        "type": "integer",
+        "enum": [
+          2,
+          5,
+          7,
+          14
+        ],
+        "title": "EconomyWindowDays"
       },
       "EventOut": {
         "properties": {

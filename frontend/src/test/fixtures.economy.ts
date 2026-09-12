@@ -80,7 +80,7 @@ export const economySnapshot: EconomySnapshot = {
 };
 export const economyNews: EconomyNews = {
   as_of: '2026-09-12T12:00:00Z',
-  window_hours: 72,
+  window_hours: 48,
   coverage_note: 'Connected economic feeds only; publisher remit is not a geolocation claim.',
   items: [
     {

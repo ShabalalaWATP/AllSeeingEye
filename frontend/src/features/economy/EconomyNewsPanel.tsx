@@ -2,6 +2,10 @@ import { SourceLink } from '@/components/ui/SourceLink';
 import { Button } from '@/components/ui/Button';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import type { EconomyNewsItem } from '@/lib/api/economy';
+import type { EconomyBriefing, EconomyDays } from '@/lib/api/economyBriefing';
+import type { Report } from '@/lib/api/reports';
+import { formatUtc } from '@/lib/format';
+import { EconomyNewsOverview } from './EconomyNewsOverview';
 import { REGIONS, type RegionCode } from './economyPresentation';
 
 const viewpoints = {
@@ -24,6 +28,10 @@ export function EconomyNewsPanel({
   error,
   region,
   coverage,
+  days,
+  asOf,
+  report,
+  briefing,
   onRetry,
 }: {
   items: readonly EconomyNewsItem[];
@@ -31,6 +39,10 @@ export function EconomyNewsPanel({
   error: string | null;
   region: RegionCode;
   coverage?: string | undefined;
+  days: EconomyDays;
+  asOf?: string | undefined;
+  report: Report | null;
+  briefing: EconomyBriefing | null;
   onRetry: () => void;
 }) {
   const filtered = (
@@ -45,9 +57,16 @@ export function EconomyNewsPanel({
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">{title}</h2>
         <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-          Past 72 hours · UTC
+          Past {days} days · UTC
         </span>
       </header>
+      {asOf && (
+        <p className="text-xs text-muted">
+          News window: {formatUtc(new Date(Date.parse(asOf) - days * 86_400_000).toISOString())} to{' '}
+          {formatUtc(asOf)}
+        </p>
+      )}
+      <EconomyNewsOverview items={filtered} region={region} report={report} briefing={briefing} />
       {loading && items.length === 0 && <LoadingNote label="Collecting economic headlines" />}
       {error && (
         <Alert tone="error">

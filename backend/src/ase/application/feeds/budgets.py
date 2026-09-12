@@ -29,7 +29,7 @@ DEFAULT_BUDGETS: Mapping[Category, RetentionBudget] = {
     Category.CYBER: RetentionBudget(timedelta(days=7), 5_000),
     Category.POLITICAL: RetentionBudget(timedelta(days=7), 5_000),
     Category.HUMANITARIAN: RetentionBudget(timedelta(days=7), 5_000),
-    Category.ECONOMIC: RetentionBudget(timedelta(days=7), 5_000),
+    Category.ECONOMIC: RetentionBudget(timedelta(days=14), 5_000),
 }
 
 DEFAULT_MEMORY_BUDGET_BYTES = 512 * 1024 * 1024

@@ -15,16 +15,25 @@ from ase.domain.economy_news import (
     economic_regions,
     economic_viewpoint,
 )
+from ase.domain.economy_periods import EconomyWindowDays, economy_window
 from ase.domain.events import Category
 from ase.domain.sources import SourceSpec
 
-WINDOW_HOURS = 72
-COVERAGE_NOTE = (
-    "Publisher economic headlines from the past 72 hours, refreshed by enabled feed collectors. "
+WINDOW_HOURS = 48
+_COVERAGE_DETAIL = (
+    "Available publisher headlines, refreshed by enabled feed collectors. "
+    "Publisher feeds and the bounded local cache may not retain the entire selected period. "
     "Region labels use an explicit headline mention or the feed's topic remit, not event "
     "locations. Official and state-aligned sources represent their issuers' perspectives. "
     "Missing coverage is not evidence that no developments occurred."
 )
+
+
+def coverage_note(days: EconomyWindowDays) -> str:
+    return f"Economic news published in the selected {int(days)} days. {_COVERAGE_DETAIL}"
+
+
+COVERAGE_NOTE = coverage_note(EconomyWindowDays.TWO)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,19 +68,27 @@ class EconomyNewsService:
         self._store, self._clock = store, clock
         self._sources, self._admission = sources, admission
 
-    async def read(self, region: EconomyRegion = "WORLD", limit: int = 60) -> EconomyNews:
+    async def read(
+        self,
+        region: EconomyRegion = "WORLD",
+        limit: int = 60,
+        days: EconomyWindowDays = EconomyWindowDays.TWO,
+    ) -> EconomyNews:
+        days = economy_window(days)
         if region not in {"WORLD", "GB", "US", "RU", "CN", "IR"} or not 1 <= limit <= 100:
             raise ValueError("Unsupported economic news scope")
         enabled = await self._admission.enabled_many(ECONOMIC_NEWS_IDS)
         selected = frozenset(key for key in ECONOMIC_NEWS_IDS if enabled.get(key, False))
         now = self._clock.now()
+        result_view = EconomyNews((), now, int(days) * 24, coverage_note(days))
         if not selected:
-            return EconomyNews((), now)
+            return result_view
+        since = now - timedelta(days=days)
         events = self._store.query(
             EventQuery(
                 categories=frozenset({Category.ECONOMIC}),
                 source_ids=selected,
-                since=now - timedelta(hours=WINDOW_HOURS),
+                since=since,
                 until=now,
                 limit=1000,
             )
@@ -80,7 +97,12 @@ class EconomyNewsService:
         seen: set[str] = set()
         for event in events:
             spec = self._sources.get(event.source_id)
-            if spec is None or event.published_at is None or not _safe_link(event.url):
+            if (
+                spec is None
+                or event.published_at is None
+                or not since <= event.published_at < now
+                or not _safe_link(event.url)
+            ):
                 continue
             regions = economic_regions(event)
             if region != "WORLD" and region not in regions:
@@ -105,7 +127,7 @@ class EconomyNewsService:
             if len(result) >= limit:
                 break
         # A source disabled while this request was preparing must not be released.
-        return await self.refilter(EconomyNews(tuple(result), now))
+        return await self.refilter(replace(result_view, items=tuple(result)))
 
     async def refilter(self, result: EconomyNews) -> EconomyNews:
         """Final release under the caller's source guard; no network or store query."""

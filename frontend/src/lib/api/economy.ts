@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { apiCall } from './client';
 import type { components } from './types.gen';
+import type { EconomyDays } from './economyBriefing';
 
 export type EconomySnapshot = components['schemas']['EconomySnapshotOut'];
 export type EconomySeries = components['schemas']['EconomySeriesOut'];
@@ -51,4 +52,7 @@ const newsSchema: z.ZodType<EconomyNews> = z.object({
 });
 
 export const fetchEconomy = () => apiCall('/api/economy', { schema: snapshotSchema });
-export const fetchEconomyNews = () => apiCall('/api/economy/news', { schema: newsSchema });
+export const fetchEconomyNews = (days: EconomyDays = 2) =>
+  apiCall(`/api/economy/news?days=${days}`, {
+    schema: newsSchema.refine((value) => value.window_hours === days * 24),
+  });

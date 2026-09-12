@@ -9,24 +9,31 @@ export function CountryInsights({ region }: { region: EconomyRegion }) {
       aria-label={`${region.name} calculated insights`}
       className="border-y border-line py-6"
     >
-      <header className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+      <header className="mb-5 space-y-2">
         <h4 className="text-base font-semibold">What the data shows</h4>
-        <span className="text-[10px] uppercase tracking-wider text-muted">
-          Calculated from published observations
-        </span>
+        <p className="max-w-3xl text-sm leading-6 text-muted">
+          Read the recorded result first, then its meaning. These observations explain the annual
+          economic backdrop; they do not describe changes during the selected news summary period.
+        </p>
       </header>
       {insights.length ? (
         <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
           {insights.map((insight) => (
-            <div key={insight.title} className="space-y-2">
+            <article key={insight.title} className="space-y-3 border-t border-line pt-4">
               <h5 className="text-xs font-semibold uppercase tracking-wider text-text">
                 {insight.title}
               </h5>
-              <p className="text-sm leading-6 text-muted">{insight.text}</p>
-              <SourceLink url={insight.series.source_url}>
-                Source: {insight.series.provider}
-              </SourceLink>
-            </div>
+              <p className="text-sm font-medium leading-6 text-text">{insight.text}</p>
+              <p className="text-sm leading-6 text-muted">{insight.explanation}</p>
+              <div className="text-xs">
+                <SourceLink url={insight.series.source_url}>
+                  Source: {insight.series.provider}
+                </SourceLink>
+                {insight.series.status === 'stale' && (
+                  <span className="text-muted"> · Cached source data</span>
+                )}
+              </div>
+            </article>
           ))}
         </div>
       ) : (

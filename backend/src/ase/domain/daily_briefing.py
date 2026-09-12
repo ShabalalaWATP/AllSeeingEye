@@ -3,6 +3,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid5
 
+from ase.domain.economy_periods import EconomyWindowDays, economy_window
 from ase.domain.report_jobs import ReportJob
 
 REFRESH_INTERVAL = timedelta(hours=24)
@@ -13,9 +14,16 @@ def briefing_key(owner_id: UUID, now: datetime) -> UUID:
     return uuid5(owner_id, f"ase:daily-briefing:v1:{now.astimezone(UTC).date().isoformat()}")
 
 
-def economy_briefing_key(owner_id: UUID, now: datetime) -> UUID:
-    """Economic analysis has its own admission identity, separate from conflict monitoring."""
-    return uuid5(owner_id, f"ase:economy-briefing:v1:{now.astimezone(UTC).date().isoformat()}")
+def economy_briefing_key(
+    owner_id: UUID, now: datetime, days: EconomyWindowDays | None = None
+) -> UUID:
+    """Separate reporting windows cannot reuse one another's assessment.
+
+    The original identity remains recognisable for old admission markers.
+    """
+    version = "v1" if days is None else f"v2:{int(economy_window(days))}d"
+    day = now.astimezone(UTC).date().isoformat()
+    return uuid5(owner_id, f"ase:economy-briefing:{version}:{day}")
 
 
 def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
@@ -27,10 +35,13 @@ def retains_daily_admission(job: ReportJob, now: datetime) -> bool:
     return (
         job.team_id is None
         and now < job.created_at + REFRESH_INTERVAL
-        and job.request_key
-        in {
-            identity(job.owner_id, instant)
-            for identity in (briefing_key, economy_briefing_key)
+        and any(
+            job.request_key
+            in {
+                briefing_key(job.owner_id, instant),
+                economy_briefing_key(job.owner_id, instant),
+                *(economy_briefing_key(job.owner_id, instant, days) for days in EconomyWindowDays),
+            }
             for instant in (job.created_at, job.created_at - REFRESH_INTERVAL)
-        }
+        )
     )

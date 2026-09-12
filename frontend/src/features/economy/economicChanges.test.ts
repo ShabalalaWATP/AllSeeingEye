@@ -80,11 +80,11 @@ it('explains slowing inflation as prices still rising and debt as central-govern
     ]),
   );
   expect(insights[0]?.text).toContain('contracted in 2025');
-  expect(insights[1]?.text).toContain('prices still rose');
-  expect(insights[1]?.text).toContain('rate eased (-3 pp vs 2024)');
+  expect(insights[1]?.explanation).toContain('prices still rose');
+  expect(insights[1]?.explanation).toContain('rate eased (-3 pp vs 2024)');
   expect(insights[2]?.text).toContain('a deficit of 3% of GDP');
   expect(insights[3]?.text).toContain('central government debt');
-  expect(insights[3]?.text).toContain('may exclude other government bodies');
+  expect(insights[3]?.explanation).toContain('may exclude other government bodies');
 });
 
 it('handles deflation, zero growth, external balance and missing readouts without inventing direction', () => {
@@ -96,9 +96,9 @@ it('handles deflation, zero growth, external balance and missing readouts withou
     ]),
   );
   expect(flat[0]?.text).toContain('was unchanged in 2025');
-  expect(flat[0]?.text).toContain('preceding-year growth is unavailable');
-  expect(flat[1]?.text).toContain('prices fell');
-  expect(flat[1]?.text).toContain('rate was unchanged');
+  expect(flat[0]?.explanation).toContain('preceding-year growth is unavailable');
+  expect(flat[1]?.explanation).toContain('prices fell');
+  expect(flat[1]?.explanation).toContain('rate was unchanged');
   expect(flat[2]?.text).toContain('a balance of 0%');
   const rising = countryInsights(
     region([
@@ -108,8 +108,8 @@ it('handles deflation, zero growth, external balance and missing readouts withou
     ]),
   );
   expect(rising[0]?.text).toContain('expanded');
-  expect(rising[1]?.text).toContain('Average consumer prices were unchanged');
-  expect(rising[1]?.text).toContain('rate increased');
+  expect(rising[1]?.explanation).toContain('Average consumer prices were unchanged');
+  expect(rising[1]?.explanation).toContain('rate increased');
   expect(rising[2]?.text).toContain('a surplus of 2%');
   expect(countryInsights(region([series('inflation', '% annual change', [null, null])]))).toEqual(
     [],

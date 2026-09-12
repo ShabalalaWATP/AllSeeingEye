@@ -60,7 +60,7 @@ async def test_only_reviewed_economic_publishers_and_valid_dates_are_news():
     result = await svc.read()
     assert [row.id for row in result.items] == [current.id]
     assert result.items[0].region_codes == ()
-    assert result.window_hours == 72 and result.as_of == NOW
+    assert result.window_hours == 48 and result.as_of == NOW
 
 
 async def test_headline_subject_and_feed_remit_do_not_invent_event_location():

@@ -260,8 +260,14 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
         # reservation already remains in output_tokens, irrespective of status.
         usage["uncertain_calls"] += _count(summary.get("in_flight_calls", 0), MAX_CALLS)
     effort = summary.get("reasoning_effort")
+    frozen = job.payload.get("input")
+    period = frozen if detail and isinstance(frozen, dict) else {}
     return {
         "id": job.id,
+        # Internal metadata comes from the immutable checkpoint, never the response clock.
+        # Generic public progress schemas omit these; economy summaries expose the range.
+        "period_from": period.get("period_from"),
+        "period_to": period.get("period_to"),
         "revision": job.revision,
         "title": job.title,
         "status": job.status,

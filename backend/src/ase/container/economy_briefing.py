@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.feeds.rss_seeds_economy import ECONOMY_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.daily_briefing import DailyBriefingService
-from ase.application.economy_briefing import COVERAGE_NOTE, economy_briefing_request
+from ase.application.economy_briefing import coverage_note, economy_briefing_request
 from ase.application.economy_evidence import economy_evidence
 from ase.application.economy_news import EconomyNewsService
 from ase.application.model_routing import RoleProfiles
@@ -19,6 +19,7 @@ from ase.application.reports.selection import select_evidence
 from ase.application.reports.templates import EvidenceStrategy
 from ase.container.research import private_research_store
 from ase.domain.daily_briefing import economy_briefing_key
+from ase.domain.economy_periods import EconomyWindowDays, economy_window
 from ase.domain.events import Category
 from ase.domain.users import User
 
@@ -37,11 +38,14 @@ class EconomyBriefingWiring:
             container.source_admission,
         )
 
-    def economy_briefing(self, session: AsyncSession) -> DailyBriefingService:
+    def economy_briefing(
+        self, session: AsyncSession, days: EconomyWindowDays = EconomyWindowDays.TWO
+    ) -> DailyBriefingService:
         container = cast("Container", self)
+        days = economy_window(days)
 
         def request_factory() -> ReportRequest:
-            request = economy_briefing_request()
+            request = economy_briefing_request(days)
             available = {spec.id for spec in container.research_sources}
             return replace(
                 request,
@@ -68,7 +72,7 @@ class EconomyBriefingWiring:
             )
             return replace(
                 job,
-                title="Daily economic briefing",
+                title=f"{int(days)} day economic summary",
                 reused_evidence=selected.items,
             ), routing
 
@@ -78,7 +82,7 @@ class EconomyBriefingWiring:
             container.repositories(session).uow,
             container.clock,
             container.daily_briefing_admission,
-            identity=economy_briefing_key,
+            identity=lambda owner_id, at: economy_briefing_key(owner_id, at, days),
             request_factory=request_factory,
-            coverage_note=COVERAGE_NOTE,
+            coverage_note=coverage_note(days),
         )
