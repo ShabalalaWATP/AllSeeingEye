@@ -8,6 +8,7 @@ from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
 from ase.domain.registry_identifiers import RegistryLookup, validate_lookup_anchor
 from ase.domain.research_area import ResearchArea
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLAN_TASKS, MAX_PLANNED_TASKS
 from ase.domain.research_continuation import ContinuationTrace
 from ase.domain.research_planning import PlanningTrace
 from ase.domain.research_scope import normalise_countries
@@ -140,6 +141,13 @@ class ResearchPlan:
 
     def __post_init__(self) -> None:
         countries = normalise_countries(self.country_iso, self.country_isos)
+        supplementary = sum(task.purpose != "baseline" for task in self.tasks)
+        if (
+            len(self.tasks) > MAX_PLAN_TASKS
+            or supplementary > MAX_PLANNED_TASKS
+            or len(self.tasks) - supplementary > MAX_COLLECTION_PROVIDERS
+        ):
+            raise ValueError("Frozen research plan exceeds catalogue or explicit task capacity")
         object.__setattr__(self, "country_isos", countries)
         object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
         if not isinstance(self.research_web_search, bool):

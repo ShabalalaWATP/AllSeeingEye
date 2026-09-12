@@ -113,12 +113,13 @@ def test_optional_fields_remain_absent_when_legacy_receipts_are_reserialised():
 
 async def test_expanded_plan_reserves_frozen_receipt_capacity_before_any_requests():
 
-    providers = [Provider("source"), *(Provider(str(index)) for index in range(62))]
+    providers = [Provider("source"), *(Provider(str(index)) for index in range(127))]
     service = ResearchCollectionService(lambda _: providers)
     retained = CollectionAttempt("retained", "Retained evidence", CollectionStatus.COMPLETED)
-    with pytest.raises(InvalidRequest, match="64-task"):
+    selected = replace(query(), planned_tasks=tuple(replace(TASK, id=str(i)) for i in range(8)))
+    with pytest.raises(InvalidRequest, match="136-receipt"):
         await collect_report_evidence(
-            query(),
+            selected,
             ReportRequest("ask"),
             service,
             private_research_store,

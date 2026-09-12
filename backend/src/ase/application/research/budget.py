@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from math import isfinite
 
 from ase.domain.research import ResearchMode
+from ase.domain.research_capacity import MAX_COLLECTION_ITEMS, MAX_COLLECTION_REQUESTS
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,7 +18,10 @@ class CollectionBudget:
     items: int
 
     def __post_init__(self) -> None:
-        if not 1 <= self.requests <= 32 or not 1 <= self.items <= 1000:
+        if (
+            not 1 <= self.requests <= MAX_COLLECTION_REQUESTS
+            or not 1 <= self.items <= MAX_COLLECTION_ITEMS
+        ):
             raise ValueError("Invalid collection request or item budget")
         if (
             any(

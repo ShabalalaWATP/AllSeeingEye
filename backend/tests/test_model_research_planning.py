@@ -15,6 +15,7 @@ from ase.application.research.model_planning import (
 )
 from ase.application.research.service import ResearchCollectionService
 from ase.domain.errors import InvalidRequest
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLANNED_TASKS
 from ase.domain.research_planning import PlanningTrace, planning_from_dict
 from ase.domain.research_records import research_from_dict, research_to_dict
 from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate
@@ -120,7 +121,14 @@ def test_malformed_or_oversized_output_is_rejected(content):
 
 
 def test_seed_receipts_and_existing_tasks_share_capacity():
-    query, _, context = setup(seeds=63)
+    query, _, context = setup(
+        replace(QUERY, source_ids=None),
+        providers=[
+            Provider("source"),
+            *(Provider(str(i)) for i in range(MAX_COLLECTION_PROVIDERS - 1)),
+        ],
+        seeds=MAX_PLANNED_TASKS,
+    )
     assert context["task_slots"] == 0
     query, _collection, context = setup(
         replace(

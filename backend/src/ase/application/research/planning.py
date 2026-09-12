@@ -11,6 +11,7 @@ from ase.application.research.registry_routing import (
 )
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchQuery
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLAN_TASKS
 from ase.domain.research_plan import (
     UNKNOWN_SPATIAL_SCOPE,
     UNKNOWN_TEMPORAL_SCOPE,
@@ -63,6 +64,8 @@ def build_plan(
     items: int,
 ) -> ResearchPlan:
     inventory = {provider.id for provider in providers}
+    if len(providers) > MAX_COLLECTION_PROVIDERS or len(inventory) != len(providers):
+        raise InvalidRequest("Research provider catalogue exceeds its unique source capacity")
     if query.source_ids is not None and not set(query.source_ids).issubset(inventory):
         raise InvalidRequest(
             "Selected sources are unavailable for this research scope. Preview the plan again."
@@ -139,19 +142,8 @@ def build_plan(
                 registry_lookup=lookup,
             )
         )
-    if len(tasks) + len(supplementary) > 64:
-        # New catalogue capabilities must not invalidate saved explicit tasks.
-        # Remove only presentation rows that cannot perform selected work. Keep
-        # every explicit source and every baseline referenced by a planned task.
-        referenced = {task.source_id for task in supplementary}
-        tasks = [
-            task
-            for task in tasks
-            if task.source_id in referenced
-            or (task.selected if query.source_ids is not None else task.supported)
-        ]
-    if len(tasks) + len(supplementary) > 64:
-        raise InvalidRequest("Expanded research plans support at most 64 tasks")
+    if len(tasks) + len(supplementary) > MAX_PLAN_TASKS:
+        raise InvalidRequest(f"Expanded research plans support at most {MAX_PLAN_TASKS} tasks")
     # Alternate baseline and explicit tasks so the latter do not sit behind the
     # full provider inventory. Every task still consumes the same run allowance.
     ordered = []

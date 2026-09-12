@@ -10,6 +10,7 @@ from ase.domain.errors import InvalidRequest
 from ase.domain.events import Event
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.research import CollectionAttempt, ResearchBatch, ResearchFocus, ResearchQuery
+from ase.domain.research_capacity import MAX_COLLECTION_RECEIPTS, MAX_SEED_RECEIPTS
 from ase.domain.research_records import ResearchReceipt
 
 
@@ -26,12 +27,18 @@ async def collect_report_evidence(
     if store_factory is None:
         raise InvalidRequest("On-demand research collection is unavailable")
     private_focus = query.focus in {ResearchFocus.DOCUMENT, ResearchFocus.MEDIA}
-    if len(seed_attempts) > 64:
+    if len(seed_attempts) > MAX_SEED_RECEIPTS:
         raise InvalidRequest("Too many retained collection receipts")
     if seed_attempts and not private_focus and collection is not None:
         planned = collection.plan(query)
-        if sum(task.selected for task in planned.tasks) + len(seed_attempts) > 64:
-            raise InvalidRequest("Expanded plan and retained receipts exceed the 64-task limit")
+        if (
+            sum(task.selected for task in planned.tasks) + len(seed_attempts)
+            > MAX_COLLECTION_RECEIPTS
+        ):
+            raise InvalidRequest(
+                "Expanded plan and retained receipts exceed the "
+                f"{MAX_COLLECTION_RECEIPTS}-receipt limit"
+            )
     if private_focus:
         # Extracted private text must not become an unsolicited public search query.
         batch = ResearchBatch()

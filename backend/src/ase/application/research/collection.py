@@ -17,6 +17,7 @@ from ase.domain.research import (
     ResearchBatch,
     ResearchQuery,
 )
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_COLLECTION_REQUESTS
 
 __all__ = ["CollectionBudget", "CollectionRunBudget", "ResearchCollector"]
 
@@ -41,8 +42,13 @@ class ResearchCollector:
     """
 
     def __init__(self, providers: Sequence[ResearchProvider]) -> None:
-        if len(providers) > 64 or len({provider.id for provider in providers}) != len(providers):
-            raise ValueError("Provide at most 64 uniquely identified collection providers")
+        if len(providers) > MAX_COLLECTION_PROVIDERS or len(
+            {provider.id for provider in providers}
+        ) != len(providers):
+            raise ValueError(
+                f"Provide at most {MAX_COLLECTION_PROVIDERS} "
+                "uniquely identified collection providers"
+            )
         self._providers = tuple(providers)
 
     async def collect(
@@ -64,9 +70,12 @@ class ResearchCollector:
         if (
             isinstance(allowance, bool)
             or not isinstance(allowance, int)
-            or not 0 <= allowance <= 32
+            or not 0 <= allowance <= MAX_COLLECTION_REQUESTS
         ):
-            raise ValueError("A pass request allowance must be an integer from zero to 32")
+            raise ValueError(
+                "A pass request allowance must be an integer "
+                f"from zero to {MAX_COLLECTION_REQUESTS}"
+            )
         with state.pass_scope():
             return await self._collect(
                 query, state, allowance, progress, skip_source_ids, skip_task_ids

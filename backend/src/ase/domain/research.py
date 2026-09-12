@@ -9,6 +9,11 @@ from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.languages import valid_language_code
 from ase.domain.registry_identifiers import RegistryLookup, validate_lookup_anchor
 from ase.domain.research_area import ResearchArea
+from ase.domain.research_capacity import (
+    MAX_COLLECTION_ITEMS,
+    MAX_COLLECTION_RECEIPTS,
+    MAX_SELECTED_SOURCES,
+)
 from ase.domain.research_plan import QueryVariant, ResearchPlan
 from ase.domain.research_scope import normalise_countries, validate_research_interval
 from ase.domain.research_tasks import (
@@ -95,11 +100,11 @@ class ResearchQuery:
         if self.area is not None and not isinstance(self.area, ResearchArea):
             raise ValueError("Research scope requires an immutable area")
         if self.source_ids is not None and (
-            len(self.source_ids) > 64
+            len(self.source_ids) > MAX_SELECTED_SOURCES
             or len(set(self.source_ids)) != len(self.source_ids)
             or any(not value or len(value) > 120 for value in self.source_ids)
         ):
-            raise ValueError("Select at most 64 unique collection sources")
+            raise ValueError(f"Select at most {MAX_SELECTED_SOURCES} unique collection sources")
         variant_languages = [variant.language.lower() for variant in self.query_variants]
         if len(variant_languages) > 8 or len(set(variant_languages)) != len(variant_languages):
             raise ValueError("Provide at most one query variant per language")
@@ -144,7 +149,7 @@ class CollectionAttempt:
         validate_lookup_anchor(self.registry_lookup, self.purpose, self.candidate_id)
         if not self.source_id or len(self.source_id) > 120 or len(self.source_name) > 200:
             raise ValueError("Invalid collection source identity")
-        if not 0 <= self.result_count <= 1000 or len(self.explanation) > 1000:
+        if not 0 <= self.result_count <= MAX_COLLECTION_ITEMS or len(self.explanation) > 1000:
             raise ValueError("Collection receipt exceeds its bounds")
 
 
@@ -155,7 +160,7 @@ class CollectionPass:
     plan: ResearchPlan | None = None
 
     def __post_init__(self) -> None:
-        if len(self.attempts) > 64 or len(self.terms) > 12:
+        if len(self.attempts) > MAX_COLLECTION_RECEIPTS or len(self.terms) > 12:
             raise ValueError("Collection pass exceeds its bounds")
 
 
@@ -169,5 +174,5 @@ class ResearchBatch:
     def __post_init__(self) -> None:
         if len(self.passes) > 2:
             raise ValueError("At most two collection passes are supported")
-        if len(self.items) > 1000 or len(self.attempts) > 64:
+        if len(self.items) > MAX_COLLECTION_ITEMS or len(self.attempts) > MAX_COLLECTION_RECEIPTS:
             raise ValueError("Research batch exceeds its bounds")

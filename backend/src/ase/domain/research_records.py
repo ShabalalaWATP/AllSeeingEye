@@ -19,6 +19,7 @@ from ase.domain.research import (
     ResearchQuery,
 )
 from ase.domain.research_area import area_from_dict, area_to_dict
+from ase.domain.research_capacity import MAX_COLLECTION_RECEIPTS, MAX_PLAN_TASKS
 from ase.domain.research_continuation import continuation_from_dict
 from ase.domain.research_plan import QueryTransformation, ResearchPlan, ResearchTask
 from ase.domain.research_planning import planning_from_dict
@@ -232,7 +233,7 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
     if data.get("policy_version") != "ase-research-v1":
         raise ValueError("Unsupported research receipt policy")
     attempts = data.get("attempts", [])
-    if not isinstance(attempts, list | tuple) or len(attempts) > 64:
+    if not isinstance(attempts, list | tuple) or len(attempts) > MAX_COLLECTION_RECEIPTS:
         raise ValueError("Invalid collection receipts")
     return ResearchReceipt(
         question=str(data["question"]),
@@ -269,7 +270,10 @@ def research_from_dict(data: Mapping[str, Any] | None) -> ResearchReceipt | None
 def plan_from_dict(data: Mapping[str, Any] | None) -> ResearchPlan | None:
     if data is None:
         return None
-    if data.get("policy_version") != "ase-deterministic-plan-v1" or len(data["tasks"]) > 64:
+    if (
+        data.get("policy_version") != "ase-deterministic-plan-v1"
+        or len(data["tasks"]) > MAX_PLAN_TASKS
+    ):
         raise ValueError("Invalid frozen research plan")
     values = dict(data)
     values["since"] = datetime.fromisoformat(data["since"])

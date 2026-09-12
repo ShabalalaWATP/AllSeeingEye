@@ -87,9 +87,9 @@ async def test_operator_tasks_interleave_and_share_quick_run_budget():
 
 
 async def test_unknown_inventory_and_expanded_cap_reject_before_fetch():
-    providers = [Provider("source"), *(Provider(str(index)) for index in range(63))]
+    providers = [Provider("source"), *(Provider(str(index)) for index in range(128))]
     for selected, inventory in ((query(), providers), (query(), [Provider("other")])):
-        with pytest.raises(InvalidRequest):
+        with pytest.raises((InvalidRequest, ValueError)):
             await ResearchCollector(inventory).collect(selected)
         assert all(not p.queries for p in inventory)
 

@@ -147,15 +147,8 @@ def research_service(
             )
         )
         selected.extend(public_research_feeds(http, clock, spatial=query.area is not None))
-        if len(selected) > 64:
-            # New topic feeds must not break multilingual/record research. Drop
-            # only unselected presentation rows or unsupported automatic choices.
-            chosen = set(query.source_ids or ()) | {task.source_id for task in query.planned_tasks}
-            selected = [
-                p
-                for p in selected
-                if p.id in chosen or (query.source_ids is None and p.supports(query))
-            ]
+        # Keep unsupported and unselected capabilities visible in the bounded
+        # catalogue. Admission and execution budgets are enforced independently.
         return [
             ControlledResearchProvider(provider, admission)
             if admission is not None and not isinstance(provider, RetainedAreaFeedProvider)

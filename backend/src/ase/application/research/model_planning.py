@@ -7,6 +7,12 @@ from typing import Any, cast
 from ase.application.ports.research import ResearchCollection
 from ase.domain.research import ResearchQuery
 from ase.domain.research_area import area_to_dict
+from ase.domain.research_capacity import (
+    MAX_COLLECTION_RECEIPTS,
+    MAX_PLAN_TASKS,
+    MAX_PLANNED_TASKS,
+    MAX_RESEARCH_CANDIDATES,
+)
 from ase.domain.research_plan import ResearchPlan
 from ase.domain.research_planning import PlanningTrace
 from ase.domain.research_tasks import PlannedQueryTask, ResearchCandidate, task_identity
@@ -32,9 +38,9 @@ def planning_context(
         and ((task.supported and task.planned_terms_supported) or task.registry_options)
     ]
     task_slots = min(
-        8 - len(query.planned_tasks),
-        64 - len(plan.tasks),
-        64 - sum(task.selected for task in plan.tasks) - seed_count,
+        MAX_PLANNED_TASKS - len(query.planned_tasks),
+        MAX_PLAN_TASKS - len(plan.tasks),
+        MAX_COLLECTION_RECEIPTS - sum(task.selected for task in plan.tasks) - seed_count,
     )
     result = {
         "question": query.question,
@@ -77,7 +83,7 @@ def planning_context(
             }
             for row in eligible
         ],
-        "candidate_slots": 8 - len(query.candidate_hypotheses),
+        "candidate_slots": MAX_RESEARCH_CANDIDATES - len(query.candidate_hypotheses),
         "task_slots": max(0, task_slots),
     }
     if len(json.dumps(result, ensure_ascii=False).encode("utf-8")) > MAX_CONTEXT_BYTES:
@@ -113,7 +119,8 @@ def parse_proposals(
         ),
     ):
         rows = payload[key]
-        if type(rows) is not list or len(rows) > 8:
+        maximum = MAX_RESEARCH_CANDIDATES if key == "candidates" else MAX_PLANNED_TASKS
+        if type(rows) is not list or len(rows) > maximum:
             raise ValueError("Invalid proposal count")
         output = []
         for row in rows:
@@ -172,7 +179,7 @@ def admit_proposals(
     )
     plan = collection.plan(combined)
     accepted = {task_identity(row) for row in tasks}
-    if sum(row.selected for row in plan.tasks) + seed_count > 64 or any(
+    if sum(row.selected for row in plan.tasks) + seed_count > MAX_COLLECTION_RECEIPTS or any(
         row.task_id in accepted
         and not (
             row.selected

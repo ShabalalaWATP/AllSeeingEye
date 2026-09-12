@@ -11,6 +11,7 @@ from ase.application.feeds.grading import profiles_from_specs
 from ase.container.research import research_service
 from ase.container.research_sources import research_source_specs
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS, MAX_PLAN_TASKS
 from ase.domain.research_tasks import PlannedQueryTask
 from ase.domain.source_controls import source_control_keys
 from hazard_area_helpers import QUERY as AREA_QUERY
@@ -36,7 +37,7 @@ async def test_all_languages_fit_provider_bound_without_silent_truncation(
     try:
         plan = service.plan(query)
         ids = [task.source_id for task in plan.tasks]
-        assert len(ids) <= 64 and len(ids) == len(set(ids))
+        assert len(ids) <= MAX_COLLECTION_PROVIDERS and len(ids) == len(set(ids))
         if spatial:
             assert ids[:4] == [
                 "research-usgs-area",
@@ -121,7 +122,7 @@ async def test_saved_company_tasks_survive_larger_catalogue(monkeypatch, explici
     )
     try:
         plan = research_service(feed.http, CLOCK).plan(query)
-        assert len(plan.tasks) <= 64
+        assert len(plan.tasks) <= MAX_PLAN_TASKS
         assert {row.task_id for row in plan.tasks if row.purpose != "baseline"} == {
             f"operator:{i}" for i in range(8)
         }

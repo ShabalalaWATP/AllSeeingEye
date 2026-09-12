@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from ase.domain.registry_identifiers import RegistryIdentifier, registry_subject
+from ase.domain.research_capacity import MAX_PLANNED_TASKS, MAX_RESEARCH_CANDIDATES
 
 TaskPurpose = Literal["baseline", "challenge", "disambiguation"]
 
@@ -122,10 +123,13 @@ def validate_operator_plan(
 ) -> None:
     if (candidates or tasks) and not public_scope:
         raise ValueError("Operator source tasks require public-source research")
-    for rows, kind in ((candidates, ResearchCandidate), (tasks, PlannedQueryTask)):
+    for rows, kind, maximum in (
+        (candidates, ResearchCandidate, MAX_RESEARCH_CANDIDATES),
+        (tasks, PlannedQueryTask, MAX_PLANNED_TASKS),
+    ):
         if (
             not isinstance(rows, tuple)
-            or len(rows) > 8
+            or len(rows) > maximum
             or any(not isinstance(row, kind) for row in rows)
         ):
             raise ValueError("Provide at most eight immutable candidates and tasks")
