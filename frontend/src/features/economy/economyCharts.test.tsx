@@ -70,6 +70,27 @@ it('shows missing series instead of plotting invented zeroes', () => {
   expect(screen.queryByRole('img')).not.toBeInTheDocument();
 });
 
+it('does not magnify floating-point cross-rate noise into apparent currency swings', () => {
+  render(
+    <EconomicChart
+      series={{
+        ...economySeries,
+        frequency: 'daily',
+        unit: 'USD per GBP',
+        points: [
+          { date: '2026-09-10', value: 1.364705882352941 },
+          { date: '2026-09-11', value: 1.3647058823529412 },
+        ],
+      }}
+    />,
+  );
+  const positions = [...screen.getByRole('img').querySelectorAll('circle')].map((point) =>
+    Number(point.getAttribute('cy')),
+  );
+  expect(Math.abs(positions[0]! - positions[1]!)).toBeLessThan(0.01);
+  expect(screen.getByRole('table')).toHaveTextContent('1.3647058823529412');
+});
+
 it('switches economic metrics and explains observation dates and units', async () => {
   const user = userEvent.setup();
   render(<CountryEconomy region={economySnapshot.regions[1]} />);

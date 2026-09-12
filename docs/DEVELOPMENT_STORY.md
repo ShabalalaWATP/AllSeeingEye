@@ -4167,3 +4167,11 @@ automatically loaded provider chart. Local services were restarted and health
 returned 200 with the twelve-indicator API contract. No new credentials, database
 migration, deployment or real-model evaluation was performed. Existing vendor
 chunk and file-length target warnings remain.
+
+Final mobile inspection exposed a near-constant cross-rate scaling issue: binary
+rounding noise could be magnified into visible swings. The chart now treats
+differences within sixteen floating-point precision units as a constant range.
+An exact-value regression preserves the source numbers while verifying the line
+stays flat. Twenty focused chart/analysis tests, lint, type checks and the build
+passed after this fix; the mobile chart was re-inspected. The full-suite coverage
+figures above were measured before this final narrow rendering correction.

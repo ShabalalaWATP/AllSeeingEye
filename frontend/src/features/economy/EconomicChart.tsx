@@ -16,7 +16,11 @@ export function EconomicChart({ series }: { series: EconomySeries }) {
     );
   const min = Math.min(...values),
     max = Math.max(...values);
-  const margin = (max - min || Math.abs(max) || 1) * 0.12;
+  // Cross-rate division can differ by a few floating-point ULPs even when the
+  // underlying ratio is constant. Do not magnify that noise into visible swings.
+  const magnitude = Math.max(Math.abs(min), Math.abs(max), 1);
+  const range = max - min;
+  const margin = (range > magnitude * Number.EPSILON * 16 ? range : magnitude) * 0.12;
   const low = min - margin,
     high = max + margin;
   const x = (index: number) => 84 + (index * 708) / Math.max(1, points.length - 1);
