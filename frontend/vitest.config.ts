@@ -37,6 +37,7 @@ export default mergeConfig(
           'src/test/**',
           'src/**/*.test.{ts,tsx}',
           'src/features/globe/engine/MapLibreEngine.ts',
+          'src/app/dev/**', // DEV-only fixture preview pages, never part of a build.
         ],
         thresholds: {
           lines: 90,
