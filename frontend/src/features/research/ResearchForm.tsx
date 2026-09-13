@@ -30,6 +30,7 @@ export function ResearchForm({
   countriesLoading,
   template,
   initialQuestion,
+  initialDates,
   initialCountry,
   parent,
 }: {
@@ -39,6 +40,7 @@ export function ResearchForm({
   countriesLoading: boolean;
   template: ReportTemplate | undefined;
   initialQuestion: string;
+  initialDates?: ResearchDates | null;
   initialCountry: string;
   parent?: { report: Report; request: ReportRequest } | undefined;
 }) {
@@ -60,7 +62,7 @@ export function ResearchForm({
   const [dates, setDates] = useState<ResearchDates | null>(
     parent?.request.research_since && parent.request.research_until
       ? { since: parent.request.research_since, until: parent.request.research_until }
-      : null,
+      : (initialDates ?? null),
   );
   const [webSearch, setWebSearch] = useState(parent?.request.research_web_search ?? false);
   const [windowHours, setWindowHours] = useState(

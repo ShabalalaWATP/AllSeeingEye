@@ -10,6 +10,7 @@ import { fetchCountries } from '@/lib/api/geo';
 import { fetchReport, fetchTemplates } from '@/lib/api/reports';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+import { readResearchDraftDates } from '@/lib/researchNavigation';
 
 import { SavedAreaResearch } from './SavedAreaResearch';
 import { ResearchForm } from './ResearchForm';
@@ -112,6 +113,7 @@ export default function ResearchPage() {
               countriesLoading={countries.loading}
               template={template}
               initialQuestion={params.get('question') ?? ''}
+              initialDates={readResearchDraftDates(params)}
               initialCountry={(
                 params.get('country') ??
                 preferences.profile.research_country ??

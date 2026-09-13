@@ -6,6 +6,13 @@ import { alert, schedule } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
+it('prefills a reviewable subscription from an Eye question without starting a run', async () => {
+  renderApp('/subscriptions?question=What+changed+in+Britain%3F&country=GB', 'user');
+  const form = within(await screen.findByRole('form', { name: 'New subscription' }));
+  expect(form.getByLabelText('Question')).toHaveValue('What changed in Britain?');
+  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+});
+
 it('saves an explicit question and bounded research options for each scheduled run', async () => {
   let captured: unknown;
   server.use(

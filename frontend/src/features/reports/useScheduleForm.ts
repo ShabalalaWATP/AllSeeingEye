@@ -21,6 +21,8 @@ export interface ScheduleFormStateProps {
   workspaces: Workspaces;
   busy: boolean;
   initial?: Schedule | undefined;
+  draftQuestion?: string | undefined;
+  draftCountry?: string | undefined;
   onSubmit: (request: ScheduleRequest) => void;
 }
 
@@ -31,6 +33,8 @@ export function useScheduleForm({
   workspaces,
   busy,
   initial,
+  draftQuestion = '',
+  draftCountry = '',
   onSubmit,
 }: ScheduleFormStateProps) {
   const selection = useWorkspaceSelection(workspaces);
@@ -55,9 +59,11 @@ export function useScheduleForm({
       ? initial.country_isos
       : initial?.country_iso
         ? [initial.country_iso]
-        : [],
+        : /^[A-Z]{2}$/.test(draftCountry.toUpperCase())
+          ? [draftCountry.toUpperCase()]
+          : [],
   );
-  const [question, setQuestion] = useState(initial?.question ?? '');
+  const [question, setQuestion] = useState(initial?.question ?? draftQuestion.slice(0, 1000));
   const [notifyOnChange, setNotifyOnChange] = useState(initial?.notify_on_change ?? true);
   const [researchMode, setResearchMode] = useState<NonNullable<ScheduleRequest['research_mode']>>(
     initial?.research_mode ?? 'quick',

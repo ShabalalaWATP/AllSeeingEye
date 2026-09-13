@@ -6,6 +6,7 @@ import { fetchCountries } from '@/lib/api/geo';
 import { fetchTemplates } from '@/lib/api/reports';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
+import { useSearchParams } from 'react-router';
 
 import { SchedulesSection } from './SchedulesSection';
 
@@ -35,6 +36,7 @@ const STEPS = [
 ] as const;
 
 export default function RecurringResearchPage() {
+  const [params] = useSearchParams();
   const workspaces = useWorkspaces();
   const options = useScopedResource(loadOptions);
   return (
@@ -82,7 +84,17 @@ export default function RecurringResearchPage() {
           </Alert>
         )}
         {options.data && (
-          <SchedulesSection key={workspaces.key} workspaces={workspaces} {...options.data} />
+          <SchedulesSection
+            key={`${workspaces.key}:${params.toString()}`}
+            workspaces={workspaces}
+            draftQuestion={(params.get('question') ?? '').slice(0, 1000)}
+            draftCountry={
+              options.data.countries.some((item) => item.iso2 === params.get('country'))
+                ? (params.get('country') ?? '')
+                : ''
+            }
+            {...options.data}
+          />
         )}
       </div>
     </section>

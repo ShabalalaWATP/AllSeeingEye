@@ -30,11 +30,15 @@ export function SchedulesSection({
   workspaces,
   plans,
   countries,
+  draftQuestion = '',
+  draftCountry = '',
 }: {
   templates: readonly ReportTemplate[];
   plans: readonly CollectionPlan[];
   workspaces: Workspaces;
   countries: readonly Country[];
+  draftQuestion?: string;
+  draftCountry?: string;
 }) {
   const [editing, setEditing] = useState<Schedule | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -212,6 +216,8 @@ export function SchedulesSection({
         <ScheduleForm
           key={`${workspaces.key}:${editing?.id ?? 'new'}:${revision}`}
           initial={editing ?? undefined}
+          draftQuestion={editing ? '' : draftQuestion}
+          draftCountry={editing ? '' : draftCountry}
           onCancel={
             editing
               ? () => {

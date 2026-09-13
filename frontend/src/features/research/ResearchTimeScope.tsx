@@ -1,21 +1,7 @@
 import { SelectField, TextField } from '@/components/ui/Field';
-
-export const MAX_RESEARCH_HOURS = 730 * 24;
-export interface ResearchDates {
-  since: string;
-  until: string;
-}
-
-export function researchDateError(dates: ResearchDates, now = Date.now()): string | null {
-  const start = Date.parse(dates.since),
-    end = Date.parse(dates.until);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)
-    return 'Choose a start and end date, with the end after the start.';
-  if (end - start > MAX_RESEARCH_HOURS * 3_600_000)
-    return 'Choose a search period of no more than two years (730 days).';
-  if (end > now) return 'The end of the search period cannot be in the future.';
-  return null;
-}
+import { MAX_RESEARCH_HOURS, type ResearchDates } from '@/lib/researchPeriod';
+export { MAX_RESEARCH_HOURS, researchDateError } from '@/lib/researchPeriod';
+export type { ResearchDates } from '@/lib/researchPeriod';
 
 export function ResearchTimeScope({
   windowHours,
