@@ -28,7 +28,9 @@ export const profileSchema: z.ZodType<Profile> = z.object({
   ]),
   report_style: z.enum(['briefing', 'assessment']),
   export_format: z.enum(['pdf', 'docx', 'md']),
-  appearance_theme: z.enum(['obsidian', 'slate', 'light']).default('obsidian'),
+  appearance_theme: z
+    .enum(['obsidian', 'slate', 'light', 'midnight', 'aurora', 'phosphor', 'crimson', 'graphite'])
+    .default('obsidian'),
   reduced_motion: z.boolean().default(false),
 });
 

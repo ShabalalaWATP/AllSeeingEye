@@ -25,6 +25,14 @@
   --color-white: #ffffff;
   --color-transparent: transparent;
 
+  /* Categorical chart slots, validated for colour-vision separation on dark surfaces. */
+  --color-chart-1: #3987e5;
+  --color-chart-2: #d95926;
+  --color-chart-3: #199e70;
+  --color-chart-4: #c98500;
+  --color-chart-5: #d55181;
+  --color-chart-6: #9085e9;
+
   --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
 
@@ -62,7 +70,88 @@
     --color-amber: #895800;
     --color-good: #13734c;
     --color-critical: #bb2638;
+    --color-chart-1: #2a78d6;
+    --color-chart-2: #eb6834;
+    --color-chart-3: #1baf7a;
+    --color-chart-4: #eda100;
+    --color-chart-5: #e87ba4;
+    --color-chart-6: #4a3aa7;
     --shadow-card: 0 14px 36px -20px rgb(20 34 50 / 0.25);
+  }
+
+  /* Deep navy with an electric-blue accent. */
+  html[data-appearance='midnight'] {
+    --color-ground: #050a18;
+    --color-surface: #0b1226;
+    --color-surface-2: #121b36;
+    --color-line: #24325c;
+    --color-text: #e6ecff;
+    --color-muted: #94a0c9;
+    --color-ember: #5b93ff;
+    --color-cyan: #38d6ff;
+    --color-amber: #ffc857;
+    --color-good: #4ade80;
+    --color-critical: #ff6b6b;
+  }
+
+  /* Violet dusk with a teal counterpoint. */
+  html[data-appearance='aurora'] {
+    --color-ground: #0a0713;
+    --color-surface: #140f22;
+    --color-surface-2: #1d1631;
+    --color-line: #36295e;
+    --color-text: #efe9ff;
+    --color-muted: #ab9fcd;
+    --color-ember: #b48cff;
+    --color-cyan: #2ee6c5;
+    --color-amber: #ffb454;
+    --color-good: #5ee3a1;
+    --color-critical: #ff5c8a;
+  }
+
+  /* Terminal green on near-black. */
+  html[data-appearance='phosphor'] {
+    --color-ground: #040806;
+    --color-surface: #0a120c;
+    --color-surface-2: #101c14;
+    --color-line: #1f3a27;
+    --color-text: #d9f5dc;
+    --color-muted: #83ad8e;
+    --color-ember: #39ff8a;
+    --color-cyan: #5cf2c2;
+    --color-amber: #e2d33a;
+    --color-good: #39ff8a;
+    --color-critical: #ff6b57;
+  }
+
+  /* Black with a crimson accent and an icy secondary. */
+  html[data-appearance='crimson'] {
+    --color-ground: #0b0507;
+    --color-surface: #17090d;
+    --color-surface-2: #221016;
+    --color-line: #45202b;
+    --color-text: #f6e7ea;
+    --color-muted: #b6929c;
+    --color-ember: #ff3b5c;
+    --color-cyan: #4fd1ff;
+    --color-amber: #ffb347;
+    --color-good: #57d99b;
+    --color-critical: #ff5a5a;
+  }
+
+  /* Neutral monochrome with a soft blue secondary. */
+  html[data-appearance='graphite'] {
+    --color-ground: #101113;
+    --color-surface: #18191c;
+    --color-surface-2: #212327;
+    --color-line: #363940;
+    --color-text: #f2f2f2;
+    --color-muted: #a0a4ab;
+    --color-ember: #e8e8ea;
+    --color-cyan: #9fd3ff;
+    --color-amber: #f5c542;
+    --color-good: #6fd39b;
+    --color-critical: #ff6b6b;
   }
 
   /* The map keeps its own contrast and data palette over satellite imagery. */

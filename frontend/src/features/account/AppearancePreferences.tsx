@@ -33,6 +33,51 @@ const themes = [
     accent: '#a63d13',
     text: '#17212d',
   },
+  {
+    value: 'midnight',
+    label: 'Midnight',
+    detail: 'Deep navy with electric blue',
+    ground: '#050a18',
+    surface: '#121b36',
+    accent: '#5b93ff',
+    text: '#e6ecff',
+  },
+  {
+    value: 'aurora',
+    label: 'Aurora',
+    detail: 'Violet dusk with teal highlights',
+    ground: '#0a0713',
+    surface: '#1d1631',
+    accent: '#b48cff',
+    text: '#efe9ff',
+  },
+  {
+    value: 'phosphor',
+    label: 'Phosphor',
+    detail: 'Terminal green on near-black',
+    ground: '#040806',
+    surface: '#101c14',
+    accent: '#39ff8a',
+    text: '#d9f5dc',
+  },
+  {
+    value: 'crimson',
+    label: 'Crimson',
+    detail: 'Black with a crimson accent',
+    ground: '#0b0507',
+    surface: '#221016',
+    accent: '#ff3b5c',
+    text: '#f6e7ea',
+  },
+  {
+    value: 'graphite',
+    label: 'Graphite',
+    detail: 'Neutral monochrome, soft blue',
+    ground: '#101113',
+    surface: '#212327',
+    accent: '#e8e8ea',
+    text: '#f2f2f2',
+  },
 ] as const;
 
 export function AppearancePreferences() {
@@ -96,7 +141,7 @@ function AppearanceForm({
       </header>
       <fieldset disabled={busy}>
         <legend className="mb-3 text-sm font-medium">Colour theme</legend>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {themes.map((option) => (
             <label
               key={option.value}

@@ -15,8 +15,9 @@ describe('personal settings', () => {
       renderApp('/settings', session);
       expect(await screen.findByRole('heading', { name: 'Settings' })).toBeVisible();
       expect(await screen.findByRole('radio', { name: /^Obsidian/ })).toBeChecked();
-      expect(screen.getAllByRole('radio')).toHaveLength(3);
-      expect(screen.getByRole('link', { name: /Source catalogue/ })).toHaveAttribute(
+      expect(screen.getAllByRole('radio')).toHaveLength(8);
+      expect(screen.getByRole('radio', { name: /^Midnight/ })).not.toBeChecked();
+      expect(screen.getByRole('link', { name: /Sources and connections/ })).toHaveAttribute(
         'href',
         '/sources',
       );

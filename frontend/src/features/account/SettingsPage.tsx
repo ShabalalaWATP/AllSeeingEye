@@ -15,8 +15,8 @@ const sections = [
 const resources = [
   {
     to: '/sources',
-    title: 'Source catalogue',
-    detail: 'Browse connected sources, coverage and availability.',
+    title: 'Sources and connections',
+    detail: 'See every feed and service, what is collecting and which API keys are missing.',
   },
   {
     to: '/warning',

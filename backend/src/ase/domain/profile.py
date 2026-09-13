@@ -10,7 +10,19 @@ from ase.domain.languages import ReportLanguage, language_capability, valid_lang
 DateFormat = Literal["day_first", "month_first", "iso"]
 ReportStyle = Literal["briefing", "assessment"]
 ExportFormat = Literal["pdf", "docx", "md"]
-AppearanceTheme = Literal["obsidian", "slate", "light"]
+AppearanceTheme = Literal[
+    "obsidian", "slate", "light", "midnight", "aurora", "phosphor", "crimson", "graphite"
+]
+APPEARANCE_THEMES: tuple[AppearanceTheme, ...] = (
+    "obsidian",
+    "slate",
+    "light",
+    "midnight",
+    "aurora",
+    "phosphor",
+    "crimson",
+    "graphite",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +82,7 @@ class PersonalProfile:
             raise ValueError("Invalid report style")
         if self.export_format not in ("pdf", "docx", "md"):
             raise ValueError("Invalid export format")
-        if self.appearance_theme not in ("obsidian", "slate", "light"):
+        if self.appearance_theme not in APPEARANCE_THEMES:
             raise ValueError("Invalid appearance theme")
         if not isinstance(self.reduced_motion, bool):
             raise ValueError("Reduced motion must be a boolean")
