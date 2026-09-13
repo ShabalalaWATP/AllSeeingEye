@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgis/postgis:16-3.4-alpine
+        image: postgis/postgis:16-3.4-alpine@sha256:681931a625df344215e9b8998bf34daf146b6a395ceacee4439eb9c85869239f
         env:
           POSTGRES_USER: ase
           POSTGRES_PASSWORD: ase
@@ -111,7 +111,7 @@ jobs:
   semgrep:
     runs-on: ubuntu-latest
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep@sha256:34ab619bf1391a24bfda3f05debd0d8a6ce3093c2d5f9d39cfc00f83c1397823
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: semgrep scan --config p/default --config p/security-audit --no-rewrite-rule-ids --error backend/src frontend/src

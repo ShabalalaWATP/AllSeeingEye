@@ -12,7 +12,7 @@ describe('ForgotPasswordPage', () => {
     await user.type(screen.getByLabelText('Email'), 'someone@example.com');
     await user.click(screen.getByRole('button', { name: 'Send reset link' }));
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'If the address is registered, a reset link has been issued.',
+      'If the address is registered, check your email for a reset link. You can request another if it does not arrive.',
     );
     expect(screen.getByRole('link', { name: 'Back to sign in' })).toHaveAttribute('href', '/login');
   });

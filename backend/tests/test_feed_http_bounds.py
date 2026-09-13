@@ -1,5 +1,6 @@
 """Reject content encodings before decoding and revalidate every redirect."""
 
+import asyncio
 from collections.abc import AsyncIterator
 
 import httpx
@@ -16,6 +17,28 @@ class ObservedBody(httpx.AsyncByteStream):
     async def __aiter__(self) -> AsyncIterator[bytes]:
         self.consumed = True
         yield b"{}"
+
+
+class SlowBody(httpx.AsyncByteStream):
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        while True:
+            yield b"x"
+            await asyncio.sleep(0.02)
+
+
+async def test_total_deadline_stops_a_slow_drip() -> None:
+    client = FeedHttpClient(
+        "test",
+        total_timeout_seconds=0.08,
+        client=httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda _: httpx.Response(200, stream=SlowBody()))
+        ),
+    )
+    try:
+        with pytest.raises(FeedFetchError, match="total time limit"):
+            await client.get_bytes("https://93.184.216.34/feed")
+    finally:
+        await client.aclose()
 
 
 @pytest.mark.parametrize("encoding", ["gzip", "deflate", "br", "gzip, identity", "unknown"])

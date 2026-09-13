@@ -122,7 +122,10 @@ export const handlers = [
 
   http.post('/api/auth/forgot-password', () =>
     HttpResponse.json(
-      { message: 'If the address is registered, a reset link has been issued.' },
+      {
+        message:
+          'If the address is registered, check your email for a reset link. You can request another if it does not arrive.',
+      },
       { status: 202 },
     ),
   ),

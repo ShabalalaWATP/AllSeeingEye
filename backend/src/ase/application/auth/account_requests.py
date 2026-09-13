@@ -103,7 +103,9 @@ class ForgotPasswordUseCase:
         self._auditor = auditor
         self._uow = uow
 
-    async def execute(self, email: str, context: RequestContext) -> None:
+    async def execute(
+        self, email: str, context: RequestContext, *, send_email: bool = True
+    ) -> str | None:
         retry_after = self._limiter.hit(
             f"forgot:ip:{context.ip}",
             self._limits.forgot_per_ip,
@@ -112,8 +114,8 @@ class ForgotPasswordUseCase:
         if retry_after is not None:
             raise RateLimited(retry_after)
         email = normalise_email(email)
-        user = await self._users.get_by_email(email)
-        delivered = False
+        user = await self._users.lock_by_email(email)
+        link: str | None = None
         if user is not None and user.is_active and user.password_hash is not None:
             now = self._clock.now()
             secret = self._generator.new_secret()
@@ -129,12 +131,15 @@ class ForgotPasswordUseCase:
                 )
             )
             link = self._links.link_for(TokenPurpose.RESET, secret)
-            delivered = await self._email_sender.send_link(email, TokenPurpose.RESET, link)
         await self._auditor.record(
             AuditAction.PASSWORD_RESET_REQUESTED,
             actor=user.id if user else None,
             subject=email,
             ip=context.ip,
-            details={"delivered": delivered},
+            details={"delivery_requested": link is not None},
         )
         await self._uow.commit()
+        # The account lock and token transaction must end before external SMTP I/O.
+        if link is not None and send_email:
+            await self._email_sender.send_link(email, TokenPurpose.RESET, link)
+        return link

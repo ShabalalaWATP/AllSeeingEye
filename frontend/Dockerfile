@@ -13,7 +13,7 @@ COPY infra/caddy-build/main.go ./
 RUN go build -mod=readonly -trimpath -buildvcs=false \
     -tags=nobadger,nomysql,nopgx -ldflags='-s -w' -o /out/caddy .
 
-FROM node:22-alpine AS build
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 ENV CI=true
 WORKDIR /app
 RUN npm install -g pnpm@11.25.0
@@ -24,7 +24,6 @@ COPY frontend/ ./
 RUN pnpm build
 
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
-RUN apk upgrade --no-cache
 COPY --from=caddy-build /out/caddy /usr/bin/caddy
 # COPY replaces the upstream inode, including the capability needed on low ports.
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy

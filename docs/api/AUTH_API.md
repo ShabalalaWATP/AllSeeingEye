@@ -36,7 +36,7 @@ TokenResponse   {access_token, token_type: "bearer", expires_in: int seconds, us
 | `POST /api/auth/refresh` | cookie + CSRF header | none | 200 `TokenResponse`; rotates cookies | 401 `invalid_refresh` (missing, expired, revoked or reused); 403 `csrf_failed` |
 | `POST /api/auth/logout` | cookie + CSRF header | none | 204; revokes the token family and its access JWTs; clears cookies | 403 `csrf_failed`; with valid CSRF, a missing refresh cookie still returns 204 |
 | `POST /api/auth/request-account` | none | `{email, display_name, reason?}` | 202 `{"message": "If the address is eligible, an administrator will review the request."}` | 422; 429 |
-| `POST /api/auth/forgot-password` | none | `{email}` | 202 `{"message": "If the address is registered, a reset link has been issued."}` | 422; 429 |
+| `POST /api/auth/forgot-password` | none | `{email}` | 202 with a generic message and advice to request another link if none arrives | 422; 429 |
 | `POST /api/auth/set-password` | none | `{token, new_password}` | 204 (token purpose may be `activation` or `reset`; single use) | 400 `invalid_token`; 422 `weak_password` with `fields.new_password` reason; 429 |
 | `GET /api/me` | bearer | | 200 `User` | 401 |
 | `POST /api/me/password` | bearer | `{current_password, new_password, totp_code?, mfa_challenge_token?, mfa_code?}`; extra fields forbidden | 204; changes only the authenticated account's password, ends all its sessions and outstanding password links, clears cookies | 401 for an ended/inactive session; 422 `invalid_request` for incorrect current password or required authenticator proof; 422 `weak_password`; 429 |

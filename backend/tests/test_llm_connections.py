@@ -195,6 +195,7 @@ async def test_saved_key_never_follows_a_changed_credential_destination(
         "https://host/v1?secret=x",
         "https://host/v1#x",
         "http://host:invalid/v1",
+        "http://models.example/v1",
         "http://host/\npath",
     ],
 )

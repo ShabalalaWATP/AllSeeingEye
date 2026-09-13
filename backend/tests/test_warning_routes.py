@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
 from dataclasses import replace
 from datetime import timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
 import httpx
+import pytest
 from httpx import AsyncClient
 
+from ase.adapters.notify import webhook as webhook_module
 from ase.adapters.notify.webhook import WebhookNotifier
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.api.routers.stream import serialise
@@ -103,13 +106,88 @@ async def test_webhook_posts_to_public_hosts_only() -> None:
     assert firing is not None
     alert = alert_from(rule, firing, uuid4(), NOW)
     transport = httpx.MockTransport(handler)
-    public = WebhookNotifier("http://93.184.216.34/hook", "ase-test", transport=transport)
+    public = WebhookNotifier("https://93.184.216.34/hook", "ase-test", transport=transport)
     assert await public.notify(alert, rule) is True
     assert seen[0][0] == "93.184.216.34" and seen[0][1]["indicator"]["name"] == "Kharkiv strikes"
     assert seen[0][1]["kind"] == "alert" and seen[0][1]["count"] == 1
-    loopback = WebhookNotifier("http://127.0.0.1/hook", "ase-test", transport=transport)
+    loopback = WebhookNotifier("https://127.0.0.1/hook", "ase-test", transport=transport)
     assert await loopback.notify(alert, rule) is False and len(seen) == 1
     status = 500
     assert await public.notify(alert, rule) is False
     status = 599
     assert await public.notify(alert, rule) is False
+
+
+def test_webhook_rejects_plain_http() -> None:
+    with pytest.raises(ValueError, match="HTTPS"):
+        WebhookNotifier("http://93.184.216.34/hook", "ase-test")
+
+
+async def test_webhook_does_not_read_response_body() -> None:
+    class UnreadableBody(httpx.AsyncByteStream):
+        async def __aiter__(self) -> AsyncIterator[bytes]:
+            pytest.fail("Webhook response body must not be consumed")
+            yield b""
+
+    events = {event.title: event for event in conflict_events(NOW)}
+    firing = evaluate(indicator(), [events["Shelling in Kharkiv"]], NOW, None)
+    assert firing is not None
+    rule = indicator()
+    alert = alert_from(rule, firing, uuid4(), NOW)
+    notifier = WebhookNotifier(
+        "https://93.184.216.34/hook",
+        "ase-test",
+        transport=httpx.MockTransport(lambda _: httpx.Response(200, stream=UnreadableBody())),
+    )
+    assert await notifier.notify(alert, rule) is True
+
+
+@pytest.mark.parametrize(
+    ("url", "authority"),
+    [
+        ("https://93.184.216.34:8443/hook", "93.184.216.34:8443"),
+        ("https://[2606:4700:4700::1111]:8443/hook", "[2606:4700:4700::1111]:8443"),
+    ],
+)
+async def test_webhook_preserves_non_default_port_and_ipv6_authority(
+    url: str, authority: str
+) -> None:
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers["host"])
+        return httpx.Response(204)
+
+    rule = indicator()
+    events = {event.title: event for event in conflict_events(NOW)}
+    firing = evaluate(rule, [events["Shelling in Kharkiv"]], NOW, None)
+    assert firing is not None
+    alert = alert_from(rule, firing, uuid4(), NOW)
+    notifier = WebhookNotifier(url, "ase-test", transport=httpx.MockTransport(handler))
+    assert await notifier.notify(alert, rule) is True
+    assert seen == [authority]
+
+
+async def test_webhook_uses_ascii_authority_for_internationalised_domain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def public_address(url: str) -> str:
+        return "93.184.216.34"
+
+    monkeypatch.setattr(webhook_module, "assert_public_host", public_address)
+    seen: list[tuple[str, str]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append((request.headers["host"], str(request.extensions["sni_hostname"])))
+        return httpx.Response(204)
+
+    rule = indicator()
+    events = {event.title: event for event in conflict_events(NOW)}
+    firing = evaluate(rule, [events["Shelling in Kharkiv"]], NOW, None)
+    assert firing is not None
+    alert = alert_from(rule, firing, uuid4(), NOW)
+    notifier = WebhookNotifier(
+        "https://münich.example/hook", "ase-test", transport=httpx.MockTransport(handler)
+    )
+    assert await notifier.notify(alert, rule) is True
+    assert seen == [("xn--mnich-kva.example", "xn--mnich-kva.example")]

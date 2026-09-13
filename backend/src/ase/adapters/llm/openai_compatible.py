@@ -25,7 +25,7 @@ from ase.adapters.llm.openai_responses import (
     uses_responses,
 )
 from ase.application.ports.llm import LlmGatewayError
-from ase.domain.llm import LlmMessage, LlmRequest, LlmResult
+from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
 MAX_REPORT_TIMEOUT_SECONDS = 300.0
@@ -162,6 +162,10 @@ class OpenAiCompatibleGateway:
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
     ) -> LlmResult:
+        try:
+            base_url = normalise_base_url(base_url)
+        except ValueError:
+            raise LlmGatewayError("The model endpoint address is invalid.") from None
         headers = {
             "Content-Type": "application/json",
             "Accept-Encoding": "identity",

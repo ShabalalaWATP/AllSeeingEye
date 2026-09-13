@@ -6,6 +6,7 @@ from typing import Any
 import httpx
 
 from ase.application.ports.llm import LlmGatewayError
+from ase.domain.llm import normalise_base_url
 
 MAX_DISCOVERY_BYTES = 512 * 1024
 MAX_MODELS = 1000
@@ -37,6 +38,10 @@ async def discover_models(
     base_url: str,
     api_key: str,
 ) -> tuple[str, ...]:
+    try:
+        base_url = normalise_base_url(base_url)
+    except ValueError:
+        raise LlmGatewayError("The model endpoint address is invalid.") from None
     # An explicit empty header prevents inherited client Authorization from being sent
     # when an administrator intentionally supplies an unauthenticated local endpoint.
     headers = {

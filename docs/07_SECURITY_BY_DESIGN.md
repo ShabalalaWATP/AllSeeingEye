@@ -1,6 +1,6 @@
 # Security by Design
 
-Status: implementation guidance updated for identity and team isolation, 6 September
+Status: implementation guidance updated for identity and team isolation, 13 September
 2026. These controls describe the current code, with deployment and verification
 limits called out below. They do not establish OWASP ASVS level 2 conformance or
 public-exposure readiness. The detailed review and remaining gates are in
@@ -41,8 +41,15 @@ exposure or multi-worker topology needs a new review.
   rotate into the new token format; expired/revoked cookies require sign-in.
 - Login and account-recovery endpoints have bounded rate limits and account
   lockout. Password activation/reset tokens are hashed, time-limited and single
-  use. Responses avoid exposing account existence. Email delivery is not
-  configured; administrators can issue activation/reset links locally.
+  use. Forgotten-password requests issue and commit a reset token under the
+  account lock before the generic response, so a concurrent password change
+  revokes it in order. Response timing has a common minimum, and optional SMTP
+  delivery runs after the token transaction commits.
+  Extreme database contention can exceed the timing floor; rate limits constrain
+  repeated probing, but the timing floor is not a constant-time guarantee.
+  SMTP delivery is best effort and has no durable outbox; if a worker stops
+  before sending, the user can request another link.
+  Administrators can also issue activation/reset links locally.
 - Optional administrator TOTP is implemented, including password-authorised
   enrolment, confirmation, encrypted secrets, expiring enrolment state and code
   replay protection. Enabling/removing TOTP revokes sessions and increments the
@@ -118,9 +125,14 @@ exposure or multi-worker topology needs a new review.
   loopback, link-local and metadata destinations. Redirect hops are checked by
   the guarded feed client. Administrator-selected model endpoints use the
   separate trust boundary below.
-- Feed responses have per-request byte limits and timeouts. XML uses
+- Feed responses have per-request byte limits and a 120-second whole-fetch
+  deadline that includes DNS, redirects and streaming. XML uses
   `defusedxml`; text is stripped of markup and bounded before it enters events.
   Parsed values and coordinates are constrained by domain/schema validation.
+- Public model endpoints and alert webhooks require HTTPS. Local and private
+  model IP endpoints can use HTTP when an administrator deliberately selects one.
+  Alert webhooks additionally require public DNS, use a ten-second total deadline,
+  follow no redirects and inspect only the response status.
 - Dynamic Mastodon instances and watchlist requests use the guarded feed path.
   Google News link resolution is deferred until report citation processing; it
   does not fetch every article in a live feed or create an article archive.

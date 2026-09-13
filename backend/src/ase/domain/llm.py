@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
+from ipaddress import IPv4Address, ip_address, ip_network
 from typing import Any, Literal
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -17,6 +18,10 @@ MIN_OUTPUT_TOKENS = 64
 MAX_API_KEY_LENGTH = 16_384
 MAX_MODEL_ID_LENGTH = 2_048
 KEY_HINT_CHARS = 4
+LOCAL_MODEL_V4 = tuple(
+    ip_network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+)
+LOCAL_MODEL_V6 = ip_network("fc00::/7")
 
 
 class LlmRole(StrEnum):
@@ -66,6 +71,20 @@ def normalise_base_url(value: str) -> str:
     if parts.query or parts.fragment:
         raise ValueError("The base URL cannot contain a query or fragment.")
     _ = parts.port  # Validate ports before any credential-bearing request.
+    if parts.scheme == "http":
+        host = parts.hostname or ""
+        try:
+            address = ip_address(host)
+        except ValueError:
+            local = host.lower() in {"localhost", "host.docker.internal"}
+        else:
+            local = address.is_loopback or (
+                any(address in network for network in LOCAL_MODEL_V4)
+                if isinstance(address, IPv4Address)
+                else address in LOCAL_MODEL_V6
+            )
+        if not local:
+            raise ValueError("Remote model endpoints must use HTTPS.")
     return candidate
 
 

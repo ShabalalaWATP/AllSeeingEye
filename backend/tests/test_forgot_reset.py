@@ -23,7 +23,10 @@ from helpers import (
     token_from_link,
 )
 
-FORGOT_MESSAGE = "If the address is registered, a reset link has been issued."
+FORGOT_MESSAGE = (
+    "If the address is registered, check your email for a reset link. "
+    "You can request another if it does not arrive."
+)
 NEW_PASSWORD = "Harbour-Lights-Fade-77"
 
 

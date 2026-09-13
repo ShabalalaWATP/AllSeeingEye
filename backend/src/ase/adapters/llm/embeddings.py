@@ -11,6 +11,7 @@ from typing import Any
 import httpx
 
 from ase.application.ports.embeddings import EmbeddingGatewayError
+from ase.domain.llm import normalise_base_url
 from ase.domain.report_search import INDEX_BATCH, MAX_TEXT_CHARS, EmbeddingResult, checked_vector
 
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024
@@ -59,6 +60,10 @@ class OpenAiEmbeddingGateway:
     async def embed(
         self, base_url: str, api_key: str, model: str, texts: Sequence[str]
     ) -> EmbeddingResult:
+        try:
+            base_url = normalise_base_url(base_url)
+        except ValueError:
+            raise EmbeddingGatewayError(SAFE_ERROR) from None
         if not 1 <= len(texts) <= INDEX_BATCH or any(
             not text.strip() or len(text) > MAX_TEXT_CHARS for text in texts
         ):

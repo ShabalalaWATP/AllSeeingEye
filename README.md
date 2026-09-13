@@ -48,8 +48,11 @@ integration is tested with scripted adapters rather than a live provider.
 ## Full stack with Docker Compose
 
 For a new Compose setup, copy `.env.example` to `.env` at the repository root.
-Preserve an existing `.env`, set `POSTGRES_PASSWORD` and
-`ASE_JWT_SECRET`, and preserve `ASE_ENCRYPTION_KEY` if configured. From that root:
+Set `POSTGRES_PASSWORD` to a unique random value and configure `ASE_JWT_SECRET`.
+Preserve an existing `.env`, its database password and `ASE_ENCRYPTION_KEY`.
+Changing the password in an existing `.env` alone does not change the PostgreSQL
+role password in its persistent volume; rotate that role explicitly before
+updating the app configuration. From the repository root:
 
 ```powershell
 docker compose up --build -d

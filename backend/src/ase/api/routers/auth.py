@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request, Response, status
+import asyncio
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response, status
 
 from ase.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
 from ase.api.deps import ContainerDep, ContextDep, SessionDep, require_csrf
@@ -16,11 +18,17 @@ from ase.api.schemas import (
     TokenResponse,
 )
 from ase.domain.mfa import PendingMfa
+from ase.domain.tokens import TokenPurpose
+from ase.domain.users import normalise_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 REQUEST_ACCOUNT_MESSAGE = "If the address is eligible, an administrator will review the request."
-FORGOT_MESSAGE = "If the address is registered, a reset link has been issued."
+FORGOT_MESSAGE = (
+    "If the address is registered, check your email for a reset link. "
+    "You can request another if it does not arrive."
+)
+FORGOT_RESPONSE_FLOOR_SECONDS = 0.5
 
 
 @router.post("/login")
@@ -89,11 +97,20 @@ async def request_account(
 @router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
 async def forgot_password(
     body: ForgotPasswordIn,
+    background_tasks: BackgroundTasks,
     session: SessionDep,
     container: ContainerDep,
     context: ContextDep,
 ) -> MessageOut:
-    await container.forgot_password(session).execute(body.email, context)
+    started = asyncio.get_running_loop().time()
+    email = normalise_email(body.email)
+    link = await container.forgot_password(session).execute(email, context, send_email=False)
+    if link is not None:
+        background_tasks.add_task(container.email_sender.send_link, email, TokenPurpose.RESET, link)
+    # SMTP cannot affect response timing; both addresses wait to a common floor.
+    await asyncio.sleep(
+        max(0, FORGOT_RESPONSE_FLOOR_SECONDS - (asyncio.get_running_loop().time() - started))
+    )
     return MessageOut(message=FORGOT_MESSAGE)
 
 

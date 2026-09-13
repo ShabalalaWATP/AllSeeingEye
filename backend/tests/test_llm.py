@@ -64,6 +64,18 @@ def test_cipher_round_trip_and_unavailability() -> None:
 def test_domain_helpers() -> None:
     assert normalise_base_url(" https://api.openai.com/v1/ ") == "https://api.openai.com/v1"
     assert normalise_base_url("http://localhost:11434/v1") == "http://localhost:11434/v1"
+    assert normalise_base_url("http://127.0.0.1:11434/v1") == "http://127.0.0.1:11434/v1"
+    assert normalise_base_url("http://192.168.1.10:11434/v1") == "http://192.168.1.10:11434/v1"
+    assert (
+        normalise_base_url("http://host.docker.internal:11434/v1")
+        == "http://host.docker.internal:11434/v1"
+    )
+    with pytest.raises(ValueError, match="HTTPS"):
+        normalise_base_url("http://public.example/v1")
+    with pytest.raises(ValueError, match="HTTPS"):
+        normalise_base_url("http://93.184.216.34/v1")
+    with pytest.raises(ValueError, match="HTTPS"):
+        normalise_base_url("http://169.254.169.254/v1")
     with pytest.raises(ValueError, match="absolute"):
         normalise_base_url("ftp://models.example")
     with pytest.raises(ValueError, match="Credentials"):

@@ -4537,3 +4537,27 @@ file-length and staged secret checks passed. Browser fixtures displayed markers
 in both settled projections and exercised country-marker inspection. The local
 backend was restarted and health/readiness returned 200. Concurrent unrelated
 Cyber/settings work was preserved and excluded from the News validation snapshot.
+
+## 13 September 2026: security audit remediation
+
+Closed the eight validated audit paths around password reset ordering and response
+timing, public HTTP model and webhook destinations, whole-feed deadlines, webhook
+response buffering, mutable container image references and the sample PostgreSQL
+password. Forgotten-password requests now commit the reset token under an
+account lock before replying, while SMTP delivery runs after the response.
+Public model and webhook destinations require HTTPS;
+loopback, private IP and Docker's host alias remain available for local HTTP
+models. Registry-verified digests pin the previously mutable build and CI images.
+
+Validation: 16 auth/race tests after the final reset change, 92 adjacent
+token/feed/discovery tests, 43 model tests, a final local-endpoint test, a real
+local TLS webhook test and two frontend reset-page tests passed. Backend Ruff,
+formatting, mypy, import contracts and Bandit on changed modules passed. Both
+Docker images built, Compose accepted the configured environment, and the blank example
+PostgreSQL password correctly prevented configuration. A full backend suite run
+was stopped after initial progress because this repository has over 3,000 test
+functions; this work has no new repository-wide coverage figure. Full-repository
+Bandit still reports four pre-existing findings outside the changed modules.
+The shared feed HTTP client is six lines over the repository's 350-line target;
+the file-length check passes, and a separate split avoids changing the existing
+credential and SSRF policy seams during this remediation.

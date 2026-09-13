@@ -160,6 +160,7 @@ class FeedHttpClient:
         user_agent: str,
         *,
         timeout_seconds: float = 30.0,
+        total_timeout_seconds: float = 120.0,
         max_bytes: int = DEFAULT_MAX_BYTES,
         client: httpx.AsyncClient | None = None,
     ) -> None:
@@ -172,6 +173,9 @@ class FeedHttpClient:
         ):
             raise ValueError("Shared feed clients must not carry global authorisation.")
         self._max_bytes = max_bytes
+        if total_timeout_seconds <= 0:
+            raise ValueError("The total feed timeout must be positive.")
+        self._total_timeout_seconds = total_timeout_seconds
         self._validators: OrderedDict[str, _Validators] = OrderedDict()
         self._client = client or httpx.AsyncClient(
             timeout=httpx.Timeout(timeout_seconds), follow_redirects=False
@@ -208,7 +212,12 @@ class FeedHttpClient:
             credential.require_origin(url)
             conditional, max_redirects = False, 0
         try:
-            return await self._get_bytes(url, conditional, max_redirects, credential)
+            async with asyncio.timeout(self._total_timeout_seconds):
+                return await self._get_bytes(url, conditional, max_redirects, credential)
+        except TimeoutError as exc:
+            if credential is not None:
+                raise FeedFetchError("Authenticated feed request failed.") from None
+            raise FeedFetchError("Feed request exceeded its total time limit.") from exc
         except (FeedFetchError, NotModified):
             if credential is not None:
                 raise FeedFetchError("Authenticated feed request failed.") from None

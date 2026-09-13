@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from urllib.parse import urlsplit
 
 import httpx
@@ -35,29 +36,58 @@ class WebhookNotifier:
     def __init__(
         self, url: str, user_agent: str, *, transport: httpx.AsyncBaseTransport | None = None
     ) -> None:
+        parts = urlsplit(url)
+        if parts.scheme != "https" or not parts.hostname or parts.username or parts.password:
+            raise ValueError("Alert webhooks must use HTTPS.")
+        try:
+            port = parts.port
+        except ValueError as exc:
+            raise ValueError("Alert webhooks need a valid HTTPS port.") from exc
+        host = parts.hostname
+        try:
+            host_ascii = host if ":" in host else host.encode("idna").decode("ascii")
+        except UnicodeError as exc:
+            raise ValueError("Alert webhook hostname is invalid.") from exc
+        authority = f"[{host_ascii}]" if ":" in host_ascii else host_ascii
+        if port is not None:
+            authority = f"{authority}:{port}"
         self._url = url
+        self._hostname = host_ascii
+        self._authority = authority
         self._user_agent = user_agent
         self._transport = transport
 
     async def notify(self, alert: Alert, indicator: Indicator) -> bool:
         try:
-            address = await assert_public_host(self._url)
+            async with asyncio.timeout(TIMEOUT_SECONDS):
+                address = await assert_public_host(self._url)
+                target = self._url if address is None else pin_url(self._url, address)
+                headers = {
+                    "User-Agent": self._user_agent,
+                    "Host": self._authority,
+                    "Accept-Encoding": "identity",
+                }
+                async with (
+                    httpx.AsyncClient(
+                        timeout=TIMEOUT_SECONDS, transport=self._transport, headers=headers
+                    ) as client,
+                    client.stream(
+                        "POST",
+                        target,
+                        json=alert_payload(alert, indicator),
+                        extensions={"sni_hostname": self._hostname},
+                        follow_redirects=False,
+                    ) as response,
+                ):
+                    status = response.status_code
         except FeedFetchError as exc:
             log.warning("alert_webhook_refused", reason=str(exc))
             return False
-        target = self._url if address is None else pin_url(self._url, address)
-        host = urlsplit(self._url).hostname or ""
-        headers = {"User-Agent": self._user_agent, "Host": host}
-        try:
-            async with httpx.AsyncClient(
-                timeout=TIMEOUT_SECONDS, transport=self._transport, headers=headers
-            ) as client:
-                response = await client.post(target, json=alert_payload(alert, indicator))
-        except httpx.HTTPError as exc:
+        except (httpx.HTTPError, TimeoutError) as exc:
             log.warning("alert_webhook_failed", error=type(exc).__name__)
             return False
-        if not response.is_success:
-            log.warning("alert_webhook_rejected", status=response.status_code)
+        if not 200 <= status < 300:
+            log.warning("alert_webhook_rejected", status=status)
             return False
         return True
 

@@ -119,3 +119,12 @@ def test_dev_generates_a_secret_and_insecure_cookies() -> None:
     assert len(settings.jwt_secret_value) >= 32
     assert settings.cookie_secure is False
     assert settings.rate_limits.login_per_ip == 10
+
+
+def test_webhook_setting_requires_https() -> None:
+    with pytest.raises(ValueError, match="ASE_ALERT_WEBHOOK_URL"):
+        Settings(
+            _env_file=None,
+            env=Environment.TEST,
+            alert_webhook_url="http://93.184.216.34/hook",
+        )

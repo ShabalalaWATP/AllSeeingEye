@@ -120,8 +120,8 @@ class Settings(BaseSettings):
         if self.archive_enabled is None:
             self.archive_enabled = self.env is not Environment.TEST
         url = self.alert_webhook_url
-        if url is not None and not url.startswith(("http://", "https://")):
-            raise ValueError("ASE_ALERT_WEBHOOK_URL must be an http or https URL")
+        if url is not None and not url.startswith("https://"):
+            raise ValueError("ASE_ALERT_WEBHOOK_URL must be an https URL")
         return self
 
     @property

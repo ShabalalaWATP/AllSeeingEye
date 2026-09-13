@@ -20,7 +20,14 @@ from ase.domain.errors import (
 )
 from ase.domain.tokens import PasswordToken, TokenPurpose
 from ase.domain.users import Role, User
-from helpers import ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, FakeClock, create_user
+from helpers import (
+    ADMIN_PASSWORD,
+    USER_EMAIL,
+    USER_PASSWORD,
+    FakeClock,
+    create_user,
+    token_from_link,
+)
 from token_race_helpers import CONTEXT
 from token_race_helpers import race_container as race_container  # noqa: PLC0414
 
@@ -223,6 +230,50 @@ async def test_password_change_invalidates_other_outstanding_reset_links(
     async with container.session_factory() as session:
         stored = await container.repositories(session).users.get_by_id(user.id)
         assert stored and container.hasher.verify(stored.password_hash or "", NEW_PASSWORD)
+
+
+async def test_forgot_reset_issuance_commits_before_email_delivery(
+    race_container: Container,
+) -> None:
+    container = race_container
+    user = await create_user(container, email=USER_EMAIL, password=USER_PASSWORD)
+    password_change_secret = await reset_secret(container, user)
+    delivery_started = asyncio.Event()
+    release_delivery = asyncio.Event()
+    sent_link: list[str] = []
+
+    class PausedSender:
+        async def send_link(self, email: str, purpose: TokenPurpose, link: str) -> bool:
+            sent_link.append(link)
+            delivery_started.set()
+            await asyncio.wait_for(release_delivery.wait(), 10)
+            return True
+
+    container.email_sender = PausedSender()
+
+    async def request_reset() -> None:
+        async with container.session_factory() as session:
+            await container.forgot_password(session).execute(USER_EMAIL, CONTEXT)
+
+    task = asyncio.create_task(request_reset())
+    try:
+        await asyncio.wait_for(delivery_started.wait(), 10)
+        async with container.session_factory() as session:
+            await asyncio.wait_for(
+                container.set_password(session).execute(
+                    password_change_secret, NEW_PASSWORD, CONTEXT
+                ),
+                5,
+            )
+    finally:
+        release_delivery.set()
+        await asyncio.gather(task, return_exceptions=True)
+
+    async with container.session_factory() as session:
+        with pytest.raises(InvalidToken):
+            await container.set_password(session).execute(
+                token_from_link(sent_link[0]), "Attacker-Password-2026", CONTEXT
+            )
 
 
 @pytest.mark.parametrize("refresh", [True, False])

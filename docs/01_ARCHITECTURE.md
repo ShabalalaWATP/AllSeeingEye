@@ -339,6 +339,9 @@ confirmed enrolment, replay protection and host-only recovery.
 ### 4.8 External model boundary
 
 Administrators may configure private or loopback model endpoints deliberately.
+Public model endpoints require HTTPS before any API key or research content is sent.
+Plain HTTP is restricted to loopback, RFC1918 or IPv6 ULA addresses, plus Docker's
+`host.docker.internal` alias. Other internal DNS names need an HTTPS endpoint.
 That trust boundary is separate from the public-feed SSRF policy. Chat and
 embedding adapters use streamed identity-encoded responses, byte caps, overall
 deadlines and no redirects. Chat has a 4 MiB response cap, a 120-second default

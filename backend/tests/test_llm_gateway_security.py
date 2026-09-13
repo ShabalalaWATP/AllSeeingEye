@@ -26,6 +26,16 @@ SECRET = "test-gateway-secret-marker"
 BASE_URL = "http://127.0.0.1:11434/v1"
 
 
+async def test_direct_gateway_rejects_public_plain_http_before_sending_secret() -> None:
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda _: pytest.fail("No HTTP request expected"))
+    ) as client:
+        with pytest.raises(LlmGatewayError, match="endpoint address is invalid"):
+            await OpenAiCompatibleGateway(client=client).complete(
+                "http://93.184.216.34/v1", SECRET, "model", REQUEST
+            )
+
+
 class RecordingStream(httpx.AsyncByteStream):
     def __init__(self, chunks: list[bytes], delay: float = 0) -> None:
         self.chunks = chunks
