@@ -9,7 +9,7 @@ export function DashboardLayerRail({
   ...controls
 }: Pick<
   ComponentProps<typeof MapLayerRail>,
-  'openPanel' | 'activePanel' | 'gnssCount' | 'onTrafficSelect' | 'selectionDisabled'
+  'openPanel' | 'activePanel' | 'onTrafficSelect' | 'selectionDisabled'
 > & { data: ReturnType<typeof useDashboardEvents>; cyberCount: number }) {
   const { observations } = data;
   return (

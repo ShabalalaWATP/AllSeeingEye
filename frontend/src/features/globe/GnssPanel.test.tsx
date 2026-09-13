@@ -102,7 +102,7 @@ it('bounds the cell list and prevents locating while another tool owns map picki
 
 it('distinguishes disabled, loading, failed, limited and expired cached snapshots', () => {
   const view = render(<Panel enabled={false} />);
-  expect(screen.getByText(/GNSS is off/)).toBeInTheDocument();
+  expect(screen.getByText(/GPS interference is off/)).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Refresh GNSS' })).not.toBeInTheDocument();
   view.rerender(<Panel loading />);
   expect(screen.getByRole('button', { name: 'Refresh GNSS' })).toBeDisabled();

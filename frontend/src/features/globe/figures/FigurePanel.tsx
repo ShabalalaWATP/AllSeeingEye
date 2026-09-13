@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { CountryChips } from '@/components/ui/CountryChips';
 import { BASIS_LABELS, type PublicFigure } from '@/lib/api/figures';
 import { formatUtc } from '@/lib/format';
@@ -14,6 +16,9 @@ export function FigurePanel({
   onSelect?: (figure: PublicFigure) => void;
 }) {
   const reported = figures.visible.filter((figure) => figure.placement.basis !== 'seat').length;
+  // Opening the panel from the rail is the intent to see the layer; the switch still turns it off.
+  const { setEnabled } = figures;
+  useEffect(() => setEnabled(true), [setEnabled]);
   return (
     <section aria-label="Public figures" className="space-y-4 p-1 text-xs">
       <button
@@ -65,6 +70,12 @@ export function FigurePanel({
           </div>
           {figures.loading && <p role="status">Loading public figures…</p>}
           {figures.error && <p role="alert">{figures.error}</p>}
+          {figures.nation && (
+            <p className="text-muted">
+              Nation filter {figures.nation} from Find nation applies; organisations are hidden
+              while it is set.
+            </p>
+          )}
           {figures.board && (
             <p className="text-muted">
               {figures.visible.length} shown, {reported} placed by reporting, from{' '}

@@ -37,28 +37,20 @@ it('reports loaded counts and separately toggles categories and context layers',
   await user.click(screen.getByRole('switch', { name: 'News 2' }));
   expect(screen.getByRole('switch', { name: 'News 2' })).toHaveAttribute('aria-checked', 'false');
   expect(screen.queryByRole('switch', { name: /Day and night/ })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('switch', { name: /GNSS interference/ }));
-  expect(screen.getByRole('switch', { name: 'GNSS interference 0' })).toHaveAttribute(
-    'aria-checked',
-    'true',
-  );
+  expect(screen.queryByRole('switch', { name: /GNSS|GPS/ })).not.toBeInTheDocument();
 });
 
-it('places the captioned GNSS control before traffic and opens its dedicated filters', async () => {
-  const open = vi.fn();
-  const user = userEvent.setup();
+it('keeps GPS interference out of the rail so the Cyber control owns it', () => {
   render(
     <MapLayerRail
       events={[]}
       counts={{}}
       visibility={{ aircraft: true, vessels: true, firms: true }}
       onToggle={vi.fn()}
-      openPanel={open}
-      gnssCount={3}
+      openPanel={vi.fn()}
     />,
   );
-  expect(screen.getAllByRole('switch')[0]).toHaveAccessibleName('GNSS interference 3');
-  expect(screen.getByText('GNSS')).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'GNSS filters' }));
-  expect(open).toHaveBeenCalledWith('GNSS interference', expect.any(HTMLButtonElement));
+  expect(screen.queryByText('GNSS')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'GNSS filters' })).not.toBeInTheDocument();
+  expect(screen.getAllByRole('switch')[0]).toHaveAccessibleName('Flights 0');
 });

@@ -23,6 +23,7 @@ function state(overrides: Partial<FigureState> = {}): FigureState {
     setQuery: vi.fn(),
     reportedOnly: false,
     setReportedOnly: vi.fn(),
+    nation: null,
     countries: new Set<string>(),
     countryOptions: [
       { code: 'GB', count: 1 },
@@ -43,7 +44,7 @@ function state(overrides: Partial<FigureState> = {}): FigureState {
 describe('public figures layer', () => {
   it('stays off until a signed-in user turns it on, then loads and filters the roster', async () => {
     applySession('user');
-    const { result } = renderHook(() => useFigures());
+    const { result, rerender } = renderHook((nation: string | null = null) => useFigures(nation));
     expect(result.current.enabled).toBe(false);
     expect(result.current.visible).toEqual([]);
     act(() => result.current.setEnabled(true));
@@ -66,6 +67,9 @@ describe('public figures layer', () => {
     expect(result.current.visible.map((figure) => figure.id)).toEqual(['nato']);
     act(() => result.current.clearCountries());
     expect(result.current.visible).toHaveLength(3);
+    rerender('GB');
+    expect(result.current.visible.map((figure) => figure.id)).toEqual(['gb-head-of-government']);
+    rerender(null);
     act(() => result.current.select(result.current.visible[0] ?? null));
     expect(result.current.selected?.name).toBe('Volodymyr Zelenskyy');
     act(() => result.current.setEnabled(false));
@@ -158,8 +162,10 @@ describe('public figures layer', () => {
     expect(figures.clearCountries).toHaveBeenCalled();
   });
 
-  it('hides the roster and shows the doctrine note while the layer is off', () => {
-    render(<FigurePanel figures={state({ enabled: false, visible: [], board: null })} />);
+  it('turns the layer on when opened and shows the doctrine note while the layer is off', () => {
+    const figures = state({ enabled: false, visible: [], board: null });
+    render(<FigurePanel figures={figures} />);
+    expect(figures.setEnabled).toHaveBeenCalledWith(true);
     expect(screen.getByRole('switch', { name: 'Show public figures' })).not.toBeChecked();
     expect(screen.queryByRole('list', { name: 'Figures on the map' })).not.toBeInTheDocument();
     expect(screen.getByText(/Nothing here is a confirmed position/)).toBeVisible();

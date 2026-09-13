@@ -102,7 +102,7 @@ export default function GlobePage() {
   const nation = country === null ? null : (countryByIso[country] ?? null);
 
   const cameras = useCameras();
-  const figures = useFigures();
+  const figures = useFigures(country);
   const infrastructure = useInfrastructure();
   const context = useContextSelection(country, tools.picking, symbolMode);
   useNewsSelectionGuard(context, data, now);
@@ -272,7 +272,6 @@ export default function GlobePage() {
               cyberCount={cyber.events.length}
               openPanel={openPanel}
               activePanel={activePanel}
-              gnssCount={gnssFilters.filtered.length}
               onTrafficSelect={selectTraffic}
               selectionDisabled={tools.picking}
             />

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { Link } from 'react-router';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { CYBER_KIND_LABELS, cyberKind, type CyberKindFilter } from '@/lib/cyber';
@@ -7,16 +8,40 @@ import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { useCyberCountryContext } from './useCyberCountryContext';
 import { isMappedEvent, precisionLabel } from './geographicPrecision';
 import { utcDate } from './context/contextPresentation';
+import { ContextTabs } from './context/ContextTabs';
+import { CyberLayerSwitches } from './CyberLayerSwitches';
+import { GnssPanel } from './GnssPanel';
 
-export function CyberFilterPanel({
-  cyber,
-  onSelect,
-  picking,
-}: {
+interface CyberRecordsProps {
   cyber: ReturnType<typeof useCyberCountryContext>;
   onSelect: (event: LiveEvent) => void;
   picking: boolean;
-}) {
+}
+
+/** Cyber incidents and GPS interference share one control; each keeps its own filters. */
+export function CyberFilterPanel({
+  gnss,
+  ...records
+}: CyberRecordsProps & { gnss?: ComponentProps<typeof GnssPanel> }) {
+  if (!gnss) return <CyberRecords {...records} />;
+  return (
+    <>
+      <CyberLayerSwitches
+        recordCount={records.cyber.events.length}
+        interferenceCount={gnss.filters.filtered.length}
+      />
+      <ContextTabs
+        label="Cyber view"
+        primaryLabel="Cyber records"
+        secondaryLabel="GPS interference"
+        primary={<CyberRecords {...records} />}
+        secondary={<GnssPanel {...gnss} />}
+      />
+    </>
+  );
+}
+
+function CyberRecords({ cyber, onSelect, picking }: CyberRecordsProps) {
   const { kind, query, countryContext, setKind, setQuery, setCountryContext } =
     useCyberFiltersStore();
   const hidden = useEventsStore((state) => state.hidden.includes('cyber'));

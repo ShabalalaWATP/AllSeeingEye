@@ -62,10 +62,11 @@ it.each(['globe', 'map'] as const)(
     useGlobeStore.setState({ mode, interference: false });
     useEventsStore.setState({ hidden: ['aviation'], windowHours: 1 });
     const { user } = renderApp('/', 'user');
-    await user.click(await screen.findByRole('button', { name: 'GNSS filters' }));
-    expect(screen.getByText(/GNSS is off/)).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Cyber filters' }));
+    await user.click(screen.getByRole('button', { name: 'GPS interference' }));
+    expect(screen.getByText(/GPS interference is off/)).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('switch', { name: 'GNSS interference 0' }));
+    await user.click(screen.getByRole('switch', { name: 'GPS interference 0' }));
     await waitFor(() => expect(jamLayer()?.props.data).toHaveLength(2));
     expect(useEventsStore.getState().hidden).toContain('aviation');
     expect(fetch).toHaveBeenCalledOnce();
@@ -78,8 +79,8 @@ it.each(['globe', 'map'] as const)(
     expect(jamLayer()?.props.getLineWidth(red)).toBe(0);
     await user.click(screen.getByRole('radio', { name: 'Red only' }));
     expect(jamLayer()?.props.data).toEqual([red]);
-    expect(screen.getByRole('switch', { name: 'GNSS interference 1' })).toBeChecked();
-    await user.click(screen.getByRole('switch', { name: 'GNSS interference 1' }));
+    expect(screen.getByRole('switch', { name: 'GPS interference 1' })).toBeChecked();
+    await user.click(screen.getByRole('switch', { name: 'GPS interference 1' }));
     expect(jamLayer()).toBeUndefined();
   },
 );

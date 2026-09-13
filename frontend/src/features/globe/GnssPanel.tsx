@@ -48,7 +48,7 @@ export function GnssPanel({
       </div>
       {!enabled ? (
         <p role="status">
-          GNSS is off. Use its switch in the left rail to load and show observations.
+          GPS interference is off. Use its switch above to load and show observations.
         </p>
       ) : (
         <>

@@ -51,6 +51,7 @@ function usePreviewState(): FigureState {
     setQuery,
     reportedOnly,
     setReportedOnly,
+    nation: null,
     countries,
     countryOptions: countryOptions(board.figures),
     toggleCountry: (code: string) =>

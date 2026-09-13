@@ -1,7 +1,6 @@
 import type { Category, LiveEvent } from '@/lib/api/eventSchemas';
 import { CATEGORY_STYLES } from '@/lib/categories';
 import { useEventsStore } from '@/stores/events';
-import { useGlobeStore } from '@/stores/globe';
 import { observationKind } from './ObservationControls';
 import type { ObservationKind, ObservationVisibility } from './ObservationControls';
 import { isObservationShown, toggleObservationLayer } from './layerVisibility';
@@ -74,7 +73,6 @@ export function MapLayerRail({
   selectionDisabled = false,
   openPanel,
   activePanel,
-  gnssCount = 0,
   fires,
   news,
 }: {
@@ -87,7 +85,6 @@ export function MapLayerRail({
   selectionDisabled?: boolean;
   openPanel?: (label: string, button: HTMLButtonElement) => void;
   activePanel?: string | null;
-  gnssCount?: number;
   fires?: ReturnType<typeof useFiresFilters>;
   news?: ReturnType<typeof useNewsFilters>;
   flightFilter?: FlightFilter;
@@ -97,35 +94,12 @@ export function MapLayerRail({
   const hidden = useEventsStore((state) => state.hidden);
   const toggleCategory = useEventsStore((state) => state.toggleCategory);
   const stats = useEventsStore((state) => state.stats);
-  const interference = useGlobeStore((state) => state.interference);
-  const toggleInterference = useGlobeStore((state) => state.toggleInterference);
   const observations = [
     { kind: 'aircraft', label: 'Flights' },
     { kind: 'vessels', label: 'Boats' },
   ] as const;
   return (
     <>
-      <div className="flex flex-col items-center">
-        <LayerButton
-          label="GNSS interference"
-          caption="GNSS"
-          icon="gnss"
-          count={gnssCount}
-          active={interference}
-          onClick={toggleInterference}
-        />
-        {openPanel && (
-          <button
-            type="button"
-            aria-label="GNSS filters"
-            aria-expanded={activePanel === 'GNSS interference'}
-            className="flex h-6 w-11 items-center justify-center rounded text-[10px] text-muted hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan"
-            onClick={(event) => openPanel('GNSS interference', event.currentTarget)}
-          >
-            FILTERS <span aria-hidden="true"> ›</span>
-          </button>
-        )}
-      </div>
       {observations.map(({ kind, label }) => {
         const button = (
           <LayerButton

@@ -17,8 +17,9 @@ function matches(figure: PublicFigure, term: string): boolean {
     .includes(term);
 }
 
-/** The layer is off by default; it loads only for a signed-in identity and forgets on change. */
-export function useFigures() {
+/** The layer is off by default; it loads only for a signed-in identity and forgets on change.
+ * A nation chosen in Find nation narrows the roster like every other layer. */
+export function useFigures(nation: string | null = null) {
   const authority = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
   );
@@ -70,11 +71,12 @@ export function useFigures() {
         ? data.figures.filter(
             (figure) =>
               matches(figure, term) &&
+              (nation === null || figure.country_iso === nation) &&
               matchesCountries(figure, countries) &&
               (!reportedOnly || figure.placement.basis !== 'seat'),
           )
         : [],
-    [enabled, data, term, countries, reportedOnly],
+    [enabled, data, term, nation, countries, reportedOnly],
   );
   const selected = useMemo(
     () => visible.find((figure) => figure.id === selectedId) ?? null,
@@ -104,6 +106,7 @@ export function useFigures() {
     setQuery: useCallback((value: string) => setQuery(value.slice(0, 120)), []),
     reportedOnly,
     setReportedOnly,
+    nation,
     countries,
     countryOptions: options,
     toggleCountry,

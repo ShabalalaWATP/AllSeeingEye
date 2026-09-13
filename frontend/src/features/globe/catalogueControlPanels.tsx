@@ -8,7 +8,6 @@ import { InfrastructurePanel } from './infrastructure/InfrastructurePanel';
 import { SatelliteFilterPanel } from './SatelliteFilterPanel';
 import { ConflictOverviewPanel } from './ConflictOverviewPanel';
 import { HazardFilterPanel } from './HazardFilterPanel';
-import { GnssPanel } from './GnssPanel';
 import { CyberFilterPanel } from './CyberFilterPanel';
 import { FiresFilterPanel } from './FiresFilterPanel';
 import { NewsPanel } from './NewsPanel';
@@ -71,7 +70,7 @@ export function catalogueControlPanels({
   conflicts: ReturnType<typeof useConflictFilters>;
   conflictOverview: Omit<ComponentProps<typeof ConflictOverviewPanel>, 'reports'>;
   hazards: ReturnType<typeof useHazardFilters>;
-  gnss: ComponentProps<typeof GnssPanel>;
+  gnss: NonNullable<ComponentProps<typeof CyberFilterPanel>['gnss']>;
   country: string | null;
   onContextSelect: (event: LiveEvent) => void;
   onSatelliteSelect: (event: LiveEvent) => void;
@@ -95,10 +94,7 @@ export function catalogueControlPanels({
       icon="cyber"
       entry={false}
     >
-      <CyberFilterPanel {...cyber} />
-    </ControlPanel>,
-    <ControlPanel key="gnss" side="left" label="GNSS interference" icon="gnss" entry={false}>
-      <GnssPanel {...gnss} />
+      <CyberFilterPanel {...cyber} gnss={gnss} />
     </ControlPanel>,
     <ControlPanel key="infrastructure" side="left" label="Infrastructure" icon="infrastructure">
       <InfrastructurePanel state={infrastructure} onSelect={focusInfrastructure} />
