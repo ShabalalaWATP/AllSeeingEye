@@ -5670,6 +5670,8 @@ export interface components {
             owner?: string | null;
             /** Description */
             description?: string | null;
+            /** Wikidata */
+            wikidata?: string | null;
         };
         /** GroundwaveOut */
         GroundwaveOut: {
@@ -7205,6 +7207,8 @@ export interface components {
             website?: string | null;
             /** Wikipedia */
             wikipedia?: string | null;
+            /** Wikidata */
+            wikidata?: string | null;
         };
         /** ObservationMetadata */
         ObservationMetadata: {

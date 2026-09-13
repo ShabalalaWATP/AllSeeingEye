@@ -17599,6 +17599,17 @@
               }
             ],
             "title": "Description"
+          },
+          "wikidata": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikidata"
           }
         },
         "type": "object",
@@ -21706,6 +21717,17 @@
               }
             ],
             "title": "Wikipedia"
+          },
+          "wikidata": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikidata"
           }
         },
         "type": "object",

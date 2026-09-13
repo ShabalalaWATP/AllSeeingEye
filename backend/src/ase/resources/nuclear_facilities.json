@@ -14,7 +14,11 @@
    "source_url": "http://energia3.mecon.gov.ar/contenidos/archivos/Reorganizacion/informacion_del_mercado/publicaciones/mercado_electrico/estadisticosectorelectrico/2015/A1.POT_GEN_COMB_POR_CENTRAL_2015.xlsx",
    "geolocation_source": "Ministerio de Energía y Minería",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
-   "wikidata": "Q130439648"
+   "wikidata": "Q130439648",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-ARG0000030",
@@ -31,7 +35,10 @@
    "geolocation_source": "Ministerio de Energía y Minería",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "wikipedia": "https://en.wikipedia.org/wiki/Atucha_II_Nuclear_Power_Plant",
-   "wikidata": "Q11959563"
+   "wikidata": "Q11959563",
+   "owner": null,
+   "description": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-ARG0000112",
@@ -46,7 +53,12 @@
    "source_name": "Ministerio de Energía y Minería",
    "source_url": "http://energia3.mecon.gov.ar/contenidos/archivos/Reorganizacion/informacion_del_mercado/publicaciones/mercado_electrico/estadisticosectorelectrico/2015/A1.POT_GEN_COMB_POR_CENTRAL_2015.xlsx",
    "geolocation_source": "Ministerio de Energía y Minería",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1019028",
@@ -61,7 +73,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/ReactorDetails.aspx?current=2",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002223",
@@ -78,7 +95,10 @@
    "geolocation_source": "GEODB",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear reactor in Anvers, Belgium",
-   "wikidata": "Q114197300"
+   "wikidata": "Q114197300",
+   "owner": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-WRI1002275",
@@ -93,7 +113,12 @@
    "source_name": "ELIA Belgian Grid Operator",
    "source_url": "http://publications.elia.be/upload/ProductionParkOverview.html?TS=20120416193815",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002277",
@@ -108,7 +133,12 @@
    "source_name": "ELIA Belgian Grid Operator",
    "source_url": "http://publications.elia.be/upload/ProductionParkOverview.html?TS=20120416193815",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-BRA0000100",
@@ -123,7 +153,12 @@
    "source_name": "Agência Nacional de Energia Elétrica (Brazil)",
    "source_url": "http://www2.aneel.gov.br/aplicacoes/capacidadebrasil/capacidadebrasil.cfm",
    "geolocation_source": "Agência Nacional de Energia Elétrica (Brazil)",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-BRA0000101",
@@ -138,7 +173,12 @@
    "source_name": "Agência Nacional de Energia Elétrica (Brazil)",
    "source_url": "http://www2.aneel.gov.br/aplicacoes/capacidadebrasil/capacidadebrasil.cfm",
    "geolocation_source": "Agência Nacional de Energia Elétrica (Brazil)",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1008053",
@@ -157,7 +197,8 @@
    "owner": "Bulgarian Energy Holding",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Kozloduy_Nuclear_Power_Plant",
-   "wikidata": "Q1032792"
+   "wikidata": "Q1032792",
+   "website": null
   },
   {
    "id": "wri-nuclear-CAN0002030",
@@ -172,7 +213,12 @@
    "source_name": "Natural Resources Canada",
    "source_url": "http://ftp.maps.canada.ca/pub/nacei_cnaie/energy_infrastructure/PowerPlantsAllGE100MW_NorthAmerica_201708.xlsx",
    "geolocation_source": "Natural Resources Canada",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-CAN0002031",
@@ -187,7 +233,12 @@
    "source_name": "Natural Resources Canada",
    "source_url": "http://ftp.maps.canada.ca/pub/nacei_cnaie/energy_infrastructure/PowerPlantsAllGE100MW_NorthAmerica_201708.xlsx",
    "geolocation_source": "Natural Resources Canada",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-CAN0002043",
@@ -202,7 +253,12 @@
    "source_name": "Natural Resources Canada",
    "source_url": "http://ftp.maps.canada.ca/pub/nacei_cnaie/energy_infrastructure/PowerPlantsAllGE100MW_NorthAmerica_201708.xlsx",
    "geolocation_source": "Natural Resources Canada",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-CAN0002073",
@@ -217,7 +273,12 @@
    "source_name": "Natural Resources Canada",
    "source_url": "http://ftp.maps.canada.ca/pub/nacei_cnaie/energy_infrastructure/PowerPlantsAllGE100MW_NorthAmerica_201708.xlsx",
    "geolocation_source": "Natural Resources Canada",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-CAN0002074",
@@ -232,7 +293,12 @@
    "source_name": "Natural Resources Canada",
    "source_url": "http://ftp.maps.canada.ca/pub/nacei_cnaie/energy_infrastructure/PowerPlantsAllGE100MW_NorthAmerica_201708.xlsx",
    "geolocation_source": "Natural Resources Canada",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-CAN0002076",
@@ -250,7 +316,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power station in Musquash Parish, New Brunswick",
    "wikipedia": "https://en.wikipedia.org/wiki/Point_Lepreau_Nuclear_Generating_Station",
-   "wikidata": "Q1391137"
+   "wikidata": "Q1391137",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061016",
@@ -265,7 +333,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1061017",
@@ -280,7 +353,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1061018",
@@ -299,7 +377,8 @@
    "description": "nuclear power plant in Guangdong, China",
    "website": "https://www.hknuclear.com/Pages/Index.aspx",
    "wikipedia": "https://en.wikipedia.org/wiki/Daya_Bay_Nuclear_Power_Plant",
-   "wikidata": "Q964007"
+   "wikidata": "Q964007",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1061019",
@@ -317,7 +396,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Guangxi, China",
    "wikipedia": "https://en.wikipedia.org/wiki/Fangchenggang_Nuclear_Power_Plant",
-   "wikidata": "Q135679"
+   "wikidata": "Q135679",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061020",
@@ -335,7 +416,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Zhejiang, China",
    "wikipedia": "https://en.wikipedia.org/wiki/Fangjiashan_Nuclear_Power_Plant",
-   "wikidata": "Q1029360"
+   "wikidata": "Q1029360",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061021",
@@ -350,7 +433,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1061022",
@@ -368,7 +456,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Liaoning, China",
    "wikipedia": "https://en.wikipedia.org/wiki/Hongyanhe_Nuclear_Power_Plant",
-   "wikidata": "Q132171"
+   "wikidata": "Q132171",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061023",
@@ -386,7 +476,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Guangdong, China",
    "wikipedia": "https://en.wikipedia.org/wiki/Ling_Ao_Nuclear_Power_Plant",
-   "wikidata": "Q1739439"
+   "wikidata": "Q1739439",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061024",
@@ -404,7 +496,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Ningde, China",
    "wikipedia": "https://en.wikipedia.org/wiki/Ningde_Nuclear_Power_Plant",
-   "wikidata": "Q835447"
+   "wikidata": "Q835447",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1061025",
@@ -419,7 +513,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1061026",
@@ -434,7 +533,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1061027",
@@ -449,7 +553,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryDetails.aspx?current=CN",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1019175",
@@ -464,7 +573,12 @@
    "source_name": "CEZ Group",
    "source_url": "https://www.cez.cz/en/power-plants-and-environment/nuclear-power-plants/dukovany.html",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1019174",
@@ -483,7 +597,8 @@
    "owner": "ČEZ Group",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Temel%C3%ADn_Nuclear_Power_Station",
-   "wikidata": "Q1502091"
+   "wikidata": "Q1502091",
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002445",
@@ -498,7 +613,12 @@
    "source_name": "Finnish Energy Authority",
    "source_url": "http://www.energiavirasto.fi/en/voimalaitosrekisteri",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002473",
@@ -513,7 +633,12 @@
    "source_name": "Finnish Energy Authority",
    "source_url": "http://www.energiavirasto.fi/en/voimalaitosrekisteri",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002693",
@@ -528,7 +653,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002694",
@@ -546,7 +676,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "French power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Blayais_Nuclear_Power_Plant",
-   "wikidata": "Q1739363"
+   "wikidata": "Q1739363",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002701",
@@ -565,7 +697,8 @@
    "description": "nuclear power plant in France",
    "website": "https://www.edf.fr/groupe-edf/producteur-industriel/carte-des-implantations/centrale-nucleaire-du-bugey/presentation",
    "wikipedia": "https://en.wikipedia.org/wiki/Bugey_Nuclear_Power_Plant",
-   "wikidata": "Q1186009"
+   "wikidata": "Q1186009",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1002703",
@@ -583,7 +716,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Cattenom_Nuclear_Power_Plant",
-   "wikidata": "Q1371612"
+   "wikidata": "Q1371612",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002706",
@@ -598,7 +733,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002707",
@@ -613,7 +753,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002708",
@@ -631,7 +776,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear Power Plant in Civaux, Vienne",
    "wikipedia": "https://en.wikipedia.org/wiki/Civaux_Nuclear_Power_Plant",
-   "wikidata": "Q1739375"
+   "wikidata": "Q1739375",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002716",
@@ -650,7 +797,8 @@
    "description": "nuclear power plant in France",
    "website": "https://www.edf.fr/centrale-nucleaire-cruas-meysse",
    "wikipedia": "https://en.wikipedia.org/wiki/Cruas_Nuclear_Power_Plant",
-   "wikidata": "Q288334"
+   "wikidata": "Q288334",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1002720",
@@ -665,7 +813,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002727",
@@ -703,7 +856,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant located at Flamanville, Manche, France",
    "wikipedia": "https://en.wikipedia.org/wiki/Flamanville_Nuclear_Power_Plant",
-   "wikidata": "Q390252"
+   "wikidata": "Q390252",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002733",
@@ -721,7 +876,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in France",
    "wikipedia": "https://en.wikipedia.org/wiki/Golfech_Nuclear_Power_Plant",
-   "wikidata": "Q1465285"
+   "wikidata": "Q1465285",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002735",
@@ -736,7 +893,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002749",
@@ -751,7 +913,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002752",
@@ -769,7 +936,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in France",
    "wikipedia": "https://en.wikipedia.org/wiki/Paluel_Nuclear_Power_Plant",
-   "wikidata": "Q1530519"
+   "wikidata": "Q1530519",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002754",
@@ -788,7 +957,8 @@
    "description": "nuclear power plant",
    "website": "https://www.edf.fr/groupe-edf/visiter-edf/741/events",
    "wikipedia": "https://en.wikipedia.org/wiki/Penly_Nuclear_Power_Plant",
-   "wikidata": "Q1318977"
+   "wikidata": "Q1318977",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1002777",
@@ -803,7 +973,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002779",
@@ -818,7 +993,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002782",
@@ -833,7 +1013,12 @@
    "source_name": "RTE Transmission Operator",
    "source_url": "http://clients.rte-france.com/lang/an/visiteurs/vie/prod/parc_reference.jsp",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005621",
@@ -851,7 +1036,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Germany",
    "wikipedia": "https://en.wikipedia.org/wiki/Brokdorf_Nuclear_Power_Plant",
-   "wikidata": "Q679563"
+   "wikidata": "Q679563",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1005659",
@@ -866,7 +1053,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005703",
@@ -885,7 +1077,8 @@
    "description": "nuclear power plant in Germany",
    "website": "https://www.preussenelektra.de/de/unsere-kraftwerke/kraftwerkgrohnde.html",
    "wikipedia": "https://en.wikipedia.org/wiki/Grohnde_Nuclear_Power_Plant",
-   "wikidata": "Q657018"
+   "wikidata": "Q657018",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1005849",
@@ -900,7 +1093,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005856",
@@ -915,7 +1113,12 @@
    "source_name": "Open Power System Data",
    "source_url": "http://data.open-power-system-data.org/",
    "geolocation_source": "Open Power System Data",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005974",
@@ -930,7 +1133,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1006001",
@@ -945,7 +1153,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1020246",
@@ -960,7 +1173,12 @@
    "source_name": "ENTSOE",
    "source_url": "https://transparency.entsoe.eu/generation/r2/installedCapacityPerProductionUnit/show",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000086",
@@ -975,7 +1193,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000170",
@@ -993,7 +1216,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Indian nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Kaiga_Atomic_Power_Station",
-   "wikidata": "Q1739416"
+   "wikidata": "Q1739416",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-IND0000173",
@@ -1008,7 +1233,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000220",
@@ -1023,7 +1253,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1026848",
@@ -1041,7 +1276,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in India",
    "wikipedia": "https://en.wikipedia.org/wiki/Kudankulam_Nuclear_Power_Plant",
-   "wikidata": "Q337376"
+   "wikidata": "Q337376",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-IND0000242",
@@ -1056,7 +1293,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000283",
@@ -1071,7 +1313,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000350",
@@ -1086,7 +1333,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-IND0000445",
@@ -1101,7 +1353,12 @@
    "source_name": "Central Electricity Authority",
    "source_url": "http://www.cea.nic.in/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1023916",
@@ -1116,7 +1373,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/ReactorDetails.aspx?current=310",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000678",
@@ -1131,7 +1393,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000687",
@@ -1146,7 +1413,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000680",
@@ -1161,7 +1433,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000675",
@@ -1176,7 +1453,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000686",
@@ -1191,7 +1473,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000679",
@@ -1210,7 +1497,8 @@
    "owner": "Tokyo Electric Power Company Holdings",
    "description": "Nuclear power station in Niigata Prefecture, Japan. Largest nuclear power station in the world.",
    "wikipedia": "https://en.wikipedia.org/wiki/Kashiwazaki-Kariwa_Nuclear_Power_Plant",
-   "wikidata": "Q725100"
+   "wikidata": "Q725100",
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1000682",
@@ -1225,7 +1513,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000684",
@@ -1240,7 +1533,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000676",
@@ -1255,7 +1553,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000688",
@@ -1270,7 +1573,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000681",
@@ -1285,7 +1593,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000685",
@@ -1300,7 +1613,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000683",
@@ -1315,7 +1633,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000689",
@@ -1332,7 +1655,10 @@
    "geolocation_source": "GEODB",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
-   "wikidata": "Q21777235"
+   "wikidata": "Q21777235",
+   "owner": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-WRI1000674",
@@ -1347,7 +1673,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000690",
@@ -1362,7 +1693,12 @@
    "source_name": "Japanese Electric Power Information Center",
    "source_url": "https://www.jepic.or.jp/en/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-MEX0001769",
@@ -1377,7 +1713,12 @@
    "source_name": "CFE-CENACE",
    "source_url": "http://base.energia.gob.mx/nacei/Archivos/3%20P%C3%A1gina%20Datos%20de%20Infraestructura/Ingl%C3%A9s/PowerPlantsAllGE100MW_NorthAmerica_201606.xlsx",
    "geolocation_source": "North American Cooperation on Energy Information and Comisión Reguladora de Energía",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1019300",
@@ -1412,7 +1753,12 @@
    "source_name": "Islamabad Chamber of Commerce and Industry",
    "source_url": "http://icci.com.pk/data/downloads/63/1293619048_1.pdf",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1001625",
@@ -1427,7 +1773,12 @@
    "source_name": "Islamabad Chamber of Commerce and Industry",
    "source_url": "http://icci.com.pk/data/downloads/63/1293619048_1.pdf",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1019093",
@@ -1442,7 +1793,12 @@
    "source_name": "ENTSOE",
    "source_url": "https://transparency.entsoe.eu/generation/r2/installedCapacityPerProductionUnit/show",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1023915",
@@ -1457,7 +1813,12 @@
    "source_name": "EnergyBase (RUS)",
    "source_url": "https://energybase.ru/power-plant/Balakovo_NPP",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003666",
@@ -1472,7 +1833,12 @@
    "source_name": "IAEA",
    "source_url": "http://www.rosenergoatom.ru/wps/wcm/connect/rosenergoatom_copy/site_en/NPP/",
    "geolocation_source": "CARMA",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003671",
@@ -1490,7 +1856,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Power plant in Bilibino, Chukotka, Russia",
    "wikipedia": "https://en.wikipedia.org/wiki/Bilibino_Nuclear_Power_Plant",
-   "wikidata": "Q1739361"
+   "wikidata": "Q1739361",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1003717",
@@ -1505,7 +1873,12 @@
    "source_name": "EnergyBase (RUS)",
    "source_url": "https://energybase.ru/power-plant/Kalinin_NPP",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003733",
@@ -1520,7 +1893,12 @@
    "source_name": "EnergyBase (RUS)",
    "source_url": "https://energybase.ru/power-plant/Kola_NPP",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003744",
@@ -1535,7 +1913,12 @@
    "source_name": "EnergyBase (RUS)",
    "source_url": "https://energybase.ru/power-plant/Kursk_NPP",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003749",
@@ -1553,7 +1936,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "RBMK and VVER nuclear power plant in Sosnovy Bor, Leningrad Oblast, Russia",
    "wikipedia": "https://en.wikipedia.org/wiki/Leningrad_Nuclear_Power_Plant",
-   "wikidata": "Q3279825"
+   "wikidata": "Q3279825",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1003775",
@@ -1571,7 +1956,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Russian Nuclear Plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Novovoronezh_Nuclear_Power_Plant",
-   "wikidata": "Q1739448"
+   "wikidata": "Q1739448",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1003791",
@@ -1586,7 +1973,12 @@
    "source_name": "IAEA",
    "source_url": "http://www.rosenergoatom.ru/wps/wcm/connect/rosenergoatom_copy/ronpp/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1003812",
@@ -1601,7 +1993,12 @@
    "source_name": "EnergyBase (RUS)",
    "source_url": "https://energybase.ru/power-plant/Smolensk_NPP",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-GEODB0002385",
@@ -1616,7 +2013,12 @@
    "source_name": "GEODB",
    "source_url": "http://globalenergyobservatory.org",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-GEODB0004330",
@@ -1631,7 +2033,12 @@
    "source_name": "GEODB",
    "source_url": "http://globalenergyobservatory.org",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1022414",
@@ -1646,7 +2053,12 @@
    "source_name": "ENTSOE",
    "source_url": "https://transparency.entsoe.eu/generation/r2/installedCapacityPerProductionUnit/show",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000137",
@@ -1661,7 +2073,12 @@
    "source_name": "Eskom",
    "source_url": "http://www.eskom.co.za/Whatweredoing/ElectricityGeneration/KoebergNuclearPowerStation/Pages/Koeberg_Power_Station.aspx",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000217",
@@ -1679,7 +2096,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Hanbit_Nuclear_Power_Plant",
-   "wikidata": "Q496260"
+   "wikidata": "Q496260",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1000218",
@@ -1694,7 +2113,12 @@
    "source_name": "KHNP",
    "source_url": "https://cms.khnp.co.kr/eng/plant-status/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000213",
@@ -1709,7 +2133,12 @@
    "source_name": "KHNP",
    "source_url": "https://cms.khnp.co.kr/eng/plant-status/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000214",
@@ -1726,7 +2155,10 @@
    "geolocation_source": "GEODB",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
-   "wikidata": "Q989879"
+   "wikidata": "Q989879",
+   "owner": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-WRI1000216",
@@ -1743,7 +2175,10 @@
    "geolocation_source": "GEODB",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
-   "wikidata": "Q123393"
+   "wikidata": "Q123393",
+   "owner": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-WRI1000215",
@@ -1758,7 +2193,12 @@
    "source_name": "KHNP",
    "source_url": "https://cms.khnp.co.kr/eng/plant-status/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1006213",
@@ -1773,7 +2213,12 @@
    "source_name": "Red Eléctrica de España",
    "source_url": "http://www.ree.es/en/statistical-data-of-spanish-electrical-system/annual-report/preliminary-report-spanish-electricity-system-2015",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1006358",
@@ -1788,7 +2233,12 @@
    "source_name": "Red Eléctrica de España",
    "source_url": "http://www.ree.es/en/statistical-data-of-spanish-electrical-system/annual-report/preliminary-report-spanish-electricity-system-2015",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1006359",
@@ -1803,7 +2253,12 @@
    "source_name": "Red Eléctrica de España",
    "source_url": "http://www.ree.es/en/statistical-data-of-spanish-electrical-system/annual-report/preliminary-report-spanish-electricity-system-2015",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1007993",
@@ -1818,7 +2273,12 @@
    "source_name": "Red Eléctrica de España",
    "source_url": "http://www.ree.es/en/statistical-data-of-spanish-electrical-system/annual-report/preliminary-report-spanish-electricity-system-2015",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1023569",
@@ -1833,7 +2293,12 @@
    "source_name": "Red Eléctrica de España",
    "source_url": "http://www.ree.es/en/statistical-data-of-spanish-electrical-system/annual-report/preliminary-report-spanish-electricity-system-2015",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002098",
@@ -1852,7 +2317,8 @@
    "owner": "Forsmarks Kraftgrupp",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/Forsmark_Nuclear_Power_Plant",
-   "wikidata": "Q1575435"
+   "wikidata": "Q1575435",
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1002168",
@@ -1867,7 +2333,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1002097",
@@ -1886,7 +2357,8 @@
    "description": "Nuclear power plant in Sweden",
    "website": "https://karnkraft.vattenfall.se/ringhals/",
    "wikipedia": "https://en.wikipedia.org/wiki/Ringhals_Nuclear_Power_Plant",
-   "wikidata": "Q205774"
+   "wikidata": "Q205774",
+   "owner": null
   },
   {
    "id": "wri-nuclear-WRI1004271",
@@ -1901,7 +2373,12 @@
    "source_name": "Swiss Federal Office of Energy",
    "source_url": "http://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfe.kernkraftwerke/3/extendedHtmlPopup?lang=en",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1004272",
@@ -1916,7 +2393,12 @@
    "source_name": "Swiss Federal Office of Energy",
    "source_url": "http://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfe.kernkraftwerke/2/extendedHtmlPopup?lang=en",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1004273",
@@ -1931,7 +2413,12 @@
    "source_name": "Swiss Federal Office of Energy",
    "source_url": "http://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfe.kernkraftwerke/4/extendedHtmlPopup?lang=en",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1004274",
@@ -1946,7 +2433,12 @@
    "source_name": "Swiss Federal Office of Energy",
    "source_url": "http://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfe.kernkraftwerke/1/extendedHtmlPopup?lang=en",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000378",
@@ -1961,7 +2453,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/pris/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1000379",
@@ -1980,7 +2477,8 @@
    "owner": "Taiwan Power Company",
    "description": "nuclear power plant in New Taipei, Taiwan",
    "wikipedia": "https://en.wikipedia.org/wiki/Kuosheng_Nuclear_Power_Plant",
-   "wikidata": "Q711929"
+   "wikidata": "Q711929",
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1000380",
@@ -1995,7 +2493,12 @@
    "source_name": "IAEA",
    "source_url": "https://www.iaea.org/pris/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005111",
@@ -2010,7 +2513,12 @@
    "source_name": "Energoatom",
    "source_url": "http://www.energoatom.kiev.ua/en/separated/npp_khmelnytska/",
    "geolocation_source": "WRI",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005112",
@@ -2025,7 +2533,12 @@
    "source_name": "Energoatom",
    "source_url": "http://www.energoatom.kiev.ua/en/separated/npp_rivne/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-WRI1005113",
@@ -2044,7 +2557,8 @@
    "owner": "Energoatom",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/South_Ukraine_Nuclear_Power_Plant",
-   "wikidata": "Q186223"
+   "wikidata": "Q186223",
+   "website": null
   },
   {
    "id": "wri-nuclear-WRI1005114",
@@ -2059,7 +2573,12 @@
    "source_name": "Energoatom",
    "source_url": "http://www.energoatom.kiev.ua/en/separated/npp_zp/",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-GBR1000052",
@@ -2077,7 +2596,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "owner": "EDF Energy",
    "description": "UK nuclear power station",
-   "wikidata": "Q104946950"
+   "wikidata": "Q104946950",
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-GBR1000053",
@@ -2092,7 +2613,12 @@
    "source_name": "Department for Business Energy & Industrial Strategy",
    "source_url": "https://www.gov.uk/government/collections/digest-of-uk-energy-statistics-dukes",
    "geolocation_source": "GEODB",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-GBR1000054",
@@ -2110,7 +2636,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "owner": "EDF Energy",
    "description": "UK nuclear power station",
-   "wikidata": "Q104946799"
+   "wikidata": "Q104946799",
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-GBR1000055",
@@ -2128,7 +2656,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "owner": "EDF Energy",
    "description": "UK nuclear power station",
-   "wikidata": "Q104946808"
+   "wikidata": "Q104946808",
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-GBR1000056",
@@ -2147,7 +2677,8 @@
    "description": "nuclear power station in Somerset, England",
    "website": "https://www.edfenergy.com/energy/power-stations/hinkley-point-b",
    "wikipedia": "https://en.wikipedia.org/wiki/Hinkley_Point_B_nuclear_power_station",
-   "wikidata": "Q1536182"
+   "wikidata": "Q1536182",
+   "owner": null
   },
   {
    "id": "wri-nuclear-GBR1000057",
@@ -2165,7 +2696,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power station in North Ayrshire, Scotland, UK",
    "wikipedia": "https://en.wikipedia.org/wiki/Hunterston_B_nuclear_power_station",
-   "wikidata": "Q782133"
+   "wikidata": "Q782133",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-GBR1000058",
@@ -2182,7 +2715,10 @@
    "geolocation_source": "GEODB",
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power station in Suffolk, England, UK",
-   "wikidata": "Q104946709"
+   "wikidata": "Q104946709",
+   "owner": null,
+   "website": null,
+   "wikipedia": null
   },
   {
    "id": "wri-nuclear-GBR1000059",
@@ -2201,7 +2737,8 @@
    "description": "nuclear power station in East Lothian, Scotland, UK",
    "website": "https://www.edfenergy.com/energy/power-stations/torness#visit",
    "wikipedia": "https://en.wikipedia.org/wiki/Torness_nuclear_power_station",
-   "wikidata": "Q1466261"
+   "wikidata": "Q1466261",
+   "owner": null
   },
   {
    "id": "wri-nuclear-USA0008055",
@@ -2220,7 +2757,8 @@
    "description": "Nuclear power plant in Pope County, Arkansas",
    "website": "https://www.entergy-nuclear.com/sites/arkansas-nuclear-one/",
    "wikipedia": "https://en.wikipedia.org/wiki/Arkansas_Nuclear_One",
-   "wikidata": "Q985274"
+   "wikidata": "Q985274",
+   "owner": null
   },
   {
    "id": "wri-nuclear-USA0006040",
@@ -2235,7 +2773,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006022",
@@ -2250,7 +2793,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000046",
@@ -2268,7 +2816,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Limestone County, Alabama",
    "wikipedia": "https://en.wikipedia.org/wiki/Browns_Ferry_Nuclear_Plant",
-   "wikidata": "Q1650555"
+   "wikidata": "Q1650555",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006014",
@@ -2286,7 +2836,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Brunswick County, North Carolina",
    "wikipedia": "https://en.wikipedia.org/wiki/Brunswick_Nuclear_Generating_Station",
-   "wikidata": "Q1516539"
+   "wikidata": "Q1516539",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006023",
@@ -2301,7 +2853,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006153",
@@ -2316,7 +2873,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006011",
@@ -2334,7 +2896,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Calvert County, Maryland",
    "wikipedia": "https://en.wikipedia.org/wiki/Calvert_Cliffs_Nuclear_Power_Plant",
-   "wikidata": "Q1739367"
+   "wikidata": "Q1739367",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006036",
@@ -2349,7 +2913,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000204",
@@ -2367,7 +2936,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in DeWitt County, Illinois",
    "wikipedia": "https://en.wikipedia.org/wiki/Clinton_Power_Station",
-   "wikidata": "Q1739379"
+   "wikidata": "Q1739379",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0000371",
@@ -2385,7 +2956,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Benton County, Washington",
    "wikipedia": "https://en.wikipedia.org/wiki/Columbia_Generating_Station",
-   "wikidata": "Q1516618"
+   "wikidata": "Q1516618",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006145",
@@ -2400,7 +2973,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0008036",
@@ -2419,7 +2997,8 @@
    "owner": "Nebraska Public Power District",
    "description": "nuclear power plant located near Brownville, Nebraska",
    "wikipedia": "https://en.wikipedia.org/wiki/Cooper_Nuclear_Station",
-   "wikidata": "Q1739383"
+   "wikidata": "Q1739383",
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006149",
@@ -2437,7 +3016,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Ottawa County, Ohio",
    "wikipedia": "https://en.wikipedia.org/wiki/Davis%E2%80%93Besse_Nuclear_Power_Station",
-   "wikidata": "Q1739392"
+   "wikidata": "Q1739392",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006099",
@@ -2452,7 +3033,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006000",
@@ -2467,7 +3053,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000869",
@@ -2485,7 +3076,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Grundy County, Illinois",
    "wikipedia": "https://en.wikipedia.org/wiki/Dresden_Generating_Station",
-   "wikidata": "Q1516283"
+   "wikidata": "Q1516283",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0001060",
@@ -2503,7 +3096,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Linn County, Iowa",
    "wikipedia": "https://en.wikipedia.org/wiki/Duane_Arnold_Energy_Center",
-   "wikidata": "Q928750"
+   "wikidata": "Q928750",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006051",
@@ -2518,7 +3113,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0001729",
@@ -2533,7 +3133,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006072",
@@ -2551,7 +3156,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Claiborne County, Mississippi",
    "wikipedia": "https://en.wikipedia.org/wiki/Grand_Gulf_Nuclear_Station",
-   "wikidata": "Q571906"
+   "wikidata": "Q571906",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0003251",
@@ -2569,7 +3176,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant",
    "wikipedia": "https://en.wikipedia.org/wiki/H._B._Robinson_Nuclear_Generating_Station",
-   "wikidata": "Q836576"
+   "wikidata": "Q836576",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006015",
@@ -2584,7 +3193,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0002497",
@@ -2599,7 +3213,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0008907",
@@ -2614,7 +3233,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006110",
@@ -2629,7 +3253,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006001",
@@ -2644,7 +3273,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006026",
@@ -2659,7 +3293,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006105",
@@ -2674,7 +3313,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006038",
@@ -2689,7 +3333,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000566",
@@ -2704,7 +3353,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0001922",
@@ -2719,7 +3373,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0002589",
@@ -2734,7 +3393,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006168",
@@ -2753,7 +3417,8 @@
    "description": "Nuclear power plant in Louisa County, Virginia",
    "website": "https://www.dom.com/corporate/what-we-do/electricity/generation/nuclear/north-anna-power-station/",
    "wikipedia": "https://en.wikipedia.org/wiki/North_Anna_Nuclear_Generating_Station",
-   "wikidata": "Q1637580"
+   "wikidata": "Q1637580",
+   "owner": null
   },
   {
    "id": "wri-nuclear-USA0003265",
@@ -2768,7 +3433,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006118",
@@ -2783,7 +3453,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0002410",
@@ -2798,7 +3473,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0001715",
@@ -2813,7 +3493,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006008",
@@ -2828,7 +3513,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0003166",
@@ -2846,7 +3536,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in York County, Pennsylvania",
    "wikipedia": "https://en.wikipedia.org/wiki/Peach_Bottom_Nuclear_Generating_Station",
-   "wikidata": "Q1535402"
+   "wikidata": "Q1535402",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0006020",
@@ -2861,7 +3553,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0004046",
@@ -2879,7 +3576,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "nuclear power plant in Manitowoc County, Wisconsin",
    "wikipedia": "https://en.wikipedia.org/wiki/Point_Beach_Nuclear_Plant",
-   "wikidata": "Q1536231"
+   "wikidata": "Q1536231",
+   "owner": null,
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0001925",
@@ -2894,7 +3593,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000880",
@@ -2909,7 +3613,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006122",
@@ -2924,7 +3633,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006462",
@@ -2939,7 +3653,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006115",
@@ -2954,7 +3673,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006152",
@@ -2969,7 +3693,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006251",
@@ -2988,7 +3717,8 @@
    "description": "Nuclear power plant in Matagorda County, Texas",
    "website": "https://www.stpnoc.com",
    "wikipedia": "https://en.wikipedia.org/wiki/South_Texas_Nuclear_Generating_Station",
-   "wikidata": "Q371357"
+   "wikidata": "Q371357",
+   "owner": null
   },
   {
    "id": "wri-nuclear-USA0006045",
@@ -3003,7 +3733,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0003806",
@@ -3018,7 +3753,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006103",
@@ -3033,7 +3773,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000621",
@@ -3048,7 +3793,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0006127",
@@ -3063,7 +3813,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000649",
@@ -3082,7 +3837,8 @@
    "owner": "Georgia Power, Oglethorpe Power, Municipal Electric Authority of Georgia, Dalton Utilities",
    "description": "nuclear power plant in Burke County, Georgia, United States",
    "wikipedia": "https://en.wikipedia.org/wiki/Vogtle_Electric_Generating_Plant",
-   "wikidata": "Q947549"
+   "wikidata": "Q947549",
+   "website": null
   },
   {
    "id": "wri-nuclear-USA0004270",
@@ -3097,7 +3853,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0007722",
@@ -3112,7 +3873,12 @@
    "source_name": "U.S. Energy Information Administration",
    "source_url": "http://www.eia.gov/electricity/data/browser/",
    "geolocation_source": "U.S. Energy Information Administration",
-   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities."
+   "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
+   "owner": null,
+   "description": null,
+   "website": null,
+   "wikipedia": null,
+   "wikidata": null
   },
   {
    "id": "wri-nuclear-USA0000210",
@@ -3130,7 +3896,9 @@
    "note": "Historical nuclear power-plant location from WRI. Approximate coordinates; current operation, ownership and capacity are not verified. Not a complete inventory of research, enrichment, waste or military facilities.",
    "description": "Nuclear power plant in Coffey County, Kansas",
    "wikipedia": "https://en.wikipedia.org/wiki/Wolf_Creek_Generating_Station",
-   "wikidata": "Q163911"
+   "wikidata": "Q163911",
+   "owner": null,
+   "website": null
   }
  ],
  "nuclear_attribution": "World Resources Institute, Global Power Plant Database (CC BY 4.0). Nuclear subset, fields selected and normalised by ASE. Historical records, not current operational status.",

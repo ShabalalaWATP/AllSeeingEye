@@ -178,6 +178,13 @@ def import_infrastructure_notes(resources: str, contact: str = DEFAULT_CONTACT) 
         )
     finally:
         entities.close()
+    # Every record carries every optional field, so parsers add nothing on read.
+    for cable in cables:
+        for key in ("operator", "owner", "description", "website", "wikipedia", "inception"):
+            cable.setdefault(key, None)
+    for record in [*nuclear["nuclear_facilities"], *stations]:
+        for key in ("owner", "description", "website", "wikipedia", "wikidata"):
+            record.setdefault(key, None)
     for path, data in ((cables_path, cables), (nuclear_path, nuclear), (stations_path, stations)):
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(data, handle, ensure_ascii=False, indent=1)

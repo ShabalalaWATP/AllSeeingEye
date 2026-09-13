@@ -33,6 +33,7 @@ class GroundStationOut(BaseModel):
     wikipedia: str | None = None
     owner: str | None = None
     description: str | None = None
+    wikidata: str | None = None
 
 
 class SiteOut(BaseModel):
@@ -85,6 +86,7 @@ class NuclearFacilityOut(BaseModel):
     description: str | None = None
     website: str | None = None
     wikipedia: str | None = None
+    wikidata: str | None = None
 
 
 class InfrastructureOut(BaseModel):
