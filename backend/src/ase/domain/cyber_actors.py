@@ -24,10 +24,119 @@ class CyberActorReference:
     url: str
     modified_at: datetime
     technique_ids: tuple[str, ...]
+    # Wording from the reference profile ("attributed to", "state-sponsored"), never
+    # this application's own judgement. None means the profile states no such link.
+    state_association: str | None = None
 
     @property
     def technique_count(self) -> int:
         return len(self.technique_ids)
+
+
+_STATES: tuple[tuple[str, str, str], ...] = (
+    # (label, nationality terms, named organs) all matched case-insensitively.
+    ("Russia", r"russia|russian", r"gru|fsb|svr|main intelligence directorate|federal security"),
+    (
+        "China",
+        r"people['’]s republic of china|china|chinese|prc",  # noqa: RUF001
+        r"ministry of state security|people['’]s liberation army",  # noqa: RUF001
+    ),
+    ("Iran", r"iran|iranian", r"irgc|islamic revolutionary guard|ministry of intelligence"),
+    ("North Korea", r"north korea|north korean|dprk", r"reconnaissance general bureau"),
+    ("Pakistan", r"pakistan|pakistani", r"(?!x)x"),
+    ("India", r"india|indian", r"(?!x)x"),
+    ("Vietnam", r"vietnam|vietnamese", r"(?!x)x"),
+    ("Belarus", r"belarus|belarusian", r"(?!x)x"),
+    ("Syria", r"syria|syrian", r"(?!x)x"),
+    ("Lebanon", r"lebanon|lebanese", r"(?!x)x"),
+    ("South Korea", r"south korea|south korean", r"(?!x)x"),
+    ("Israel", r"israel|israeli", r"(?!x)x"),
+    ("Turkey", r"turkey|turkish|türkiye", r"(?!x)x"),
+    ("United Arab Emirates", r"united arab emirates|uae|emirati", r"(?!x)x"),
+)
+_ATTRIBUTION_CUE = (
+    r"(?:attributed to|sponsored by|on behalf of|operated by|run by|working for|"
+    r"affiliated with|linked to|associated with|tied to|connected to|aligned with|"
+    r"assessed to be|believed to be|suspected to be|likely|part of|element within|"
+    r"subordinate to|controlled by|directed by|operat(?:e|es|ed|ing) (?:out of|from))"
+)
+_ADJECTIVE_NOUN = (
+    r"\)?(?:\s*\([A-Za-z]{2,5}\))?[- '’–—]*"  # noqa: RUF001
+    r"(?:state|government|based|sponsored|backed|linked|aligned|affiliated|nexus|origins?|"
+    r"intelligence|military|cyber|espionage|threat|hackers|actors?|group|apt|"
+    r"ministry|general staff|main|federal|foreign|people|security|reconnaissance|"
+    r"islamic|army|s ministry|s general|s main|s federal|s foreign|s people|s intelligence|"
+    r"s military|s state|s government|s cyber|s reconnaissance|s islamic|s security)"
+)
+_TARGETING_CUE = re.compile(
+    r"\b(?:target(?:s|ed|ing)?|against|victims?|focus(?:ed|ing|es)?|including|emphasis|"
+    r"interest in|operations|campaigns? in|primarily in|located in|entities in|"
+    r"organi[sz]ations? in|based mostly in)\b",
+    re.IGNORECASE,
+)
+
+
+_HEDGE = re.compile(
+    r"circumstantial|could be|may be|might be|possibl[ey]|unconfirmed|reportedly|allegedly|"
+    r"speculat|some researchers|compared (?:to|with)|similar(?:ities)? to|resembl|"
+    r"no (?:formal |confirmed |established )?(?:attribution|link)|not (?:been )?confirmed|"
+    r"not been (?:definitively |formally )?attributed",
+    re.IGNORECASE,
+)
+
+
+@lru_cache(maxsize=1)
+def _state_patterns() -> tuple[re.Pattern[str], tuple[tuple[str, re.Pattern[str]], ...]]:
+    any_term = "|".join(terms for _, terms, _ in _STATES)
+    cue = re.compile(_ATTRIBUTION_CUE + r"[^.;]{0,80}?\b(" + any_term + r")\b", re.IGNORECASE)
+    rows = tuple(
+        (
+            label,
+            re.compile(
+                r"\b(?:" + terms + r")" + _ADJECTIVE_NOUN + r"\b|\b(?:" + organs + r")\b",
+                re.IGNORECASE,
+            ),
+        )
+        for label, terms, organs in _STATES
+    )
+    return cue, rows
+
+
+def _label_for(term: str) -> str | None:
+    folded = term.casefold()
+    for label, terms, _ in _STATES:
+        if re.fullmatch(terms, folded):
+            return label
+    return None
+
+
+def assessed_state_association(description: str) -> str | None:
+    """The state a reference profile itself associates a group with, or None.
+
+    Only sentences carrying an explicit attribution cue, a nationality-plus-role
+    phrase or a named state organ count. Hedged sentences and phrases that merely
+    describe targets are ignored. This is bounded extraction of the source's
+    wording, not this application's own analysis.
+    """
+    cue, rows = _state_patterns()
+    for sentence in re.split(r"(?<=[.;])\s+", description[:MAX_DESCRIPTION_LENGTH]):
+        if _HEDGE.search(sentence):
+            continue
+        cued = cue.search(sentence)
+        if cued and (label := _label_for(cued.group(1))):
+            return label
+        earliest: tuple[int, str] | None = None
+        for label, pattern in rows:
+            match = pattern.search(sentence)
+            if (
+                match
+                and not _TARGETING_CUE.search(sentence[: match.start()])
+                and (earliest is None or match.start() < earliest[0])
+            ):
+                earliest = (match.start(), label)
+        if earliest:
+            return earliest[1]
+    return None
 
 
 @dataclass(frozen=True)

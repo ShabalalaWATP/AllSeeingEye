@@ -29,8 +29,17 @@ async def test_authentication_no_store_and_reference_catalogue(client, user, con
     assert response.status_code == 200, response.text
     assert response.headers["cache-control"] == "private, no-store"
     assert response.json()["window_days"] == 2
-    assert len(response.json()["sources"]) == 10
+    assert len(response.json()["sources"]) == 19
     assert all(row["status"] == "idle" for row in response.json()["sources"])
+    assert [row["theme"] for row in response.json()["themes"]] == [
+        "nation_state",
+        "nato_allies",
+        "uk_infrastructure",
+        "ukraine",
+        "gnss_interference",
+        "critical_infrastructure",
+    ]
+    assert response.json()["state_mentions"] == []
     references = await client.get("/api/cyber/actors", headers=headers)
     assert references.status_code == 200, references.text
     assert references.headers["cache-control"] == "private, no-store"
@@ -38,6 +47,9 @@ async def test_authentication_no_store_and_reference_catalogue(client, user, con
     assert references.json()["available"] and catalogue["version"] == "19.2"
     assert len(catalogue["actors"]) == 176
     assert catalogue["actors"][0]["technique_count"] == len(catalogue["actors"][0]["technique_ids"])
+    by_id = {actor["group_id"]: actor for actor in catalogue["actors"]}
+    assert by_id["G0007"]["state_association"] == "Russia"
+    assert by_id["G0046"]["state_association"] is None
     await disable(container, "mitre_attack", user.id)
     disabled = (await client.get("/api/cyber/actors", headers=headers)).json()
     assert disabled["available"] is False and disabled["catalogue"] is None

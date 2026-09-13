@@ -17,6 +17,7 @@ from ase.domain.cyber_actors import (
     MAX_TECHNIQUES,
     CyberActorCatalogue,
     CyberActorReference,
+    assessed_state_association,
 )
 
 SOURCE_ID = "mitre_attack"
@@ -88,14 +89,17 @@ def _actor(value: object) -> CyberActorReference:
         raise ValueError("Invalid ATT&CK technique identifier")
     if len(set(technique_ids)) != len(technique_ids) or len(set(names)) != len(names):
         raise ValueError("Duplicate reference names or techniques")
+    description = bounded_text(row.get("description"), MAX_DESCRIPTION_LENGTH, empty=True)
     return CyberActorReference(
         group_id=group_id,
         name=bounded_text(row.get("name"), MAX_NAME_LENGTH),
         associated_names=names,
-        description=bounded_text(row.get("description"), MAX_DESCRIPTION_LENGTH, empty=True),
+        description=description,
         url=url,
         modified_at=utc_date(row.get("modified_at")),
         technique_ids=technique_ids,
+        # Derived from the packaged wording at load time; the projection stays unchanged.
+        state_association=assessed_state_association(description),
     )
 
 

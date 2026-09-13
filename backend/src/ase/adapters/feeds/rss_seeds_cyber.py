@@ -1,8 +1,12 @@
-"""Public CTI publisher feeds verified with bounded requests on 12 September 2026.
+"""Public CTI publisher feeds verified with bounded requests on 12 and 13 September 2026.
 
 Official feed directories: ncsc.gov.uk/information/rss-feeds,
-cloud.google.com/blog/topics/threat-intelligence and cyber.gov.au's social media
-community page. CISA RSS returned 403; its working KEV API remains separate.
+cloud.google.com/blog/topics/threat-intelligence, cyber.gov.au's social media
+community page, cisa.gov/cybersecurity-advisories, cert.gov.ua, cyber.gc.ca,
+cert.ssi.gouv.fr and ic3.gov. The 13 September probes used the application's own
+user agent; CISA's advisory feed answered 200 that day after an earlier 403.
+Candidates that answered 403 or 404 (ENISA news, WeLiveSecurity, CCDCOE, SSSCIP,
+NCSC Ireland, Google TAG) were left out until their feed addresses are confirmed.
 """
 
 from dataclasses import replace
@@ -21,7 +25,14 @@ _BASE = RssOptions(
 )
 _OFFICIAL = replace(_BASE, tags=_BASE.tags | {"official_issuer", "interested_party"})
 _VENDOR = replace(_BASE, tags=_BASE.tags | {"security_vendor", "interested_party"})
+_COMMUNITY = replace(_BASE, tags=_BASE.tags | {"community_research"})
 _ADVISORY = replace(_OFFICIAL, subtype="advisory")
+_NEWS = replace(
+    _BASE,
+    subtype="news_report",
+    tags=_BASE.tags | {"specialist_outlet"},
+    rationale="Specialist cyber news reporting; claims and attribution remain unassessed.",
+)
 _TERMS = (
     "Publisher RSS terms apply. Headlines, dates, attribution and links only; no full article, "
     "malware, indicators or imagery retained. Public access does not establish commercial "
@@ -36,6 +47,8 @@ def _row(
     url: str,
     homepage: str,
     options: RssOptions,
+    *,
+    language: str = "en",
 ) -> RssSeed:
     return seed(
         f"cyber_{key}",
@@ -48,6 +61,7 @@ def _row(
         options,
         homepage=homepage,
         licence_note=_TERMS,
+        language=language,
         flags=options.tags - {"cyber_publication", "headlines_only"},
     )
 
@@ -108,5 +122,79 @@ CYBER_SEEDS: tuple[RssSeed, ...] = (
         "https://www.cyber.gov.au/rss/advisories",
         "https://www.cyber.gov.au/about-us/view-all-content/advisories",
         _ADVISORY,
+    ),
+    _row(
+        "cisa_advisories",
+        "US CISA cybersecurity and ICS advisories",
+        "US Cybersecurity and Infrastructure Security Agency",
+        "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+        "https://www.cisa.gov/news-events/cybersecurity-advisories",
+        _ADVISORY,
+    ),
+    _row(
+        "cert_ua",
+        "CERT-UA incident and threat reports",
+        "Government Computer Emergency Response Team of Ukraine",
+        "https://cert.gov.ua/api/articles/rss",
+        "https://cert.gov.ua/",
+        _OFFICIAL,
+        language="uk",
+    ),
+    _row(
+        "cccs_alerts",
+        "Canadian Centre for Cyber Security alerts and advisories",
+        "Communications Security Establishment Canada",
+        "https://www.cyber.gc.ca/api/cccs/rss/v1/get?feed=alerts_advisories&lang=en",
+        "https://www.cyber.gc.ca/en/alerts-advisories",
+        _ADVISORY,
+    ),
+    _row(
+        "cert_fr",
+        "CERT-FR alerts and advisories",
+        "French National Cybersecurity Agency (ANSSI)",
+        "https://www.cert.ssi.gouv.fr/feed/",
+        "https://www.cert.ssi.gouv.fr/",
+        _ADVISORY,
+        language="fr",
+    ),
+    _row(
+        "ic3_psa",
+        "FBI IC3 public service announcements",
+        "US Federal Bureau of Investigation",
+        "https://www.ic3.gov/PSA/RSS",
+        "https://www.ic3.gov/PSA",
+        _ADVISORY,
+    ),
+    _row(
+        "sans_isc",
+        "SANS Internet Storm Center diaries",
+        "SANS Internet Storm Center",
+        "https://isc.sans.edu/rssfeed.xml",
+        "https://isc.sans.edu/",
+        _COMMUNITY,
+    ),
+    _row(
+        "unit42",
+        "Palo Alto Networks Unit 42 research",
+        "Palo Alto Networks",
+        "https://unit42.paloaltonetworks.com/feed/",
+        "https://unit42.paloaltonetworks.com/",
+        _VENDOR,
+    ),
+    _row(
+        "the_record",
+        "The Record from Recorded Future News",
+        "Recorded Future",
+        "https://therecord.media/feed",
+        "https://therecord.media/",
+        _NEWS,
+    ),
+    _row(
+        "bleeping_computer",
+        "BleepingComputer security news",
+        "BleepingComputer",
+        "https://www.bleepingcomputer.com/feed/",
+        "https://www.bleepingcomputer.com/",
+        _NEWS,
     ),
 )

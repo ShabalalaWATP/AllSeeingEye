@@ -4,7 +4,7 @@ import asyncio
 from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
 
 from ase.application.feeds.cooperative_work import joined_thread_call
@@ -22,18 +22,22 @@ from ase.domain.cyber import (
     CyberKindCount,
     CyberSnapshot,
     CyberSource,
+    CyberStateTally,
     CyberTally,
+    CyberThemeTally,
     CyberWindowDays,
     cyber_kind,
     cyber_window,
 )
 from ase.domain.cyber_actors import CyberActorReference, match_actor_mentions
+from ase.domain.cyber_themes import CyberTheme, classify_cyber_themes
 from ase.domain.errors import RateLimited
 from ase.domain.events import Category, Event
 from ase.domain.sources import SourceSpec
 
-MAX_POOL = 5_000
+MAX_POOL = 8_000
 MAX_ITEMS = 200
+MAX_STATE_GROUPS = 12
 COVERAGE_NOTE = (
     "Counts describe available records from enabled feeds, not total attacks or victims. "
     "Publisher snapshots and the bounded memory cache may not cover the full selected period. "
@@ -107,8 +111,11 @@ class CyberService:
         actors = self._actors if enabled.get(ACTOR_REFERENCE_SOURCE_ID, False) else ()
         source_ids = tuple(key for key in selected.source_ids if enabled.get(key, False))
         start = selected.as_of - timedelta(days=selected.days)
+        states = {
+            actor.group_id: actor.state_association for actor in actors if actor.state_association
+        }
         rows = [
-            row if actors else replace(row, actor_mentions=())
+            _released(row, bool(actors), states)
             for row in selected.items
             if row.source_id in source_ids
         ]
@@ -117,6 +124,7 @@ class CyberService:
         groups = Counter(mention.group_id for row in rows for mention in row.actor_mentions)
         actor_names = {actor.group_id: actor.name for actor in actors}
         source_counts = Counter(row.source_id for row in rows)
+        days = _days(start, selected.as_of)
         return CyberSnapshot(
             selected.as_of,
             selected.days,
@@ -127,7 +135,7 @@ class CyberService:
             min(MAX_ITEMS, len(rows)),
             len(rows) > MAX_ITEMS,
             _counts(counts),
-            _timeline(rows, start, selected.as_of),
+            _timeline(rows, days),
             tuple(CyberTally(key, count) for key, count in countries.most_common(250)),
             tuple(
                 CyberActorTally(key, actor_names[key], count)
@@ -135,6 +143,8 @@ class CyberService:
             ),
             tuple(self._source(key, source_counts[key]) for key in source_ids),
             tuple(rows[:MAX_ITEMS]),
+            _themes(rows, days),
+            _state_mentions(rows, states),
         )
 
     def _items(
@@ -155,12 +165,19 @@ class CyberService:
             spec = self._sources[event.source_id]
             kind = cyber_kind(event.subtype)
             mentions = match_actor_mentions(event.title, actors)
+            summary = event.summary[:2_000] if event.summary else None
+            themes = classify_cyber_themes(
+                f"{event.title} {summary or ''}",
+                source_id=event.source_id,
+                country_iso=event.country_iso,
+                connectivity_signal=kind is CyberKind.OUTAGE_SIGNAL,
+            )
             rows.append(
                 CyberItem(
                     event.id,
                     kind,
                     event.title[:300],
-                    event.summary[:2_000] if event.summary else None,
+                    summary,
                     event.url or "",
                     event.source_id,
                     spec.name,
@@ -171,6 +188,7 @@ class CyberService:
                     event.grade,
                     mentions,
                     _kev(event) if kind is CyberKind.KNOWN_EXPLOITED_VULNERABILITY else None,
+                    themes,
                 )
             )
         rows.sort(key=lambda item: (item.published_at, item.id), reverse=True)
@@ -225,15 +243,71 @@ def _kev(event: Event) -> CyberKev | None:
     )
 
 
+def _released(row: CyberItem, actors_enabled: bool, states: Mapping[str, str]) -> CyberItem:
+    """Derived name matches and their state lens follow the reference source control."""
+    if not actors_enabled:
+        return replace(row, actor_mentions=())
+    if CyberTheme.NATION_STATE not in row.themes and any(
+        mention.group_id in states for mention in row.actor_mentions
+    ):
+        return replace(row, themes=(CyberTheme.NATION_STATE, *row.themes))
+    return row
+
+
 def _counts(counts: Counter[CyberKind]) -> tuple[CyberKindCount, ...]:
     return tuple(CyberKindCount(kind, counts[kind]) for kind in CyberKind)
 
 
-def _timeline(rows: list[CyberItem], start: datetime, end: datetime) -> tuple[CyberDailyCount, ...]:
-    result: list[CyberDailyCount] = []
+def _days(start: datetime, end: datetime) -> tuple[date, ...]:
+    days: list[date] = []
     day = start.date()
     while day <= (end - timedelta(microseconds=1)).date():
-        counts = Counter(row.kind for row in rows if row.published_at.astimezone(UTC).date() == day)
-        result.append(CyberDailyCount(day, sum(counts.values()), _counts(counts)))
+        days.append(day)
         day += timedelta(days=1)
+    return tuple(days)
+
+
+def _published_day(row: CyberItem) -> date:
+    return row.published_at.astimezone(UTC).date()
+
+
+def _timeline(rows: list[CyberItem], days: tuple[date, ...]) -> tuple[CyberDailyCount, ...]:
+    result: list[CyberDailyCount] = []
+    for day in days:
+        counts = Counter(row.kind for row in rows if _published_day(row) == day)
+        result.append(CyberDailyCount(day, sum(counts.values()), _counts(counts)))
     return tuple(result)
+
+
+def _themes(rows: list[CyberItem], days: tuple[date, ...]) -> tuple[CyberThemeTally, ...]:
+    result: list[CyberThemeTally] = []
+    for theme in CyberTheme:
+        matched = [row for row in rows if theme in row.themes]
+        by_day = Counter(_published_day(row) for row in matched)
+        result.append(CyberThemeTally(theme, len(matched), tuple(by_day[day] for day in days)))
+    return tuple(result)
+
+
+def _state_mentions(
+    rows: list[CyberItem], states: Mapping[str, str]
+) -> tuple[CyberStateTally, ...]:
+    """Each record counts once per state, however many matched names it carries."""
+    counts: Counter[str] = Counter()
+    groups: dict[str, Counter[str]] = {}
+    for row in rows:
+        per_row: dict[str, set[str]] = {}
+        for mention in row.actor_mentions:
+            state = states.get(mention.group_id)
+            if state:
+                per_row.setdefault(state, set()).add(mention.group_id)
+        for state, group_ids in per_row.items():
+            counts[state] += 1
+            groups.setdefault(state, Counter()).update(group_ids)
+    return tuple(
+        CyberStateTally(
+            state,
+            count,
+            tuple(group for group, _ in groups[state].most_common(MAX_STATE_GROUPS)),
+        )
+        for state, count in counts.most_common(20)
+    )

@@ -9,7 +9,7 @@ import pytest
 
 from ase.application.cyber_briefing import cyber_briefing_request
 from ase.application.feeds.budgets import budget_for
-from ase.domain.cyber import CYBER_PUBLISHER_IDS, CyberWindowDays
+from ase.domain.cyber import CYBER_BRIEFING_PUBLISHER_IDS, CYBER_PUBLISHER_IDS, CyberWindowDays
 from ase.domain.daily_briefing import (
     cyber_briefing_key,
     economy_briefing_key,
@@ -30,9 +30,12 @@ def test_request_uses_only_reviewed_publishers_and_names_exact_interval(days):
     assert request.window_hours == int(days) * 24 and request.research_mode is ResearchMode.DETAILED
     assert request.categories == (Category.CYBER,)
     assert request.research_source_ids == tuple(
-        f"research_publisher_{key}" for key in CYBER_PUBLISHER_IDS
+        f"research_publisher_{key}" for key in CYBER_BRIEFING_PUBLISHER_IDS
     )
+    assert set(CYBER_BRIEFING_PUBLISHER_IDS) < set(CYBER_PUBLISHER_IDS)
+    assert "cyber_cert_ua" in CYBER_PUBLISHER_IDS
     assert "exact supplied reporting range" in request.question
+    assert "Nation-state activity" in request.question and "GNSS" in request.question
     assert (
         "unverified claim" in request.question and "not when exploitation began" in request.question
     )
@@ -54,7 +57,7 @@ def test_daily_markers_protect_each_window_and_status_across_midnight(days, stat
 def test_identity_isolates_owner_window_and_other_briefing_families():
     owner = uuid4()
     values = {cyber_briefing_key(owner, NOW, days) for days in CyberWindowDays}
-    assert len(values) == 4
+    assert len(values) == 5
     assert cyber_briefing_key(uuid4(), NOW, CyberWindowDays.TWO) not in values
     assert economy_briefing_key(owner, NOW) not in values
 
@@ -101,7 +104,7 @@ async def test_each_window_has_its_own_durable_job_and_get_never_starts_work(
         assert (
             await client.delete(f"/api/report-jobs/{job_id}", headers=headers)
         ).status_code == 422
-    assert len({response.json()["job"]["id"] for response in responses}) == 4
+    assert len({response.json()["job"]["id"] for response in responses}) == 5
     assert not gateway.calls
 
 
@@ -119,7 +122,7 @@ def test_selected_publishers_fit_research_plan_and_retention_without_expanding_c
     assert {row.source_id for row in plan.tasks if row.selected} == set(request.research_source_ids)
     assert all(row.supported for row in plan.tasks if row.selected)
     budget = budget_for(Category.CYBER)
-    assert budget.window == timedelta(days=14) and budget.max_items == 5_000
+    assert budget.window >= timedelta(days=max(CyberWindowDays)) and budget.max_items == 8_000
 
 
 async def test_worker_collects_cyber_only_and_preserves_cited_retained_observations(

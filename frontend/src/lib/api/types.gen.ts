@@ -1965,6 +1965,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sources/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Connections */
+        get: operations["list_connections_api_sources_connections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stream": {
         parameters: {
             query?: never;
@@ -4340,6 +4357,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["ConflictSourceOut"][];
         };
+        /**
+         * ConnectionState
+         * @enum {string}
+         */
+        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment";
         /** ContinuationTraceOut */
         ContinuationTraceOut: {
             /**
@@ -4511,6 +4533,8 @@ export interface components {
             technique_ids: string[];
             /** Technique Count */
             technique_count: number;
+            /** State Association */
+            state_association: string | null;
         };
         /** CyberActorTallyOut */
         CyberActorTallyOut: {
@@ -4618,6 +4642,8 @@ export interface components {
             /** Actor Mentions */
             actor_mentions: components["schemas"]["CyberActorMentionOut"][];
             kev: components["schemas"]["CyberKevOut"] | null;
+            /** Themes */
+            themes: components["schemas"]["CyberTheme"][];
         };
         /** CyberKevOut */
         CyberKevOut: {
@@ -4645,7 +4671,7 @@ export interface components {
          * CyberKind
          * @enum {string}
          */
-        CyberKind: "ransomware_claim" | "outage_signal" | "known_exploited_vulnerability" | "advisory" | "threat_report" | "other";
+        CyberKind: "ransomware_claim" | "outage_signal" | "known_exploited_vulnerability" | "advisory" | "threat_report" | "news_report" | "other";
         /** CyberKindCountOut */
         CyberKindCountOut: {
             kind: components["schemas"]["CyberKind"];
@@ -4690,6 +4716,10 @@ export interface components {
             sources: components["schemas"]["CyberSourceOut"][];
             /** Items */
             items: components["schemas"]["CyberItemOut"][];
+            /** Themes */
+            themes: components["schemas"]["CyberThemeTallyOut"][];
+            /** State Mentions */
+            state_mentions: components["schemas"]["CyberStateTallyOut"][];
         };
         /** CyberSourceOut */
         CyberSourceOut: {
@@ -4709,6 +4739,15 @@ export interface components {
             /** Retained Count */
             retained_count: number;
         };
+        /** CyberStateTallyOut */
+        CyberStateTallyOut: {
+            /** State */
+            state: string;
+            /** Count */
+            count: number;
+            /** Group Ids */
+            group_ids: string[];
+        };
         /** CyberTallyOut */
         CyberTallyOut: {
             /** Key */
@@ -4717,10 +4756,23 @@ export interface components {
             count: number;
         };
         /**
+         * CyberTheme
+         * @enum {string}
+         */
+        CyberTheme: "nation_state" | "nato_allies" | "uk_infrastructure" | "ukraine" | "gnss_interference" | "critical_infrastructure";
+        /** CyberThemeTallyOut */
+        CyberThemeTallyOut: {
+            theme: components["schemas"]["CyberTheme"];
+            /** Count */
+            count: number;
+            /** Daily */
+            daily: number[];
+        };
+        /**
          * CyberWindowDays
          * @enum {integer}
          */
-        CyberWindowDays: 2 | 5 | 7 | 14;
+        CyberWindowDays: 2 | 5 | 7 | 14 | 30;
         /** DailyBriefingOut */
         DailyBriefingOut: {
             job: components["schemas"]["ReportJobOut"];
@@ -7410,6 +7462,24 @@ export interface components {
             /** Items */
             items: components["schemas"]["PlanOut"][];
         };
+        /** PlatformConnectionOut */
+        PlatformConnectionOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Purpose */
+            purpose: string;
+            state: components["schemas"]["ConnectionState"];
+            requirement: components["schemas"]["SourceRequirementOut"];
+            /** Detail */
+            detail: string;
+        };
+        /** PlatformConnectionsOut */
+        PlatformConnectionsOut: {
+            /** Items */
+            items: components["schemas"]["PlatformConnectionOut"][];
+        };
         /** PointOut */
         PointOut: {
             /** Lon */
@@ -7466,7 +7536,7 @@ export interface components {
              * Appearance Theme
              * @enum {string}
              */
-            appearance_theme: "obsidian" | "slate" | "light";
+            appearance_theme: "obsidian" | "slate" | "light" | "midnight" | "aurora" | "phosphor" | "crimson" | "graphite";
             /** Reduced Motion */
             reduced_motion: boolean;
         };
@@ -7493,7 +7563,7 @@ export interface components {
             /** Export Format */
             export_format?: ("pdf" | "docx" | "md") | null;
             /** Appearance Theme */
-            appearance_theme?: ("obsidian" | "slate" | "light") | null;
+            appearance_theme?: ("obsidian" | "slate" | "light" | "midnight" | "aurora" | "phosphor" | "crimson" | "graphite") | null;
             /** Reduced Motion */
             reduced_motion?: boolean | null;
         };
@@ -9375,6 +9445,20 @@ export interface components {
             /** Enabled */
             enabled: boolean;
         };
+        /** SourceConnectionOut */
+        SourceConnectionOut: {
+            state: components["schemas"]["ConnectionState"];
+            /** Enabled */
+            enabled: boolean;
+            /** Environment Disabled */
+            environment_disabled: boolean;
+            /** Active */
+            active: boolean;
+            requirement: components["schemas"]["SourceRequirementOut"] | null;
+            health: components["schemas"]["SourceHealthSummaryOut"] | null;
+            /** Detail */
+            detail: string;
+        };
         /** SourceDate */
         SourceDate: {
             /** Field */
@@ -9449,6 +9533,25 @@ export interface components {
             items_last_poll: number;
             /** Last Latency Ms */
             last_latency_ms: number | null;
+            /** Next Poll At */
+            next_poll_at: string | null;
+            /** Polls */
+            polls: number;
+        };
+        /**
+         * SourceHealthSummaryOut
+         * @description Delivery health without error text, which can embed operator URLs.
+         */
+        SourceHealthSummaryOut: {
+            status: components["schemas"]["SourceStatus"];
+            /** Last Success */
+            last_success: string | null;
+            /** Last Error At */
+            last_error_at: string | null;
+            /** Consecutive Failures */
+            consecutive_failures: number;
+            /** Items Last Poll */
+            items_last_poll: number;
             /** Next Poll At */
             next_poll_at: string | null;
             /** Polls */
@@ -9555,6 +9658,27 @@ export interface components {
             /** Reviewed At */
             reviewed_at: string | null;
         };
+        /** SourceRequirementOut */
+        SourceRequirementOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "api_key" | "credentials" | "acknowledgement" | "snapshot" | "catalogue" | "runtime" | "model" | "toggle" | "endpoint";
+            /** Satisfied */
+            satisfied: boolean | null;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "environment" | "database" | "none" | "unknown";
+            /** Setting */
+            setting: string | null;
+            /** Note */
+            note: string;
+            /** Optional */
+            optional: boolean;
+        };
         /**
          * SourceStatus
          * @enum {string}
@@ -9594,6 +9718,7 @@ export interface components {
             coverage_regions: string[];
             /** Coverage Note */
             coverage_note: string;
+            connection: components["schemas"]["SourceConnectionOut"];
         };
         /** SourceTestOut */
         SourceTestOut: {
@@ -14172,6 +14297,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ase__api__routers__sources__SourcesOut"];
+                };
+            };
+        };
+    };
+    list_connections_api_sources_connections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformConnectionsOut"];
                 };
             };
         };

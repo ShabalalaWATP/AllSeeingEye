@@ -5,6 +5,7 @@ from datetime import date, datetime
 from enum import IntEnum, StrEnum
 
 from ase.domain.cyber_actors import CyberActorMention
+from ase.domain.cyber_themes import CyberTheme
 
 CYBER_PUBLISHER_IDS = (
     "cyber_ncsc_reports",
@@ -14,6 +15,20 @@ CYBER_PUBLISHER_IDS = (
     "cyber_google_threat_intelligence",
     "cyber_cert_eu",
     "cyber_acsc_advisories",
+    "cyber_cisa_advisories",
+    "cyber_cert_ua",
+    "cyber_cccs_alerts",
+    "cyber_cert_fr",
+    "cyber_ic3_psa",
+    "cyber_sans_isc",
+    "cyber_unit42",
+    "cyber_the_record",
+    "cyber_bleeping_computer",
+)
+# Private briefing collection follows the owner's research languages; the workspace
+# keeps every publisher, while the English-language briefing request names only these.
+CYBER_BRIEFING_PUBLISHER_IDS = tuple(
+    key for key in CYBER_PUBLISHER_IDS if key not in {"cyber_cert_ua", "cyber_cert_fr"}
 )
 CYBER_TELEMETRY_IDS = ("cisa_kev", "ransomware_live", "ioda_outages")
 ACTOR_REFERENCE_SOURCE_ID = "mitre_attack"
@@ -24,11 +39,12 @@ class CyberWindowDays(IntEnum):
     FIVE = 5
     SEVEN = 7
     FOURTEEN = 14
+    THIRTY = 30
 
 
 def cyber_window(value: int) -> CyberWindowDays:
     if not isinstance(value, int) or isinstance(value, bool):
-        raise ValueError("Choose a 2, 5, 7 or 14 day cyber briefing")
+        raise ValueError("Choose a 2, 5, 7, 14 or 30 day cyber briefing")
     return CyberWindowDays(value)
 
 
@@ -38,6 +54,7 @@ class CyberKind(StrEnum):
     KNOWN_EXPLOITED_VULNERABILITY = "known_exploited_vulnerability"
     ADVISORY = "advisory"
     THREAT_REPORT = "threat_report"
+    NEWS_REPORT = "news_report"
     OTHER = "other"
 
 
@@ -80,6 +97,25 @@ class CyberItem:
     grade: str
     actor_mentions: tuple[CyberActorMention, ...]
     kev: CyberKev | None
+    themes: tuple[CyberTheme, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class CyberThemeTally:
+    """How many retained records matched a lens, and per calendar day of the period."""
+
+    theme: CyberTheme
+    count: int
+    daily: tuple[int, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class CyberStateTally:
+    """Records mentioning at least one actor whose reference profile names this state."""
+
+    state: str
+    count: int
+    group_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,3 +172,5 @@ class CyberSnapshot:
     actor_mentions: tuple[CyberActorTally, ...]
     sources: tuple[CyberSource, ...]
     items: tuple[CyberItem, ...]
+    themes: tuple[CyberThemeTally, ...] = ()
+    state_mentions: tuple[CyberStateTally, ...] = ()

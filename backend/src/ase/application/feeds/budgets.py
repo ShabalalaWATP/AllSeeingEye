@@ -26,7 +26,8 @@ DEFAULT_BUDGETS: Mapping[Category, RetentionBudget] = {
     Category.CONFLICT: RetentionBudget(timedelta(days=30), 30_000),
     Category.SOCIAL: RetentionBudget(timedelta(hours=24), 10_000),
     Category.SPACE: RetentionBudget(timedelta(days=7), 25_000),
-    Category.CYBER: RetentionBudget(timedelta(days=14), 5_000),
+    # Thirty days supports the longest cyber reporting period; headline feeds are small.
+    Category.CYBER: RetentionBudget(timedelta(days=30), 8_000),
     Category.POLITICAL: RetentionBudget(timedelta(days=7), 5_000),
     Category.HUMANITARIAN: RetentionBudget(timedelta(days=7), 5_000),
     Category.ECONOMIC: RetentionBudget(timedelta(days=14), 5_000),

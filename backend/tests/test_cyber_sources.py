@@ -34,11 +34,19 @@ async def test_cyber_publishers_share_guarded_pipeline_without_implied_geography
         batch = await PublisherFeedResearchProvider(feed.http, CLOCK, seed).collect(QUERY)
     finally:
         await feed.http.aclose()
-    live, private = events[0], batch.items[0]
-    assert live.id == private.id
+    live = events[0]
+    if seed.spec.language not in QUERY.languages:
+        # Private collection follows the requested research languages; live collection
+        # still retains the publisher's own-language headlines for the workspace.
+        assert not batch.items and live.language == seed.spec.language
+        collected = (live,)
+    else:
+        private = batch.items[0]
+        assert live.id == private.id
+        collected = (live, private)
     assert live.category is Category.CYBER
-    assert live.subtype in {"advisory", "threat_report"}
-    for event in (live, private):
+    assert live.subtype in {"advisory", "threat_report", "news_report"}
+    for event in collected:
         assert event.grade == "F6" and event.summary is None
         assert event.point is None and event.country_iso is None
         assert event.geo_confidence is GeoConfidence.NONE
@@ -46,7 +54,7 @@ async def test_cyber_publishers_share_guarded_pipeline_without_implied_geography
         assert event.attributes["original_source_name"] == seed.spec.name
         assert event.attributes["original_source_organisation"] == seed.spec.organisation
         assert "unknown" in event.attributes["geography_basis"]
-    assert len(feed.requests) == len(feed.guarded) == 2
+    assert len(feed.requests) == len(feed.guarded) == len(collected)
     assert all(str(request.url) == seed.spec.url for request in feed.requests)
 
 

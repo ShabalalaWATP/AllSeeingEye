@@ -136,7 +136,9 @@ def _gregorian_instant(base: SourceDate, text: str) -> SourceDate:
     try:
         parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
-        parsed = parsedate_to_datetime(text)
+        # Some publishers write an RFC 822 date with a colon inside the explicit
+        # numeric offset ("-04:00"). Removing that colon changes no declared value.
+        parsed = parsedate_to_datetime(re.sub(r"([+-]\d{2}):(\d{2})$", r"\1\2", text))
     if parsed.utcoffset() is None:
         return replace(base, status="ambiguous", limitations=("Timezone is undeclared.",))
     return replace(base, precision="instant", status="resolved", value=parsed.astimezone(UTC))

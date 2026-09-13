@@ -6876,6 +6876,32 @@
         ]
       }
     },
+    "/api/sources/connections": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "List Connections",
+        "operationId": "list_connections_api_sources_connections_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformConnectionsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/stream": {
       "get": {
         "tags": [
@@ -13797,6 +13823,22 @@
         ],
         "title": "ConflictSourcesOut"
       },
+      "ConnectionState": {
+        "type": "string",
+        "enum": [
+          "connected",
+          "idle",
+          "degraded",
+          "failing",
+          "key_missing",
+          "key_unverified",
+          "on_demand",
+          "not_configured",
+          "disabled_by_admin",
+          "disabled_by_environment"
+        ],
+        "title": "ConnectionState"
+      },
       "ContinuationTraceOut": {
         "properties": {
           "decision": {
@@ -14250,6 +14292,17 @@
           "technique_count": {
             "type": "integer",
             "title": "Technique Count"
+          },
+          "state_association": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Association"
           }
         },
         "type": "object",
@@ -14261,7 +14314,8 @@
           "url",
           "modified_at",
           "technique_ids",
-          "technique_count"
+          "technique_count",
+          "state_association"
         ],
         "title": "CyberActorOut"
       },
@@ -14535,6 +14589,13 @@
                 "type": "null"
               }
             ]
+          },
+          "themes": {
+            "items": {
+              "$ref": "#/components/schemas/CyberTheme"
+            },
+            "type": "array",
+            "title": "Themes"
           }
         },
         "type": "object",
@@ -14552,7 +14613,8 @@
           "country_iso",
           "grade",
           "actor_mentions",
-          "kev"
+          "kev",
+          "themes"
         ],
         "title": "CyberItemOut"
       },
@@ -14613,6 +14675,7 @@
           "known_exploited_vulnerability",
           "advisory",
           "threat_report",
+          "news_report",
           "other"
         ],
         "title": "CyberKind"
@@ -14711,6 +14774,20 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "themes": {
+            "items": {
+              "$ref": "#/components/schemas/CyberThemeTallyOut"
+            },
+            "type": "array",
+            "title": "Themes"
+          },
+          "state_mentions": {
+            "items": {
+              "$ref": "#/components/schemas/CyberStateTallyOut"
+            },
+            "type": "array",
+            "title": "State Mentions"
           }
         },
         "type": "object",
@@ -14728,7 +14805,9 @@
           "top_countries",
           "actor_mentions",
           "sources",
-          "items"
+          "items",
+          "themes",
+          "state_mentions"
         ],
         "title": "CyberSnapshotOut"
       },
@@ -14795,6 +14874,32 @@
         ],
         "title": "CyberSourceOut"
       },
+      "CyberStateTallyOut": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "group_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Group Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "count",
+          "group_ids"
+        ],
+        "title": "CyberStateTallyOut"
+      },
       "CyberTallyOut": {
         "properties": {
           "key": {
@@ -14813,13 +14918,51 @@
         ],
         "title": "CyberTallyOut"
       },
+      "CyberTheme": {
+        "type": "string",
+        "enum": [
+          "nation_state",
+          "nato_allies",
+          "uk_infrastructure",
+          "ukraine",
+          "gnss_interference",
+          "critical_infrastructure"
+        ],
+        "title": "CyberTheme"
+      },
+      "CyberThemeTallyOut": {
+        "properties": {
+          "theme": {
+            "$ref": "#/components/schemas/CyberTheme"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "daily": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Daily"
+          }
+        },
+        "type": "object",
+        "required": [
+          "theme",
+          "count",
+          "daily"
+        ],
+        "title": "CyberThemeTallyOut"
+      },
       "CyberWindowDays": {
         "type": "integer",
         "enum": [
           2,
           5,
           7,
-          14
+          14,
+          30
         ],
         "title": "CyberWindowDays"
       },
@@ -22178,6 +22321,58 @@
         ],
         "title": "PlansOut"
       },
+      "PlatformConnectionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ConnectionState"
+          },
+          "requirement": {
+            "$ref": "#/components/schemas/SourceRequirementOut"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "purpose",
+          "state",
+          "requirement",
+          "detail"
+        ],
+        "title": "PlatformConnectionOut"
+      },
+      "PlatformConnectionsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformConnectionOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PlatformConnectionsOut"
+      },
       "PointOut": {
         "properties": {
           "lon": {
@@ -22304,7 +22499,12 @@
             "enum": [
               "obsidian",
               "slate",
-              "light"
+              "light",
+              "midnight",
+              "aurora",
+              "phosphor",
+              "crimson",
+              "graphite"
             ],
             "title": "Appearance Theme"
           },
@@ -22498,7 +22698,12 @@
                 "enum": [
                   "obsidian",
                   "slate",
-                  "light"
+                  "light",
+                  "midnight",
+                  "aurora",
+                  "phosphor",
+                  "crimson",
+                  "graphite"
                 ]
               },
               {
@@ -28145,6 +28350,60 @@
         ],
         "title": "SourceActivationIn"
       },
+      "SourceConnectionOut": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ConnectionState"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "environment_disabled": {
+            "type": "boolean",
+            "title": "Environment Disabled"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "requirement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRequirementOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "health": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceHealthSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "enabled",
+          "environment_disabled",
+          "active",
+          "requirement",
+          "health",
+          "detail"
+        ],
+        "title": "SourceConnectionOut"
+      },
       "SourceDate": {
         "properties": {
           "field": {
@@ -28400,6 +28659,73 @@
           "polls"
         ],
         "title": "SourceHealthOut"
+      },
+      "SourceHealthSummaryOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/SourceStatus"
+          },
+          "last_success": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success"
+          },
+          "last_error_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error At"
+          },
+          "consecutive_failures": {
+            "type": "integer",
+            "title": "Consecutive Failures"
+          },
+          "items_last_poll": {
+            "type": "integer",
+            "title": "Items Last Poll"
+          },
+          "next_poll_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Poll At"
+          },
+          "polls": {
+            "type": "integer",
+            "title": "Polls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "last_success",
+          "last_error_at",
+          "consecutive_failures",
+          "items_last_poll",
+          "next_poll_at",
+          "polls"
+        ],
+        "title": "SourceHealthSummaryOut",
+        "description": "Delivery health without error text, which can embed operator URLs."
       },
       "SourceKind": {
         "type": "string",
@@ -28669,6 +28995,75 @@
         ],
         "title": "SourceRatingOut"
       },
+      "SourceRequirementOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api_key",
+              "credentials",
+              "acknowledgement",
+              "snapshot",
+              "catalogue",
+              "runtime",
+              "model",
+              "toggle",
+              "endpoint"
+            ],
+            "title": "Kind"
+          },
+          "satisfied": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Satisfied"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "environment",
+              "database",
+              "none",
+              "unknown"
+            ],
+            "title": "Origin"
+          },
+          "setting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setting"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "optional": {
+            "type": "boolean",
+            "title": "Optional"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "satisfied",
+          "origin",
+          "setting",
+          "note",
+          "optional"
+        ],
+        "title": "SourceRequirementOut"
+      },
       "SourceStatus": {
         "type": "string",
         "enum": [
@@ -28758,6 +29153,9 @@
           "coverage_note": {
             "type": "string",
             "title": "Coverage Note"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/SourceConnectionOut"
           }
         },
         "type": "object",
@@ -28776,7 +29174,8 @@
           "coverage_scope",
           "coverage_countries",
           "coverage_regions",
-          "coverage_note"
+          "coverage_note",
+          "connection"
         ],
         "title": "SourceSummaryOut"
       },

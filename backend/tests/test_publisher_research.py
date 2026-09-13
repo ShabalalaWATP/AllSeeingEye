@@ -58,7 +58,10 @@ async def test_one_native_feed_request_preserves_identity_and_discards_article_t
     seed = SEEDS[seed_id]
     feed = PublicFeed(monkeypatch, httpx.Response(200, text=rss(item())))
     provider = PublisherFeedResearchProvider(feed.http, CLOCK, seed)
-    batch = await provider.collect(QUERY)
+    # Private collection only queries a publisher in a requested research language.
+    language = seed.spec.language
+    query = QUERY if language == "en" else replace(QUERY, languages=(language,))
+    batch = await provider.collect(query)
     assert len(feed.requests) == len(feed.guarded) == 1
     request = feed.requests[0]
     assert str(request.url) == seed.spec.url
@@ -67,7 +70,7 @@ async def test_one_native_feed_request_preserves_identity_and_discards_article_t
     event = batch.items[0]
     assert batch.attempts[0].source_id == event.source_id == provider.id
     assert batch.attempts[0].status is CollectionStatus.COMPLETED
-    assert batch.attempts[0].language == "en" and event.language == "en"
+    assert batch.attempts[0].language == language and event.language == language
     assert event.grade == "F6" and event.summary is None
     assert event.attributes["original_source_id"] == seed_id
     assert event.attributes["original_source_organisation"] == seed.spec.organisation
@@ -235,7 +238,7 @@ async def test_empty_headline_match_has_a_truthful_receipt(monkeypatch: pytest.M
 
 
 def test_reviewed_seeds_are_distinct_and_inherit_original_admission() -> None:
-    assert len(PUBLISHER_SEEDS) == len(SEEDS) == 37
+    assert len(PUBLISHER_SEEDS) == len(SEEDS) == 46
     assert not SEEDS.keys() & {seed.spec.id for seed in (*REGIONAL_SEEDS, *SOCIAL_SEEDS)}
     for source_id in SEEDS:
         derived = f"research_publisher_{source_id}"

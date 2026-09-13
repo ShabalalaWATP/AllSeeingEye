@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 from ase.api.routers.daily_briefing import DailyBriefingOut
 from ase.application.feeds.health import SourceStatus
 from ase.domain.cyber import CyberKind, CyberWindowDays
+from ase.domain.cyber_themes import CyberTheme
 
 
 class _FromAttributes(BaseModel):
@@ -44,6 +45,19 @@ class CyberItemOut(_FromAttributes):
     grade: str
     actor_mentions: list[CyberActorMentionOut]
     kev: CyberKevOut | None
+    themes: list[CyberTheme]
+
+
+class CyberThemeTallyOut(_FromAttributes):
+    theme: CyberTheme
+    count: int
+    daily: list[int]
+
+
+class CyberStateTallyOut(_FromAttributes):
+    state: str
+    count: int
+    group_ids: list[str]
 
 
 class CyberKindCountOut(_FromAttributes):
@@ -94,6 +108,8 @@ class CyberSnapshotOut(_FromAttributes):
     actor_mentions: list[CyberActorTallyOut]
     sources: list[CyberSourceOut]
     items: list[CyberItemOut]
+    themes: list[CyberThemeTallyOut]
+    state_mentions: list[CyberStateTallyOut]
 
 
 class CyberActorOut(_FromAttributes):
@@ -105,6 +121,7 @@ class CyberActorOut(_FromAttributes):
     modified_at: datetime
     technique_ids: list[str]
     technique_count: int
+    state_association: str | None
 
 
 class CyberActorCatalogueOut(_FromAttributes):
