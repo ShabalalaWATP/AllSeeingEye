@@ -9460,6 +9460,79 @@
           }
         ]
       }
+    },
+    "/api/conflicts/ukraine/reference": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Reference",
+        "description": "Curated notes on equipment, forces and the timeline; absent until imported.",
+        "operationId": "ukraine_reference_api_conflicts_ukraine_reference_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UkraineReferenceOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/conflicts/ukraine/images/{image_id}.jpg": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Image",
+        "description": "A cached Commons image from the packaged store, same origin so the CSP is unchanged.",
+        "operationId": "ukraine_image_api_conflicts_ukraine_images__image_id__jpg_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -15572,7 +15645,7 @@
           },
           "links": {
             "items": {
-              "$ref": "#/components/schemas/LinkOut"
+              "$ref": "#/components/schemas/ase__api__schemas_infrastructure__LinkOut"
             },
             "type": "array",
             "maxItems": 6,
@@ -16337,6 +16410,103 @@
           14
         ],
         "title": "EconomyWindowDays"
+      },
+      "EquipmentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "side": {
+            "$ref": "#/components/schemas/Side"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "subgroup": {
+            "type": "string",
+            "title": "Subgroup"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "numbers": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numbers"
+          },
+          "wikidata_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikidata Id"
+          },
+          "image_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ase__api__schemas_ukraine_reference__LinkOut"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "side",
+          "group",
+          "subgroup",
+          "name",
+          "origin",
+          "role",
+          "description",
+          "numbers",
+          "wikidata_id",
+          "image_id",
+          "as_of",
+          "links"
+        ],
+        "title": "EquipmentOut"
       },
       "EventOut": {
         "properties": {
@@ -17804,6 +17974,107 @@
         ],
         "title": "FootprintSearchIn"
       },
+      "ForceNodeOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "side": {
+            "$ref": "#/components/schemas/Side"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "commander": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commander"
+          },
+          "figure_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figure Id"
+          },
+          "strength": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strength"
+          },
+          "wikidata_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikidata Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ase__api__schemas_ukraine_reference__LinkOut"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "side",
+          "parent_id",
+          "name",
+          "role",
+          "commander",
+          "figure_id",
+          "strength",
+          "wikidata_id",
+          "as_of",
+          "links"
+        ],
+        "title": "ForceNodeOut"
+      },
       "ForgotPasswordIn": {
         "properties": {
           "email": {
@@ -18108,7 +18379,7 @@
           },
           "links": {
             "items": {
-              "$ref": "#/components/schemas/LinkOut"
+              "$ref": "#/components/schemas/ase__api__schemas_infrastructure__LinkOut"
             },
             "type": "array",
             "maxItems": 6,
@@ -20242,26 +20513,6 @@
           "updated_at"
         ],
         "title": "LibraryPreferenceOut"
-      },
-      "LinkOut": {
-        "properties": {
-          "label": {
-            "type": "string",
-            "maxLength": 80,
-            "title": "Label"
-          },
-          "url": {
-            "type": "string",
-            "maxLength": 400,
-            "title": "Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "label",
-          "url"
-        ],
-        "title": "LinkOut"
       },
       "LlmConnectionIn": {
         "properties": {
@@ -24454,6 +24705,46 @@
           "provenance"
         ],
         "title": "ReferenceEntryOut"
+      },
+      "ReferenceImageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "licence": {
+            "type": "string",
+            "title": "Licence"
+          },
+          "credit": {
+            "type": "string",
+            "title": "Credit"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "licence",
+          "credit",
+          "source_url",
+          "width",
+          "height"
+        ],
+        "title": "ReferenceImageOut"
       },
       "ReferenceLinkOut": {
         "properties": {
@@ -29487,6 +29778,14 @@
         ],
         "title": "SettlementOut"
       },
+      "Side": {
+        "type": "string",
+        "enum": [
+          "ru",
+          "ua"
+        ],
+        "title": "Side"
+      },
       "SirEvidenceOut": {
         "properties": {
           "code": {
@@ -29699,7 +29998,7 @@
           },
           "links": {
             "items": {
-              "$ref": "#/components/schemas/LinkOut"
+              "$ref": "#/components/schemas/ase__api__schemas_infrastructure__LinkOut"
             },
             "type": "array",
             "maxItems": 6,
@@ -30827,6 +31126,32 @@
         ],
         "title": "SpaceBoardOut"
       },
+      "SpecialityOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "subgroups": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Subgroups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "subgroups"
+        ],
+        "title": "SpecialityOut"
+      },
       "StoreStatsOut": {
         "properties": {
           "total": {
@@ -31277,6 +31602,119 @@
         ],
         "title": "TextTransformation"
       },
+      "TimelineEventOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "phase_id": {
+            "type": "string",
+            "title": "Phase Id"
+          },
+          "on": {
+            "type": "string",
+            "format": "date",
+            "title": "On"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme"
+          },
+          "wikidata_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikidata Id"
+          },
+          "image_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Id"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ase__api__schemas_ukraine_reference__LinkOut"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "phase_id",
+          "on",
+          "title",
+          "text",
+          "theme",
+          "wikidata_id",
+          "image_id",
+          "links"
+        ],
+        "title": "TimelineEventOut"
+      },
+      "TimelinePhaseOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "start",
+          "end",
+          "summary"
+        ],
+        "title": "TimelinePhaseOut"
+      },
       "TokenResponse": {
         "properties": {
           "access_token": {
@@ -31490,6 +31928,81 @@
           "freshness"
         ],
         "title": "UkraineBoardOut"
+      },
+      "UkraineReferenceOut": {
+        "properties": {
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "source_note": {
+            "type": "string",
+            "title": "Source Note"
+          },
+          "specialities": {
+            "items": {
+              "$ref": "#/components/schemas/SpecialityOut"
+            },
+            "type": "array",
+            "title": "Specialities"
+          },
+          "themes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Themes"
+          },
+          "equipment": {
+            "items": {
+              "$ref": "#/components/schemas/EquipmentOut"
+            },
+            "type": "array",
+            "title": "Equipment"
+          },
+          "forces": {
+            "items": {
+              "$ref": "#/components/schemas/ForceNodeOut"
+            },
+            "type": "array",
+            "title": "Forces"
+          },
+          "phases": {
+            "items": {
+              "$ref": "#/components/schemas/TimelinePhaseOut"
+            },
+            "type": "array",
+            "title": "Phases"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEventOut"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "images": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ReferenceImageOut"
+            },
+            "type": "object",
+            "title": "Images"
+          }
+        },
+        "type": "object",
+        "required": [
+          "retrieved_at",
+          "source_note",
+          "specialities",
+          "themes",
+          "equipment",
+          "forces",
+          "phases",
+          "events",
+          "images"
+        ],
+        "title": "UkraineReferenceOut"
       },
       "UpdateGroup": {
         "type": "string",
@@ -31913,6 +32426,44 @@
           "items"
         ],
         "title": "SourcesOut"
+      },
+      "ase__api__schemas_infrastructure__LinkOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Label"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "url"
+        ],
+        "title": "LinkOut"
+      },
+      "ase__api__schemas_ukraine_reference__LinkOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "url"
+        ],
+        "title": "LinkOut"
       }
     },
     "securitySchemes": {

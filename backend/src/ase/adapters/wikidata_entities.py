@@ -32,6 +32,7 @@ class EntityFacts:
     wikipedia: str | None
     inception: str | None = None
     parent: tuple[str, ...] = field(default_factory=tuple)
+    image: str | None = None  # Commons file name from P18
 
 
 class WikidataEntities:
@@ -129,6 +130,7 @@ class WikidataEntities:
                 wikipedia=f.wikipedia,
                 inception=f.inception,
                 parent=tuple(names[q] for q in f.parent if q in names),
+                image=f.image,
             )
             for qid, f in found.items()
         }
@@ -175,4 +177,5 @@ def _facts(qid: str, entity: dict[str, Any]) -> EntityFacts:
         wikipedia=str(entity.get("sitelinks", {}).get("enwiki", {}).get("url", "")) or None,
         inception=_claim_text(claims, "P571"),
         parent=_claim_ids(claims, "P749"),
+        image=_claim_text(claims, "P18"),
     )

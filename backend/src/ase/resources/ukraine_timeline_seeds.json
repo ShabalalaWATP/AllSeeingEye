@@ -1,0 +1,465 @@
+{
+  "note": "Hand-written timeline of the war from 2014 to the present, in phases with dated events. Each event names a theme and carries a source link; the importer adds Wikidata ids and licensed images. Later events arrive on the page through the updates feed, not this file.",
+  "phases": [
+    {
+      "id": "background",
+      "label": "Background, 2014 to 2021",
+      "start": "2014-02-20",
+      "end": "2022-02-23",
+      "summary": "Russia seized Crimea and fostered the war in the Donbas after the Maidan revolution; eight years of trench war followed along a static line while Ukraine rebuilt its army."
+    },
+    {
+      "id": "invasion",
+      "label": "Full-scale invasion, February to April 2022",
+      "start": "2022-02-24",
+      "end": "2022-04-07",
+      "summary": "Russia attacked from the north, east and south. The drive on Kyiv failed within weeks and Russian forces withdrew from the north, leaving Bucha and Irpin behind them."
+    },
+    {
+      "id": "donbas-2022",
+      "label": "Battle for the Donbas, April to August 2022",
+      "start": "2022-04-08",
+      "end": "2022-09-05",
+      "summary": "Russia concentrated on the east, took Mariupol, Sievierodonetsk and Lysychansk with massed artillery, and was slowed only when HIMARS reached Ukraine."
+    },
+    {
+      "id": "counteroffensives-2022",
+      "label": "Ukrainian counteroffensives, autumn 2022",
+      "start": "2022-09-06",
+      "end": "2022-11-11",
+      "summary": "Ukraine broke through at Kharkiv and forced the Russian withdrawal from Kherson, while Russia annexed four regions on paper and mobilised 300,000 men."
+    },
+    {
+      "id": "bakhmut",
+      "label": "Winter attrition and Bakhmut, late 2022 to mid 2023",
+      "start": "2022-11-12",
+      "end": "2023-06-07",
+      "summary": "Russia struck the power grid all winter and Wagner ground through Bakhmut at enormous cost while both sides prepared for the summer."
+    },
+    {
+      "id": "counteroffensive-2023",
+      "label": "The 2023 counteroffensive",
+      "start": "2023-06-08",
+      "end": "2023-12-01",
+      "summary": "Ukraine's Western-equipped brigades attacked into deep minefields in Zaporizhzhia and gained little; at sea, naval drones and missiles drove the Black Sea Fleet from Sevastopol."
+    },
+    {
+      "id": "avdiivka-2024",
+      "label": "Avdiivka and attrition, 2024",
+      "start": "2023-12-02",
+      "end": "2024-08-05",
+      "summary": "With US aid stalled for months, Russia took Avdiivka with glide bombs and human waves, opened a new front at Kharkiv and ground westward towards Pokrovsk."
+    },
+    {
+      "id": "kursk",
+      "label": "Kursk and the long-range war, August 2024 to spring 2025",
+      "start": "2024-08-06",
+      "end": "2025-04-30",
+      "summary": "Ukraine invaded Kursk Oblast and held a salient for months against Russian and North Korean troops; deep strikes on refineries and airfields grew on both sides and Russia fired the Oreshnik."
+    },
+    {
+      "id": "2025",
+      "label": "Talks, drones and the 2025 summer offensive",
+      "start": "2025-05-01",
+      "end": "2025-12-31",
+      "summary": "Russia's summer offensive made slow, costly gains around Pokrovsk and Kostiantynivka while Shahed waves reached record size; the United States pushed peace plans that Kyiv and Europe reworked and Moscow rejected."
+    },
+    {
+      "id": "2026",
+      "label": "2026",
+      "start": "2026-01-01",
+      "end": null,
+      "summary": "The war continued into its fifth year with a slow Russian advance, a growing drone war on both sides, a command crisis in Kyiv in the summer and no ceasefire. Later events appear in the updates feed above."
+    }
+  ],
+  "events": [
+    {
+      "id": "crimea-2014",
+      "phase_id": "background",
+      "on": "2014-02-27",
+      "title": "Russia seizes Crimea",
+      "text": "Unmarked Russian troops took control of the Crimean parliament and the peninsula within days of the Maidan revolution; a staged referendum and annexation followed in March. The seizure was the opening of the Russo-Ukrainian war.",
+      "theme": "ground",
+      "search": "Annexation of Crimea by the Russian Federation",
+      "links": []
+    },
+    {
+      "id": "donbas-2014",
+      "phase_id": "background",
+      "on": "2014-04-12",
+      "title": "War begins in the Donbas",
+      "text": "Russian-backed armed groups seized towns in Donetsk and Luhansk oblasts; the fighting that followed, including Ilovaisk and Debaltseve, killed some 14,000 people before 2022 and froze into a trench line under the Minsk agreements.",
+      "theme": "ground",
+      "search": "War in Donbas",
+      "links": []
+    },
+    {
+      "id": "mh17",
+      "phase_id": "background",
+      "on": "2014-07-17",
+      "title": "MH17 shot down",
+      "text": "A Buk missile from Russia's 53rd Anti-Aircraft Brigade destroyed Malaysia Airlines flight 17 over the Donbas, killing 298 people; a Dutch court convicted three men in absentia in 2022.",
+      "theme": "air",
+      "search": "Malaysia Airlines Flight 17",
+      "links": []
+    },
+    {
+      "id": "buildup-2021",
+      "phase_id": "background",
+      "on": "2021-11-01",
+      "title": "Russian build-up and demands",
+      "text": "Russia massed some 190,000 troops on Ukraine's borders and in Belarus through late 2021 and demanded that NATO never admit Ukraine, while denying any plan to attack.",
+      "theme": "mobilisation",
+      "search": "Prelude to the Russian invasion of Ukraine",
+      "links": []
+    },
+    {
+      "id": "invasion-day",
+      "phase_id": "invasion",
+      "on": "2022-02-24",
+      "title": "The full-scale invasion begins",
+      "text": "Putin announced a 'special military operation' and missiles struck cities across Ukraine as columns crossed from Belarus, Russia and Crimea. Airborne troops seized Hostomel airfield near Kyiv and were thrown back within a day.",
+      "theme": "ground",
+      "search": "Russian invasion of Ukraine",
+      "links": []
+    },
+    {
+      "id": "kyiv-defence",
+      "phase_id": "invasion",
+      "on": "2022-03-25",
+      "title": "The battle for Kyiv is won",
+      "text": "Russian columns stalled north of Kyiv under ambushes, Javelins, artillery and their own logistics failures; by the end of March Russia announced a withdrawal from the north.",
+      "theme": "ground",
+      "search": "battle of Kyiv",
+      "links": []
+    },
+    {
+      "id": "bucha",
+      "phase_id": "invasion",
+      "on": "2022-04-02",
+      "title": "Bucha and the northern withdrawal",
+      "text": "Ukrainian forces re-entering Bucha, Irpin and Borodianka found hundreds of murdered civilians. The evidence ended early peace talks in Istanbul and hardened Western support.",
+      "theme": "diplomacy",
+      "search": "Bucha massacre",
+      "links": []
+    },
+    {
+      "id": "moskva",
+      "phase_id": "donbas-2022",
+      "on": "2022-04-14",
+      "title": "The cruiser Moskva sinks",
+      "text": "Two Ukrainian Neptune missiles hit the Black Sea Fleet flagship, which sank the next day, the largest warship lost in combat since 1982.",
+      "theme": "naval",
+      "search": "Russian cruiser Moskva",
+      "links": []
+    },
+    {
+      "id": "mariupol",
+      "phase_id": "donbas-2022",
+      "on": "2022-05-20",
+      "title": "Mariupol falls after Azovstal",
+      "text": "After nearly three months of siege and the destruction of most of the city, the last defenders at the Azovstal steelworks surrendered on orders from Kyiv. Tens of thousands of civilians are believed to have died.",
+      "theme": "ground",
+      "search": "Siege of Mariupol",
+      "links": []
+    },
+    {
+      "id": "himars",
+      "phase_id": "donbas-2022",
+      "on": "2022-06-23",
+      "title": "HIMARS enters the war",
+      "text": "American HIMARS launchers began destroying Russian ammunition depots and bridges up to 80 kilometres behind the line, ending the artillery advantage that had taken Sievierodonetsk and Lysychansk.",
+      "theme": "air",
+      "search": "M142 HIMARS",
+      "links": []
+    },
+    {
+      "id": "kharkiv-2022",
+      "phase_id": "counteroffensives-2022",
+      "on": "2022-09-10",
+      "title": "Kharkiv counteroffensive",
+      "text": "Ukrainian forces broke through thin Russian lines east of Kharkiv, took Balakliia, Kupiansk and Izium in a week and recovered most of the oblast, the war's fastest advance.",
+      "theme": "ground",
+      "search": "2022 Kharkiv counteroffensive",
+      "links": []
+    },
+    {
+      "id": "mobilisation-2022",
+      "phase_id": "counteroffensives-2022",
+      "on": "2022-09-21",
+      "title": "Russia announces mobilisation",
+      "text": "Putin ordered the call-up of 300,000 reservists, the first Russian mobilisation since 1945; hundreds of thousands of men left the country and the annexation of four oblasts was proclaimed nine days later.",
+      "theme": "mobilisation",
+      "search": "2022 Russian mobilization",
+      "links": []
+    },
+    {
+      "id": "crimean-bridge-2022",
+      "phase_id": "counteroffensives-2022",
+      "on": "2022-10-08",
+      "title": "The Crimean Bridge is hit",
+      "text": "A truck bomb collapsed part of the road bridge to Crimea; Russia answered with the first mass missile strikes on Ukraine's energy system, opening the winter campaign against the grid.",
+      "theme": "economy",
+      "search": "2022 Crimean Bridge explosion",
+      "links": []
+    },
+    {
+      "id": "kherson",
+      "phase_id": "counteroffensives-2022",
+      "on": "2022-11-11",
+      "title": "Kherson liberated",
+      "text": "Cut off by HIMARS strikes on the Dnipro bridges, Russian forces withdrew from the only regional capital they had captured; Ukrainian troops entered the city to crowds in the streets.",
+      "theme": "ground",
+      "search": "2022 Kherson counteroffensive",
+      "links": []
+    },
+    {
+      "id": "grid-winter",
+      "phase_id": "bakhmut",
+      "on": "2022-12-15",
+      "title": "Winter strikes on the power grid",
+      "text": "Waves of cruise missiles and Shahed drones through the winter of 2022 to 2023 left millions without power and heat, without breaking the grid or public support.",
+      "theme": "economy",
+      "search": "Russian strikes against Ukrainian infrastructure",
+      "links": []
+    },
+    {
+      "id": "tanks-pledged",
+      "phase_id": "bakhmut",
+      "on": "2023-01-25",
+      "title": "Western tanks pledged",
+      "text": "Germany, the United States and European partners agreed to send Leopard 2, Abrams and Challenger 2 tanks after months of hesitation, followed by Patriot batteries and, in May, Storm Shadow missiles.",
+      "theme": "diplomacy",
+      "search": "List of military aid to Ukraine during the Russo-Ukrainian War",
+      "links": []
+    },
+    {
+      "id": "bakhmut-falls",
+      "phase_id": "bakhmut",
+      "on": "2023-05-20",
+      "title": "Bakhmut falls to Wagner",
+      "text": "After ten months of the war's longest battle, Wagner's prisoner-recruited assault groups took the ruined city at a cost estimated in the tens of thousands of casualties on each side.",
+      "theme": "ground",
+      "search": "Battle of Bakhmut",
+      "links": []
+    },
+    {
+      "id": "kakhovka",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-06-06",
+      "title": "Kakhovka dam destroyed",
+      "text": "The dam on the Dnipro collapsed while under Russian control, flooding towns downstream, killing dozens and draining the reservoir that cooled the Zaporizhzhia nuclear plant.",
+      "theme": "economy",
+      "search": "Destruction of the Kakhovka Dam",
+      "links": []
+    },
+    {
+      "id": "counteroffensive-start",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-06-08",
+      "title": "The 2023 counteroffensive begins",
+      "text": "Ukraine's new brigades attacked towards Melitopol and Berdiansk into dense minefields covered by Ka-52 helicopters and Lancets; Robotyne was taken in August but no breakthrough followed.",
+      "theme": "ground",
+      "search": "2023 Ukrainian counteroffensive",
+      "links": []
+    },
+    {
+      "id": "wagner-mutiny",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-06-24",
+      "title": "Wagner mutiny",
+      "text": "Yevgeny Prigozhin's Wagner columns seized Rostov-on-Don and drove towards Moscow before a deal halted them; Prigozhin died in a plane crash two months later.",
+      "theme": "mobilisation",
+      "search": "Wagner Group rebellion",
+      "links": []
+    },
+    {
+      "id": "sevastopol-hq",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-09-22",
+      "title": "Black Sea Fleet headquarters struck",
+      "text": "Storm Shadow missiles destroyed the fleet headquarters in Sevastopol; with a submarine and landing ship hit in dry dock and naval drones stalking the harbour, most of the fleet moved to Novorossiysk.",
+      "theme": "naval",
+      "search": "2023 Sevastopol headquarters strike",
+      "links": [],
+      "wikidata_id": "Q122781619"
+    },
+    {
+      "id": "atacms-first",
+      "phase_id": "counteroffensive-2023",
+      "on": "2023-10-17",
+      "title": "First ATACMS strikes",
+      "text": "Secretly delivered ATACMS missiles destroyed helicopters at Berdiansk and Luhansk airfields, and Ukraine's counteroffensive was acknowledged to have stalled by November.",
+      "theme": "air",
+      "search": "MGM-140 ATACMS",
+      "links": []
+    },
+    {
+      "id": "avdiivka-falls",
+      "phase_id": "avdiivka-2024",
+      "on": "2024-02-17",
+      "title": "Avdiivka falls",
+      "text": "After four months of assault under glide bombs and with Ukrainian ammunition rationed while US aid was blocked in Congress, Ukraine withdrew from the fortress town it had held since 2014.",
+      "theme": "ground",
+      "search": "battle of Avdiivka",
+      "links": [],
+      "wikidata_id": "Q111383245"
+    },
+    {
+      "id": "syrskyi",
+      "phase_id": "avdiivka-2024",
+      "on": "2024-02-08",
+      "title": "Zaluzhnyi replaced by Syrskyi",
+      "text": "President Zelenskyy replaced the popular commander-in-chief Valerii Zaluzhnyi with Oleksandr Syrskyi after months of reported disputes over mobilisation and strategy.",
+      "theme": "mobilisation",
+      "search": "Oleksandr Syrskyi",
+      "links": []
+    },
+    {
+      "id": "us-aid-2024",
+      "phase_id": "avdiivka-2024",
+      "on": "2024-04-24",
+      "title": "US aid resumes",
+      "text": "Congress passed a 61 billion dollar package after a six-month blockage; ammunition and the 300-kilometre ATACMS reached the front within weeks. Ukraine also lowered its mobilisation age to 25.",
+      "theme": "diplomacy",
+      "search": "Ukraine Security Supplemental Appropriations Act",
+      "links": [],
+      "wikidata_id": "Q125627597"
+    },
+    {
+      "id": "kharkiv-2024",
+      "phase_id": "avdiivka-2024",
+      "on": "2024-05-10",
+      "title": "Russian incursion north of Kharkiv",
+      "text": "Russia opened a new front towards Vovchansk and Lyptsi, drawing Ukrainian reserves; it was contained within weeks and led allies to permit strikes into Russia near the border.",
+      "theme": "ground",
+      "search": "2024 Kharkiv offensive",
+      "links": [],
+      "wikidata_id": "Q125870679"
+    },
+    {
+      "id": "f16",
+      "phase_id": "kursk",
+      "on": "2024-08-04",
+      "title": "F-16s arrive",
+      "text": "The first European F-16s entered Ukrainian service, initially against cruise missiles and drones; one was lost with its pilot in the first weeks.",
+      "theme": "air",
+      "search": "General Dynamics F-16 Fighting Falcon",
+      "links": []
+    },
+    {
+      "id": "kursk-incursion",
+      "phase_id": "kursk",
+      "on": "2024-08-06",
+      "title": "Ukraine invades Kursk Oblast",
+      "text": "Ukrainian brigades crossed the border and took Sudzha and some 1,000 square kilometres in days, the first foreign occupation of Russian territory since 1945; the salient held until spring 2025.",
+      "theme": "ground",
+      "search": "2024 Kursk offensive",
+      "links": [],
+      "wikidata_id": "Q128686808"
+    },
+    {
+      "id": "dprk-troops",
+      "phase_id": "kursk",
+      "on": "2024-11-05",
+      "title": "North Korean troops enter combat",
+      "text": "Some 11,000 North Korean soldiers deployed to Kursk engaged Ukrainian forces from early November, confirmed by Kyiv, Seoul and Washington; two were captured in January 2025.",
+      "theme": "mobilisation",
+      "search": "North Korean involvement in the Russian invasion of Ukraine",
+      "links": []
+    },
+    {
+      "id": "oreshnik",
+      "phase_id": "kursk",
+      "on": "2024-11-21",
+      "title": "Oreshnik fired at Dnipro",
+      "text": "Days after Ukraine's first ATACMS and Storm Shadow strikes inside Russia, Russia fired an intermediate-range ballistic missile with inert warheads at Dnipro as a signal to the West.",
+      "theme": "air",
+      "search": "Oreshnik (missile)",
+      "links": []
+    },
+    {
+      "id": "trump-talks",
+      "phase_id": "kursk",
+      "on": "2025-02-28",
+      "title": "Washington changes course",
+      "text": "The new US administration opened direct talks with Moscow, clashed publicly with Zelenskyy in the Oval Office and briefly paused aid and intelligence; Ukraine accepted a 30-day ceasefire proposal in March that Russia declined.",
+      "theme": "diplomacy",
+      "search": "Trump Zelenskyy Oval Office meeting",
+      "links": [],
+      "wikidata_id": "Q132831010"
+    },
+    {
+      "id": "kursk-end",
+      "phase_id": "kursk",
+      "on": "2025-04-26",
+      "title": "Kursk salient largely lost",
+      "text": "Russian and North Korean forces, using fibre-optic drones against Ukrainian supply routes, retook Sudzha in March and most of the salient by late April.",
+      "theme": "ground",
+      "search": "2024 Kursk offensive",
+      "links": [],
+      "wikidata_id": "Q128686808"
+    },
+    {
+      "id": "spiderweb",
+      "phase_id": "2025",
+      "on": "2025-06-01",
+      "title": "Operation Spiderweb",
+      "text": "FPV drones smuggled into Russia in lorry roofs struck strategic bombers on airfields from Murmansk to Irkutsk; Ukraine claimed 41 aircraft hit, US officials fewer. The operation exposed the bomber fleet to drones for the first time.",
+      "theme": "air",
+      "search": "Operation Spiderweb",
+      "links": []
+    },
+    {
+      "id": "summer-offensive-2025",
+      "phase_id": "2025",
+      "on": "2025-07-15",
+      "title": "Russia's summer offensive",
+      "text": "Russian forces pushed on Pokrovsk, Kostiantynivka and into Sumy and Dnipropetrovsk oblasts through the summer with small infantry groups and motorcycles, gaining ground slowly at heavy cost without a breakthrough.",
+      "theme": "ground",
+      "search": "Battle of Pokrovsk",
+      "links": []
+    },
+    {
+      "id": "refineries-2025",
+      "phase_id": "2025",
+      "on": "2025-09-01",
+      "title": "Campaign against Russian refineries",
+      "text": "Ukrainian long-range drones hit a large share of Russia's major refineries repeatedly through 2025, cutting output and causing fuel shortages in Russian regions; Russia answered with record Shahed and missile waves on Ukraine's grid.",
+      "theme": "economy",
+      "search": "Ukrainian strikes on Russian oil refineries",
+      "links": [],
+      "wikidata_id": "Q136464377"
+    },
+    {
+      "id": "peace-plan-2025",
+      "phase_id": "2025",
+      "on": "2025-11-20",
+      "title": "The 28-point plan",
+      "text": "A US 28-point peace plan, read as close to Russian terms, prompted counter-drafts from Kyiv and European capitals; Moscow rejected the revised versions and fighting continued.",
+      "theme": "diplomacy",
+      "search": "Peace negotiations in the Russian invasion of Ukraine",
+      "links": []
+    },
+    {
+      "id": "casualty-statement-2026",
+      "phase_id": "2026",
+      "on": "2026-02-24",
+      "title": "Four years of full-scale war",
+      "text": "On the fourth anniversary Zelenskyy put Ukrainian military deaths at about 55,000 with many more missing, a figure independent trackers consider low; estimates of Russian dead from named-casualty counts run far higher. All such figures are contested.",
+      "theme": "mobilisation",
+      "search": "Casualties of the Russo-Ukrainian War",
+      "links": []
+    },
+    {
+      "id": "command-crisis-2026",
+      "phase_id": "2026",
+      "on": "2026-07-15",
+      "title": "Command crisis in Kyiv",
+      "text": "Amid protests over the defence ministry and the conduct of the war, Zelenskyy replaced Oleksandr Syrskyi with Mykhailo Drapatyi as commander-in-chief in July 2026 (reported; see current updates for later changes).",
+      "theme": "mobilisation",
+      "search": "Mykhailo Drapatyi",
+      "links": []
+    }
+  ]
+}

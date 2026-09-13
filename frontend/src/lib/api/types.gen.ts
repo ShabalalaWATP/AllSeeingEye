@@ -2847,6 +2847,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conflicts/ukraine/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Reference
+         * @description Curated notes on equipment, forces and the timeline; absent until imported.
+         */
+        get: operations["ukraine_reference_api_conflicts_ukraine_reference_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conflicts/ukraine/images/{image_id}.jpg": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Image
+         * @description A cached Commons image from the packaged store, same origin so the CSP is unchanged.
+         */
+        get: operations["ukraine_image_api_conflicts_ukraine_images__image_id__jpg_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4994,7 +5034,7 @@ export interface components {
             /** Wikipedia */
             wikipedia?: string | null;
             /** Links */
-            links?: components["schemas"]["LinkOut"][];
+            links?: components["schemas"]["ase__api__schemas_infrastructure__LinkOut"][];
             /** Source Url */
             source_url: string;
             /** Note */
@@ -5262,6 +5302,37 @@ export interface components {
          * @enum {integer}
          */
         EconomyWindowDays: 2 | 5 | 7 | 14;
+        /** EquipmentOut */
+        EquipmentOut: {
+            /** Id */
+            id: string;
+            side: components["schemas"]["Side"];
+            /** Group */
+            group: string;
+            /** Subgroup */
+            subgroup: string;
+            /** Name */
+            name: string;
+            /** Origin */
+            origin: string;
+            /** Role */
+            role: string;
+            /** Description */
+            description: string;
+            /** Numbers */
+            numbers: string | null;
+            /** Wikidata Id */
+            wikidata_id: string | null;
+            /** Image Id */
+            image_id: string | null;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Links */
+            links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
+        };
         /** EventOut */
         EventOut: {
             /** Id */
@@ -5748,6 +5819,33 @@ export interface components {
              */
             disclose_to_provider: true;
         };
+        /** ForceNodeOut */
+        ForceNodeOut: {
+            /** Id */
+            id: string;
+            side: components["schemas"]["Side"];
+            /** Parent Id */
+            parent_id: string | null;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Commander */
+            commander: string | null;
+            /** Figure Id */
+            figure_id: string | null;
+            /** Strength */
+            strength: string | null;
+            /** Wikidata Id */
+            wikidata_id: string | null;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Links */
+            links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
+        };
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
             /**
@@ -5841,7 +5939,7 @@ export interface components {
             /** Precision */
             precision?: ("site" | "mapped" | "city") | null;
             /** Links */
-            links?: components["schemas"]["LinkOut"][];
+            links?: components["schemas"]["ase__api__schemas_infrastructure__LinkOut"][];
         };
         /** GroundwaveOut */
         GroundwaveOut: {
@@ -6612,13 +6710,6 @@ export interface components {
             note: string | null;
             /** Updated At */
             updated_at: string | null;
-        };
-        /** LinkOut */
-        LinkOut: {
-            /** Label */
-            label: string;
-            /** Url */
-            url: string;
         };
         /** LlmConnectionIn */
         LlmConnectionIn: {
@@ -8115,6 +8206,21 @@ export interface components {
             links: components["schemas"]["ReferenceLinkOut"][];
             /** Provenance */
             provenance: string;
+        };
+        /** ReferenceImageOut */
+        ReferenceImageOut: {
+            /** Id */
+            id: string;
+            /** Licence */
+            licence: string;
+            /** Credit */
+            credit: string;
+            /** Source Url */
+            source_url: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
         };
         /** ReferenceLinkOut */
         ReferenceLinkOut: {
@@ -9797,6 +9903,11 @@ export interface components {
             /** Votes */
             votes: components["schemas"]["ControlStatus"][];
         };
+        /**
+         * Side
+         * @enum {string}
+         */
+        Side: "ru" | "ua";
         /** SirEvidenceOut */
         SirEvidenceOut: {
             /** Code */
@@ -9863,7 +9974,7 @@ export interface components {
             /** Wikipedia */
             wikipedia?: string | null;
             /** Links */
-            links?: components["schemas"]["LinkOut"][];
+            links?: components["schemas"]["ase__api__schemas_infrastructure__LinkOut"][];
             /** Source Url */
             source_url: string;
             /** Note */
@@ -10238,6 +10349,17 @@ export interface components {
             /** Latest Alerts */
             latest_alerts: components["schemas"]["EventOut"][];
         };
+        /** SpecialityOut */
+        SpecialityOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Subgroups */
+            subgroups: {
+                [key: string]: string;
+            };
+        };
         /** StoreStatsOut */
         StoreStatsOut: {
             /** Total */
@@ -10417,6 +10539,46 @@ export interface components {
             /** Provider */
             provider?: string | null;
         };
+        /** TimelineEventOut */
+        TimelineEventOut: {
+            /** Id */
+            id: string;
+            /** Phase Id */
+            phase_id: string;
+            /**
+             * On
+             * Format: date
+             */
+            on: string;
+            /** Title */
+            title: string;
+            /** Text */
+            text: string;
+            /** Theme */
+            theme: string;
+            /** Wikidata Id */
+            wikidata_id: string | null;
+            /** Image Id */
+            image_id: string | null;
+            /** Links */
+            links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
+        };
+        /** TimelinePhaseOut */
+        TimelinePhaseOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** End */
+            end: string | null;
+            /** Summary */
+            summary: string;
+        };
         /** TokenResponse */
         TokenResponse: {
             /** Access Token */
@@ -10500,6 +10662,34 @@ export interface components {
             headline_categories: string[];
             control: components["schemas"]["ControlSummaryOut"] | null;
             freshness: components["schemas"]["FreshnessOut"];
+        };
+        /** UkraineReferenceOut */
+        UkraineReferenceOut: {
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Source Note */
+            source_note: string;
+            /** Specialities */
+            specialities: components["schemas"]["SpecialityOut"][];
+            /** Themes */
+            themes: {
+                [key: string]: string;
+            };
+            /** Equipment */
+            equipment: components["schemas"]["EquipmentOut"][];
+            /** Forces */
+            forces: components["schemas"]["ForceNodeOut"][];
+            /** Phases */
+            phases: components["schemas"]["TimelinePhaseOut"][];
+            /** Events */
+            events: components["schemas"]["TimelineEventOut"][];
+            /** Images */
+            images: {
+                [key: string]: components["schemas"]["ReferenceImageOut"];
+            };
         };
         /**
          * UpdateGroup
@@ -10634,6 +10824,20 @@ export interface components {
         ase__api__schemas_events__SourcesOut: {
             /** Items */
             items: components["schemas"]["SourceOut"][];
+        };
+        /** LinkOut */
+        ase__api__schemas_infrastructure__LinkOut: {
+            /** Label */
+            label: string;
+            /** Url */
+            url: string;
+        };
+        /** LinkOut */
+        ase__api__schemas_ukraine_reference__LinkOut: {
+            /** Label */
+            label: string;
+            /** Url */
+            url: string;
         };
     };
     responses: never;
@@ -16590,6 +16794,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ControlOut"];
+                };
+            };
+        };
+    };
+    ukraine_reference_api_conflicts_ukraine_reference_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UkraineReferenceOut"];
+                };
+            };
+        };
+    };
+    ukraine_image_api_conflicts_ukraine_images__image_id__jpg_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

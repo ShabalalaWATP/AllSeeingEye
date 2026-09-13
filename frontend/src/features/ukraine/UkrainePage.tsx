@@ -3,21 +3,30 @@ import { describeError } from '@/lib/api/errors';
 import {
   fetchUkraineBoard,
   fetchUkraineControl,
+  fetchUkraineReference,
   type UkraineBoard,
   type UkraineControl,
+  type UkraineReference,
 } from '@/lib/api/ukraine';
 import { formatAgo } from '@/lib/format';
 
+import { EquipmentSection } from './EquipmentSection';
 import { FiguresStrip } from './FiguresStrip';
+import { ForcesSection } from './ForcesSection';
 import { SourcesFooter } from './SourcesFooter';
+import { TimelineSection } from './TimelineSection';
 import { UkraineMap } from './UkraineMap';
 import { UpdatesTabs } from './UpdatesTabs';
 import { useUkraineBoard } from './useUkraineBoard';
+import { useUkraineReference } from './useUkraineReference';
 
 const SECTIONS = [
   ['map', 'Map'],
   ['updates', 'Updates'],
   ['figures', 'Figures'],
+  ['timeline', 'Timeline'],
+  ['forces', 'Forces'],
+  ['equipment', 'Equipment'],
   ['sources', 'Sources'],
 ] as const;
 
@@ -47,11 +56,16 @@ function Freshness({ board, now }: { board: UkraineBoard; now: number }) {
 export default function UkrainePage({
   loadBoard = fetchUkraineBoard,
   loadControl = fetchUkraineControl,
+  loadReference = fetchUkraineReference,
+  imageFetcher,
 }: {
   loadBoard?: () => Promise<UkraineBoard>;
   loadControl?: () => Promise<UkraineControl>;
+  loadReference?: () => Promise<UkraineReference>;
+  imageFetcher?: ((path: string) => Promise<Blob>) | undefined;
 }) {
   const { data: loaded, error, loading } = useUkraineBoard(loadBoard);
+  const reference = useUkraineReference(loadReference);
   const data = loaded?.board ?? null;
   const now = loaded?.loadedAt ?? 0;
   return (
@@ -95,6 +109,18 @@ export default function UkrainePage({
       <UkraineMap load={loadControl} />
       {data ? <UpdatesTabs updates={data.updates} /> : null}
       {data ? <FiguresStrip board={data} /> : null}
+      {reference.error ? (
+        <Alert tone="warning">
+          Reference notes are unavailable: {describeError(reference.error)}
+        </Alert>
+      ) : null}
+      {reference.data ? (
+        <>
+          <TimelineSection reference={reference.data} fetcher={imageFetcher} />
+          <ForcesSection reference={reference.data} />
+          <EquipmentSection reference={reference.data} fetcher={imageFetcher} />
+        </>
+      ) : null}
       <SourcesFooter control={data?.control ?? null} />
     </article>
   );

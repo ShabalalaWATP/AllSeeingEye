@@ -9,7 +9,11 @@ import { TopBar } from '@/app/shell/TopBar';
 import UkrainePage from '@/features/ukraine/UkrainePage';
 import { ukraineControlSchema, type UkraineBoard, type UkraineControl } from '@/lib/api/ukraine';
 import { ukraineBoard } from '@/test/fixtures.ukraine';
+import { ukraineReference } from '@/test/fixtures.ukraineReference';
 
+import invasionDay from './invasion-day.jpg';
+import orlan from './ru-orlan-10.jpg';
+import t90m from './ru-t-90m.jpg';
 import controlPreview from './ukraineControlPreview.json';
 
 const control: UkraineControl = ukraineControlSchema.parse(controlPreview);
@@ -17,6 +21,22 @@ const board: UkraineBoard = { ...ukraineBoard, control: control.summary };
 
 const loadBoard = () => Promise.resolve(board);
 const loadControl = () => Promise.resolve(control);
+const loadReference = () => Promise.resolve(ukraineReference);
+const previewImages: Record<string, string> = {
+  'ru-orlan-10': orlan,
+  'ru-t-90m': t90m,
+  'invasion-day': invasionDay,
+};
+/** Serves the three bundled sample images in place of the authenticated image endpoint. */
+const imageFetcher = (path: string): Promise<Blob> => {
+  const id =
+    path
+      .split('/')
+      .pop()
+      ?.replace(/\.jpg$/, '') ?? '';
+  const url = previewImages[id];
+  return url ? fetch(url).then((r) => r.blob()) : Promise.reject(new Error('no preview image'));
+};
 
 export default function UkrainePreviewPage() {
   return (
@@ -25,7 +45,12 @@ export default function UkrainePreviewPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
         <main className="min-h-0 flex-1">
-          <UkrainePage loadBoard={loadBoard} loadControl={loadControl} />
+          <UkrainePage
+            loadBoard={loadBoard}
+            loadControl={loadControl}
+            loadReference={loadReference}
+            imageFetcher={imageFetcher}
+          />
         </main>
       </div>
     </div>

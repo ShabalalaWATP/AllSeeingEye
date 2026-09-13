@@ -14,6 +14,13 @@ export type Settlement = components['schemas']['SettlementOut'];
 export type ControlStatus = components['schemas']['ControlStatus'];
 export type UpdateGroup = components['schemas']['UpdateGroup'];
 export type Lens = components['schemas']['Lens'];
+export type UkraineReference = components['schemas']['UkraineReferenceOut'];
+export type EquipmentEntry = components['schemas']['EquipmentOut'];
+export type ForceNode = components['schemas']['ForceNodeOut'];
+export type TimelinePhase = components['schemas']['TimelinePhaseOut'];
+export type TimelineEvent = components['schemas']['TimelineEventOut'];
+export type ReferenceImage = components['schemas']['ReferenceImageOut'];
+export type Side = components['schemas']['Side'];
 
 const statusSchema = z.enum(['ua', 'ru', 'contested', 'unknown']);
 const groupSchema = z.enum(['assessments', 'ukrainian', 'russian', 'international']);
@@ -109,6 +116,119 @@ export const ukraineControlSchema: z.ZodType<UkraineControl> = z.object({
     .array(z.object({ name: z.string().max(80), iso: z.string().max(8), polygons }))
     .max(30),
 });
+
+const sideSchema = z.enum(['ru', 'ua']);
+const linkSchema = z.object({ label: z.string().max(120), url: z.string().max(600) });
+const imageIdSchema = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9-]{0,59}$/)
+  .nullable();
+const qidSchema = z
+  .string()
+  .regex(/^Q\d{1,12}$/)
+  .nullable();
+
+export const ukraineReferenceSchema: z.ZodType<UkraineReference> = z.object({
+  retrieved_at: z.string(),
+  source_note: z.string().max(400),
+  specialities: z
+    .array(
+      z.object({
+        key: z.string().max(40),
+        label: z.string().max(80),
+        subgroups: z.record(z.string().max(40), z.string().max(80)),
+      }),
+    )
+    .max(20),
+  themes: z.record(z.string().max(40), z.string().max(80)),
+  equipment: z
+    .array(
+      z.object({
+        id: z.string().max(60),
+        side: sideSchema,
+        group: z.string().max(40),
+        subgroup: z.string().max(40),
+        name: z.string().max(160),
+        origin: z.string().max(80),
+        role: z.string().max(160),
+        description: z.string().max(900),
+        numbers: z.string().max(400).nullable(),
+        wikidata_id: qidSchema,
+        image_id: imageIdSchema,
+        as_of: z.string(),
+        links: z.array(linkSchema).max(8),
+      }),
+    )
+    .max(200),
+  forces: z
+    .array(
+      z.object({
+        id: z.string().max(60),
+        side: sideSchema,
+        parent_id: z.string().max(60).nullable(),
+        name: z.string().max(160),
+        role: z.string().max(900),
+        commander: z.string().max(120).nullable(),
+        figure_id: z.string().max(60).nullable(),
+        strength: z.string().max(400).nullable(),
+        wikidata_id: qidSchema,
+        as_of: z.string(),
+        links: z.array(linkSchema).max(8),
+      }),
+    )
+    .max(160),
+  phases: z
+    .array(
+      z.object({
+        id: z.string().max(60),
+        label: z.string().max(160),
+        start: z.string(),
+        end: z.string().nullable(),
+        summary: z.string().max(900),
+      }),
+    )
+    .max(16),
+  events: z
+    .array(
+      z.object({
+        id: z.string().max(60),
+        phase_id: z.string().max(60),
+        on: z.string(),
+        title: z.string().max(160),
+        text: z.string().max(900),
+        theme: z.string().max(40),
+        wikidata_id: qidSchema,
+        image_id: imageIdSchema,
+        links: z.array(linkSchema).max(8),
+      }),
+    )
+    .max(160),
+  images: z.record(
+    z.string().max(60),
+    z.object({
+      id: z.string().max(60),
+      licence: z.string().max(80),
+      credit: z.string().max(300),
+      source_url: z.string().max(600),
+      width: z.number().int().nonnegative(),
+      height: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
+export function fetchUkraineReference(signal?: AbortSignal): Promise<UkraineReference> {
+  return apiCall(
+    '/api/conflicts/ukraine/reference',
+    signal ? { schema: ukraineReferenceSchema, signal } : { schema: ukraineReferenceSchema },
+  );
+}
+
+/** Same-origin path of a cached reference image; the id is validated by the schema. */
+export function referenceImagePath(imageId: string): string {
+  return `/api/conflicts/ukraine/images/${imageId}.jpg`;
+}
+
+export const SIDE_LABELS: Record<Side, string> = { ru: 'Russia', ua: 'Ukraine' };
 
 export function fetchUkraineBoard(signal?: AbortSignal): Promise<UkraineBoard> {
   return apiCall(

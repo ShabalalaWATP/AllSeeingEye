@@ -2,9 +2,10 @@
 
 A left-rail workspace at `/conflicts/ukraine` that shows reported territorial control, the
 belligerents' own figures, published assessments and retained reporting on Russia's war in
-Ukraine. Phase 1 of `docs/UKRAINE_WAR_TRACKER_PLAN.md` is delivered: the map, headline
-figures, grouped updates with lenses, and the sources footer. Timeline, force organisation,
-equipment, losses and casualty importers follow in later phases.
+Ukraine. Phases 1 and 2 of `docs/UKRAINE_WAR_TRACKER_PLAN.md` are delivered: the map,
+headline figures, grouped updates with lenses, the timeline, force organisation, the
+equipment catalogue and the sources footer. Loss and casualty importers, lenses with
+charts and the flagged frontline providers follow in later phases.
 
 ## What the page shows
 
@@ -23,6 +24,18 @@ equipment, losses and casualty importers follow in later phases.
   for six categories with the day's stated increase and a 30-day sparkline of daily
   increases, each badged `Claimed`, plus the reported count of Russian-held places badged
   `Reported`. A table lists every claimed category.
+- **Timeline.** A phase ribbon from 2014 to the current year over dated event cards with a
+  theme filter; each card carries plain English, a source link and, where Commons holds a
+  licensed image of the subject, a captioned image.
+- **Force organisation.** Two expandable trees (Russia, Ukraine) of reported command
+  structure: command, ministry, general staff, groupings and services, corps and branches.
+  Nodes show the reported commander (linking to the public figures tracker where a roster
+  record exists), a strength estimate naming whose, links and an as-of date.
+- **Equipment by speciality.** Ten specialities (drones; communications and electronic
+  warfare; air defence; land-attack missiles and glide bombs; artillery; small arms; tanks;
+  infantry fighting vehicles and carriers; aviation; naval), each with sub-headings and a
+  Russia and a Ukraine column of cards: image, role, description, origin, reported numbers
+  naming whose, links and an as-of date. A compare toggle renders the speciality as a table.
 - **Sources.** Attribution, licence and the doctrine in plain words.
 
 ## Data and cadence
@@ -34,6 +47,7 @@ equipment, losses and casualty importers follow in later phases.
 | General Staff claims | russianwarship.rip mirror of the General Staff posts | Feed connector `ukraine_general_staff`, every six hours, last 90 days, one event per day with the figures in attributes. Grade C, credibility cannot be judged, tagged `interested_party`. |
 | ISW assessments | WordPress posts index of understandingwar.org | Feed connector `isw_assessments`, hourly, ten newest posts titled "Russian Offensive Campaign Assessment"; title, link, date and a plain-text excerpt under 400 characters. |
 | Kyiv Independent, Bellingcat | Public RSS | New seeds in the outlet list, under the normal source controls. |
+| Reference notes | Hand-written seeds `ukraine_equipment_seeds.json`, `ukraine_forces_seeds.json`, `ukraine_timeline_seeds.json` | `uv run ase import-ukraine-reference` resolves each seed through the Wikidata entity client (explicit `wikidata_id` wins, otherwise a search whose label shares a word), adds the article link, and caches the Commons image named by P18 as a 480 px JPEG under 60 KB with its licence and credit, into `resources/ukraine_reference.json` and `resources/ukraine_images/`. Around 110 images, 3.7 MB. |
 
 Loaders are cached per process, so restart the API after re-running an importer. The page
 polls its board every five minutes while visible.
@@ -46,7 +60,13 @@ polls its board every five minutes while visible.
 - `GET /api/conflicts/ukraine/control` returns the settlements, areas and outlines.
   `private, max-age=3600`; the payload changes only when the operator re-imports.
 
-Both require a session and revalidate it like the other trackers.
+- `GET /api/conflicts/ukraine/reference` returns the specialities, themes, equipment,
+  forces, phases, events and the image manifest; 404 until the operator has imported.
+- `GET /api/conflicts/ukraine/images/{id}.jpg` serves one cached image from the package
+  (`private, max-age=86400`); the page fetches it through the session and shows it as an
+  object URL, so no external host joins the Content Security Policy.
+
+All require a session and revalidate it like the other trackers.
 
 ## Doctrine
 
@@ -61,14 +81,28 @@ humanitarian purpose. `docs/FRONTLINES_AND_UNREST.md` and the map's Conflict pan
 the access routes, and the plan's section 9 holds a request text the operator may send to
 DeepState.
 
+## Reference content and its limits
+
+The notes were written by hand from public reporting up to mid-2026 and dated on each entry;
+the 2026 phase and the July 2026 command change rest on the encyclopaedic summary current at
+the time of writing and say so. Nothing in them is intelligence. Numbers are public estimates
+that name their source (Oryx counts are visually confirmed and undercount by design; General
+Staff figures are claims). Wikidata provides the identifier and article; where an item has no
+Commons image the card runs without one; where no Wikidata item exists the seed keeps a
+hand-written link. Re-run the importer after editing a seed, and review image licences and
+credits in the catalogue before committing.
+
 ## Verification
 
 `backend/tests/test_ukraine.py` covers the VIINA parser and dissolve on a synthetic
 tessellation, the bounds, the outline simplifier, the packaged snapshots, the claim
 round-trip through event attributes, the lens vocabulary, the update grouping and war
 relevance rule, both connectors on saved fixtures, the board service and the two
-endpoints. `frontend/src/features/ukraine/ukraine.test.tsx` covers the page without
+endpoints. `tests/test_ukraine_reference.py` covers the seed files, the packaged catalogue and images,
+seed resolution on fakes, the bounds and validation, and the two endpoints.
+`frontend/src/features/ukraine/ukraine.test.tsx` covers the page without
 WebGL, the tabs and lenses, the claim badges and links, a failed board, the rail entry
-and the layer colours. The DEV-only route `/dev/ukraine-preview` frames the page with
+and the layer colours; `reference.test.tsx` covers the timeline filters, the force
+trees, the equipment headings, compare table and captioned images, and a missing catalogue. The DEV-only route `/dev/ukraine-preview` frames the page with
 fixture data and a reduced copy of the real snapshot for visual checks; it needs no
 account and sends no credential.

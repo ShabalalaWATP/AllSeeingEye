@@ -4678,3 +4678,14 @@ claims, and a sources footer. Two connectors were added (the General Staff mirro
 ISW's posts index, since its RSS refuses readers) and two seeds (Kyiv Independent's
 verified archive feed, Bellingcat). Importers run as operator commands with byte and
 vertex bounds; the snapshot is 700 KB.
+
+Phase 2 of the Ukraine tracker followed the same evening: a timeline from 2014 to 2026 in
+ten phases and 38 dated events, force structure trees for both sides (32 nodes, commanders
+linked to the public figures roster) and an equipment catalogue of 108 systems in ten
+specialities with sub-headings and a compare table. All of it is hand-written seed JSON
+with a source and an as-of date on every entry, resolved through the Wikidata entity client
+for identifiers and articles, with Commons images cached as bounded JPEGs carrying their
+licence and credit and served through the session so the Content Security Policy stays
+unchanged. Wikidata searches with parenthetical or year-ranged titles returned nothing, so
+those seeds pin explicit ids; the 2026 events lean on the encyclopaedic summary current at
+the time and say so on the card.

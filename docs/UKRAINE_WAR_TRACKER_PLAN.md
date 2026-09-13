@@ -308,8 +308,8 @@ route with a temporary launch configuration that is deleted afterwards.
 
 ## 8. Phases
 
-Status: phase 1 delivered on 13 September 2026 (`docs/UKRAINE_WAR_TRACKER.md`); the
-frontline provider endpoint moved to phase 4 with the providers themselves.
+Status: phases 1 and 2 delivered on 13 September 2026 (`docs/UKRAINE_WAR_TRACKER.md`);
+the frontline provider endpoint moved to phase 4 with the providers themselves.
 
 1. **Skeleton and map.** Domain, oblast import, VIINA importer and snapshot,
    board endpoint, page shell, rail entry, map with control cells and legend,

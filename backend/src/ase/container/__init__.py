@@ -89,13 +89,13 @@ from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
-from ase.container.ukraine import UkraineWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
 from ase.container.sec_filings import SecFilingWiring
 from ase.container.source_inventory import SourceInventoryWiring
+from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter

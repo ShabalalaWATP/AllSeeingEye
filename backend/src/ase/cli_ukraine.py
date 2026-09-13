@@ -8,6 +8,7 @@ import typer
 from ase.adapters.geo.bounded_download import DEFAULT_CONTACT
 from ase.adapters.geo.ukraine_control_import import import_ukraine_control
 from ase.adapters.geo.ukraine_oblasts_import import import_ukraine_oblasts
+from ase.adapters.geo.ukraine_reference_import import import_ukraine_reference
 
 RESOURCES = Path(__file__).parent / "resources"
 Contact = Annotated[str, typer.Option(help="Contact URL or address sent in the User-Agent.")]
@@ -39,3 +40,19 @@ def import_oblasts(
         typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
         raise typer.Exit(1) from exc
     typer.echo(f"Wrote {count} oblast outlines to {destination}.")
+
+
+def import_reference(
+    destination: Annotated[
+        Path, typer.Option(help="Reference catalogue JSON to write.")
+    ] = RESOURCES / "ukraine_reference.json",
+    contact: Contact = DEFAULT_CONTACT,
+) -> None:
+    """Resolve the equipment, forces and timeline seeds through Wikidata and cache images."""
+    try:
+        count = import_ukraine_reference(str(destination), contact=contact)
+    except Exception as exc:
+        typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
+        raise typer.Exit(1) from exc
+    typer.echo(f"Wrote {count} reference entries to {destination}.")
+    typer.echo("Review image licences and credits before committing the catalogue.")
