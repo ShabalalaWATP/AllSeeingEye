@@ -610,3 +610,19 @@ passed; the full backend and coverage-gated frontend runs are reported there.
   is visible before the first research run.
 
 See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
+
+## 13 September 2026: public figures tracker
+
+- [x] Operator-run Wikidata and Commons import producing a bounded, licensed roster
+  with a retrieval date.
+- [x] Narrow name matching over retained news, political and conflict reporting with
+  a stated placement basis and a seat-of-office default.
+- [x] Authenticated `GET /api/figures` board with portraits inline; no image route.
+- [x] Off-by-default map layer with portrait markers, a panel, an inspector and the
+  `/trackers/figures` page.
+- [ ] Geocode place names in reports that name an official but carry no location.
+- [ ] Re-import the roster on a schedule the operator chooses; the date is visible
+  until then.
+
+See [Public figures](PUBLIC_FIGURES.md).
+

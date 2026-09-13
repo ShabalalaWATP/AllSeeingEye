@@ -4561,3 +4561,32 @@ Bandit still reports four pre-existing findings outside the changed modules.
 The shared feed HTTP client is six lines over the repository's 350-line target;
 the file-length check passes, and a separate split avoids changing the existing
 credential and SSRF policy seams during this remediation.
+
+## 13 September 2026: public figures tracker
+
+Added a public figures layer and tracker: a packaged roster of 69 current heads of
+state, heads of government and the leaders of NATO, the UN and the EU, imported from
+Wikidata with licensed Wikimedia Commons portraits by an operator-run CLI command,
+never at request time. The board places each figure by the newest retained report
+that names them, states the basis (reported place, reported country or seat of
+office) on every marker, list and inspector, and says plainly that absence of
+reporting is not a location. Name matching is deliberately narrow: full names,
+multi-word aliases, distinctive surnames, no title words, a deny list for shared
+surnames, and any name shared by two people is dropped. The map layer is off by
+default, loads only for a signed-in identity, and renders circular portraits ringed
+by basis. Portraits travel as validated base64 inside the authenticated payload so
+no image route exists.
+
+Two importer problems shaped the code. Wikidata refuses requests without a contact
+in the User-Agent and rate-limited the second run, so the importer carries a contact,
+pauses between queries and retries a 429 once. Several incumbents have no English
+label and some countries declare an office item that does not match the incumbent
+(Iran, South Korea), so labels fall back to the multilingual default and titles come
+from the person's own current positions ranked by role words.
+
+Validation: 17 backend tests and 11 frontend tests pass with Ruff, mypy strict, the
+import contracts, typecheck, lint and the file-length check; the full frontend suite
+ran with coverage. The panel, inspector and board were checked visually on a
+development preview route with real portraits; the globe markers rely on layer tests.
+See [Public figures](PUBLIC_FIGURES.md).
+

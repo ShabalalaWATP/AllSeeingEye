@@ -217,6 +217,14 @@ Searching returns the list to its first page; lists remain bounded and scrollabl
 Media remains selection-driven and this redesign adds no polling or new camera
 providers. Source coverage and provider availability are not expanded by styling.
 
+### Public figures layer
+
+The "Public figures" panel on the left rail toggles an off-by-default layer of
+circular portraits for current office-holders, ringed by placement basis. Selecting
+a portrait or a list entry flies to the placement and opens an inspector that
+explains the basis and lists the reporting behind it. See
+[Public figures](PUBLIC_FIGURES.md) for the roster, doctrine and import.
+
 ## Routing configuration and limits
 
 The local development contact was configured in the ignored backend environment
