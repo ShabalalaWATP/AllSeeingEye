@@ -102,7 +102,9 @@ matcher, tells the reader what the mention establishes.
 
 - The map layer is off by default. The "Public figures" panel on the left rail
   toggles it, lists the visible figures with their basis, filters by name, office or
-  country, and can hide seat defaults. Selecting a figure flies to the placement and
+  country text, narrows to one or more countries with chips (organisations grouped
+  as one chip, "All" clears), and can hide seat defaults. The tracker page carries the
+  same chips. Selecting a figure flies to the placement and
   opens an inspector with the basis, its explanation, the recent reporting with
   grades and the portrait credit.
 - Markers are the portrait in a ring coloured by basis (cyan reported place, amber
@@ -142,6 +144,19 @@ Xinhua's English RSS has not updated since 2017, and BelTA's English site return
 English names and aliases in the roster, so it was not added for this purpose.
 Belarusian and Chinese officials therefore depend on wire, broadcaster and
 regional English reporting, and most will sit at their seat most of the time.
+
+Later the same day four non-English or state feeds were added so the translation
+queue can supply English titles for matching: the Russian MFA news feed (official,
+C, `state_controlled`, Russian), BelTA (Belarusian state agency, Russian), Interfax
+(Russian press, Russian) and Ukrinform in English (Ukrainian state agency). The
+regional ones are unassessed headline-only seeds like the other regional feeds and
+are approved for regional research with their country. Translation depends on a
+configured model: the queue translates titles only, in batches of 20 within 60
+model calls an hour, so a Cyrillic headline naming Lavrov becomes matchable once
+its English title arrives. Without a model those feeds still appear on the map but
+cannot place a figure. RT and Sputnik were not added: both are sanctioned in the UK
+and EU, and the doctrine already treats state media as the government's position.
+Kremlin, Xinhua and gov.cn serve plain HTTP only and remain out.
 
 ## Follow-ups
 

@@ -201,7 +201,7 @@ CATALOGUE = {
         "Language, nationality and a translated headline do not establish credibility.",
     ),
     **_entries(
-        {"tass_en": "C", "cgtn_china": "C"},
+        {"tass_en": "C", "cgtn_china": "C", "russia_mfa_ru": "C"},
         "Inherited editorial assignment with a state-controlled-source caution.",
         "Attributable outlet reporting, including statements of government positions.",
         "publisher",

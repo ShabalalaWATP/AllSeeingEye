@@ -624,6 +624,8 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
   fixed Wikidata position items (roster of 103).
 - [x] Official statement feeds for placements: GOV.UK MoD, No 10 and Home Office,
   White House, US Department of Defense; CGTN China as state media.
+- [x] Country chips on the figures panel and tracker page.
+- [x] Russian MFA, BelTA, Interfax and Ukrinform feeds for translated matching.
 - [ ] Kremlin, State Department, Chinese MFA and Belarusian official feeds once a
   usable HTTPS feed exists.
 - [ ] Hand-curated entries for Russian posts without a usable Wikidata position item

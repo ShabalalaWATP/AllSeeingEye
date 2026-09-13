@@ -15,6 +15,7 @@ from ase.adapters.feeds.rss_seeds import (
     US_ADVISORY,
     A,
     B,
+    C,
     H,
     N,
     P,
@@ -22,6 +23,13 @@ from ase.adapters.feeds.rss_seeds import (
     seed,
 )
 from ase.domain.events import Credibility
+
+STATE_OFFICIAL = RssOptions(
+    subtype="statement",
+    tags=frozenset({"official", "state_controlled"}),
+    credibility=Credibility.DOUBTFUL,
+    rationale="Official release of a state with controlled media; treat as its position",
+)
 
 OFFICIAL_SEEDS: tuple[RssSeed, ...] = (
     seed(
@@ -107,6 +115,20 @@ OFFICIAL_SEEDS: tuple[RssSeed, ...] = (
         OFFICIAL,
         homepage="https://www.defense.gov/News/",
         licence_note="US Government work",
+    ),
+    seed(
+        "russia_mfa_ru",
+        "Russian MFA news (Russian)",
+        "Ministry of Foreign Affairs of the Russian Federation",
+        P,
+        "https://mid.ru/ru/rss/",
+        C,
+        30,
+        STATE_OFFICIAL,
+        homepage="https://mid.ru/ru/",
+        language="ru",
+        licence_note="Ministry terms; titles and links only",
+        flags=frozenset({"state_controlled"}),
     ),
     seed(
         "us_state_travel_advisories",

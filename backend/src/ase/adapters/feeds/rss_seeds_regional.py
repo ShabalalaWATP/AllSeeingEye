@@ -1,4 +1,4 @@
-"""Publisher-discovered regional feeds, smoke-tested 6 September 2026.
+"""Publisher-discovered regional feeds, smoke-tested 6 and 13 September 2026.
 
 Only titles, dates, attribution and source links enter the event store. Public RSS
 availability is not a full-text republication licence or a credibility assessment.
@@ -28,6 +28,11 @@ HUMAN_RIGHTS = replace(
     rationale="Human-rights organisation reporting; claims and upstream sources need review.",
 )
 IRANWIRE = replace(REGIONAL_NEWS, newest_first=True)
+STATE_AGENCY = replace(
+    REGIONAL_NEWS,
+    tags=REGIONAL_NEWS.tags | {"state_controlled"},
+    rationale="State news agency; treat as the government's position until corroborated.",
+)
 TERMS = (
     "Publisher-supplied public RSS; titles, attribution, dates and links only. "
     "No article text or imagery retained; broader reuse rights not established."
@@ -137,6 +142,44 @@ REGIONAL_SEEDS: tuple[RssSeed, ...] = (
         60,
         IRANWIRE,
         homepage="https://iranwire.com/en/",
+        licence_note=TERMS,
+    ),
+    seed(
+        "belta_ru",
+        "BelTA in Russian",
+        "Belarusian Telegraph Agency",
+        N,
+        "https://belta.by/rss/",
+        Reliability.F,
+        30,
+        STATE_AGENCY,
+        homepage="https://belta.by/",
+        language="ru",
+        licence_note=TERMS,
+    ),
+    seed(
+        "interfax_ru",
+        "Interfax in Russian",
+        "Interfax",
+        N,
+        "https://www.interfax.ru/rss.asp",
+        Reliability.F,
+        30,
+        REGIONAL_NEWS,
+        homepage="https://www.interfax.ru/",
+        language="ru",
+        licence_note=TERMS,
+    ),
+    seed(
+        "ukrinform_en",
+        "Ukrinform in English",
+        "Ukrinform",
+        N,
+        "https://www.ukrinform.net/rss/block-lastnews",
+        Reliability.F,
+        30,
+        STATE_AGENCY,
+        homepage="https://www.ukrinform.net/",
         licence_note=TERMS,
     ),
 )

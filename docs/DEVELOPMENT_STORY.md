@@ -4610,3 +4610,14 @@ reasons are recorded in the public figures document: the Kremlin serves its feed
 only over plain HTTP, State returns 407, Chinese and Belarusian ministries return
 HTML, and Xinhua's RSS stopped in 2017.
 
+A fourth request added a country filter and asked for more sources even at the
+cost of translation. The panel and the tracker page gained multi-select country
+chips (organisations as one chip), shared through a components-level chip control.
+Four feeds joined: Russian MFA news, BelTA and Interfax in Russian and Ukrinform in
+English, each fetched live through the real connector; the translation queue
+already handles any non-English title when a model is configured. Two things
+surfaced along the way: the tracker test had to count direct list children because
+an expanded card nests its own list, and the "Network" map panel lists IODA
+connectivity signals that carry no coordinates by design, so it is empty when a
+nation filter is set and never draws point markers.
+

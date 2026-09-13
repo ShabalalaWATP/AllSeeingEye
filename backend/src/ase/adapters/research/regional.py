@@ -18,6 +18,9 @@ REGIONAL_COUNTRIES = {
     "hrana_en": "IR",
     "iranwire_fa": "IR",
     "iranwire_en": "IR",
+    "belta_ru": "BY",
+    "interfax_ru": "RU",
+    "ukrinform_en": "UA",
 }
 LANGUAGE_ALIASES = {"zh": frozenset({"zh", "zh-cn", "zh-hans"})}
 LIMITATIONS = (

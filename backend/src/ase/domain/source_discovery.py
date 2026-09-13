@@ -142,6 +142,10 @@ REGIONAL = {
     "whitehouse_news": _focus("US"),
     "us_dod_news": _focus("US"),
     "cgtn_china": _focus("CN"),
+    "russia_mfa_ru": _focus("RU"),
+    "belta_ru": _focus("BY"),
+    "interfax_ru": _focus("RU"),
+    "ukrinform_en": _focus("UA"),
     "digitraffic_ais": SourceCoverage(
         "regional",
         ("FI",),
