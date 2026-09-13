@@ -7,6 +7,7 @@ via Overpass (ODbL, attributed). Neither establishes operational status.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import time
@@ -16,12 +17,38 @@ from typing import Any
 import httpx
 
 from ase.adapters.geo.countries import CountryIndex, load_records
+from ase.adapters.geo.sites_import import (
+    _seeds,
+    merge_sites,
+    previous_mapped,
+    resolve_seed,
+    site_links,
+)
+from ase.adapters.geo.sites_osm import overpass, wikipedia_url
+from ase.adapters.wikidata_entities import WikidataEntities
 
 SPARQL = "https://query.wikidata.org/sparql"
 OVERPASS = "https://overpass-api.de/api/interpreter"
 DEFAULT_CONTACT = "https://github.com/ShabalalaWATP/OSINT"
 MAX_STATIONS = 500
-MAX_CENTRES = 3_600
+MAX_CENTRES = 3_700
+CENTRE_WORDS = ("data cent", "cloud", "company", "corporation", "software", "bank")
+STATION_WORDS = (
+    "station",
+    "antenna",
+    "space",
+    "satellite",
+    "tracking",
+    "teleport",
+    "cosmodrome",
+    "launch",
+    "control",
+    "telescope",
+    "observatory",
+    "radar",
+    "capital",
+    "city",
+)
 NEAR_DEGREES = 0.05
 STATION_CLASSES = ("Q1349167", "Q10379228")  # ground station, teleport
 STATION_QUERY = (
@@ -52,6 +79,10 @@ def _https(value: str | None) -> str | None:
 
 def _clean(value: str | None, limit: int = 120) -> str:
     return " ".join((value or "").split())[:limit]
+
+
+def _slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:30]
 
 
 def parse_station_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -100,10 +131,7 @@ def merge_stations(
     return kept[:MAX_STATIONS]
 
 
-def import_ground_stations(destination: str, contact: str = DEFAULT_CONTACT) -> int:
-    with open(destination, encoding="utf-8") as handle:
-        existing = json.load(handle)
-    curated = [item for item in existing if not str(item.get("id", "")).startswith("wd-")]
+def _station_rows(contact: str) -> list[dict[str, Any]]:
     with httpx.Client(timeout=180, headers={"User-Agent": _agent(contact)}) as client:
         response = client.get(
             SPARQL,
@@ -119,8 +147,61 @@ def import_ground_stations(destination: str, contact: str = DEFAULT_CONTACT) -> 
             )
         response.raise_for_status()
         bindings = response.json()["results"]["bindings"]
-    rows = [{key: value.get("value") for key, value in row.items()} for row in bindings]
-    merged = merge_stations(curated, parse_station_rows(rows))
+    return [{key: value.get("value") for key, value in row.items()} for row in bindings]
+
+
+def curated_stations(contact: str) -> list[dict[str, Any]]:
+    """Key control, tracking and launch sites resolved through Wikidata; city-level when needed."""
+    entities = WikidataEntities.open(contact)
+    stations: list[dict[str, Any]] = []
+    try:
+        for seed in _seeds("ground_station_key_sites.json"):
+            try:
+                site = resolve_seed(
+                    {**seed, "kind": seed.get("role", "station")}, entities, STATION_WORDS
+                )
+            except httpx.HTTPError:
+                site = None  # a dropped lookup leaves the seed unresolved, not the run failed
+            if site is None:
+                continue
+            stations.append(
+                {
+                    "id": f"key-{site['id']}",
+                    "name": site["name"],
+                    "operator": str(seed.get("operator") or site["operator"]),
+                    "country": str(seed["country"]),
+                    "longitude": site["longitude"],
+                    "latitude": site["latitude"],
+                    "source_url": site["source_url"],
+                    "note": site["note"],
+                    "website": site["website"],
+                    "wikipedia": site["wikipedia"],
+                    "owner": site["owner"],
+                    "description": site["description"],
+                    "wikidata": site["wikidata"],
+                    "role": str(seed.get("role") or "station"),
+                    "significance": site["significance"],
+                    "detail": site["detail"],
+                    "precision": site["precision"],
+                }
+            )
+    finally:
+        entities.close()
+    return stations
+
+
+def import_ground_stations(destination: str, contact: str = DEFAULT_CONTACT) -> int:
+    with open(destination, encoding="utf-8") as handle:
+        existing = json.load(handle)
+    curated = [item for item in existing if not str(item.get("id", "")).startswith(("wd-", "key-"))]
+    imported = [item for item in existing if str(item.get("id", "")).startswith("wd-")]
+    # The endpoint is often overloaded; keep the previously imported rows on failure.
+    with contextlib.suppress(httpx.HTTPError, ValueError, KeyError):
+        imported = parse_station_rows(_station_rows(contact))
+    curated = merge_stations(curated_stations(contact), curated)
+    merged = merge_stations(curated, imported)
+    for station in merged:
+        station["links"] = site_links(station)
     with open(destination, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(merged, handle, ensure_ascii=False, indent=1)
         handle.write("\n")
@@ -143,16 +224,26 @@ def parse_centre_elements(
             continue
         if not -180 <= lon <= 180 or not -90 <= lat <= 90:
             continue
+        wikidata = _clean(tags.get("wikidata") or tags.get("operator:wikidata"), 20)
         centres.append(
             {
                 "id": f"osm-{kind}-{ident}",
                 "name": name,
                 "operator": _clean(tags.get("operator") or tags.get("brand"))
                 or "Operator not recorded",
+                "owner": _clean(tags.get("owner")) or None,
                 "country": index.resolve(float(lon), float(lat)),
+                "city": _clean(tags.get("addr:city")) or None,
                 "longitude": round(float(lon), 4),
                 "latitude": round(float(lat), 4),
+                "precision": "mapped",
+                "description": _clean(tags.get("description"), 300) or None,
+                "significance": None,
+                "detail": None,
                 "website": _https(tags.get("website") or tags.get("contact:website")),
+                "wikipedia": wikipedia_url(tags.get("wikipedia") or tags.get("operator:wikipedia")),
+                "wikidata": wikidata if wikidata.startswith("Q") else None,
+                "links": [],
                 "source_url": f"https://www.openstreetmap.org/{kind}/{ident}",
                 "note": "Mapped position only; not capacity, tenants or current operation.",
             }
@@ -162,14 +253,46 @@ def parse_centre_elements(
 
 
 def import_data_centres(destination: str, contact: str = DEFAULT_CONTACT) -> int:
-    with httpx.Client(timeout=240, headers={"User-Agent": _agent(contact)}) as client:
-        response = client.post(OVERPASS, data={"data": CENTRE_QUERY})
-        response.raise_for_status()
-        payload = response.json()
-    elements = payload.get("elements")
-    if not isinstance(elements, list) or len(elements) > 20_000:
-        raise ValueError("Unexpected Overpass result shape")
-    items = parse_centre_elements(elements, CountryIndex(load_records()))
+    try:
+        with httpx.Client(timeout=300, headers={"User-Agent": _agent(contact)}) as client:
+            elements = overpass(client, CENTRE_QUERY)
+        mapped = parse_centre_elements(elements, CountryIndex(load_records()))
+    except httpx.HTTPError:
+        mapped = previous_mapped(destination)  # Overpass down: keep the last mapped breadth
+        if not mapped:
+            raise
+    entities = WikidataEntities.open(contact)
+    try:
+        curated = []
+        for seed in _seeds("data_centre_key_sites.json"):
+            try:
+                site = resolve_seed({**seed, "kind": "data_centre"}, entities, CENTRE_WORDS)
+            except httpx.HTTPError:
+                site = None
+            if site is not None:
+                site["id"] = f"key-{site['id']}-{_slug(str(seed.get('city', '')))}"
+                site["operator"] = str(seed.get("operator") or site["operator"])
+                site["city"] = str(seed.get("city") or "") or None
+                curated.append(site)
+        linked = {c["wikidata"] for c in mapped if c.get("wikidata")}
+        try:
+            facts = entities.facts(sorted(linked)[:400])
+        except httpx.HTTPError:
+            facts = {}
+        for centre in mapped:
+            fact = facts.get(centre.get("wikidata") or "")
+            if fact is None:
+                continue
+            centre["owner"] = centre["owner"] or (", ".join(fact.owners) or None)
+            centre["description"] = centre["description"] or (fact.description or None)
+            centre["website"] = centre["website"] or fact.website
+            centre["wikipedia"] = centre["wikipedia"] or fact.wikipedia
+    finally:
+        entities.close()
+    items = merge_sites(curated, mapped, MAX_CENTRES)
+    for item in items:
+        item.pop("kind", None)
+        item["links"] = site_links(item)
     snapshot = {
         "attribution": (
             "© OpenStreetMap contributors (ODbL). Features tagged telecom=data_center with a "
@@ -180,7 +303,7 @@ def import_data_centres(destination: str, contact: str = DEFAULT_CONTACT) -> int
         "_provenance": {
             "source_url": OVERPASS,
             "query": CENTRE_QUERY,
-            "osm_base": str(payload.get("osm3s", {}).get("timestamp_osm_base", "")),
+            "osm_base": "",
         },
         "items": items,
     }

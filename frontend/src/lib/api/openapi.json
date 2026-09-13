@@ -15157,6 +15157,17 @@
             "type": "string",
             "title": "Operator"
           },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
           "country": {
             "anyOf": [
               {
@@ -15170,6 +15181,17 @@
             ],
             "title": "Country"
           },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
           "longitude": {
             "type": "number",
             "maximum": 180.0,
@@ -15182,6 +15204,49 @@
             "minimum": -90.0,
             "title": "Latitude"
           },
+          "precision": {
+            "type": "string",
+            "enum": [
+              "site",
+              "mapped",
+              "city"
+            ],
+            "title": "Precision",
+            "default": "mapped"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "significance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Significance"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
           "website": {
             "anyOf": [
               {
@@ -15192,6 +15257,25 @@
               }
             ],
             "title": "Website"
+          },
+          "wikipedia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikipedia"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Links"
           },
           "source_url": {
             "type": "string",
@@ -17610,6 +17694,64 @@
               }
             ],
             "title": "Wikidata"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "significance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Significance"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "precision": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "site",
+                  "mapped",
+                  "city"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precision"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Links"
           }
         },
         "type": "object",
@@ -19728,6 +19870,26 @@
           "updated_at"
         ],
         "title": "LibraryPreferenceOut"
+      },
+      "LinkOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Label"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "url"
+        ],
+        "title": "LinkOut"
       },
       "LlmConnectionIn": {
         "properties": {
@@ -28988,6 +29150,17 @@
             ],
             "title": "Significance"
           },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
           "website": {
             "anyOf": [
               {
@@ -29009,6 +29182,14 @@
               }
             ],
             "title": "Wikipedia"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Links"
           },
           "source_url": {
             "type": "string",

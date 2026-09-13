@@ -20,6 +20,11 @@ class CableOut(BaseModel):
     inception: str | None = None
 
 
+class LinkOut(BaseModel):
+    label: str = Field(max_length=80)
+    url: str = Field(max_length=400)
+
+
 class GroundStationOut(BaseModel):
     id: str
     name: str
@@ -34,6 +39,11 @@ class GroundStationOut(BaseModel):
     owner: str | None = None
     description: str | None = None
     wikidata: str | None = None
+    role: str | None = Field(default=None, max_length=40)
+    significance: str | None = None
+    detail: str | None = None
+    precision: Literal["site", "mapped", "city"] | None = None
+    links: list[LinkOut] = Field(default_factory=list, max_length=6)
 
 
 class SiteOut(BaseModel):
@@ -50,8 +60,10 @@ class SiteOut(BaseModel):
     precision: Literal["site", "mapped", "city"]
     description: str | None = None
     significance: str | None = None
+    detail: str | None = None
     website: str | None = None
     wikipedia: str | None = None
+    links: list[LinkOut] = Field(default_factory=list, max_length=6)
     source_url: str
     note: str
 
@@ -60,10 +72,18 @@ class DataCentreOut(BaseModel):
     id: str
     name: str
     operator: str
+    owner: str | None = None
     country: str | None = Field(default=None, min_length=2, max_length=2)
+    city: str | None = None
     longitude: float = Field(ge=-180, le=180)
     latitude: float = Field(ge=-90, le=90)
+    precision: Literal["site", "mapped", "city"] = "mapped"
+    description: str | None = None
+    significance: str | None = None
+    detail: str | None = None
     website: str | None = None
+    wikipedia: str | None = None
+    links: list[LinkOut] = Field(default_factory=list, max_length=6)
     source_url: str
     note: str
 

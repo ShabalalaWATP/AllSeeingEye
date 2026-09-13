@@ -21,6 +21,17 @@
    "precision": "city",
    "description": null,
    "significance": "Infineon's Austrian power semiconductor fab.",
+   "detail": "Villach 300 mm thin-wafer power fab, Infineon's Austrian headquarters for power devices.",
+   "links": [
+    {
+     "label": "Infineon Technologies website",
+     "url": "https://www.infineon.com/"
+    },
+    {
+     "label": "Infineon Technologies on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Infineon_Technologies"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -39,6 +50,17 @@
    "precision": "city",
    "description": null,
    "significance": "China's leading DRAM maker, in Hefei.",
+   "detail": "CXMT's Hefei DRAM fabs, China's only volume DRAM maker, moving toward HBM.",
+   "links": [
+    {
+     "label": "Changxin Memory Technologies website",
+     "url": "https://www.cxmt.com"
+    },
+    {
+     "label": "Changxin Memory Technologies on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/ChangXin_Memory_Technologies"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -57,6 +79,8 @@
    "precision": "city",
    "description": null,
    "significance": "Chinese specialty foundry with fabs in Shanghai and Wuxi.",
+   "detail": "Hua Hong's Wuxi 12-inch fab for power, embedded memory and mature logic.",
+   "links": [],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -75,6 +99,13 @@
    "precision": "city",
    "description": null,
    "significance": "SMIC's Beijing fabs.",
+   "detail": "SMIC's Beijing 12-inch fabs (SMNC joint venture) for 28 nm and above.",
+   "links": [
+    {
+     "label": "Smíchov on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sm%C3%ADchov"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -93,6 +124,13 @@
    "precision": "city",
    "description": null,
    "significance": "China's largest foundry, headquartered in Shanghai with fabs in Beijing and Shenzhen.",
+   "detail": "SMIC's Shanghai headquarters and fabs, including 7 nm-class production without EUV; China's most advanced foundry.",
+   "links": [
+    {
+     "label": "Smíchov on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sm%C3%ADchov"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -111,6 +149,8 @@
    "precision": "city",
    "description": null,
    "significance": "China's leading NAND maker, in Wuhan.",
+   "detail": "YMTC's Wuhan fabs producing 3D NAND with its Xtacking architecture; on the US Entity List since 2022.",
+   "links": [],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -129,6 +169,17 @@
    "precision": "city",
    "description": null,
    "significance": "Bosch's 300 mm automotive chip fab.",
+   "detail": "Bosch's 300 mm fab for automotive microcontrollers and power chips, opened 2021.",
+   "links": [
+    {
+     "label": "Robert Bosch website",
+     "url": "https://www.bosch.com/"
+    },
+    {
+     "label": "Robert Bosch on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Bosch_(company)"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -147,6 +198,13 @@
    "precision": "city",
    "description": null,
    "significance": "Optics for ASML's EUV and DUV lithography systems.",
+   "detail": "Oberkochen optics for ASML's EUV and DUV systems; every EUV mirror set comes from here.",
+   "links": [
+    {
+     "label": "Carl Zeiss SMT on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Carl_Zeiss_SMT"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -165,6 +223,25 @@
    "precision": "site",
    "description": "a joint venture of TSMC, NXP, Bosch, and Infineon, to bring advanced semiconductor manufacturing to Europe",
    "significance": "TSMC's Dresden joint venture with Bosch, Infineon and NXP, under construction.",
+   "detail": "ESMC joint venture with Bosch, Infineon and NXP in Dresden; 12 to 28 nm automotive and industrial logic, production targeted for 2027.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.esmc.eu/de/index.html"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q121474429"
+    }
+   ],
    "website": "https://www.esmc.eu/de/index.html",
    "wikipedia": null,
    "wikidata": "Q121474429",
@@ -183,6 +260,25 @@
    "precision": "site",
    "description": null,
    "significance": "Fab 1 in Dresden, Europe's largest foundry site.",
+   "detail": "Fab 1 in Dresden: 22FDX and 28 nm, Europe's largest foundry site, expanding under the EU Chips Act.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://gf.com/de/"
+    },
+    {
+     "label": "GlobalFoundries website",
+     "url": "https://gf.com/"
+    },
+    {
+     "label": "GlobalFoundries on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/GlobalFoundries"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q124260648"
+    }
+   ],
    "website": "https://gf.com/de/",
    "wikipedia": null,
    "wikidata": "Q124260648",
@@ -201,6 +297,25 @@
    "precision": "site",
    "description": null,
    "significance": "Infineon's Dresden power and analogue fabs, with the Smart Power Fab under construction.",
+   "detail": "Fab 1 (200 mm) and Fab 2 (300 mm) plus the Smart Power Fab under construction, Europe's largest power semiconductor site.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.infineon.com/cms/dresden/de/"
+    },
+    {
+     "label": "Infineon Technologies website",
+     "url": "https://www.infineon.com/"
+    },
+    {
+     "label": "Infineon Technologies on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Infineon_Technologies"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q115209559"
+    }
+   ],
    "website": "https://www.infineon.com/cms/dresden/de/",
    "wikipedia": null,
    "wikidata": "Q115209559",
@@ -219,6 +334,17 @@
    "precision": "city",
    "description": null,
    "significance": "ST's 300 mm fab near Grenoble, being expanded with GlobalFoundries.",
+   "detail": "Crolles 300 mm fab near Grenoble; FD-SOI and imaging, being expanded with GlobalFoundries.",
+   "links": [
+    {
+     "label": "STMicroelectronics website",
+     "url": "https://www.st.com/"
+    },
+    {
+     "label": "STMicroelectronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/STMicroelectronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -237,6 +363,17 @@
    "precision": "city",
    "description": null,
    "significance": "The UK's largest chip fab at Newport was ordered sold in 2022; Nexperia's Manchester wafer fab continues.",
+   "detail": "Nexperia's Hazel Grove wafer fab in Manchester; its Newport fab was ordered sold on security grounds in 2022.",
+   "links": [
+    {
+     "label": "Nexperia website",
+     "url": "https://www.nexperia.com/"
+    },
+    {
+     "label": "Nexperia on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nexperia"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -255,6 +392,17 @@
    "precision": "city",
    "description": null,
    "significance": "Intel's Irish campus, its largest fab outside the United States.",
+   "detail": "Fab 34 in Leixlip, the first high-volume Intel 4 fab and Intel's largest site outside the United States.",
+   "links": [
+    {
+     "label": "Intel website",
+     "url": "https://www.intel.com"
+    },
+    {
+     "label": "Intel on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Intel"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -273,6 +421,25 @@
    "precision": "site",
    "description": "city in the Southern District of Israel",
    "significance": "Intel's Israeli fab complex.",
+   "detail": "Fab 28 in Kiryat Gat, Israel; a further fab (38) has been announced and paused.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kiryat_Gat"
+    },
+    {
+     "label": "Intel website",
+     "url": "https://www.intel.com"
+    },
+    {
+     "label": "Intel on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Intel"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q152406"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Kiryat_Gat",
    "wikidata": "Q152406",
@@ -291,6 +458,13 @@
    "precision": "city",
    "description": null,
    "significance": "Israeli specialty foundry headquarters.",
+   "detail": "Migdal HaEmek fabs for analogue, RF and imaging; Tower also operates fabs in the US and Japan.",
+   "links": [
+    {
+     "label": "Tower Semiconductor Ltd. on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Tower_Semiconductor"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -309,6 +483,17 @@
    "precision": "city",
    "description": null,
    "significance": "ST's Sicilian site for silicon carbide power devices.",
+   "detail": "Catania silicon carbide substrate and device campus for electric-vehicle power chips.",
+   "links": [
+    {
+     "label": "STMicroelectronics website",
+     "url": "https://www.st.com/"
+    },
+    {
+     "label": "STMicroelectronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/STMicroelectronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -327,6 +512,25 @@
    "precision": "site",
    "description": "Japanese joint venture enterprise",
    "significance": "TSMC's Kumamoto joint venture with Sony and Denso.",
+   "detail": "JASM Fab 1 in Kikuyo (12 to 28 nm) producing since 2024 with Sony and Denso; a second fab for 6 nm is planned.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Japan_Advanced_Semiconductor_Manufacturing"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q111362867"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Japan_Advanced_Semiconductor_Manufacturing",
    "wikidata": "Q111362867",
@@ -345,6 +549,17 @@
    "precision": "city",
    "description": null,
    "significance": "The largest NAND flash complex in the world, with Western Digital.",
+   "detail": "Fab 1 to Fab 7 in Yokkaichi with Western Digital, the largest NAND flash complex in the world.",
+   "links": [
+    {
+     "label": "Kioxia website",
+     "url": "https://www.kioxia.com"
+    },
+    {
+     "label": "Kioxia on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kioxia"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -363,6 +578,17 @@
    "precision": "city",
    "description": null,
    "significance": "Micron's Japanese DRAM fab, an HBM production site.",
+   "detail": "Hiroshima DRAM fab (formerly Elpida), an HBM production site with EUV tooling.",
+   "links": [
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -381,6 +607,17 @@
    "precision": "city",
    "description": null,
    "significance": "Japan's state-backed 2 nm foundry under construction in Hokkaido.",
+   "detail": "IIM-1 in Chitose, Hokkaido: Japan's state-backed 2 nm foundry with IBM technology, pilot line from 2025.",
+   "links": [
+    {
+     "label": "Rapidus Corporation website",
+     "url": "https://www.rapidus.inc/"
+    },
+    {
+     "label": "Rapidus Corporation on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Rapidus"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -399,6 +636,17 @@
    "precision": "city",
    "description": null,
    "significance": "Renesas' 300 mm microcontroller fab.",
+   "detail": "Naka 300 mm fab for microcontrollers; a 2021 fire there disrupted global car production.",
+   "links": [
+    {
+     "label": "Renesas Electronics website",
+     "url": "https://www.renesas.com/"
+    },
+    {
+     "label": "Renesas Electronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Renesas_Electronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -417,6 +665,13 @@
    "precision": "city",
    "description": null,
    "significance": "Largest silicon wafer producer.",
+   "detail": "Tokyo headquarters of the largest silicon wafer producer; also a key photoresist supplier.",
+   "links": [
+    {
+     "label": "Shin-Etsu Chemical on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Shin-Etsu_Chemical"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -435,6 +690,17 @@
    "precision": "city",
    "description": null,
    "significance": "Sony's image sensor fabs at Nagasaki and Kumamoto.",
+   "detail": "Nagasaki and Kumamoto fabs for image sensors, where Sony holds around half the world market.",
+   "links": [
+    {
+     "label": "Sony Semiconductor Solutions Corporation website",
+     "url": "https://www.sony-semicon.co.jp/"
+    },
+    {
+     "label": "Sony Semiconductor Solutions Corporation on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sony_Semiconductor_Solutions"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -453,6 +719,17 @@
    "precision": "city",
    "description": null,
    "significance": "Japan's largest chip equipment maker.",
+   "detail": "Tokyo headquarters; the coater/developer supplier for nearly all EUV lithography lines.",
+   "links": [
+    {
+     "label": "Tokyo Electron website",
+     "url": "https://www.tel.com/"
+    },
+    {
+     "label": "Tokyo Electron on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Tokyo_Electron"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -471,6 +748,25 @@
    "precision": "site",
    "description": "City in North Chungcheong Province, South Korea",
    "significance": "SK hynix NAND and HBM fabs in Cheongju.",
+   "detail": "M15 NAND fab and M15X, an HBM-focused fab under construction in Cheongju.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Cheongju"
+    },
+    {
+     "label": "SK Hynix website",
+     "url": "https://www.skhynix.com/"
+    },
+    {
+     "label": "SK Hynix on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/SK_Hynix"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q42147"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Cheongju",
    "wikidata": "Q42147",
@@ -489,6 +785,17 @@
    "precision": "city",
    "description": null,
    "significance": "SK hynix headquarters and memory fabs at Icheon, the main HBM source.",
+   "detail": "Icheon headquarters campus with M14 and M16 DRAM fabs; the main source of HBM memory for AI accelerators.",
+   "links": [
+    {
+     "label": "SK Hynix website",
+     "url": "https://www.skhynix.com/"
+    },
+    {
+     "label": "SK Hynix on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/SK_Hynix"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -507,6 +814,17 @@
    "precision": "city",
    "description": null,
    "significance": "Samsung's Hwaseong and Giheung fabs, its advanced foundry base.",
+   "detail": "Hwaseong and neighbouring Giheung: Samsung Foundry's 3 nm gate-all-around lines and memory development.",
+   "links": [
+    {
+     "label": "Samsung Electronics website",
+     "url": "https://samsung.com/"
+    },
+    {
+     "label": "Samsung Electronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samsung_Electronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -525,6 +843,17 @@
    "precision": "city",
    "description": null,
    "significance": "Samsung's largest semiconductor campus, memory and foundry.",
+   "detail": "P1 to P3 lines with P4 and P5 under construction; DRAM, NAND and advanced foundry on one campus.",
+   "links": [
+    {
+     "label": "Samsung Electronics website",
+     "url": "https://samsung.com/"
+    },
+    {
+     "label": "Samsung Electronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samsung_Electronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -543,6 +872,25 @@
    "precision": "site",
    "description": "place in Kedah, Malaysia",
    "significance": "Infineon's silicon carbide power fab in Malaysia.",
+   "detail": "Infineon's Kulim Module Three, the world's largest 200 mm silicon carbide power fab.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kulim_Hi-Tech_Park"
+    },
+    {
+     "label": "Infineon Technologies website",
+     "url": "https://www.infineon.com/"
+    },
+    {
+     "label": "Infineon Technologies on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Infineon_Technologies"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q20455546"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Kulim_Hi-Tech_Park",
    "wikidata": "Q20455546",
@@ -561,6 +909,17 @@
    "precision": "city",
    "description": null,
    "significance": "Sole maker of EUV lithography systems; the chokepoint of advanced chipmaking.",
+   "detail": "Veldhoven headquarters and assembly of EUV and High-NA lithography systems; ASML is the only EUV supplier.",
+   "links": [
+    {
+     "label": "ASML Holding website",
+     "url": "https://www.asml.com/"
+    },
+    {
+     "label": "ASML Holding on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/ASML"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -579,6 +938,17 @@
    "precision": "city",
    "description": null,
    "significance": "GlobalFoundries' Woodlands campus in Singapore.",
+   "detail": "Woodlands campus with the new Fab 7H expansion for automotive and RF nodes.",
+   "links": [
+    {
+     "label": "GlobalFoundries website",
+     "url": "https://gf.com/"
+    },
+    {
+     "label": "GlobalFoundries on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/GlobalFoundries"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -597,6 +967,17 @@
    "precision": "city",
    "description": null,
    "significance": "Micron's NAND fabs in Singapore.",
+   "detail": "NAND fabs at Woodlands and North Coast, plus HBM packaging under construction.",
+   "links": [
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -615,6 +996,17 @@
    "precision": "city",
    "description": null,
    "significance": "Largest outsourced chip assembly and test company.",
+   "detail": "Kaohsiung headquarters of the largest outsourced assembly and test provider; advanced packaging for AI chips.",
+   "links": [
+    {
+     "label": "ASE Group website",
+     "url": "https://ase.aseglobal.com/"
+    },
+    {
+     "label": "ASE Group on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/ASE_Group"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -633,6 +1025,25 @@
    "precision": "site",
    "description": "industrial park in Taiwan",
    "significance": "Fab 15 and the planned 2 nm expansion in Taichung.",
+   "detail": "Fab 15 (N7 family) in Taichung with 2 nm expansion planned at Fab 25.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Central_Taiwan_Science_Park"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q10876715"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Central_Taiwan_Science_Park",
    "wikidata": "Q10876715",
@@ -651,6 +1062,29 @@
    "precision": "site",
    "description": "city in southern Taiwan",
    "significance": "Fab 22 in Nanzih, TSMC's 2 nm site in southern Taiwan.",
+   "detail": "Fab 22 in Nanzih, Kaohsiung: 2 nm production ramping from 2025.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kaohsiung"
+    },
+    {
+     "label": "Site website",
+     "url": "https://www.kcg.gov.tw/Default.aspx"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q181557"
+    }
+   ],
    "website": "https://www.kcg.gov.tw/Default.aspx",
    "wikipedia": "https://en.wikipedia.org/wiki/Kaohsiung",
    "wikidata": "Q181557",
@@ -669,6 +1103,17 @@
    "precision": "city",
    "description": null,
    "significance": "Micron's Taiwan DRAM fabs at Taichung and Taoyuan.",
+   "detail": "Taiwan DRAM fabs at Taichung (Fab 16) and Taoyuan, Micron's largest DRAM manufacturing base.",
+   "links": [
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -687,6 +1132,13 @@
    "precision": "city",
    "description": null,
    "significance": "Taiwanese DRAM maker.",
+   "detail": "Taiwan's largest DRAM maker, with a new 12-inch fab in New Taipei.",
+   "links": [
+    {
+     "label": "Nanya Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nanya_Technology_Corporation"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -705,6 +1157,13 @@
    "precision": "city",
    "description": null,
    "significance": "Taiwanese memory and foundry maker.",
+   "detail": "PSMC's Hsinchu fabs for DRAM and mature logic, with a new Tongluo 12-inch fab.",
+   "links": [
+    {
+     "label": "Powerchip on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Powerchip"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -723,6 +1182,25 @@
    "precision": "site",
    "description": "nonprofit organization in Tainan City, Taiwan",
    "significance": "Fab 18 in Tainan, TSMC's 5 nm and 3 nm production site.",
+   "detail": "Fab 18 (N5 and N3) and Fab 14 in Tainan; the largest concentration of leading-edge logic capacity in the world.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Southern_Taiwan_Science_Park"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q704542"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Southern_Taiwan_Science_Park",
    "wikidata": "Q704542",
@@ -741,6 +1219,17 @@
    "precision": "city",
    "description": null,
    "significance": "TSMC headquarters and Hsinchu Science Park fabs, including Fab 12 and advanced-node research.",
+   "detail": "Headquarters, R&D centre and Fab 12 in Hsinchu Science Park; 2 nm development moved to Baoshan (Fab 20) nearby.",
+   "links": [
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -759,6 +1248,17 @@
    "precision": "city",
    "description": null,
    "significance": "UMC headquarters and fabs at Hsinchu, with Fab 12A in Tainan.",
+   "detail": "UMC's Hsinchu fabs (8-inch and 12-inch Fab 12A in Tainan); mature nodes from 22 nm upward.",
+   "links": [
+    {
+     "label": "United Microelectronics Corporation website",
+     "url": "https://www.umc.com/"
+    },
+    {
+     "label": "United Microelectronics Corporation on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/United_Microelectronics_Corporation"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -777,6 +1277,17 @@
    "precision": "city",
    "description": null,
    "significance": "Taiwanese foundry, partner in the Singapore VSMC fab.",
+   "detail": "VIS's Hsinchu 8-inch fabs; joint venture VSMC fab in Singapore with NXP under construction.",
+   "links": [
+    {
+     "label": "Vanguard International Semiconductor Corporation website",
+     "url": "https://www.vis.com.tw/"
+    },
+    {
+     "label": "Vanguard International Semiconductor Corporation on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Vanguard_International_Semiconductor_Corporation"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -795,6 +1306,13 @@
    "precision": "city",
    "description": null,
    "significance": "Taiwanese memory maker with a fab at Kaohsiung.",
+   "detail": "Specialty DRAM and flash maker with fabs in Taichung and Kaohsiung.",
+   "links": [
+    {
+     "label": "Winbond on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Winbond"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -813,6 +1331,13 @@
    "precision": "city",
    "description": null,
    "significance": "Largest US-based packaging and test company, building an Arizona plant.",
+   "detail": "Tempe headquarters; building an Arizona packaging plant to serve TSMC Arizona.",
+   "links": [
+    {
+     "label": "Amkor Technology (Portugal) website",
+     "url": "https://amkor.com/amkor-technology-portugal/"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -831,6 +1356,17 @@
    "precision": "city",
    "description": null,
    "significance": "Largest semiconductor equipment maker.",
+   "detail": "Santa Clara headquarters of the largest chip equipment maker, deposition, etch and inspection.",
+   "links": [
+    {
+     "label": "Applied Materials website",
+     "url": "https://www.appliedmaterials.com/"
+    },
+    {
+     "label": "Applied Materials on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Applied_Materials"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -849,6 +1385,25 @@
    "precision": "site",
    "description": "town in Onondaga County, New York, United States",
    "significance": "Micron's planned megafab campus north of Syracuse.",
+   "detail": "Planned megafab campus north of Syracuse for leading-edge DRAM, first production expected around 2028.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Clay,_New_York"
+    },
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q684627"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Clay,_New_York",
    "wikidata": "Q684627",
@@ -867,6 +1422,29 @@
    "precision": "site",
    "description": "semiconductor fabrication plant in Arizona, United States",
    "significance": "TSMC's US fabs in north Phoenix, producing 4 nm from 2025 with further phases planned.",
+   "detail": "Fab 21 phases 1 to 3: N4 in production from 2025, N3 and N2 planned; the largest foreign investment in Arizona.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC_Arizona"
+    },
+    {
+     "label": "Site website",
+     "url": "https://www.tsmc.com/static/abouttsmcaz/index.htm"
+    },
+    {
+     "label": "TSMC website",
+     "url": "https://www.tsmc.com/"
+    },
+    {
+     "label": "TSMC on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/TSMC"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q135913497"
+    }
+   ],
    "website": "https://www.tsmc.com/static/abouttsmcaz/index.htm",
    "wikipedia": "https://en.wikipedia.org/wiki/TSMC_Arizona",
    "wikidata": "Q135913497",
@@ -885,6 +1463,17 @@
    "precision": "city",
    "description": null,
    "significance": "Fab 8 at Malta, the largest US foundry fab.",
+   "detail": "Fab 8 in Malta, New York: 12 and 14 nm FinFET plus RF and silicon photonics; the largest US pure-play foundry fab.",
+   "links": [
+    {
+     "label": "GlobalFoundries website",
+     "url": "https://gf.com/"
+    },
+    {
+     "label": "GlobalFoundries on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/GlobalFoundries"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -903,6 +1492,17 @@
    "precision": "city",
    "description": null,
    "significance": "Intel's Arizona fabs, including the new Fab 52 for 18A.",
+   "detail": "Chandler campus: Fab 42 and the new Fab 52 and 62 for the Intel 18A process.",
+   "links": [
+    {
+     "label": "Intel website",
+     "url": "https://www.intel.com"
+    },
+    {
+     "label": "Intel on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Intel"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -921,6 +1521,17 @@
    "precision": "city",
    "description": null,
    "significance": "Advanced packaging (Foveros) site.",
+   "detail": "Fab 9 advanced packaging (Foveros 3D stacking) in Rio Rancho, New Mexico.",
+   "links": [
+    {
+     "label": "Intel website",
+     "url": "https://www.intel.com"
+    },
+    {
+     "label": "Intel on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Intel"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -939,6 +1550,17 @@
    "precision": "city",
    "description": null,
    "significance": "Etch and deposition equipment maker.",
+   "detail": "Fremont headquarters; etch and deposition tools essential for 3D NAND and advanced logic.",
+   "links": [
+    {
+     "label": "Lam Research website",
+     "url": "https://www.lamresearch.com/"
+    },
+    {
+     "label": "Lam Research on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Lam_Research"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -957,6 +1579,17 @@
    "precision": "city",
    "description": null,
    "significance": "Micron's Virginia memory fab, long-lifecycle products.",
+   "detail": "Fab 6 in Manassas, Virginia, long-lifecycle DRAM and NOR for automotive, industrial and defence customers.",
+   "links": [
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -975,6 +1608,17 @@
    "precision": "city",
    "description": null,
    "significance": "Micron headquarters, research fab and new memory fab in Boise.",
+   "detail": "Boise headquarters with the R&D fab and a new leading-edge DRAM fab under construction, Micron's first US memory fab in 20 years.",
+   "links": [
+    {
+     "label": "Micron Technology website",
+     "url": "https://www.micron.com/"
+    },
+    {
+     "label": "Micron Technology on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Micron_Technology"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -993,6 +1637,17 @@
    "precision": "city",
    "description": null,
    "significance": "Intel's Oregon development site where each new process node is first made.",
+   "detail": "Intel's Oregon development site (D1X) where each new process node is first built before high-volume fabs copy it.",
+   "links": [
+    {
+     "label": "Intel website",
+     "url": "https://www.intel.com"
+    },
+    {
+     "label": "Intel on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Intel"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -1011,6 +1666,17 @@
    "precision": "city",
    "description": null,
    "significance": "Samsung's Texas foundry fab, with the Taylor fab under construction nearby.",
+   "detail": "S2 foundry fab in Austin, Texas, mature-node logic and image sensors.",
+   "links": [
+    {
+     "label": "Samsung Electronics website",
+     "url": "https://samsung.com/"
+    },
+    {
+     "label": "Samsung Electronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samsung_Electronics"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -1029,6 +1695,25 @@
    "precision": "site",
    "description": "city in Williamson County, Texas, United States",
    "significance": "Samsung's new advanced foundry fab in Taylor.",
+   "detail": "Samsung's Taylor fab for 2 nm class foundry production, supported by US CHIPS Act funding.",
+   "links": [
+    {
+     "label": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Taylor,_Texas"
+    },
+    {
+     "label": "Samsung Electronics website",
+     "url": "https://samsung.com/"
+    },
+    {
+     "label": "Samsung Electronics on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samsung_Electronics"
+    },
+    {
+     "label": "Wikidata",
+     "url": "https://www.wikidata.org/wiki/Q981995"
+    }
+   ],
    "website": null,
    "wikipedia": "https://en.wikipedia.org/wiki/Taylor,_Texas",
    "wikidata": "Q981995",
@@ -1047,6 +1732,17 @@
    "precision": "city",
    "description": null,
    "significance": "TI's RFAB 300 mm fabs at Richardson.",
+   "detail": "RFAB1 and RFAB2 in Richardson, TI's 300 mm analogue and embedded processing fabs.",
+   "links": [
+    {
+     "label": "Texas Instruments website",
+     "url": "https://www.ti.com/"
+    },
+    {
+     "label": "Texas Instruments on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Texas_Instruments"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -1065,6 +1761,17 @@
    "precision": "city",
    "description": null,
    "significance": "TI's new 300 mm analogue fabs in Sherman.",
+   "detail": "SM1 and SM2, the first of up to four 300 mm analogue fabs in Sherman, Texas.",
+   "links": [
+    {
+     "label": "Texas Instruments website",
+     "url": "https://www.ti.com/"
+    },
+    {
+     "label": "Texas Instruments on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Texas_Instruments"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -1083,6 +1790,13 @@
    "precision": "city",
    "description": null,
    "significance": "The first 200 mm silicon carbide fab.",
+   "detail": "Mohawk Valley Fab in Marcy, New York, the first 200 mm silicon carbide fab.",
+   "links": [
+    {
+     "label": "Wolfspeed on Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Wolfspeed"
+    }
+   ],
    "website": null,
    "wikipedia": null,
    "wikidata": null,
@@ -1105,7 +1819,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1003929701",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://rahulgroup.com.bd/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1003929701"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-465420605",
@@ -1123,7 +1848,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/465420605",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/465420605"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-300654142",
@@ -1141,7 +1873,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/300654142",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/300654142"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-764664413",
@@ -1159,7 +1898,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/764664413",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.schne-frost.de/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/764664413"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-375016105",
@@ -1177,7 +1927,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/375016105",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/375016105"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-970431794",
@@ -1195,7 +1952,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/970431794",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.okmetic.com/fi/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/970431794"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-9332220657",
@@ -1213,7 +1981,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/9332220657",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.brets.fr/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/9332220657"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-58506246",
@@ -1231,7 +2010,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/58506246",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.newportwaferfab.co.uk/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/58506246"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-11076252932",
@@ -1249,7 +2039,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/11076252932",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.spts.com/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/11076252932"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-12736585058",
@@ -1267,7 +2068,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/12736585058",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/12736585058"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-225651907",
@@ -1285,7 +2093,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/225651907",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/225651907"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-640977291",
@@ -1303,7 +2118,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/640977291",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/640977291"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-640977293",
@@ -1321,7 +2143,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/640977293",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/640977293"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-347712440",
@@ -1339,7 +2168,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/347712440",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.rohm.co.jp/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/347712440"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-768675021",
@@ -1357,7 +2197,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/768675021",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.shinetsu.co.jp/jp/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/768675021"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-478628105",
@@ -1375,7 +2226,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/478628105",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.edwardsvacuum.com/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/478628105"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-589807732",
@@ -1393,7 +2255,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/589807732",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/589807732"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1495868945",
@@ -1411,7 +2280,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1495868945",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1495868945"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-13447708125",
@@ -1429,7 +2305,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/13447708125",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://cocopeat.organic"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/13447708125"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-9189760135",
@@ -1447,7 +2334,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/9189760135",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://producator-peleti.ro/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/9189760135"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1551569401",
@@ -1465,7 +2363,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1551569401",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1551569401"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1157273463",
@@ -1483,7 +2388,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1157273463",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1157273463"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1225140435",
@@ -1501,7 +2413,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1225140435",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1225140435"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1396105323",
@@ -1519,7 +2438,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1396105323",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1396105323"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-relation-19998880",
@@ -1537,7 +2463,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/relation/19998880",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/relation/19998880"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1210262715",
@@ -1555,7 +2488,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1210262715",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1210262715"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-852183056",
@@ -1573,7 +2513,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/852183056",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/852183056"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1427963949",
@@ -1591,7 +2538,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1427963949",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1427963949"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1167679107",
@@ -1609,7 +2563,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1167679107",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1167679107"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-639165847",
@@ -1627,7 +2588,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/639165847",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/639165847"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-761542930",
@@ -1645,7 +2613,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/761542930",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/761542930"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-204820054",
@@ -1663,7 +2638,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/204820054",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/204820054"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-227068065",
@@ -1681,7 +2663,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/227068065",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/227068065"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-215760243",
@@ -1699,7 +2688,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/215760243",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://www.stacyssnacks.com/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/215760243"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-666506795",
@@ -1717,7 +2717,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/666506795",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/666506795"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-1234261747",
@@ -1735,7 +2742,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/1234261747",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/1234261747"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-way-836070618",
@@ -1753,7 +2767,14 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/way/836070618",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/way/836070618"
+    }
+   ],
+   "detail": null
   },
   {
    "id": "osm-node-12123301110",
@@ -1771,7 +2792,18 @@
    "wikipedia": null,
    "wikidata": null,
    "source_url": "https://www.openstreetmap.org/node/12123301110",
-   "note": "Mapped position only; ownership, output and current operation are not verified."
+   "note": "Mapped position only; ownership, output and current operation are not verified.",
+   "links": [
+    {
+     "label": "Site website",
+     "url": "https://waynepallets.com/"
+    },
+    {
+     "label": "OpenStreetMap feature",
+     "url": "https://www.openstreetmap.org/node/12123301110"
+    }
+   ],
+   "detail": null
   }
  ]
 }

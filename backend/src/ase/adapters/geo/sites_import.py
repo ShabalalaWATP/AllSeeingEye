@@ -64,6 +64,41 @@ def choose_hit(
     return hits[0][0] if hits else None
 
 
+def company_links(seed: dict[str, Any], entities: WikidataEntities) -> list[dict[str, str]]:
+    """Website and article of the operating company named in the seed, when Wikidata has them."""
+    label = seed.get("company_search")
+    if not label:
+        return []
+    qid = choose_hit(entities.search(str(label)), None, ("company", "manufacturer", "corporation"))
+    facts = entities.facts([qid]).get(qid) if qid else None
+    if facts is None:
+        return []
+    links = []
+    if facts.website:
+        links.append({"label": f"{facts.label or label} website", "url": facts.website})
+    if facts.wikipedia:
+        links.append({"label": f"{facts.label or label} on Wikipedia", "url": facts.wikipedia})
+    return links
+
+
+def site_links(site: dict[str, Any]) -> list[dict[str, str]]:
+    """Links in display order: article, site website, then the source record."""
+    links = []
+    if site.get("wikipedia"):
+        links.append({"label": "Wikipedia", "url": site["wikipedia"]})
+    if site.get("website"):
+        links.append({"label": "Site website", "url": site["website"]})
+    for link in site.get("links") or []:
+        if link["url"] not in {known["url"] for known in links}:
+            links.append(link)
+    source = site.get("source_url") or ""
+    if source.startswith("https://www.openstreetmap.org/"):
+        links.append({"label": "OpenStreetMap feature", "url": source})
+    elif source.startswith("https://www.wikidata.org/wiki/"):
+        links.append({"label": "Wikidata", "url": source})
+    return links[:6]
+
+
 def resolve_seed(
     seed: dict[str, Any], entities: WikidataEntities, words: tuple[str, ...]
 ) -> dict[str, Any] | None:
@@ -91,6 +126,8 @@ def resolve_seed(
         "precision": precision,
         "description": (facts.description if facts and precision == "site" else None) or None,
         "significance": str(seed.get("significance") or ""),
+        "detail": str(seed.get("detail") or "") or None,
+        "links": company_links(seed, entities),
         "website": facts.website if facts and precision == "site" else None,
         "wikipedia": facts.wikipedia if facts and precision == "site" else None,
         "wikidata": qid if precision == "site" else None,
@@ -117,7 +154,7 @@ def merge_sites(
         )
         if not near:
             kept.append(site)
-    kept.sort(key=lambda s: (s["significance"] is None, s["country"] or "ZZ", s["name"]))
+    kept.sort(key=lambda s: (not s.get("significance"), s.get("country") or "ZZ", s["name"]))
     return kept[:bound]
 
 
@@ -128,7 +165,25 @@ def _seeds(name: str) -> list[dict[str, Any]]:
     return items
 
 
-def build_layer(layer: str, contact: str) -> dict[str, Any]:
+def previous_mapped(destination: str | None) -> list[dict[str, Any]]:
+    """OpenStreetMap items from the last snapshot, kept when Overpass cannot answer."""
+    if not destination:
+        return []
+    try:
+        with open(destination, encoding="utf-8") as handle:
+            items = json.load(handle).get("items", [])
+    except (OSError, ValueError):
+        return []
+    mapped = [item for item in items if str(item.get("id", "")).startswith("osm-")]
+    for item in mapped:
+        for key in ("owner", "description", "significance", "detail", "wikipedia", "wikidata"):
+            item.setdefault(key, None)
+        item.setdefault("precision", "mapped")
+        item.setdefault("links", [])
+    return mapped
+
+
+def build_layer(layer: str, contact: str, destination: str | None = None) -> dict[str, Any]:
     seeds = _seeds(f"{layer}_key_sites.json")
     words = ENERGY_WORDS if layer == "energy" else ("semiconductor", "fab", "chip", "company")
     entities = WikidataEntities.open(contact)
@@ -136,7 +191,10 @@ def build_layer(layer: str, contact: str) -> dict[str, Any]:
     unresolved: list[str] = []
     try:
         for seed in seeds:
-            site = resolve_seed(seed, entities, words)
+            try:
+                site = resolve_seed(seed, entities, words)
+            except httpx.HTTPError:
+                site = None  # a dropped lookup leaves the seed unresolved, not the run failed
             if site is None:
                 unresolved.append(str(seed["search"]))
             else:
@@ -145,10 +203,18 @@ def build_layer(layer: str, contact: str) -> dict[str, Any]:
         entities.close()
     agent = f"TheAllSeeingEye/0.1 ({contact}; operator-run infrastructure import) httpx"
     index = CountryIndex(load_records())
-    with httpx.Client(timeout=300, headers={"User-Agent": agent}) as client:
-        queries = ENERGY_QUERIES if layer == "energy" else SEMICONDUCTOR_QUERIES
-        mapped = osm_sites(client, queries, index)
+    queries = ENERGY_QUERIES if layer == "energy" else SEMICONDUCTOR_QUERIES
+    try:
+        with httpx.Client(timeout=300, headers={"User-Agent": agent}) as client:
+            mapped = osm_sites(client, queries, index)
+    except httpx.HTTPError:
+        mapped = previous_mapped(destination)  # Overpass down: keep the last mapped breadth
+        if not mapped:
+            raise
     items = merge_sites(curated, mapped, MAX_SITES[layer])
+    for item in items:
+        item["links"] = site_links(item)
+        item.setdefault("detail", None)
     return {
         "attribution": (
             "Curated key sites resolved through Wikidata (CC0); breadth from © OpenStreetMap "
@@ -169,7 +235,7 @@ def build_layer(layer: str, contact: str) -> dict[str, Any]:
 def import_sites(layer: str, destination: str, contact: str = DEFAULT_CONTACT) -> int:
     if layer not in MAX_SITES:
         raise ValueError("Unknown site layer")
-    snapshot = build_layer(layer, contact)
+    snapshot = build_layer(layer, contact, destination)
     with open(destination, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(snapshot, handle, ensure_ascii=False, indent=1)
         handle.write("\n")

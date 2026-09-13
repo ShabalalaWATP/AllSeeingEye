@@ -10,6 +10,7 @@ import pytest
 from typer.testing import CliRunner
 
 from ase.adapters.geo import infrastructure_import as importer
+from ase.adapters.geo import sites_osm
 from ase.adapters.geo.countries import CountryIndex, load_records
 from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.api.schemas_infrastructure import InfrastructureOut
@@ -18,11 +19,11 @@ from ase.cli import app
 
 def test_packaged_snapshot_carries_data_centres_and_imported_stations() -> None:
     data = InfrastructureOut.model_validate(public_infrastructure())
-    assert 1000 <= len(data.data_centres) <= 3600
+    assert 1000 <= len(data.data_centres) <= 3700
     assert len({c.id for c in data.data_centres}) == len(data.data_centres)
     assert "OpenStreetMap" in data.data_centre_attribution
     assert data.data_centre_licence_url == "https://www.openstreetmap.org/copyright"
-    for centre in data.data_centres[:200]:
+    for centre in [c for c in data.data_centres if c.id.startswith("osm-")][:200]:
         assert centre.source_url.startswith("https://www.openstreetmap.org/")
         assert centre.website is None or centre.website.startswith("https://")
         assert centre.country is None or len(centre.country) == 2
@@ -132,13 +133,29 @@ def test_import_data_centres_writes_attributed_snapshot(
     monkeypatch.setattr(
         importer.httpx, "Client", lambda **kw: real(transport=httpx.MockTransport(respond), **kw)
     )
+    monkeypatch.setattr(sites_osm.time, "sleep", lambda _s: None)
+
+    class Offline:
+        def search(self, text: str, limit: int = 5) -> list[tuple[str, str, str]]:
+            return []
+
+        def facts(self, qids: list[str]) -> dict[str, object]:
+            return {}
+
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(importer.WikidataEntities, "open", classmethod(lambda cls, c: Offline()))
     destination = tmp_path / "data_centres.json"
     assert importer.import_data_centres(str(destination)) == 1
     snapshot = json.loads(destination.read_text("utf-8"))
     assert snapshot["items"][0]["id"] == "osm-node-1" and snapshot["licence_url"].endswith(
         "copyright"
     )
-    assert snapshot["_provenance"]["osm_base"] == "2026-09-13T00:00:00Z"
+    assert snapshot["items"][0]["links"] == [
+        {"label": "OpenStreetMap feature", "url": "https://www.openstreetmap.org/node/1"}
+    ]
+    assert snapshot["items"][0]["precision"] == "mapped"
 
 
 def test_cli_commands_report_counts_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

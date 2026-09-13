@@ -11,6 +11,7 @@ import httpx
 from ase.adapters.geo.countries import CountryIndex
 
 OVERPASS = "https://overpass-api.de/api/interpreter"
+MIRRORS = (OVERPASS, "https://overpass.kumi.systems/api/interpreter")
 QUERY_PAUSE_SECONDS = 3.0
 ENERGY_QUERIES: tuple[tuple[str, str], ...] = (
     ("refinery", '[out:json][timeout:240];nwr["industrial"="refinery"]["name"];out center tags;'),
@@ -37,13 +38,25 @@ SEMICONDUCTOR_QUERIES: tuple[tuple[str, str], ...] = (
 NOTE = "Mapped position only; ownership, output and current operation are not verified."
 
 
+def _post(client: httpx.Client, query: str) -> httpx.Response:
+    """Try the main instance, then the public mirror when a connection is dropped."""
+    for index, endpoint in enumerate(MIRRORS):
+        try:
+            return client.post(endpoint, data={"data": query})
+        except httpx.TransportError:
+            if index == len(MIRRORS) - 1:
+                raise
+            time.sleep(20.0)
+    raise httpx.TransportError("No Overpass endpoint answered")
+
+
 def overpass(client: httpx.Client, query: str) -> list[dict[str, Any]]:
     """One query with a polite pause; a busy or rate-limited server is retried once."""
     time.sleep(QUERY_PAUSE_SECONDS)
-    response = client.post(OVERPASS, data={"data": query})
+    response = _post(client, query)
     if response.status_code in {429, 502, 503, 504}:
         time.sleep(60.0)
-        response = client.post(OVERPASS, data={"data": query})
+        response = _post(client, query)
     response.raise_for_status()
     elements = response.json().get("elements")
     if not isinstance(elements, list) or len(elements) > 20_000:

@@ -644,6 +644,10 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [x] Semiconductor site layer: curated fabs and suppliers plus OpenStreetMap breadth.
 - [ ] Global Energy Monitor trackers as a licensed energy import.
 - [ ] Site-level coordinates for the fabs currently placed at city precision.
+- [x] Detail text and company links on curated chip sites; links on every record.
+- [x] Curated Russian, Chinese and North Korean data centres and satellite control sites.
+- [ ] Site coordinates for the city-level Russian and Chinese stations (Bear Lakes,
+  Kashgar, Jiamusi, Miyun, Kunming, Sanya) from open imagery references.
 
 See [Reference notes](REFERENCE_NOTES.md) and [Map infrastructure](MAP_INFRASTRUCTURE.md).
 - [ ] Hand-curated entries for Russian posts without a usable Wikidata position item

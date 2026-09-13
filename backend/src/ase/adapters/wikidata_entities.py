@@ -49,7 +49,11 @@ class WikidataEntities:
 
     def _get(self, params: dict[str, str]) -> dict[str, Any]:
         time.sleep(PAUSE_SECONDS)
-        response = self._client.get(API, params={**params, "format": "json"})
+        try:
+            response = self._client.get(API, params={**params, "format": "json"})
+        except httpx.TransportError:
+            time.sleep(15.0)  # the endpoint drops connections under load; one retry
+            response = self._client.get(API, params={**params, "format": "json"})
         if response.status_code == 429:
             time.sleep(min(float(response.headers.get("Retry-After", "20")), 120.0))
             response = self._client.get(API, params={**params, "format": "json"})

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ase.adapters.geo import infrastructure_import as infra
 from ase.adapters.geo import infrastructure_notes as notes
 from ase.adapters.geo import sites_import as sites
 from ase.adapters.geo.countries import CountryIndex, load_records
@@ -55,6 +56,16 @@ def test_packaged_site_layers_are_bounded_and_attributed() -> None:
     assert len(curated) >= 40
     assert any("Qatar" in (s.significance or "") for s in curated)
     assert any(s.kind == "fab" and s.significance for s in data.semiconductor_sites)
+    chips = [s for s in data.semiconductor_sites if s.significance]
+    assert all(s.detail for s in chips) and sum(1 for s in chips if s.links) >= 45
+    assert sum(1 for s in chips if any("website" in link.label for link in s.links)) >= 40
+    keyed = [c for c in data.data_centres if c.id.startswith("key-")]
+    assert {c.country for c in keyed} >= {"RU", "CN", "KP"}
+    assert all(c.significance and c.detail for c in keyed)
+    assert sum(1 for c in keyed if c.links) >= 15
+    stations = [s for s in data.ground_stations if s.id.startswith("key-")]
+    assert {s.country for s in stations} >= {"RU", "CN", "KP"}
+    assert all(s.role and s.significance and s.precision for s in stations)
 
 
 def test_osm_sites_parse_names_operators_and_links() -> None:
@@ -145,6 +156,70 @@ def test_seed_resolution_prefers_match_word_and_falls_back_to_city() -> None:
         10,
     )
     assert [s["id"] for s in merged] == ["wd-q2", "osm-node-2"]
+
+
+def test_company_and_site_links_are_ordered_and_deduplicated() -> None:
+    entities = FakeEntities(
+        {"TSMC": [("Q1", "TSMC", "Taiwanese semiconductor company")]},
+        {
+            "Q1": fact(
+                "Q1",
+                "TSMC",
+                None,
+                website="https://www.tsmc.com/",
+                wikipedia="https://en.wikipedia.org/wiki/TSMC",
+            )
+        },
+    )
+    links = sites.company_links({"company_search": "TSMC"}, entities)  # type: ignore[arg-type]
+    assert [link["label"] for link in links] == ["TSMC website", "TSMC on Wikipedia"]
+    assert sites.company_links({}, entities) == []  # type: ignore[arg-type]
+    site = {
+        "wikipedia": "https://en.wikipedia.org/wiki/TSMC",
+        "website": None,
+        "links": links,
+        "source_url": "https://www.openstreetmap.org/way/5",
+    }
+    ordered = sites.site_links(site)
+    assert [link["label"] for link in ordered] == [
+        "Wikipedia",
+        "TSMC website",
+        "OpenStreetMap feature",
+    ]
+
+
+def test_curated_stations_carry_role_and_precision(monkeypatch) -> None:
+    entities = FakeEntities(
+        {
+            "Okno": [("Q2", "Okno", "space surveillance complex in Tajikistan")],
+            "Nurek": [("Q3", "Nurek", "city in Tajikistan")],
+        },
+        {"Q2": fact("Q2", "Okno", (69.2, 38.3), operators=("Russian Space Forces",))},
+    )
+    monkeypatch.setattr(infra.WikidataEntities, "open", classmethod(lambda cls, contact: entities))
+    monkeypatch.setattr(entities, "close", lambda: None, raising=False)
+    monkeypatch.setattr(
+        infra,
+        "_seeds",
+        lambda name: [
+            {
+                "search": "Okno",
+                "match": "Tajikistan",
+                "city": "Nurek",
+                "country": "TJ",
+                "operator": "Russian Space Forces",
+                "role": "space_surveillance",
+                "significance": "Optical surveillance.",
+                "detail": "Tracks satellites.",
+            }
+        ],
+    )
+    stations = infra.curated_stations("contact")
+    assert len(stations) == 1
+    station = stations[0]
+    assert station["id"] == "key-wd-q2" and station["role"] == "space_surveillance"
+    assert station["precision"] == "site" and station["country"] == "TJ"
+    assert station["significance"] == "Optical surveillance." and station["detail"]
 
 
 def test_cable_enrichment_uses_way_tags_then_wikidata() -> None:

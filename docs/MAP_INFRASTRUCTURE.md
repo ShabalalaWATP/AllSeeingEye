@@ -123,3 +123,38 @@ Monitor's oil and gas trackers (CC BY 4.0 but behind a download form, a candidat
 licensed import later); OpenStreetMap `man_made=petroleum_well` and pipelines (too many
 features to package usefully). Site records state that output, ownership and current
 operation are not verified.
+
+## Detail and links per record; Russia, China and North Korea, 13 September 2026
+
+Every site, data centre and ground station now carries a `links` list (article, site
+website, the operating company's website and article, the source record) and, for
+curated entries, a `detail` paragraph beside the one-line significance. The inspector
+renders detail, description, city, role and every link.
+
+- Semiconductor sites: all 60 curated entries carry a written detail (fab
+  numbers, process nodes, products) and 49 resolve the operating company's
+  website and article through Wikidata (`company_search` in the seed file).
+- Data centres: the OpenStreetMap import now keeps description, city, `wikipedia`,
+  `wikidata` and `operator:wikidata` tags and pulls owner, description and links for
+  features that name a Wikidata item (1 of 3622 carry an article).
+  A curated list adds 22 key campuses that OpenStreetMap lacks: Russia
+  (8: Yandex, Sberbank, Rostelecom, IXcellerate, DataPro, Selectel, 3data, VK),
+  China (11: Alibaba, Tencent, Apple's GCBD iCloud site, Huawei, the three
+  carriers at Hohhot, Range at Langfang, GDS, Chindata, ByteDance, Baidu) and North Korea
+  (3: Korea Computer Center, the Sci-Tech Complex, Pyongyang Informatics
+  Center). OpenStreetMap already held every named Russian (61) and Chinese (93) feature
+  and nothing for North Korea, so these come from curated seeds resolved through
+  Wikidata and are mostly city-level placements, stated on each record.
+- Satellite control and tracking: `ground_station_key_sites.json` adds 32 curated
+  sites (11 Russian including TsUP, the Titov military control centre,
+  Bear Lakes, Galenki and Yevpatoria deep-space antennas, Plesetsk, Vostochny,
+  Baikonur, Okno and Krona; 17 Chinese including Xi'an Satellite Control
+  Center, the Beijing flight control centre, the Jiamusi and Kashgar deep-space
+  stations, Miyun, Kunming and Sanya receiving stations, the four launch centres,
+  Swakopmund and Zhongshan; 4 North Korean: Sohae, Tonghae, the General
+  Satellite Control Center and Pyongyang's earth stations). 13 are placed at
+  the named city because the public record has no site coordinate; the snapshot now
+  holds 137 stations. Roles (mission control, military control, deep space,
+  tracking, launch site, space surveillance, teleport) are shown in the inspector.
+
+North Korean entries rest on state media and open reporting; the notes say so.

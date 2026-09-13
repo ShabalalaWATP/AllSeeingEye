@@ -4648,3 +4648,12 @@ infrastructure files at the same time (a military source index layer), so the ed
 here were applied as anchored insertions on top of its uncommitted work and its
 moved JSON briefly broke the shared test files until it caught up.
 
+A seventh request asked for far more detail and links on chip sites and data centres
+and for Russian, Chinese and North Korean data centres and satellite control sites.
+OpenStreetMap turned out to hold every named Russian and Chinese data centre already
+and nothing in North Korea, so three curated seed files were written and resolved
+through the Wikidata entity client: 22 data centre campuses, 32 control,
+tracking and launch sites, and company links plus a written detail for all
+60 curated chip sites. Records gained a links list and detail text,
+rendered by one facts block. Wikidata dropped connections during two runs; the client
+now retries once on transport errors.

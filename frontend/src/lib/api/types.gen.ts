@@ -4838,14 +4838,34 @@ export interface components {
             name: string;
             /** Operator */
             operator: string;
+            /** Owner */
+            owner?: string | null;
             /** Country */
             country?: string | null;
+            /** City */
+            city?: string | null;
             /** Longitude */
             longitude: number;
             /** Latitude */
             latitude: number;
+            /**
+             * Precision
+             * @default mapped
+             * @enum {string}
+             */
+            precision: "site" | "mapped" | "city";
+            /** Description */
+            description?: string | null;
+            /** Significance */
+            significance?: string | null;
+            /** Detail */
+            detail?: string | null;
             /** Website */
             website?: string | null;
+            /** Wikipedia */
+            wikipedia?: string | null;
+            /** Links */
+            links?: components["schemas"]["LinkOut"][];
             /** Source Url */
             source_url: string;
             /** Note */
@@ -5672,6 +5692,16 @@ export interface components {
             description?: string | null;
             /** Wikidata */
             wikidata?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Significance */
+            significance?: string | null;
+            /** Detail */
+            detail?: string | null;
+            /** Precision */
+            precision?: ("site" | "mapped" | "city") | null;
+            /** Links */
+            links?: components["schemas"]["LinkOut"][];
         };
         /** GroundwaveOut */
         GroundwaveOut: {
@@ -6437,6 +6467,13 @@ export interface components {
             note: string | null;
             /** Updated At */
             updated_at: string | null;
+        };
+        /** LinkOut */
+        LinkOut: {
+            /** Label */
+            label: string;
+            /** Url */
+            url: string;
         };
         /** LlmConnectionIn */
         LlmConnectionIn: {
@@ -9632,10 +9669,14 @@ export interface components {
             description?: string | null;
             /** Significance */
             significance?: string | null;
+            /** Detail */
+            detail?: string | null;
             /** Website */
             website?: string | null;
             /** Wikipedia */
             wikipedia?: string | null;
+            /** Links */
+            links?: components["schemas"]["LinkOut"][];
             /** Source Url */
             source_url: string;
             /** Note */
