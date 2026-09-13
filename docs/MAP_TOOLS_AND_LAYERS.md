@@ -414,3 +414,14 @@ AI report. It preserves the exact boundary and collection period, with cited
 evidence and source coverage receipts. Drawing and research have separate state
 and share the exclusive map-input owner with measurement and RF tools.
 See [area research](AREA_RESEARCH.md) for the full flow, bounds and limitations.
+
+## Technology and communications control, 13 September 2026
+
+One rail control now owns undersea cables, satellite ground stations, data centres and
+semiconductor sites, with the connectivity signals panel on a second tab. The
+Infrastructure control keeps nuclear power, oil and gas facilities and the military
+source index. Both controls render the same panel component over the same
+infrastructure state, narrowed by a `group` prop, so a selection made from one is
+still highlighted when the other is open. The standalone Network button left the rail;
+the network map's country markers now load while the connectivity tab is open, which
+the tab reports to the map through a callback rather than by panel label.

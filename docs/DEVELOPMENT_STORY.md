@@ -4657,3 +4657,11 @@ tracking and launch sites, and company links plus a written detail for all
 60 curated chip sites. Records gained a links list and detail text,
 rendered by one facts block. Wikidata dropped connections during two runs; the client
 now retries once on transport errors.
+
+An eighth request asked for one technology and communications icon in place of separate
+data centre, network, ground station, cable and semiconductor entries. The rail gained a
+chip-and-antenna control whose panel groups those four layers with the connectivity
+signals on a second tab, while nuclear, oil and gas and the military source index stay
+under Infrastructure. The panel component serves both controls from one state through a
+group prop, and a small tab component reports when the signals tab is open so the
+network map keeps loading its snapshot only while it is in view.

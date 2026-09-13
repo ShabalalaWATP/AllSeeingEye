@@ -646,6 +646,8 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [ ] Site-level coordinates for the fabs currently placed at city precision.
 - [x] Detail text and company links on curated chip sites; links on every record.
 - [x] Curated Russian, Chinese and North Korean data centres and satellite control sites.
+- [x] Technology and communications rail control grouping cables, stations, data
+  centres, semiconductor sites and connectivity signals.
 - [ ] Site coordinates for the city-level Russian and Chinese stations (Bear Lakes,
   Kashgar, Jiamusi, Miyun, Kunming, Sanya) from open imagery references.
 
