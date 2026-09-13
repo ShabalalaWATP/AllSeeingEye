@@ -12,15 +12,16 @@ export function CyberBriefing({ state, days }: { state: CyberBriefingState; days
   const job = briefing?.job;
   const pending = job?.status === 'queued' || job?.status === 'running';
   return (
-    <section aria-label="Cyber intelligence briefing" className="space-y-6">
-      <header>
-        <h2 className="text-xl font-semibold">{days}-day cyber intelligence briefing</h2>
-        <p className="mt-2 max-w-4xl text-sm leading-7 text-muted">
-          A source-backed assessment of campaigns, ransomware claims, exploitation and defensive
-          implications. This global report covers the selected period; the activity-list filters do
-          not change its scope. Reused for 24 hours.
-        </p>
-      </header>
+    <section
+      aria-label="Cyber intelligence briefing"
+      className="space-y-6 rounded-xl border border-line/60 bg-surface/40 p-5 sm:p-6"
+    >
+      <p className="max-w-4xl text-sm leading-7 text-muted">
+        The {days}-day source-backed assessment of campaigns, nation-state reporting, alliance and
+        UK infrastructure activity, Ukraine, navigation interference, ransomware claims and
+        exploitation. This global report covers the selected period; the activity filters do not
+        change its scope. Reused for 24 hours.
+      </p>
       {loading && <LoadingNote label="Loading your cyber briefing" />}
       {error && (
         <Alert tone="error">

@@ -7,8 +7,10 @@ import { report } from '@/test/fixtures';
 import { cyberActors, cyberBriefing, cyberSnapshot } from '@/test/fixtures.cyber';
 import { parseCyberDays } from '@/lib/api/cyber';
 import { useEventsStore } from '@/stores/events';
+import { useGlobeStore } from '@/stores/globe';
 
-beforeEach(() =>
+beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn();
   server.use(
     http.get('/api/cyber', ({ request }) =>
       HttpResponse.json(
@@ -21,10 +23,10 @@ beforeEach(() =>
         cyberBriefing(parseCyberDays(new URL(request.url).searchParams.get('days'))),
       ),
     ),
-  ),
-);
+  );
+});
 
-it('opens a dedicated cyber workspace with attributed activity, timeline and source coverage', async () => {
+it('opens one scrolling CTI workspace with figures, lenses, GNSS, activity and coverage', async () => {
   renderApp('/cyber', 'user');
   expect(await screen.findByRole('heading', { name: 'Cyber threat intelligence' })).toBeVisible();
   expect(await screen.findByRole('img', { name: 'Daily cyber reporting volume' })).toBeVisible();
@@ -33,14 +35,43 @@ it('opens a dedicated cyber workspace with attributed activity, timeline and sou
       name: 'Cyber intelligence',
     }),
   ).toHaveAttribute('aria-current', 'page');
+  const sections = within(screen.getByRole('navigation', { name: 'Cyber workspace sections' }));
+  expect(sections.getAllByRole('link').map((link) => link.textContent)).toEqual([
+    'Overview',
+    'Assessment',
+    'Focus areas',
+    'Nation-state',
+    'GNSS',
+    'Vulnerabilities',
+    'Actors',
+    'Activity',
+    'Briefing',
+    'Sources',
+  ]);
+  expect(screen.getByRole('list', { name: 'Cyber reporting headline figures' })).toBeVisible();
+  const focus = within(screen.getByRole('list', { name: 'Cyber focus areas' }));
+  expect(focus.getAllByRole('heading', { level: 3 })).toHaveLength(6);
+  expect(focus.getByRole('heading', { name: 'Ukraine' })).toBeVisible();
+  expect(focus.getAllByText(/themed passage appears here/)).toHaveLength(6);
+  expect(
+    within(
+      screen.getByRole('list', {
+        name: 'Records mentioning actors with a recorded state association',
+      }),
+    ).getByText('Russia'),
+  ).toBeVisible();
+  expect(await screen.findByText('Baltic Sea, Kaliningrad and Baltic states')).toBeVisible();
+  expect(screen.getByText('Ukraine and its border regions')).toBeVisible();
   const activity = within(screen.getByRole('list', { name: 'Cyber activity reports' }));
   expect(activity.getAllByRole('listitem')).toHaveLength(4);
   expect(activity.getByText(/not proof of malicious activity/)).toBeVisible();
   expect(activity.getByText(/criminal group’s claim/)).toBeVisible();
+  expect(screen.getByText('Apply the vendor update and review exposed services.')).toBeVisible();
+  expect(screen.getByText(/not a universal deadline/)).toBeVisible();
   expect(screen.getByText(/Source coverage/)).toHaveTextContent('1/2');
 });
 
-it('filters returned activity by kind, country and keyword and restores it', async () => {
+it('filters returned activity by kind, country, lens and keyword and restores it', async () => {
   const { user } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
   await user.selectOptions(
@@ -53,28 +84,30 @@ it('filters returned activity by kind, country and keyword and restores it', asy
   await user.selectOptions(screen.getByRole('combobox', { name: 'Country context' }), 'UA');
   expect(screen.getByText(/No records match/)).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Lens' }), 'ukraine');
+  expect(
+    within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
+  ).toHaveLength(1);
+  await user.click(screen.getByRole('button', { name: 'Clear filters' }));
   await user.type(screen.getByRole('searchbox', { name: 'Search returned reports' }), 'APT29');
   expect(
     within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
   ).toHaveLength(1);
 });
 
-it('separates source-referenced historical actor profiles from matched current reporting', async () => {
+it('links focus cards and state mentions into the activity list and actor reference', async () => {
   const { user } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
-  await user.click(
-    within(screen.getByRole('navigation', { name: 'Cyber workspace sections' })).getByRole(
-      'button',
-      { name: 'Threat actors' },
-    ),
-  );
-  await user.type(
-    screen.getByRole('searchbox', { name: /Search name, associated name/ }),
-    'Midnight Blizzard',
-  );
-  await user.click(screen.getByRole('button', { name: /View APT29/ }));
+  const focus = within(screen.getByRole('list', { name: 'Cyber focus areas' }));
+  await user.click(focus.getAllByRole('button', { name: 'Filter activity by this lens' })[3]!);
+  expect(screen.getByRole('combobox', { name: 'Lens' })).toHaveValue('ukraine');
+  expect(
+    within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
+  ).toHaveLength(1);
+  await user.click(screen.getByRole('button', { name: /^APT29.*Profile association: Russia/ }));
   const inspector = within(screen.getByRole('complementary', { name: 'Selected threat actor' }));
   expect(inspector.getByRole('heading', { name: 'APT29' })).toBeVisible();
+  expect(inspector.getByText('Profile association: Russia')).toBeVisible();
   expect(inspector.getByText(/not a verified identity crosswalk/)).toBeVisible();
   expect(inspector.getByRole('link', { name: /Read profile/ })).toHaveAttribute(
     'href',
@@ -82,26 +115,13 @@ it('separates source-referenced historical actor profiles from matched current r
   );
   await user.click(inspector.getByRole('button', { name: 'Filter activity by this actor' }));
   expect(screen.getByText(/Actor mentions: APT29/)).toBeVisible();
+  expect(screen.getByRole('combobox', { name: 'Lens' })).toHaveValue('');
   expect(
     within(screen.getByRole('list', { name: 'Cyber activity reports' })).getAllByRole('listitem'),
   ).toHaveLength(1);
 });
 
-it('shows exploitation context, mitigation and scoped dates without inventing incident geography', async () => {
-  const { user } = renderApp('/cyber', 'user');
-  await screen.findByRole('list', { name: 'Cyber activity reports' });
-  await user.click(
-    within(screen.getByRole('navigation', { name: 'Cyber workspace sections' })).getByRole(
-      'button',
-      { name: 'Exploited vulnerabilities' },
-    ),
-  );
-  expect(screen.getByText('Apply the vendor update and review exposed services.')).toBeVisible();
-  expect(screen.getByText(/not a universal deadline/)).toBeVisible();
-  expect(screen.queryByRole('button', { name: /View country context/ })).not.toBeInTheDocument();
-});
-
-it('uses all four periods while filters and refresh never admit another briefing', async () => {
+it('uses all five periods while filters and refresh never admit another briefing', async () => {
   const starts = vi.fn();
   server.use(
     http.post('/api/cyber/briefing', ({ request }) => {
@@ -118,16 +138,16 @@ it('uses all four periods while filters and refresh never admit another briefing
     expect(screen.getByRole('button', { name: 'Refresh sources' })).not.toBeDisabled(),
   );
   expect(starts).toHaveBeenCalledTimes(1);
-  for (const days of [5, 7, 14]) {
-    await user.click(screen.getByRole('button', { name: `${days} Day` }));
+  for (const days of [5, 7, 14, 30]) {
+    await user.click(screen.getByRole('button', { name: `${days} days` }));
     await waitFor(() => expect(starts).toHaveBeenLastCalledWith(days));
     await screen.findByRole('list', { name: 'Cyber activity reports' });
     expect(router.state.location.search).toContain(`days=${days}`);
   }
-  expect(starts).toHaveBeenCalledTimes(4);
+  expect(starts).toHaveBeenCalledTimes(5);
 });
 
-it('keeps report dates and export links, then hides the previous report when switching period', async () => {
+it('shows the AI assessment at the top, keeps export links, then hides it when the period changes', async () => {
   let release: () => void = () => {
     throw new Error('Not initialised');
   };
@@ -147,13 +167,16 @@ it('keeps report dates and export links, then hides the previous report when swi
     }),
   );
   const { user } = renderApp('/cyber', 'user');
-  await user.click(await screen.findByRole('button', { name: 'Intelligence briefing' }));
+  const assessment = within(await screen.findByRole('article', { name: 'AI assessment' }));
+  expect(
+    await assessment.findByRole('link', { name: 'Open saved report and exports' }),
+  ).toHaveAttribute('href', `/reports/${report.report.id}`);
   expect(await screen.findByRole('article', { name: 'Cyber briefing summary' })).toBeVisible();
   expect(screen.getByRole('link', { name: 'Read full briefing and export' })).toHaveAttribute(
     'href',
     `/reports/${report.report.id}`,
   );
-  await user.click(screen.getByRole('button', { name: '5 Day' }));
+  await user.click(screen.getByRole('button', { name: '5 days' }));
   expect(screen.queryByRole('article', { name: 'Cyber briefing summary' })).not.toBeInTheDocument();
   await act(async () => {
     release();
@@ -162,7 +185,7 @@ it('keeps report dates and export links, then hides the previous report when swi
   expect(await screen.findByText(/Reporting period:/)).toHaveTextContent('7 Sept 2026');
 });
 
-it('opens explicitly labelled country context and enables only the requested map category', async () => {
+it('opens labelled country context on the map and can enable the GNSS layer', async () => {
   const { user, router } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
   await user.selectOptions(screen.getByRole('combobox', { name: 'Country context' }), 'GB');
@@ -170,6 +193,15 @@ it('opens explicitly labelled country context and enables only the requested map
   await waitFor(() => expect(router.state.location.pathname).toBe('/'));
   expect(useEventsStore.getState().hidden.includes('cyber')).toBe(false);
   expect(useEventsStore.getState().hidden.includes('aviation')).toBe(true);
+  await user.click(
+    within(screen.getByRole('navigation', { name: 'Primary' })).getByRole('link', {
+      name: 'Cyber intelligence',
+    }),
+  );
+  expect(useGlobeStore.getState().interference).toBe(false);
+  await user.click(await screen.findByRole('button', { name: 'Show GNSS cells on the map' }));
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'));
+  expect(useGlobeStore.getState().interference).toBe(true);
 });
 
 it('handles unavailable sources and disabled actor reference without replacing gaps with data', async () => {
@@ -188,11 +220,11 @@ it('handles unavailable sources and disabled actor reference without replacing g
       }),
     ),
   );
-  const { user } = renderApp('/cyber', 'user');
+  renderApp('/cyber', 'user');
   expect(await screen.findByText('Cyber source snapshot unavailable')).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'Threat actors' }));
   expect(await screen.findByText('Actor reference is disabled.')).toBeVisible();
   expect(screen.queryByText('APT29')).not.toBeInTheDocument();
+  expect(screen.queryByRole('list', { name: 'Cyber focus areas' })).not.toBeInTheDocument();
 });
 
 it('keeps actor references useful without reporting zero activity when the snapshot fails', async () => {
@@ -206,7 +238,6 @@ it('keeps actor references useful without reporting zero activity when the snaps
   );
   const { user } = renderApp('/cyber', 'user');
   await screen.findByText('Cyber source snapshot unavailable');
-  await user.click(screen.getByRole('button', { name: 'Threat actors' }));
   await user.click(
     await screen.findByRole('button', { name: /View APT29 .*Activity unavailable/ }),
   );
@@ -231,9 +262,8 @@ it('hides previous actor counts while the selected reporting period is loading',
   );
   const { user } = renderApp('/cyber', 'user');
   await screen.findByRole('list', { name: 'Cyber activity reports' });
-  await user.click(screen.getByRole('button', { name: 'Threat actors' }));
   await user.click(await screen.findByRole('button', { name: /View APT29 .*1 mentions/ }));
-  await user.click(screen.getByRole('button', { name: '14 Day' }));
+  await user.click(screen.getByRole('button', { name: '14 days' }));
   expect(screen.getByText(/Activity loading\. Mention counts/)).toBeVisible();
   expect(screen.queryByText(/Matched records:/)).not.toBeInTheDocument();
   await act(async () => {

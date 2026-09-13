@@ -6,6 +6,7 @@ export const CYBER_KIND_LABELS = {
   known_exploited_vulnerability: 'Known exploited vulnerabilities',
   advisory: 'Security advisories',
   threat_report: 'Threat reports',
+  news_report: 'Cyber news reporting',
   other: 'Other cyber reporting',
 } as const;
 

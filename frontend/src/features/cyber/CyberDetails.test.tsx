@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
@@ -6,7 +6,8 @@ import { cyberActors, cyberBriefing, cyberItems, cyberSnapshot } from '@/test/fi
 import { ApiError } from '@/lib/api/errors';
 import { CyberActivity } from './CyberActivity';
 import { CyberActors } from './CyberActors';
-import { CyberOverview } from './CyberOverview';
+import { CyberCharts } from './CyberCharts';
+import { CyberKpis } from './CyberKpis';
 import { CyberVulnerabilities } from './CyberVulnerabilities';
 import { CyberBriefing } from './CyberBriefing';
 import { cyberCountry, filterCyberItems } from './cyberPresentation';
@@ -15,27 +16,51 @@ it('explains empty observations and exposes the underlying chart counts', async 
   const user = userEvent.setup();
   const data = cyberSnapshot();
   data.retained_count = 0;
-  data.counts = [];
+  data.counts = data.counts.map((row) => ({ ...row, count: 0 }));
   data.timeline = [];
   data.actor_mentions = [];
   data.top_countries = [];
-  render(<CyberOverview data={data} onCountry={vi.fn()} onActor={vi.fn()} />);
-  expect(screen.getByText(/No dated cyber records/)).toBeVisible();
-  expect(screen.getByText(/No distinctive actor names/)).toBeVisible();
-  await user.click(screen.getByText('Daily counts by evidence type'));
-  expect(screen.getByRole('table', { name: 'Dated cyber records, split by type' })).toBeVisible();
+  data.sources = [];
+  render(<CyberKpis data={data} />);
+  expect(screen.getByRole('list', { name: 'Cyber reporting headline figures' })).toBeVisible();
+  render(<CyberCharts data={data} onCountry={vi.fn()} />);
+  expect(screen.getByText(/No records to apportion/)).toBeVisible();
+  expect(screen.getByText(/Locations are not established/)).toBeVisible();
+  expect(screen.getByText(/No source returned dated records/)).toBeVisible();
+  await user.click(screen.getByText('Table view'));
+  expect(
+    screen.getByRole('table', { name: 'Daily cyber reporting volume, as a table' }),
+  ).toBeVisible();
+});
+it('lets a country bar narrow the activity list and marks alliance members', async () => {
+  const user = userEvent.setup();
+  const onCountry = vi.fn();
+  render(<CyberCharts data={cyberSnapshot()} onCountry={onCountry} />);
+  const countries = within(
+    screen.getByRole('list', { name: 'Records by source-supplied country' }),
+  );
+  expect(countries.getByText('NATO member')).toBeVisible();
+  await user.click(countries.getByRole('button', { name: /United Kingdom/ }));
+  expect(onCountry).toHaveBeenCalledWith('GB');
+  const nato = within(
+    screen.getByRole('list', { name: 'Records with country context in NATO member states' }),
+  );
+  expect(nato.getAllByRole('listitem')).toHaveLength(1);
 });
 it('bounds the initially rendered activity list and lets the operator reveal more', async () => {
   const user = userEvent.setup();
   const items = Array.from({ length: 31 }, (_, i) => ({ ...cyberItems[0]!, id: String(i) }));
+  const onTheme = vi.fn();
   render(
     <MemoryRouter>
-      <CyberActivity items={items} days={2} onActor={vi.fn()} />
+      <CyberActivity items={items} days={2} onActor={vi.fn()} onTheme={onTheme} />
     </MemoryRouter>,
   );
   expect(screen.getAllByRole('heading')).toHaveLength(30);
   await user.click(screen.getByRole('button', { name: 'Show more reports (1 remaining)' }));
   expect(screen.getAllByRole('heading')).toHaveLength(31);
+  await user.click(screen.getAllByRole('button', { name: 'Nation-state' })[0]!);
+  expect(onTheme).toHaveBeenCalledWith('nation_state');
 });
 it('shows no-matching-reference state and paginates the actor directory', async () => {
   const user = userEvent.setup();
@@ -59,6 +84,7 @@ it('shows no-matching-reference state and paginates the actor directory', async 
     </MemoryRouter>,
   );
   expect(screen.getByText(/does not establish inactivity/)).toBeVisible();
+  expect(screen.getByText('Profile association: North Korea')).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Show more actors' }));
   expect(screen.queryByRole('button', { name: 'Show more actors' })).not.toBeInTheDocument();
   await user.type(screen.getByRole('searchbox'), 'not present');
@@ -111,12 +137,15 @@ it('retains loading, error retry and active progress states without a fabricated
   ).toHaveAttribute('value', '1');
   expect(screen.queryByRole('article', { name: 'Cyber briefing summary' })).not.toBeInTheDocument();
 });
-it('filters on actor membership and CVE/product metadata without mistaking publisher country for geography', () => {
+it('filters on actor membership, lens and CVE/product metadata without mistaking publisher country for geography', () => {
   expect(filterCyberItems(cyberItems, '', 'all', '', 'G0016').map((item) => item.id)).toEqual([
     'advisory-1',
   ]);
   expect(filterCyberItems(cyberItems, 'CVE-2026-12345', 'all', '', '')).toHaveLength(1);
   expect(filterCyberItems(cyberItems, 'APT29', 'all', 'GB', '')).toHaveLength(0);
+  expect(filterCyberItems(cyberItems, '', 'all', '', '', 'ukraine').map((item) => item.id)).toEqual(
+    ['outage-1'],
+  );
   expect(cyberCountry(null)).toBe('Location not established');
   expect(cyberCountry('invalid-region')).toBe('invalid-region');
 });

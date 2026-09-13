@@ -1,4 +1,4 @@
-import type { CyberItem } from '@/lib/api/cyber';
+import type { CyberItem, CyberTheme } from '@/lib/api/cyber';
 
 const countries = new Intl.DisplayNames(['en-GB'], { type: 'region' });
 export function cyberCountry(code: string | null): string {
@@ -20,6 +20,8 @@ export const KIND_NOTES: Record<CyberItem['kind'], string> = {
     'Published defensive guidance. Attribution and affected scope are the issuing source’s assessment.',
   threat_report:
     'Published threat research. An actor mentioned in a report is not automatically responsible for an incident.',
+  news_report:
+    'Specialist press reporting of a headline only. Claims, attribution and figures are the outlet’s and remain unverified here.',
   other: 'Cyber-related reporting whose precise activity type has not been established.',
 };
 export function filterCyberItems(
@@ -28,6 +30,7 @@ export function filterCyberItems(
   kind: CyberItem['kind'] | 'all',
   country: string,
   actor: string,
+  theme: CyberTheme | '' = '',
 ) {
   const text = query.trim().toLocaleLowerCase();
   return items.filter(
@@ -35,6 +38,7 @@ export function filterCyberItems(
       (kind === 'all' || item.kind === kind) &&
       (!country || item.country_iso === country) &&
       (!actor || item.actor_mentions.some((mention) => mention.group_id === actor)) &&
+      (!theme || item.themes.includes(theme)) &&
       (!text ||
         [
           item.title,

@@ -24,6 +24,7 @@ export const cyberItems: CyberItem[] = [
     grade: 'F6',
     actor_mentions: [{ group_id: 'G0016', matched_name: 'APT29' }],
     kev: null,
+    themes: ['nation_state'],
   },
   {
     id: 'claim-1',
@@ -40,6 +41,7 @@ export const cyberItems: CyberItem[] = [
     grade: 'B3',
     actor_mentions: [],
     kev: null,
+    themes: [],
   },
   {
     id: 'outage-1',
@@ -56,6 +58,7 @@ export const cyberItems: CyberItem[] = [
     grade: 'B2',
     actor_mentions: [],
     kev: null,
+    themes: ['ukraine'],
   },
   {
     id: 'kev-1',
@@ -81,6 +84,7 @@ export const cyberItems: CyberItem[] = [
       cwes: 'CWE-20',
       required_action: 'Apply the vendor update and review exposed services.',
     },
+    themes: [],
   },
 ];
 export function cyberSnapshot(days: CyberDays = 2): CyberSnapshot {
@@ -92,6 +96,7 @@ export function cyberSnapshot(days: CyberDays = 2): CyberSnapshot {
       { kind: 'known_exploited_vulnerability', count: 1 },
       { kind: 'advisory', count: 1 },
       { kind: 'threat_report', count: 0 },
+      { kind: 'news_report', count: 0 },
       { kind: 'other', count: 0 },
     ] as const
   ).map((item) => ({ ...item }));
@@ -123,6 +128,15 @@ export function cyberSnapshot(days: CyberDays = 2): CyberSnapshot {
         })),
       },
     ],
+    themes: [
+      { theme: 'nation_state', count: 1, daily: [0, 1] },
+      { theme: 'nato_allies', count: 0, daily: [0, 0] },
+      { theme: 'uk_infrastructure', count: 0, daily: [0, 0] },
+      { theme: 'ukraine', count: 1, daily: [0, 1] },
+      { theme: 'gnss_interference', count: 0, daily: [0, 0] },
+      { theme: 'critical_infrastructure', count: 0, daily: [0, 0] },
+    ],
+    state_mentions: [{ state: 'Russia', count: 1, group_ids: ['G0016'] }],
     top_countries: [
       { key: 'GB', count: 1 },
       { key: 'UA', count: 1 },
@@ -178,6 +192,7 @@ export const cyberActors: CyberActors = {
         modified_at: '2026-08-01T00:00:00Z',
         technique_ids: ['T1078', 'T1566.001'],
         technique_count: 2,
+        state_association: 'Russia',
       },
       {
         group_id: 'G0032',
@@ -188,6 +203,7 @@ export const cyberActors: CyberActors = {
         modified_at: '2026-08-01T00:00:00Z',
         technique_ids: [],
         technique_count: 0,
+        state_association: 'North Korea',
       },
     ],
   },

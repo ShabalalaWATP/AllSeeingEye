@@ -10,23 +10,42 @@ export type CyberActors = components['schemas']['CyberActorsOut'];
 export type CyberActor = components['schemas']['CyberActorOut'];
 export type CyberBriefing = components['schemas']['CyberBriefingOut'];
 export type CyberDays = CyberBriefing['window_days'];
-export const CYBER_PERIODS = [2, 5, 7, 14] as const;
+export type CyberTheme = CyberItem['themes'][number];
+export type CyberThemeTally = CyberSnapshot['themes'][number];
+export type CyberStateTally = CyberSnapshot['state_mentions'][number];
+export const CYBER_PERIODS = [2, 5, 7, 14, 30] as const;
 export const parseCyberDays = (value: string | null): CyberDays =>
   CYBER_PERIODS.find((day) => String(day) === value) ?? 2;
 
 const date = z.iso.datetime({ offset: true });
-const daysSchema = z.union([z.literal(2), z.literal(5), z.literal(7), z.literal(14)]);
+const daysSchema = z.union([
+  z.literal(2),
+  z.literal(5),
+  z.literal(7),
+  z.literal(14),
+  z.literal(30),
+]);
 const kindSchema = z.enum([
   'ransomware_claim',
   'outage_signal',
   'known_exploited_vulnerability',
   'advisory',
   'threat_report',
+  'news_report',
   'other',
 ]);
+export const CYBER_THEMES = [
+  'nation_state',
+  'nato_allies',
+  'uk_infrastructure',
+  'ukraine',
+  'gnss_interference',
+  'critical_infrastructure',
+] as const;
+const themeSchema = z.enum(CYBER_THEMES);
 const counts = z
   .array(z.object({ kind: kindSchema, count: z.number().int().nonnegative() }))
-  .max(6);
+  .max(7);
 const itemSchema = z.object({
   id: z.string(),
   kind: kindSchema,
@@ -53,6 +72,7 @@ const itemSchema = z.object({
       required_action: z.string(),
     })
     .nullable(),
+  themes: z.array(themeSchema).max(6),
 });
 const snapshotSchema: z.ZodType<CyberSnapshot> = z.object({
   as_of: date,
@@ -60,13 +80,31 @@ const snapshotSchema: z.ZodType<CyberSnapshot> = z.object({
   period_from: date,
   period_to: date,
   coverage_note: z.string(),
-  retained_count: z.number().int().nonnegative().max(5000),
+  retained_count: z.number().int().nonnegative().max(10_000),
   returned_count: z.number().int().nonnegative().max(200),
   truncated: z.boolean(),
   counts,
   timeline: z
     .array(z.object({ day: z.string(), total: z.number().int().nonnegative(), counts }))
-    .max(15),
+    .max(31),
+  themes: z
+    .array(
+      z.object({
+        theme: themeSchema,
+        count: z.number().int().nonnegative(),
+        daily: z.array(z.number().int().nonnegative()).max(31),
+      }),
+    )
+    .max(6),
+  state_mentions: z
+    .array(
+      z.object({
+        state: z.string().max(60),
+        count: z.number().int().nonnegative(),
+        group_ids: z.array(z.string().regex(/^G\d{4}$/)).max(12),
+      }),
+    )
+    .max(20),
   top_countries: z
     .array(z.object({ key: z.string(), count: z.number().int().nonnegative() }))
     .max(250),
@@ -100,6 +138,7 @@ const actorSchema = z.object({
   modified_at: date,
   technique_ids: z.array(z.string().regex(/^T\d{4}(\.\d{3})?$/)).max(1000),
   technique_count: z.number().int().nonnegative(),
+  state_association: z.string().max(60).nullable(),
 });
 const actorsSchema: z.ZodType<CyberActors> = z.object({
   available: z.boolean(),

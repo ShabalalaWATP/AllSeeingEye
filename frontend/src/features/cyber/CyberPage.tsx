@@ -1,127 +1,126 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { CYBER_PERIODS, parseCyberDays } from '@/lib/api/cyber';
+import { parseCyberDays, type CyberDays, type CyberTheme } from '@/lib/api/cyber';
 import { describeError } from '@/lib/api/errors';
 import { CYBER_KIND_LABELS, type CyberKindFilter } from '@/lib/cyber';
-import { formatUtc } from '@/lib/format';
+import { CYBER_THEME_META } from '@/lib/cyberThemes';
 import { prepareCyberMap } from '@/stores/cyberFilters';
+import { useGlobeStore } from '@/stores/globe';
 import { CyberActivity } from './CyberActivity';
 import { CyberActors } from './CyberActors';
+import { CyberAssessment } from './CyberAssessment';
 import { CyberBriefing } from './CyberBriefing';
-import { CyberOverview } from './CyberOverview';
+import { CyberCharts } from './CyberCharts';
+import { CyberFocusAreas } from './CyberFocusAreas';
+import { CyberGnss } from './CyberGnss';
+import { CyberHeader } from './CyberHeader';
+import { CyberKpis } from './CyberKpis';
+import { CyberNationState } from './CyberNationState';
+import { CyberSectionNav, SectionHeading } from './CyberSectionNav';
 import { CyberSourceCoverage } from './CyberSourceCoverage';
 import { CyberVulnerabilities } from './CyberVulnerabilities';
 import { cyberCountry, filterCyberItems } from './cyberPresentation';
 import { useCyberWorkspace } from './useCyberWorkspace';
 
-const TABS = [
-  { id: 'activity', label: 'Activity' },
-  { id: 'actors', label: 'Threat actors' },
-  { id: 'vulnerabilities', label: 'Exploited vulnerabilities' },
-  { id: 'briefing', label: 'Intelligence briefing' },
-] as const;
-type Tab = (typeof TABS)[number]['id'];
 const field =
   'min-h-11 rounded-md border border-line bg-surface px-3 text-sm text-text focus:border-ember focus:outline-none';
+
+function Section({
+  id,
+  eyebrow,
+  title,
+  lede,
+  aside,
+  children,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-16 space-y-5">
+      <SectionHeading id={id} eyebrow={eyebrow} title={title} lede={lede} aside={aside} />
+      {children}
+    </section>
+  );
+}
 
 export default function CyberPage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const days = parseCyberDays(params.get('days'));
-  const [tab, setTab] = useState<Tab>('activity');
   const [query, setQuery] = useState('');
   const [country, setCountry] = useState('');
   const [kind, setKind] = useState<CyberKindFilter>('all');
   const [actor, setActor] = useState('');
+  const [theme, setTheme] = useState<CyberTheme | ''>('');
   const [selectedActor, setSelectedActor] = useState('');
-  const { snapshot, actors, briefing } = useCyberWorkspace(days);
+  const { snapshot, actors, briefing, gnss } = useCyberWorkspace(days);
   const data = snapshot.data;
   const items = useMemo(
-    () => filterCyberItems(data?.items ?? [], query, kind, country, actor),
-    [data, query, kind, country, actor],
+    () => filterCyberItems(data?.items ?? [], query, kind, country, actor, theme),
+    [data, query, kind, country, actor, theme],
   );
   const vulnerabilities = useMemo(
     () => filterCyberItems(data?.items ?? [], query, 'known_exploited_vulnerability', '', ''),
     [data, query],
   );
-  const selectedName = actors.data?.catalogue?.actors.find((item) => item.group_id === actor)?.name;
+  const gnssItems = useMemo(
+    () => (data?.items ?? []).filter((item) => item.themes.includes('gnss_interference')),
+    [data],
+  );
+  const catalogue = actors.data?.catalogue?.actors ?? [];
+  const selectedName = catalogue.find((item) => item.group_id === actor)?.name;
+  const actorStatus = data ? 'ready' : snapshot.loading ? 'loading' : 'unavailable';
+  const pending =
+    briefing.briefing?.job.status === 'running' || briefing.briefing?.job.status === 'queued';
+  const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ block: 'start' });
   const inspectActor = (id: string) => {
     setSelectedActor(id);
-    setTab('actors');
+    jump('cyber-actors');
+  };
+  const focusActivity = (changes: Partial<{ country: string; theme: CyberTheme | '' }>) => {
+    if (changes.country !== undefined) setCountry(changes.country);
+    if (changes.theme !== undefined) setTheme(changes.theme);
+    jump('cyber-activity');
   };
   const clear = () => {
     setQuery('');
     setCountry('');
     setKind('all');
     setActor('');
+    setTheme('');
   };
+  const setDays = (value: CyberDays) =>
+    setParams((previous) => {
+      previous.set('days', String(value));
+      return previous;
+    });
+  const openGnssMap = () => {
+    const globe = useGlobeStore.getState();
+    if (!globe.interference) globe.toggleInterference();
+    void navigate('/');
+  };
+  const filtered = Boolean(query || country || actor || theme || kind !== 'all');
   return (
     <section className="h-full min-w-0 overflow-y-auto px-4 py-6 sm:px-7 lg:px-10">
-      <div className="mx-auto max-w-[1500px] space-y-7 pb-28">
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-cyan">
-              Cyber intelligence
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight">Cyber threat intelligence</h1>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Reported campaigns, actor tradecraft and exploitation, with the evidence behind each
-              assessment.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => void snapshot.reload()}
-              busy={snapshot.loading}
-            >
-              Refresh sources
-            </Button>
-            <Button
-              onClick={() =>
-                void navigate(prepareCyberMap({ country: country || null, days, kind, query }))
-              }
-            >
-              Open cyber map
-            </Button>
-          </div>
-        </header>
-        <section
-          aria-label="Cyber reporting period"
-          className="flex flex-wrap items-center justify-between gap-4 border-y border-line py-4"
-        >
-          <div>
-            <h2 className="text-sm font-semibold">Reporting period</h2>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              Applies to activity and the AI briefing. Actor profiles retain their own reference
-              dates.
-            </p>
-          </div>
-          <div
-            role="group"
-            aria-label="Choose cyber reporting period"
-            className="flex gap-1 rounded-lg bg-surface p-1"
-          >
-            {CYBER_PERIODS.map((period) => (
-              <button
-                key={period}
-                type="button"
-                aria-pressed={days === period}
-                onClick={() =>
-                  setParams((previous) => {
-                    previous.set('days', String(period));
-                    return previous;
-                  })
-                }
-                className={`min-h-11 min-w-16 rounded-md px-3 text-sm transition-colors ${days === period ? 'bg-ember font-semibold text-ground' : 'text-muted hover:bg-surface-2 hover:text-text'}`}
-              >
-                {period} Day
-              </button>
-            ))}
-          </div>
-        </section>
+      <div className="mx-auto max-w-[1500px] space-y-8 pb-28">
+        <CyberHeader
+          days={days}
+          onDays={setDays}
+          data={data}
+          loading={snapshot.loading}
+          onRefresh={() => void snapshot.reload()}
+          onOpenMap={() =>
+            void navigate(prepareCyberMap({ country: country || null, days, kind, query }))
+          }
+        />
+        <CyberSectionNav preparing={pending} />
         {snapshot.loading && !data && <LoadingNote label="Loading cyber activity" />}
         {snapshot.error && (
           <Alert tone="error">
@@ -132,43 +131,111 @@ export default function CyberPage() {
           </Alert>
         )}
         {data && (
+          <Section
+            id="cyber-overview"
+            eyebrow="Overview"
+            title="The current picture"
+            lede="Collected records for the selected period, split by what each source actually measures."
+          >
+            <CyberKpis data={data} />
+            <CyberCharts data={data} onCountry={(value) => focusActivity({ country: value })} />
+          </Section>
+        )}
+        <Section
+          id="cyber-assessment"
+          eyebrow="Assessment"
+          title="AI assessment of the period"
+          lede="A source-backed executive view written by the configured model from the collected evidence. Filters on this page never change its scope."
+        >
+          <CyberAssessment state={briefing} days={days} />
+        </Section>
+        {data && (
           <>
-            <p className="text-xs text-muted">
-              Evidence window: {formatUtc(data.period_from)} to {formatUtc(data.period_to)}
-            </p>
-            <CyberOverview
-              data={data}
-              onCountry={(value) => {
-                setCountry(value);
-                setTab('activity');
-              }}
-              onActor={inspectActor}
-            />
+            <Section
+              id="cyber-focus"
+              eyebrow="Focus areas"
+              title="Themed lenses on the reporting"
+              lede="Nation-state tradecraft, the alliance, UK infrastructure, Ukraine, navigation interference and operational technology, each with the briefing’s own words when it has them."
+            >
+              <CyberFocusAreas
+                data={data}
+                report={briefing.report}
+                onTheme={(value) => focusActivity({ theme: value })}
+              />
+            </Section>
+            <Section
+              id="cyber-nation-state"
+              eyebrow="Nation-state"
+              title="State-associated actor mentions"
+              lede="Where reporting names a group whose MITRE ATT&CK profile records a state association. Mentions are leads for research, not attribution."
+            >
+              <CyberNationState
+                data={data}
+                actors={catalogue}
+                actorStatus={actors.data ? 'ready' : actors.loading ? 'loading' : 'unavailable'}
+                onActor={inspectActor}
+              />
+            </Section>
+            <Section
+              id="cyber-gnss"
+              eyebrow="GNSS"
+              title="GPS and GNSS interference"
+              lede="Aircraft accuracy anomalies from the aviation tracker, read by region, beside reporting that mentions jamming or spoofing."
+            >
+              <CyberGnss gnss={gnss} items={gnssItems} onOpenMap={openGnssMap} />
+            </Section>
+            <Section
+              id="cyber-vulnerabilities"
+              eyebrow="Exploitation"
+              title="Exploited vulnerabilities to prioritise"
+              lede="Recent additions to CISA’s Known Exploited Vulnerabilities catalogue. Match affected products to your own estate before acting; catalogue addition is not the date exploitation began."
+            >
+              <CyberVulnerabilities items={vulnerabilities} />
+            </Section>
           </>
         )}
-        <nav
-          aria-label="Cyber workspace sections"
-          className="flex flex-wrap gap-2 border-b border-line pb-3"
+        <Section
+          id="cyber-actors"
+          eyebrow="Reference"
+          title="Threat actor reference"
+          lede="Historical MITRE ATT&CK profiles with this period’s name matches."
         >
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-pressed={tab === item.id}
-              onClick={() => setTab(item.id)}
-              className={`min-h-11 rounded-md px-4 text-sm font-medium transition-colors ${tab === item.id ? 'bg-surface-2 text-text' : 'text-muted hover:bg-surface hover:text-text'}`}
-            >
-              {item.label}
-              {item.id === 'briefing' &&
-                (briefing.briefing?.job.status === 'running' ||
-                  briefing.briefing?.job.status === 'queued') && (
-                  <span className="ml-2 text-[10px] text-cyan">Preparing</span>
-                )}
-            </button>
-          ))}
-        </nav>
-        {(tab === 'activity' || tab === 'vulnerabilities') && (
-          <section aria-label="Filter cyber reporting" className="space-y-3">
+          {actors.loading && <LoadingNote label="Loading threat actor references" />}
+          {actors.error && (
+            <Alert tone="error">
+              {describeError(actors.error)}{' '}
+              <Button variant="ghost" onClick={() => void actors.reload()}>
+                Retry actor references
+              </Button>
+            </Alert>
+          )}
+          {actors.data && (
+            <CyberActors
+              key={actors.key}
+              data={actors.data}
+              items={data?.items ?? []}
+              mentions={data?.actor_mentions ?? []}
+              activityStatus={actorStatus}
+              selectedId={selectedActor}
+              onSelect={setSelectedActor}
+              onActivity={(id) => {
+                setActor(id);
+                setCountry('');
+                setKind('all');
+                setQuery('');
+                setTheme('');
+                jump('cyber-activity');
+              }}
+            />
+          )}
+        </Section>
+        <Section
+          id="cyber-activity"
+          eyebrow="Activity"
+          title="Collected reporting"
+          lede="Every returned record with its source, grade, lenses and matched names."
+        >
+          <div aria-label="Filter cyber reporting" className="space-y-3">
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex min-w-48 flex-1 flex-col gap-2 text-xs text-muted">
                 Search returned reports
@@ -181,47 +248,58 @@ export default function CyberPage() {
                   className={field}
                 />
               </label>
-              {tab === 'activity' && (
-                <>
-                  <label className="flex flex-col gap-2 text-xs text-muted">
-                    Evidence type
-                    <select
-                      value={kind}
-                      onChange={(event) => setKind(event.target.value as CyberKindFilter)}
-                      className={field}
-                    >
-                      <option value="all">All cyber reporting</option>
-                      {Object.entries(CYBER_KIND_LABELS).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="flex flex-col gap-2 text-xs text-muted">
-                    Country context
-                    <select
-                      value={country}
-                      onChange={(event) => setCountry(event.target.value)}
-                      className={field}
-                    >
-                      <option value="">All locations</option>
-                      {data?.top_countries.map((item) => (
-                        <option key={item.key} value={item.key}>
-                          {cyberCountry(item.key)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </>
-              )}
-              {(query || (tab === 'activity' && (country || actor || kind !== 'all'))) && (
+              <label className="flex flex-col gap-2 text-xs text-muted">
+                Evidence type
+                <select
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value as CyberKindFilter)}
+                  className={field}
+                >
+                  <option value="all">All cyber reporting</option>
+                  {Object.entries(CYBER_KIND_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-2 text-xs text-muted">
+                Country context
+                <select
+                  value={country}
+                  onChange={(event) => setCountry(event.target.value)}
+                  className={field}
+                >
+                  <option value="">All locations</option>
+                  {data?.top_countries.map((item) => (
+                    <option key={item.key} value={item.key}>
+                      {cyberCountry(item.key)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-2 text-xs text-muted">
+                Lens
+                <select
+                  value={theme}
+                  onChange={(event) => setTheme(event.target.value as CyberTheme | '')}
+                  className={field}
+                >
+                  <option value="">All lenses</option>
+                  {Object.entries(CYBER_THEME_META).map(([key, meta]) => (
+                    <option key={key} value={key}>
+                      {meta.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {filtered && (
                 <Button variant="ghost" onClick={clear}>
                   Clear filters
                 </Button>
               )}
             </div>
-            {actor && tab === 'activity' && (
+            {actor && (
               <p className="text-xs text-cyan">
                 Actor mentions: {selectedName ?? actor}{' '}
                 <button type="button" className="ml-3 underline" onClick={() => setActor('')}>
@@ -231,57 +309,41 @@ export default function CyberPage() {
             )}
             {data && (
               <p className="text-xs leading-5 text-muted">
-                {tab === 'activity' ? items.length : vulnerabilities.length} matching records in the{' '}
-                {data.returned_count} returned.{' '}
+                {items.length} matching records in the {data.returned_count} returned.{' '}
                 {data.truncated
                   ? `The newest ${data.returned_count} of ${data.retained_count} records are listed. Overview counts include the wider retained selection.`
                   : 'Overview counts cover the complete retained selection for this period.'}
               </p>
             )}
-          </section>
+          </div>
+          {data && (
+            <CyberActivity
+              key={`${days}:${query}:${kind}:${country}:${actor}:${theme}:${snapshot.key}`}
+              items={items}
+              days={days}
+              onActor={inspectActor}
+              onTheme={(value) => focusActivity({ theme: value })}
+            />
+          )}
+        </Section>
+        <Section
+          id="cyber-briefing"
+          eyebrow="Briefing"
+          title="Full cited briefing"
+          lede="The complete assessment with judgements, developments, watch conditions and references."
+        >
+          <CyberBriefing state={briefing} days={days} />
+        </Section>
+        {data && (
+          <Section
+            id="cyber-sources"
+            eyebrow="Sources"
+            title="Coverage and limitations"
+            lede="Which feeds contributed, their delivery health and what the counts can and cannot say."
+          >
+            <CyberSourceCoverage data={data} />
+          </Section>
         )}
-        {tab === 'activity' && data && (
-          <CyberActivity
-            key={`${days}:${query}:${kind}:${country}:${actor}:${snapshot.key}`}
-            items={items}
-            days={days}
-            onActor={inspectActor}
-          />
-        )}
-        {tab === 'vulnerabilities' && data && <CyberVulnerabilities items={vulnerabilities} />}
-        {tab === 'actors' && (
-          <>
-            {actors.loading && <LoadingNote label="Loading threat actor references" />}
-            {actors.error && (
-              <Alert tone="error">
-                {describeError(actors.error)}{' '}
-                <Button variant="ghost" onClick={() => void actors.reload()}>
-                  Retry actor references
-                </Button>
-              </Alert>
-            )}
-            {actors.data && (
-              <CyberActors
-                key={actors.key}
-                data={actors.data}
-                items={data?.items ?? []}
-                mentions={data?.actor_mentions ?? []}
-                activityStatus={data ? 'ready' : snapshot.loading ? 'loading' : 'unavailable'}
-                selectedId={selectedActor}
-                onSelect={setSelectedActor}
-                onActivity={(id) => {
-                  setActor(id);
-                  setCountry('');
-                  setKind('all');
-                  setQuery('');
-                  setTab('activity');
-                }}
-              />
-            )}
-          </>
-        )}
-        {tab === 'briefing' && <CyberBriefing state={briefing} days={days} />}
-        {data && <CyberSourceCoverage data={data} />}
       </div>
     </section>
   );

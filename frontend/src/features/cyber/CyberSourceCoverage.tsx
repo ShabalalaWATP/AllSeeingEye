@@ -2,36 +2,56 @@ import type { CyberSnapshot } from '@/lib/api/cyber';
 import { SourceLink } from '@/components/ui/SourceLink';
 import { formatUtc } from '@/lib/format';
 
+const STATUS_STYLE: Record<CyberSnapshot['sources'][number]['status'], string> = {
+  healthy: 'text-good',
+  degraded: 'text-amber',
+  idle: 'text-muted',
+  disabled: 'text-critical',
+};
+
 export function CyberSourceCoverage({ data }: { data: CyberSnapshot }) {
   const healthy = data.sources.filter((source) => source.status === 'healthy').length;
   return (
-    <details className="border-t border-line pt-5 text-xs leading-6 text-muted">
-      <summary className="w-fit cursor-pointer font-medium hover:text-text">
-        Source coverage · {healthy}/{data.sources.length} feeds healthy
-      </summary>
-      <p className="mt-3 max-w-4xl">{data.coverage_note}</p>
-      <p className="mt-2 max-w-4xl">
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold">
+        Source coverage{' '}
+        <span className="font-normal text-muted">
+          · {healthy}/{data.sources.length} feeds healthy
+        </span>
+      </h3>
+      <p className="max-w-4xl text-xs leading-5 text-muted">{data.coverage_note}</p>
+      <p className="max-w-4xl text-xs leading-5 text-muted">
         Multiple records may describe the same event or repeat one publisher. Counts describe
         collected reporting, not independently confirmed incidents. Recent provider success does not
         guarantee complete coverage.
       </p>
-      <ul className="mt-4 grid gap-x-8 gap-y-4 md:grid-cols-2">
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {data.sources.map((source) => (
-          <li key={source.source_id} className="border-t border-line py-3">
-            <div className="flex flex-wrap justify-between gap-2">
-              <SourceLink url={source.url}>{source.name}</SourceLink>
-              <span className={source.status === 'degraded' ? 'text-amber' : ''}>
+          <li
+            key={source.source_id}
+            className="rounded-lg border border-line/60 bg-surface/50 px-3 py-2.5 text-xs leading-5"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="min-w-0 truncate">
+                <SourceLink url={source.url}>{source.name}</SourceLink>
+              </span>
+              <span
+                className={`inline-flex shrink-0 items-center gap-1.5 ${STATUS_STYLE[source.status]}`}
+              >
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
                 {source.status}
               </span>
             </div>
-            <p>{source.retained_count} dated records in this period</p>
-            <p>Last successful collection: {formatUtc(source.last_success)}</p>
+            <p className="text-muted">
+              {source.retained_count.toLocaleString('en-GB')} dated records · last success{' '}
+              {formatUtc(source.last_success)}
+            </p>
             {source.last_error_at && (
-              <p>Last collection error: {formatUtc(source.last_error_at)}</p>
+              <p className="text-muted">Last collection error {formatUtc(source.last_error_at)}</p>
             )}
           </li>
         ))}
       </ul>
-    </details>
+    </div>
   );
 }

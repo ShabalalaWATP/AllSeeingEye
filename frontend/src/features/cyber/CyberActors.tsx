@@ -48,15 +48,12 @@ export function CyberActors({
       : null;
   return (
     <section aria-label="Threat actor reference" className="space-y-6">
-      <header>
-        <h2 className="text-xl font-semibold">Threat actor reference</h2>
-        <p className="mt-2 max-w-4xl text-sm leading-6 text-muted">
-          Explore {catalogue.actors.length} publicly documented groups and the activity currently
-          mentioning them. Historical profiles describe reported tradecraft, not proof of
-          responsibility for a new incident.
-        </p>
-      </header>
-      <div className="grid items-start gap-7 xl:grid-cols-[1fr_1.2fr]">
+      <p className="max-w-4xl text-sm leading-6 text-muted">
+        Explore {catalogue.actors.length} publicly documented groups and the activity currently
+        mentioning them. Historical profiles describe reported tradecraft, not proof of
+        responsibility for a new incident.
+      </p>
+      <div className="grid items-start gap-7 rounded-xl border border-line/60 bg-surface/40 p-4 sm:p-5 xl:grid-cols-[1fr_1.2fr]">
         <div>
           <label className="block text-xs font-medium text-muted" htmlFor="cyber-actor-search">
             Search name, associated name, ID or profile
@@ -92,7 +89,8 @@ export function CyberActors({
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold">{actor.name}</span>
                       <span className="mt-1 block truncate text-xs text-muted">
-                        {actor.group_id} ·{' '}
+                        {actor.group_id}
+                        {actor.state_association ? ` · ${actor.state_association}` : ''} ·{' '}
                         {actor.associated_names.slice(0, 3).join(', ') ||
                           'No associated names listed'}
                       </span>
@@ -134,6 +132,22 @@ export function CyberActors({
                 <h3 className="mt-2 text-2xl font-semibold">{selected.name}</h3>
                 <p className="mt-2 text-xs text-muted">
                   Profile modified {formatUtc(selected.modified_at)}
+                </p>
+                <p className="mt-2 text-xs leading-5">
+                  {selected.state_association ? (
+                    <>
+                      <span className="rounded-full border border-line/70 px-2 py-0.5 text-text">
+                        Profile association: {selected.state_association}
+                      </span>{' '}
+                      <span className="text-muted">
+                        MITRE’s wording for this group, not attribution of any current report.
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-muted">
+                      The reference profile records no state association.
+                    </span>
+                  )}
                 </p>
               </header>
               <p className="whitespace-pre-line text-sm leading-7 text-text/90">
