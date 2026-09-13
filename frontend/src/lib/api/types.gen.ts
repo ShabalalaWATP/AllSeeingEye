@@ -2776,6 +2776,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/figures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Figures Board */
+        get: operations["figures_board_api_figures_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5299,6 +5316,82 @@ export interface components {
          * @enum {string}
          */
         ExportFormat: "pdf" | "docx";
+        /** FigureBoardOut */
+        FigureBoardOut: {
+            /** Figures */
+            figures: components["schemas"]["FigureOut"][];
+            /** Window Hours */
+            window_hours: number;
+            /** Events Scanned */
+            events_scanned: number;
+            /**
+             * Roster Retrieved At
+             * Format: date-time
+             */
+            roster_retrieved_at: string;
+            /** Source Note */
+            source_note: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Caveat */
+            caveat: string;
+        };
+        /** FigureOut */
+        FigureOut: {
+            /** Id */
+            id: string;
+            /** Wikidata Id */
+            wikidata_id: string;
+            /** Name */
+            name: string;
+            /** Office */
+            office: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "head_of_state" | "head_of_government" | "head_of_state_and_government" | "organisation";
+            /** Country Iso */
+            country_iso: string | null;
+            /** Organisation */
+            organisation: string | null;
+            /** Seat Name */
+            seat_name: string;
+            portrait: components["schemas"]["FigurePortraitOut"] | null;
+            placement: components["schemas"]["FigurePlacementOut"];
+            /** Mentions */
+            mentions: number;
+            /** Latest */
+            latest: components["schemas"]["EventOut"][];
+        };
+        /** FigurePlacementOut */
+        FigurePlacementOut: {
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            basis: components["schemas"]["PlacementBasis"];
+            /** Detail */
+            detail: string;
+            /** Event Id */
+            event_id: string | null;
+            /** Published At */
+            published_at: string | null;
+        };
+        /** FigurePortraitOut */
+        FigurePortraitOut: {
+            /** Png Base64 */
+            png_base64: string;
+            /** Licence */
+            licence: string;
+            /** Credit */
+            credit: string;
+            /** Source Url */
+            source_url: string;
+        };
         /** FirmsConfirmIn */
         FirmsConfirmIn: {
             /** Expected Revision */
@@ -7305,6 +7398,11 @@ export interface components {
             /** Sirs */
             sirs: components["schemas"]["SirOut"][];
         };
+        /**
+         * PlacementBasis
+         * @enum {string}
+         */
+        PlacementBasis: "reported_place" | "reported_country" | "seat";
         /** PlanEvidenceOut */
         PlanEvidenceOut: {
             plan: components["schemas"]["PlanOut"];
@@ -15959,6 +16057,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InfrastructureOut"];
+                };
+            };
+        };
+    };
+    figures_board_api_figures_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FigureBoardOut"];
                 };
             };
         };

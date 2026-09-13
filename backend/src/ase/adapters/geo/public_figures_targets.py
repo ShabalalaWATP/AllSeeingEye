@@ -1,0 +1,72 @@
+"""Fixed import targets for the office-holder roster: which countries and organisations."""
+
+from __future__ import annotations
+
+COUNTRIES: tuple[tuple[str, str], ...] = (
+    ("US", "Q30"),
+    ("GB", "Q145"),
+    ("FR", "Q142"),
+    ("DE", "Q183"),
+    ("IT", "Q38"),
+    ("CA", "Q16"),
+    ("JP", "Q17"),
+    ("RU", "Q159"),
+    ("UA", "Q212"),
+    ("CN", "Q148"),
+    ("IN", "Q668"),
+    ("BR", "Q155"),
+    ("TR", "Q43"),
+    ("PL", "Q36"),
+    ("ES", "Q29"),
+    ("NL", "Q55"),
+    ("SE", "Q34"),
+    ("FI", "Q33"),
+    ("NO", "Q20"),
+    ("DK", "Q35"),
+    ("EE", "Q191"),
+    ("LV", "Q211"),
+    ("LT", "Q37"),
+    ("IL", "Q801"),
+    ("IR", "Q794"),
+    ("SA", "Q851"),
+    ("EG", "Q79"),
+    ("ZA", "Q258"),
+    ("NG", "Q1033"),
+    ("KR", "Q884"),
+    ("KP", "Q423"),
+    ("AU", "Q408"),
+    ("MX", "Q96"),
+    ("ID", "Q252"),
+    ("PK", "Q843"),
+    ("BY", "Q184"),
+    ("TW", "Q865"),
+)
+
+# key, organisation, office label as held on Wikidata, seat name, seat lat, seat lon
+ORGANISATIONS: tuple[tuple[str, str, str, str, float, float], ...] = (
+    ("nato", "NATO", "Secretary General of NATO", "NATO headquarters, Brussels", 50.879, 4.425),
+    (
+        "un",
+        "United Nations",
+        "Secretary-General of the United Nations",
+        "United Nations headquarters, New York",
+        40.749,
+        -73.968,
+    ),
+    (
+        "eu-commission",
+        "European Commission",
+        "President of the European Commission",
+        "Berlaymont, Brussels",
+        50.843,
+        4.382,
+    ),
+    (
+        "eu-council",
+        "European Council",
+        "President of the European Council",
+        "Europa building, Brussels",
+        50.842,
+        4.380,
+    ),
+)

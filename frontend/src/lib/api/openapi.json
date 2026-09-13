@@ -9319,6 +9319,32 @@
           }
         ]
       }
+    },
+    "/api/figures": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Figures Board",
+        "operationId": "figures_board_api_figures_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FigureBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -16578,6 +16604,238 @@
         ],
         "title": "ExportFormat"
       },
+      "FigureBoardOut": {
+        "properties": {
+          "figures": {
+            "items": {
+              "$ref": "#/components/schemas/FigureOut"
+            },
+            "type": "array",
+            "maxItems": 80,
+            "title": "Figures"
+          },
+          "window_hours": {
+            "type": "integer",
+            "title": "Window Hours"
+          },
+          "events_scanned": {
+            "type": "integer",
+            "title": "Events Scanned"
+          },
+          "roster_retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Roster Retrieved At"
+          },
+          "source_note": {
+            "type": "string",
+            "title": "Source Note"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "figures",
+          "window_hours",
+          "events_scanned",
+          "roster_retrieved_at",
+          "source_note",
+          "generated_at",
+          "caveat"
+        ],
+        "title": "FigureBoardOut"
+      },
+      "FigureOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "wikidata_id": {
+            "type": "string",
+            "title": "Wikidata Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "office": {
+            "type": "string",
+            "title": "Office"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "head_of_state",
+              "head_of_government",
+              "head_of_state_and_government",
+              "organisation"
+            ],
+            "title": "Role"
+          },
+          "country_iso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "seat_name": {
+            "type": "string",
+            "title": "Seat Name"
+          },
+          "portrait": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FigurePortraitOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "placement": {
+            "$ref": "#/components/schemas/FigurePlacementOut"
+          },
+          "mentions": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Mentions"
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Latest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "wikidata_id",
+          "name",
+          "office",
+          "role",
+          "country_iso",
+          "organisation",
+          "seat_name",
+          "portrait",
+          "placement",
+          "mentions",
+          "latest"
+        ],
+        "title": "FigureOut"
+      },
+      "FigurePlacementOut": {
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/PlacementBasis"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "basis",
+          "detail",
+          "event_id",
+          "published_at"
+        ],
+        "title": "FigurePlacementOut"
+      },
+      "FigurePortraitOut": {
+        "properties": {
+          "png_base64": {
+            "type": "string",
+            "maxLength": 24000,
+            "title": "Png Base64"
+          },
+          "licence": {
+            "type": "string",
+            "title": "Licence"
+          },
+          "credit": {
+            "type": "string",
+            "title": "Credit"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "png_base64",
+          "licence",
+          "credit",
+          "source_url"
+        ],
+        "title": "FigurePortraitOut"
+      },
       "FirmsConfirmIn": {
         "properties": {
           "expected_revision": {
@@ -21867,6 +22125,15 @@
           "sirs"
         ],
         "title": "PirOut"
+      },
+      "PlacementBasis": {
+        "type": "string",
+        "enum": [
+          "reported_place",
+          "reported_country",
+          "seat"
+        ],
+        "title": "PlacementBasis"
       },
       "PlanEvidenceOut": {
         "properties": {

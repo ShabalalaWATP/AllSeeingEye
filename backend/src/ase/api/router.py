@@ -28,6 +28,7 @@ from ase.api.routers import (
     economy,
     economy_news,
     events,
+    figures,
     footprints,
     health,
     identities,
@@ -123,3 +124,4 @@ api_router.include_router(admin_llm_discovery.router)
 api_router.include_router(admin_firms_credentials.router)
 
 api_router.include_router(infrastructure.router)
+api_router.include_router(figures.router)
