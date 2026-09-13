@@ -62,6 +62,7 @@ from ase.api.routers import (
     tiles,
     totp,
     trackers,
+    ukraine,
     warning,
 )
 
@@ -127,3 +128,4 @@ api_router.include_router(admin_firms_credentials.router)
 api_router.include_router(infrastructure.router)
 api_router.include_router(figures.router)
 api_router.include_router(reference.router)
+api_router.include_router(ukraine.router)

@@ -4665,3 +4665,16 @@ signals on a second tab, while nuclear, oil and gas and the military source inde
 under Infrastructure. The panel component serves both controls from one state through a
 group prop, and a small tab component reports when the signals tab is open so the
 network map keeps loading its snapshot only while it is in view.
+
+The Ukraine war tracker began on 13 September 2026 with a written plan whose every
+source was probed first: DeepState's control API answers but its licence reserves API use
+to the rights holder, ISW's geodata needs written consent and OCHA's line is for
+humanitarian use, so the map draws VIINA 2.0's Open Database Licence control data instead
+(a daily majority vote of public maps for 33,141 populated places). Phase 1 delivered a
+left-rail page with a 2D map of dissolved Russian-held and contested areas over oblast
+outlines, settlements near the reported line with their source votes, updates grouped by
+who reports them with vocabulary lenses, the General Staff's daily claims badged as
+claims, and a sources footer. Two connectors were added (the General Staff mirror and
+ISW's posts index, since its RSS refuses readers) and two seeds (Kyiv Independent's
+verified archive feed, Bellingcat). Importers run as operator commands with byte and
+vertex bounds; the snapshot is 700 KB.

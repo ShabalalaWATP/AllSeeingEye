@@ -38,6 +38,7 @@ from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
 from ase.adapters.feeds.gdelt_news import GdeltNewsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
+from ase.adapters.feeds.isw_assessments import IswAssessmentsConnector
 from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
@@ -46,6 +47,7 @@ from ase.adapters.feeds.satellites import SATELLITE_SPECS, SatelliteConnector
 from ase.adapters.feeds.space import KpConnector, LaunchConnector
 from ase.adapters.feeds.swpc import SwpcAlertsConnector, SwpcScalesConnector
 from ase.adapters.feeds.tsunami import NTWC, PTWC, TsunamiConnector
+from ase.adapters.feeds.ukraine_general_staff import GeneralStaffLossesConnector
 from ase.adapters.feeds.usgs import UsgsConnector
 from ase.adapters.feeds.volcanoes import VolcanoReportConnector
 from ase.application.ports import Clock
@@ -126,6 +128,8 @@ def build_connectors(
         KpConnector(http, clock),
         RansomwareConnector(http, clock),
         IodaConnector(http, clock),
+        IswAssessmentsConnector(http, clock),
+        GeneralStaffLossesConnector(http, clock),
         *[
             connector
             for connector in build_rss_connectors(http, clock)

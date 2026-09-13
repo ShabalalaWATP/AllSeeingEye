@@ -2810,6 +2810,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conflicts/ukraine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ukraine Board */
+        get: operations["ukraine_board_api_conflicts_ukraine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conflicts/ukraine/control": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Control
+         * @description The packaged snapshot changes only when the operator re-imports it.
+         */
+        get: operations["ukraine_control_api_conflicts_ukraine_control_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3322,6 +3359,12 @@ export interface components {
             military: number;
             /** Baseline */
             baseline: number | null;
+        };
+        /** AreaOut */
+        AreaOut: {
+            status: components["schemas"]["ControlStatus"];
+            /** Polygons */
+            polygons: number[][][][];
         };
         /** AssessmentDimensionOut */
         AssessmentDimensionOut: {
@@ -4140,6 +4183,26 @@ export interface components {
              */
             base_revision_id: string;
         };
+        /** ClaimedLossesOut */
+        ClaimedLossesOut: {
+            /**
+             * Reported On
+             * Format: date
+             */
+            reported_on: string;
+            /** Day */
+            day: number;
+            /** Source Url */
+            source_url: string | null;
+            /** Totals */
+            totals: {
+                [key: string]: number;
+            };
+            /** Increase */
+            increase: {
+                [key: string]: number;
+            };
+        };
         /** CollectionAttemptOut */
         CollectionAttemptOut: {
             /** Source Id */
@@ -4477,6 +4540,72 @@ export interface components {
             possible_copy: boolean;
             /** Confirmed Strong */
             confirmed_strong: boolean;
+        };
+        /** ControlChangeOut */
+        ControlChangeOut: {
+            /** Geoname Id */
+            geoname_id: number;
+            /** Name */
+            name: string;
+            /** Oblast */
+            oblast: string;
+            previous: components["schemas"]["ControlStatus"];
+            status: components["schemas"]["ControlStatus"];
+            /**
+             * Changed On
+             * Format: date
+             */
+            changed_on: string;
+        };
+        /** ControlOut */
+        ControlOut: {
+            summary: components["schemas"]["ControlSummaryOut"] | null;
+            /** Settlements */
+            settlements: components["schemas"]["SettlementOut"][];
+            /** Areas */
+            areas: components["schemas"]["AreaOut"][];
+            /** Outlines */
+            outlines: components["schemas"]["OutlineOut"][];
+        };
+        /**
+         * ControlStatus
+         * @enum {string}
+         */
+        ControlStatus: "ua" | "ru" | "contested" | "unknown";
+        /** ControlSummaryOut */
+        ControlSummaryOut: {
+            /**
+             * Assessment Date
+             * Format: date
+             */
+            assessment_date: string;
+            /** Release Stamp */
+            release_stamp: string;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Attribution */
+            attribution: string;
+            /** Licence */
+            licence: string;
+            /** Source Url */
+            source_url: string;
+            /** Method Note */
+            method_note: string;
+            /** Places Total */
+            places_total: number;
+            /** Retained */
+            retained: number;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Oblasts */
+            oblasts: components["schemas"]["OblastControlOut"][];
+            /** Changes */
+            changes: components["schemas"]["ControlChangeOut"][];
         };
         /** CountriesOut */
         CountriesOut: {
@@ -5627,6 +5756,17 @@ export interface components {
              */
             email: string;
         };
+        /** FreshnessOut */
+        FreshnessOut: {
+            /** Control Assessed */
+            control_assessed: string | null;
+            /** Assessment Published */
+            assessment_published: string | null;
+            /** Claim Reported */
+            claim_reported: string | null;
+            /** Latest Update */
+            latest_update: string | null;
+        };
         /** FrozenExcerpt */
         FrozenExcerpt: {
             /**
@@ -6429,6 +6569,11 @@ export interface components {
             /** Dimensions */
             dimensions: components["schemas"]["ClaimDimensionOut"][];
         };
+        /**
+         * Lens
+         * @enum {string}
+         */
+        Lens: "equipment" | "workforce" | "casualties" | "strikes" | "diplomacy";
         /** LibraryItemOut */
         LibraryItemOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -7247,6 +7392,21 @@ export interface components {
             /** Wikidata */
             wikidata?: string | null;
         };
+        /** OblastControlOut */
+        OblastControlOut: {
+            /** Name */
+            name: string;
+            /** Total */
+            total: number;
+            /** Ua */
+            ua: number;
+            /** Ru */
+            ru: number;
+            /** Contested */
+            contested: number;
+            /** Unknown */
+            unknown: number;
+        };
         /** ObservationMetadata */
         ObservationMetadata: {
             /**
@@ -7377,6 +7537,15 @@ export interface components {
              * @default 30
              */
             retention_days: number;
+        };
+        /** OutlineOut */
+        OutlineOut: {
+            /** Name */
+            name: string;
+            /** Iso */
+            iso: string;
+            /** Polygons */
+            polygons: number[][][][];
         };
         /** PhotoCandidate */
         PhotoCandidate: {
@@ -9610,6 +9779,24 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** SettlementOut */
+        SettlementOut: {
+            /** Geoname Id */
+            geoname_id: number;
+            /** Name */
+            name: string;
+            /** Oblast */
+            oblast: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            status: components["schemas"]["ControlStatus"];
+            /** Since */
+            since: string | null;
+            /** Votes */
+            votes: components["schemas"]["ControlStatus"][];
+        };
         /** SirEvidenceOut */
         SirEvidenceOut: {
             /** Code */
@@ -10278,6 +10465,53 @@ export interface components {
             enabled: boolean;
             /** Available */
             available: boolean;
+        };
+        /** UkraineBoardOut */
+        UkraineBoardOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Day Number */
+            day_number: number;
+            /**
+             * Day Basis
+             * @enum {string}
+             */
+            day_basis: "claimed" | "computed";
+            /** Window Days */
+            window_days: number;
+            /** Events Scanned */
+            events_scanned: number;
+            /** Updates */
+            updates: components["schemas"]["UpdateOut"][];
+            /** Lens Counts */
+            lens_counts: {
+                [key: string]: number;
+            };
+            /** Claims */
+            claims: components["schemas"]["ClaimedLossesOut"][];
+            /** Categories */
+            categories: {
+                [key: string]: string;
+            };
+            /** Headline Categories */
+            headline_categories: string[];
+            control: components["schemas"]["ControlSummaryOut"] | null;
+            freshness: components["schemas"]["FreshnessOut"];
+        };
+        /**
+         * UpdateGroup
+         * @enum {string}
+         */
+        UpdateGroup: "assessments" | "ukrainian" | "russian" | "international";
+        /** UpdateOut */
+        UpdateOut: {
+            event: components["schemas"]["EventOut"];
+            group: components["schemas"]["UpdateGroup"];
+            /** Lenses */
+            lenses: components["schemas"]["Lens"][];
         };
         /** UpdateUserIn */
         UpdateUserIn: {
@@ -16316,6 +16550,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ukraine_board_api_conflicts_ukraine_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UkraineBoardOut"];
+                };
+            };
+        };
+    };
+    ukraine_control_api_conflicts_ukraine_control_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ControlOut"];
                 };
             };
         };

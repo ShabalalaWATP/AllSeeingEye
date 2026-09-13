@@ -89,6 +89,7 @@ from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
 from ase.container.public_figures import PublicFigureWiring
 from ase.container.reference import ReferenceWiring
+from ase.container.ukraine import UkraineWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -116,6 +117,7 @@ class Container(
     SourceInventoryWiring,
     PublicFigureWiring,
     ReferenceWiring,
+    UkraineWiring,
 ):
     def __init__(
         self,

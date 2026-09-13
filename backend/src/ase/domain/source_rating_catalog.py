@@ -192,6 +192,8 @@ CATALOGUE = {
             "dawn": "C",
             "meduza_en": "C",
             "pravda_ua_en": "C",
+            "kyiv_independent": "C",
+            "bellingcat": "B",
         },
         "Inherited B/C editorial assignment for this named outlet in the registry; "
         "the registry distinguishes publisher categories but records no measured track record.",
@@ -234,6 +236,24 @@ CATALOGUE = {
         "aggregator",
         "Coverage, translation, extraction and syndication can distort results. A resolved "
         "publisher link does not establish source independence or upgrade the retained feed grade.",
+    ),
+    **_entries(
+        {"isw_assessments": "B"},
+        "Inherited editorial assignment for a named research institute's daily published "
+        "assessment; the grade reflects consistent sourcing, not agreement with its conclusions.",
+        "The institute's own daily assessment text, title and publication date.",
+        "originator",
+        "Assessments interpret partial open reporting and a declared analytical stance; "
+        "an assessed line or claim is the institute's judgement, not an observed fact.",
+    ),
+    **_entries(
+        {"ukraine_general_staff": "C"},
+        "Inherited assignment for an official belligerent statement read through a public "
+        "mirror that links each original post; a party to the conflict reporting its own count.",
+        "Daily cumulative loss figures the General Staff publishes about its adversary.",
+        "originator",
+        "Figures are the claimant's own and are not independently verifiable; the mirror "
+        "adds no assessment and a transcription error cannot be excluded.",
     ),
     **_entries(
         {"ucdp_candidate": "B"},

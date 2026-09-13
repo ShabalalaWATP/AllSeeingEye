@@ -9407,6 +9407,59 @@
           }
         }
       }
+    },
+    "/api/conflicts/ukraine": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Board",
+        "operationId": "ukraine_board_api_conflicts_ukraine_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UkraineBoardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/conflicts/ukraine/control": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Control",
+        "description": "The packaged snapshot changes only when the operator re-imports it.",
+        "operationId": "ukraine_control_api_conflicts_ukraine_control_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -10786,6 +10839,35 @@
           "baseline"
         ],
         "title": "AreaActivityOut"
+      },
+      "AreaOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ControlStatus"
+          },
+          "polygons": {
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Polygons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "polygons"
+        ],
+        "title": "AreaOut"
       },
       "AssessmentDimensionOut": {
         "properties": {
@@ -13153,6 +13235,54 @@
         ],
         "title": "ClaimUpdateIn"
       },
+      "ClaimedLossesOut": {
+        "properties": {
+          "reported_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Reported On"
+          },
+          "day": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Day"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Totals"
+          },
+          "increase": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Increase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reported_on",
+          "day",
+          "source_url",
+          "totals",
+          "increase"
+        ],
+        "title": "ClaimedLossesOut"
+      },
       "CollectionAttemptOut": {
         "properties": {
           "source_id": {
@@ -14189,6 +14319,177 @@
           "confirmed_strong"
         ],
         "title": "ContributionGroupOut"
+      },
+      "ControlChangeOut": {
+        "properties": {
+          "geoname_id": {
+            "type": "integer",
+            "title": "Geoname Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "oblast": {
+            "type": "string",
+            "title": "Oblast"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/ControlStatus"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ControlStatus"
+          },
+          "changed_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Changed On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "geoname_id",
+          "name",
+          "oblast",
+          "previous",
+          "status",
+          "changed_on"
+        ],
+        "title": "ControlChangeOut"
+      },
+      "ControlOut": {
+        "properties": {
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ControlSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "settlements": {
+            "items": {
+              "$ref": "#/components/schemas/SettlementOut"
+            },
+            "type": "array",
+            "title": "Settlements"
+          },
+          "areas": {
+            "items": {
+              "$ref": "#/components/schemas/AreaOut"
+            },
+            "type": "array",
+            "title": "Areas"
+          },
+          "outlines": {
+            "items": {
+              "$ref": "#/components/schemas/OutlineOut"
+            },
+            "type": "array",
+            "title": "Outlines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "settlements",
+          "areas",
+          "outlines"
+        ],
+        "title": "ControlOut"
+      },
+      "ControlStatus": {
+        "type": "string",
+        "enum": [
+          "ua",
+          "ru",
+          "contested",
+          "unknown"
+        ],
+        "title": "ControlStatus"
+      },
+      "ControlSummaryOut": {
+        "properties": {
+          "assessment_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Assessment Date"
+          },
+          "release_stamp": {
+            "type": "string",
+            "title": "Release Stamp"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "licence": {
+            "type": "string",
+            "title": "Licence"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "method_note": {
+            "type": "string",
+            "title": "Method Note"
+          },
+          "places_total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Places Total"
+          },
+          "retained": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Retained"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "oblasts": {
+            "items": {
+              "$ref": "#/components/schemas/OblastControlOut"
+            },
+            "type": "array",
+            "title": "Oblasts"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ControlChangeOut"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assessment_date",
+          "release_stamp",
+          "retrieved_at",
+          "attribution",
+          "licence",
+          "source_url",
+          "method_note",
+          "places_total",
+          "retained",
+          "counts",
+          "oblasts",
+          "changes"
+        ],
+        "title": "ControlSummaryOut"
       },
       "CountriesOut": {
         "properties": {
@@ -17517,6 +17818,66 @@
         ],
         "title": "ForgotPasswordIn"
       },
+      "FreshnessOut": {
+        "properties": {
+          "control_assessed": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Control Assessed"
+          },
+          "assessment_published": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Published"
+          },
+          "claim_reported": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Reported"
+          },
+          "latest_update": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Update"
+          }
+        },
+        "type": "object",
+        "required": [
+          "control_assessed",
+          "assessment_published",
+          "claim_reported",
+          "latest_update"
+        ],
+        "title": "FreshnessOut"
+      },
       "FrozenExcerpt": {
         "properties": {
           "field": {
@@ -19746,6 +20107,17 @@
         ],
         "title": "LedgerClaimOut"
       },
+      "Lens": {
+        "type": "string",
+        "enum": [
+          "equipment",
+          "workforce",
+          "casualties",
+          "strikes",
+          "diplomacy"
+        ],
+        "title": "Lens"
+      },
       "LibraryItemOut": {
         "properties": {
           "report": {
@@ -21910,6 +22282,49 @@
         ],
         "title": "NuclearFacilityOut"
       },
+      "OblastControlOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "ua": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Ua"
+          },
+          "ru": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Ru"
+          },
+          "contested": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Contested"
+          },
+          "unknown": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unknown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "total",
+          "ua",
+          "ru",
+          "contested",
+          "unknown"
+        ],
+        "title": "OblastControlOut"
+      },
       "ObservationMetadata": {
         "properties": {
           "acquired_at": {
@@ -22227,6 +22642,41 @@
           "byte_count"
         ],
         "title": "OriginalAssetReserveIn"
+      },
+      "OutlineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "iso": {
+            "type": "string",
+            "title": "Iso"
+          },
+          "polygons": {
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Polygons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "iso",
+          "polygons"
+        ],
+        "title": "OutlineOut"
       },
       "PhotoCandidate": {
         "properties": {
@@ -28973,6 +29423,70 @@
         ],
         "title": "SetPasswordIn"
       },
+      "SettlementOut": {
+        "properties": {
+          "geoname_id": {
+            "type": "integer",
+            "title": "Geoname Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "oblast": {
+            "type": "string",
+            "title": "Oblast"
+          },
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ControlStatus"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "votes": {
+            "items": {
+              "$ref": "#/components/schemas/ControlStatus"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Votes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "geoname_id",
+          "name",
+          "oblast",
+          "lat",
+          "lon",
+          "status",
+          "since",
+          "votes"
+        ],
+        "title": "SettlementOut"
+      },
       "SirEvidenceOut": {
         "properties": {
           "code": {
@@ -30880,6 +31394,136 @@
           "available"
         ],
         "title": "TotpStatusOut"
+      },
+      "UkraineBoardOut": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "day_number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Day Number"
+          },
+          "day_basis": {
+            "type": "string",
+            "enum": [
+              "claimed",
+              "computed"
+            ],
+            "title": "Day Basis"
+          },
+          "window_days": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Window Days"
+          },
+          "events_scanned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Events Scanned"
+          },
+          "updates": {
+            "items": {
+              "$ref": "#/components/schemas/UpdateOut"
+            },
+            "type": "array",
+            "title": "Updates"
+          },
+          "lens_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Lens Counts"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimedLossesOut"
+            },
+            "type": "array",
+            "title": "Claims"
+          },
+          "categories": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Categories"
+          },
+          "headline_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Headline Categories"
+          },
+          "control": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ControlSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/FreshnessOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "day_number",
+          "day_basis",
+          "window_days",
+          "events_scanned",
+          "updates",
+          "lens_counts",
+          "claims",
+          "categories",
+          "headline_categories",
+          "control",
+          "freshness"
+        ],
+        "title": "UkraineBoardOut"
+      },
+      "UpdateGroup": {
+        "type": "string",
+        "enum": [
+          "assessments",
+          "ukrainian",
+          "russian",
+          "international"
+        ],
+        "title": "UpdateGroup"
+      },
+      "UpdateOut": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventOut"
+          },
+          "group": {
+            "$ref": "#/components/schemas/UpdateGroup"
+          },
+          "lenses": {
+            "items": {
+              "$ref": "#/components/schemas/Lens"
+            },
+            "type": "array",
+            "title": "Lenses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event",
+          "group",
+          "lenses"
+        ],
+        "title": "UpdateOut"
       },
       "UpdateUserIn": {
         "properties": {

@@ -95,6 +95,7 @@ GLOBAL_IDS = frozenset(
         "yt_sky_news",
         "reddit_worldnews",
         "reddit_geopolitics",
+        "bellingcat",
         "aisstream",
         "research-openalex",
         "research-crossref",
@@ -146,6 +147,9 @@ REGIONAL = {
     "belta_ru": _focus("BY"),
     "interfax_ru": _focus("RU"),
     "ukrinform_en": _focus("UA"),
+    "kyiv_independent": _focus("UA"),
+    "isw_assessments": _focus("UA", "RU"),
+    "ukraine_general_staff": _focus("UA", "RU"),
     "digitraffic_ais": SourceCoverage(
         "regional",
         ("FI",),

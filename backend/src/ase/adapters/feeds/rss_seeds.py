@@ -3,8 +3,9 @@
 Rows, not code: each seed is a SourceSpec plus the options that turn its items into
 events. Grades follow docs/02_DATA_SOURCES.md (B for wires and public broadcasters, C
 for national press, C with `state_controlled` for state media). Feeds that answered
-404 or 403 to a polite fetch (Kyiv Independent, Focus Taiwan, NHK World, ISW, Kyodo)
-are left out until their URLs are confirmed.
+404 or 403 to a polite fetch (Focus Taiwan, NHK World, Kyodo) are left out until their
+URLs are confirmed; Kyiv Independent's news-archive feed was verified on 13 September
+2026 and ISW is read through its posts index by a dedicated connector.
 """
 
 from __future__ import annotations

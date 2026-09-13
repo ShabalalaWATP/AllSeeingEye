@@ -22,6 +22,7 @@ from ase.cli_infrastructure import (
 )
 from ase.cli_public_figures import import_figures
 from ase.cli_reference import import_reference_notes
+from ase.cli_ukraine import import_control, import_oblasts
 from ase.container import Container
 from ase.domain.errors import AppError, InvalidCredentials, WeakPassword
 from ase.domain.password_policy import validate_password
@@ -40,6 +41,8 @@ app.command("import-energy-sites")(import_energy)
 app.command("import-semiconductor-sites")(import_semiconductor)
 app.command("import-infrastructure-notes")(import_notes)
 app.command("import-reference")(import_reference_notes)
+app.command("import-ukraine-control")(import_control)
+app.command("import-ukraine-oblasts")(import_oblasts)
 
 
 @app.command("recover-admin-mfa")

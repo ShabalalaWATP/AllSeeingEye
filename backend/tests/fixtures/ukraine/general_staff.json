@@ -1,0 +1,101 @@
+{
+ "message": "ok",
+ "data": {
+  "records": [
+   {
+    "date": "2026-09-12",
+    "day": 1662,
+    "resource": "https://www.facebook.com/GeneralStaff.ua/posts/previous",
+    "war_status": {
+     "code": 1,
+     "alias": "in_progress"
+    },
+    "stats": {
+     "personnel_units": 1505380,
+     "tanks": 12342,
+     "armoured_fighting_vehicles": 25322,
+     "artillery_systems": 49601,
+     "mlrs": 2115,
+     "aa_warfare_systems": 1633,
+     "planes": 442,
+     "helicopters": 356,
+     "vehicles_fuel_tanks": 147849,
+     "warships_cutters": 35,
+     "cruise_missiles": 5107,
+     "uav_systems": 513900,
+     "special_military_equip": 4680,
+     "atgm_srbm_systems": 2603,
+     "submarines": 2
+    },
+    "increase": {
+     "personnel_units": 1310,
+     "tanks": 4,
+     "armoured_fighting_vehicles": 6,
+     "artillery_systems": 60,
+     "mlrs": 1,
+     "aa_warfare_systems": 1,
+     "planes": 0,
+     "helicopters": 0,
+     "vehicles_fuel_tanks": 380,
+     "warships_cutters": 0,
+     "cruise_missiles": 3,
+     "uav_systems": 401,
+     "special_military_equip": 1,
+     "atgm_srbm_systems": 0,
+     "submarines": 0
+    }
+   },
+   {
+    "date": "2026-09-13",
+    "day": 1663,
+    "resource": "https://www.facebook.com/GeneralStaff.ua/posts/example",
+    "war_status": {
+     "code": 1,
+     "alias": "in_progress"
+    },
+    "stats": {
+     "personnel_units": 1506900,
+     "tanks": 12344,
+     "armoured_fighting_vehicles": 25330,
+     "artillery_systems": 49678,
+     "mlrs": 2120,
+     "aa_warfare_systems": 1635,
+     "planes": 442,
+     "helicopters": 356,
+     "vehicles_fuel_tanks": 148259,
+     "warships_cutters": 35,
+     "cruise_missiles": 5111,
+     "uav_systems": 514317,
+     "special_military_equip": 4681,
+     "atgm_srbm_systems": 2603,
+     "submarines": 2
+    },
+    "increase": {
+     "personnel_units": 1520,
+     "tanks": 2,
+     "armoured_fighting_vehicles": 8,
+     "artillery_systems": 77,
+     "mlrs": 5,
+     "aa_warfare_systems": 2,
+     "planes": 0,
+     "helicopters": 0,
+     "vehicles_fuel_tanks": 410,
+     "warships_cutters": 0,
+     "cruise_missiles": 4,
+     "uav_systems": 417,
+     "special_military_equip": 1,
+     "atgm_srbm_systems": 0,
+     "submarines": 0
+    }
+   },
+   {
+    "date": "2026-09-13",
+    "day": "bad",
+    "stats": {}
+   }
+  ],
+  "paging": {
+   "next_url": null
+  }
+ }
+}

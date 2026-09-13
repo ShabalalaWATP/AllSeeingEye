@@ -28,6 +28,7 @@ const ITEMS: readonly RailItem[] = [
   { to: '/geolocation', label: 'Geolocation', icon: 'geolocation' },
   { to: '/economy', label: 'Economy', icon: 'economy' },
   { to: '/cyber', label: 'Cyber intelligence', icon: 'cyber' },
+  { to: '/conflicts/ukraine', label: 'Ukraine war', icon: 'ukraine' },
 ];
 
 function RailLink({

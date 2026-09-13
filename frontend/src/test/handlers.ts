@@ -1,6 +1,7 @@
 import { profileHandlers } from './handlers.profile';
 import { platformConnections } from './fixtures.researchMetadata';
 import { figureBoard } from './fixtures.figures';
+import { ukraineHandlers } from './handlers.ukraine';
 import { reportJob } from './reportJobFixture';
 import { libraryHandlers } from './handlers.library';
 /** Default MSW handlers implementing docs/api/AUTH_API.md against the fixtures. */
@@ -320,6 +321,7 @@ export const handlers = [
 
   http.get('/api/trackers/cyber', () => HttpResponse.json(cyberBoard)),
   http.get('/api/figures', () => HttpResponse.json(figureBoard)),
+  ...ukraineHandlers,
   http.get('/api/reference', () =>
     HttpResponse.json({
       items: [],
