@@ -60,9 +60,15 @@ const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
+const CyberPreviewPage = lazy(() => import('@/app/dev/CyberPreviewPage'));
+const PagesPreviewPage = lazy(() => import('@/app/dev/PagesPreviewPage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
-  ? [{ path: '/brand/capture', element: <BrandCapturePage /> }]
+  ? [
+      { path: '/brand/capture', element: <BrandCapturePage /> },
+      { path: '/dev/cyber-preview', element: <CyberPreviewPage /> },
+      { path: '/dev/pages-preview', element: <PagesPreviewPage /> },
+    ]
   : [];
 
 export const routes: RouteObject[] = [
