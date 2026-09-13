@@ -32,6 +32,16 @@ export const eyeAnswer = assistantAnswerSchema.parse({
     capped: true,
     notes: ['Only recent retained observations were searched.'],
   },
+  interpretation: {
+    topics: ['maritime'],
+    countries: [],
+    since: null,
+    until: null,
+    time_basis: 'publication',
+    notes: [],
+    source_categories: ['maritime'],
+  },
+  continuation_id: 'test-continuation-1234567890',
   generated_at: '2026-09-11T10:10:00Z',
   model: { name: 'fixture-model', reasoning_effort: 'high' },
 });

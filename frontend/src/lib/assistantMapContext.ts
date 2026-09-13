@@ -12,10 +12,17 @@ export interface AssistantMapContext {
 }
 type Reader = () => AssistantMapContext;
 type Focus = (point: { lon: number; lat: number }) => void;
+export interface AssistantMapTarget {
+  kind: 'event' | 'camera' | 'infrastructure' | 'gnss' | 'doctrine';
+  id: string;
+  point: { lon: number; lat: number };
+}
+type SelectSource = (target: AssistantMapTarget) => boolean;
 const listeners = new Set<() => void>();
 let reader: Reader | null = null;
 let focus: Focus | null = null;
-let queuedFocus: { point: { lon: number; lat: number }; at: number } | null = null;
+let selectSource: SelectSource | null = null;
+let queuedFocus: { target: AssistantMapTarget; at: number } | null = null;
 let revision = 0;
 const notify = () => {
   revision++;
@@ -23,16 +30,19 @@ const notify = () => {
 };
 
 /** Register a tiny on-demand reader, never another copy of map events or a map engine. */
-export function registerAssistantMapContext(next: Reader, locate?: Focus) {
+export function registerAssistantMapContext(next: Reader, locate?: Focus, select?: SelectSource) {
   reader = next;
   focus = locate ?? null;
-  if (queuedFocus && focus && Date.now() - queuedFocus.at < 5000) focus(queuedFocus.point);
+  selectSource = select ?? null;
+  if (queuedFocus && focus && Date.now() - queuedFocus.at < 5000)
+    focusAssistantTarget(queuedFocus.target);
   queuedFocus = null;
   notify();
   return () => {
     if (reader === next) {
       reader = null;
       focus = null;
+      selectSource = null;
       notify();
     }
   };
@@ -49,7 +59,20 @@ export function locateAssistantPoint(point: { lon: number; lat: number }) {
   )
     return;
   if (focus) focus(point);
-  else queuedFocus = { point, at: Date.now() };
+  else queuedFocus = { target: { kind: 'event', id: '', point }, at: Date.now() };
+}
+function focusAssistantTarget(target: AssistantMapTarget) {
+  focus?.(target.point);
+  if (target.id) selectSource?.(target);
+}
+/** A cited map record is selected when it is still available; the point remains useful otherwise. */
+export function locateAssistantSource(target: AssistantMapTarget) {
+  if (!target.id || target.id.length > 256) return;
+  const { lon, lat } = target.point;
+  if (!Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lon) > 180 || Math.abs(lat) > 90)
+    return;
+  if (focus) focusAssistantTarget(target);
+  else queuedFocus = { target, at: Date.now() };
 }
 export function refreshAssistantMapContext() {
   notify();

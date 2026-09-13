@@ -17,6 +17,7 @@ from ase.api.routers import (
     annotation_comparisons,
     annotation_monitors,
     assistant,
+    assistant_history,
     auth,
     cameras,
     capabilities,
@@ -73,6 +74,7 @@ api_router.include_router(economy_news.router)
 api_router.include_router(daily_briefing.router)
 api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)
+api_router.include_router(assistant_history.router)
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)
 api_router.include_router(terrain.router)

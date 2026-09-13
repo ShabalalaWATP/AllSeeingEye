@@ -5,8 +5,15 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from ase.domain.assistant import AssistantAnswer, AssistantQuestion, AssistantSelection
-from ase.domain.events import BoundingBox
+from ase.domain.assistant import (
+    AssistantAnswer,
+    AssistantQuestion,
+    AssistantSelection,
+    AssistantTimeRange,
+)
+from ase.domain.events import BoundingBox, Category
+
+AssistantSourceCategory = Category | Literal["camera", "infrastructure", "doctrine"]
 
 
 class AssistantBoundsIn(BaseModel):
@@ -23,6 +30,12 @@ class AssistantSelectionIn(BaseModel):
     id: str = Field(min_length=1, max_length=160)
 
 
+class AssistantTimeRangeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    since: datetime
+    until: datetime
+
+
 class AssistantAnswerIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2000)
@@ -30,6 +43,11 @@ class AssistantAnswerIn(BaseModel):
     scope: Literal["global", "viewport", "selected"] = "global"
     bbox: AssistantBoundsIn | None = None
     selected: AssistantSelectionIn | None = None
+    time_range: AssistantTimeRangeIn | None = None
+    continuation_id: str | None = Field(default=None, min_length=16, max_length=80)
+    source_categories: list[AssistantSourceCategory] | None = Field(
+        default=None, min_length=1, max_length=14
+    )
 
     def to_question(self) -> AssistantQuestion:
         return AssistantQuestion(
@@ -38,6 +56,11 @@ class AssistantAnswerIn(BaseModel):
             self.scope,
             BoundingBox(**self.bbox.model_dump()) if self.bbox else None,
             AssistantSelection(**self.selected.model_dump()) if self.selected else None,
+            AssistantTimeRange(**self.time_range.model_dump()) if self.time_range else None,
+            self.continuation_id,
+            tuple(str(value) for value in self.source_categories)
+            if self.source_categories
+            else None,
         )
 
     @model_validator(mode="after")
@@ -55,7 +78,7 @@ class AssistantPointOut(BaseModel):
 class AssistantSourceOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
-    kind: Literal["event", "camera", "infrastructure", "gnss"]
+    kind: Literal["event", "camera", "infrastructure", "gnss", "doctrine"]
     record_id: str
     source_id: str
     title: str
@@ -88,6 +111,16 @@ class AssistantCoverageOut(BaseModel):
     notes: list[str]
 
 
+class AssistantInterpretationOut(BaseModel):
+    topics: list[str]
+    countries: list[str]
+    since: datetime | None
+    until: datetime | None
+    time_basis: Literal["publication"]
+    notes: list[str]
+    source_categories: list[str]
+
+
 class AssistantModelOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     name: str
@@ -99,6 +132,8 @@ class AssistantAnswerOut(BaseModel):
     sources: list[AssistantSourceOut]
     scope: AssistantScopeOut
     coverage: AssistantCoverageOut
+    interpretation: AssistantInterpretationOut
+    continuation_id: str | None
     generated_at: datetime
     model: AssistantModelOut | None
 
@@ -130,6 +165,18 @@ class AssistantAnswerOut(BaseModel):
                 capped=context.capped,
                 notes=list(context.notes),
             ),
+            interpretation=AssistantInterpretationOut(
+                topics=list(context.interpretation.topics) if context.interpretation else [],
+                countries=list(context.interpretation.countries) if context.interpretation else [],
+                since=context.interpretation.since if context.interpretation else None,
+                until=context.interpretation.until if context.interpretation else None,
+                time_basis="publication",
+                notes=list(context.interpretation.notes) if context.interpretation else [],
+                source_categories=list(context.interpretation.source_categories)
+                if context.interpretation
+                else [],
+            ),
+            continuation_id=answer.continuation_id,
             generated_at=answer.generated_at,
             model=AssistantModelOut.model_validate(answer.model) if answer.model else None,
         )

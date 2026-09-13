@@ -75,12 +75,13 @@ it('contains a chat render failure, preserves the map and restarts with fresh co
 it('shows an honest unknown count for an old answer retained across a hot reload', () => {
   const oldAnswer = structuredClone(eyeAnswer);
   Reflect.deleteProperty(oldAnswer.coverage, 'matched_count');
+  Reflect.deleteProperty(oldAnswer, 'interpretation');
   render(
     <MemoryRouter>
       <EyeAnswer answer={oldAnswer} />
     </MemoryRouter>,
   );
-  fireEvent.click(screen.getByText('Sources and coverage'));
+  fireEvent.click(screen.getByText('Evidence and coverage'));
   expect(screen.getByText(/Matched count unavailable/)).toBeVisible();
   expect(screen.getByText('Two recent vessel observations are available.')).toBeVisible();
 });

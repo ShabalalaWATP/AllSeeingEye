@@ -14,16 +14,20 @@ import './eyeLauncher.css';
 function EyeSession() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [seenTurn, setSeenTurn] = useState<number | null>(null);
   const placement = useAssistantPosition();
   const chat = useEyeChat();
   const launcher = useRef<HTMLButtonElement>(null);
   const panelId = useId(),
     helpId = useId();
   const close = () => {
-    chat.stop();
+    const last = chat.turns.at(-1);
+    if (last?.status === 'answered') setSeenTurn(last.id);
     setOpen(false);
     launcher.current?.focus();
   };
+  const latest = chat.turns.at(-1);
+  const unread = !open && latest?.status === 'answered' && latest.id !== seenTurn;
   useEffect(() => () => clearAssistantMapFocus(), []);
   return (
     <div className="eye-assistant" data-dragging={placement.dragging}>
@@ -49,7 +53,10 @@ function EyeSession() {
         onClick={() => {
           if (placement.allowClick()) {
             if (open) close();
-            else setOpen(true);
+            else {
+              if (latest?.status === 'answered') setSeenTurn(latest.id);
+              setOpen(true);
+            }
           }
         }}
       >
@@ -57,6 +64,10 @@ function EyeSession() {
         <span className="eye-launcher-label" aria-hidden="true">
           ASK EYE
         </span>
+        {chat.busy && (
+          <span className="eye-launcher-working" role="status" aria-label="Answer in progress" />
+        )}
+        {unread && <span className="eye-launcher-ready" role="status" aria-label="Answer ready" />}
       </button>
       <span id={helpId} className="sr-only">
         Click to chat. Drag to move. Arrow keys reposition; Home resets. Hold Shift for larger

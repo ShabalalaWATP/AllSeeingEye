@@ -2,6 +2,7 @@
 
 import asyncio
 from dataclasses import replace
+from datetime import timedelta
 from uuid import uuid4
 
 import pytest
@@ -176,6 +177,64 @@ async def test_scope_and_current_actor_access_are_checked_before_disclosure(cont
                 check_session=nothing,
             )
     assert not gateway.calls
+
+
+async def test_followup_uses_same_users_frozen_evidence_and_rechecks_source(container, user):
+    _, gateway = await setup(container)
+    async with container.session_factory() as session:
+        first = await container.map_assistant(session).execute(
+            user, AssistantQuestion("earthquakes"), check_session=nothing
+        )
+    assert first.continuation_id
+    async with container.session_factory() as session:
+        second = await container.map_assistant(session).execute(
+            user,
+            AssistantQuestion(
+                "Which of those are independently confirmed?",
+                continuation_id=first.continuation_id,
+            ),
+            check_session=nothing,
+        )
+    assert [row.record_id for row in second.context.sources] == ["quake"]
+    assert "frozen evidence" in " ".join(second.context.notes)
+    assert len(gateway.calls) == 2
+    container.source_admission.disabled.add("usgs_earthquakes")
+    async with container.session_factory() as session:
+        with pytest.raises(InvalidRequest, match="disabled"):
+            await container.map_assistant(session).execute(
+                user,
+                AssistantQuestion("Which of those?", continuation_id=first.continuation_id),
+                check_session=nothing,
+            )
+    assert len(gateway.calls) == 2
+
+
+async def test_continuation_expires_and_is_bound_to_security_version(container, user):
+    capacity = AssistantCapacity()
+    _, gateway = await setup(container)
+    async with container.session_factory() as session:
+        first = await container.map_assistant(session).execute(
+            user, AssistantQuestion("earthquakes"), check_session=nothing
+        )
+    context = first.context
+    token = capacity.remember(user, context, container.clock.now())
+    assert capacity.find(user, token, container.clock.now()) == context
+    assert (
+        capacity.find(
+            replace(user, security_version=user.security_version + 1), token, container.clock.now()
+        )
+        is None
+    )
+    container.clock.advance(timedelta(minutes=21))
+    assert capacity.find(user, token, container.clock.now()) is None
+    async with container.session_factory() as session:
+        with pytest.raises(InvalidRequest, match="expired"):
+            await container.map_assistant(session).execute(
+                user,
+                AssistantQuestion("Which of those?", continuation_id=first.continuation_id),
+                check_session=nothing,
+            )
+    assert len(gateway.calls) == 1
 
 
 def test_capacity_blocks_duplicate_user_and_global_saturation(user):

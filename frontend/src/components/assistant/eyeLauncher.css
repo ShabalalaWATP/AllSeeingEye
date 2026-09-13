@@ -39,6 +39,27 @@
 .eye-launcher:hover .eye-launcher-label {
   color: var(--eye-accent);
 }
+.eye-launcher-working {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--eye-accent);
+  box-shadow: 0 0 12px var(--eye-accent);
+  animation: eye-working 1.4s ease-in-out infinite;
+}
+.eye-launcher-ready {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--eye-accent);
+  box-shadow: 0 0 12px var(--eye-accent);
+}
 .eye-assistant[data-dragging='true'] .eye-launcher {
   cursor: grabbing;
 }

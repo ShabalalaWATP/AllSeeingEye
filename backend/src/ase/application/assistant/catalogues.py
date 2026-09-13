@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from typing import Any
 
+from ase.application.assistant.intent import QuestionIntent
 from ase.application.assistant.sources import safe_source_url
 from ase.application.cameras import CameraCatalogueService
 from ase.domain.assistant import AssistantQuestion, AssistantSource
@@ -12,6 +13,98 @@ from ase.domain.evidence import injection_flags
 from ase.domain.users import User
 
 CATALOGUE_LIMIT = 100
+
+DOCTRINE_REFERENCES = (
+    (
+        "phia-uncertainty-2025",
+        "UK PHIA: Explaining Uncertainty in Intelligence Assessment",
+        "https://www.gov.uk/government/publications/explaining-uncertainty-in-uk-intelligence-assessment/explaining-uncertainty-in-uk-intelligence-assessment",
+        "The UK PHIA guidance separates an assessed proposition's likelihood from "
+        "analytical confidence in the foundations of that judgement. The Probability "
+        "Yardstick supplies standard likelihood language; confidence describes the "
+        "information base, rigour, and complexity or volatility.",
+        "UK Crown copyright 2025; Open Government Licence v3.0, except where otherwise stated.",
+    ),
+    (
+        "phia-standards-2025",
+        "UK PHIA: Common Analytical Standards",
+        "https://www.gov.uk/government/publications/phia-common-analytical-standards/phia-common-analytical-standards",
+        "The public UK standards call for clear, auditable and objective assessment, "
+        "including testing alternative explanations and describing uncertainty or "
+        "information gaps. They are guidance for analytical practice, not evidence "
+        "that a particular event occurred.",
+        "UK Crown copyright 2025; Open Government Licence v3.0, except where otherwise stated.",
+    ),
+    (
+        "uk-mod-jdp-2-00",
+        "UK MOD JDP 2-00: Understanding and Intelligence Support to Joint Operations",
+        "https://www.gov.uk/government/publications/jdp-2-00-understanding-and-intelligence-support-to-joint-operations",
+        "Public UK MOD doctrine catalogue reference for intelligence support to joint "
+        "operations. Consult the linked publication for its actual edition and text; "
+        "Ask Eye does not ingest or reproduce the PDF.",
+        "UK MOD publication metadata and link only; no doctrine text is ingested.",
+    ),
+    (
+        "nato-ajp-2-9-catalogue",
+        "NATO AJP-2.9: Allied Joint Doctrine for Open Source Intelligence",
+        "https://www.gov.uk/government/collections/allied-joint-publication-ajp",
+        "Public catalogue reference for NATO open source intelligence doctrine. Check the "
+        "catalogue for the current edition and access conditions. This app does not "
+        "reproduce the doctrine or claim NATO accreditation.",
+        "Public catalogue link only; no doctrine text is ingested.",
+    ),
+)
+
+
+def doctrine_sources(question: AssistantQuestion, intent: QuestionIntent) -> list[AssistantSource]:
+    """Expose short, attributed public methodology records only for doctrine questions."""
+    if question.selected or not any(
+        topic in ("doctrine", "phia", "yardstick") for topic in intent.topics
+    ):
+        return []
+    if question.bbox or question.time_range or intent.time_range:
+        return []
+    rows = []
+    for identifier, title, url, summary, licence in DOCTRINE_REFERENCES:
+        if "phia" in intent.topics and not identifier.startswith("phia"):
+            continue
+        if "yardstick" in intent.topics and identifier != "phia-uncertainty-2025":
+            continue
+        source = AssistantSource(
+            id="",
+            kind="doctrine",
+            record_id=identifier,
+            source_id=f"doctrine:{identifier}",
+            title=title,
+            url=url,
+            published_at=None,
+            observed_at=None,
+            point=None,
+            grade=None,
+            summary=summary,
+            details=(licence, "Methodology reference, not event evidence."),
+            publisher="UK Government" if identifier.startswith(("phia", "uk-mod")) else "NATO",
+        )
+        if intent.accepts("doctrine", source):
+            rows.append(source)
+    return rows
+
+
+def _infrastructure_url(row: Mapping[str, Any]) -> str | None:
+    url = safe_source_url(row.get("source_url") or row.get("website") or row.get("wikipedia"))
+    if url is not None:
+        return url
+    links = row.get("links")
+    if not isinstance(links, list):
+        return None
+    return next(
+        (
+            allowed
+            for link in links[:8]
+            if isinstance(link, dict) and (allowed := safe_source_url(link.get("url")))
+        ),
+        None,
+    )
 
 
 def cached_cameras(
@@ -74,6 +167,9 @@ def infrastructure_sources(
         ("cables", "Undersea cable", 3000),
         ("ground_stations", "Satellite ground station", 100),
         ("nuclear_facilities", "Nuclear power facility", 1000),
+        ("data_centres", "Data centre", 1500),
+        ("energy_sites", "Energy site", 3200),
+        ("semiconductor_sites", "Semiconductor site", 500),
     ):
         group = []
         for row in snapshot.get(field, ())[:limit]:
@@ -88,9 +184,23 @@ def infrastructure_sources(
             )
             if question.bbox is not None and (point is None or not question.bbox.contains(point)):
                 continue
-            title, note = str(row["name"])[:300], str(row.get("note", ""))[:600]
+            title = str(row["name"])[:300]
+            note = str(row.get("note") or row.get("significance") or row.get("description") or "")[
+                :600
+            ]
             if injection_flags(title, note):
                 continue
+            country = str(row.get("country", ""))[:100]
+            url = _infrastructure_url(row)
+            snapshot_key = (
+                "nuclear_snapshot_date"
+                if field == "nuclear_facilities"
+                else "data_centre_snapshot_date"
+                if field == "data_centres"
+                else "site_snapshot_date"
+                if field in ("energy_sites", "semiconductor_sites")
+                else "snapshot_date"
+            )
             group.append(
                 AssistantSource(
                     "",
@@ -98,7 +208,7 @@ def infrastructure_sources(
                     identifier,
                     f"infrastructure:{field}",
                     title,
-                    safe_source_url(row.get("source_url")),
+                    url,
                     None,
                     None,
                     point,
@@ -106,19 +216,13 @@ def infrastructure_sources(
                     note,
                     (
                         f"Catalogue: {label}; historical public inventory, status unverified.",
-                        "Snapshot: "
-                        + str(
-                            snapshot.get(
-                                "nuclear_snapshot_date"
-                                if field == "nuclear_facilities"
-                                else "snapshot_date",
-                                "unknown",
-                            )
-                        )
-                        + ".",
-                        f"Country label: {str(row.get('country', 'unknown'))[:100]}.",
-                        "Cable routes and facility coordinates may be approximate.",
+                        f"Snapshot: {str(snapshot.get(snapshot_key, 'unknown'))[:32]}.",
+                        f"Country label: {country or 'unknown'}.",
+                        f"Coordinate precision: {str(row.get('precision', 'unknown'))[:60]}.",
+                        "Cable routes and facility coordinates may be approximate; "
+                        "catalogue presence does not establish current operation.",
                     ),
+                    country if len(country) == 2 and country.isalpha() else None,
                 )
             )
         groups.append(group)

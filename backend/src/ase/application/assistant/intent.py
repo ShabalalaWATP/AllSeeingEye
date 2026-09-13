@@ -2,9 +2,11 @@
 
 import re
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from ase.application.assistant.sources import query_terms, relevance
-from ase.domain.assistant import AssistantSource
+from ase.domain.assistant import AssistantSource, AssistantTimeRange
 from ase.domain.country_subject_aliases import COUNTRY_SUBJECT_ALIASES
 from ase.domain.country_subjects import source_text_country_matches
 from ase.domain.errors import InvalidRequest
@@ -32,6 +34,9 @@ TOPICS = {
     "nuclear": "infrastructure",
     "station": "infrastructure",
     "infrastructure": "infrastructure",
+    "doctrine": "doctrine",
+    "phia": "doctrine",
+    "yardstick": "doctrine",
 }
 FILLER = frozenset(
     {
@@ -82,6 +87,15 @@ EPISTEMIC_INSTRUCTION = re.compile(
 UNSUPPORTED_EXCLUSION = re.compile(
     r"\b(?:exclude|excluding|except|without)\b|"
     r"\b(?:do not|don't)\s+(?:include|show|use)\b|\bnon[- ]military\b",
+    re.IGNORECASE,
+)
+RELATIVE_WINDOW = re.compile(
+    r"\b(?:last|past)\s+(\d{1,3})\s+(hours?|days?|weeks?)\b", re.IGNORECASE
+)
+NAMED_WINDOW = re.compile(r"\b(?:today|yesterday|last\s+(?:week|month|year))\b", re.IGNORECASE)
+UNHANDLED_WINDOW = re.compile(
+    r"\b(?:last|past|yesterday|today)\s+(?:\d+\s+)?(?:hours?|days?|weeks?|months?|years?)\b|"
+    r"\b(?:since|between)\s+\w+",
     re.IGNORECASE,
 )
 
@@ -152,6 +166,7 @@ class QuestionIntent:
     anchors: tuple[str, ...]
     residual: tuple[str, ...]
     clarification: str | None = None
+    time_range: AssistantTimeRange | None = None
 
     def accepts(self, category: str, source: AssistantSource) -> bool:
         relevant_topics = tuple(topic for topic in self.topics if TOPICS[topic] == category)
@@ -195,10 +210,55 @@ class QuestionIntent:
         )
 
 
-def interpret_question(text: str) -> QuestionIntent:
+def _extract_time(text: str, now: datetime) -> tuple[str, AssistantTimeRange | None, bool]:
+    """Resolve a small, explicit UTC/publication-time vocabulary; fail closed otherwise."""
+    match = RELATIVE_WINDOW.search(text)
+    named = NAMED_WINDOW.search(text)
+    if (match and named) or (match and len(RELATIVE_WINDOW.findall(text)) > 1):
+        return text, None, True
+    if named and len(NAMED_WINDOW.findall(text)) > 1:
+        return text, None, True
+    if match:
+        count = int(match.group(1))
+        unit = match.group(2).casefold()
+        hours = count * (1 if unit.startswith("hour") else 24 if unit.startswith("day") else 168)
+        if not 1 <= hours <= 366 * 24:
+            return text, None, True
+        value = AssistantTimeRange(now - timedelta(hours=hours), now)
+        text = text[: match.start()] + text[match.end() :]
+    elif named:
+        phrase = named.group().casefold().replace("  ", " ")
+        if phrase in ("today", "yesterday"):
+            local = now.astimezone(ZoneInfo("Europe/London"))
+            midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
+            if phrase == "yesterday":
+                start, end = midnight - timedelta(days=1), midnight
+            else:
+                start, end = midnight, now
+            value = AssistantTimeRange(start.astimezone(UTC), end.astimezone(UTC))
+        else:
+            days = {"last week": 7, "last month": 30, "last year": 365}[phrase]
+            value = AssistantTimeRange(now - timedelta(days=days), now)
+        text = text[: named.start()] + text[named.end() :]
+    else:
+        value = None
+    return text, value, bool(UNHANDLED_WINDOW.search(text))
+
+
+def interpret_question(text: str, *, now: datetime | None = None) -> QuestionIntent:
+    now = now or datetime.now(UTC)
+    if now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError("Question interpretation requires a timezone-aware clock.")
     text, unclear = _retrieval_text(text)
+    text, time_range, ambiguous_time = _extract_time(text, now)
     terms = tuple(term for term in query_terms(text, limit=None) if term not in FILLER)
-    if unclear or not text or len(terms) > 24 or UNSUPPORTED_EXCLUSION.search(text):
+    if (
+        unclear
+        or ambiguous_time
+        or not text
+        or len(terms) > 24
+        or UNSUPPORTED_EXCLUSION.search(text)
+    ):
         return QuestionIntent(
             (),
             (),
@@ -206,7 +266,8 @@ def interpret_question(text: str) -> QuestionIntent:
             (),
             (),
             "Name the topics and places to include, or select a map item. "
-            "This bounded search cannot reliably apply exclusions or very complex queries.",
+            "This bounded search cannot reliably apply exclusions, ambiguous dates "
+            "or very complex queries.",
         )
     topics = tuple(term for term in terms if term in TOPICS)
     country_words: set[str] = set()
@@ -222,4 +283,4 @@ def interpret_question(text: str) -> QuestionIntent:
     # Unrecognised meaningful terms may be locations or entities even in lowercase.
     # Require textual support; formatting/request words were removed separately.
     anchors = residual
-    return QuestionIntent(terms, topics, tuple(countries), anchors, residual)
+    return QuestionIntent(terms, topics, tuple(countries), anchors, residual, time_range=time_range)

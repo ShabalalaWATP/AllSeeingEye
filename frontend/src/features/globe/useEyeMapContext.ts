@@ -1,7 +1,11 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import type { Camera } from '@/lib/api/cameras';
-import { registerAssistantMapContext, refreshAssistantMapContext } from '@/lib/assistantMapContext';
+import {
+  registerAssistantMapContext,
+  refreshAssistantMapContext,
+  type AssistantMapTarget,
+} from '@/lib/assistantMapContext';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import type { GlobeEngineHandle } from './useGlobeEngine';
@@ -14,6 +18,7 @@ export function useEyeMapContext(
   event: LiveEvent | null,
   cameras: { selected: Camera | null },
   infrastructure: { selected: InfrastructureSelection | null },
+  selectSource?: (target: AssistantMapTarget) => boolean,
 ) {
   const actor = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
@@ -60,6 +65,7 @@ export function useEyeMapContext(
       (point) => {
         if (current()) engine.flyTo({ center: [point.lon, point.lat], zoom: 6 });
       },
+      (target) => (current() ? (selectSource?.(target) ?? false) : false),
     );
-  }, [enabled, engine, actor, revision, kind]);
+  }, [enabled, engine, actor, revision, kind, selectSource]);
 }

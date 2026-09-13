@@ -156,6 +156,27 @@ async def test_domain_names_and_plain_text_reference_lookalikes_are_not_generate
     assert paragraphs[0].text == text and paragraphs[0].citations == ("E1",)
 
 
+async def test_numeric_claim_requires_value_in_cited_source():
+    source = replace(SOURCE, title="Earthquake magnitude 4.5 in Japan")
+    context = replace(CONTEXT, sources=(source,))
+    supported, _ = await answer_question(
+        Gateway(response(paragraph("The source reports magnitude 4.5."))),
+        Cipher(),
+        PROFILE,
+        QUESTION,
+        context,
+    )
+    assert supported[0].text.endswith("4.5.")
+    with pytest.raises(AssistantAnswerInvalid):
+        await answer_question(
+            Gateway(response(paragraph("The source reports magnitude 7.2."))),
+            Cipher(),
+            PROFILE,
+            QUESTION,
+            context,
+        )
+
+
 async def test_empty_context_can_only_produce_an_uncited_gap():
     empty = AssistantContext((), 0, 0, False, ("No cached records matched this scope.",))
     paragraphs, _ = await answer_question(

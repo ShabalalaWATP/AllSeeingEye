@@ -11,6 +11,7 @@ import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import type { AssistantRequest } from '@/lib/api/assistant';
 import { EyeAssistant } from './EyeAssistant';
 import { eyeAnswer } from './assistantFixture';
+import { continuationFresh } from './useEyeChat';
 
 async function mount() {
   applySession('user');
@@ -87,7 +88,7 @@ it('prevents duplicate sends, stops a request and allows a new question without 
     fireEvent.submit(form);
   });
   await waitFor(() => expect(bodies).toHaveLength(1));
-  expect(screen.getByLabelText('Ask the Eye')).toBeDisabled();
+  expect(screen.getByLabelText('Ask the Eye')).toBeEnabled();
   await user.click(screen.getByRole('button', { name: 'Stop' }));
   expect(screen.getByText('Stopped. No answer was added.')).toBeVisible();
   await user.type(screen.getByLabelText('Ask the Eye'), 'Second question{Enter}');
@@ -119,12 +120,42 @@ it('sends only the last four successful user questions and New chat discards his
     'Question 4',
     'Question 5',
   ]);
+  expect(bodies[5]).not.toHaveProperty('continuation_id');
   expect(bodies[5]).not.toHaveProperty('messages');
   await user.click(screen.getByRole('button', { name: 'New chat' }));
   expect(screen.queryByText('Question 6')).not.toBeInTheDocument();
   await user.type(screen.getByLabelText('Ask the Eye'), 'Fresh question{Enter}');
   await waitFor(() => expect(bodies).toHaveLength(7));
   expect(bodies[6]?.prior_questions).toEqual([]);
+  expect(bodies[6]).not.toHaveProperty('continuation_id');
+});
+
+it('continues prior evidence only for a referential follow-up in the same scope', async () => {
+  const bodies: AssistantRequest[] = [];
+  server.use(
+    http.post('/api/assistant/answer', async ({ request }) => {
+      bodies.push((await request.json()) as AssistantRequest);
+      return HttpResponse.json(eyeAnswer);
+    }),
+  );
+  const { user } = await mount();
+  await user.type(screen.getByLabelText('Ask the Eye'), 'Summarise the vessel reports{Enter}');
+  await screen.findByText('Two recent vessel observations are available.');
+  await user.type(screen.getByLabelText('Ask the Eye'), 'Which of those are confirmed?{Enter}');
+  await waitFor(() => expect(bodies).toHaveLength(2));
+  expect(bodies[1]?.continuation_id).toBe('test-continuation-1234567890');
+  await waitFor(() => expect(screen.getByLabelText('Ask the Eye')).toBeEnabled());
+  await user.type(screen.getByLabelText('Ask the Eye'), 'What happened in Japan yesterday?{Enter}');
+  await waitFor(() => expect(bodies).toHaveLength(3));
+  expect(bodies[2]).not.toHaveProperty('continuation_id');
+});
+
+it('does not reuse an expired or clock-skewed evidence token', () => {
+  const received = 1_000_000;
+  expect(continuationFresh(received, received + 17 * 60_000)).toBe(true);
+  expect(continuationFresh(received, received + 19 * 60_000)).toBe(false);
+  expect(continuationFresh(received, received - 1)).toBe(false);
+  expect(continuationFresh(null, received)).toBe(false);
 });
 
 it('keeps unsafe markup and URLs inert and offers a retry after a failed answer', async () => {
@@ -156,7 +187,7 @@ it('keeps unsafe markup and URLs inert and offers a retry after a failed answer'
   expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
 });
 
-it('closing the panel cancels unfinished work and retains only already displayed turns', async () => {
+it('minimising keeps the request running and restores its completed answer', async () => {
   let release: () => void = () => undefined;
   const gate = new Promise<void>((resolve) => {
     release = resolve;
@@ -168,15 +199,40 @@ it('closing the panel cancels unfinished work and retains only already displayed
     }),
   );
   const { user } = await mount();
-  await user.type(screen.getByLabelText('Ask the Eye'), 'Stop on close{Enter}');
-  await user.click(screen.getByRole('button', { name: 'Close Eye assistant' }));
+  await user.type(screen.getByLabelText('Ask the Eye'), 'Answer while minimised{Enter}');
+  await user.click(screen.getByRole('button', { name: 'Minimise chat window' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('status', { name: 'Answer in progress' })).toBeVisible();
   await act(async () => {
     release();
     await gate;
   });
+  expect(screen.getByRole('status', { name: 'Answer ready' })).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Open Eye assistant' }));
-  expect(screen.getByText('Stopped. No answer was added.')).toBeVisible();
-  expect(
-    screen.queryByText('Two recent vessel observations are available.'),
-  ).not.toBeInTheDocument();
+  expect(screen.getByText('Two recent vessel observations are available.')).toBeVisible();
+});
+
+it('keeps a next-question draft while an answer runs', async () => {
+  let release: () => void = () => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let started = false;
+  server.use(
+    http.post('/api/assistant/answer', async () => {
+      started = true;
+      await gate;
+      return HttpResponse.json(eyeAnswer);
+    }),
+  );
+  const { user } = await mount();
+  await user.type(screen.getByLabelText('Ask the Eye'), 'First question{Enter}');
+  await waitFor(() => expect(started).toBe(true));
+  await user.type(screen.getByLabelText('Ask the Eye'), 'Follow-up draft');
+  await act(async () => {
+    release();
+    await gate;
+  });
+  expect(await screen.findByText('Two recent vessel observations are available.')).toBeVisible();
+  expect(screen.getByLabelText('Ask the Eye')).toHaveValue('Follow-up draft');
 });

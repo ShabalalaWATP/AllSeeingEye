@@ -5,10 +5,27 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from ase.domain.events import BoundingBox, Point
+from ase.domain.events import BoundingBox, Category, Point
 
 AssistantScope = Literal["global", "viewport", "selected"]
-AssistantKind = Literal["event", "camera", "infrastructure", "gnss"]
+AssistantKind = Literal["event", "camera", "infrastructure", "gnss", "doctrine"]
+
+
+@dataclass(frozen=True, slots=True)
+class AssistantTimeRange:
+    since: datetime
+    until: datetime
+
+    def __post_init__(self) -> None:
+        if (
+            self.since.tzinfo is None
+            or self.until.tzinfo is None
+            or self.since.utcoffset() is None
+            or self.until.utcoffset() is None
+            or self.since >= self.until
+            or (self.until - self.since).total_seconds() > 366 * 86400
+        ):
+            raise ValueError("Choose a valid time range of at most 366 days.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,10 +47,31 @@ class AssistantQuestion:
     scope: AssistantScope = "global"
     bbox: BoundingBox | None = None
     selected: AssistantSelection | None = None
+    time_range: AssistantTimeRange | None = None
+    continuation_id: str | None = None
+    source_categories: tuple[str, ...] | None = None
 
     def __post_init__(self) -> None:
         if len(self.prior_questions) > 4:
             raise ValueError("Use at most four previous questions.")
+        if self.continuation_id is not None and not (
+            16 <= len(self.continuation_id) <= 80
+            and all(
+                char.isascii() and (char.isalnum() or char in "-_") for char in self.continuation_id
+            )
+        ):
+            raise ValueError("Choose a valid conversation reference.")
+        if self.source_categories is not None and (
+            not 1 <= len(self.source_categories) <= len(Category) + 3
+            or len(set(self.source_categories)) != len(self.source_categories)
+            or any(
+                category
+                not in {value.value for value in Category}
+                | {"camera", "infrastructure", "doctrine"}
+                for category in self.source_categories
+            )
+        ):
+            raise ValueError("Choose valid, distinct source categories.")
         for text in (self.question, *self.prior_questions):
             if not 1 <= len(text.strip()) <= 2000 or len(text) > 2000:
                 raise ValueError("Questions must contain between 1 and 2,000 characters.")
@@ -76,6 +114,17 @@ class AssistantSource:
 
 
 @dataclass(frozen=True, slots=True)
+class AssistantInterpretation:
+    topics: tuple[str, ...]
+    countries: tuple[str, ...]
+    since: datetime | None = None
+    until: datetime | None = None
+    time_basis: Literal["publication"] = "publication"
+    notes: tuple[str, ...] = ()
+    source_categories: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class AssistantContext:
     sources: tuple[AssistantSource, ...]
     candidate_count: int
@@ -85,6 +134,7 @@ class AssistantContext:
     matched_count: int = 0
     as_of: datetime | None = None
     clarification: str | None = None
+    interpretation: AssistantInterpretation | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,3 +157,4 @@ class AssistantAnswer:
     question: AssistantQuestion
     generated_at: datetime
     model: AssistantModel | None = None
+    continuation_id: str | None = None

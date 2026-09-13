@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.retrieval import AssistantRetrieval
-from ase.application.assistant.service import AssistantCapacity, MapAssistant
+from ase.application.assistant.service import MapAssistant
 from ase.application.model_routing import ModelRouting
 from ase.domain.llm import LlmUsage
 

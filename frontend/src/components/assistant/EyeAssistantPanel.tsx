@@ -1,11 +1,13 @@
-import { useEffect, useEffectEvent, useId, useRef } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import type { CSSProperties, SyntheticEvent } from 'react';
 import { Link } from 'react-router';
 import { useAssistantMapAvailability } from '@/lib/assistantMapContext';
-import { researchHref } from '@/lib/researchNavigation';
+import { researchHref, subscriptionHref } from '@/lib/researchNavigation';
 import { EyeAnswer } from './EyeAnswer';
+import { EyeSourceFilter } from './EyeSourceFilter';
+import { EyeSavedChats } from './EyeSavedChats';
 import './eyeConversation.css';
-import type { EyeChat } from './useEyeChat';
+import type { ChatTimeWindow, EyeChat } from './useEyeChat';
 
 const prompts = [
   [
@@ -36,9 +38,11 @@ export function EyeAssistantPanel({
   const input = useRef<HTMLTextAreaElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
+  const [savedOpen, setSavedOpen] = useState(false);
   const close = useEffectEvent(onClose);
   const inputId = useId();
   const scopeId = useId();
+  const timeId = useId();
   useEffect(() => {
     input.current?.focus();
   }, []);
@@ -61,7 +65,19 @@ export function EyeAssistantPanel({
     event.preventDefault();
     void chat.send();
   };
-  const lastQuestion = chat.turns.at(-1)?.question ?? chat.question;
+  const answered = [...chat.turns].reverse().find((turn) => turn.status === 'answered');
+  const draft = chat.question.trim();
+  const lastQuestion = draft.length ? draft : (answered?.question ?? chat.turns.at(-1)?.question);
+  const interpretation = draft ? null : answered?.answer?.interpretation;
+  const country = interpretation?.countries.length === 1 ? interpretation.countries[0] : null;
+  const subscriptionCountry =
+    answered?.answer?.interpretation.countries.length === 1
+      ? answered.answer.interpretation.countries[0]
+      : null;
+  const timeRange =
+    interpretation?.since && interpretation.until
+      ? { since: interpretation.since, until: interpretation.until }
+      : null;
   return (
     <section
       ref={panel}
@@ -112,18 +128,21 @@ export function EyeAssistantPanel({
           <button
             type="button"
             className="eye-icon-action"
-            aria-label="Close Eye assistant"
-            title="Close Eye assistant"
+            aria-label="Minimise chat window"
+            title="Minimise chat window"
             onClick={onClose}
           >
-            ×
+            −
           </button>
         </div>
       </header>
       <div className="eye-assistant-tools">
         <button
           type="button"
-          onClick={chat.clear}
+          onClick={() => {
+            chat.clear();
+            setSavedOpen(false);
+          }}
           disabled={chat.turns.length === 0 && !chat.question}
         >
           New chat
@@ -131,8 +150,25 @@ export function EyeAssistantPanel({
         <button type="button" onClick={onResetPosition}>
           Reset position
         </button>
-        <span>Session only</span>
+        <button
+          type="button"
+          aria-expanded={savedOpen}
+          onClick={() => setSavedOpen((previous) => !previous)}
+        >
+          Saved chats
+        </button>
+        <span>Private</span>
       </div>
+      {savedOpen && (
+        <EyeSavedChats
+          chat={chat}
+          onResume={() => {
+            setSavedOpen(false);
+            input.current?.focus();
+          }}
+        />
+      )}
+      {chat.savedSnapshotNotice && <p className="eye-snapshot-note">{chat.savedSnapshotNotice}</p>}
       <div className="eye-transcript" role="log" aria-live="polite" aria-label="Eye conversation">
         {chat.turns.length === 0 && (
           <div className="eye-welcome">
@@ -163,6 +199,7 @@ export function EyeAssistantPanel({
               <span className="sr-only">You: </span>
               {turn.question}
             </p>
+            {turn.saved && <p className="eye-turn-snapshot">Saved answer · recheck before use</p>}
             {turn.answer && <EyeAnswer answer={turn.answer} />}
             {turn.status === 'pending' && (
               <div role="status">
@@ -171,7 +208,7 @@ export function EyeAssistantPanel({
                   Searching sources and preparing a reply…
                 </p>
                 <p className="eye-answer-meta">
-                  May take up to two minutes. You can stop at any time.
+                  May take up to two minutes. You can draft the next question or stop this one.
                 </p>
               </div>
             )}
@@ -186,28 +223,52 @@ export function EyeAssistantPanel({
         <div ref={bottom} />
       </div>
       <form className="eye-composer" onSubmit={submit} noValidate>
-        <div className="eye-scope">
-          <label htmlFor={scopeId}>Search</label>
-          <select
-            id={scopeId}
-            aria-label="Eye search scope"
-            value={chat.scope}
-            disabled={chat.busy}
-            onChange={(event) => {
-              const value = event.target.value;
-              if (value === 'global' || value === 'viewport' || value === 'selected')
-                chat.setScope(value);
-            }}
-          >
-            <option value="global">All retained map sources</option>
-            <option value="viewport" disabled={!map?.bounds}>
-              Current map area
-            </option>
-            <option value="selected" disabled={!map?.selected}>
-              Selected map item
-            </option>
-          </select>
+        <div className="eye-search-controls">
+          <div className="eye-scope">
+            <label htmlFor={scopeId}>Area</label>
+            <select
+              id={scopeId}
+              aria-label="Eye search scope"
+              value={chat.scope}
+              disabled={chat.busy}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value === 'global' || value === 'viewport' || value === 'selected')
+                  chat.setScope(value);
+              }}
+            >
+              <option value="global">All sources</option>
+              <option value="viewport" disabled={!map?.bounds}>
+                Map view
+              </option>
+              <option value="selected" disabled={!map?.selected}>
+                Selected item
+              </option>
+            </select>
+          </div>
+          <div className="eye-scope">
+            <label htmlFor={timeId}>Time</label>
+            <select
+              id={timeId}
+              aria-label="Eye time period"
+              value={chat.timeWindow}
+              disabled={chat.busy}
+              onChange={(event) => chat.setTimeWindow(event.target.value as ChatTimeWindow)}
+            >
+              <option value="auto">From question</option>
+              <option value="48">Past 2 days</option>
+              <option value="120">Past 5 days</option>
+              <option value="168">Past 7 days</option>
+              <option value="336">Past 14 days</option>
+              <option value="720">Past 30 days</option>
+              <option value="2160">Past 90 days</option>
+              <option value="8760">Past year</option>
+            </select>
+          </div>
         </div>
+        {chat.timeWindow !== 'auto' && (
+          <p className="eye-scope-note">Filters by publication time. Source archives vary.</p>
+        )}
         {chat.scope === 'viewport' && (
           <p className="eye-scope-note">
             Uses the current geographic view boundary, including layers switched off.
@@ -218,6 +279,11 @@ export function EyeAssistantPanel({
             {map?.selected ? map.selected.title : 'Select an item on the map to continue.'}
           </p>
         )}
+        <EyeSourceFilter
+          value={chat.sourceCategories}
+          onChange={chat.setSourceCategories}
+          disabled={chat.busy}
+        />
         <label className="sr-only" htmlFor={inputId}>
           Ask the Eye
         </label>
@@ -227,11 +293,15 @@ export function EyeAssistantPanel({
           value={chat.question}
           maxLength={2000}
           rows={2}
-          disabled={chat.busy}
           onChange={(event) => chat.setQuestion(event.target.value)}
           placeholder="Ask about events, places or sources…"
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+            if (
+              event.key === 'Enter' &&
+              !chat.busy &&
+              !event.shiftKey &&
+              !event.nativeEvent.isComposing
+            ) {
               event.preventDefault();
               void chat.send();
             }
@@ -257,13 +327,20 @@ export function EyeAssistantPanel({
         <div className="eye-research-link">
           <Link
             to={researchHref(
-              lastQuestion || 'Investigate the available evidence and its limitations.',
+              lastQuestion ?? 'Investigate the available evidence and its limitations.',
+              country,
+              timeRange,
             )}
             onClick={onClose}
           >
             Search deeper in Research →
           </Link>
-          <span>Review scope before creating a report.</span>
+          <span>Opens a reviewable research draft. Refine its scope and sources there.</span>
+          {answered?.answer && (
+            <Link to={subscriptionHref(answered.question, subscriptionCountry)} onClick={onClose}>
+              Create subscription draft →
+            </Link>
+          )}
         </div>
       </form>
     </section>

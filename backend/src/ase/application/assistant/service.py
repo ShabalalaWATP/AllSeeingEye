@@ -1,13 +1,14 @@
 """One request-local answer with live access, bounded admission and usage accounting."""
 
 import asyncio
+import re
 import time
-from collections.abc import Awaitable, Callable, Iterator
-from contextlib import contextmanager
+from collections.abc import Awaitable, Callable
 from dataclasses import replace
-from uuid import UUID
 
 from ase.application.access import AccessPolicy
+from ase.application.assistant.continuation import AssistantCapacity
+from ase.application.assistant.intent import interpret_question
 from ase.application.assistant.model import AssistantAnswerInvalid, answer_question
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.usage import save_usage
@@ -23,35 +24,20 @@ from ase.application.ports.source_controls import SourceAdmission
 from ase.domain.assistant import (
     AssistantAnswer,
     AssistantContext,
+    AssistantInterpretation,
     AssistantModel,
     AssistantParagraph,
     AssistantQuestion,
 )
 from ase.domain.errors import InvalidRequest, RateLimited
+from ase.domain.events import Category
 from ase.domain.llm import LlmProfile, LlmResult, LlmRole, LlmUsage
 from ase.domain.users import User
 
 SessionCheck = Callable[[], Awaitable[None]]
 UsageRecorder = Callable[[LlmUsage], Awaitable[None]]
 ANSWER_SECONDS = 120
-
-
-class AssistantCapacity:
-    """Fail fast rather than queue duplicate or unlimited model work."""
-
-    def __init__(self, limit: int = 2) -> None:
-        self.limit = limit
-        self.active: set[UUID] = set()
-
-    @contextmanager
-    def reserve(self, actor_id: UUID) -> Iterator[None]:
-        if actor_id in self.active or len(self.active) >= self.limit:
-            raise RateLimited(5)
-        self.active.add(actor_id)
-        try:
-            yield
-        finally:
-            self.active.discard(actor_id)
+FOLLOWUP_REFERENCE = re.compile(r"\b(those|these|them|earlier|previous|above)\b", re.I)
 
 
 class MapAssistant:
@@ -107,9 +93,20 @@ class MapAssistant:
         with self.capacity.reserve(actor.id):
             async with asyncio.timeout(ANSWER_SECONDS):
                 await self._authorise(actor, check_session)
-                context = replace(
-                    await self.retrieval.collect(actor, question), as_of=self.clock.now()
-                )
+                if question.continuation_id:
+                    previous = self.capacity.find(actor, question.continuation_id, self.clock.now())
+                    if previous is None:
+                        raise InvalidRequest(
+                            "That Ask Eye conversation reference expired or is unavailable. "
+                            "Start a new search."
+                        )
+                else:
+                    previous = None
+                if previous and FOLLOWUP_REFERENCE.search(question.question):
+                    context = self._followup_context(previous, question)
+                else:
+                    context = await self.retrieval.collect(actor, question, as_of=self.clock.now())
+                context = replace(context, as_of=self.clock.now())
                 if not context.sources:
                     async with self.admission.guard():
                         await self._authorise(actor, check_session, final=True)
@@ -133,6 +130,80 @@ class MapAssistant:
                 finally:
                     await self.uow.rollback()
                 return await self._answer(actor, question, context, profile, check_session)
+
+    def _followup_context(
+        self, previous: AssistantContext, question: AssistantQuestion
+    ) -> AssistantContext:
+        intent = interpret_question(question.question, now=self.clock.now())
+        period = question.time_range or intent.time_range
+        effective_categories = question.source_categories or (
+            *(category.value for category in Category),
+            "camera",
+            "infrastructure",
+            "doctrine",
+        )
+        interpretation = AssistantInterpretation(
+            intent.topics,
+            intent.countries,
+            period.since if period else None,
+            period.until if period else None,
+            notes=("Reusing evidence from this user's earlier Ask Eye answer.",),
+            source_categories=effective_categories,
+        )
+        if intent.clarification:
+            return AssistantContext(
+                (),
+                0,
+                0,
+                False,
+                ("No previous sources searched because the follow-up needs clarification.",),
+                clarification=intent.clarification,
+                interpretation=interpretation,
+            )
+        # Pronouns refer to the frozen evidence set. Analytical wording such as
+        # "independently confirmed" is not a new entity that each title must contain.
+        filter_intent = replace(
+            intent,
+            terms=tuple(term for term in intent.terms if term != "military"),
+            anchors=(),
+            residual=(),
+        )
+        rows = [
+            source
+            for source in previous.sources
+            if _source_category(source) in effective_categories
+            and filter_intent.accepts(_source_category(source), source)
+            and (
+                period is None
+                or (
+                    source.published_at is not None
+                    and period.since <= source.published_at < period.until
+                )
+            )
+            and (
+                question.bbox is None
+                or (source.point is not None and question.bbox.contains(source.point))
+            )
+            and (
+                question.selected is None
+                or (
+                    source.kind == question.selected.kind
+                    and source.record_id == question.selected.id
+                )
+            )
+        ]
+        return AssistantContext(
+            tuple(replace(row, id=f"E{index + 1}") for index, row in enumerate(rows)),
+            len(previous.sources),
+            len({row.source_id for row in rows}),
+            previous.capped,
+            (
+                *previous.notes,
+                "Follow-up uses a frozen evidence packet; source status is rechecked.",
+            ),
+            matched_count=len(rows),
+            interpretation=interpretation,
+        )
 
     async def _answer(
         self,
@@ -221,6 +292,7 @@ class MapAssistant:
             await self._authorise(actor, check_session, final=True)
             await self._sources_enabled(context)
             await check_session()
+            continuation_id = self.capacity.remember(actor, context, self.clock.now())
             return AssistantAnswer(
                 paragraphs,
                 context,
@@ -230,8 +302,20 @@ class MapAssistant:
                     result.model,
                     profile.reasoning_effort.value if profile.reasoning_effort else None,
                 ),
+                continuation_id,
             )
 
 
 def _tokens(value: int | None) -> int | None:
     return value if type(value) is int and 0 <= value <= 2**31 - 1 else None
+
+
+def _source_category(source: object) -> str:
+    kind = getattr(source, "kind", "")
+    if kind != "event":
+        return str(kind)
+    for detail in getattr(source, "details", ()):
+        match = re.match(r"Category: ([a-z_]+);", detail)
+        if match:
+            return match.group(1)
+    return "event"

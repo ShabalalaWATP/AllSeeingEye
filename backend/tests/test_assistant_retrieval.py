@@ -1,7 +1,7 @@
 """Source relevance, spatial scope, catalogue boundaries and bounded coverage receipts."""
 
 from dataclasses import replace
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -10,7 +10,7 @@ from ase.application.assistant.intent import interpret_question
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.sources import event_source, safe_source_url
 from ase.application.cameras import CameraCatalogueService
-from ase.domain.assistant import AssistantQuestion, AssistantSelection
+from ase.domain.assistant import AssistantQuestion, AssistantSelection, AssistantTimeRange
 from ase.domain.cameras import Camera
 from ase.domain.errors import InvalidRequest
 from ase.domain.events import BoundingBox, Category, Point
@@ -46,7 +46,7 @@ async def test_default_shortcuts_return_diverse_categories(question, container, 
     [
         ("Are there any recent earthquakes?", {"quake"}),
         ("What is happening in Ukraine?", {"ukraine"}),
-        ("What happened in Ukraine today?", {"ukraine"}),
+        ("What happened in Ukraine today?", set()),
         ("Tell me about vessels in the current area", {"ship"}),
         ("Any ships near Atlantis?", set()),
         ("Earthquakes in France", set()),
@@ -98,6 +98,23 @@ async def test_alternative_categories_share_one_country_constraint(container, us
         user, AssistantQuestion("Flights and ships in Ukraine")
     )
     assert {source.record_id for source in context.sources} == {"air", "ship"}
+
+
+async def test_explicit_category_allowlist_intersects_with_topic(container, user):
+    container.store.upsert(
+        [
+            event("quake", category=Category.DISASTER, title="Earthquake in Japan"),
+            event("news", category=Category.NEWS, title="Japan earthquake news"),
+        ]
+    )
+    answer = await retrieval(container).collect(
+        user,
+        AssistantQuestion("Japan earthquakes", source_categories=("news",)),
+    )
+    assert not answer.sources
+    assert answer.interpretation and answer.interpretation.source_categories == ("news",)
+    with pytest.raises(ValueError, match="categories"):
+        AssistantQuestion("Japan", source_categories=("news", "news"))
 
 
 async def test_military_discovery_filters_before_traffic_sample_and_selected_item_stays(
@@ -158,6 +175,49 @@ async def test_sample_matched_supplied_counts_and_provider_limit_differ(containe
     context = await retrieval(container).collect(user, AssistantQuestion("Earthquakes"))
     assert (context.candidate_count, context.matched_count, len(context.sources)) == (90, 12, 6)
     assert context.capped and context.source_count == 1
+
+
+async def test_date_is_applied_before_newest_sample_and_exposed_in_interpretation(container, user):
+    newer = [
+        replace(
+            event(f"new-{i}", title=f"Earthquake {i} in Japan"),
+            published_at=NOW + timedelta(days=1),
+        )
+        for i in range(110)
+    ]
+    container.store.upsert([*newer, event("target", title="Earthquake in Japan yesterday")])
+    answer = await retrieval(container).collect(
+        user,
+        AssistantQuestion("Earthquakes in Japan yesterday"),
+        as_of=datetime(2026, 9, 2, 12, tzinfo=UTC),
+    )
+    assert [row.record_id for row in answer.sources] == ["target"]
+    assert answer.interpretation is not None
+    assert answer.interpretation.since == datetime(2026, 8, 31, 23, tzinfo=UTC)
+    assert answer.interpretation.until == datetime(2026, 9, 1, 23, tzinfo=UTC)
+
+
+async def test_explicit_time_range_excludes_unknown_and_overrides_relative_window(container, user):
+    container.store.upsert((event("target", title="Earthquake in Japan"),))
+    question = AssistantQuestion(
+        "Earthquakes in Japan last 24 hours",
+        time_range=AssistantTimeRange(NOW - timedelta(hours=1), NOW + timedelta(hours=1)),
+    )
+    answer = await retrieval(container).collect(user, question, as_of=NOW + timedelta(days=14))
+    assert [row.record_id for row in answer.sources] == ["target"]
+    assert answer.interpretation and answer.interpretation.since == question.time_range.since
+    assert "overrides" in " ".join(answer.interpretation.notes)
+
+
+async def test_bounded_text_scan_finds_older_match_after_first_page(container, user):
+    rows = [
+        replace(event(str(i), title=f"Flood alert {i}"), published_at=NOW + timedelta(minutes=i))
+        for i in range(110)
+    ]
+    container.store.upsert([*rows, event("target", title="Earthquake near Tokyo, Japan")])
+    answer = await retrieval(container).collect(user, AssistantQuestion("Earthquakes"))
+    assert [row.record_id for row in answer.sources] == ["target"]
+    assert answer.candidate_count > 90
 
 
 async def test_viewport_antimeridian_and_disabled_source_stay_strict(container, user):
@@ -226,6 +286,55 @@ def test_infrastructure_duplicate_ids_and_unlocated_cables_fail_closed():
         {"cables": [row]},
         AssistantQuestion("Cable", scope="viewport", bbox=BoundingBox(-5, 50, 5, 55)),
     )[0]
+
+
+def test_technology_sites_are_individual_attributed_infrastructure_sources():
+    snapshot = {
+        "data_centres": [
+            {
+                "id": "dc-1",
+                "name": "Data centre",
+                "country": "GB",
+                "longitude": -1,
+                "latitude": 52,
+                "significance": "Public catalogue record",
+                "website": "https://example.org/site",
+            }
+        ],
+        "energy_sites": [
+            {"id": "en-1", "name": "Energy site", "country": "GB", "longitude": -2, "latitude": 53}
+        ],
+        "semiconductor_sites": [
+            {
+                "id": "sc-1",
+                "name": "Semiconductor site",
+                "country": "GB",
+                "longitude": -3,
+                "latitude": 54,
+            }
+        ],
+        "data_centre_snapshot_date": "2026-09-13",
+        "site_snapshot_date": "2026-09-13",
+    }
+    rows, capped, _ = infrastructure_sources(snapshot, AssistantQuestion("Infrastructure"))
+    assert not capped
+    assert {row.source_id for row in rows} == {
+        "infrastructure:data_centres",
+        "infrastructure:energy_sites",
+        "infrastructure:semiconductor_sites",
+    }
+    assert all(row.country_iso == "GB" and row.point for row in rows)
+    assert rows[0].url == "https://example.org/site"
+
+
+async def test_doctrine_question_returns_cited_public_methodology_only(container, user):
+    result = await retrieval(container).collect(user, AssistantQuestion("Explain PHIA doctrine"))
+    assert result.sources
+    assert all(row.kind == "doctrine" and row.point is None for row in result.sources)
+    assert all(row.published_at is None and row.url for row in result.sources)
+    assert not (
+        await retrieval(container).collect(user, AssistantQuestion("Earthquakes in Japan"))
+    ).sources
 
 
 def test_projection_omits_sensitive_attributes_and_urls_and_source_instructions():

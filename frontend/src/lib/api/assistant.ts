@@ -1,9 +1,14 @@
 import { z } from 'zod';
 import { apiCall } from './client';
 import type { components } from './types.gen';
+import { categorySchema } from './eventSchemas';
 
 export type AssistantRequest = components['schemas']['AssistantAnswerIn'];
 export type AssistantAnswer = components['schemas']['AssistantAnswerOut'];
+export const assistantSourceCategorySchema = z.union([
+  categorySchema,
+  z.enum(['camera', 'infrastructure', 'doctrine']),
+]);
 export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
   paragraphs: z.array(
     z.object({
@@ -15,7 +20,7 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
   sources: z.array(
     z.object({
       id: z.string(),
-      kind: z.enum(['event', 'camera', 'infrastructure', 'gnss']),
+      kind: z.enum(['event', 'camera', 'infrastructure', 'gnss', 'doctrine']),
       record_id: z.string(),
       source_id: z.string(),
       title: z.string(),
@@ -43,6 +48,16 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
     capped: z.boolean(),
     notes: z.array(z.string()),
   }),
+  interpretation: z.object({
+    topics: z.array(z.string()),
+    countries: z.array(z.string()),
+    since: z.string().nullable(),
+    until: z.string().nullable(),
+    time_basis: z.literal('publication'),
+    notes: z.array(z.string()),
+    source_categories: z.array(z.string()),
+  }),
+  continuation_id: z.string().nullable(),
   generated_at: z.string(),
   model: z.object({ name: z.string(), reasoning_effort: z.string().nullable() }).nullable(),
 });
