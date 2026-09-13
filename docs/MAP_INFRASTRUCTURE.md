@@ -48,3 +48,24 @@ No user URL is fetched and no map action contacts a station or cable operator.
 The server reads fixed packaged resources only. API and client validation bound
 the number of features and vertices. Snapshot dates and provenance accompany the
 data; there is no automatic assertion of freshness.
+
+## Ground stations from Wikidata and data centres from OpenStreetMap, 13 September 2026
+
+Two operator-run commands extend the packaged snapshot:
+
+- `uv run ase import-ground-stations` merges Wikidata items that are ground stations or
+  teleports with a recorded coordinate, an ISO country and no dissolution date, behind
+  the 25 curated entries (sites within 0.05° of a curated one are dropped). Each carries
+  a Wikipedia or Wikidata source link, a website where recorded, and a note that the
+  position is an approximate site, not an antenna or a statement of current use. The
+  snapshot now holds 106 stations. Sources tried and left for later: OpenStreetMap
+  `man_made=ground_station` (six features worldwide), named `satellite_dish` features
+  (125, mostly single dishes), and national earth-station licence lists, which need a
+  per-country parser.
+- `uv run ase import-data-centres` queries Overpass for `telecom=data_center` features
+  with a name and writes `data_centres.json` (3,600 of roughly 3,614 named features,
+  ODbL, attributed). Country is resolved from the mapped position with the packaged
+  Natural Earth index, so 63 sites near coasts or borders carry no country. The panel
+  lists them as a fourth layer with an operator website link in the inspector.
+
+Neither dataset states capacity, tenants or operational status; the inspector says so.

@@ -4621,3 +4621,16 @@ an expanded card nests its own list, and the "Network" map panel lists IODA
 connectivity signals that carry no coordinates by design, so it is empty when a
 nation filter is set and never draws point markers.
 
+A fifth request bundled several map asks. The Public figures rail button now turns
+the layer on as it opens the panel and the roster follows the Find nation filter.
+GPS interference moved under the Cyber control with its own switch and tab. Two
+operator-run imports extended the infrastructure snapshot: Wikidata ground stations
+(106 sites, closed ones excluded) and OpenStreetMap data centres (3,600 named
+features, ODbL) as a fourth infrastructure layer with website links. A reference
+notes catalogue was added for the things the map shows by identifier: 2,962 vessels
+by MMSI and 373 aircraft by registration from Wikidata, plus 39 curated ICAO aircraft
+type notes, served by a bounded authenticated lookup and shown in the event inspector
+with the caveat that a match is background, not identity. Wikidata's endpoint
+disconnected or rate-limited several imports; each retried and the snapshots were
+reviewed before committing.
+

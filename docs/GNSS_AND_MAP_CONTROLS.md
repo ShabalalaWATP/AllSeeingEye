@@ -142,3 +142,12 @@ catalogues. Restore All location qualities to remove this extra restriction. See
 [map layers and planning tools](MAP_TOOLS_AND_LAYERS.md) for the accompanying
 interaction, route-search, RF and OS map changes. Final verification for this
 follow-up is recorded separately from the earlier milestone above.
+
+## GPS interference under the Cyber control, 13 September 2026
+
+The standalone GNSS switch left the layer rail. The Cyber control's panel now carries
+two switches, "Cyber incidents" (the cyber event category) and "GPS interference" (the
+aviation-derived interference cells), and a second tab holding the interference cell
+list and filters unchanged. The layer itself, its data path and its doctrine notes are
+the same; only the control that owns it moved. The user-facing name is "GPS
+interference"; the code and API keep GNSS terms.

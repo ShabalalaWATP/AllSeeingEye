@@ -628,6 +628,19 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [x] Russian MFA, BelTA, Interfax and Ukrinform feeds for translated matching.
 - [ ] Kremlin, State Department, Chinese MFA and Belarusian official feeds once a
   usable HTTPS feed exists.
+
+## 13 September 2026: map controls, infrastructure and reference notes
+
+- [x] Figures layer enabled from the rail; roster follows the nation filter.
+- [x] GPS interference as a switch and tab under the Cyber control.
+- [x] Wikidata ground stations merged behind the curated list (106).
+- [x] OpenStreetMap data centres as a fourth infrastructure layer (3,600).
+- [x] Reference notes for vessels (MMSI), aircraft (registration) and aircraft
+  types, with an authenticated bounded lookup and inspector block.
+- [ ] National earth-station licence lists (Ofcom, FCC) as further station sources.
+- [ ] Hand-curated notes for naval vessels without an MMSI on Wikidata.
+
+See [Reference notes](REFERENCE_NOTES.md) and [Map infrastructure](MAP_INFRASTRUCTURE.md).
 - [ ] Hand-curated entries for Russian posts without a usable Wikidata position item
   (General Staff, SVR, press secretary).
 - [ ] Geocode place names in reports that name an official but carry no location.

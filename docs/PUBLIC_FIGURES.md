@@ -100,8 +100,10 @@ matcher, tells the reader what the mention establishes.
 
 ## Frontend
 
-- The map layer is off by default. The "Public figures" panel on the left rail
-  toggles it, lists the visible figures with their basis, filters by name, office or
+- The map layer is off by default. Opening the "Public figures" panel from the left
+  rail turns it on (the switch inside still turns it off), and a nation chosen in Find
+  nation narrows the roster like every other layer, hiding organisations while set. The
+  panel lists the visible figures with their basis, filters by name, office or
   country text, narrows to one or more countries with chips (organisations grouped
   as one chip, "All" clears), and can hide seat defaults. The tracker page carries the
   same chips. Selecting a figure flies to the placement and

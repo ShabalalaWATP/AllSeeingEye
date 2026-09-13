@@ -1,0 +1,169 @@
+{
+  "title": "Military infrastructure public source register",
+  "reviewed_at": "2026-09-13",
+  "record_type": "source_metadata_only",
+  "coverage_is_complete": false,
+  "countries": ["RU", "CN", "BY", "UA", "EE", "LV", "LT", "US", "CA", "AU"],
+  "sources": [
+    {
+      "id": "ru-military-administrative-decree-2024",
+      "country_codes": ["RU"],
+      "publisher": "Official Publication of Legal Acts, Russian Federation",
+      "title": "Presidential decree No. 141 on military-administrative division",
+      "url": "https://publication.pravo.gov.ru/document/0001202402260031",
+      "published_at": "2024-02-26",
+      "assertion_scope": "statutory territorial organisation",
+      "limitation": "Not an installation inventory; verify subsequent amendments and current applicability."
+    },
+    {
+      "id": "ru-government-ministry",
+      "country_codes": ["RU"],
+      "publisher": "Government of the Russian Federation",
+      "title": "Ministry of Defence",
+      "url": "https://government.ru/en/department/94/",
+      "published_at": null,
+      "assertion_scope": "ministry remit",
+      "limitation": "Does not enumerate facilities or current occupants."
+    },
+    {
+      "id": "cn-mnd-about",
+      "country_codes": ["CN"],
+      "publisher": "Ministry of National Defense, People's Republic of China",
+      "title": "About Us",
+      "url": "https://eng.mod.gov.cn/2025xb/A_251795/index.html",
+      "published_at": null,
+      "assertion_scope": "ministry overview",
+      "limitation": "Organisational information, not a comprehensive estate inventory."
+    },
+    {
+      "id": "cn-national-defense-law",
+      "country_codes": ["CN"],
+      "publisher": "Ministry of National Defense, People's Republic of China",
+      "title": "Law of the People's Republic of China on National Defense",
+      "url": "https://eng.mod.gov.cn/2025xb/M/L_251592/16415117.html",
+      "published_at": "2025-10-14",
+      "assertion_scope": "legal command framework",
+      "limitation": "Does not identify facilities or site occupancy."
+    },
+    {
+      "id": "by-mod-structure",
+      "country_codes": ["BY"],
+      "publisher": "Ministry of Defence, Republic of Belarus",
+      "title": "Order of subordination in the Armed Forces",
+      "url": "https://www.mil.by/ru/forces/structure/",
+      "published_at": null,
+      "assertion_scope": "force and command structure",
+      "limitation": "Command chart, not a verified installation register."
+    },
+    {
+      "id": "ua-mod-overview",
+      "country_codes": ["UA"],
+      "publisher": "Ministry of Defence of Ukraine",
+      "title": "About the Ministry",
+      "url": "https://mod.gov.ua/pro-nas",
+      "published_at": null,
+      "assertion_scope": "ministry and service structure",
+      "limitation": "Wartime force structure changes; no current site occupancy asserted."
+    },
+    {
+      "id": "ua-armed-forces-structure",
+      "country_codes": ["UA"],
+      "publisher": "Armed Forces of Ukraine",
+      "title": "Structure of the Armed Forces",
+      "url": "https://www.zsu.gov.ua/suchasni-zbroini-syly-ukrainy/struktura-zbroinykh-syl-ukrainy",
+      "published_at": null,
+      "assertion_scope": "service and branch taxonomy",
+      "limitation": "No comprehensive facility inventory or current deployments."
+    },
+    {
+      "id": "ee-defence-forces-overview",
+      "country_codes": ["EE"],
+      "publisher": "Estonian Defence Forces",
+      "title": "Estonian Defence Forces",
+      "url": "https://mil.ee/en/defence-forces/",
+      "published_at": null,
+      "assertion_scope": "force organisation",
+      "limitation": "Not a complete estate directory."
+    },
+    {
+      "id": "lv-national-armed-forces-structure",
+      "country_codes": ["LV"],
+      "publisher": "Latvian National Armed Forces",
+      "title": "Structure",
+      "url": "https://www.mil.lv/en/par-mums/about-national-armed-forces/structure",
+      "published_at": null,
+      "assertion_scope": "force organisation",
+      "limitation": "Not an installation inventory."
+    },
+    {
+      "id": "lt-armed-forces-structure",
+      "country_codes": ["LT"],
+      "publisher": "Lithuanian Armed Forces",
+      "title": "Structure",
+      "url": "https://www.kariuomene.lt/en/structure/23581",
+      "published_at": null,
+      "assertion_scope": "force organisation",
+      "limitation": "Does not establish a complete estate inventory or current occupancy."
+    },
+    {
+      "id": "nato-eastern-flank",
+      "country_codes": ["EE", "LV", "LT"],
+      "publisher": "NATO",
+      "title": "Strengthening NATO's eastern flank",
+      "url": "https://nato.int/en/what-we-do/deterrence-and-defence/strengthening-natos-eastern-flank",
+      "published_at": null,
+      "assertion_scope": "country-level multinational presence",
+      "limitation": "Not an installation directory or fixed local unit roster."
+    },
+    {
+      "id": "us-militaryinstallations",
+      "country_codes": ["US"],
+      "publisher": "Military OneSource, United States Department of Defense",
+      "title": "MilitaryINSTALLATIONS directory",
+      "url": "https://installations.militaryonesource.mil/view-all",
+      "published_at": null,
+      "assertion_scope": "service-approved public directory",
+      "limitation": "Publisher explicitly states that it does not list every installation."
+    },
+    {
+      "id": "us-disdi",
+      "country_codes": ["US"],
+      "publisher": "United States Department of Defense",
+      "title": "Defense Installations Spatial Data Infrastructure",
+      "url": "https://www.acq.osd.mil/eie/imr/rpid/disdi/index.html",
+      "published_at": null,
+      "assertion_scope": "geospatial programme and planning dataset description",
+      "limitation": "Some datasets are access-controlled; public release notes say coverage is not necessarily comprehensive."
+    },
+    {
+      "id": "ca-bases-support-units",
+      "country_codes": ["CA"],
+      "publisher": "Department of National Defence, Canada",
+      "title": "Canadian Armed Forces bases and support units",
+      "url": "https://www.canada.ca/en/department-national-defence/services/bases-support-units.html",
+      "published_at": null,
+      "assertion_scope": "base and support-unit directory by service and province",
+      "limitation": "Support-oriented directory, not a certified complete estate register."
+    },
+    {
+      "id": "au-base-directory",
+      "country_codes": ["AU"],
+      "publisher": "Department of Defence, Australia",
+      "title": "Base induction directory",
+      "url": "https://www.defence.gov.au/about/locations-property/base-induction",
+      "published_at": null,
+      "assertion_scope": "public base directory",
+      "limitation": "Designed for induction; not a live occupancy or whole-estate dataset."
+    },
+    {
+      "id": "au-annual-report-2024-25",
+      "country_codes": ["AU"],
+      "publisher": "Department of Defence, Australia",
+      "title": "Defence Annual Report 2024–25",
+      "url": "https://www.defence.gov.au/sites/default/files/2025-10/Defence-Annual-Report-2024-25.pdf",
+      "published_at": "2025-10",
+      "assertion_scope": "dated major-base overview",
+      "limitation": "Annual-report snapshot, not live status."
+    }
+  ]
+}
