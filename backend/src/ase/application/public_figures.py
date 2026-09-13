@@ -53,9 +53,20 @@ class PublicFigureService:
 
     def board(self) -> FigureBoard:
         now = self._clock.now()
-        events = self._store.query(
-            EventQuery(categories=CATEGORIES, since=now - WINDOW, limit=POOL)
-        )
+        # Official Atom feeds declare modification dates only, so their items have no
+        # publication instant; keep them while they were collected inside the window.
+        events = [
+            event
+            for event in self._store.query(
+                EventQuery(
+                    categories=CATEGORIES,
+                    since=now - WINDOW,
+                    limit=POOL,
+                    include_unknown_dates=True,
+                )
+            )
+            if event.published_at is not None or event.observed_at >= now - WINDOW
+        ]
         by_person: dict[str, list[Event]] = defaultdict(list)
         figures = self._catalogue.figures
         for event in sorted(events, key=_recency, reverse=True):

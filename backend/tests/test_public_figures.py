@@ -189,6 +189,22 @@ async def test_board_places_named_figures_and_defaults_others(
                 point=Point(lon=2.35, lat=48.85),
                 published_at=now - timedelta(days=9),
             ),
+            make_event(
+                "undated",
+                category=Category.POLITICAL,
+                subtype="statement",
+                title="Defence Secretary Wes Streeting announces reserve funding",
+                point=None,
+                observed_at=now - timedelta(hours=3),
+            ).with_changes(published_at=None),
+            make_event(
+                "undated-stale",
+                category=Category.POLITICAL,
+                subtype="statement",
+                title="Wes Streeting on last month's estimates",
+                point=None,
+                observed_at=now - timedelta(days=9),
+            ).with_changes(published_at=None),
         ]
     )
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
@@ -196,7 +212,7 @@ async def test_board_places_named_figures_and_defaults_others(
     assert response.status_code == 200
     assert response.headers["cache-control"] == "private, no-store"
     board = response.json()
-    assert board["window_hours"] == 72 and board["events_scanned"] == 2
+    assert board["window_hours"] == 72 and board["events_scanned"] == 3
     assert "never means an official is at home" in board["caveat"]
     cards = {card["id"]: card for card in board["figures"]}
     ukraine = cards["ua-head-of-state"]
@@ -205,6 +221,9 @@ async def test_board_places_named_figures_and_defaults_others(
     assert ukraine["placement"]["latitude"] == 49.99
     assert ukraine["placement"]["event_id"] == event_id("test_source", "n1")
     assert ukraine["portrait"]["png_base64"].startswith("iVBOR")
+    defence = cards["gb-defence-secretary"]
+    assert defence["mentions"] == 1 and defence["placement"]["basis"] == "seat"
+    assert defence["latest"][0]["published_at"] is None
     britain = cards["gb-head-of-state"]
     assert britain["mentions"] == 0 and britain["placement"]["basis"] == "seat"
     assert britain["seat_name"] == "London"

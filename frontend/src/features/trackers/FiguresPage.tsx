@@ -151,7 +151,7 @@ export default function FiguresPage() {
   return (
     <ModulePage
       title="Public figures"
-      blurb="Current heads of state and government, named senior ministers and chiefs for the UK, Russia and China, and the leaders of NATO, the UN and the EU, with where public reporting names them in the last three days. Office-holders only, from public schedules and reporting; no private individuals, staff or families."
+      blurb="Current heads of state and government, named senior ministers and chiefs for the UK, US, Russia, China and Belarus, and the leaders of NATO, the UN and the EU, with where public reporting names them in the last three days. Office-holders only, from public schedules and reporting; no private individuals, staff or families."
       template={null}
       loading={loading}
       error={error === null ? null : describeError(error)}
