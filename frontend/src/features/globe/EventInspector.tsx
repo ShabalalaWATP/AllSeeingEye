@@ -15,6 +15,7 @@ import { ConflictScreeningDetails } from './ConflictScreeningDetails';
 import { conflictKind, conflictReportLabel } from '@/lib/conflicts';
 import { ConflictSymbol } from '@/components/maps/ConflictSymbol';
 import { SelectedEventFacts } from './SelectedEventFacts';
+import { ReferenceNotes } from './ReferenceNotes';
 import { eventTimeLabel } from './eventFacts';
 
 export interface EventInspectorProps {
@@ -166,6 +167,7 @@ export function EventInspector({ event, storySize = 1, onClose }: EventInspector
           </p>
         )}
         <SelectedEventFacts event={event} />
+        <ReferenceNotes event={event} />
         {event.summary !== null && (
           <p className="mt-3 whitespace-pre-line text-text">{event.summary}</p>
         )}

@@ -320,6 +320,13 @@ export const handlers = [
 
   http.get('/api/trackers/cyber', () => HttpResponse.json(cyberBoard)),
   http.get('/api/figures', () => HttpResponse.json(figureBoard)),
+  http.get('/api/reference', () =>
+    HttpResponse.json({
+      items: [],
+      retrieved_at: '2026-09-13T18:00:00Z',
+      caveat: 'A match is background, not confirmation of identity.',
+    }),
+  ),
   http.get('/api/sources/connections', () => HttpResponse.json({ items: platformConnections })),
 
   http.get('/api/trackers/conflicts/:id', ({ params }) =>

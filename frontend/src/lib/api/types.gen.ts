@@ -2793,6 +2793,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lookup Reference */
+        get: operations["lookup_reference_api_reference_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4801,6 +4818,27 @@ export interface components {
             /** Coverage Note */
             coverage_note: string;
         };
+        /** DataCentreOut */
+        DataCentreOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Operator */
+            operator: string;
+            /** Country */
+            country?: string | null;
+            /** Longitude */
+            longitude: number;
+            /** Latitude */
+            latitude: number;
+            /** Website */
+            website?: string | null;
+            /** Source Url */
+            source_url: string;
+            /** Note */
+            note: string;
+        };
         /** DayBucketOut */
         DayBucketOut: {
             /**
@@ -5612,6 +5650,10 @@ export interface components {
             source_url: string;
             /** Note */
             note: string;
+            /** Website */
+            website?: string | null;
+            /** Wikipedia */
+            wikipedia?: string | null;
         };
         /** GroundwaveOut */
         GroundwaveOut: {
@@ -5989,6 +6031,14 @@ export interface components {
             cables: components["schemas"]["CableOut"][];
             /** Ground Stations */
             ground_stations: components["schemas"]["GroundStationOut"][];
+            /** Data Centres */
+            data_centres: components["schemas"]["DataCentreOut"][];
+            /** Data Centre Attribution */
+            data_centre_attribution: string;
+            /** Data Centre Licence Url */
+            data_centre_licence_url: string;
+            /** Data Centre Snapshot Date */
+            data_centre_snapshot_date: string;
             /** Snapshot Date */
             snapshot_date: string;
             /** Cable Attribution */
@@ -7801,6 +7851,45 @@ export interface components {
             remaining: number;
             /** Available */
             available: boolean;
+        };
+        /** ReferenceEntryOut */
+        ReferenceEntryOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "vessel" | "aircraft" | "aircraft_type";
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Detail */
+            detail: string;
+            /** Links */
+            links: components["schemas"]["ReferenceLinkOut"][];
+            /** Provenance */
+            provenance: string;
+        };
+        /** ReferenceLinkOut */
+        ReferenceLinkOut: {
+            /** Label */
+            label: string;
+            /** Url */
+            url: string;
+        };
+        /** ReferenceLookupOut */
+        ReferenceLookupOut: {
+            /** Items */
+            items: components["schemas"]["ReferenceEntryOut"][];
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Caveat */
+            caveat: string;
         };
         /** RegistryIdentifierIn */
         RegistryIdentifierIn: {
@@ -16077,6 +16166,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FigureBoardOut"];
+                };
+            };
+        };
+    };
+    lookup_reference_api_reference_get: {
+        parameters: {
+            query: {
+                kind: "vessel" | "aircraft" | "aircraft_type";
+                keys: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceLookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

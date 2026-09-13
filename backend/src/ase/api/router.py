@@ -42,6 +42,7 @@ from ase.api.routers import (
     profile,
     radio,
     recovery,
+    reference,
     relationships,
     report_documents,
     report_jobs,
@@ -125,3 +126,4 @@ api_router.include_router(admin_firms_credentials.router)
 
 api_router.include_router(infrastructure.router)
 api_router.include_router(figures.router)
+api_router.include_router(reference.router)

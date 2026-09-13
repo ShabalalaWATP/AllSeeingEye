@@ -9345,6 +9345,68 @@
           }
         ]
       }
+    },
+    "/api/reference": {
+      "get": {
+        "tags": [
+          "reference"
+        ],
+        "summary": "Lookup Reference",
+        "operationId": "lookup_reference_api_reference_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "vessel",
+                "aircraft",
+                "aircraft_type"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "keys",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1650,
+              "title": "Keys"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceLookupOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -15015,6 +15077,77 @@
         ],
         "title": "DailyBriefingOut"
       },
+      "DataCentreOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "operator",
+          "longitude",
+          "latitude",
+          "source_url",
+          "note"
+        ],
+        "title": "DataCentreOut"
+      },
       "DayBucketOut": {
         "properties": {
           "day": {
@@ -17356,6 +17489,28 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "wikipedia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikipedia"
           }
         },
         "type": "object",
@@ -18318,8 +18473,28 @@
               "$ref": "#/components/schemas/GroundStationOut"
             },
             "type": "array",
-            "maxItems": 100,
+            "maxItems": 500,
             "title": "Ground Stations"
+          },
+          "data_centres": {
+            "items": {
+              "$ref": "#/components/schemas/DataCentreOut"
+            },
+            "type": "array",
+            "maxItems": 4000,
+            "title": "Data Centres"
+          },
+          "data_centre_attribution": {
+            "type": "string",
+            "title": "Data Centre Attribution"
+          },
+          "data_centre_licence_url": {
+            "type": "string",
+            "title": "Data Centre Licence Url"
+          },
+          "data_centre_snapshot_date": {
+            "type": "string",
+            "title": "Data Centre Snapshot Date"
           },
           "snapshot_date": {
             "type": "string",
@@ -18362,6 +18537,10 @@
         "required": [
           "cables",
           "ground_stations",
+          "data_centres",
+          "data_centre_attribution",
+          "data_centre_licence_url",
+          "data_centre_snapshot_date",
           "snapshot_date",
           "cable_attribution",
           "cable_licence_url",
@@ -23424,6 +23603,104 @@
           "available"
         ],
         "title": "RecoveryStatusOut"
+      },
+      "ReferenceEntryOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "vessel",
+              "aircraft",
+              "aircraft_type"
+            ],
+            "title": "Kind"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceLinkOut"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Links"
+          },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "key",
+          "name",
+          "description",
+          "detail",
+          "links",
+          "provenance"
+        ],
+        "title": "ReferenceEntryOut"
+      },
+      "ReferenceLinkOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "url"
+        ],
+        "title": "ReferenceLinkOut"
+      },
+      "ReferenceLookupOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceEntryOut"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Items"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "retrieved_at",
+          "caveat"
+        ],
+        "title": "ReferenceLookupOut"
       },
       "RegistryIdentifierIn": {
         "properties": {

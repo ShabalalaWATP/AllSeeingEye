@@ -88,6 +88,7 @@ from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
 from ase.container.public_figures import PublicFigureWiring
+from ase.container.reference import ReferenceWiring
 from ase.container.repositories import Repositories as Repositories
 from ase.container.repositories import build_repositories
 from ase.container.research import research_service
@@ -114,6 +115,7 @@ class Container(
     CyberWiring,
     SourceInventoryWiring,
     PublicFigureWiring,
+    ReferenceWiring,
 ):
     def __init__(
         self,
