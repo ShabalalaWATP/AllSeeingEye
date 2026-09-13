@@ -16,7 +16,9 @@ implemented behaviour within the documented limits, not measured research accura
 - [x] Reuse owner/window-scoped daily research for a cited cyber briefing and the
   professional report reader with existing exports.
 - [x] Add an off-by-default Cyber shield layer and filters to map/globe, including
-  explicitly labelled, opt-in country reference markers and selection clearing.
+  explicitly labelled country reference markers and selection clearing. The
+  13 September repair shows country references on the first Cyber toggle,
+  refreshes visible snapshots every minute, and prioritises recent IODA alerts.
 - [x] Keep aggregation bounded and outside the shared source-control lock; recheck
   source/session access before release and preserve unknown evidence states.
 - [ ] Evaluate configured-model cyber briefing quality and factual attribution

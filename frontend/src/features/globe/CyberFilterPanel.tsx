@@ -5,7 +5,7 @@ import { useCyberFiltersStore } from '@/stores/cyberFilters';
 import { useEventsStore } from '@/stores/events';
 import { MapToolIntro } from '@/components/maps/MapToolIntro';
 import type { useCyberCountryContext } from './useCyberCountryContext';
-import { precisionLabel } from './geographicPrecision';
+import { isMappedEvent, precisionLabel } from './geographicPrecision';
 import { utcDate } from './context/contextPresentation';
 
 export function CyberFilterPanel({
@@ -21,6 +21,7 @@ export function CyberFilterPanel({
     useCyberFiltersStore();
   const hidden = useEventsStore((state) => state.hidden.includes('cyber'));
   const country = useEventsStore((state) => state.country);
+  const locatedCount = cyber.events.filter(isMappedEvent).length;
   return (
     <section aria-label="Cyber threat intelligence filters" className="map-tool-workspace">
       <MapToolIntro
@@ -103,8 +104,24 @@ export function CyberFilterPanel({
           {cyber.error}
         </p>
       )}
-      {!hidden && !cyber.loading && !cyber.events.length && (
-        <p className="map-tool-help">No matching records in this collected snapshot.</p>
+      {!hidden && !cyber.loading && !cyber.error && (
+        <div role="status" className="map-tool-notice">
+          <p>
+            {cyber.groups.length} country reference markers · {locatedCount} reported locations
+          </p>
+          {!cyber.events.length ? (
+            <p>
+              No matching records in this collected snapshot. Try a wider Event time or Location
+              quality selection. New feed records are checked every minute while Cyber is visible.
+            </p>
+          ) : !cyber.groups.length && !locatedCount ? (
+            <p>
+              {countryContext
+                ? 'These records have no usable incident or victim/outage country location. Read them below or open Cyber Threat Intelligence.'
+                : 'Country reference markers are hidden. Enable approximate country context to show eligible victim and outage countries.'}
+            </p>
+          ) : null}
+        </div>
       )}
       <ul className="map-tool-list">
         {cyber.events.slice(0, 25).map((event) => (
@@ -124,7 +141,8 @@ export function CyberFilterPanel({
         ))}
       </ul>
       <p className="map-tool-help">
-        Snapshot: {utcDate(cyber.fetchedAt)}. Up to 500 collected records and 25 list entries.{' '}
+        Snapshot: {utcDate(cyber.fetchedAt)}. Refreshes every minute while Cyber is visible. Up to
+        500 collected records and 25 list entries.{' '}
         {cyber.limited ? 'The snapshot reached its limit. ' : ''}Counts are not unique verified
         incidents or complete coverage.
       </p>

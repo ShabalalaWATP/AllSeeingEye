@@ -5,10 +5,10 @@ import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { prepareCyberMap, useCyberFiltersStore } from './cyberFilters';
 import { useEventsStore } from './events';
 
-it('starts off and explicitly prepares a filtered country visit without modifying event geometry', () => {
+it('keeps Cyber off with country context ready, and prepares a visit without changing geometry', () => {
   applySession('user');
   expect(useEventsStore.getState().hidden).toContain('cyber');
-  expect(useCyberFiltersStore.getState().countryContext).toBe(false);
+  expect(useCyberFiltersStore.getState().countryContext).toBe(true);
   const event = liveEvent({
     category: 'cyber',
     geo_confidence: 'country',
@@ -41,7 +41,7 @@ it('discards pending selections and filters across every account and access tran
   expect(useCyberFiltersStore.getState()).toMatchObject({
     pending: null,
     query: '',
-    countryContext: false,
+    countryContext: true,
   });
   prepareCyberMap();
   invalidateWorkspaceAccess();

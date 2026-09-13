@@ -52,7 +52,7 @@ beforeEach(() => {
 });
 
 it.each(['globe', 'map'] as const)(
-  'keeps Cyber off until enabled and uses explicit selectable country context on the %s',
+  'shows selectable country context after one Cyber toggle on the %s',
   async (mode) => {
     useGlobeStore.setState({ mode });
     server.use(
@@ -64,14 +64,13 @@ it.each(['globe', 'map'] as const)(
     expect(layer('cyber-country-context-icons')).toBeUndefined();
     await user.click(toggle);
     await screen.findByRole('switch', { name: 'Cyber 2' });
-    expect(layer('cyber-country-context-icons')).toBeUndefined();
+    await waitFor(() => expect(layer('cyber-country-context-icons')?.props.data).toHaveLength(1));
     await user.click(screen.getByRole('button', { name: 'Cyber filters' }));
     const panel = screen.getByRole('region', { name: 'Cyber threat intelligence filters' });
     expect(within(panel).getByText(/not incident coordinates/)).toBeVisible();
-    await user.click(
+    expect(
       within(panel).getByRole('checkbox', { name: 'Show approximate country context' }),
-    );
-    await waitFor(() => expect(layer('cyber-country-context-icons')?.props.data).toHaveLength(1));
+    ).toBeChecked();
     const group = layer('cyber-country-context-icons')!.props.data[0] as CyberCountryContext;
     act(() => {
       layer('cyber-country-context-icons')!.props.onClick({ object: group });
@@ -96,6 +95,16 @@ it.each(['globe', 'map'] as const)(
       ).toHaveLength(1),
     );
     await user.click(screen.getByRole('switch', { name: 'Cyber 1' }));
+    expect(layer('cyber-country-context-icons')).toBeUndefined();
+    await user.click(screen.getByRole('switch', { name: 'Cyber 0' }));
+    await waitFor(() => expect(layer('cyber-country-context-icons')?.props.data).toHaveLength(1));
+    await user.click(
+      within(panel).getByRole('checkbox', { name: 'Show approximate country context' }),
+    );
+    expect(layer('cyber-country-context-icons')).toBeUndefined();
+    await user.click(screen.getByRole('switch', { name: 'Cyber 1' }));
+    await user.click(screen.getByRole('switch', { name: 'Cyber 0' }));
+    await screen.findByRole('switch', { name: 'Cyber 1' });
     expect(layer('cyber-country-context-icons')).toBeUndefined();
   },
 );

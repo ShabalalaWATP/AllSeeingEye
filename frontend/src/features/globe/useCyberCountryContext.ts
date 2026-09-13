@@ -14,6 +14,7 @@ import { locationQuality, type LocationQualityFilter } from './geographicPrecisi
 
 const EMPTY: LiveEvent[] = [];
 export const CYBER_CONTEXT_LIMIT = 500;
+export const CYBER_REFRESH_MS = 60_000;
 
 interface Snapshot {
   scope: string;
@@ -66,6 +67,7 @@ export function useCyberCountryContext(
   useEffect(() => {
     if (!enabled || !actor.startsWith('authenticated:') || !actor.endsWith(':true')) return;
     const signal = request();
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
     void fetchEvents(
       {
         categories: ['cyber'],
@@ -94,8 +96,15 @@ export function useCyberCountryContext(
             fetchedAt: new Date().toISOString(),
             error: describeError(error),
           });
+      })
+      .finally(() => {
+        // Feeds may still be warming when the layer first opens. Refresh only
+        // after completion, with no overlapping requests or viewport dependency.
+        if (!signal.aborted)
+          refreshTimer = setTimeout(() => setRefreshKey((value) => value + 1), CYBER_REFRESH_MS);
       });
     return () => {
+      clearTimeout(refreshTimer);
       request();
     };
   }, [enabled, actor, scope, country, windowHours, request, refreshKey]);

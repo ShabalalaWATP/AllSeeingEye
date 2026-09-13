@@ -4353,3 +4353,35 @@ readiness and login returned HTTP 200 after the backend restart. No dependency,
 credential or database migration was added. Documentation includes the active
 plan, source inventory, map/evidence guide, doctrine update and focused security
 review. No Git remote is configured; changes remain on local main.
+
+## Cyber layer visibility repair, 13 September 2026
+
+Enabling Cyber previously fetched records but left country references behind a
+second unchecked setting. Country context now starts selected while the master
+Cyber layer remains off by default. One toggle displays eligible references;
+explicitly hiding those references still survives a layer off/on cycle. The
+panel explains record/marker counts, missing geography and restrictive filters.
+
+The bounded snapshot now refreshes one minute after each completed request
+while visible. It retains records during refresh, never overlaps requests, and
+cancels on disable, unmount or access changes. This repairs the empty snapshot
+that previously remained after feed startup. A live provider probe also found
+IODA's daily request exhausted its 300-row limit before recent measurements.
+The existing 15-minute poll now overlaps the latest hour; retained history still
+supplies longer views, without claiming complete historical backfill.
+
+Validation: 59 focused frontend and 79 backend tests passed. Regression checks
+cover one-click markers in both view modes, selection, explicit opt-out,
+late/slow responses, access changes and the IODA request window. Frontend types,
+scoped lint/format, production build, backend Ruff and scoped mypy passed. File
+length checks passed with the existing untouched test-helper warning. Browser
+fixtures showed country shields in both settled projections and exercised
+marker selection, the filter panel and inspector dismissal. Coverage was not
+remeasured.
+
+An independent frontend review found no actionable correctness or access issue.
+The existing API authorisation, source controls, geometry validation and bounded
+response sizes remain in place; no credentials, dependencies or migrations were
+added. The Cyber guide and active plan were updated. Local backend health and
+readiness returned 200 after restarting with the feed repair.
+The staged Gitleaks scan passed. Changes remain on local main without a remote.

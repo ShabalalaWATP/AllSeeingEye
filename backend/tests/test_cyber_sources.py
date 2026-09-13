@@ -1,6 +1,7 @@
 """Cyber sources retain publisher claims, measured signals and explicit uncertainty."""
 
 from datetime import UTC, datetime, timedelta
+from urllib.parse import parse_qs, urlsplit
 
 import httpx
 import pytest
@@ -144,6 +145,16 @@ async def test_malformed_entities_are_skipped_and_outage_rows_are_bounded() -> N
     alerts.extend([alert] * 350)
     events = await IodaConnector(FakeHttp({"outages/alerts": {"data": alerts}}), CLOCK).fetch()
     assert len(events) == 298
+
+
+async def test_outage_poll_prioritises_recent_alerts_instead_of_truncating_a_whole_day() -> None:
+    http = FakeHttp({"outages/alerts": {"data": []}})
+    await IodaConnector(http, FakeClock(NOW)).fetch()
+    query = parse_qs(urlsplit(http.requests[0]).query)
+    assert int(query["from"][0]) == int((NOW - timedelta(hours=1)).timestamp())
+    assert int(query["until"][0]) == int(NOW.timestamp())
+    assert query["limit"] == ["300"]
+    assert len(http.requests) == 1
 
 
 @pytest.mark.parametrize(

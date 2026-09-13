@@ -51,7 +51,9 @@ IODA = SourceSpec(
     homepage="https://ioda.inetintel.cc.gatech.edu/",
     instrument=True,
 )
-LOOKBACK = timedelta(hours=24)
+# Alerts arrive oldest first. A whole-day query fills the 300-row limit before
+# recent measurements. Overlap four polls; retained events supply longer views.
+LOOKBACK = timedelta(hours=1)
 IODA_SEVERITY = {"critical": 0.8, "warning": 0.5}
 MAX_ITEMS = 300
 

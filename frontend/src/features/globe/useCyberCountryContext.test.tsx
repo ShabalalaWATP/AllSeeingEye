@@ -6,7 +6,7 @@ import { invalidateWorkspaceAccess } from '@/lib/workspaceAccess';
 import { useCyberFiltersStore } from '@/stores/cyberFilters';
 import { applySession } from '@/test/render';
 import { countries, liveEvent } from '@/test/fixtures';
-import { useCyberCountryContext } from './useCyberCountryContext';
+import { CYBER_REFRESH_MS, useCyberCountryContext } from './useCyberCountryContext';
 import type { LocationQualityFilter } from './geographicPrecision';
 
 const directory = Object.fromEntries(countries.map((country) => [country.iso2, country]));
@@ -17,9 +17,13 @@ const record = liveEvent({
   country_iso: 'GB',
   geo_confidence: 'country',
   point: null,
+  published_at: new Date().toISOString(),
 });
 const now = Date.now();
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
 
 it('loads nothing until enabled, then uses a bounded snapshot without viewport geometry', async () => {
   applySession('user');
@@ -35,7 +39,7 @@ it('loads nothing until enabled, then uses a bounded snapshot without viewport g
     { categories: ['cyber'], limit: 500, country: 'GB', since: expect.any(String) },
     expect.any(AbortSignal),
   );
-  expect(result.current.groups).toEqual([]);
+  expect(result.current.groups).toHaveLength(1);
   unmount();
   expect(fetch.mock.calls[0]?.[1]?.aborted).toBe(true);
 });
@@ -114,4 +118,60 @@ it('discards snapshots across batched logout/login and rejects late responses af
   });
   expect(result.current.events).toEqual([]);
   expect(fetch.mock.calls[1]?.[1]?.aborted).toBe(true);
+});
+
+it('refreshes an initially empty snapshot after feed warm-up and stops when disabled', async () => {
+  applySession('user');
+  vi.useFakeTimers();
+  const fetch = vi.spyOn(api, 'fetchEvents').mockResolvedValueOnce([]).mockResolvedValue([record]);
+  const { result, rerender } = renderHook(
+    ({ enabled }) => useCyberCountryContext(enabled, directory, null, null, now, 'all'),
+    { initialProps: { enabled: true } },
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(result.current.groups).toEqual([]);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(CYBER_REFRESH_MS);
+  });
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(result.current.groups).toHaveLength(1);
+  rerender({ enabled: false });
+  expect(result.current.groups).toEqual([]);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(CYBER_REFRESH_MS * 3);
+  });
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('does not overlap slow refreshes or discard visible records while they are pending', async () => {
+  applySession('user');
+  vi.useFakeTimers();
+  const fetch = vi.spyOn(api, 'fetchEvents').mockResolvedValueOnce([record]);
+  const { result, unmount } = renderHook(() =>
+    useCyberCountryContext(true, directory, null, null, now, 'all'),
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  let resolve!: (events: LiveEvent[]) => void;
+  fetch.mockImplementation(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(CYBER_REFRESH_MS * 3);
+  });
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(result.current.groups).toHaveLength(1);
+  unmount();
+  await act(async () => {
+    resolve([]);
+    await vi.advanceTimersByTimeAsync(CYBER_REFRESH_MS * 3);
+  });
+  expect(fetch.mock.calls[1]?.[1]?.aborted).toBe(true);
+  expect(fetch).toHaveBeenCalledTimes(2);
 });

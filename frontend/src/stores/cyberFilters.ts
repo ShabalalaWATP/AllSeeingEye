@@ -28,7 +28,9 @@ interface CyberFilters {
   reset: () => void;
 }
 
-const defaults = { kind: 'all' as const, query: '', countryContext: false, pending: null };
+// The Cyber master layer still starts off. Enabling it must show the available
+// country references without requiring a second, hidden opt-in.
+const defaults = { kind: 'all' as const, query: '', countryContext: true, pending: null };
 
 /** Session-only filters shared by the cyber workspace and both map projections. */
 export const useCyberFiltersStore = create<CyberFilters>()((set) => ({

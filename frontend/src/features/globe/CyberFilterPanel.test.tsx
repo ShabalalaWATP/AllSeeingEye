@@ -70,5 +70,25 @@ it('shares type and search choices, reports snapshot limits, and blocks record p
     </MemoryRouter>,
   );
   expect(screen.getByRole('alert')).toHaveTextContent('Unavailable');
-  expect(screen.getByText('No matching records in this collected snapshot.')).toBeVisible();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  rerender(
+    <MemoryRouter>
+      <CyberFilterPanel
+        cyber={{ ...cyber, events: [], error: null, limited: false }}
+        onSelect={select}
+        picking={false}
+      />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole('status')).toHaveTextContent('No matching records');
+  expect(screen.getByRole('status')).toHaveTextContent('wider Event time or Location quality');
+  rerender(
+    <MemoryRouter>
+      <CyberFilterPanel cyber={cyber} onSelect={select} picking={false} />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole('status')).toHaveTextContent('0 country reference markers');
+  expect(screen.getByRole('status')).toHaveTextContent('no usable incident or victim/outage');
+  await user.click(screen.getByRole('checkbox', { name: 'Show approximate country context' }));
+  expect(screen.getByRole('status')).toHaveTextContent('Country reference markers are hidden');
 });

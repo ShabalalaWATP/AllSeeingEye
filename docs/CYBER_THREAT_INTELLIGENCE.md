@@ -83,9 +83,11 @@ The dedicated **Cyber** shield switch and adjacent filter control live on the
 left layer rail. It is off by default, preserving the existing conflicts-only
 default. Cyber no longer has a duplicated toggle under Topics & time.
 
-Type and keyword filters work in both projections. **Show approximate country
-context** is an additional opt-in for source-attributed ransomware victim and
-outage countries. These labelled count markers use country centres as reference
+Type and keyword filters work in both projections. Enabling **Cyber** now also
+shows source-attributed ransomware victim and outage country references. **Show
+approximate country context** starts selected and can be cleared independently;
+that choice survives switching the layer off and on within the session. These
+labelled count markers use country centres as reference
 locations. They are not incident coordinates, attacker origins or attack paths.
 Advisories and KEV records do not acquire locations from publisher headquarters.
 
@@ -98,6 +100,20 @@ are displayed. Shared country, time and location-quality controls still apply.
 **Open cyber map** deliberately enables Cyber and its labelled country context,
 carrying the selected period, country, type and search. It preserves other layer
 choices. It does not manufacture a point for the selected report.
+
+The map snapshot refreshes 60 seconds after each completed request while Cyber
+is enabled and the page is visible. Requests do not overlap; hiding the page,
+disabling Cyber or changing account/access cancels pending work. An initially
+empty snapshot can therefore populate after the feed workers warm up. The
+filter panel distinguishes collected records, country references and located
+records, and explains when the selected records cannot be placed on the map.
+
+The IODA poll now requests the latest hour every 15 minutes, still capped at
+300 input rows. A 13 September public probe found the previous 24-hour request
+filled its limit with early records and missed recent alerts available in a
+one-hour request. Overlapping polls build the existing retained history; startup
+does not backfill a complete day. Busy hours can still hit the cap and this is
+not complete outage coverage. See the [IODA API](https://api.ioda.inetintel.cc.gatech.edu/v2/).
 
 ## Bounds and security
 

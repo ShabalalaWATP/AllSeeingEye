@@ -57,6 +57,7 @@ export function cyberCountryLayers(
       getAngle: flat ? 0 : 180,
       getPosition: (item) => item.country.centroid,
       getText: (item) => `${item.country.iso2} · ${item.events.length}\nCYBER COUNTRY CONTEXT`,
+      characterSet: 'auto',
       getSize: 10,
       getColor: [160, 234, 244, 255],
       getPixelOffset: [0, 35],
