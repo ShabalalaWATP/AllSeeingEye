@@ -13,6 +13,8 @@ import { MaritimeAttribution } from './MaritimeAttribution';
 import { usePageVisible, useReducedMotion } from '@/components/brand/useMotionPreferences';
 import { useCameras } from './cameras/useCameras';
 import { useCameraSelection } from './cameras/useCameraSelection';
+import { useFigures } from './figures/useFigures';
+import { useFigureSelection } from './figures/useFigureSelection';
 import { useNow } from '@/lib/hooks/useNow';
 import { useMapReferenceData } from './useMapReferenceData';
 import { useDashboardEvents } from './useDashboardEvents';
@@ -100,24 +102,35 @@ export default function GlobePage() {
   const nation = country === null ? null : (countryByIso[country] ?? null);
 
   const cameras = useCameras();
+  const figures = useFigures();
   const infrastructure = useInfrastructure();
   const context = useContextSelection(country, tools.picking, symbolMode);
   useNewsSelectionGuard(context, data, now);
   useEyeMapContext(engine, supported, selected ?? context.event, cameras, infrastructure);
   const closeContext = context.close;
   const closeCamera = cameras.close;
+  const closeFigure = figures.close;
   const closeInfrastructure = infrastructure.close;
   const closeRegion = regions.close;
   const closeCyber = cyber.close;
   const closeNews = news.close;
   const closeCatalogues = useCallback(() => {
     closeCamera();
+    closeFigure();
     closeInfrastructure();
     closeRegion();
     closeContext();
     closeCyber();
     closeNews();
-  }, [closeCamera, closeInfrastructure, closeRegion, closeContext, closeCyber, closeNews]);
+  }, [
+    closeCamera,
+    closeFigure,
+    closeInfrastructure,
+    closeRegion,
+    closeContext,
+    closeCyber,
+    closeNews,
+  ]);
   const {
     details,
     highlightedId,
@@ -181,6 +194,13 @@ export default function GlobePage() {
     engine,
     symbolMode,
   );
+  const { focusFigure, figureLayers } = useFigureSelection(
+    figures,
+    tools.picking,
+    close,
+    engine,
+    symbolMode,
+  );
   const selectTraffic = useTrafficSelection(
     engine,
     choose,
@@ -209,6 +229,7 @@ export default function GlobePage() {
     jamSelection: details?.kind === 'jam' ? details.cell : null,
     gridLayers: britishGrid.layers,
     cameraLayers,
+    figureLayers,
     infrastructureLayers,
     conflictRegionLayers: regionSelection.layers,
     contextLayers: context.layers,
@@ -306,6 +327,7 @@ export default function GlobePage() {
             },
             grid: { grid: britishGrid, engine },
             cameras: { cameras, onSelect: focusCamera },
+            figures: { figures, onSelect: focusFigure },
           })}
           {mapPlanningPanels(tools)}
           {eventControlPanels(data, selectContext)}
@@ -325,6 +347,7 @@ export default function GlobePage() {
           regions={regions}
           infrastructure={infrastructure}
           cameras={cameras}
+          figures={figures}
           eventDetails={{
             selected: selected ?? context.event,
             storySize,

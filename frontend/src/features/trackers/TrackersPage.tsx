@@ -39,6 +39,11 @@ const MODULES = [
     title: 'Cyber',
     blurb: 'Outage signals, ransomware claims and newly exploited vulnerabilities.',
   },
+  {
+    to: '/trackers/figures',
+    title: 'Public figures',
+    blurb: 'Heads of state and government, placed by public reporting or at their seat.',
+  },
 ];
 
 function ConflictBoard({ items }: { items: readonly ConflictCard[] }) {
@@ -166,7 +171,7 @@ export default function TrackersPage() {
       </div>
       <nav aria-label="Specialist monitoring" className="border-t border-line pt-5">
         <h2 className="mb-3 text-base font-semibold">Explore connected feeds</h2>
-        <ul aria-label="Modules" className="grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-5">
+        <ul aria-label="Modules" className="grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
           {MODULES.map((module) => (
             <li key={module.to}>
               <Link

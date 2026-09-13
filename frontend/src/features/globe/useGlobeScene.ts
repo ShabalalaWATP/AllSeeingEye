@@ -22,6 +22,7 @@ interface Scene {
   jamSelection?: JamCell | null;
   gridLayers: readonly Layer[];
   cameraLayers: readonly Layer[];
+  figureLayers?: readonly Layer[];
   infrastructureLayers?: readonly Layer[];
   conflictRegionLayers?: readonly Layer[];
   contextLayers?: readonly Layer[];
@@ -55,6 +56,7 @@ export function useGlobeScene({
   jamSelection = null,
   gridLayers,
   cameraLayers,
+  figureLayers,
   infrastructureLayers,
   conflictRegionLayers,
   contextLayers,
@@ -102,6 +104,7 @@ export function useGlobeScene({
         ...eventLayers,
         ...(conflictRegionLayers ?? []),
         ...cameraLayers,
+        ...(figureLayers ?? []),
         ...(contextLayers ?? []),
         ...(cyberCountryLayers ?? []),
         ...(newsCountryLayers ?? []),
@@ -116,6 +119,7 @@ export function useGlobeScene({
     measured,
     gridLayers,
     cameraLayers,
+    figureLayers,
     infrastructureLayers,
     conflictRegionLayers,
     contextLayers,

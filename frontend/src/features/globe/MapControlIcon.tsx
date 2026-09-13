@@ -28,7 +28,8 @@ export type ControlIcon =
   | 'route'
   | 'rf'
   | 'research'
-  | 'infrastructure';
+  | 'infrastructure'
+  | 'figure';
 const paths: Record<ControlIcon, string> = {
   aircraft:
     'M12 2c1 0 1.5 1 1.5 2v4l7.5 5v2l-7.5-2v5l2.5 2v1l-4-1-4 1v-1l2.5-2v-5L3 15v-2l7.5-5V4c0-1 .5-2 1.5-2Z',
@@ -59,6 +60,7 @@ const paths: Record<ControlIcon, string> = {
   research: 'M3 9V3h6m6 0h6v6M3 15v6h6M12 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm4-1 6 6',
   infrastructure:
     'M3 21V9h7v12M10 21V3h7v18M17 21v-8h4v8M5 12h3m-3 4h3m4-10h3m-3 4h3m-3 4h3M1 21h22',
+  figure: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0Z',
 };
 export function MapControlIcon({ name }: { name: ControlIcon }) {
   return (

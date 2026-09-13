@@ -6,6 +6,7 @@ import { CountryPanel } from './CountryPanel';
 import { GeographicPrecisionPanel } from './GeographicPrecisionPanel';
 import { BritishGridTool } from './BritishGridTool';
 import { CameraPanel } from './cameras/CameraPanel';
+import { FigurePanel } from './figures/FigurePanel';
 import { MapDisplaySettings } from './MapDisplaySettings';
 
 /** Direct panel elements allow the rail to maintain one active inspector. */
@@ -17,6 +18,7 @@ export function mapReferencePanels(props: {
   precision: ComponentProps<typeof GeographicPrecisionPanel>;
   grid: ComponentProps<typeof BritishGridTool>;
   cameras: ComponentProps<typeof CameraPanel>;
+  figures: ComponentProps<typeof FigurePanel>;
 }) {
   return [
     <ControlPanel key="style" side="right" label="Map style" icon="layers">
@@ -40,6 +42,9 @@ export function mapReferencePanels(props: {
     </ControlPanel>,
     <ControlPanel key="cctv" side="left" label="CCTV" icon="camera">
       <CameraPanel {...props.cameras} />
+    </ControlPanel>,
+    <ControlPanel key="figures" side="left" label="Public figures" icon="figure">
+      <FigurePanel {...props.figures} />
     </ControlPanel>,
   ];
 }

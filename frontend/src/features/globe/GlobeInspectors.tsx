@@ -5,6 +5,8 @@ import { NewsCountryInspector } from './NewsCountryInspector';
 import type { useNewsCountryContext } from './useNewsCountryContext';
 import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
 import { CameraInspector } from './cameras/CameraInspector';
+import { FigureInspector } from './figures/FigureInspector';
+import type { useFigures } from './figures/useFigures';
 import { SelectedMapDetails } from './SelectedMapDetails';
 import type { useConflictRegions } from './useConflictRegions';
 import type { useInfrastructure } from './infrastructure/useInfrastructure';
@@ -16,6 +18,7 @@ export function GlobeInspectors({
   regions,
   infrastructure,
   cameras,
+  figures,
   eventDetails,
   cyber,
   news,
@@ -23,6 +26,7 @@ export function GlobeInspectors({
   regions: ReturnType<typeof useConflictRegions>;
   infrastructure: ReturnType<typeof useInfrastructure>;
   cameras: ReturnType<typeof useCameras>;
+  figures?: ReturnType<typeof useFigures>;
   eventDetails: ComponentProps<typeof SelectedMapDetails>;
   cyber?: {
     state: ReturnType<typeof useCyberCountryContext>;
@@ -65,6 +69,14 @@ export function GlobeInspectors({
         key={cameras.selected.id}
         camera={cameras.selected}
         onClose={cameras.close}
+      />
+    );
+  if (figures?.selected)
+    return (
+      <FigureInspector
+        key={figures.selected.id}
+        figure={figures.selected}
+        onClose={figures.close}
       />
     );
   return <SelectedMapDetails {...eventDetails} />;

@@ -56,18 +56,21 @@ const SpacePage = lazy(() =>
 const CyberPage = lazy(() =>
   import('@/features/trackers/ModulePages').then((m) => ({ default: m.CyberPage })),
 );
+const FiguresPage = lazy(() => import('@/features/trackers/FiguresPage'));
 const DirectionPage = lazy(() => import('@/features/direction/DirectionPage'));
 const WarningPage = lazy(() => import('@/features/warning/WarningPage'));
 const PlanPage = lazy(() => import('@/features/direction/PlanPage'));
 const BrandCapturePage = lazy(() => import('@/app/dev/BrandCapturePage'));
 const CyberPreviewPage = lazy(() => import('@/app/dev/CyberPreviewPage'));
 const PagesPreviewPage = lazy(() => import('@/app/dev/PagesPreviewPage'));
+const FiguresPreviewPage = lazy(() => import('@/app/dev/FiguresPreviewPage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
       { path: '/brand/capture', element: <BrandCapturePage /> },
       { path: '/dev/cyber-preview', element: <CyberPreviewPage /> },
       { path: '/dev/pages-preview', element: <PagesPreviewPage /> },
+      { path: '/dev/figures-preview', element: <FiguresPreviewPage /> },
     ]
   : [];
 
@@ -113,6 +116,7 @@ export const routes: RouteObject[] = [
           { path: 'trackers/maritime', element: <MaritimePage /> },
           { path: 'trackers/space', element: <SpacePage /> },
           { path: 'trackers/cyber', element: <CyberPage /> },
+          { path: 'trackers/figures', element: <FiguresPage /> },
           { path: 'trackers/social', element: <SocialPage /> },
           { path: 'direction', element: <DirectionPage /> },
           { path: 'direction/plans/:id', element: <PlanPage /> },
