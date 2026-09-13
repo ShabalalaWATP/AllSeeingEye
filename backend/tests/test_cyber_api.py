@@ -21,7 +21,7 @@ async def disable(container, source_id, user_id):
 
 
 async def test_authentication_no_store_and_reference_catalogue(client, user, container):
-    for path in ("/api/cyber", "/api/cyber/actors"):
+    for path in ("/api/cyber", "/api/cyber/actors", "/api/cyber/radar-attacks"):
         assert (await client.get(path)).status_code == 401
     assert (await client.post("/api/cyber/briefing")).status_code == 401
     headers = bearer(await login_token(client, USER_EMAIL, USER_PASSWORD))
@@ -29,8 +29,14 @@ async def test_authentication_no_store_and_reference_catalogue(client, user, con
     assert response.status_code == 200, response.text
     assert response.headers["cache-control"] == "private, no-store"
     assert response.json()["window_days"] == 2
-    assert len(response.json()["sources"]) == 19
+    assert len(response.json()["sources"]) == 21
     assert all(row["status"] == "idle" for row in response.json()["sources"])
+    radar = await client.get("/api/cyber/radar-attacks", headers=headers)
+    assert radar.status_code == 200 and radar.headers["cache-control"] == "private, no-store"
+    assert radar.json()["status"] == "not_configured" and radar.json()["layers"] == []
+    await disable(container, "cloudflare_radar_attack_trends", user.id)
+    hidden_radar = await client.get("/api/cyber/radar-attacks", headers=headers)
+    assert hidden_radar.json()["status"] == "disabled" and hidden_radar.json()["layers"] == []
     assert [row["theme"] for row in response.json()["themes"]] == [
         "nation_state",
         "nato_allies",

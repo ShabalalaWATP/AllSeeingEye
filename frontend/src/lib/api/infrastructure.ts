@@ -6,6 +6,7 @@ export type Cable = components['schemas']['CableOut'];
 export type NuclearFacility = components['schemas']['NuclearFacilityOut'];
 export type GroundStation = components['schemas']['GroundStationOut'];
 export type DataCentre = components['schemas']['DataCentreOut'];
+export type Site = components['schemas']['SiteOut'];
 export type Infrastructure = components['schemas']['InfrastructureOut'];
 const publicLink = z.url().refine((value) => {
   const url = new URL(value);
@@ -19,6 +20,32 @@ const historicalSourceLink = z.url().refine((value) => {
 const longitude = z.number().min(-180).max(180);
 const latitude = z.number().min(-90).max(90);
 const text = z.string().max(2000);
+const optionalText = text.nullable().default(null);
+const optionalLink = publicLink.nullable().default(null);
+const links = z
+  .array(z.object({ label: z.string().max(80), url: publicLink }))
+  .max(6)
+  .default([]);
+const precision = z.enum(['site', 'mapped', 'city']);
+const siteSchema = z.object({
+  id: text,
+  kind: z.string().max(40),
+  name: text,
+  operator: text,
+  owner: optionalText,
+  country: z.string().length(2).nullable().default(null),
+  longitude,
+  latitude,
+  precision,
+  description: optionalText,
+  significance: optionalText,
+  detail: optionalText,
+  website: optionalLink,
+  wikipedia: optionalLink,
+  links,
+  source_url: publicLink,
+  note: text,
+});
 export const infrastructureSchema = z.object({
   cables: z
     .array(
@@ -32,6 +59,12 @@ export const infrastructureSchema = z.object({
           .max(512),
         source_url: publicLink,
         note: text,
+        operator: optionalText,
+        owner: optionalText,
+        description: optionalText,
+        website: optionalLink,
+        wikipedia: optionalLink,
+        inception: optionalText,
       }),
     )
     .max(3000),
@@ -48,6 +81,14 @@ export const infrastructureSchema = z.object({
         note: text,
         website: publicLink.nullable().default(null),
         wikipedia: publicLink.nullable().default(null),
+        owner: optionalText,
+        description: optionalText,
+        wikidata: z.string().max(20).nullable().default(null),
+        role: optionalText,
+        significance: optionalText,
+        detail: optionalText,
+        precision: precision.nullable().default(null),
+        links,
       }),
     )
     .max(500),
@@ -57,10 +98,18 @@ export const infrastructureSchema = z.object({
         id: text,
         name: text,
         operator: text,
+        owner: optionalText,
         country: z.string().length(2).nullable().default(null),
+        city: optionalText,
         longitude,
         latitude,
+        precision: precision.default('mapped'),
+        description: optionalText,
+        significance: optionalText,
+        detail: optionalText,
         website: publicLink.nullable().default(null),
+        wikipedia: optionalLink,
+        links,
         source_url: publicLink,
         note: text,
       }),
@@ -86,9 +135,19 @@ export const infrastructureSchema = z.object({
         source_url: historicalSourceLink,
         geolocation_source: text,
         note: text,
+        owner: optionalText,
+        description: optionalText,
+        website: optionalLink,
+        wikipedia: optionalLink,
+        wikidata: z.string().max(20).nullable().default(null),
       }),
     )
     .max(1000),
+  energy_sites: z.array(siteSchema).max(3200).default([]),
+  semiconductor_sites: z.array(siteSchema).max(300).default([]),
+  site_attribution: text.default(''),
+  site_licence_url: publicLink.default('https://www.openstreetmap.org/copyright'),
+  site_snapshot_date: text.default(''),
   nuclear_attribution: text,
   nuclear_licence_url: publicLink,
   nuclear_dataset_version: text,

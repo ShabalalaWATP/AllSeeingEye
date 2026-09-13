@@ -5,6 +5,32 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/cyber/radar-attacks": {
+      "get": {
+        "tags": [
+          "cyber"
+        ],
+        "summary": "Radar Attack Trends",
+        "operationId": "radar_attack_trends_api_cyber_radar_attacks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadarAttackSnapshotOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/cyber": {
       "get": {
         "tags": [
@@ -622,6 +648,219 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/assistant/conversations": {
+      "get": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "List Conversations",
+        "operationId": "list_conversations_api_assistant_conversations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedConversationPageOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Save Conversation",
+        "operationId": "save_conversation_api_assistant_conversations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedConversationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedConversationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/assistant/conversations/{conversation_id}": {
+      "get": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Get Conversation",
+        "operationId": "get_conversation_api_assistant_conversations__conversation_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedConversationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Replace Conversation",
+        "operationId": "replace_conversation_api_assistant_conversations__conversation_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedConversationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedConversationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "assistant"
+        ],
+        "summary": "Delete Conversation",
+        "operationId": "delete_conversation_api_assistant_conversations__conversation_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/health": {
@@ -11156,6 +11395,57 @@
                 "type": "null"
               }
             ]
+          },
+          "time_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistantTimeRangeIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "continuation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuation Id"
+          },
+          "source_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Category"
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "camera",
+                        "infrastructure",
+                        "doctrine"
+                      ]
+                    }
+                  ]
+                },
+                "type": "array",
+                "maxItems": 14,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Categories"
           }
         },
         "additionalProperties": false,
@@ -11187,6 +11477,20 @@
           "coverage": {
             "$ref": "#/components/schemas/AssistantCoverageOut"
           },
+          "interpretation": {
+            "$ref": "#/components/schemas/AssistantInterpretationOut"
+          },
+          "continuation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuation Id"
+          },
           "generated_at": {
             "type": "string",
             "format": "date-time",
@@ -11209,6 +11513,8 @@
           "sources",
           "scope",
           "coverage",
+          "interpretation",
+          "continuation_id",
           "generated_at",
           "model"
         ],
@@ -11291,6 +11597,78 @@
           "notes"
         ],
         "title": "AssistantCoverageOut"
+      },
+      "AssistantInterpretationOut": {
+        "properties": {
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Topics"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          },
+          "time_basis": {
+            "type": "string",
+            "const": "publication",
+            "title": "Time Basis"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "source_categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topics",
+          "countries",
+          "since",
+          "until",
+          "time_basis",
+          "notes",
+          "source_categories"
+        ],
+        "title": "AssistantInterpretationOut"
       },
       "AssistantModelOut": {
         "properties": {
@@ -11444,7 +11822,8 @@
               "event",
               "camera",
               "infrastructure",
-              "gnss"
+              "gnss",
+              "doctrine"
             ],
             "title": "Kind"
           },
@@ -11531,6 +11910,27 @@
           "grade"
         ],
         "title": "AssistantSourceOut"
+      },
+      "AssistantTimeRangeIn": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Until"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "since",
+          "until"
+        ],
+        "title": "AssistantTimeRangeIn"
       },
       "AuditEntryOut": {
         "properties": {
@@ -24551,6 +24951,140 @@
         ],
         "title": "QueryVariantIn"
       },
+      "RadarAttackCountryOut": {
+        "properties": {
+          "country_iso": {
+            "type": "string",
+            "title": "Country Iso"
+          },
+          "country_name": {
+            "type": "string",
+            "title": "Country Name"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "share_percent": {
+            "type": "number",
+            "title": "Share Percent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "country_iso",
+          "country_name",
+          "rank",
+          "share_percent"
+        ],
+        "title": "RadarAttackCountryOut"
+      },
+      "RadarAttackLayerOut": {
+        "properties": {
+          "layer": {
+            "type": "string",
+            "enum": [
+              "layer3",
+              "layer7"
+            ],
+            "title": "Layer"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period From"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period To"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "bytes",
+              "requests"
+            ],
+            "title": "Unit"
+          },
+          "countries": {
+            "items": {
+              "$ref": "#/components/schemas/RadarAttackCountryOut"
+            },
+            "type": "array",
+            "title": "Countries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layer",
+          "period_from",
+          "period_to",
+          "updated_at",
+          "unit",
+          "countries"
+        ],
+        "title": "RadarAttackLayerOut"
+      },
+      "RadarAttackSnapshotOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "partial",
+              "stale",
+              "unavailable",
+              "not_configured",
+              "disabled"
+            ],
+            "title": "Status"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "layers": {
+            "items": {
+              "$ref": "#/components/schemas/RadarAttackLayerOut"
+            },
+            "type": "array",
+            "title": "Layers"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "fetched_at",
+          "layers",
+          "source_url"
+        ],
+        "title": "RadarAttackSnapshotOut"
+      },
       "ReadyOut": {
         "properties": {
           "status": {
@@ -28942,6 +29476,128 @@
         ],
         "title": "RoutedModelOut"
       },
+      "SavedConversationIn": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/SavedTurnIn"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Turns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "turns"
+        ],
+        "title": "SavedConversationIn"
+      },
+      "SavedConversationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/SavedTurnOut"
+            },
+            "type": "array",
+            "title": "Turns"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "snapshot_notice": {
+            "type": "string",
+            "title": "Snapshot Notice",
+            "default": "Private user-controlled chat snapshot. Check source links before treating its text as evidence."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "turns",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SavedConversationOut"
+      },
+      "SavedConversationPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SavedConversationSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "SavedConversationPageOut"
+      },
+      "SavedConversationSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "turn_count": {
+            "type": "integer",
+            "title": "Turn Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "turn_count",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SavedConversationSummaryOut"
+      },
       "SavedMapViewOut": {
         "properties": {
           "view": {
@@ -28958,6 +29614,100 @@
           "revision"
         ],
         "title": "SavedMapViewOut"
+      },
+      "SavedTurnIn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "scope": {
+            "type": "string",
+            "pattern": "^(global|viewport|selected)$",
+            "title": "Scope"
+          },
+          "time_window": {
+            "type": "string",
+            "pattern": "^(auto|48|120|168|336|720|2160|8760)$",
+            "title": "Time Window"
+          },
+          "source_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 14
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Categories"
+          },
+          "answer": {
+            "$ref": "#/components/schemas/AssistantAnswerOut"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question",
+          "scope",
+          "time_window",
+          "answer"
+        ],
+        "title": "SavedTurnIn"
+      },
+      "SavedTurnOut": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "scope": {
+            "type": "string",
+            "pattern": "^(global|viewport|selected)$",
+            "title": "Scope"
+          },
+          "time_window": {
+            "type": "string",
+            "pattern": "^(auto|48|120|168|336|720|2160|8760)$",
+            "title": "Time Window"
+          },
+          "source_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 14
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Categories"
+          },
+          "answer": {
+            "$ref": "#/components/schemas/AssistantAnswerOut"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question",
+          "scope",
+          "time_window",
+          "answer"
+        ],
+        "title": "SavedTurnOut"
       },
       "ScheduleIn": {
         "properties": {

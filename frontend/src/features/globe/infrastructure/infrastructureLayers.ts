@@ -3,6 +3,9 @@ import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Cable, GroundStation } from '@/lib/api/infrastructure';
 import { nuclearLayers } from './nuclearLayers';
 import { dataCentreLayers } from './dataCentreLayers';
+import { siteLayers } from './siteLayers';
+import { militarySourceLayers } from './militarySourceLayers';
+import type { MilitaryCountryReference } from './militarySourceReferences';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
@@ -12,12 +15,25 @@ export function buildInfrastructureLayers(
   state: Pick<InfrastructureState, 'data' | 'cablesEnabled' | 'stationsEnabled' | 'selected'> & {
     nuclearEnabled?: boolean;
     dataCentresEnabled?: boolean;
+    energyEnabled?: boolean;
+    semiconductorEnabled?: boolean;
+    militaryEnabled?: boolean;
+    militaryCountries?: MilitaryCountryReference[];
   },
   onSelect: (selection: InfrastructureSelection) => void,
   globe = false,
 ): Layer[] {
-  if (!state.data) return [];
   const layers: Layer[] = [];
+  if (state.militaryEnabled)
+    layers.push(
+      ...militarySourceLayers(
+        state.militaryCountries ?? [],
+        state.selected?.kind === 'military_country' ? state.selected.item : null,
+        (item) => onSelect({ kind: 'military_country', item }),
+        globe,
+      ),
+    );
+  if (!state.data) return layers;
   if (state.cablesEnabled)
     layers.push(
       new PathLayer<Cable>({
@@ -88,5 +104,17 @@ export function buildInfrastructureLayers(
     layers.push(...nuclearLayers(state.data.nuclear_facilities, state.selected, onSelect, globe));
   if (state.dataCentresEnabled)
     layers.push(...dataCentreLayers(state.data.data_centres, state.selected, onSelect, globe));
+  if (state.energyEnabled)
+    layers.push(...siteLayers('energy', state.data.energy_sites, state.selected, onSelect, globe));
+  if (state.semiconductorEnabled)
+    layers.push(
+      ...siteLayers(
+        'semiconductor',
+        state.data.semiconductor_sites,
+        state.selected,
+        onSelect,
+        globe,
+      ),
+    );
   return layers;
 }

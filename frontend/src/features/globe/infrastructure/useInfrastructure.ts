@@ -1,4 +1,9 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import type { Country } from '@/lib/api/geoSchemas';
+import {
+  militaryCountryReferences,
+  type MilitaryCountryReference,
+} from './militarySourceReferences';
 import {
   fetchInfrastructure,
   type Infrastructure,
@@ -6,6 +11,7 @@ import {
   type DataCentre,
   type NuclearFacility,
   type GroundStation,
+  type Site,
 } from '@/lib/api/infrastructure';
 
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
@@ -16,9 +22,14 @@ export type InfrastructureSelection =
   | { kind: 'cable'; item: Cable }
   | { kind: 'station'; item: GroundStation }
   | { kind: 'nuclear'; item: NuclearFacility }
-  | { kind: 'data_centre'; item: DataCentre };
+  | { kind: 'data_centre'; item: DataCentre }
+  | { kind: 'energy_site'; item: Site }
+  | { kind: 'semiconductor_site'; item: Site }
+  | { kind: 'military_country'; item: MilitaryCountryReference };
 
-export function useInfrastructure() {
+const EMPTY_COUNTRIES: Record<string, Country> = {};
+
+export function useInfrastructure(countries: Record<string, Country> = EMPTY_COUNTRIES) {
   const authority = useAuthStore(
     (state) => `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}`,
   );
@@ -32,6 +43,10 @@ export function useInfrastructure() {
   const [stationsEnabled, setStationsEnabled] = useState(false);
   const [nuclearEnabled, setNuclearEnabled] = useState(false);
   const [dataCentresEnabled, setDataCentresEnabled] = useState(false);
+  const [energyEnabled, setEnergyEnabled] = useState(false);
+  const [semiconductorEnabled, setSemiconductorEnabled] = useState(false);
+  const [militaryEnabled, setMilitaryEnabled] = useState(false);
+  const militaryCountries = useMemo(() => militaryCountryReferences(countries), [countries]);
   const [data, setData] = useState<Infrastructure | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +55,13 @@ export function useInfrastructure() {
     scope: string;
     value: InfrastructureSelection;
   } | null>(null);
-  const enabled = cablesEnabled || stationsEnabled || nuclearEnabled || dataCentresEnabled;
+  const enabled =
+    cablesEnabled ||
+    stationsEnabled ||
+    nuclearEnabled ||
+    dataCentresEnabled ||
+    energyEnabled ||
+    semiconductorEnabled;
   useEffect(() => {
     if (!enabled || anonymous) return;
     const signal = request();
@@ -68,12 +89,22 @@ export function useInfrastructure() {
     };
   }, [enabled, revision, scope, anonymous, request]);
   const close = useCallback(() => setSelection(null), []);
+  const enableTechnology = useCallback(() => {
+    setCablesEnabled(true);
+    setStationsEnabled(true);
+    setDataCentresEnabled(true);
+    setSemiconductorEnabled(true);
+    setLoading(true);
+  }, []);
   const selected =
     selection?.scope === scope &&
     ((selection.value.kind === 'cable' && cablesEnabled) ||
       (selection.value.kind === 'station' && stationsEnabled) ||
       (selection.value.kind === 'nuclear' && nuclearEnabled) ||
-      (selection.value.kind === 'data_centre' && dataCentresEnabled))
+      (selection.value.kind === 'data_centre' && dataCentresEnabled) ||
+      (selection.value.kind === 'energy_site' && energyEnabled) ||
+      (selection.value.kind === 'semiconductor_site' && semiconductorEnabled) ||
+      (selection.value.kind === 'military_country' && militaryEnabled))
       ? selection.value
       : null;
   return {
@@ -84,8 +115,13 @@ export function useInfrastructure() {
     stationsEnabled,
     nuclearEnabled,
     dataCentresEnabled,
+    energyEnabled,
+    semiconductorEnabled,
+    militaryEnabled,
+    militaryCountries,
     selected,
     close,
+    enableTechnology,
     select: useCallback(
       (value: InfrastructureSelection) => setSelection({ scope, value }),
       [scope],
@@ -109,6 +145,20 @@ export function useInfrastructure() {
       setSelection(null);
       if (!enabled) setLoading(true);
       setDataCentresEnabled(!dataCentresEnabled);
+    },
+    toggleEnergy: () => {
+      setSelection(null);
+      if (!enabled) setLoading(true);
+      setEnergyEnabled(!energyEnabled);
+    },
+    toggleSemiconductor: () => {
+      setSelection(null);
+      if (!enabled) setLoading(true);
+      setSemiconductorEnabled(!semiconductorEnabled);
+    },
+    toggleMilitary: () => {
+      setSelection(null);
+      setMilitaryEnabled(!militaryEnabled);
     },
     retry: () => {
       setLoading(enabled);

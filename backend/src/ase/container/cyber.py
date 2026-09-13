@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.cyber_reference import MITRE_ATTACK_SPEC, load_actor_catalogue
 from ase.adapters.feeds.cisa_kev import SPEC as KEV_SPEC
 from ase.adapters.feeds.cyber import IODA, RANSOMWARE
+from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR, IODA_EVENTS
+from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
+from ase.adapters.feeds.radar_attack_trends import RadarAttackTrends
 from ase.adapters.feeds.rss_seeds_cyber import CYBER_SEEDS
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.cyber import CyberService
@@ -33,6 +36,17 @@ class CyberWiring:
         # connector or an unimplemented research provider.
         if MITRE_ATTACK_SPEC.id not in container.settings.disabled_feed_ids:
             container.research_sources = (*container.research_sources, MITRE_ATTACK_SPEC)
+        container.research_sources = (*container.research_sources, RADAR_ATTACK_SPEC)
+
+    @cached_property
+    def radar_attack_trends(self) -> RadarAttackTrends:
+        container = cast("Container", self)
+        token = container.settings.cloudflare_radar_token
+        return RadarAttackTrends(
+            container.http,
+            container.clock,
+            token.get_secret_value() if token else None,
+        )
 
     @cached_property
     def cyber_actors(self) -> CyberActorCatalogue:
@@ -46,7 +60,14 @@ class CyberWiring:
             container.clock,
             {
                 spec.id: spec
-                for spec in (KEV_SPEC, RANSOMWARE, IODA, *(s.spec for s in CYBER_SEEDS))
+                for spec in (
+                    KEV_SPEC,
+                    RANSOMWARE,
+                    IODA,
+                    IODA_EVENTS,
+                    CLOUDFLARE_RADAR,
+                    *(s.spec for s in CYBER_SEEDS),
+                )
             },
             container.source_admission,
             container.health,

@@ -13,6 +13,7 @@ export function dashboardCataloguePanels({
   data,
   infrastructure,
   focusInfrastructure,
+  technology,
   conflictOverview,
   cyber,
   gnss,
@@ -26,6 +27,7 @@ export function dashboardCataloguePanels({
   data: ReturnType<typeof useDashboardEvents>;
   infrastructure: Catalogue['infrastructure'];
   focusInfrastructure: Catalogue['focusInfrastructure'];
+  technology: Catalogue['technology'];
   conflictOverview: Catalogue['conflictOverview'];
   cyber: Catalogue['cyber'];
   gnss: Omit<Catalogue['gnss'], 'onSelect' | 'selectionDisabled'>;
@@ -40,6 +42,7 @@ export function dashboardCataloguePanels({
     ...catalogueControlPanels({
       infrastructure,
       focusInfrastructure,
+      technology,
       conflictOverview,
       cyber,
       fires: data.fires,

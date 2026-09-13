@@ -8,6 +8,7 @@ from ase.adapters.feeds.aisstream import SPEC as AISSTREAM_SPEC
 from ase.adapters.feeds.barentswatch import SPEC as BARENTSWATCH_SPEC
 from ase.adapters.feeds.conflict_acled import SPEC as ACLED_SPEC
 from ase.adapters.feeds.conflict_reliefweb import SPEC as RELIEFWEB_SPEC
+from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR
 from ase.application.source_inventory import RequirementKind, SourceRequirement
 from ase.container.research_inputs import media_tools
 from ase.domain.web_research import WEB_SOURCE_ID
@@ -15,7 +16,13 @@ from ase.domain.web_research import WEB_SOURCE_ID
 if TYPE_CHECKING:
     from ase.infrastructure.settings import Settings
 
-OPTIONAL_CONNECTOR_SPECS = (AISSTREAM_SPEC, BARENTSWATCH_SPEC, ACLED_SPEC, RELIEFWEB_SPEC)
+OPTIONAL_CONNECTOR_SPECS = (
+    AISSTREAM_SPEC,
+    BARENTSWATCH_SPEC,
+    ACLED_SPEC,
+    RELIEFWEB_SPEC,
+    CLOUDFLARE_RADAR,
+)
 
 FIRMS_SETTING = "ASE_FIRMS_MAP_KEY or the administrator FIRMS connection"
 MEDIA_SETTINGS = (
@@ -97,6 +104,16 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
         ),
         RELIEFWEB_SPEC.id: _key(
             "ASE_RELIEFWEB_APPNAME", bool(settings.reliefweb_appname), "the ReliefWeb reports API"
+        ),
+        CLOUDFLARE_RADAR.id: _key(
+            "ASE_CLOUDFLARE_RADAR_TOKEN",
+            bool(settings.cloudflare_radar_token),
+            "Cloudflare Radar outage annotations",
+        ),
+        "cloudflare_radar_attack_trends": _key(
+            "ASE_CLOUDFLARE_RADAR_TOKEN",
+            bool(settings.cloudflare_radar_token),
+            "Cloudflare Radar aggregated attack distributions",
         ),
         "ucdp_candidate": _key(
             "ASE_UCDP_ACCESS_TOKEN",

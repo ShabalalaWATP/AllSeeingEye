@@ -12,6 +12,7 @@ import type { GlobeEngineHandle } from './useGlobeEngine';
 import { isMappedEvent, locationQuality, type LocationQualityFilter } from './geographicPrecision';
 import { cyberCountryLayers } from './layers/cyberCountries';
 import type { CyberCountryContext } from './cyberCountryContext';
+import { isNetworkSource } from './networkSources';
 
 export function useCyberMapSelection({
   cyber,
@@ -25,6 +26,7 @@ export function useCyberMapSelection({
   quality,
   windowHours,
   now,
+  networkOpen = false,
 }: {
   cyber: ReturnType<typeof useCyberCountryContext>;
   enabled: boolean;
@@ -37,6 +39,7 @@ export function useCyberMapSelection({
   quality: LocationQualityFilter;
   windowHours: number | null;
   now: number;
+  networkOpen?: boolean;
 }) {
   const pending = useCyberFiltersStore((state) => state.pending);
   const kind = useCyberFiltersStore((state) => state.kind);
@@ -85,6 +88,7 @@ export function useCyberMapSelection({
   }, [pending, picking, countries, consume, selectRecord, engine]);
   useEffect(() => {
     const event = context.event;
+    if (networkOpen && event && isNetworkSource(event.source_id)) return;
     if (
       event?.category === 'cyber' &&
       (!enabled ||
@@ -93,7 +97,7 @@ export function useCyberMapSelection({
         !filterByWindow([event], windowHours, now).length)
     )
       closeContext();
-  }, [context.event, enabled, kind, query, quality, windowHours, now, closeContext]);
+  }, [context.event, enabled, kind, query, quality, windowHours, now, networkOpen, closeContext]);
   const layers = useMemo(() => {
     if (!enabled) return [];
     const event = context.event;

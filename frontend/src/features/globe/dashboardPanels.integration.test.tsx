@@ -9,6 +9,8 @@ import { FakeEventStreamClient } from '@/test/fakeStream';
 import { liveEvent } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
+// Load the real route before timed assertions; the map module graph is substantial.
+import './GlobePage';
 
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));

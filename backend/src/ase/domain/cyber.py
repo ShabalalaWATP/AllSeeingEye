@@ -30,7 +30,13 @@ CYBER_PUBLISHER_IDS = (
 CYBER_BRIEFING_PUBLISHER_IDS = tuple(
     key for key in CYBER_PUBLISHER_IDS if key not in {"cyber_cert_ua", "cyber_cert_fr"}
 )
-CYBER_TELEMETRY_IDS = ("cisa_kev", "ransomware_live", "ioda_outages")
+CYBER_TELEMETRY_IDS = (
+    "cisa_kev",
+    "ransomware_live",
+    "ioda_outages",
+    "ioda_outage_events",
+    "cloudflare_radar_outages",
+)
 ACTOR_REFERENCE_SOURCE_ID = "mitre_attack"
 
 

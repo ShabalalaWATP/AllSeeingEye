@@ -6,6 +6,8 @@ from datetime import timedelta
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.mastodon import spec_for
+from ase.adapters.feeds.network_outages import CLOUDFLARE_RADAR
+from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.registry import build_connectors
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.application.feeds.grading import profiles_from_specs
@@ -23,7 +25,12 @@ from feeds_helpers import NOW, FakeClock, FakeHttp, make_event, make_spec
 
 def test_every_registered_source_has_explicit_versioned_rating_context():
     connectors = build_connectors(FakeHttp(), FakeClock(NOW))  # type: ignore[arg-type]
-    specs = [*(connector.spec for connector in connectors), GOOGLE_NEWS]
+    specs = [
+        *(connector.spec for connector in connectors),
+        GOOGLE_NEWS,
+        CLOUDFLARE_RADAR,
+        RADAR_ATTACK_SPEC,
+    ]
     assert len({spec.id for spec in specs}) == len(specs)
     assert set(CATALOGUE) <= {spec.id for spec in specs}
     for spec in specs:

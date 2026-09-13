@@ -29,6 +29,22 @@ it('loads separate bounded source snapshots without bbox, streams or polling', a
   expect(fetch.mock.calls.every(([, signal]) => signal?.aborted)).toBe(true);
 });
 
+it('does not fetch a Network snapshot until its panel is enabled', async () => {
+  applySession('user');
+  const fetch = vi.spyOn(api, 'fetchEvents').mockResolvedValue([liveEvent()]);
+  const sources = ['ioda_outages'];
+  const view = renderHook(({ enabled }) => useContextEvents(sources, null, enabled), {
+    initialProps: { enabled: false },
+  });
+  expect(view.result.current.loading).toBe(false);
+  expect(fetch).not.toHaveBeenCalled();
+  view.rerender({ enabled: true });
+  await waitFor(() => expect(view.result.current.events).toHaveLength(1));
+  expect(fetch).toHaveBeenCalledTimes(1);
+  view.rerender({ enabled: false });
+  expect(view.result.current.events).toEqual([]);
+});
+
 it('keeps successful sources after partial errors and refreshes explicitly', async () => {
   applySession('user');
   const fetch = vi

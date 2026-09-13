@@ -134,12 +134,28 @@ CATALOGUE = {
         "independently establish compromise, attribution or impact.",
     ),
     **_entries(
-        {"ioda_outages": "B"},
+        {"ioda_outages": "B", "ioda_outage_events": "B"},
         "Inherited editorial assignment for a specialist service's combined network observations.",
         "Published connectivity measurements and outage signals.",
         "aggregator",
         "Measurement coverage and thresholds affect detection. A connectivity signal alone "
         "does not establish deliberate interference or its cause.",
+    ),
+    **_entries(
+        {"cloudflare_radar_outages": "B"},
+        "Inherited editorial assignment for Cloudflare Radar outage annotations.",
+        "Provider-reported disruption timing and geographic scope.",
+        "aggregator",
+        "Radar coverage and classification are provider assessments. Country scope is not "
+        "a precise incident location, and an annotation alone does not establish cause.",
+    ),
+    **_entries(
+        {"cloudflare_radar_attack_trends": "B"},
+        "Inherited editorial assignment for Cloudflare Radar aggregated attack measurements.",
+        "Ranked share of Cloudflare-observed mitigated traffic by attacked zone billing country.",
+        "aggregator",
+        "A country share is not an incident count, attacker location, or representative rate "
+        "for all networks in that country.",
     ),
     **_entries(
         {

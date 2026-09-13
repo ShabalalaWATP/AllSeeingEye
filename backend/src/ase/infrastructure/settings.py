@@ -65,6 +65,7 @@ class Settings(BaseSettings):
         default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{1,99}$"
     )
     aisstream_api_key: SecretStr | None = None
+    cloudflare_radar_token: SecretStr | None = None
     barentswatch_client_id: SecretStr | None = None
     barentswatch_client_secret: SecretStr | None = None
     firms_map_key: SecretStr | None = None

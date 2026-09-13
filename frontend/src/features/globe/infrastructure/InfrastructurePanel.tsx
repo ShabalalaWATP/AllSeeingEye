@@ -1,16 +1,56 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { MapControlIcon } from '../MapControlIcon';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 
+export type InfrastructureGroup = 'technology' | 'infrastructure';
+const GROUP_KINDS: Record<InfrastructureGroup, InfrastructureSelection['kind'][]> = {
+  technology: ['cable', 'station', 'data_centre', 'semiconductor_site'],
+  infrastructure: ['nuclear', 'energy_site', 'military_country'],
+};
+const COPY: Record<InfrastructureGroup | 'all', { title: string; intro: string; aria: string }> = {
+  all: {
+    title: 'Infrastructure layers',
+    intro:
+      'Public infrastructure, with approximate routes and locations. Select a line or site icon on the map for its source.',
+    aria: 'Map infrastructure',
+  },
+  technology: {
+    title: 'Technology and communications',
+    intro:
+      'Undersea cables, satellite ground stations, data centres, semiconductor sites and connectivity signals. All five layers start on when this control is first selected.',
+    aria: 'Technology and communications',
+  },
+  infrastructure: {
+    title: 'Energy and industry',
+    intro:
+      'Nuclear power, oil and gas facilities and the military source index, with approximate locations. Select a site icon on the map for its source.',
+    aria: 'Map infrastructure',
+  },
+};
+
+/** One panel body; `group` narrows the switches and records to a rail control's remit. */
 export function InfrastructurePanel({
   state,
   onSelect,
+  group,
+  connectivity,
+  connectivityEnabled = false,
+  connectivityCount = 0,
+  onToggleConnectivity,
 }: {
   state: InfrastructureState;
   onSelect: (value: InfrastructureSelection) => void;
+  group?: InfrastructureGroup;
+  connectivity?: ReactNode;
+  connectivityEnabled?: boolean;
+  connectivityCount?: number;
+  onToggleConnectivity?: () => void;
 }) {
   const [query, setQuery] = useState('');
-  const records: InfrastructureSelection[] = [
+  const shows = (kind: InfrastructureSelection['kind']) =>
+    group === undefined || GROUP_KINDS[group].includes(kind);
+  const copy = COPY[group ?? 'all'];
+  const records: Exclude<InfrastructureSelection, { kind: 'military_country' }>[] = [
     ...(state.cablesEnabled
       ? (state.data?.cables ?? []).map((item) => ({ kind: 'cable' as const, item }))
       : []),
@@ -23,22 +63,37 @@ export function InfrastructurePanel({
     ...(state.dataCentresEnabled
       ? (state.data?.data_centres ?? []).map((item) => ({ kind: 'data_centre' as const, item }))
       : []),
+    ...(state.energyEnabled
+      ? (state.data?.energy_sites ?? []).map((item) => ({ kind: 'energy_site' as const, item }))
+      : []),
+    ...(state.semiconductorEnabled
+      ? (state.data?.semiconductor_sites ?? []).map((item) => ({
+          kind: 'semiconductor_site' as const,
+          item,
+        }))
+      : []),
   ];
-  const matches = records.filter(({ item }) =>
-    `${item.name} ${'operator' in item ? `${item.operator ?? ''} ${item.country ?? ''}` : item.category}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
-  );
-  return (
-    <section aria-label="Map infrastructure" className="space-y-3 p-1">
-      <h3 className="text-sm font-medium">Infrastructure layers</h3>
-      <p className="mb-3 text-xs leading-relaxed text-muted">
-        Public infrastructure, with approximate routes and locations. Select a line or site icon on
-        the map for its source.
-      </p>
+  const matches = records
+    .filter(({ kind }) => shows(kind))
+    .filter(({ item }) =>
+      [
+        item.name,
+        'operator' in item ? item.operator : '',
+        'country' in item ? item.country : '',
+        'category' in item ? item.category : '',
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
+    );
+  const layers = (
+    <section aria-label={copy.aria} className="space-y-3 p-1">
+      <h3 className="text-sm font-medium">{copy.title}</h3>
+      <p className="mb-3 text-xs leading-relaxed text-muted">{copy.intro}</p>
       {[
         {
           label: 'Undersea cables',
+          kind: 'cable' as const,
           icon: 'route' as const,
           description: 'Approximate public route segments',
           count: state.data?.cables.length,
@@ -47,6 +102,7 @@ export function InfrastructurePanel({
         },
         {
           label: 'Satellite ground stations',
+          kind: 'station' as const,
           icon: 'space' as const,
           description: 'Public station locations',
           count: state.data?.ground_stations.length,
@@ -55,6 +111,7 @@ export function InfrastructurePanel({
         },
         {
           label: 'Nuclear power facilities',
+          kind: 'nuclear' as const,
           icon: 'infrastructure' as const,
           description: 'Historical power-plant inventory',
           count: state.data?.nuclear_facilities.length,
@@ -63,44 +120,145 @@ export function InfrastructurePanel({
         },
         {
           label: 'Data centres',
+          kind: 'data_centre' as const,
           icon: 'connectivity' as const,
           description: 'Named OpenStreetMap data centres',
           count: state.data?.data_centres.length,
           enabled: state.dataCentresEnabled,
           toggle: state.toggleDataCentres,
         },
-      ].map((choice) => (
+        {
+          label: 'Oil and gas facilities',
+          kind: 'energy_site' as const,
+          icon: 'firms' as const,
+          description: 'Key refineries, terminals, fields, platforms and pipelines',
+          count: state.data?.energy_sites.length,
+          enabled: state.energyEnabled,
+          toggle: state.toggleEnergy,
+        },
+        {
+          label: 'Semiconductor sites',
+          kind: 'semiconductor_site' as const,
+          icon: 'grid' as const,
+          description: 'Wafer fabs, packaging plants and key suppliers',
+          count: state.data?.semiconductor_sites.length,
+          enabled: state.semiconductorEnabled,
+          toggle: state.toggleSemiconductor,
+        },
+        {
+          label: 'Military source index',
+          kind: 'military_country' as const,
+          icon: 'infrastructure' as const,
+          description: 'Country-level official source guide, not base markers',
+          count: state.militaryCountries.length,
+          enabled: state.militaryEnabled,
+          toggle: state.toggleMilitary,
+        },
+      ]
+        .filter((choice) => shows(choice.kind))
+        .map((choice) => (
+          <button
+            key={choice.label}
+            type="button"
+            role="switch"
+            aria-label={choice.label}
+            aria-checked={choice.enabled}
+            onClick={choice.toggle}
+            className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line px-3 py-3 text-left text-sm transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-cyan"
+          >
+            <span className="text-cyan">
+              <MapControlIcon name={choice.icon} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">{choice.label}</span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-muted">
+                {choice.description}
+                {choice.count !== undefined
+                  ? ` / ${choice.count.toLocaleString('en-GB')} loaded`
+                  : ''}
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${choice.enabled ? 'bg-cyan/70' : 'bg-white/15'}`}
+            >
+              <span
+                className={`h-4 w-4 rounded-full bg-white transition-transform ${choice.enabled ? 'translate-x-4' : ''}`}
+              />
+            </span>
+          </button>
+        ))}
+      {group === 'technology' && onToggleConnectivity && (
         <button
-          key={choice.label}
           type="button"
           role="switch"
-          aria-label={choice.label}
-          aria-checked={choice.enabled}
-          onClick={choice.toggle}
+          aria-label="Connectivity signals"
+          aria-checked={connectivityEnabled}
+          onClick={onToggleConnectivity}
           className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line px-3 py-3 text-left text-sm transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-cyan"
         >
           <span className="text-cyan">
-            <MapControlIcon name={choice.icon} />
+            <MapControlIcon name="connectivity" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-medium">{choice.label}</span>
+            <span className="block font-medium">Connectivity signals</span>
             <span className="mt-1 block text-[11px] leading-relaxed text-muted">
-              {choice.description}
-              {choice.count !== undefined
-                ? ` / ${choice.count.toLocaleString('en-GB')} loaded`
-                : ''}
+              IODA and Cloudflare Radar country-level network signals /{' '}
+              {connectivityCount.toLocaleString('en-GB')} countries mapped
             </span>
           </span>
           <span
             aria-hidden="true"
-            className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${choice.enabled ? 'bg-cyan/70' : 'bg-white/15'}`}
+            className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${connectivityEnabled ? 'bg-cyan/70' : 'bg-white/15'}`}
           >
             <span
-              className={`h-4 w-4 rounded-full bg-white transition-transform ${choice.enabled ? 'translate-x-4' : ''}`}
+              className={`h-4 w-4 rounded-full bg-white transition-transform ${connectivityEnabled ? 'translate-x-4' : ''}`}
             />
           </span>
         </button>
-      ))}
+      )}
+      {group === 'technology' && connectivityEnabled && connectivity && (
+        <details className="rounded-lg border border-line bg-white/[0.03] p-3">
+          <summary className="cursor-pointer text-xs font-medium text-cyan">
+            Browse connectivity signals
+          </summary>
+          <div className="mt-3">{connectivity}</div>
+        </details>
+      )}
+      {shows('military_country') && state.militaryEnabled && (
+        <div className="rounded-lg border border-line bg-white/[0.03] p-3">
+          <p className="text-xs leading-relaxed text-muted">
+            Map badges show country source coverage at country centres. They do not identify
+            installations, current units or operational activity.
+          </p>
+          {state.militaryCountries.length === 0 ? (
+            <p role="status" className="mt-2 text-xs text-muted">
+              Loading country reference data…
+            </p>
+          ) : (
+            <ul className="mt-2 max-h-52 overflow-y-auto">
+              {state.militaryCountries.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect({ kind: 'military_country', item })}
+                    aria-pressed={
+                      state.selected?.kind === 'military_country' &&
+                      state.selected.item.id === item.id
+                    }
+                    className="min-h-12 w-full border-b border-line px-2 py-2 text-left text-xs hover:bg-white/5 aria-pressed:bg-cyan/10 focus-visible:outline-2 focus-visible:outline-cyan"
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <span className="ml-2 text-muted">
+                      {item.sources.length} official source{item.sources.length === 1 ? '' : 's'}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       {state.nuclearEnabled && (
         <p className="text-[11px] text-muted">
           Historical public power-plant inventory. Not a current operational status or radiation
@@ -157,9 +315,11 @@ export function InfrastructurePanel({
                       ? `Nuclear power · ${value.item.country}`
                       : value.kind === 'data_centre'
                         ? `Data centre · ${value.item.operator} · ${value.item.country ?? 'country unresolved'}`
-                        : value.kind === 'station'
-                          ? `${value.item.operator} · ${value.item.country}`
-                          : `Cable segment · ${value.item.category}`}
+                        : value.kind === 'energy_site' || value.kind === 'semiconductor_site'
+                          ? `${value.item.kind.replace(/_/g, ' ')} · ${value.item.operator} · ${value.item.country ?? '??'}`
+                          : value.kind === 'station'
+                            ? `${value.item.operator} · ${value.item.country}`
+                            : `Cable segment · ${value.item.category}`}
                   </span>
                 </button>
               </li>
@@ -186,6 +346,19 @@ export function InfrastructurePanel({
                 className="underline"
               >
                 Nuclear inventory licence
+              </a>
+            </p>
+          )}
+          {(state.energyEnabled || state.semiconductorEnabled) && (
+            <p className="mt-3 text-[10px] text-muted">
+              {state.data.site_attribution} Snapshot {state.data.site_snapshot_date}.{' '}
+              <a
+                href={state.data.site_licence_url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Site data licence
               </a>
             </p>
           )}
@@ -217,4 +390,5 @@ export function InfrastructurePanel({
       )}
     </section>
   );
+  return layers;
 }

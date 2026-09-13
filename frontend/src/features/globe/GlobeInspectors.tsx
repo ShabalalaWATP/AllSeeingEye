@@ -12,6 +12,10 @@ import type { useConflictRegions } from './useConflictRegions';
 import type { useInfrastructure } from './infrastructure/useInfrastructure';
 import type { useCameras } from './cameras/useCameras';
 import type { useCyberCountryContext } from './useCyberCountryContext';
+import { NetworkCountryInspector } from './NetworkCountryInspector';
+import type { NetworkCountryGroup } from './networkContext';
+import { RadarAttackInspector } from './RadarAttackInspector';
+import type { useRadarAttackMap } from './useRadarAttackMap';
 
 /** A single inspector slot for every map selection. */
 export function GlobeInspectors({
@@ -22,6 +26,8 @@ export function GlobeInspectors({
   eventDetails,
   cyber,
   news,
+  network,
+  radar,
 }: {
   regions: ReturnType<typeof useConflictRegions>;
   infrastructure: ReturnType<typeof useInfrastructure>;
@@ -36,7 +42,15 @@ export function GlobeInspectors({
     state: ReturnType<typeof useNewsCountryContext>;
     onSelect: ComponentProps<typeof NewsCountryInspector>['onSelect'];
   };
+  network?: { selected: NetworkCountryGroup | null; onClose: () => void };
+  radar?: ReturnType<typeof useRadarAttackMap>;
 }) {
+  if (radar?.selected && radar.data)
+    return (
+      <RadarAttackInspector row={radar.selected} snapshot={radar.data} onClose={radar.close} />
+    );
+  if (network?.selected)
+    return <NetworkCountryInspector group={network.selected} onClose={network.onClose} />;
   if (news?.state.selected)
     return (
       <NewsCountryInspector

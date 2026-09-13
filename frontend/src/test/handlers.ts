@@ -358,6 +358,14 @@ export const handlers = [
   http.get('/api/events/stats', () => HttpResponse.json(storeStats)),
 
   http.get('/api/countries', () => HttpResponse.json({ items: countries })),
+  http.get('/api/cyber/radar-attacks', () =>
+    HttpResponse.json({
+      status: 'not_configured',
+      fetched_at: null,
+      layers: [],
+      source_url: 'https://radar.cloudflare.com/',
+    }),
+  ),
 
   http.get('/api/capabilities', () => HttpResponse.json({ os_maps: false, os_layers: [] })),
 

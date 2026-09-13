@@ -27,6 +27,8 @@ interface Scene {
   conflictRegionLayers?: readonly Layer[];
   contextLayers?: readonly Layer[];
   cyberCountryLayers?: readonly Layer[];
+  radarAttackLayers?: readonly Layer[];
+  networkCountryLayers?: readonly Layer[];
   newsCountryLayers?: readonly Layer[];
   measured: readonly Layer[];
   supported: boolean;
@@ -61,6 +63,8 @@ export function useGlobeScene({
   conflictRegionLayers,
   contextLayers,
   cyberCountryLayers,
+  radarAttackLayers,
+  networkCountryLayers,
   newsCountryLayers,
   measured,
   supported,
@@ -107,6 +111,8 @@ export function useGlobeScene({
         ...(figureLayers ?? []),
         ...(contextLayers ?? []),
         ...(cyberCountryLayers ?? []),
+        ...(radarAttackLayers ?? []),
+        ...(networkCountryLayers ?? []),
         ...(newsCountryLayers ?? []),
         ...measured,
       ]);
@@ -124,6 +130,8 @@ export function useGlobeScene({
     conflictRegionLayers,
     contextLayers,
     cyberCountryLayers,
+    radarAttackLayers,
+    networkCountryLayers,
     newsCountryLayers,
   ]);
 

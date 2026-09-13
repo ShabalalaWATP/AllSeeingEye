@@ -405,7 +405,7 @@ Acceptance from the roadmap: foreign-language items appear with translated title
 
 - No git remote yet, so CI has not run.
 - No LLM endpoint or `ASE_ENCRYPTION_KEY` on the development host, so every report has been generated with a scripted model only.
-- Keys only Alex can obtain, in order of visible impact: a NASA FIRMS map key (active fires, the most obvious gap on the globe), an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`), an AISStream key and a Global Fishing Watch token (vessels), an alerts.in.ua token (air-raid alerts), a UCDP token and an ACLED account (conflict event history), a ReliefWeb application name (the API answers 410 until it is approved), and optionally OpenSky credentials (only to poll civil traffic more often) and Cloudflare Radar (IODA covers outages without it).
+- Keys only Alex can obtain, in order of visible impact: a NASA FIRMS map key (active fires, the most obvious gap on the globe), an Ordnance Survey Data Hub key (`ASE_OS_MAPS_KEY`), an AISStream key and a Global Fishing Watch token (vessels), an alerts.in.ua token (air-raid alerts), a UCDP token and an ACLED account (conflict event history), a ReliefWeb application name (the API answers 410 until it is approved), and optionally OpenSky credentials (only to poll civil traffic more often). Cloudflare Radar is configured for connectivity signals and its separate Layer 3/4 and Layer 7 attack distributions in Cyber.
 
 ## 6 September 2026: research expansion implementation milestone
 
@@ -833,3 +833,36 @@ or a fresh search of every source catalogue entry.
 See [professional research report product](PROFESSIONAL_REPORT_PRODUCT_PLAN.md)
 for the product boundary, report structure, export contract and verification
 record. No production deployment or live model acceptance run is claimed.
+
+## 13 September 2026: Ask Eye research companion
+
+- [x] Apply publication-time constraints before retained-event paging and report
+  the interpreted period, place and actual source-category scope.
+- [x] Add an explicit bounded Source types selector and reporting-window control.
+- [x] Search additional packaged infrastructure records and attributed public
+  UK PHIA, MOD and NATO methodology references without ingesting doctrine PDFs.
+- [x] Reuse a server-owned, account-bound evidence packet for a short referential
+  follow-up, with session/source rechecks and a 20-minute expiry.
+- [x] Reject unsupported numeric claims in an answer and keep source links,
+  publication times, grades and coverage beside the cited paragraphs.
+- [x] Let a cited, still-visible map record open its actual inspector; centre on
+  its point only when selection is unavailable.
+- [x] Preserve a valid question, one country and time range in a reviewable
+  Research draft, and open a reviewable Subscription draft from chat.
+- [x] Preserve in-flight work on minimise and offer explicit private saved-chat
+  snapshots with resume and delete, separate from verified report evidence.
+- [ ] Search GNSS and Cloudflare Radar aggregate products, saved reports and
+  fresh provider/web results with matching access and provenance controls.
+- [ ] Add claim-level semantic evidence checks and an evaluation set of
+  contradictory, correlated and misleading reports; numeric grounding alone
+  does not establish correctness.
+- [ ] Carry an exact drawn area, chosen evidence and unresolved questions into a
+  full Research draft; a map viewport and text-only draft are not equivalent.
+- [ ] Add multi-record temporary map result overlays and richer page-specific
+  context for Economy, Cyber and saved reports.
+- [ ] Complete live provider/model, migration, browser and visual acceptance
+  against the running app before production release.
+
+The public methodology references are guidance for phrasing and uncertainty,
+not an official UK or NATO certification. See [Ask Eye](EYE_ASSISTANT.md) for
+the source and conversation boundaries.

@@ -41,6 +41,7 @@ from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnecto
 from ase.adapters.feeds.isw_assessments import IswAssessmentsConnector
 from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
 from ase.adapters.feeds.navarea import NavareaConnector
+from ase.adapters.feeds.network_outages import CloudflareRadarConnector, IodaEventsConnector
 from ase.adapters.feeds.nws import NwsAlertsConnector
 from ase.adapters.feeds.rss_sources import build_rss_connectors
 from ase.adapters.feeds.satellites import SATELLITE_SPECS, SatelliteConnector
@@ -76,6 +77,7 @@ def build_connectors(
     ucdp_access_token: str | None = None,
     acled_access_token: str | None = None,
     reliefweb_appname: str | None = None,
+    cloudflare_radar_token: str | None = None,
     iso3_to_iso2: Mapping[str, str] | None = None,
 ) -> list[FeedConnector]:
     excluded = {item.strip() for item in disabled if item.strip()}
@@ -130,6 +132,7 @@ def build_connectors(
         IodaConnector(http, clock),
         IswAssessmentsConnector(http, clock),
         GeneralStaffLossesConnector(http, clock),
+        IodaEventsConnector(http, clock),
         *[
             connector
             for connector in build_rss_connectors(http, clock)
@@ -149,6 +152,8 @@ def build_connectors(
         )
     if acled_access_token and AcledConnector.spec.id not in excluded:
         connectors.append(AcledConnector(http, clock, acled_access_token))
+    if cloudflare_radar_token and CloudflareRadarConnector.spec.id not in excluded:
+        connectors.append(CloudflareRadarConnector(http, clock, cloudflare_radar_token))
     if reliefweb_appname and ReliefWebReportsConnector.spec.id not in excluded:
         connectors.append(ReliefWebReportsConnector(http, clock, reliefweb_appname, iso3_to_iso2))
     if aisstream_key and AisStreamConnector.spec.id not in excluded:

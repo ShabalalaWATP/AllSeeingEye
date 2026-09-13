@@ -12,6 +12,7 @@ import { liveEvent } from '@/test/fixtures';
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
 import type { GroundStation, Cable, DataCentre, NuclearFacility } from '@/lib/api/infrastructure';
+import type { MilitaryCountryReference } from './militarySourceReferences';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
@@ -45,6 +46,7 @@ const centre: DataCentre = {
   longitude: -0.02,
   latitude: 51.5,
   website: 'https://op.example/',
+  precision: 'mapped',
   source_url: 'https://www.openstreetmap.org/node/1',
   note: 'Mapped position only.',
 };
@@ -95,24 +97,77 @@ beforeEach(async () => {
         data_centre_attribution: 'OpenStreetMap contributors',
         data_centre_licence_url: 'https://www.openstreetmap.org/copyright',
         data_centre_snapshot_date: '2026-09-13',
+        energy_sites: [],
+        semiconductor_sites: [],
+        site_attribution: 'Wikidata and OpenStreetMap contributors',
+        site_licence_url: 'https://www.openstreetmap.org/copyright',
+        site_snapshot_date: '2026-09-13',
       }),
     ),
   );
 });
 it.each(['globe', 'map'] as const)(
-  'selects, highlights and closes infrastructure on the %s without keeping event selection',
+  'shows the country-level military source index on the %s and clears its highlight',
   async (mode) => {
     useGlobeStore.setState({ mode });
     const { user } = renderApp('/', 'user');
     await user.click(await screen.findByRole('button', { name: 'Infrastructure' }));
-    await user.click(screen.getByRole('switch', { name: 'Satellite ground stations' }));
-    await user.click(screen.getByRole('switch', { name: 'Undersea cables' }));
+    await user.click(screen.getByRole('switch', { name: 'Military source index' }));
+    await waitFor(() =>
+      expect(layers().some((layer) => layer.id === 'military-source-countries')).toBe(true),
+    );
+    const markerLayer = layers().find((layer) => layer.id === 'military-source-countries')!;
+    const item = (markerLayer.props.data as MilitaryCountryReference[]).find(
+      (value) => value.id === 'UA',
+    )!;
+    pick('military-source-countries', item);
+    expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(
+      'not a military base location',
+    );
+    const selected = layers().find((layer) => layer.id === 'military-source-countries')!;
+    expect(
+      (
+        selected.props as unknown as {
+          getLineWidth: (item: MilitaryCountryReference) => number;
+        }
+      ).getLineWidth(item),
+    ).toBe(3);
+    await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
+    expect(screen.queryByRole('complementary', { name: 'Infrastructure details' })).toBeNull();
+    const cleared = layers().find((layer) => layer.id === 'military-source-countries')!;
+    expect(
+      (
+        cleared.props as unknown as {
+          getLineWidth: (item: MilitaryCountryReference) => number;
+        }
+      ).getLineWidth(item),
+    ).toBe(2);
+  },
+);
+it.each(['globe', 'map'] as const)(
+  'selects, highlights and closes infrastructure on the %s without keeping event selection',
+  async (mode) => {
+    useGlobeStore.setState({ mode });
+    const { user } = renderApp('/', 'user');
+    await user.click(await screen.findByRole('button', { name: 'Technology & communications' }));
+    expect(screen.queryByRole('switch', { name: 'Nuclear power facilities' })).toBeNull();
+    for (const name of [
+      'Undersea cables',
+      'Satellite ground stations',
+      'Data centres',
+      'Semiconductor sites',
+      'Connectivity signals',
+    ]) {
+      expect(screen.getByRole('switch', { name })).toHaveAttribute('aria-checked', 'true');
+    }
     await waitFor(() =>
       expect(layers().some((layer) => layer.id === 'satellite-ground-stations')).toBe(true),
     );
     expect(layers().find((layer) => layer.id === 'undersea-cables')?.props.wrapLongitude).toBe(
       true,
     );
+    await user.click(screen.getByRole('button', { name: 'Infrastructure' }));
+    expect(screen.queryByRole('switch', { name: 'Undersea cables' })).toBeNull();
     await user.click(screen.getByRole('switch', { name: 'Nuclear power facilities' }));
     await waitFor(() =>
       expect(layers().some((layer) => layer.id === 'nuclear-facilities')).toBe(true),
@@ -124,7 +179,7 @@ it.each(['globe', 'map'] as const)(
     expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
     expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(false);
-    await user.click(screen.getByRole('switch', { name: 'Data centres' }));
+    await user.click(screen.getByRole('button', { name: 'Technology & communications' }));
     await waitFor(() => expect(layers().some((layer) => layer.id === 'data-centres')).toBe(true));
     pick('data-centres', centre);
     expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(

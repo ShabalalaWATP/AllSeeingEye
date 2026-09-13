@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/cyber/radar-attacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Radar Attack Trends */
+        get: operations["radar_attack_trends_api_cyber_radar_attacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cyber": {
         parameters: {
             query?: never;
@@ -205,6 +222,43 @@ export interface paths {
         /** Answer */
         post: operations["answer_api_assistant_answer_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Conversations */
+        get: operations["list_conversations_api_assistant_conversations_get"];
+        put?: never;
+        /** Save Conversation */
+        post: operations["save_conversation_api_assistant_conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Conversation */
+        get: operations["get_conversation_api_assistant_conversations__conversation_id__get"];
+        /** Replace Conversation */
+        put: operations["replace_conversation_api_assistant_conversations__conversation_id__put"];
+        post?: never;
+        /** Delete Conversation */
+        delete: operations["delete_conversation_api_assistant_conversations__conversation_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3487,6 +3541,11 @@ export interface components {
             scope: "global" | "viewport" | "selected";
             bbox?: components["schemas"]["AssistantBoundsIn"] | null;
             selected?: components["schemas"]["AssistantSelectionIn"] | null;
+            time_range?: components["schemas"]["AssistantTimeRangeIn"] | null;
+            /** Continuation Id */
+            continuation_id?: string | null;
+            /** Source Categories */
+            source_categories?: (components["schemas"]["Category"] | ("camera" | "infrastructure" | "doctrine"))[] | null;
         };
         /** AssistantAnswerOut */
         AssistantAnswerOut: {
@@ -3496,6 +3555,9 @@ export interface components {
             sources: components["schemas"]["AssistantSourceOut"][];
             scope: components["schemas"]["AssistantScopeOut"];
             coverage: components["schemas"]["AssistantCoverageOut"];
+            interpretation: components["schemas"]["AssistantInterpretationOut"];
+            /** Continuation Id */
+            continuation_id: string | null;
             /**
              * Generated At
              * Format: date-time
@@ -3528,6 +3590,26 @@ export interface components {
             capped: boolean;
             /** Notes */
             notes: string[];
+        };
+        /** AssistantInterpretationOut */
+        AssistantInterpretationOut: {
+            /** Topics */
+            topics: string[];
+            /** Countries */
+            countries: string[];
+            /** Since */
+            since: string | null;
+            /** Until */
+            until: string | null;
+            /**
+             * Time Basis
+             * @constant
+             */
+            time_basis: "publication";
+            /** Notes */
+            notes: string[];
+            /** Source Categories */
+            source_categories: string[];
         };
         /** AssistantModelOut */
         AssistantModelOut: {
@@ -3583,7 +3665,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "camera" | "infrastructure" | "gnss";
+            kind: "event" | "camera" | "infrastructure" | "gnss" | "doctrine";
             /** Record Id */
             record_id: string;
             /** Source Id */
@@ -3599,6 +3681,19 @@ export interface components {
             point: components["schemas"]["AssistantPointOut"] | null;
             /** Grade */
             grade: string | null;
+        };
+        /** AssistantTimeRangeIn */
+        AssistantTimeRangeIn: {
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
         };
         /** AuditEntryOut */
         AuditEntryOut: {
@@ -8151,6 +8246,58 @@ export interface components {
             /** Method */
             method?: string | null;
         };
+        /** RadarAttackCountryOut */
+        RadarAttackCountryOut: {
+            /** Country Iso */
+            country_iso: string;
+            /** Country Name */
+            country_name: string;
+            /** Rank */
+            rank: number;
+            /** Share Percent */
+            share_percent: number;
+        };
+        /** RadarAttackLayerOut */
+        RadarAttackLayerOut: {
+            /**
+             * Layer
+             * @enum {string}
+             */
+            layer: "layer3" | "layer7";
+            /**
+             * Period From
+             * Format: date-time
+             */
+            period_from: string;
+            /**
+             * Period To
+             * Format: date-time
+             */
+            period_to: string;
+            /** Updated At */
+            updated_at: string | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "bytes" | "requests";
+            /** Countries */
+            countries: components["schemas"]["RadarAttackCountryOut"][];
+        };
+        /** RadarAttackSnapshotOut */
+        RadarAttackSnapshotOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "partial" | "stale" | "unavailable" | "not_configured" | "disabled";
+            /** Fetched At */
+            fetched_at: string | null;
+            /** Layers */
+            layers: components["schemas"]["RadarAttackLayerOut"][];
+            /** Source Url */
+            source_url: string;
+        };
         /** ReadyOut */
         ReadyOut: {
             /** Status */
@@ -9627,10 +9774,95 @@ export interface components {
              */
             profile_updated_at: string;
         };
+        /** SavedConversationIn */
+        SavedConversationIn: {
+            /** Title */
+            title: string;
+            /** Turns */
+            turns: components["schemas"]["SavedTurnIn"][];
+        };
+        /** SavedConversationOut */
+        SavedConversationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Turns */
+            turns: components["schemas"]["SavedTurnOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Snapshot Notice
+             * @default Private user-controlled chat snapshot. Check source links before treating its text as evidence.
+             */
+            snapshot_notice: string;
+        };
+        /** SavedConversationPageOut */
+        SavedConversationPageOut: {
+            /** Items */
+            items: components["schemas"]["SavedConversationSummaryOut"][];
+        };
+        /** SavedConversationSummaryOut */
+        SavedConversationSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Turn Count */
+            turn_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** SavedMapViewOut */
         SavedMapViewOut: {
             view: components["schemas"]["MapViewOut"];
             revision: components["schemas"]["MapRevisionOut"];
+        };
+        /** SavedTurnIn */
+        SavedTurnIn: {
+            /** Question */
+            question: string;
+            /** Scope */
+            scope: string;
+            /** Time Window */
+            time_window: string;
+            /** Source Categories */
+            source_categories?: string[] | null;
+            answer: components["schemas"]["AssistantAnswerOut"];
+        };
+        /** SavedTurnOut */
+        SavedTurnOut: {
+            /** Question */
+            question: string;
+            /** Scope */
+            scope: string;
+            /** Time Window */
+            time_window: string;
+            /** Source Categories */
+            source_categories?: string[] | null;
+            answer: components["schemas"]["AssistantAnswerOut"];
         };
         /** ScheduleIn */
         ScheduleIn: {
@@ -10848,6 +11080,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    radar_attack_trends_api_cyber_radar_attacks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadarAttackSnapshotOut"];
+                };
+            };
+        };
+    };
     cyber_snapshot_api_cyber_get: {
         parameters: {
             query?: {
@@ -11241,6 +11493,154 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AssistantAnswerOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversations_api_assistant_conversations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedConversationPageOut"];
+                };
+            };
+        };
+    };
+    save_conversation_api_assistant_conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedConversationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_conversation_api_assistant_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_conversation_api_assistant_conversations__conversation_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedConversationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_api_assistant_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

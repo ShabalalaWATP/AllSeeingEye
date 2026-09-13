@@ -25,18 +25,46 @@ export function useInfrastructureSelection(
       if (picking) return;
       choose(value);
       const point: [number, number] | undefined =
-        value.kind !== 'cable' ? [value.item.longitude, value.item.latitude] : value.item.path[0];
+        value.kind === 'cable'
+          ? value.item.path[0]
+          : value.kind === 'military_country'
+            ? value.item.country.centroid
+            : [value.item.longitude, value.item.latitude];
       if (point)
-        engine.flyTo({ center: [point[0], point[1]], zoom: value.kind !== 'cable' ? 8 : 4 });
+        engine.flyTo({
+          center: [point[0], point[1]],
+          zoom: value.kind === 'military_country' ? 3 : value.kind === 'cable' ? 4 : 8,
+        });
     },
     [choose, engine, picking],
   );
-  const { data, cablesEnabled, stationsEnabled, nuclearEnabled, dataCentresEnabled, selected } =
-    state;
+  const {
+    data,
+    cablesEnabled,
+    stationsEnabled,
+    nuclearEnabled,
+    dataCentresEnabled,
+    energyEnabled,
+    semiconductorEnabled,
+    militaryEnabled,
+    militaryCountries,
+    selected,
+  } = state;
   const layers = useMemo(
     () =>
       buildInfrastructureLayers(
-        { data, cablesEnabled, stationsEnabled, nuclearEnabled, dataCentresEnabled, selected },
+        {
+          data,
+          cablesEnabled,
+          stationsEnabled,
+          nuclearEnabled,
+          dataCentresEnabled,
+          energyEnabled,
+          semiconductorEnabled,
+          militaryEnabled,
+          militaryCountries,
+          selected,
+        },
         choose,
         mode === 'globe',
       ),
@@ -46,6 +74,10 @@ export function useInfrastructureSelection(
       stationsEnabled,
       nuclearEnabled,
       dataCentresEnabled,
+      energyEnabled,
+      semiconductorEnabled,
+      militaryEnabled,
+      militaryCountries,
       selected,
       choose,
       mode,

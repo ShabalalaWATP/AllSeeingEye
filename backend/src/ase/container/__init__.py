@@ -239,6 +239,11 @@ class Container(
                         else None
                     ),
                     reliefweb_appname=settings.reliefweb_appname,
+                    cloudflare_radar_token=(
+                        settings.cloudflare_radar_token.get_secret_value()
+                        if settings.cloudflare_radar_token
+                        else None
+                    ),
                     iso3_to_iso2={
                         country.iso3: country.iso2 for country in self.countries.countries()
                     },

@@ -18,10 +18,14 @@ interface Snapshot {
 }
 
 /** Mounted panels read a bounded store snapshot, never open a second stream or poll. */
-export function useContextEvents(sources: readonly string[], country?: string | null) {
+export function useContextEvents(
+  sources: readonly string[],
+  country?: string | null,
+  enabled = true,
+) {
   const auth = useAuthStore(actor);
   const revision = useSyncExternalStore(subscribeWorkspaceAccess, workspaceRevision);
-  const scope = JSON.stringify([auth, revision, sources, country]);
+  const scope = JSON.stringify([auth, revision, sources, country, enabled]);
   const request = useScopedRequest();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [refresh, setRefresh] = useState(0);
@@ -45,7 +49,7 @@ export function useContextEvents(sources: readonly string[], country?: string | 
   }, []);
 
   useEffect(() => {
-    if (!auth.startsWith('authenticated:')) return;
+    if (!enabled || !auth.startsWith('authenticated:')) return;
     const signal = request();
     // Separate capped reads prevent a busy bulletin source from hiding singleton indices.
     const limit = Math.max(1, Math.floor(100 / sources.length));
@@ -67,12 +71,12 @@ export function useContextEvents(sources: readonly string[], country?: string | 
     return () => {
       request();
     };
-  }, [auth, scope, sources, country, request, refresh]);
+  }, [auth, scope, sources, country, enabled, request, refresh]);
 
   const current = snapshot?.scope === scope ? snapshot : null;
   return {
     events: current?.events ?? EMPTY,
-    loading: auth.startsWith('authenticated:') && !current,
+    loading: enabled && auth.startsWith('authenticated:') && !current,
     failures: current?.failures ?? 0,
     fetchedAt: current?.fetchedAt ?? null,
     refresh: () => {

@@ -4658,6 +4658,19 @@ tracking and launch sites, and company links plus a written detail for all
 rendered by one facts block. Wikidata dropped connections during two runs; the client
 now retries once on transport errors.
 
+On 13 September, Network gained a second IODA collection path for outage event
+windows and an optional Cloudflare Radar outage annotation connector. The map and
+panel now distinguish IODA alerts, IODA event windows and Radar annotations,
+map only provider-attributed countries, and leave ASN-only records unlocated.
+Radar requires a server-side Account > Radar > Read token and its API data carries
+a CC BY-NC 4.0 non-commercial licence. The connector, source inventory, ratings,
+and operator notes were updated. Focused backend and frontend tests, strict
+typing, lint and the frontend build passed. The operator then created a
+Radar Read token, which was placed in the ignored backend `.env`. Cloudflare
+verified it as active, the outage endpoint returned annotations, and the
+running app displayed five Radar records alongside IODA signals. The backend
+was restarted and passed health and readiness checks.
+
 An eighth request asked for one technology and communications icon in place of separate
 data centre, network, ground station, cable and semiconductor entries. The rail gained a
 chip-and-antenna control whose panel groups those four layers with the connectivity
@@ -4665,6 +4678,26 @@ signals on a second tab, while nuclear, oil and gas and the military source inde
 under Infrastructure. The panel component serves both controls from one state through a
 group prop, and a small tab component reports when the signals tab is open so the
 network map keeps loading its snapshot only while it is in view.
+
+The Radar Read token was then checked against Cloudflare's Layer 3/4 and Layer 7
+target-distribution endpoints. Both returned percentage-normalised results. A
+separate, cached Cyber endpoint and compact Cyber-icon panel now show those
+provider-wide distributions, with a fuller view in the Cyber overview. The
+data remains outside incident counts and map markers because target country
+is billing-country context, not an incident or attacker location. Focused
+backend and frontend tests passed, and the live parser returned both layers.
+
+The Technology control was then simplified to five peer switches. Its first
+opening enables cables, ground stations, data centres, semiconductor sites and
+connectivity signals together; later opens preserve individual choices. The
+signals list is an expandable part of the same panel, and its country markers
+remain active when the panel closes until the switch is turned off. Cyber now
+loads the bounded Cloudflare target billing-country snapshot when its icon is
+enabled, without requiring the filter panel to open. Purple, selectable labels
+show Layer 3/4 byte and Layer 7 request shares separately at country centres,
+offset from cyber context badges. The panel explains the measure and lets the
+user disable this map sublayer. Map and globe interaction tests, type checking,
+focused lint and the production frontend build passed.
 
 The Ukraine war tracker began on 13 September 2026 with a written plan whose every
 source was probed first: DeepState's control API answers but its licence reserves API use
@@ -4689,3 +4722,16 @@ licence and credit and served through the session so the Content Security Policy
 unchanged. Wikidata searches with parenthetical or year-ranged titles returned nothing, so
 those seeds pin explicit ids; the 2026 events lean on the encyclopaedic summary current at
 the time and say so on the card.
+
+Ask Eye was extended on 13 September 2026 as a scoped research companion. Its
+retained-event search now applies a requested publication window before paging,
+and the reader can narrow source categories and inspect the interpreted scope.
+The map can select a cited visible item, while Research and Subscriptions receive
+reviewable question drafts. Short referential follow-ups reuse a server-selected,
+account-bound evidence packet for up to 20 minutes; model text never enters that
+packet. Public PHIA, MOD and NATO methodology pages are linked and summarised,
+without bulk doctrine ingestion or any claim of official accreditation. A private
+saved-chat snapshot is an explicit user action and is labelled as historical on
+resume. Numeric citation checks and source membership improve traceability but
+do not establish full semantic accuracy; fresh provider coverage and a claim-level
+evaluation set remain open.

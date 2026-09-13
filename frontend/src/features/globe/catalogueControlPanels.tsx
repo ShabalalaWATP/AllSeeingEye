@@ -11,7 +11,7 @@ import { HazardFilterPanel } from './HazardFilterPanel';
 import { CyberFilterPanel } from './CyberFilterPanel';
 import { FiresFilterPanel } from './FiresFilterPanel';
 import { NewsPanel } from './NewsPanel';
-import { useMemo, type ComponentProps } from 'react';
+import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { ContextTabs } from './context/ContextTabs';
 import { SpaceWeatherPanel } from './context/SpaceWeatherPanel';
@@ -50,6 +50,7 @@ function SatelliteContent({
 export function catalogueControlPanels({
   infrastructure,
   focusInfrastructure,
+  technology,
   satellites,
   conflicts,
   conflictOverview,
@@ -66,6 +67,12 @@ export function catalogueControlPanels({
 }: {
   infrastructure: ReturnType<typeof useInfrastructure>;
   focusInfrastructure: ReturnType<typeof useInfrastructureSelection>['focus'];
+  technology: {
+    connectivity: ReactNode;
+    connectivityEnabled: boolean;
+    connectivityCount: number;
+    toggleConnectivity: () => void;
+  };
   satellites: ReturnType<typeof useSatelliteFilters>;
   conflicts: ReturnType<typeof useConflictFilters>;
   conflictOverview: Omit<ComponentProps<typeof ConflictOverviewPanel>, 'reports'>;
@@ -96,8 +103,28 @@ export function catalogueControlPanels({
     >
       <CyberFilterPanel {...cyber} gnss={gnss} />
     </ControlPanel>,
+    <ControlPanel
+      key="technology"
+      side="left"
+      label="Technology & communications"
+      icon="technology"
+    >
+      <InfrastructurePanel
+        state={infrastructure}
+        onSelect={focusInfrastructure}
+        group="technology"
+        connectivity={technology.connectivity}
+        connectivityEnabled={technology.connectivityEnabled}
+        connectivityCount={technology.connectivityCount}
+        onToggleConnectivity={technology.toggleConnectivity}
+      />
+    </ControlPanel>,
     <ControlPanel key="infrastructure" side="left" label="Infrastructure" icon="infrastructure">
-      <InfrastructurePanel state={infrastructure} onSelect={focusInfrastructure} />
+      <InfrastructurePanel
+        state={infrastructure}
+        onSelect={focusInfrastructure}
+        group="infrastructure"
+      />
     </ControlPanel>,
     <ControlPanel key="satellites" side="left" label="Space" icon="space" entry={false}>
       <ContextTabs

@@ -13,6 +13,32 @@ export type CyberDays = CyberBriefing['window_days'];
 export type CyberTheme = CyberItem['themes'][number];
 export type CyberThemeTally = CyberSnapshot['themes'][number];
 export type CyberStateTally = CyberSnapshot['state_mentions'][number];
+const radarAttackCountrySchema = z.object({
+  country_iso: z.string().regex(/^[A-Z]{2}$/),
+  country_name: z.string().min(1).max(80),
+  rank: z.number().int().positive(),
+  share_percent: z.number().min(0).max(100),
+});
+const radarAttackSchema = z.object({
+  status: z.enum(['ready', 'partial', 'stale', 'unavailable', 'not_configured', 'disabled']),
+  fetched_at: z.iso.datetime({ offset: true }).nullable(),
+  layers: z
+    .array(
+      z.object({
+        layer: z.enum(['layer3', 'layer7']),
+        period_from: z.iso.datetime({ offset: true }),
+        period_to: z.iso.datetime({ offset: true }),
+        updated_at: z.iso.datetime({ offset: true }).nullable(),
+        unit: z.enum(['bytes', 'requests']),
+        countries: z.array(radarAttackCountrySchema).max(10),
+      }),
+    )
+    .max(2),
+  source_url: z.url(),
+});
+export type RadarAttackSnapshot = z.infer<typeof radarAttackSchema>;
+export const fetchRadarAttackTrends = (signal?: AbortSignal) =>
+  apiCall('/api/cyber/radar-attacks', { schema: radarAttackSchema, ...(signal ? { signal } : {}) });
 export const CYBER_PERIODS = [2, 5, 7, 14, 30] as const;
 export const parseCyberDays = (value: string | null): CyberDays =>
   CYBER_PERIODS.find((day) => String(day) === value) ?? 2;

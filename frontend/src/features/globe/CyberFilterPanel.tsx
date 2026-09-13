@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Link } from 'react-router';
 import type { LiveEvent } from '@/lib/api/eventSchemas';
 import { CYBER_KIND_LABELS, cyberKind, type CyberKindFilter } from '@/lib/cyber';
@@ -11,11 +11,14 @@ import { utcDate } from './context/contextPresentation';
 import { ContextTabs } from './context/ContextTabs';
 import { CyberLayerSwitches } from './CyberLayerSwitches';
 import { GnssPanel } from './GnssPanel';
+import { RadarAttackResults } from '../cyber/RadarAttackTrends';
+import type { useRadarAttackMap } from './useRadarAttackMap';
 
 interface CyberRecordsProps {
   cyber: ReturnType<typeof useCyberCountryContext>;
   onSelect: (event: LiveEvent) => void;
   picking: boolean;
+  radar?: ReturnType<typeof useRadarAttackMap>;
 }
 
 /** Cyber incidents and GPS interference share one control; each keeps its own filters. */
@@ -41,7 +44,8 @@ export function CyberFilterPanel({
   );
 }
 
-function CyberRecords({ cyber, onSelect, picking }: CyberRecordsProps) {
+function CyberRecords({ cyber, onSelect, picking, radar }: CyberRecordsProps) {
+  const [showRadar, setShowRadar] = useState(false);
   const { kind, query, countryContext, setKind, setQuery, setCountryContext } =
     useCyberFiltersStore();
   const hidden = useEventsStore((state) => state.hidden.includes('cyber'));
@@ -56,6 +60,54 @@ function CyberRecords({ cyber, onSelect, picking }: CyberRecordsProps) {
       <Link to="/cyber" className="map-tool-text-button">
         Open Cyber Threat Intelligence
       </Link>
+      <div className="rounded-lg border border-line/70 bg-surface/50 p-3">
+        {radar && (
+          <label className="mb-3 flex min-h-11 items-center gap-2 text-xs">
+            <input type="checkbox" checked={radar.enabled} onChange={radar.toggle} />
+            Show Cloudflare observed traffic on map
+          </label>
+        )}
+        {radar?.active && (
+          <p role="status" className="mb-3 text-[11px] leading-5 text-muted">
+            <span className="inline-block h-2 w-2 rounded-sm bg-violet-400" aria-hidden="true" />{' '}
+            Purple CF labels: Cloudflare-observed mitigated traffic shares by target billing
+            country. L3/4 is bytes; L7 is requests.{' '}
+            {radar.loading ? 'Loading…' : `${radar.rows.length} countries mapped.`}
+            {radar.error && ' Radar could not be loaded.'}
+            {radar.data && radar.data.status !== 'ready' && ` Source status: ${radar.data.status}.`}
+          </p>
+        )}
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 text-left text-xs font-medium"
+          aria-expanded={showRadar}
+          onClick={() => setShowRadar((value) => !value)}
+        >
+          <span>Cloudflare Radar attack trends</span>
+          <span aria-hidden="true">{showRadar ? '−' : '+'}</span>
+        </button>
+        {showRadar && (
+          <div className="mt-3 space-y-3 border-t border-line/60 pt-3">
+            {radar?.data ? (
+              <RadarAttackResults data={radar.data} compact />
+            ) : (
+              <p className="text-[11px] text-muted">
+                {radar?.loading
+                  ? 'Loading Cloudflare Radar…'
+                  : 'Enable Cyber and the map layer to load the current distribution.'}
+              </p>
+            )}
+            {radar?.error && (
+              <button type="button" className="text-xs text-cyan underline" onClick={radar.reload}>
+                Retry Cloudflare Radar
+              </button>
+            )}
+            <p className="text-[11px] leading-5 text-muted">
+              Provider-wide shares by billing country, not map incidents or attacker locations.
+            </p>
+          </div>
+        )}
+      </div>
       <label className="map-tool-field">
         Record type
         <select

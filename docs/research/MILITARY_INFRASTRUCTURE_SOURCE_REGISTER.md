@@ -4,12 +4,13 @@ Reviewed: 13 September 2026. Scope: Russia, China, Belarus, Ukraine, Estonia,
 Latvia, Lithuania, United States, Canada and Australia. China appeared twice in
 the request and is counted once.
 
-This is a source and data-quality register for a possible future Infrastructure
-category. It is **not** an inventory of installations or a map layer. It contains
-no site coordinates, site boundaries, or present-day site-to-unit pairings.
+This is a source and data-quality register used by the optional country-level
+Infrastructure source index. It is **not** an inventory of installations or a
+facility map layer. It contains no site coordinates, site boundaries, or
+present-day site-to-unit pairings.
 Publicly named organisations are not evidence that a particular unit currently
 occupies a particular facility. The companion machine-readable register is
-[`military_infrastructure_sources.json`](military_infrastructure_sources.json).
+[`military_infrastructure_sources.json`](../../frontend/src/features/globe/infrastructure/military_infrastructure_sources.json).
 
 ## Research finding
 
@@ -91,11 +92,13 @@ directory is not evidence that a facility does not exist.
 ## Preparation for a future Infrastructure category
 
 The packaged JSON is deliberately a **source register**, not GeoJSON and not a
-ready-to-render marker set. A future implementation can use it to populate a
-country-level source explorer with publisher, coverage, date, access and known
-limitations. No source has been bulk scraped or geocoded, and redistribution
-licences were not assessed in this pass. Before ingesting content, verify each
-publisher's reuse terms, field definitions and refresh behaviour.
+ready-to-render facility marker set. The map's optional country badges use the
+country catalogue's centroids solely to open this register. Their coordinates
+do not come from military sources and must never be interpreted as a site.
+The panel shows publisher, coverage and known limitations. No source has been
+bulk scraped or geocoded, and redistribution licences were not assessed in
+this pass. Before ingesting content, verify each publisher's reuse terms,
+field definitions and refresh behaviour.
 
 A category should label its coverage as partial, show source dates on every
 record, and distinguish permanent estate records from time-sensitive reporting.

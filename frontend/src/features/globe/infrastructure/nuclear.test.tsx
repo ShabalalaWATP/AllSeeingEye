@@ -22,8 +22,18 @@ const plant = {
   source_url: 'https://datasets.wri.org/',
   geolocation_source: 'Public inventory',
   note: 'Historical location, not current operating status.',
+  owner: null,
+  description: null,
+  website: null,
+  wikipedia: null,
+  wikidata: null,
 };
 const data: Infrastructure = {
+  energy_sites: [],
+  semiconductor_sites: [],
+  site_attribution: 'Wikidata and OpenStreetMap contributors',
+  site_licence_url: 'https://www.openstreetmap.org/copyright',
+  site_snapshot_date: '2026-09-13',
   data_centres: [],
   data_centre_attribution: 'OpenStreetMap contributors',
   data_centre_licence_url: 'https://www.openstreetmap.org/copyright',

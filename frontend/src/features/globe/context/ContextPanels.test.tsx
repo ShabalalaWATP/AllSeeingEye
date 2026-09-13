@@ -74,19 +74,40 @@ it('bounds connectivity rows, searches raw signals, preserves zero and rejects u
       },
     }),
   );
+  events.push(
+    liveEvent({
+      id: 'radar-gb',
+      source_id: 'cloudflare_radar_outages',
+      title: 'Cloudflare Radar outage: GB',
+      point: null,
+      attributes: { datasource: 'Cloudflare Radar', start: '2026-09-13T08:00:00Z', end: null },
+    }),
+  );
   const fetch = serve(events);
   const onSelect = vi.fn();
   render(<ConnectivityPanel country="TN" onSelect={onSelect} />);
   await screen.findByText('Signal 0');
   expect(screen.getAllByRole('listitem')).toHaveLength(25);
-  expect(screen.getByText(/Recovery messages are not retained/)).toBeVisible();
-  expect(fetch.mock.calls[0]![0]).toEqual({ sources: ['ioda_outages'], country: 'TN', limit: 100 });
-  fireEvent.change(screen.getByRole('combobox'), { target: { value: 'bgp' } });
+  expect(
+    screen.getByText(/Cloudflare Radar annotations are a separate provider assessment/),
+  ).toBeVisible();
+  expect(fetch.mock.calls[0]![0]).toEqual({ sources: ['ioda_outages'], country: 'TN', limit: 33 });
+  expect(fetch.mock.calls.map(([query]) => query?.sources?.[0])).toEqual([
+    'ioda_outages',
+    'ioda_outage_events',
+    'cloudflare_radar_outages',
+  ]);
+  fireEvent.change(screen.getByLabelText('Measurement source'), { target: { value: 'bgp' } });
   expect(screen.getAllByRole('listitem')).toHaveLength(1);
   expect(screen.getByText('0 / 100')).toBeVisible();
   expect(screen.queryByRole('link', { name: 'Open source' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'View details' }));
   expect(onSelect).toHaveBeenCalledWith(events[0]);
+  fireEvent.change(screen.getByLabelText('Measurement source'), { target: { value: 'all' } });
+  fireEvent.change(screen.getByLabelText('Provider and record type'), {
+    target: { value: 'cloudflare_radar_outages' },
+  });
+  expect(screen.getByText('Cloudflare Radar outage: GB')).toBeVisible();
   fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'missing' } });
   expect(screen.getByText('No matching connectivity signals in this snapshot.')).toBeVisible();
 });
@@ -143,7 +164,7 @@ it('offers explicit retry after an unavailable snapshot and reports empty condit
   await screen.findByRole('alert');
   fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
   await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
-  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch).toHaveBeenCalledTimes(6);
   expect(screen.getByText(/empty list does not establish normal conditions/)).toBeVisible();
 });
 

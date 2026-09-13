@@ -33,6 +33,11 @@ const station: GroundStation = {
   note: 'Approximate location.',
 };
 const data: Infrastructure = {
+  energy_sites: [],
+  semiconductor_sites: [],
+  site_attribution: 'Wikidata and OpenStreetMap contributors',
+  site_licence_url: 'https://www.openstreetmap.org/copyright',
+  site_snapshot_date: '2026-09-13',
   data_centres: [],
   data_centre_attribution: 'OpenStreetMap contributors',
   data_centre_licence_url: 'https://www.openstreetmap.org/copyright',

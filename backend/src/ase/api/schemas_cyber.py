@@ -1,6 +1,7 @@
 """Cyber workspace responses with bounded source observations and reference knowledge."""
 
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -110,6 +111,29 @@ class CyberSnapshotOut(_FromAttributes):
     items: list[CyberItemOut]
     themes: list[CyberThemeTallyOut]
     state_mentions: list[CyberStateTallyOut]
+
+
+class RadarAttackCountryOut(_FromAttributes):
+    country_iso: str
+    country_name: str
+    rank: int
+    share_percent: float
+
+
+class RadarAttackLayerOut(_FromAttributes):
+    layer: Literal["layer3", "layer7"]
+    period_from: datetime
+    period_to: datetime
+    updated_at: datetime | None
+    unit: Literal["bytes", "requests"]
+    countries: list[RadarAttackCountryOut]
+
+
+class RadarAttackSnapshotOut(_FromAttributes):
+    status: Literal["ready", "partial", "stale", "unavailable", "not_configured", "disabled"]
+    fetched_at: datetime | None
+    layers: list[RadarAttackLayerOut]
+    source_url: str
 
 
 class CyberActorOut(_FromAttributes):

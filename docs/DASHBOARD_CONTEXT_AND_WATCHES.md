@@ -17,9 +17,10 @@
   A selected located warning opens details and shows one highlighted first-position
   marker, even if that record is absent from the viewport cache. Closing details
   removes the marker. No warning polygon or safe-navigation assessment is inferred.
-- **Network:** opens IODA connectivity signals. Nation applies when source country
-  attribution exists. These are dated drops, not established current outages:
-  the existing adapter does not retain recovery messages.
+- **Network:** opens IODA alerts and event windows, with optional Cloudflare Radar
+  outage annotations. Provider and measurement filters separate the records. A
+  country marker uses only the provider's country attribution. The feeds do not
+  establish a precise outage location, current status or cause.
 - **CCTV:** media choices distinguish approved in-app streams, video clips, snapshots
   and provider-only links. Provider names are searchable. A camera can match more
   than one media kind. Filtering away its selection closes its media/details.
