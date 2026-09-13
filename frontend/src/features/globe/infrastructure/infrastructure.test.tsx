@@ -10,6 +10,10 @@ import { InfrastructurePanel } from './InfrastructurePanel';
 import { InfrastructureInspector } from './InfrastructureInspector';
 
 const data: Infrastructure = {
+  data_centres: [],
+  data_centre_attribution: 'OpenStreetMap contributors',
+  data_centre_licence_url: 'https://www.openstreetmap.org/copyright',
+  data_centre_snapshot_date: '2026-09-13',
   cables: [
     {
       id: 'c1',
@@ -33,6 +37,8 @@ const data: Infrastructure = {
       latitude: 67.88,
       source_url: 'https://sscspace.com/',
       note: 'Approximate public location.',
+      website: null,
+      wikipedia: null,
     },
   ],
   snapshot_date: '2026-09-08',

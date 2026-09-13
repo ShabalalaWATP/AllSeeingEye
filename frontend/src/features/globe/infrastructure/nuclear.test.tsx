@@ -24,6 +24,10 @@ const plant = {
   note: 'Historical location, not current operating status.',
 };
 const data: Infrastructure = {
+  data_centres: [],
+  data_centre_attribution: 'OpenStreetMap contributors',
+  data_centre_licence_url: 'https://www.openstreetmap.org/copyright',
+  data_centre_snapshot_date: '2026-09-13',
   cables: [],
   ground_stations: [],
   snapshot_date: '2026-09-09',

@@ -33,6 +33,10 @@ const station: GroundStation = {
   note: 'Approximate location.',
 };
 const data: Infrastructure = {
+  data_centres: [],
+  data_centre_attribution: 'OpenStreetMap contributors',
+  data_centre_licence_url: 'https://www.openstreetmap.org/copyright',
+  data_centre_snapshot_date: '2026-09-13',
   cables: [cable],
   ground_stations: [station],
   snapshot_date: '2026-09-08',

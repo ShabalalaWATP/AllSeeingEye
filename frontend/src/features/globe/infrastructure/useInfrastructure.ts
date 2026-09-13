@@ -3,6 +3,7 @@ import {
   fetchInfrastructure,
   type Infrastructure,
   type Cable,
+  type DataCentre,
   type NuclearFacility,
   type GroundStation,
 } from '@/lib/api/infrastructure';
@@ -14,7 +15,8 @@ import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAcce
 export type InfrastructureSelection =
   | { kind: 'cable'; item: Cable }
   | { kind: 'station'; item: GroundStation }
-  | { kind: 'nuclear'; item: NuclearFacility };
+  | { kind: 'nuclear'; item: NuclearFacility }
+  | { kind: 'data_centre'; item: DataCentre };
 
 export function useInfrastructure() {
   const authority = useAuthStore(
@@ -29,6 +31,7 @@ export function useInfrastructure() {
   const [cablesEnabled, setCablesEnabled] = useState(false);
   const [stationsEnabled, setStationsEnabled] = useState(false);
   const [nuclearEnabled, setNuclearEnabled] = useState(false);
+  const [dataCentresEnabled, setDataCentresEnabled] = useState(false);
   const [data, setData] = useState<Infrastructure | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export function useInfrastructure() {
     scope: string;
     value: InfrastructureSelection;
   } | null>(null);
-  const enabled = cablesEnabled || stationsEnabled || nuclearEnabled;
+  const enabled = cablesEnabled || stationsEnabled || nuclearEnabled || dataCentresEnabled;
   useEffect(() => {
     if (!enabled || anonymous) return;
     const signal = request();
@@ -69,7 +72,8 @@ export function useInfrastructure() {
     selection?.scope === scope &&
     ((selection.value.kind === 'cable' && cablesEnabled) ||
       (selection.value.kind === 'station' && stationsEnabled) ||
-      (selection.value.kind === 'nuclear' && nuclearEnabled))
+      (selection.value.kind === 'nuclear' && nuclearEnabled) ||
+      (selection.value.kind === 'data_centre' && dataCentresEnabled))
       ? selection.value
       : null;
   return {
@@ -79,6 +83,7 @@ export function useInfrastructure() {
     cablesEnabled,
     stationsEnabled,
     nuclearEnabled,
+    dataCentresEnabled,
     selected,
     close,
     select: useCallback(
@@ -99,6 +104,11 @@ export function useInfrastructure() {
       setSelection(null);
       if (!enabled) setLoading(true);
       setNuclearEnabled(!nuclearEnabled);
+    },
+    toggleDataCentres: () => {
+      setSelection(null);
+      if (!enabled) setLoading(true);
+      setDataCentresEnabled(!dataCentresEnabled);
     },
     retry: () => {
       setLoading(enabled);

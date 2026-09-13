@@ -11,7 +11,7 @@ import { server } from '@/test/server';
 import { liveEvent } from '@/test/fixtures';
 import { useEventsStore } from '@/stores/events';
 import { useGlobeStore } from '@/stores/globe';
-import type { GroundStation, Cable, NuclearFacility } from '@/lib/api/infrastructure';
+import type { GroundStation, Cable, DataCentre, NuclearFacility } from '@/lib/api/infrastructure';
 vi.mock('maplibre-gl', () => import('@/test/fakeMap'));
 vi.mock('@deck.gl/maplibre', () => import('@/test/fakeDeck'));
 vi.mock('@/lib/sse', () => import('@/test/fakeStream'));
@@ -36,6 +36,17 @@ const cable: Cable = {
   ],
   source_url: 'https://www.openstreetmap.org/way/1',
   note: 'Approximate incomplete route.',
+};
+const centre: DataCentre = {
+  id: 'osm-node-1',
+  name: 'Docklands DC',
+  operator: 'Op',
+  country: 'GB',
+  longitude: -0.02,
+  latitude: 51.5,
+  website: 'https://op.example/',
+  source_url: 'https://www.openstreetmap.org/node/1',
+  note: 'Mapped position only.',
 };
 const nuclear: NuclearFacility = {
   id: 'nuclear',
@@ -80,6 +91,10 @@ beforeEach(async () => {
         nuclear_licence_url: 'https://creativecommons.org/licenses/by/4.0/',
         nuclear_dataset_version: '1.3.0',
         nuclear_snapshot_date: '2026-09-09',
+        data_centres: [centre],
+        data_centre_attribution: 'OpenStreetMap contributors',
+        data_centre_licence_url: 'https://www.openstreetmap.org/copyright',
+        data_centre_snapshot_date: '2026-09-13',
       }),
     ),
   );
@@ -109,6 +124,18 @@ it.each(['globe', 'map'] as const)(
     expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
     expect(layers().some((layer) => layer.id === 'selected-nuclear-facility-halo')).toBe(false);
+    await user.click(screen.getByRole('switch', { name: 'Data centres' }));
+    await waitFor(() => expect(layers().some((layer) => layer.id === 'data-centres')).toBe(true));
+    pick('data-centres', centre);
+    expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(
+      'Docklands DC',
+    );
+    expect(screen.getByRole('link', { name: 'Operator website' })).toHaveAttribute(
+      'href',
+      'https://op.example/',
+    );
+    expect(layers().some((layer) => layer.id === 'selected-data-centre-halo')).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Close infrastructure details' }));
     pick('satellite-ground-stations', station);
     expect(screen.getByRole('complementary', { name: 'Infrastructure details' })).toHaveTextContent(
       station.name,

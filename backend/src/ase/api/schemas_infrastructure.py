@@ -21,6 +21,20 @@ class GroundStationOut(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     source_url: str
     note: str
+    website: str | None = None
+    wikipedia: str | None = None
+
+
+class DataCentreOut(BaseModel):
+    id: str
+    name: str
+    operator: str
+    country: str | None = Field(default=None, min_length=2, max_length=2)
+    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90)
+    website: str | None = None
+    source_url: str
+    note: str
 
 
 class NuclearFacilityOut(BaseModel):
@@ -41,7 +55,11 @@ class NuclearFacilityOut(BaseModel):
 
 class InfrastructureOut(BaseModel):
     cables: list[CableOut] = Field(max_length=3000)
-    ground_stations: list[GroundStationOut] = Field(max_length=100)
+    ground_stations: list[GroundStationOut] = Field(max_length=500)
+    data_centres: list[DataCentreOut] = Field(max_length=4000)
+    data_centre_attribution: str
+    data_centre_licence_url: str
+    data_centre_snapshot_date: str
     snapshot_date: str
     cable_attribution: str
     cable_licence_url: str

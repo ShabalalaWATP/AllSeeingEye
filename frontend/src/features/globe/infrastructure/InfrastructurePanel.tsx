@@ -20,9 +20,12 @@ export function InfrastructurePanel({
     ...(state.nuclearEnabled
       ? (state.data?.nuclear_facilities ?? []).map((item) => ({ kind: 'nuclear' as const, item }))
       : []),
+    ...(state.dataCentresEnabled
+      ? (state.data?.data_centres ?? []).map((item) => ({ kind: 'data_centre' as const, item }))
+      : []),
   ];
   const matches = records.filter(({ item }) =>
-    `${item.name} ${'operator' in item ? `${item.operator ?? ''} ${item.country}` : item.category}`
+    `${item.name} ${'operator' in item ? `${item.operator ?? ''} ${item.country ?? ''}` : item.category}`
       .toLowerCase()
       .includes(query.trim().toLowerCase()),
   );
@@ -57,6 +60,14 @@ export function InfrastructurePanel({
           count: state.data?.nuclear_facilities.length,
           enabled: state.nuclearEnabled,
           toggle: state.toggleNuclear,
+        },
+        {
+          label: 'Data centres',
+          icon: 'connectivity' as const,
+          description: 'Named OpenStreetMap data centres',
+          count: state.data?.data_centres.length,
+          enabled: state.dataCentresEnabled,
+          toggle: state.toggleDataCentres,
         },
       ].map((choice) => (
         <button
@@ -114,8 +125,9 @@ export function InfrastructurePanel({
           <p className="my-3 text-[11px] text-muted">
             Snapshot: {state.data.snapshot_date}. {state.data.cables.length} route segments ·{' '}
             {state.data.ground_stations.length} ground stations ·{' '}
-            {state.data.nuclear_facilities.length} historical nuclear facilities. Coverage is
-            incomplete; segments are not individual cable systems.
+            {state.data.nuclear_facilities.length} historical nuclear facilities ·{' '}
+            {state.data.data_centres.length} data centres. Coverage is incomplete; segments are not
+            individual cable systems.
           </p>
           <label className="block text-xs">
             Find infrastructure
@@ -143,9 +155,11 @@ export function InfrastructurePanel({
                   <span className="text-[10px] text-muted">
                     {value.kind === 'nuclear'
                       ? `Nuclear power · ${value.item.country}`
-                      : value.kind === 'station'
-                        ? `${value.item.operator} · ${value.item.country}`
-                        : `Cable segment · ${value.item.category}`}
+                      : value.kind === 'data_centre'
+                        ? `Data centre · ${value.item.operator} · ${value.item.country ?? 'country unresolved'}`
+                        : value.kind === 'station'
+                          ? `${value.item.operator} · ${value.item.country}`
+                          : `Cable segment · ${value.item.category}`}
                   </span>
                 </button>
               </li>
@@ -172,6 +186,19 @@ export function InfrastructurePanel({
                 className="underline"
               >
                 Nuclear inventory licence
+              </a>
+            </p>
+          )}
+          {state.dataCentresEnabled && (
+            <p className="mt-3 text-[10px] text-muted">
+              {state.data.data_centre_attribution} Snapshot {state.data.data_centre_snapshot_date}.{' '}
+              <a
+                href={state.data.data_centre_licence_url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Data centre licence
               </a>
             </p>
           )}

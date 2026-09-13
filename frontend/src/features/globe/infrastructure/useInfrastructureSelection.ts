@@ -31,15 +31,25 @@ export function useInfrastructureSelection(
     },
     [choose, engine, picking],
   );
-  const { data, cablesEnabled, stationsEnabled, nuclearEnabled, selected } = state;
+  const { data, cablesEnabled, stationsEnabled, nuclearEnabled, dataCentresEnabled, selected } =
+    state;
   const layers = useMemo(
     () =>
       buildInfrastructureLayers(
-        { data, cablesEnabled, stationsEnabled, nuclearEnabled, selected },
+        { data, cablesEnabled, stationsEnabled, nuclearEnabled, dataCentresEnabled, selected },
         choose,
         mode === 'globe',
       ),
-    [data, cablesEnabled, stationsEnabled, nuclearEnabled, selected, choose, mode],
+    [
+      data,
+      cablesEnabled,
+      stationsEnabled,
+      nuclearEnabled,
+      dataCentresEnabled,
+      selected,
+      choose,
+      mode,
+    ],
   );
   return { layers, focus };
 }

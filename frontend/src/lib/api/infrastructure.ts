@@ -5,6 +5,7 @@ import type { components } from './types.gen';
 export type Cable = components['schemas']['CableOut'];
 export type NuclearFacility = components['schemas']['NuclearFacilityOut'];
 export type GroundStation = components['schemas']['GroundStationOut'];
+export type DataCentre = components['schemas']['DataCentreOut'];
 export type Infrastructure = components['schemas']['InfrastructureOut'];
 const publicLink = z.url().refine((value) => {
   const url = new URL(value);
@@ -45,9 +46,30 @@ export const infrastructureSchema = z.object({
         latitude,
         source_url: publicLink,
         note: text,
+        website: publicLink.nullable().default(null),
+        wikipedia: publicLink.nullable().default(null),
       }),
     )
-    .max(100),
+    .max(500),
+  data_centres: z
+    .array(
+      z.object({
+        id: text,
+        name: text,
+        operator: text,
+        country: z.string().length(2).nullable().default(null),
+        longitude,
+        latitude,
+        website: publicLink.nullable().default(null),
+        source_url: publicLink,
+        note: text,
+      }),
+    )
+    .max(4000)
+    .default([]),
+  data_centre_attribution: text.default(''),
+  data_centre_licence_url: publicLink.default('https://www.openstreetmap.org/copyright'),
+  data_centre_snapshot_date: text.default(''),
   nuclear_facilities: z
     .array(
       z.object({

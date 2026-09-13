@@ -2,6 +2,7 @@ import { IconLayer, PathLayer, ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Cable, GroundStation } from '@/lib/api/infrastructure';
 import { nuclearLayers } from './nuclearLayers';
+import { dataCentreLayers } from './dataCentreLayers';
 import type { InfrastructureSelection, InfrastructureState } from './useInfrastructure';
 import { SYMBOL_WINDING } from '@/lib/map/symbolWinding';
 
@@ -10,6 +11,7 @@ const DISH = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://w
 export function buildInfrastructureLayers(
   state: Pick<InfrastructureState, 'data' | 'cablesEnabled' | 'stationsEnabled' | 'selected'> & {
     nuclearEnabled?: boolean;
+    dataCentresEnabled?: boolean;
   },
   onSelect: (selection: InfrastructureSelection) => void,
   globe = false,
@@ -84,5 +86,7 @@ export function buildInfrastructureLayers(
   }
   if (state.nuclearEnabled)
     layers.push(...nuclearLayers(state.data.nuclear_facilities, state.selected, onSelect, globe));
+  if (state.dataCentresEnabled)
+    layers.push(...dataCentreLayers(state.data.data_centres, state.selected, onSelect, globe));
   return layers;
 }

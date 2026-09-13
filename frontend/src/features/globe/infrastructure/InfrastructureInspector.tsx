@@ -37,9 +37,11 @@ export function InfrastructureInspector({
           <p className="text-[10px] uppercase tracking-wider text-cyan">
             {selected.kind === 'nuclear'
               ? 'Historical nuclear power facility'
-              : selected.kind === 'station'
-                ? 'Satellite ground station'
-                : 'Undersea cable segment'}
+              : selected.kind === 'data_centre'
+                ? 'Data centre'
+                : selected.kind === 'station'
+                  ? 'Satellite ground station'
+                  : 'Undersea cable segment'}
           </p>
           <h2 className="mt-1 text-sm font-medium">{selected.item.name}</h2>
         </div>
@@ -53,9 +55,33 @@ export function InfrastructureInspector({
           ×
         </button>
       </header>
-      {selected.kind === 'station' && (
+      {(selected.kind === 'station' || selected.kind === 'data_centre') && (
         <p className="mt-3 text-xs text-muted">
-          {selected.item.operator} · {selected.item.country}
+          {selected.item.operator} · {selected.item.country ?? 'country unresolved'}
+        </p>
+      )}
+      {selected.kind !== 'cable' && selected.kind !== 'nuclear' && (
+        <p className="mt-2 flex flex-wrap gap-3 text-xs">
+          {selected.item.website && (
+            <a
+              href={selected.item.website}
+              target="_blank"
+              rel="noreferrer"
+              className="text-cyan underline"
+            >
+              Operator website
+            </a>
+          )}
+          {selected.kind === 'station' && selected.item.wikipedia && (
+            <a
+              href={selected.item.wikipedia}
+              target="_blank"
+              rel="noreferrer"
+              className="text-cyan underline"
+            >
+              Wikipedia
+            </a>
+          )}
         </p>
       )}
       {selected.kind === 'nuclear' && (
@@ -101,7 +127,9 @@ export function InfrastructureInspector({
           ? 'This historical power-plant record does not establish current operating status, reactor activity or a radiation hazard.'
           : selected.kind === 'station'
             ? 'A public site or locality marker does not indicate current communications or activity.'
-            : 'This segment is an incomplete map record, not proof of its condition, exact seabed route or operational status.'}
+            : selected.kind === 'data_centre'
+              ? 'A mapped data centre is a building record, not a statement of tenants, capacity or current operation.'
+              : 'This segment is an incomplete map record, not proof of its condition, exact seabed route or operational status.'}
       </p>
       <a
         className="mt-3 inline-block text-xs text-cyan underline"
