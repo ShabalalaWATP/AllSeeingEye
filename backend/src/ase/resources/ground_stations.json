@@ -7,7 +7,11 @@
   "longitude": -116.89,
   "latitude": 35.43,
   "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
-  "note": "Approximate complex location, rounded from JPL's public GOLD geodetic site. Not an individual antenna position."
+  "note": "Approximate complex location, rounded from JPL's public GOLD geodetic site. Not an individual antenna position.",
+  "description": "deep space radio communications facility in California, U.S.",
+  "website": "https://www.gdscc.nasa.gov/",
+  "wikipedia": "https://en.wikipedia.org/wiki/Goldstone_Deep_Space_Communications_Complex",
+  "wikidata": "Q618630"
  },
  {
   "id": "madrid-dsn",
@@ -17,7 +21,11 @@
   "longitude": -4.24,
   "latitude": 40.5,
   "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
-  "note": "Approximate Robledo de Chavela locality marker. The complex is outside the town; this is not its surveyed position."
+  "note": "Approximate Robledo de Chavela locality marker. The complex is outside the town; this is not its surveyed position.",
+  "description": "deep space radio communications facility in Madrid, Spain",
+  "website": "https://www.mdscc.nasa.gov/",
+  "wikipedia": "https://en.wikipedia.org/wiki/Madrid_Deep_Space_Communications_Complex",
+  "wikidata": "Q618721"
  },
  {
   "id": "canberra-dsn",
@@ -27,7 +35,11 @@
   "longitude": 148.98,
   "latitude": -35.4,
   "source_url": "https://www.nasa.gov/directorates/somd/space-communications-navigation-program/dsn-complexes/",
-  "note": "Approximate Tidbinbilla complex location, rounded from the published JPL site location."
+  "note": "Approximate Tidbinbilla complex location, rounded from the published JPL site location.",
+  "description": "deep space radio communications facility in Tidbinbilla, Australia",
+  "website": "https://www.cdscc.nasa.gov/",
+  "wikipedia": "https://en.wikipedia.org/wiki/Canberra_Deep_Space_Communication_Complex",
+  "wikidata": "Q1032865"
  },
  {
   "id": "new-norcia",
@@ -207,7 +219,10 @@
   "longitude": 138.48,
   "latitude": 36.25,
   "source_url": "https://global.jaxa.jp/about/centers/udsc/index.html",
-  "note": "Approximate Saku city marker. The mountain facility is outside the city centre; this is not its surveyed position."
+  "note": "Approximate Saku city marker. The mountain facility is outside the city centre; this is not its surveyed position.",
+  "description": "spacecraft ground station in Japan",
+  "wikipedia": "https://en.wikipedia.org/wiki/Usuda_Deep_Space_Center",
+  "wikidata": "Q7902244"
  },
  {
   "id": "istrac-bengaluru",
@@ -259,7 +274,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q5845105",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "Ground station in Argentina",
+  "wikidata": "Q5845105"
  },
  {
   "id": "wd-q18327264",
@@ -271,7 +288,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q18327264",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "Ground station in Argentina",
+  "wikidata": "Q18327264"
  },
  {
   "id": "wd-q5845108",
@@ -283,7 +302,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q5845108",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "Ground station in Argentina",
+  "wikidata": "Q5845108"
  },
  {
   "id": "wd-q5845110",
@@ -295,7 +316,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q5845110",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "Ground station in the Teófilo Tabanera Space Center",
+  "wikidata": "Q5845110"
  },
  {
   "id": "wd-q20014921",
@@ -331,7 +354,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q42373251",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "Ground station of CONAE in Tierra del Fuego",
+  "wikidata": "Q42373251"
  },
  {
   "id": "wd-q4824079",
@@ -463,7 +488,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q66503286",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "ground station in Jiamusi",
+  "wikidata": "Q66503286"
  },
  {
   "id": "wd-q26936139",
@@ -475,7 +502,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q26936139",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station",
+  "wikidata": "Q26936139"
  },
  {
   "id": "wd-q324125",
@@ -511,7 +540,8 @@
   "source_url": "https://www.wikidata.org/wiki/Q1116887",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q1116887"
  },
  {
   "id": "wd-q2889659",
@@ -535,7 +565,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q24568323",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "building in Community of Madrid, Spain",
+  "wikidata": "Q24568323"
  },
  {
   "id": "wd-q4302441",
@@ -559,7 +591,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q28733142",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "owner": "Telefónica",
+  "wikidata": "Q28733142"
  },
  {
   "id": "wd-q18167242",
@@ -583,7 +617,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q35993927",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "tracking station for the Centre Spatial Guyanais",
+  "wikidata": "Q35993927"
  },
  {
   "id": "wd-q3155726",
@@ -631,7 +667,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q21055491",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in France",
+  "wikidata": "Q21055491"
  },
  {
   "id": "wd-q108937859",
@@ -643,7 +681,10 @@
   "source_url": "https://www.wikidata.org/wiki/Q108937859",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "owner": "Arqiva",
+  "description": "Satellite ground station and media facility in Chalfont St Giles, Buckinghamshire, England, UK",
+  "wikidata": "Q108937859"
  },
  {
   "id": "wd-q5512985",
@@ -691,7 +732,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q6535235",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "teleport in Israel",
+  "wikidata": "Q6535235"
  },
  {
   "id": "wd-q6021612",
@@ -715,7 +758,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q127294667",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station",
+  "wikidata": "Q127294667"
  },
  {
   "id": "wd-q45851275",
@@ -739,7 +784,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q137597436",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": "https://www.telespazio.com/en/business/space-centres-teleports/lario-space-centre",
-  "wikipedia": null
+  "wikipedia": null,
+  "owner": "Telespazio",
+  "wikidata": "Q137597436"
  },
  {
   "id": "wd-q109376750",
@@ -751,7 +798,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q109376750",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": "https://www.telespazio.com/en/business/space-centres-teleports/scanzano-space-centre",
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "teleport in Italy",
+  "wikidata": "Q109376750"
  },
  {
   "id": "wd-q5327099",
@@ -774,8 +823,9 @@
   "latitude": 30.5559,
   "source_url": "https://www.wikidata.org/wiki/Q11429311",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
-  "website": "https://global.jaxa.jp/about/centers/mtcs/index.html",
-  "wikipedia": null
+  "website": "https://www.jaxa.jp/about/centers/mtcs/index_j.html",
+  "wikipedia": null,
+  "wikidata": "Q11429311"
  },
  {
   "id": "wd-q11463405",
@@ -786,8 +836,9 @@
   "latitude": 27.0791,
   "source_url": "https://www.wikidata.org/wiki/Q11463405",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
-  "website": "https://global.jaxa.jp/about/centers/odrs/index.html",
-  "wikipedia": null
+  "website": "https://www.jaxa.jp/about/centers/odrs/index_j.html",
+  "wikipedia": null,
+  "wikidata": "Q11463405"
  },
  {
   "id": "wd-q11552678",
@@ -798,8 +849,9 @@
   "latitude": 26.5005,
   "source_url": "https://www.wikidata.org/wiki/Q11552678",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
-  "website": "https://global.jaxa.jp/about/centers/otcs/index.html",
-  "wikipedia": null
+  "website": "https://www.jaxa.jp/about/centers/otcs/index_j.html",
+  "wikipedia": null,
+  "wikidata": "Q11552678"
  },
  {
   "id": "wd-q7902244",
@@ -823,7 +875,8 @@
   "source_url": "https://www.wikidata.org/wiki/Q135840316",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q135840316"
  },
  {
   "id": "wd-q2233113",
@@ -835,7 +888,10 @@
   "source_url": "https://www.wikidata.org/wiki/Q2233113",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "owner": "KPN",
+  "description": "Dutch ground station for satellite communications",
+  "wikidata": "Q2233113"
  },
  {
   "id": "wd-q116256318",
@@ -847,7 +903,8 @@
   "source_url": "https://www.wikidata.org/wiki/Q116256318",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q116256318"
  },
  {
   "id": "wd-q126213290",
@@ -859,7 +916,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q126213290",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in Norway",
+  "wikidata": "Q126213290"
  },
  {
   "id": "wd-q6429241",
@@ -979,7 +1038,8 @@
   "source_url": "https://www.wikidata.org/wiki/Q4169312",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q4169312"
  },
  {
   "id": "wd-q124251114",
@@ -991,7 +1051,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q124251114",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in Russia",
+  "wikidata": "Q124251114"
  },
  {
   "id": "wd-q124251160",
@@ -1003,7 +1065,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q124251160",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in Russia",
+  "wikidata": "Q124251160"
  },
  {
   "id": "wd-q124251134",
@@ -1015,7 +1079,10 @@
   "source_url": "https://www.wikidata.org/wiki/Q124251134",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "owner": "Russian Satellite Communications Company",
+  "description": "satellite ground station in Russia",
+  "wikidata": "Q124251134"
  },
  {
   "id": "wd-q4349991",
@@ -1039,7 +1106,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q10690711",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "former satellite ground station in Sweden",
+  "wikidata": "Q10690711"
  },
  {
   "id": "wd-q4986972",
@@ -1087,7 +1156,8 @@
   "source_url": "https://www.wikidata.org/wiki/Q12168346",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q12168346"
  },
  {
   "id": "wd-q16960925",
@@ -1195,7 +1265,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q126277673",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in California",
+  "wikidata": "Q126277673"
  },
  {
   "id": "wd-q126278225",
@@ -1207,7 +1279,9 @@
   "source_url": "https://www.wikidata.org/wiki/Q126278225",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "description": "satellite ground station in USA",
+  "wikidata": "Q126278225"
  },
  {
   "id": "wd-q22045788",
@@ -1219,6 +1293,7 @@
   "source_url": "https://www.wikidata.org/wiki/Q22045788",
   "note": "Wikidata item with a recorded coordinate; approximate site location, not an antenna position or a statement of current use.",
   "website": null,
-  "wikipedia": null
+  "wikipedia": null,
+  "wikidata": "Q22045788"
  }
 ]

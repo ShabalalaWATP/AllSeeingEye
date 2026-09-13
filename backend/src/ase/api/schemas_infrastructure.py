@@ -1,5 +1,7 @@
 """Read-only public infrastructure map contract."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -10,6 +12,12 @@ class CableOut(BaseModel):
     path: list[tuple[float, float]] = Field(max_length=512)
     source_url: str
     note: str
+    operator: str | None = None
+    owner: str | None = None
+    description: str | None = None
+    website: str | None = None
+    wikipedia: str | None = None
+    inception: str | None = None
 
 
 class GroundStationOut(BaseModel):
@@ -23,6 +31,28 @@ class GroundStationOut(BaseModel):
     note: str
     website: str | None = None
     wikipedia: str | None = None
+    owner: str | None = None
+    description: str | None = None
+
+
+class SiteOut(BaseModel):
+    """A researched energy or semiconductor site; precision states what the point is."""
+
+    id: str
+    kind: str = Field(max_length=40)
+    name: str
+    operator: str
+    owner: str | None = None
+    country: str | None = Field(default=None, min_length=2, max_length=2)
+    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90)
+    precision: Literal["site", "mapped", "city"]
+    description: str | None = None
+    significance: str | None = None
+    website: str | None = None
+    wikipedia: str | None = None
+    source_url: str
+    note: str
 
 
 class DataCentreOut(BaseModel):
@@ -51,6 +81,10 @@ class NuclearFacilityOut(BaseModel):
     source_url: str
     geolocation_source: str
     note: str
+    owner: str | None = None
+    description: str | None = None
+    website: str | None = None
+    wikipedia: str | None = None
 
 
 class InfrastructureOut(BaseModel):
@@ -60,6 +94,11 @@ class InfrastructureOut(BaseModel):
     data_centre_attribution: str
     data_centre_licence_url: str
     data_centre_snapshot_date: str
+    energy_sites: list[SiteOut] = Field(max_length=3200)
+    semiconductor_sites: list[SiteOut] = Field(max_length=300)
+    site_attribution: str
+    site_licence_url: str
+    site_snapshot_date: str
     snapshot_date: str
     cable_attribution: str
     cable_licence_url: str

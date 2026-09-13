@@ -3591,6 +3591,18 @@ export interface components {
             source_url: string;
             /** Note */
             note: string;
+            /** Operator */
+            operator?: string | null;
+            /** Owner */
+            owner?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Wikipedia */
+            wikipedia?: string | null;
+            /** Inception */
+            inception?: string | null;
         };
         /** CameraCatalogueOut */
         CameraCatalogueOut: {
@@ -5654,6 +5666,10 @@ export interface components {
             website?: string | null;
             /** Wikipedia */
             wikipedia?: string | null;
+            /** Owner */
+            owner?: string | null;
+            /** Description */
+            description?: string | null;
         };
         /** GroundwaveOut */
         GroundwaveOut: {
@@ -6039,6 +6055,16 @@ export interface components {
             data_centre_licence_url: string;
             /** Data Centre Snapshot Date */
             data_centre_snapshot_date: string;
+            /** Energy Sites */
+            energy_sites: components["schemas"]["SiteOut"][];
+            /** Semiconductor Sites */
+            semiconductor_sites: components["schemas"]["SiteOut"][];
+            /** Site Attribution */
+            site_attribution: string;
+            /** Site Licence Url */
+            site_licence_url: string;
+            /** Site Snapshot Date */
+            site_snapshot_date: string;
             /** Snapshot Date */
             snapshot_date: string;
             /** Cable Attribution */
@@ -7171,6 +7197,14 @@ export interface components {
             geolocation_source: string;
             /** Note */
             note: string;
+            /** Owner */
+            owner?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Wikipedia */
+            wikipedia?: string | null;
         };
         /** ObservationMetadata */
         ObservationMetadata: {
@@ -9563,6 +9597,45 @@ export interface components {
             keywords: string[];
             /** Categories */
             categories: components["schemas"]["Category"][];
+        };
+        /**
+         * SiteOut
+         * @description A researched energy or semiconductor site; precision states what the point is.
+         */
+        SiteOut: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Operator */
+            operator: string;
+            /** Owner */
+            owner?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Longitude */
+            longitude: number;
+            /** Latitude */
+            latitude: number;
+            /**
+             * Precision
+             * @enum {string}
+             */
+            precision: "site" | "mapped" | "city";
+            /** Description */
+            description?: string | null;
+            /** Significance */
+            significance?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Wikipedia */
+            wikipedia?: string | null;
+            /** Source Url */
+            source_url: string;
+            /** Note */
+            note: string;
         };
         /** SocialBoardOut */
         SocialBoardOut: {

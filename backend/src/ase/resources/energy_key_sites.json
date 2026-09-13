@@ -1,0 +1,502 @@
+[
+ {
+  "search": "Ras Tanura Refinery",
+  "kind": "refinery",
+  "country": "SA",
+  "significance": "Saudi Aramco's largest refinery and the Ras Tanura export terminal on the Gulf coast."
+ },
+ {
+  "search": "Abqaiq",
+  "match": "oil",
+  "kind": "processing_plant",
+  "country": "SA",
+  "significance": "World's largest crude stabilisation plant; struck by drones and missiles in September 2019.",
+  "city": "Abqaiq"
+ },
+ {
+  "search": "Ghawar Field",
+  "kind": "oil_field",
+  "country": "SA",
+  "significance": "Largest conventional onshore oil field in the world."
+ },
+ {
+  "search": "Yanbu Refinery",
+  "kind": "refinery",
+  "country": "SA",
+  "significance": "Red Sea refining and export hub at the end of the East-West pipeline.",
+  "city": "Yanbu"
+ },
+ {
+  "search": "East–West Pipeline",
+  "kind": "pipeline",
+  "country": "SA",
+  "significance": "Petroline from the Eastern Province to Yanbu, the export route that bypasses the Strait of Hormuz.",
+  "city": "Yanbu"
+ },
+ {
+  "search": "Ras Laffan Industrial City",
+  "kind": "lng_terminal",
+  "country": "QA",
+  "significance": "Qatar's LNG export complex, the largest in the world."
+ },
+ {
+  "search": "Ruwais Refinery",
+  "kind": "refinery",
+  "country": "AE",
+  "significance": "ADNOC's main refinery west of Abu Dhabi."
+ },
+ {
+  "search": "Fujairah",
+  "kind": "oil_terminal",
+  "country": "AE",
+  "significance": "Bunkering and export hub outside the Strait of Hormuz, fed by the Habshan-Fujairah pipeline.",
+  "city": "Fujairah"
+ },
+ {
+  "search": "Kharg Island",
+  "kind": "oil_terminal",
+  "country": "IR",
+  "significance": "Iran's main crude export terminal, handling most seaborne exports."
+ },
+ {
+  "search": "Abadan Refinery",
+  "kind": "refinery",
+  "country": "IR",
+  "significance": "Iran's largest and oldest refinery near the Shatt al-Arab."
+ },
+ {
+  "search": "South Pars",
+  "match": "gas field",
+  "kind": "gas_field",
+  "country": "IR",
+  "significance": "Iranian half of the largest gas field in the world, shared with Qatar's North Field."
+ },
+ {
+  "search": "Al Basrah Oil Terminal",
+  "kind": "oil_terminal",
+  "country": "IQ",
+  "significance": "Iraq's principal offshore crude export terminal in the northern Gulf.",
+  "city": "Al-Faw"
+ },
+ {
+  "search": "Rumaila oil field",
+  "kind": "oil_field",
+  "country": "IQ",
+  "significance": "Iraq's largest producing field near the Kuwaiti border."
+ },
+ {
+  "search": "Kirkuk oil field",
+  "kind": "oil_field",
+  "country": "IQ",
+  "significance": "Northern Iraqi field feeding the Kirkuk-Ceyhan pipeline.",
+  "city": "Kirkuk"
+ },
+ {
+  "search": "Mina Al Ahmadi Refinery",
+  "kind": "refinery",
+  "country": "KW",
+  "significance": "Kuwait's main refining and export site south of Kuwait City."
+ },
+ {
+  "search": "Al Zour Refinery",
+  "kind": "refinery",
+  "country": "KW",
+  "significance": "Kuwait's newest large refinery, commissioned in the 2020s.",
+  "city": "Al Zour"
+ },
+ {
+  "search": "Sitra",
+  "match": "island",
+  "kind": "refinery",
+  "country": "BH",
+  "significance": "Bapco refinery and terminal, Bahrain's main oil facility."
+ },
+ {
+  "search": "Ceyhan",
+  "kind": "oil_terminal",
+  "country": "TR",
+  "significance": "Mediterranean terminal for the Baku-Tbilisi-Ceyhan and Kirkuk-Ceyhan pipelines.",
+  "city": "Ceyhan"
+ },
+ {
+  "search": "Sidra Libya",
+  "kind": "oil_terminal",
+  "country": "LY",
+  "significance": "Libya's largest export terminal, repeatedly closed by conflict.",
+  "city": "Sidra"
+ },
+ {
+  "search": "Ras Lanuf",
+  "match": "port",
+  "kind": "oil_terminal",
+  "country": "LY",
+  "significance": "Refinery and export terminal in Libya's oil crescent."
+ },
+ {
+  "search": "Bonny Island",
+  "match": "Nigeria",
+  "kind": "lng_terminal",
+  "country": "NG",
+  "significance": "Nigeria LNG plant and Bonny crude export terminal in the Niger Delta."
+ },
+ {
+  "search": "Escravos",
+  "match": "Nigeria",
+  "kind": "oil_terminal",
+  "country": "NG",
+  "significance": "Chevron's export terminal and gas-to-liquids plant in the western Niger Delta."
+ },
+ {
+  "search": "Primorsk",
+  "match": "Leningrad",
+  "kind": "oil_terminal",
+  "country": "RU",
+  "significance": "Baltic Sea crude export port at the end of the Baltic Pipeline System."
+ },
+ {
+  "search": "Ust-Luga",
+  "match": "port",
+  "kind": "oil_terminal",
+  "country": "RU",
+  "significance": "Baltic export port for crude and products west of St Petersburg."
+ },
+ {
+  "search": "Novorossiysk",
+  "match": "Krasnodar",
+  "kind": "oil_terminal",
+  "country": "RU",
+  "significance": "Black Sea export port including the CPC terminal for Kazakh crude."
+ },
+ {
+  "search": "Kozmino",
+  "match": "port",
+  "kind": "oil_terminal",
+  "country": "RU",
+  "significance": "Pacific export terminal at the end of the ESPO pipeline.",
+  "city": "Nakhodka"
+ },
+ {
+  "search": "Sabetta",
+  "kind": "lng_terminal",
+  "country": "RU",
+  "significance": "Yamal LNG export port on the Kara Sea."
+ },
+ {
+  "search": "Omsk Refinery",
+  "kind": "refinery",
+  "country": "RU",
+  "significance": "Gazprom Neft's Siberian refinery, one of Russia's largest.",
+  "city": "Omsk"
+ },
+ {
+  "search": "Kirishi Refinery",
+  "kind": "refinery",
+  "country": "RU",
+  "significance": "Surgutneftegas refinery near St Petersburg supplying Baltic exports.",
+  "city": "Kirishi"
+ },
+ {
+  "search": "Ryazan Refinery",
+  "kind": "refinery",
+  "country": "RU",
+  "significance": "Rosneft refinery south-east of Moscow, struck by drones in 2024 and 2025.",
+  "city": "Ryazan"
+ },
+ {
+  "search": "Tuapse Refinery",
+  "kind": "refinery",
+  "country": "RU",
+  "significance": "Black Sea coastal refinery and export point."
+ },
+ {
+  "search": "Druzhba pipeline",
+  "kind": "pipeline",
+  "country": "RU",
+  "significance": "Crude pipeline from Russia to Belarus, Poland, Germany, Hungary, Slovakia and Czechia.",
+  "city": "Almetyevsk"
+ },
+ {
+  "search": "Mozyr Oil Refinery",
+  "kind": "refinery",
+  "country": "BY",
+  "significance": "Belarusian refinery on the Druzhba southern branch."
+ },
+ {
+  "search": "Naftan",
+  "match": "refinery",
+  "kind": "refinery",
+  "country": "BY",
+  "significance": "Belarusian refinery at Novopolotsk on the Druzhba northern branch."
+ },
+ {
+  "search": "Kremenchuk Oil Refinery",
+  "kind": "refinery",
+  "country": "UA",
+  "significance": "Ukraine's largest refinery, repeatedly struck since 2022.",
+  "city": "Kremenchuk"
+ },
+ {
+  "search": "Fawley Refinery",
+  "kind": "refinery",
+  "country": "GB",
+  "significance": "The UK's largest refinery, on Southampton Water."
+ },
+ {
+  "search": "Grangemouth Refinery",
+  "kind": "refinery",
+  "country": "GB",
+  "significance": "Scotland's only refinery, converted to an import terminal in 2025."
+ },
+ {
+  "search": "Pembroke Refinery",
+  "kind": "refinery",
+  "country": "GB",
+  "significance": "Valero refinery on Milford Haven."
+ },
+ {
+  "search": "Stanlow Refinery",
+  "kind": "refinery",
+  "country": "GB",
+  "significance": "Essar refinery on the Manchester Ship Canal."
+ },
+ {
+  "search": "Sullom Voe Terminal",
+  "kind": "oil_terminal",
+  "country": "GB",
+  "significance": "Shetland terminal for North Sea crude."
+ },
+ {
+  "search": "St Fergus Gas Terminal",
+  "kind": "gas_terminal",
+  "country": "GB",
+  "significance": "Landing point for much of the UK's North Sea gas."
+ },
+ {
+  "search": "Bacton Gas Terminal",
+  "kind": "gas_terminal",
+  "country": "GB",
+  "significance": "Norfolk terminal with interconnectors to Belgium and the Netherlands."
+ },
+ {
+  "search": "South Hook LNG terminal",
+  "kind": "lng_terminal",
+  "country": "GB",
+  "significance": "Largest UK LNG import terminal, at Milford Haven."
+ },
+ {
+  "search": "Isle of Grain",
+  "match": "LNG",
+  "kind": "lng_terminal",
+  "country": "GB",
+  "significance": "LNG import terminal on the Thames estuary.",
+  "city": "Isle of Grain"
+ },
+ {
+  "search": "Forties Oil Field",
+  "kind": "oil_field",
+  "country": "GB",
+  "significance": "Large North Sea field feeding the Forties pipeline to Cruden Bay."
+ },
+ {
+  "search": "Port of Rotterdam",
+  "kind": "oil_terminal",
+  "country": "NL",
+  "significance": "Europe's largest oil port and refining cluster, including Pernis."
+ },
+ {
+  "search": "Shell Pernis",
+  "kind": "refinery",
+  "country": "NL",
+  "significance": "Shell's Pernis refinery, the largest in Europe.",
+  "city": "Pernis"
+ },
+ {
+  "search": "Port of Antwerp",
+  "kind": "oil_terminal",
+  "country": "BE",
+  "significance": "Second-largest European petrochemical cluster."
+ },
+ {
+  "search": "Sines",
+  "match": "port",
+  "kind": "oil_terminal",
+  "country": "PT",
+  "significance": "Portugal's deep-water oil, gas and LNG port."
+ },
+ {
+  "search": "Milazzo Refinery",
+  "kind": "refinery",
+  "country": "IT",
+  "significance": "Sicilian refinery serving the central Mediterranean.",
+  "city": "Milazzo"
+ },
+ {
+  "search": "Trans-Alaska Pipeline System",
+  "kind": "pipeline",
+  "country": "US",
+  "significance": "Crude pipeline from Prudhoe Bay to Valdez."
+ },
+ {
+  "search": "Port Arthur Refinery",
+  "kind": "refinery",
+  "country": "US",
+  "significance": "Motiva's Port Arthur refinery, the largest in North America."
+ },
+ {
+  "search": "Baytown Refinery",
+  "kind": "refinery",
+  "country": "US",
+  "significance": "ExxonMobil's Baytown refinery and chemical complex near Houston."
+ },
+ {
+  "search": "Garyville Refinery",
+  "kind": "refinery",
+  "country": "US",
+  "significance": "Marathon's Louisiana refinery on the Mississippi."
+ },
+ {
+  "search": "Whiting Refinery",
+  "kind": "refinery",
+  "country": "US",
+  "significance": "BP's largest US refinery, near Chicago."
+ },
+ {
+  "search": "Cushing, Oklahoma",
+  "kind": "storage_hub",
+  "country": "US",
+  "significance": "WTI pricing point and the largest crude storage hub in the United States."
+ },
+ {
+  "search": "Sabine Pass LNG",
+  "kind": "lng_terminal",
+  "country": "US",
+  "significance": "Cheniere's export terminal, the largest US LNG plant."
+ },
+ {
+  "search": "Corpus Christi LNG",
+  "kind": "lng_terminal",
+  "country": "US",
+  "significance": "Cheniere's Texas LNG export terminal."
+ },
+ {
+  "search": "Louisiana Offshore Oil Port",
+  "kind": "oil_terminal",
+  "country": "US",
+  "significance": "The only US deep-water port able to load and unload the largest tankers."
+ },
+ {
+  "search": "Permian Basin",
+  "kind": "oil_field",
+  "country": "US",
+  "significance": "The largest producing oil region in the United States.",
+  "city": "Midland, Texas"
+ },
+ {
+  "search": "Prudhoe Bay Oil Field",
+  "kind": "oil_field",
+  "country": "US",
+  "significance": "Largest oil field in North America, on Alaska's North Slope."
+ },
+ {
+  "search": "Jamnagar Refinery",
+  "kind": "refinery",
+  "country": "IN",
+  "significance": "Reliance's Jamnagar complex, the largest refinery in the world."
+ },
+ {
+  "search": "Ulsan Refinery",
+  "kind": "refinery",
+  "country": "KR",
+  "significance": "SK Energy's Ulsan complex, among the largest refineries in Asia.",
+  "city": "Ulsan"
+ },
+ {
+  "search": "Jurong Island",
+  "kind": "refinery",
+  "country": "SG",
+  "significance": "Singapore's refining and petrochemical hub."
+ },
+ {
+  "search": "Zhenhai Refinery",
+  "kind": "refinery",
+  "country": "CN",
+  "significance": "Sinopec's Zhenhai complex at Ningbo, China's largest refinery.",
+  "city": "Ningbo"
+ },
+ {
+  "search": "Daqing Oil Field",
+  "kind": "oil_field",
+  "country": "CN",
+  "significance": "China's largest oil field, in Heilongjiang."
+ },
+ {
+  "search": "Kashagan Field",
+  "kind": "oil_field",
+  "country": "KZ",
+  "significance": "Giant Caspian offshore field exporting through the CPC pipeline."
+ },
+ {
+  "search": "Tengiz Field",
+  "kind": "oil_field",
+  "country": "KZ",
+  "significance": "Kazakhstan's largest producing field, operated by Tengizchevroil."
+ },
+ {
+  "search": "Baku–Tbilisi–Ceyhan pipeline",
+  "kind": "pipeline",
+  "country": "AZ",
+  "significance": "Caspian crude route to the Mediterranean that avoids Russia and Iran.",
+  "city": "Baku"
+ },
+ {
+  "search": "Sangachal Terminal",
+  "kind": "oil_terminal",
+  "country": "AZ",
+  "significance": "BP-operated terminal feeding the BTC and South Caucasus pipelines."
+ },
+ {
+  "search": "Nord Stream",
+  "kind": "pipeline",
+  "country": "DE",
+  "significance": "Baltic gas pipelines from Russia to Germany, damaged by explosions in September 2022.",
+  "city": "Lubmin"
+ },
+ {
+  "search": "Hammerfest LNG",
+  "kind": "lng_terminal",
+  "country": "NO",
+  "significance": "Norway's Arctic LNG plant at Melkøya."
+ },
+ {
+  "search": "Troll gas field",
+  "kind": "gas_field",
+  "country": "NO",
+  "significance": "Norway's largest gas field, a major source of European supply."
+ },
+ {
+  "search": "Mongstad Refinery",
+  "kind": "refinery",
+  "country": "NO",
+  "significance": "Norway's largest refinery and crude terminal."
+ },
+ {
+  "search": "Cabinda",
+  "kind": "oil_terminal",
+  "country": "AO",
+  "significance": "Angola's Cabinda enclave, its main onshore oil base.",
+  "city": "Cabinda"
+ },
+ {
+  "search": "Ras Gharib",
+  "kind": "oil_field",
+  "country": "EG",
+  "significance": "Egypt's Gulf of Suez oil hub."
+ },
+ {
+  "search": "Damietta",
+  "kind": "lng_terminal",
+  "country": "EG",
+  "significance": "Mediterranean LNG export plant east of the Nile delta.",
+  "city": "Damietta"
+ }
+]

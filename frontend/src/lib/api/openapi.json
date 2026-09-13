@@ -11603,6 +11603,72 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "operator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "wikipedia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikipedia"
+          },
+          "inception": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inception"
           }
         },
         "type": "object",
@@ -17511,6 +17577,28 @@
               }
             ],
             "title": "Wikipedia"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           }
         },
         "type": "object",
@@ -18496,6 +18584,34 @@
             "type": "string",
             "title": "Data Centre Snapshot Date"
           },
+          "energy_sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteOut"
+            },
+            "type": "array",
+            "maxItems": 3200,
+            "title": "Energy Sites"
+          },
+          "semiconductor_sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteOut"
+            },
+            "type": "array",
+            "maxItems": 300,
+            "title": "Semiconductor Sites"
+          },
+          "site_attribution": {
+            "type": "string",
+            "title": "Site Attribution"
+          },
+          "site_licence_url": {
+            "type": "string",
+            "title": "Site Licence Url"
+          },
+          "site_snapshot_date": {
+            "type": "string",
+            "title": "Site Snapshot Date"
+          },
           "snapshot_date": {
             "type": "string",
             "title": "Snapshot Date"
@@ -18541,6 +18657,11 @@
           "data_centre_attribution",
           "data_centre_licence_url",
           "data_centre_snapshot_date",
+          "energy_sites",
+          "semiconductor_sites",
+          "site_attribution",
+          "site_licence_url",
+          "site_snapshot_date",
           "snapshot_date",
           "cable_attribution",
           "cable_licence_url",
@@ -21541,6 +21662,50 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "wikipedia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikipedia"
           }
         },
         "type": "object",
@@ -28714,6 +28879,138 @@
           "categories"
         ],
         "title": "SirOut"
+      },
+      "SiteOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "longitude": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitude"
+          },
+          "precision": {
+            "type": "string",
+            "enum": [
+              "site",
+              "mapped",
+              "city"
+            ],
+            "title": "Precision"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "significance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Significance"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "wikipedia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wikipedia"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "operator",
+          "longitude",
+          "latitude",
+          "precision",
+          "source_url",
+          "note"
+        ],
+        "title": "SiteOut",
+        "description": "A researched energy or semiconductor site; precision states what the point is."
       },
       "SocialBoardOut": {
         "properties": {

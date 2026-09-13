@@ -13,7 +13,13 @@ import typer
 from ase.adapters.persistence.session import ensure_sqlite_directory
 from ase.cli_aiddata import import_aiddata
 from ase.cli_designations import import_designations
-from ase.cli_infrastructure import import_centres, import_stations
+from ase.cli_infrastructure import (
+    import_centres,
+    import_energy,
+    import_notes,
+    import_semiconductor,
+    import_stations,
+)
 from ase.cli_public_figures import import_figures
 from ase.cli_reference import import_reference_notes
 from ase.container import Container
@@ -30,6 +36,9 @@ app.command("import-aiddata")(import_aiddata)
 app.command("import-public-figures")(import_figures)
 app.command("import-ground-stations")(import_stations)
 app.command("import-data-centres")(import_centres)
+app.command("import-energy-sites")(import_energy)
+app.command("import-semiconductor-sites")(import_semiconductor)
+app.command("import-infrastructure-notes")(import_notes)
 app.command("import-reference")(import_reference_notes)
 
 
