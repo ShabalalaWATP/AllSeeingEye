@@ -2,11 +2,12 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/Button';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
+import { useNow } from '@/lib/hooks/useNow';
 import { useAuthStore } from '@/stores/auth';
-
-import { PersonalLinks } from './PersonalLinks';
 import { useGlobeStore } from '@/stores/globe';
 import type { ViewMode } from '@/stores/globe';
+
+import { PersonalLinks } from './PersonalLinks';
 
 export function viewTitle(pathname: string, mode: ViewMode): string {
   if (pathname === '/') return mode === 'globe' ? 'Globe' : 'Map';
@@ -27,6 +28,27 @@ export function viewTitle(pathname: string, mode: ViewMode): string {
   return 'The All Seeing Eye';
 }
 
+const UTC_CLOCK = new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'UTC',
+  hourCycle: 'h23',
+});
+
+function UtcClock() {
+  const now = useNow();
+  return (
+    <time
+      dateTime={new Date(now).toISOString()}
+      aria-label="Current time, UTC"
+      className="hidden items-center gap-1.5 rounded-md border border-line/60 bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted tabular-nums md:inline-flex"
+    >
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-good" />
+      {UTC_CLOCK.format(now)} <span className="text-muted/70">UTC</span>
+    </time>
+  );
+}
+
 export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) | undefined }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -38,8 +60,8 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
   });
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line bg-ground px-2 sm:px-4">
-      <div className="flex min-w-0 items-center gap-2">
+    <header className="relative flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line/70 bg-ground/85 px-2 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-ember/50 after:via-cyan/30 after:to-transparent sm:px-4">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         {onOpenNavigation !== undefined && (
           <Button
             variant="ghost"
@@ -61,11 +83,14 @@ export function TopBar({ onOpenNavigation }: { onOpenNavigation?: (() => void) |
             </svg>
           </Button>
         )}
-        <p className="truncate font-mono text-xs uppercase tracking-normal text-muted sm:tracking-[0.2em]">
+        <span aria-hidden="true" className="hidden size-1.5 rounded-full bg-ember sm:block" />
+        <p className="truncate font-mono text-xs tracking-normal text-muted uppercase sm:tracking-[0.2em]">
           {viewTitle(pathname, mode)}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-3">
+      <div className="flex shrink-0 items-center gap-1 text-sm sm:gap-2">
+        <UtcClock />
+        <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line/70 md:block" />
         <PersonalLinks />
         <Button variant="ghost" className="min-h-11" busy={busy} onClick={() => void run()}>
           Logout

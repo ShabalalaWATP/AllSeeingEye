@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useGlobeStore } from '@/stores/globe';
+import { useShellStore } from '@/stores/shell';
 
 import { useViewNavigation } from './useViewNavigation';
 
@@ -16,10 +17,11 @@ export function isEditableTarget(target: EventTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 }
 
-/** Keyboard shortcuts: G shows the globe, M shows the map. Ignored inside form fields. */
+/** Keyboard shortcuts: G globe, M map, O ops room, [ toggles the rail. Ignored in form fields. */
 export function useViewShortcuts(): void {
   const { showGlobe, showMap } = useViewNavigation();
   const setOpsRoom = useGlobeStore((state) => state.setOpsRoom);
+  const toggleRail = useShellStore((state) => state.toggleRail);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -37,6 +39,9 @@ export function useViewShortcuts(): void {
         event.preventDefault();
         showGlobe();
         setOpsRoom(true);
+      } else if (key === '[') {
+        event.preventDefault();
+        toggleRail();
       } else if (key === 'escape') {
         setOpsRoom(false);
       }
@@ -45,5 +50,5 @@ export function useViewShortcuts(): void {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [setOpsRoom, showGlobe, showMap]);
+  }, [setOpsRoom, showGlobe, showMap, toggleRail]);
 }

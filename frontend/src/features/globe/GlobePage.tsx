@@ -19,7 +19,6 @@ import { useDashboardEvents } from './useDashboardEvents';
 import { useReportingReferences } from './useReportingReferences';
 import { useNewsCountryLayers } from './useNewsCountryLayers';
 import { useCyberMapSelection } from './useCyberMapSelection';
-import { EventScopeStrip } from './EventScopeStrip';
 import { dashboardCataloguePanels } from './dashboardCataloguePanels';
 import { useContextSelection } from './context/useContextSelection';
 import { eventControlPanels } from './eventControlPanels';
@@ -241,7 +240,6 @@ export default function GlobePage() {
     <div className="globe-dashboard absolute inset-0 bg-ground">
       <MapCanvas containerRef={containerRef} supported={supported} mode={mode} engine={engine} />
       {!opsRoom && <ModeToolbar mode={mode} onChange={setMode} />}
-      {!opsRoom && <EventScopeStrip state={data} />}
       {!opsRoom && <SavedMapAreaNotice area={savedArea} />}
       <MaritimeAttribution events={quality.filtered} hidden={hidden.includes('maritime')} />
       {!opsRoom && (

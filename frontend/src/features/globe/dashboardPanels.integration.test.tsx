@@ -40,7 +40,7 @@ beforeEach(() => {
   server.use(http.get('/api/trackers/conflicts', () => HttpResponse.json({ items: [] })));
 });
 
-it('uses one drawer and keeps aircraft search separate from boats, with a visible reset chip', async () => {
+it('uses one drawer and keeps aircraft search separate from boats until it is cleared', async () => {
   // Layer changes may refresh the snapshot. Keep test traffic in that source as well
   // as stream updates so a legitimate refresh cannot race away these fixtures.
   server.use(
@@ -54,7 +54,6 @@ it('uses one drawer and keeps aircraft search separate from boats, with a visibl
   const flights = screen.getByRole('button', { name: 'Flight filters' });
   await user.click(flights);
   await user.type(screen.getByRole('searchbox', { name: 'Search aircraft' }), 'EYE123');
-  expect(screen.getByRole('button', { name: 'Flights: refined ×' })).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Boat list' }));
   expect(screen.queryByRole('region', { name: 'Flight filters' })).not.toBeInTheDocument();
   expect(screen.getByRole('searchbox', { name: 'Search vessels' })).toHaveValue('');
@@ -63,8 +62,10 @@ it('uses one drawer and keeps aircraft search separate from boats, with a visibl
   expect(screen.getByRole('searchbox', { name: 'Search aircraft' })).toHaveValue('EYE123');
   await user.keyboard('{Escape}');
   expect(flights).toHaveFocus();
-  await user.click(screen.getByRole('button', { name: 'Flights: refined ×' }));
-  expect(screen.queryByRole('button', { name: 'Flights: refined ×' })).not.toBeInTheDocument();
+  // The refinement lives in its panel; clearing the field is the reset.
+  await user.click(flights);
+  await user.clear(screen.getByRole('searchbox', { name: 'Search aircraft' }));
+  expect(screen.getByRole('searchbox', { name: 'Search aircraft' })).toHaveValue('');
 });
 
 it('fetches context only when requested and locates a selected warning outside the viewport store', async () => {
@@ -144,7 +145,9 @@ it('satellite list selection enables Space, then clearing details clears the sel
     }),
   );
   expect(useEventsStore.getState().selectedId).toBeNull();
-  expect(screen.getByRole('button', { name: 'Space search ×' })).toBeInTheDocument();
+  if (!screen.queryByRole('searchbox', { name: 'Find a satellite' }))
+    await user.click(screen.getByRole('button', { name: 'Space filters' }));
+  expect(screen.getByRole('searchbox', { name: 'Find a satellite' })).toHaveValue('54321');
 });
 
 it('only offers records allowed by location quality in traffic and satellite lists', async () => {
@@ -172,6 +175,8 @@ it('only offers records allowed by location quality in traffic and satellite lis
   expect(screen.queryByRole('button', { name: /EYE123/ })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Space filters' }));
   expect(screen.queryByRole('button', { name: /Orbital test/ })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Approximate ×' }));
+  await user.click(screen.getByRole('button', { name: 'Location quality' }));
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Show on map or globe' }), 'all');
+  await user.click(screen.getByRole('button', { name: 'Space filters' }));
   expect(screen.getByRole('button', { name: /Orbital test/ })).toBeInTheDocument();
 });

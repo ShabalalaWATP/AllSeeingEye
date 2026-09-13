@@ -13,23 +13,6 @@
   isolation: isolate;
 }
 
-.map-event-scope {
-  position: absolute;
-  top: 0.75rem;
-  left: 155px;
-  right: 12px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-height: 32px;
-  overflow-x: auto;
-  white-space: nowrap;
-  border-radius: 6px;
-  background: #080a0de8;
-  scrollbar-width: thin;
-}
-
 .globe-dashboard [aria-label='View mode'] {
   animation: dashboard-arrive 450ms ease-out both;
 }
