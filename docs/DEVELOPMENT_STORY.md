@@ -4634,3 +4634,17 @@ with the caveat that a match is background, not identity. Wikidata's endpoint
 disconnected or rate-limited several imports; each retried and the snapshots were
 reviewed before committing.
 
+A sixth request asked for owner, purpose and links on every mapped object and for
+researched oil, gas and semiconductor sites. Wikidata's SPARQL endpoint was failing, so
+a small entity-API client (search and fetch) was written and used for everything:
+cable segments gained operator, owner and links from OpenStreetMap tags and linked
+Wikidata items (376 of 429 named), nuclear
+plants and curated ground stations were matched by name within 0.5° (64 and
+84 matched), and two new layers were built from curated key-site
+lists resolved through Wikidata plus OpenStreetMap breadth: 2789 oil and gas
+sites and 98 semiconductor sites, with city-level placement stated
+where the public record has no coordinate. Another session was editing the same
+infrastructure files at the same time (a military source index layer), so the edits
+here were applied as anchored insertions on top of its uncommitted work and its
+moved JSON briefly broke the shared test files until it caught up.
+

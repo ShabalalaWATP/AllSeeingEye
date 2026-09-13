@@ -639,6 +639,11 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
   types, with an authenticated bounded lookup and inspector block.
 - [ ] National earth-station licence lists (Ofcom, FCC) as further station sources.
 - [ ] Hand-curated notes for naval vessels without an MMSI on Wikidata.
+- [x] Owner, purpose and links on cables, nuclear plants and stations via enrichment.
+- [x] Oil and gas facility layer: curated key sites plus OpenStreetMap breadth.
+- [x] Semiconductor site layer: curated fabs and suppliers plus OpenStreetMap breadth.
+- [ ] Global Energy Monitor trackers as a licensed energy import.
+- [ ] Site-level coordinates for the fabs currently placed at city precision.
 
 See [Reference notes](REFERENCE_NOTES.md) and [Map infrastructure](MAP_INFRASTRUCTURE.md).
 - [ ] Hand-curated entries for Russian posts without a usable Wikidata position item

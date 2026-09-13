@@ -69,3 +69,57 @@ Two operator-run commands extend the packaged snapshot:
   lists them as a fourth layer with an operator website link in the inspector.
 
 Neither dataset states capacity, tenants or operational status; the inspector says so.
+
+## Owner, purpose and links on existing records, 13 September 2026
+
+`uv run ase import-infrastructure-notes` adds fields without moving or removing a record:
+
+- Cables: the OpenStreetMap way tags for the 429 named segments
+  (operator, owner, description, website, `wikipedia`, `wikidata`) and, where a way names
+  a Wikidata item, that item's owners, description, website, article and inception.
+  376 segments gained at least one field. The 1,570 unnamed
+  segments carry no tags to enrich.
+- Nuclear plants: a Wikidata name search per WRI record, accepted only when the hit reads
+  as a nuclear plant and sits within 0.5° of the packaged point; 64
+  of 195 matched and gained owner, description, website and article links.
+- Ground stations: the same search for the curated entries; 84
+  of 106 now carry an article or Wikidata link.
+
+The inspector shows one facts block for every kind: operator, owner, country, inception,
+significance, description, links and the precision caveat. Enrichment is public-record
+background, not verification of who runs a site today.
+
+## Oil and gas facilities and semiconductor sites, 13 September 2026
+
+Two researched layers join the infrastructure panel. Each merges a curated list of key
+sites, resolved through Wikidata's entity API (search, then coordinates, operator,
+owner, description, website and article), with OpenStreetMap breadth. Curated sites
+carry a written significance and are drawn larger; sites whose Wikidata item has no
+coordinate are placed at the named city and say so (`precision: city`).
+
+- Oil and gas (`ase import-energy-sites`): 74 curated sites from
+  `energy_key_sites.json` (Gulf refineries and terminals such as Ras Tanura, Abqaiq,
+  Ras Laffan, Kharg Island and Basra; Russian export ports and refineries such as
+  Primorsk, Novorossiysk, Kozmino, Sabetta and Omsk; UK refineries and gas terminals
+  such as Fawley, Grangemouth, St Fergus and Bacton; US refineries, Cushing, Sabine Pass
+  and LOOP; Rotterdam, Jamnagar, Zhenhai, the Caspian fields and the BTC, Druzhba,
+  Nord Stream and Trans-Alaska pipelines) plus OpenStreetMap refineries
+  (`industrial=refinery`), named offshore platforms and operator-tagged oil facilities,
+  2789 sites in total, 18 at city precision.
+  Unresolved seeds: Yanbu Refinery, East–West Pipeline, Sidra Libya.
+- Semiconductors (`ase import-semiconductor-sites`): 60 curated sites
+  from `semiconductor_key_sites.json` covering TSMC (Hsinchu, Tainan, Taichung,
+  Kaohsiung, Arizona, Kumamoto, Dresden), Samsung, SK hynix, Intel, Micron,
+  GlobalFoundries, UMC, SMIC, YMTC, CXMT, Hua Hong, Texas Instruments, Infineon,
+  STMicroelectronics, Bosch, Rapidus, Kioxia, Renesas, Sony, Wolfspeed, Tower, Nexperia,
+  the equipment chokepoints (ASML, Zeiss SMT, Tokyo Electron, Applied Materials, Lam),
+  Shin-Etsu wafers and the ASE and Amkor packaging plants, plus OpenStreetMap features
+  tagged as semiconductor works: 98 sites, 47 at city
+  precision because most fab items on Wikidata are company records without a coordinate.
+
+Sources considered and not used: Wikidata's SPARQL endpoint (returned 502 and
+disconnects during this work, so the entity API is used instead); Global Energy
+Monitor's oil and gas trackers (CC BY 4.0 but behind a download form, a candidate for a
+licensed import later); OpenStreetMap `man_made=petroleum_well` and pipelines (too many
+features to package usefully). Site records state that output, ownership and current
+operation are not verified.
