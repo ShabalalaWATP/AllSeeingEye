@@ -620,6 +620,10 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [x] Authenticated `GET /api/figures` board with portraits inline; no image route.
 - [x] Off-by-default map layer with portrait markers, a panel, an inspector and the
   `/trackers/figures` page.
+- [x] Named senior posts for the UK, Russia and China resolved from fixed Wikidata
+  position items (roster of 87).
+- [ ] Hand-curated entries for Russian posts without a usable Wikidata position item
+  (General Staff, SVR, press secretary).
 - [ ] Geocode place names in reports that name an official but carry no location.
 - [ ] Re-import the roster on a schedule the operator chooses; the date is visible
   until then.

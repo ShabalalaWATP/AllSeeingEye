@@ -5353,7 +5353,7 @@ export interface components {
              * Role
              * @enum {string}
              */
-            role: "head_of_state" | "head_of_government" | "head_of_state_and_government" | "organisation";
+            role: "head_of_state" | "head_of_government" | "head_of_state_and_government" | "senior_official" | "organisation";
             /** Country Iso */
             country_iso: string | null;
             /** Organisation */

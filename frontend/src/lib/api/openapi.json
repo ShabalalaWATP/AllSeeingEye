@@ -16611,7 +16611,7 @@
               "$ref": "#/components/schemas/FigureOut"
             },
             "type": "array",
-            "maxItems": 80,
+            "maxItems": 120,
             "title": "Figures"
           },
           "window_hours": {
@@ -16677,6 +16677,7 @@
               "head_of_state",
               "head_of_government",
               "head_of_state_and_government",
+              "senior_official",
               "organisation"
             ],
             "title": "Role"

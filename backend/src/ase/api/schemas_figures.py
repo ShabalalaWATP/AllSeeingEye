@@ -79,7 +79,7 @@ class FigureOut(BaseModel):
 
 
 class FigureBoardOut(BaseModel):
-    figures: list[FigureOut] = Field(max_length=80)
+    figures: list[FigureOut] = Field(max_length=120)
     window_hours: int
     events_scanned: int
     roster_retrieved_at: datetime

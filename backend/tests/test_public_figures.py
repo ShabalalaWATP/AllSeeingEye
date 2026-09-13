@@ -54,16 +54,27 @@ def test_packaged_roster_is_bounded_named_and_licensed() -> None:
     assert 0 < len(catalogue.figures) <= MAX_FIGURES
     assert catalogue.retrieved_at.tzinfo is not None
     assert len({f.id for f in catalogue.figures}) == len(catalogue.figures)
-    assert {"gb-head-of-government", "ua-head-of-state", "nato"} <= {
-        f.id for f in catalogue.figures
-    }
+    assert {
+        "gb-head-of-government",
+        "gb-defence-secretary",
+        "gb-foreign-secretary",
+        "ru-foreign-minister",
+        "cn-defence-minister",
+        "ua-head-of-state",
+        "nato",
+    } <= {f.id for f in catalogue.figures}
+    assert all(f.role == "senior_official" for f in catalogue.figures if "-secretary" in f.id)
+    with_portrait = 0
     for item in catalogue.figures:
         assert not item.name.startswith("Q"), item.id
         assert -90 <= item.seat_lat <= 90 and -180 <= item.seat_lon <= 180
-        assert item.portrait is not None, item.id
+        if item.portrait is None:
+            continue  # the map falls back to a neutral bust
+        with_portrait += 1
         png = base64.b64decode(item.portrait.png_base64)
         assert png.startswith(b"\x89PNG") and len(png) < 8_000
         assert item.portrait.licence and item.portrait.source_url.startswith("https://commons.")
+    assert with_portrait >= len(catalogue.figures) - 3
 
 
 def test_matching_drops_shared_titles_and_generic_surnames() -> None:
@@ -141,7 +152,7 @@ def test_loader_rejects_duplicates_and_oversize() -> None:
     data["figures"] = [data["figures"][0]] * 2  # type: ignore[index]
     with pytest.raises(ValueError, match="unique"):
         parse_catalogue(data)
-    data["figures"] = [{**roster()["figures"][0], "id": f"f{i}"} for i in range(81)]  # type: ignore[index]
+    data["figures"] = [{**roster()["figures"][0], "id": f"f{i}"} for i in range(121)]  # type: ignore[index]
     with pytest.raises(ValueError, match="bound"):
         parse_catalogue(data)
     assert parse_catalogue(roster()).figures[0].name == "Ada Lovelace"

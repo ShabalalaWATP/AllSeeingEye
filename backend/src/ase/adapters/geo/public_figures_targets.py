@@ -42,6 +42,29 @@ COUNTRIES: tuple[tuple[str, str], ...] = (
     ("TW", "Q865"),
 )
 
+# Named senior posts: country ISO, roster key, Wikidata position item. The incumbent is
+# the newest open-ended holder with a recorded start date. Resolved on 13 September 2026.
+POSITIONS: tuple[tuple[str, str, str], ...] = (
+    ("GB", "gb-defence-secretary", "Q2747647"),
+    ("GB", "gb-foreign-secretary", "Q1371091"),
+    ("GB", "gb-chancellor", "Q531471"),
+    ("GB", "gb-home-secretary", "Q2484309"),
+    ("GB", "gb-chief-of-defence-staff", "Q2962001"),
+    ("GB", "gb-chief-of-sis", "Q5097071"),
+    ("RU", "ru-foreign-minister", "Q1418873"),
+    ("RU", "ru-defence-minister", "Q17287317"),
+    ("RU", "ru-security-council-secretary", "Q38715304"),
+    ("RU", "ru-fsb-director", "Q4399975"),
+    ("RU", "ru-duma-chairman", "Q4376663"),
+    ("CN", "cn-foreign-minister", "Q2664362"),
+    ("CN", "cn-defence-minister", "Q10297096"),
+    ("CN", "cn-npc-chairman", "Q3408540"),
+    ("CN", "cn-cmc-vice-chairman", "Q20791672"),
+    ("CN", "cn-vice-president", "Q553169"),
+    ("CN", "cn-cppcc-chairman", "Q3400466"),
+    ("CN", "cn-state-security-minister", "Q17279714"),
+)
+
 # key, organisation, office label as held on Wikidata, seat name, seat lat, seat lon
 ORGANISATIONS: tuple[tuple[str, str, str, str, float, float], ...] = (
     ("nato", "NATO", "Secretary General of NATO", "NATO headquarters, Brussels", 50.879, 4.425),

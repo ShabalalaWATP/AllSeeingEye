@@ -11,7 +11,7 @@ from typing import Literal
 
 from ase.domain.events import Event, GeoConfidence
 
-MAX_FIGURES = 80
+MAX_FIGURES = 120
 MAX_ALIASES = 12
 MAX_NAME_LENGTH = 120
 MAX_MENTION_TEXT = 4_000
@@ -42,11 +42,27 @@ TITLE_WORDS = frozenset(
 )
 # Surnames shared with many public people, or that are really given names.
 GENERIC_SURNAMES = frozenset(
-    {"silva", "costa", "saud", "sharif", "alexander", "charles", "salman", "haakon", "gustaf"}
+    {
+        "silva",
+        "costa",
+        "saud",
+        "sharif",
+        "alexander",
+        "charles",
+        "salman",
+        "haakon",
+        "gustaf",
+        "mahmood",
+        "zheng",
+    }
 )
 
 FigureRole = Literal[
-    "head_of_state", "head_of_government", "head_of_state_and_government", "organisation"
+    "head_of_state",
+    "head_of_government",
+    "head_of_state_and_government",
+    "senior_official",
+    "organisation",
 ]
 
 

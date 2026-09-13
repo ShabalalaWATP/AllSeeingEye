@@ -1,6 +1,7 @@
 # Public figures tracker
 
-A curated roster of current heads of state, heads of government and the leaders of
+A curated roster of current heads of state, heads of government, named senior
+ministers and chiefs for the United Kingdom, Russia and China, and the leaders of
 NATO, the United Nations, the European Commission and the European Council, shown on
 the map as circular portraits and on `/trackers/figures` as a board. Each marker is
 placed by the newest retained public report that names the office-holder, or at the
@@ -33,6 +34,13 @@ time, and it is the only network path in the feature.
 - Countries and organisations are a fixed list in `adapters/geo/public_figures_targets.py`.
 - Incumbents come from the country items (`P35` head of state, `P6` head of
   government) and, for organisations, from open-ended `P39` position statements.
+- Named senior posts are fixed Wikidata position items in `POSITIONS` (six for the
+  UK: defence, foreign, chancellor, home, Chief of the Defence Staff, Chief of SIS;
+  five for Russia: foreign, defence, Security Council secretary, FSB director, Duma
+  chairman; seven for China: foreign, defence, NPC chairman, CMC vice chairman, vice
+  president, CPPCC chairman, state security). The incumbent is the newest open-ended
+  holder with a recorded start date, because many historical holders on Wikidata
+  lack an end date. They carry the `senior_official` role and the country seat.
 - Office titles prefer the country's declared office item, then the person's newest
   current post whose label reads like the role, then a plain "Head of state" or
   "Head of government". Two roster entries (North Korea's premier, Latvia's prime
@@ -43,8 +51,9 @@ time, and it is the only network path in the feature.
 - Portraits are the person's `P18` image, fetched at 160 px, centre-cropped, masked
   to a 64 px circle, quantised and stored as base64 PNG (2 to 4 KB each). The
   Commons licence short name, artist credit (HTML stripped) and file page URL are
-  kept per image. Review the licences before committing a refreshed roster; all 69
-  current portraits are public domain, Creative Commons, OGL, KOGL or GODL.
+  kept per image. Review the licences before committing a refreshed roster; the 86
+  current portraits are public domain, Creative Commons, OGL, KOGL or GODL, and one
+  official (the Chief of SIS) has no Commons portrait and uses the neutral bust.
 - Wikimedia's robot policy requires a contact in the User-Agent. The default is the
   repository URL; pass `--contact` to change it. The importer pauses two seconds
   between queries and retries a 429 once after the advertised wait.
@@ -116,6 +125,9 @@ marker rendering on the deck.gl globe was verified by layer tests only.
   visible until the roster is re-imported, so the roster date is shown everywhere.
 - Head-of-government coverage depends on Wikidata's `P6` statement; some countries
   return only a head of state.
+- Russia's Chief of the General Staff, SVR director and presidential press secretary
+  have no position item with a jurisdiction and current holder on Wikidata, so they
+  are not in the roster. Adding them needs a hand-curated entry, not an import rule.
 - Reporting that names an official without a geolocation leaves the marker at the
   seat. A later step could geocode the report's place names through the existing
   gazetteer path.

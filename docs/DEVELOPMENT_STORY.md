@@ -4590,3 +4590,14 @@ ran with coverage. The panel, inspector and board were checked visually on a
 development preview route with real portraits; the globe markers rely on layer tests.
 See [Public figures](PUBLIC_FIGURES.md).
 
+Later the same day Alex asked for more UK, Russian and Chinese figures. The importer
+gained a fixed list of Wikidata position items (UK defence, foreign, chancellor,
+home, CDS and SIS chief; Russian foreign, defence, Security Council, FSB and Duma;
+seven Chinese posts) resolved to the newest open-ended holder with a recorded
+start, because Wikidata leaves many historical holders without an end date. The
+roster grew to 87 with a `senior_official` role; the bound rose to 120. Russia's
+Chief of the General Staff, SVR director and press secretary have no usable
+position item and were left out rather than hand-typed. The first report that no
+figures loaded was the operator's backend running pre-feature code without reload;
+it was restarted.
+

@@ -37,9 +37,10 @@ export function FigurePanel({
         </span>
       </button>
       <p className="text-muted">
-        Heads of state, heads of government and leaders of NATO, the UN and the EU, placed where
-        public reporting names them in the last three days. With no located report the marker sits
-        at the seat of office. Nothing here is a confirmed position or a movement record.
+        Heads of state and government, named senior ministers and chiefs for the UK, Russia and
+        China, and the leaders of NATO, the UN and the EU, placed where public reporting names them
+        in the last three days. With no located report the marker sits at the seat of office.
+        Nothing here is a confirmed position or a movement record.
       </p>
       {figures.enabled && (
         <>

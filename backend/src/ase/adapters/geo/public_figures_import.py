@@ -20,7 +20,7 @@ from urllib.parse import quote, unquote
 import httpx
 from PIL import Image, ImageDraw
 
-from ase.adapters.geo.public_figures_targets import COUNTRIES, ORGANISATIONS
+from ase.adapters.geo.public_figures_targets import COUNTRIES, ORGANISATIONS, POSITIONS
 
 SPARQL = "https://query.wikidata.org/sparql"
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
@@ -88,6 +88,26 @@ def position_holder(client: httpx.Client, office: str) -> str | None:
         "ORDER BY DESC(?start) LIMIT 1",
     )
     return _qid(rows[0]["person"]) if rows else None
+
+
+def position_incumbents(
+    client: httpx.Client, position_qids: list[str]
+) -> dict[str, dict[str, Any]]:
+    """Newest open-ended holder with a recorded start for each position item, with its label."""
+    rows = _sparql(
+        client,
+        f"SELECT ?pos ?posLabel ?person ?start WHERE {{ VALUES ?pos {{ {_values(position_qids)} }} "
+        "?person p:P39 ?s . ?s ps:P39 ?pos . ?s pq:P580 ?start . "
+        "FILTER NOT EXISTS { ?s pq:P582 ?end } " + LABEL_SERVICE + " } ORDER BY DESC(?start)",
+    )
+    incumbents: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        position = _qid(row.get("pos")) or ""
+        person = _qid(row.get("person"))
+        if position in incumbents or not person:
+            continue
+        incumbents[position] = {"person": person, "office": _title(row.get("posLabel") or "")}
+    return incumbents
 
 
 def person_details(client: httpx.Client, qids: list[str]) -> dict[str, dict[str, Any]]:
@@ -255,12 +275,27 @@ def _country_entries(row: dict[str, Any], seat: tuple[float, float]) -> list[dic
 
 def build_roster(client: httpx.Client, now: datetime) -> dict[str, Any]:
     entries: dict[str, dict[str, Any]] = {}
+    seats: dict[str, dict[str, Any]] = {}
     for row in country_rows(client):
         seat = _point(row.get("coord"))
         if seat is None:
             continue
         for entry in _country_entries(row, seat):
             entries.setdefault(entry["id"], entry)  # first capital row wins
+            seats.setdefault(entry["country_iso"], entry["seat"])
+    incumbents = position_incumbents(client, [qid for _, _, qid in POSITIONS])
+    for iso, key, position in POSITIONS:
+        incumbent = incumbents.get(position)
+        if incumbent and iso in seats and incumbent["office"]:
+            entries[key] = {
+                "id": key,
+                "person": incumbent["person"],
+                "office": incumbent["office"],
+                "role": "senior_official",
+                "country_iso": iso,
+                "organisation": None,
+                "seat": seats[iso],
+            }
     for key, organisation, office, seat_name, lat, lon in ORGANISATIONS:
         holder = position_holder(client, office)
         if holder:

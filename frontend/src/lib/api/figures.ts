@@ -30,6 +30,7 @@ export const figureSchema: z.ZodType<PublicFigure> = z.object({
     'head_of_state',
     'head_of_government',
     'head_of_state_and_government',
+    'senior_official',
     'organisation',
   ]),
   country_iso: z.string().length(2).nullable(),
@@ -59,7 +60,7 @@ export const figureSchema: z.ZodType<PublicFigure> = z.object({
 });
 
 export const figureBoardSchema: z.ZodType<FigureBoard> = z.object({
-  figures: z.array(figureSchema).max(80),
+  figures: z.array(figureSchema).max(120),
   window_hours: z.number().int().positive(),
   events_scanned: z.number().int().nonnegative(),
   roster_retrieved_at: z.string(),
@@ -90,5 +91,6 @@ export const ROLE_LABELS: Record<PublicFigure['role'], string> = {
   head_of_state: 'Head of state',
   head_of_government: 'Head of government',
   head_of_state_and_government: 'Head of state and government',
+  senior_official: 'Senior official',
   organisation: 'Organisation leader',
 };

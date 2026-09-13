@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
  "source": "Wikidata (CC0) via the public SPARQL endpoint; portraits from Wikimedia Commons under the licence recorded per image",
- "retrieved_at": "2026-09-13T12:06:50.228402+00:00",
+ "retrieved_at": "2026-09-13T13:13:24.541821+00:00",
  "figures": [
   {
    "id": "au-head-of-government",
@@ -193,6 +193,97 @@
    }
   },
   {
+   "id": "cn-cmc-vice-chairman",
+   "wikidata_id": "Q705140",
+   "name": "Zhang Youxia",
+   "office": "Vice Chairman of the Central Military Commission",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [
+    "General Zhang Youxia",
+    "Youxia Zhang",
+    "Zhang You Xia",
+    "Zhangyouxia"
+   ],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEXVzlzcvsHDt2aqr6RLVmWjmF4jOHJ3isl2g3BDYKEdNrXr3qmueoJFJh0ykYs/VWEAAACxpJAnNTkzRUsaJimrhXgRFhgrPEKymIkkKy2YdWvWt7Cke3AGCAqJZ1izi4NzVkrNqqXIpZnEmpGQbWTkyMUWHCJLV1VOOTNTS0V1Y1Rvd289UVXu19ZmTESFXFCTg3Tiw70nGxlTQztWZWaQlo9ramiTiIP++bGVmHDXx8bz5upnRTpYY1XYwbV2iI29s5jJxo+nqG+PclwlIhyzk3rBt560uG8cIR2rp1k3RDnCjYgdMjj07a3y6pGYoo3S0ovd2tE4TmXz6m84RZy8pKFSPUJpOjF1dlr89vgqHCKWl1nkvLX49NScfYDT16vwO+P5AAAAYHRSTlP/////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////////////////9s2q7yAAAHDUlEQVR42pWX52LbuBKFteWWvW1DFBIAq0iKTbK6a9yd3rO97/u/xT0DUlZJvEnww5Jong8zZwYg2Lt356jLujwwh4dKTQ/uvqv3/stV0iQHxgyN+t5/e+KrvJq7nwDQdS5p5jhWqn9+/+e9gdMwrcOPBITz8VQ5Jyd+v5/2+74/IIJKmKcL8REAN3QXRvn+/fsnvu+fn5/PBnv37+/5stJauAf+BwCQuyxXNO3eAIDBYK8dg7R58IsomOM4fwUIoZ8nceaTbjCbQT8AZDY791NZa62L4eUOobetD12t8zSFCGPmzxDEzIcPvp+qCEm4pbMTwwbAn0Jf6GoKgG/Dn9lPmEkMNU0W2q0dZxuxBuCyC72uZarSdtZW3adqACDzpGoj2CT0NvSOFsIFQCmVYqiUpJlSWZal+JQyqjV5sEXYAFxOdeE+sYAsbaXQqljhCyyQUpqE7Tt3AOjavuvCw0Q+tFOmNGtG+ff9gd8HIZBR5Tg7hN5a7ygCVA2mkirtHMiA+M13qKllEETjXO0Qemu94zDoxxEBUpqX9EGMYQxdi6UxSeLsxLAJeGRCvZgYG4CSNCmpZWBMlFtEYBrTiZVy1BqwQvq1O46MCVQcSNk0UHWAWPX7Gblo1C0AYxegJjkjgFS4E7Pm+NrqkU6aUgiRWsvXgNukTn8cAxBgUA98H0eTXMZBEklT6yrJ4ePKQ6jpzw7gMvqxqSNkm0tqBBVHpxPkcnpaVfM5zEVvGeU42zb2NgJw5CRCBAg6n4zrB/NqcQpVlieN+eMPeDqbKbkNcHYATjBJKAKZnFbJDzU8CLIT/2Gcwxgj0U7o8XcBm7/VZBwh/9QgiCBAFYL4M19myuTYpAbYE2Tf2SHsAEwCgD/oUw1yE6MjTgZYGau2+iDAwYoLZDpDsOi8LM1kfzBIgyjo265Ge7wfsHZGZSgjGnlGG6IfR0H62cCPsyiIscAClGTbAxSyZ+t5eyWNowj3YTVizmwiaT/Jst/kpO1JuVMFtEOva4rVQPY3IDzHhM9llPaxF8RBZCY5/Ajk+wBq+xIAkUH/PYcAX1FOk/x3bAx1FMCB4297sAN4pPoyapsZgtxMKoxFfhjbstLF5nAnhE3AI2fIE7MCBAG6YWqoBWI1NS1zynhZll8eDDEOrbR3q790piX3QpajBaiJ0IZYhxLbYkzpSOtB43L+xdt9/nW5vyz5slwOe7fBDEvOuSg88oAG6Q18SBZzdz5uJO2qsgpddvj721F5fHR0fPzyz+GyA+wflKMR50y4IonygOTQJ5Weh/Nfqh8SuzMgAM8NQ4aJRt7jp9Pm1avrYwKo6bL8hpcAlEwI1mBBIX8sKQyk8x/si+ohOWDYCxGGgtMoPc5/enbGe2q4HNHvM4+zk9+PhRA1ZAHto4YqR9+wO9ImFSxecEHPT8ziQU+6UY/Ew/qfb46ua2/4RYIcNCam9UtB0N4W2EcLvi20GB679ATHoA+hmdfbPxteHb1pHveeao7pRShAGCcRhn1A2McTlmEUVS5j7OinMCzggge77Ojde3V2/PSajxhnHm7ACaMoHlAM1A+SvI/jLJZR0rgQ6qsr3MGsC4BwjtX464h77U8cYZBhWNeuW5OBZKZdRHFwEzUHSL08//Mlgwe2ECOyHYBO3UUEwGWDjyqJbBi2gdCdydkyFPrZ9dXRGWxiHu8GAFYctlhPu+GDo5uCheEcaiAmUTvqIQeA6cXrEdcFuyXQphrayqziCJ/8+/Mr5wmQmnywbkZmXF5oWz045WEu6xf+2l2Z8xXOAoqrl39r2mzwMMmtPqmGF7ZqDD5SsBiafrUPlhF1cecjbps+Qj+2BL1Ibm6ipGLLi2FoZZ6g+tvptdDdk2lliAUITwsACksQnOkK0PJifxlqC8CvFUCvAB3B85CYoEhxJm0RIS9rN0Sw9X7pWhXjnq2CBdzbAngtoCBPhSUUhSsOKCnOcXRxO+dozXYRrA8YVm0JOFAjd2EHEaAU7Bmja63vHlXQkvTGCYXm7ggkRAB6FYP7hD3jLFwDKFpyUIjNQ1ZbVtYCBPljCYLKwbBQYEf7/1Zf4J4vt495NiYCQGcNbidBLLCgpDW21nuh5t/9Y/egqSlsGwJ5pdsyAcBEyEYsJGwXv8d//fbNv945qdrp2hzY7aBMsPrI9zWAPf22d/2/dw/bFkCzI2tvA8E0ttG2ccllzsrPHz++eN9xX7Rh0qaCvysGqligId3OQ4S4fH398I4XDiJ4liD4CkFTowKdh7hYXry++5XHJkH9GFIaXot4QUmJLgDG//7dX710iTZVhOzqdnHYKGgj7QDffPWB1z5bCrjNsC5vCcjJa/uMf8SLZ/fYoNp1TY812ln6sa++zG7cnhCdkR3gE16+Wy+47jYvC/ikt/fV8kAP2Ajuvuv/rKyM71s1NRwAAAAASUVORK5CYII=",
+    "licence": "CC BY 4.0",
+    "credit": "Пресс-служба Президента России",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Zhang%20Youxia%20%282017-12-07%29%203.jpg"
+   }
+  },
+  {
+   "id": "cn-cppcc-chairman",
+   "wikidata_id": "Q64543",
+   "name": "Wang Huning",
+   "office": "Chairman of the National Committee of the Chinese People's Political Consultative Conference",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAAD3XEv4YVAxKS43Mjr8+/qTNzavaFAqFxPLh221dVqUWUuWZlKxemTPWE3pp5Hx5+bUm4WRVDvUlHpMGhQyIhyMSDSrWkXHe2RNNDFMKiq2hnBtKidzRjXOZFEqCARyV1A7N0KpRjno2NTws5slHSOJSkhsNzT7w6zFdFzUpZD1uqVkJRtNJBrUy8m1TUQbCQfZ09JwZ2p4dXjzaWG4s7T149xNREivUzzsdmSNdXJEOkLinIONZmeKLCixpaW1mZNsTEFcQDiak5QcFRKjaWxkHRrRu7ahPD2oj5HIrqm8gV7VxLybcFxqMh2FO0GzpJx9fIDhmHvkc12RjZFaVlm7kXmkPkLhy8pDDg4AAAAAAAAAAAAAAAAAAAAAAAA0DzEnAAAAYHRSTlMA//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAADGqDy3AAAFN0lEQVR42pWXZ2OjOBCGjTASEsU0G9vgEte4J9mUTW+32du+1+/+/x+5kTAYME6ZD5AY3kczr0YCSqWdgURIEj+U3hooEwKC3i43Vz2Me6ZpcsYb8ojU7VrYbFarKoTn3USEVyFQNBz2qnIUnNHxeuJX6cVC1sm356oqx8GTUDs4tgK9Qu97arUq5wg3MQC9oJeQ6anqRl+tVqMqTFGEtNuJZMrmfMSEUG00Gk2OWCUASXpmeAlhkbIKQgG41yFaUMfcTLXGLj2v0vtF6B/uG61uo9kNbNd1jS6kghMXigjJFbPDAY0uH1hr6YE9tSGCh6o6R9LuFDZXehzQ0FlAaRCAvDIbQNhdaKhUX+cJm7ZH+OBArd4bjNp2BWK2v78/m02nxkLtrNIAVDy+hEIOaAkAEGazSsU2NN0IGmqnt27obQLKZNA5UAHA9FbLMVyQt1q6QYKWqvbWs7gFSK9cMBEA3YARI9Adjdmubgz2pwb9pqrmxsXsAs+sfeQBQK8TZk/dgNHKNDAgF0LdBT6WsvtE4e4BNXRU1agz4oy/1wid7TPoI92ggUNQPoq3n/OxtyCUEJ2Ak4Y9YC6lFLwgZmaTgkD5HoyWvOnrc1KnjMvc+mCfXrnUvapcsT+2AGgNkGJXxK+ST6Dk30FPK3UooUIHFUBQcp4HRClIqeaIzm2/Ria0XqdXlFSgj7ia0snkXMrus1LkQrIKN/MDAEKgBJcw6EXXIBRwpL7lIRLrWooj3vUQOie+T1id1on2vebAVJA6ACbJCJuEM4A1hd/R9t9DDhMGuRvMHlQYmUzaceHxaFIEkPLBr5jtHhDazIXlMIAqKGEkAqD4GNNKW2pxMt/zFAg14OBrNcIm7TaKR06fpe0MouvvfbCRODVH8zkJGlM4nb8N7QSYPSFk4gBykrVgEzsAEurVHIHwxYQSv12s3w0wazUonbEJ72iqk5RvrwJIyAcDgGBQoGgOq78RAEtK0xxHEwfHIYZdVAPaPQumd8fFNREOIXd9fP6GDNDxU+N0qulAgAQIMwJLGePjoiIKAagdqt3+6WddhylgX74YRl9RjtSwZqJj9DIAVuNiIXdP+8phoDMe35YKAOSy3GziPGN7MZk45C8XZ6eWpSg/L3SdGVyvvJPhMQ2McGSmasmtRi73oneTZt/istOp8fdX/ofym1yGuLxsyM3xqh2nkdsPeqEXv9qoS0UQPs7s0UWUAQfI5b29ckOUgjIA+HeFm17qveaEq/oP49E8/K8rAJegF5Q9gEAafHmVIgJCKzxvyvwGWR4OBeARRNaRuphj7HUf4wzWIRChH+3KAFiFXsQubzI4AsDP22svxOH1v59OtgFl2YsfDL3F5mIMGJ4pymHf6nc93LIsa3l4lAZEd6rrJ5O5iItLpyBb0D2W1R+HI+7G8nJLnwBKwrs8YChctJTrpxGfDmtbLydP5/iVLmvCnZh+a4xHp3A+XI+QDDRMAUopQDnjoqLcPmH8Gc4nMUDeTqAYIJ+JRroIMb6G8+OzgFIKsCEccoAGgB/9TRvE+qGcfU0rSkG4qN1gjD8pSjfrgTzMvygWpPAnB4xAjzVFOctMQVkuvQLAXbQ44B/80cpPYqmQkAWcxYBfb+6WyfTt0pdKw8SHlIuWxgH4w22mkeUdXwy5ZhreQgofsDDhIg3Y/cmSm4d3CeCHWAl7UQXPfTTJWyZoAhDK5cL+KYiMj4cxYJyQX/HlmAKcZAGvkkeItYsX0Sxg3JDLLxSfR0SEv6xlBGi+TZ5Mann5VbQy3n3X/1EceO298ldJAAAAAElFTkSuQmCC",
+    "licence": "CC BY 4.0",
+    "credit": "China News Service",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%E7%8E%8B%E6%B2%AA%E5%AE%81%20Wang%20Huning%2020221023.jpg"
+   }
+  },
+  {
+   "id": "cn-defence-minister",
+   "wikidata_id": "Q60995154",
+   "name": "Dong Jun",
+   "office": "Minister of National Defense of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [
+    "Dong, Jun"
+   ],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVkZGOonqjKpaNdEQbg1t5nTTmEIQ7jp3GciGapcjgsFRnhy7SOe4e6tcarY1o7RkwqLEHrhjXCtsjAaGUAAAATGiawZ0vMiG3XlXaxd1Trp4iQWUkQFBv3tI2xhVe3ZDqUZVHKajEJCQ7lmnTvpnrHhVGweWe5hW2rXEVuFQbVmYZ0VkrHd1CtWjspKDLVdDBTNyyWdlPm2eNuRzdvSUPGfWbYo4/s5OuTVTnUx9KJRjZTQ0lrZ21uZlcrGRPinILEaUXi1dzz17Htyqjzu6SOTEXPpHNuOy1IKSSRdWZMPETb09wZIC3NlFW1lWqvqbU2NkUyIhqQbGRWWWaRiZDXtou4mZOLJhQyNDqJNyzheSq3ioNzORfnx5tPKhZzJRN5Ut9ZAAAAYHRSTlP//////////////////////////wD///////////////////////////////////////////////////////////////////////////////////////////////////9wZNmvAAAHyUlEQVR42pWXCVub2hqF0Wq1473n3rIHNgFCDBAgCJkTYxITkzhPrdbWof//X5y1AYe2Ws/5nlbz9Ol69/q+vfaGKJ+eLYdbQtTn8cC27ef/l/L0P9eXLYeVGKWU884OCPZA/AtA3eKcrmlra2ulUgmMWAdhzsk/BMSElkpra4W1rCQjlhYI6h8ABgFnkGuFvOCjxFIPU/4U4heAPbBcqS88lPTAgtOBHRMuEdafALYd0F/0sIAmnHgHPYTSAhHPA2z7lDK0vfJILYsxHtRPbSsUwhJE7D0DKJu2LVIDGIH2iIApOkF9x+6NiBCeJzb2gqcAYfmNPXApywiFn4bIqKjH+hwtWEQCxMrvgPX10LJjWmbYwrvlt3MHEhA0BjvwT1JAUA5/A/y1HnI75piBdud/e7tFGWUa9NRq1AcxACO0sLcRmL8BCDfKXJcA5rOWpmHxQou5V77f8mWirXn9dIeTEUlnYJXX138GcM4NwxjEvEwdy3KoX9iGkZZ/tburLHQvEOe6FUfiDmB+X18vPgZwXj40DPc0xhlgvqb5TCtMWo4Qwrm4ujr7sjuPT7EPMgWe19mIJSD3kAHKRvnw0HDjW5c7jnNm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",
+    "licence": "CC BY 4.0",
+    "credit": "Photographer: Eng Chin An",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Dong%20Jun%20%282024%29%20%28cropped%29%202.jpg"
+   }
+  },
+  {
+   "id": "cn-foreign-minister",
+   "wikidata_id": "Q701801",
+   "name": "Wang Yi",
+   "office": "Minister of Foreign Affairs of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVcLBsYUqSYaV7WnpYYLlp1iqdtV1gfHSjqWiCppK7bJSQLZdJUaYydL0n8zwhpPFLSY1f1oxK2z+afLhnZ5/KVq8WqjGwuR3Lu07mFfI2eUStiUDvpIkrVqcLnhXlShMfNf4QEN40AAADEucouRnbxBCTMw9LtARv4+fr21tD45+zRmIwvOFP4KkrwyMr6MlPWpZUnO2rouLC4qrfOtbXyFjPTqK/HiHTuxrizeGl0RDDV5vG2hnQxTIGsZk/55Nnlq63z2+eJhZCQVkxwdolvOijMk3xLRk6zdVmOl6uPSzHrucb91wXT1dS1tcW0xNbYAwn1IztSV2ivlI/UxrLP2+mRVTixiYYUKlGWpLeITErFe2lESm4Id+tvZ21bZHVJJu4PAAAAYHRSTlP/////////////////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////8Y3W8LAAAHAUlEQVR42pWXB3uqyhaGFRBret3l3BIUwTFsRASxIAbsscQaNTv+/39x1wAqGD13n/XE8kS+d7611jDMBJ5OxsZKbEJ3d51QqBM6fVXg+L+vfnxsxuPEOBEKWaEXi7bGlvUPAIXYahOystnxp2V1Xpz4HFuDPwSMRm/frbvOhiYm0bzMyEo+L0MsPjuDwR8ACqnR6Or+7nppTWSB5zM8z7PwqvFFeTEc5tn/Ayj8xAAiNLheTvlaLWNHLcNxmRrPC9HZcsAyfwdIFX6mUukbazm7ZXmQc7vIYAIfHXZYhjkNuErhSJ+FhjNWsA3sCTUMmM6WhwQPIH11HotFIqkRsby+ZgSceG1PwHq+yA5fAOBF7AGxyPnr+etrJBWz7oYDuYgFvAvIuIBHefiSBwLLfgVcvdoRSaXOEp27vCwVedyEDE4DXhnbwKMcDXVsC8wXQOwKhn+9ShcKZ1bImkhS8REI9brTiEwdmlAsFslJ5wQglU5HAHAeKRQIerzBAFyFzF4P8qIkvlhOEXYEF1BIp1Ox86vIORDMcetzIkIKNQcAHPBhGxBF4vObC2C8gOcCdC9yHkvhLqw2LXoikkV5wNZx/m4W0EcMaG0duAQXABmkI5G0PQ/Oxhc0EsVFqzVOvLD1uptIvS/LIqr8+DwC+GUDQI5fqUYrQMCVJk0HIKAfUAyW6Wxa4dYCqaU9gDkOiNEYIKIJUtvz710diYosVjAr0DCbzdK3r4BnH+BfqNWakCJCSk8QFJVoizLCpLnebrcrzR+THcCeTluA4x4obzc3RKsiiVpFEqB8dVEXBbFdkWAeSBUA0CZjT0UI2wIA3lyA6+DmRvusiKKm6zodoAmkKRlZM8gFsUCorap0l3XkLGtbAMCzP4WIfklUoImVubkK010TSZyAzEY4HAh0NaTO26wnMKDw7E0hlbpsfu82RbwU1XsKm6kLAscL9Xp+gTRVktq6yLoFwA4YG/DLByiQulYRYTkR8ByqCzwAJP5W6OGpLeltxhdHHKTXKqogqZjBhB4Uj+fAhYSryBfJNmJ3NbBz2AL2NUhfygAQkSFIiJTqgsFzGZAbSBR4Caky64unQOHt0MEbtKCJEBCwBSQJANAkXhCKZFNt4vS9OWwB6R0glSaliorEooDvRBKGFXrF4n+gAgIAEHMQAZzBAeCyCBdCFYQ6jzSkEWtdh09BEAykijsl61hxAG/beeQCcBFESRIMzejad8GNShiSIaqXInsQDqDgA4xizSYAFMlYk4JCajddXTXWKik21bbCujPAC3j2AeBtpCIogggC8PgXqVWQYiBdVdd6hf1SA7uGfsBodIkBCKmKovTkvxQFeqKs22vNDxi4gF+7FNxIjyKgEBX4I1arixWxMs2uirT1Wp8wRxx4Ac5bOqY1ScgBdU2zcUFf4LVkrqLmpY6nP+MvIgbYKdhyp5c3Gtz5kISpSQppKApJIigB2dQ1exVg940EB88eQMpdVcO3067ehoyh8xphrkydhC+qNleYryngDHYA5+H83uIyRKPbJRTD6PWMngHTWjE0orvwDs863wJPh4DCBRXluGigUTIJsteDhRHfiyRJBAjW3wD3dj4EnOWyS44rwzrcKGmK0FN6PUVCyAwQzJFwAak9IJbN5XJlrtwnAg1YxzW0gLVwoa2O648ALpK55HuIK5f79yXwUCqZpa45LzXmcl7JO6L8wAd4cgDu+KCHoK7BwlQkSk4Ap1GR804MBp4iPO0AW7mtz1HjW7Awle+JRsNhzKc0jA/bxoMM7AeL46BwBnIcmICTmPWnU/J+DgiA3Nda2W/5LxVwAW9Q+7OP5DZswrA8m/VZjMArwv0jHw5ns3QUXOQVRZbxp7wFPP08o/dyG5F8T5SBMOv3p49TIvBjUutjAEW1XmDfC+W0Y/d0/ngIJv2EZJLCnYDo1z7D4fewxb0AAAIQDKPksYf94/3pIxFMJqsHhKGzwetQFPX+TvfLYYeQpT6+MUw06tuhJI9ErupsETdUMBik6CgXdQEQHyCXZe8ma18/XxKgD0U/qN/xB5oucy1qR8iO84x/m7cFUO+5qieJDD5vUPF4sLyMch1sIblFHG40HU01SYWprYtcsJy/Kw8HSQzgokPuIfuQzfn1PkDVGft9lwaV4Lhb7jYUjAdhw5ufdWD8ZPIE4MkBVJ1psPXAQhlur4O/g3340r92fvHqvdt9O4WgrxMPCdyIMgBYuyUdF509ceCoHkyFZJVaYl0wHrc/uXLC9nf6yOO17xYVnxigCCHn4BDCP//doQs8UD5ADiv/DTk4gOvqgf7rse/hgJCccVx8V4TbxB8cPL2zEQAW1AAAdjm5Pzz65jz6aq6PAfH/Do/JTx6+vRYSGPA7GPxHp3cPpJpj4/HTV/0PJCCO2Z9ZETEAAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "Office of U.S. National Security Advisor",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Jake%20Sullivan%20and%20Wang%20Yi%20met%20in%20Bangkok%20%282024%29%20%28cropped%29.jpg"
+   }
+  },
+  {
    "id": "cn-head-of-government",
    "wikidata_id": "Q4414390",
    "name": "Li Qiang",
@@ -240,6 +331,71 @@
     "licence": "Public domain",
     "credit": "Presidencia de la República del Ecuador",
     "source_url": "https://commons.wikimedia.org/wiki/File:Xi%20Jinping%20on%20August%2018%2C%202026%20%28cropped%29.jpg"
+   }
+  },
+  {
+   "id": "cn-npc-chairman",
+   "wikidata_id": "Q127295",
+   "name": "Zhao Leji",
+   "office": "Chairman of the Standing Committee of the National People's Congress",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [
+    "Leji Zhao"
+   ],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVpZmJgTiPZll2XVzVbNR7w4Gzb4eKOl6DYb0yqj2KVNiIpMRShrsXUqJfmXDpZY5F4iIubX1koZwbX07WUfIf8PUB5knvRuT7cKS4OjysAAAAOGhA1SFARJhH5VUcMRwj4S0MQNwwKVQbVtpSsiHDKqY06UVf4Y1JFVVWzmIjuRTwoNjTMp3flyarL1dYLZghIRy0nOkW0lHU7UmHrOTrUuaZFVmbZ5OqTZ1AzRDeLl4+VeGbL2eLYxq7Hl28oWAbo06+5x8+3pItyeW11h3eneWlJSVCvdlCNV0gyRg2qaUuUhGzPRDTixZqZp6/RODCRd1dqWG7bwZnEnIoPdBB4ha7SWUivtrRueKSvRCshLBZseIyIlrRpaYyrjIN2aEtUNLbzAAAAYHRSTlP//////////////////////////////////wD///////////////////////////////////////////////////////////////////////////////////////////+TYTX8AAAH2UlEQVR42pWXB3faShOGVxLV4Jrkft8NEosaIAEiYNFBdDDFFDu4xO3//4s7sxIlxfcmc/A5Pjbvs+/Mzs5K5PO7kXDDNG3+f+9/i/z6z3GIRDxkMsDyhJ/IVP4DQCrlAvxIAAf/P+EkIMi/CfCHdgC/mTiJm7ZtcpJEZUmSfgPg51NxBkiYJ34/z/t527TNoxhYAIAU+w+A3+8PgR4BKRBjnEAONgOgBUmS/w0Aa/p5BrgbzwaDcDjsTyVAjwBJRoAsy/R9gM37TxggtAr/NRgMyICEeTRgL8G85Dn4fj8OAPTR5FN2CABVQgb1YL3eJ33CT6vThL2MxHYAGX79FUCh80TchNqnrgYgH5zVzwaEe3ur/9Wf3dkRaRuyFIP4GaAok3kC9fErWB7W7/f7s/4b99Ynbxw392EOe/2esAPkFR/2XTx+l+6fgXv4zGZFLbyarQh5E3ygkdxC/BqgACDBAFeD+qDeMwy11zPCejarrRqNN8L9CIh9D6BUUY5cA/1BsN5T1Zub69y1ep1lBKgF6iSEePptIV0AyBXlkQHOSX+mtzq5awxVBUC2uFpx3ISppR1A8vrBA+RdADSgQOrBTqeTy13fqKqu64wwW3ETKruELYAeACgC2nMXMAi2UJ9rtXYAflblItRt5dg+pB1AYQCTAap9Q82xaJVUJ+sCwpCCjAf6UL8HYAEo5bxNSGvqdS7XyUEGGFlkOG++CJxnimmwYjKQpBwAFOpj+rgvXVSvWRFAnXMRWWfF+WADqUIPPbCDCYAYJEApPWL6+BECWhgltVQ61hqNhuY4Y46DZanSpoc7iUkAQJIxA9ltg/ijr6hiDxk9Qy8Zrw2tCJENC4Ick38NgMzQmjx3AXe+7A0sXdINTT9+NXSw4IS1MfcosJOMKeCx9ACSCwAH8sQ9CVCEHuye0SCadqxXX89HvvPquAgOHjkcKd+wnZVdJRAA7tkmeIBQddjraTNCGjOjVG0YhuZACvxYgPMEbYCAmCJvE2EAGQHKFuCoRehgyB6qkNM0qMMt6LPCUcjHzkIMGPQQgCMGHQgJk2VwnNNvcqpeui3puU5W01W9qGVVAIwjbgvEXP8e4ILgjEDAkQfQc+pNR9VhC6AhbxyjxFrBmR5NvR7aSpkdmSNYGZp3NyHhOlBvsJNvoRt1ldewmRwoosAA31gOse3JjLSJjLuTpxNvF+Oplgo5dDrGrXp7W72aDku67oyn4dCRC/jm/gCAUnAgsxrQfH5bw3icb2Whh0t6SWsMyZWm67dOeBxyQkfSLgc2YWNYS0km0F+ykv+6B6SOe7quGqUcNJNuFAEwnIZ5J768aMOOyxEsI2WtxC47gla+5vPCDhA/VrNQxFYLzrNxiwY0nudD9ryd/wqRx66TXSfIQUD+7zybZ56DlAOTRCsa2nB4BVHVdAcBJqfkIZAAR4JNeQVaEgHwN7rcA+IpAID8/PX447BarRYdx+HvbJtTYHRDtjQmty/y6CB/IceYA0oj5g4AFqB7sIOM1+F0qkHw/PjEtn2KOziwkRWKJVU8wFfFbeRtCnFeVYdQPTiI46Gmjcfjaci0Px3JsBK9oFjKtoxXBAwS3IX89iS4fYB3e/F2CFOh1IJd0LTqlTAWlvYnAeaBTC/yoEcOXPR5SAkOkwK9LCT2gHhiOW0MNRgKPZBrU58g8GFf4tO8DQSlDW0PrtttyAQc4GkEA+4mbB2Yy5DW0GawNgT08FTIdjK+hNnG+rfx65LUnuCYpwhghZkflsBcLkMw06AEWqN6VR0L4w8tX4abczh5cHxRGptEsJXhdoKJBJyJDfIdYG4vSa8ICIAMpyuhqn64+QLBgVjGNLAFIzE2o92hSn3mdg8BcGKGfE/32EkaHIdGVehZnfsaEr5MavJkIoOQ4glqt2U2lQHo2+nRwXmy8FSZacYr1nBYPQ5YH+oZBviSTqe5GqXuowb04fZiedwbuBNGIgACgZnBcliVKtaH+zMPIKbL5XI6WcNGjrH7mbC79dHT312NaqKYFAtnlUBAQ/1roGJZrfu+BwALyTRGDSfLFvAZxhHKz0mtlkyK8CmQZiXQghSMSqUJ+m5aHGEVal9qIqjBRDotZmK723li4uLpJAbqxcKTBRYCxn2ggga60YwoijWQZyJiOVl2Cena/gEDL2WwBlJEiLXCWbMZCCzIUwUzCFiLTHqEiEwG9Mly+fISEQdPKOdMDlI3aoXnphVYlB+CLxYDPBVG7B8Z8fIyeYmBtTx8yGKrb+WZWmHRrFjlzcPHURkA3W5ZHI28/zI5QsrfP+ZB7jt9RkRAPfjytB6VLQSk9wCRfREAPz5oHhhAQKW7iJ4G16P7pmVF7/fSS8gCAcnP7wJEBDxXut3Thycyijab3cXCK0EBapzxEvn5YVv0kiggINi0FqebFzIKAqB7VtiyL0UP8KvHfQ+QQUC/YgWjz0+ELABQIZ4+nbx09eI7Lxx7B+lKYLN5flgDwOpau/JBjya/k//4yuM6iMBaTSjB88sLqUMR7/eAAtr8t5euAgMUxLQVPd1sNut1HwD1wn4Xyj/of37tYzUQRSv68BANkvN1t2mRgw4o/8aLZyYDK0ajpw/RhzJZ3zehjXb633z1LcA+Pp8Gnzcv63W9stgZ+IOX70zw+WUDP+t1MLDtgj96e8d4iG5OX8hH1gXvf+sfV5w6BYLWE+EAAAAASUVORK5CYII=",
+    "licence": "CC BY 2.0",
+    "credit": "Palácio do Planalto from Brasilia, Brasil",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Zhao%20in%202023.jpg"
+   }
+  },
+  {
+   "id": "cn-state-security-minister",
+   "wikidata_id": "Q18977835",
+   "name": "Chen Yixin",
+   "office": "Minister of State Security of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "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",
+    "licence": "Public domain",
+    "credit": "Radio Free Asia, part of the U.S. Agency for Global Media, crop by Abovfold",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Chen%20Yixin.jpg"
+   }
+  },
+  {
+   "id": "cn-vice-president",
+   "wikidata_id": "Q48405",
+   "name": "Han Zheng",
+   "office": "Vice President of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAADjyY/axJLQuYy5tLardFqQWkS1hWsYFRSWZk9VVVPWuHimaE/a2M7Wx6uOUzvGlHp0RTLl0660p5Oxq6qwe2MNCgmHSjRvOSbizKXGuavKxcdLSkgrJinkw3nCvMMlGhbk49vKp4hQNyy8uMIvIxvBiXBRJhjLmoDh29HivHC9s5XcwHns6+N4VkfLq3Wak444NDEYGSiSeGhvZFdsaGbq0Ze4p3eiXUdlKRZFLCN5dXK1lnjc0riSc1puMh2Th3ThvIn08uqxnItIGRJNRTyOiYV5Ujx0TUExCwOBTUIeIDFaYFyxrcBdXWCIPSWinqTEpl65hFmkXT9lHxCYk36QbGBfUT+8t3ZaMB68wL1ADgchHSGQgFzf4NcAAABR7P83AAAAYHRSTlMA/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wAbsZ+ZAAAHwklEQVR42pVXh2LayhJFZVesJCQLIVADBKIYGzCE4t7txCm3vN7f/3/GO7MSdnJffJMMlijWOTtzpqxUqbxqSTIYDLrdJEm63cqPWvJi3dIGPwDvxjFB9fvFYtHQX1i+F94dJEm8mOfLdpZl7WW6edsAhf6dFN2uPkga5/lw2CZ8llWr1WyYvtUTfUD2TThU0zd5G1atNqVVpbXPE0kw+F0vBoRfLYftYbaDP3M0zbg7+IYTOizZZO1hVcKzbDg8A1XpRNPs4v+/w0BwvWtWC+erw9zzOMzLz7Iiiuqiq5f2NXws1z/P5PLZ2OO2zYyAMSa4NywINkkBb3yNofh90Za+5+8EC4zRHplhMCEZsmzZ0BuN13woqFOSLJszCd7fxx9ORjDPKYph9XxQEHzFhQHk0Qe/tomAG0D3+4CWZrA5XADHUn+OIf7N+lIB/ZwC4M/AEo5DnJUySnCD7AsfGr7v088mCLyLi9EIkcsYJNdoZDBvKNVdSygu9QH5jMBvFAYJMgO2ty/hfTJoQDqitqvVf+e+f3ioaZp/DPsyg7EeN3RI4OF6ufAIflxIMiJg87M2RBheWJp2ZJX2EkHjp5/0OHEWcPKK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",
+    "licence": "CC BY 4.0",
+    "credit": "Foreign, Commonwealth & Development Office",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Han%20Zheng%20%2855309839831%29%20%28cropped%29.jpg"
    }
   },
   {
@@ -632,6 +788,120 @@
    }
   },
   {
+   "id": "gb-chancellor",
+   "wikidata_id": "Q615077",
+   "name": "John Healey",
+   "office": "Chancellor of the Exchequer",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAABUQzZIOS3Op5GSd2wGFDO1loiph3jpxarZuKduWVDYsZjEm4qJbGPkuZisioOahHa0k3pRR0djTDnk6O13Y1mje3CGZ1vivKYyOUjQ09kXIjjW2+PFydE7MzDEmXvsw5sBCiy5o5AqKC+wuMUZJULd4ul3amRqUzynqrI5QEvKqKGPiIkjLEW7w87Non6UmaiEXVZlTEVbVFN5dXOao7JPVWOzs7ozJxoLGkGXc1qYlI5zeIbfwK8UFhz606hmXmJ+hJPj0NOWWWChfF2hnaHg3OBEPkEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2qzK2AAAAYHRSTlMA//////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJr6z2AAAGSklEQVR42pWXC2OaShCFA7vsyvJGARXBCFFjNM27adre9r7v//9H98yCb5Mmk2jUeD7OzO4McHb2agyuBk1cXV2dfTSg0fI4viqtvOF8QH59fT3I8zIRjn/uMDkfWFY+vfr8+Z1yi2KSPzqdn+c6Ok4YW9b14PvT4t1yK3E6jdpvQsZXf9w+LS4+vUf+MhlUPzvnHf3b6B3fEbe3twAUw1/qrUnS6fidNloHjsOq29uni4ti+AZh0ug5jDfH14ROp+87zGFjtgAAFoo35aT3z8lAC4CcDDjMjapqQRaKonfa/qTx7zN/rd2kQQ6YKyPxrC0Me6+lb01inzm+LkG/vwHg+IwAMvyHkvh0itAC8huH+UjBbwH60eiZK0BYEGGxmr9mgPs3jFHZ+40Bel4DUAUNuFjFRzvbWsf4ht0wqhkAdr9j6yAxMUQUSbFYfa7rw95YyyeKgaC/72jpbxuATkEIKR7qPM+n1C6nDEgcf0xH0wBtYCcD6LmIrek0n1KcMDAg/XhMDny7D21TyD7bFJFLbk3JAn6nx4DYgXwcjZnv722Evs6CFoFzcf2So7vxyI8SmPzOxFiOSe/3d/SUiaMBPORibuWWNdVrfgR4ZBFZQAUc+Ef+9NQUgwApDPAw3Hz/pe2ByQawcmTUrkG7DO1S4LMIDgDw+LfpywahAfEmTJQ5oiUnACOZvdTlE9gBEa0B9zwuBpM9gFLqch2VaBwgyLOLHyZ5lmWcSymDUAN4HHJzUCLwBMDlZbcNw6gqAkQyinjGpYCcySzxUDyOCgYooefNed/NlNHGHiDrRgxafD3zMhiTgjkiUx7yRsiQSsDnnDHFuzuAzeG7Tj+qoMe3vCQhRGTbUsH+Qxl7MEQ1gBX8CYwtoJUDoDLaggRQqhzMQZCOTVtPBGIpUgKkMCM5C5gyNwSt1aHcO14xsuAFohI4GOs7qQyCQFAb0FZOKR25DGy+BWzMGJcsyCQBZHO0MGU+w0tJDJcKKlBaL+PLYOmdAnRxCKyWq2eXDCBkvgsA3mu5i397WMYU22Kr2gEYkGRf1/sAlJT1XS+VrB0QmCchLEC+3GawCzAlKsXl2KEZbBMBgDQiKd7TBxHqGzLBhNqKdgFdmIz+Hq/34dhlNiY5diNaCQDsZ56psBIsjU+nYEq4/ErpooNE6oKAGjCUxcZ0odMCT1Qo8MFGsXVg0g93XdkAmMulM3ZtN3WZxOu2o0Iv4fjndg1aB3hvmgAkrh99HVPNgyzlqevaUGdeILMU81TQJk8k3CljD2CSWodh99GOWEOZeanXxa5n3v1dmsr0jroRW4IrgeyMXYC5Ewbs4Shpmnm04t07rkyPlCnaSxIDRQiE2gPsEbitGybjTRhmzAMKamVO3viuGEekbtwFmEpx6lkaADzlAWVOempoSTVIHuI9gnkIgAmyGnKlk+CBd6dU994EV9BUV/EvAQkAVCyzNu4VpkmSZYlxT+c0FJHHuwCq/tkRwUDLiSqQnqlE5FSVU4XKo1TQaCI5YeA4B5HQ1JH8Dr6jKEyUF1AxcEqBAXUCcGRBJFKfBVMqgh5lGCcCVVDI6oT+AFCqKqQZnEK6XC5dN6D5wgJehYZSySnAURIVAWCAS72GKWZaxcNKPcxVqE7oDy2YQagHEjZDmmIT0TwUHirAk2T1WMfHgANCrQTXy6YHKsJFBbhQCQaiuLDK+Eh/mIOJczDK1gQmJV7OBVfY4uFw+GCVx4DDJIwEC8GE6y71RBU04xV1RzEqvll107/7l2kHFmLFpT4XMG0kTOZab8+K4iK2asM41O8TStOIY2olVycRhGqe0JWB3RsVxSfcfNS6DV8FlGUdPxj3nBC0jFwlc2pS6HGh/VznRDh7g1CWX2KF9U70WdmbQx+2+mEx+m7V60uT1wgAoANUjI2HrTenGYF5UvRGAAyLQV1vr89OI0rzywJnaIwvTAUOH2ik1RB6AGa3Vp2/fsuy9vDluVIQegpDJaRxJka92YwIoziv37ppajIw66chT/RkDEOyb/d6DWC2eFvfIuL627BIsHK4rgoF2afQgPfcfBr/lT9WuK+Z01jEQBD/rvXD2TvvXcsfj7gvGq6UwhXeojfTABz/A3fPj1iw0ewCPfDc6mejD9/BD3t/Bn8Fjf71b/0P3M6WM5L14M0AAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "U.S. Secretary of Defense",
+    "source_url": "https://commons.wikimedia.org/wiki/File:John%20Healey%2C%20United%20Kingdom%20Secretary%20of%20State%20for%20Defense%20during%20the%20NATO%2075th%20Anniversary%20Summit%20in%20Washington%2C%20D.C.%20on%20July%2010%2C%202024%20%28cropped%29.jpg"
+   }
+  },
+  {
+   "id": "gb-chief-of-defence-staff",
+   "wikidata_id": "Q19663463",
+   "name": "Tony Radakin",
+   "office": "Chief of the Defence Staff",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [
+    "A. D. Radakin",
+    "Anthony David Radakin",
+    "Anthony Radakin"
+   ],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWmICRqGyJcWGdpSzpjcpSjW1PRIiElHBwfO2LGZlatuMpkN1V2gZTgmn7tsJU2SWSTnKneyaqCfYUfV4q+p3/wQT7Av8De3eB/oMcAAAAZGRkrWIpriLW0hW/np4yueWnJiHR6k7xTeKqEm8LUmIXQlHiQpMmQZ1fUx7WTd2jr6eUYM1gLCw2OBAzZ1M6YhnN1WUrLx8UOKk/XpIyFmbgkJCasmIqJhobi2cysqqa6trG2GBjKjIPlNzPEe3D19fGJWE1saGtegK/l4tqmdFySlZiRa2Gwa2dyY1YuSXHRto4eHiE1YZOzlHizo5KvjIS2IRyQcVrlnYrLIiRCbqJ5dnZHR0slOlZ8l8LKuq03NjfY0rs8baJKPTNYV1lweJECBi/KAAAAYHRSTlP/////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////+WdVRwAAAGb0lEQVR42pWXiVbiShCGA4iMjrPfTUjbDSR2EmIWdgKXRRZxZlBRcF/e/y1uVYclQXDm1pmDnEn+r/+qrgodaX9jbP8LcSXdaZbR3XyXtP6/o65xGQRUrWr/fwAmjx0LAYDYlrQ5IP/uNwGPk0xqWm0dbO/Emzvx+NkdAlwE5PK/AZhkHh8zqa9dq0DKZ2XbtnV9dFftWtUiAHL5018AJpPJ4+Pkcat/ZpfL5yjnY87H9l212s8JwM/UW4DMJAPxuHV2Rs5g+bLNh07McYZDbt/1czcAePczldoMyIiYZCq2je5HeiwGcojYU8zRP51CEXIASG0AZOZR0Ye6raP9ga5TSgmhsacnp9P5lMvnUyLWARZ6WXccDgRCmaIoqoofzImAl+jpHJB6DcgsDQwdZ0x0QkCpHIhQVdaGLKbRXP7TCuE1YMsexjghhKkztQCoJPbk6FGxDWsBQnt8LB9n9nQH9YpSWOgPCmCBOkN96G9DkCAF9TLGHmRPVGW5PARUgrGxTaY3S0AqCJivj1Ep2wgovAIQfTSFfUylQgRp1YBcOT+HAoQBogjEtqf5XH4d4DgMgAqoBUzhI2o/fpwBqG1HEfAzRPABx0GALgBi4Y9+CQWBkLH9KbfchgBAlgN6eapD68H9fhkUAVBgUwGg34QBqQVAXpRQlr/a2Lu9dsxpc8agGRuEO+1ejxDdRkDuFUAOR0WHJuYEcuacMpUBChuLLwCpVJDwGoAOYDmO7UTpAYvTwcAZELBgYwq5oAMBSC+1+HWrUgYh4YNrvdFgAKCMdJ54GypLytfgILoVshAGwPeXyhkYVxsNHCXGAAB/cWdBTwZgwHsFSC/1CMBGVgsQAvBBFUONY01GvJ3L9x/2NjpII+GFcjrrAtCrB+oOE4NRUAk/Ocm/PGj9MCA7d5BO397epuUtRvkMcAADcMl2mHJweXmpqpQ2o9GqptWCgBQAFstnswIw4qo6dwAAqAMAPkAKrNnRILxNgCxEEQBE9wGNJqXKAROfMI+MMKZZSAhVUQroDw8Ps/IWNB4+jWDpRrzNaTsex43AYWJE0zYC5DTqARCFYlNYrEnBPOVtfkKhnyijPcLKVQHY+/YG4PZ9vDAGADzMgdA4F2oap7TXo/T7gwB0NqQgAOlIRMIUhLBJzhUqoic66TvKH5TIGkA6XTz0U4gcHcVH8EglPMrF6oTH2pQojIy+fNfQgiStBWR9wBYAJOhF6IF4G3+fz8rteJMUEPAdHTzsSNLpKwAY8AH/IOAIcsAmaJ7MgjHoQ/IBAQ+N+kU9ugpIzzYRahgFvbCAXcQUGEjoA9hVrADqCxfbUv39CkDo55uAALBAoHNAiRMNu6HihIsMtusXK4D9tK8XbZROR47mFmAQmk34Bx/QhSM++qOgfdmpS/V6XQpNYxELgPoszlVEEoQ2oWCBiYkGPVXGvPCULEWkbTCwvQKAyPoBgCMfEIFzgYIAhoQePB97X6amaSaAAEmcBgHZYjG9AHyWpKsrBEQH8EQVRWQEWrsXL1teyUwmI1cXoW3AhyrUYOYhLX+Ow9mwfhRJtJ0BPJQxONeJPj7vam4HAECoB6q4PwP4VQBA8U5CgHltO85g6HCIASU6LxtV16vdJ5O+hzBg3wfALgDAUq7+vEqYzzUh5jrOBNfvWl3LdSvoAAjSduRb+Jdp3kdFueYaH/6NJM37qs7hgKWDAX1w3m0ZXUvzSkk/IhdS+KdtPwCwrHIkmTSHmqsPxPmMUq9lGJCB9Wwm55G4OQ39OsszwGHRK+My5otX62p4wmOEuKjvWtZ0qcf4Ubo5XR4wbgGwu3v4cn3vX92teVbX0jk9Oa+i3rCsWvJVBE4osP5uMVpaXNrte5ZlGGVaMITe6LqJNwH7ey/PP8DWj9mlzwCoGm5lWGn5AOPeXK9fHPMwqbk8aVZqNberQeeZz8JCq2Mm1uuXB83F6nOAVUmWEiWzA4RWzfyxQb8EBC+aHa/mev1kAr5Zn62WVdpQgNBhOwiIejXNewZAxfjb9azr5EYDweN+4PK167m7JUilBR3sXpsrDhLjDS8cizvu/4LGw1RADkO4ojc3v/Is7qlV+0mU1Vy3uDH9dS9d83v6huh8c2pY96sF+MVr32wfLdHU5rAVXUngN148xT66KIMu8ML633z1hW2Yzc58ujbJN758P1XMt2v3K8C8GqU3xRj/AXrlKw/dNajXAAAAAElFTkSuQmCC",
+    "licence": "CC BY 2.0",
+    "credit": "Chairman of the Joint Chiefs of Staff",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Admiral%20Tony%20Radakin%2C%20United%20Kingdom%20Chief%20of%20Defense%20at%20NATO%20Headquarters%20on%20January%2017%2C%202024%20%28cropped%29.jpg"
+   }
+  },
+  {
+   "id": "gb-chief-of-sis",
+   "wikidata_id": "Q134944050",
+   "name": "Blaise Metreweli",
+   "office": "Chief of the Secret Intelligence Service",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [
+    "Blaise Florence Metreweli",
+    "Blaze Metreveli"
+   ],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": null
+  },
+  {
+   "id": "gb-defence-secretary",
+   "wikidata_id": "Q7983764",
+   "name": "Wes Streeting",
+   "office": "Secretary of State for Defence",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [
+    "Wesley \"Wes\" Streeting",
+    "Wesley Streeting"
+   ],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEU6UmZhFh4gKUAeIB+mussAAACvwtMqJyrVtrTjysvLqagaNU/n1NcHCAuzlpQWFhY0NDdMR01qVlXx9v3ZxcmReHVuZm+riomJamkkGxtIODgTLEaVholVU1dYZXGdtMS1o6dSWGY1OkUTIzPp3ON1hZPXvcPgvLilg3vo6/dweYkWGySTprS5oJxjSUk4Qk9scXknIB7hwbxqW2LDmpiym6ObgXnbwr2Ne4TGo52MmKVEOUUjHiFPQj7Jl6Kqd4ZIExZLJijT1uaCkp6idnp6YVsyDRKrtLra4/FOTGBwHSjkvcLBTV2SNkRYGCWCZ12sanzFyeW1QlZuOEacsL3P2d2qNUOLWWGCXViQL0GFIix+l6t/kJ1+iaHVUWVvIy5i1Wk8AAAAYHRSTlP//////wD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////2dcJSAAAF2klEQVR42pWXZ3fqOBCG2V1HIwssW8ZywwZjQm8hkN5u7/fuLdvr//8XO6LkUOyQnYQPOSfvw2iaRoWDXNPWLP+/CvvFD0MKj5XnIQp75URZPqKQJ69pqPppMGgeVavNgXbP2ANY+2KtVxWWaYGBH0tUL5cIoj0EWPO8N0atYYAw+wCpBVDVyPJE+YB7dY1UTdM08LdhQaNvNUQswOqtEDkAbU3fRK0BaQp9sFIQeAh0yKoPyDKoWYD1yA8sdAAsywIh4mkIgQn4F7J+2iEUMvTkLwvdt2JX+i6PZGTH6AICEVld5ZU8BLhsAISu5IxSxqjj0IRLNwTLBAERyQGsB2Bsgu15HX5BKW3rC6OJFIGVmuOVB2QTsBGAPghfnvIL9IBSvVQq6frxcVunwrLM/iXZJBR2q/e5Ydm+7CjAcbulAIhot2mbhz9Av3oPIDkAcoSAHzudzgU9Rt9LpUM0JKA3HuZCELIL0HIAbaoIh4fdQ/ThmDIqIY21TUIGoGqEeARvxhYRLC0M40iZZ0GaAdhq39hUAJVEXelWenSBRsJaB5BswBgs+6WHAGeRgXsCpafWegxWgO25owCSJ4y2HGX6Mopn6IF3AzHZJGQABIQ2toAbJaoOWorQRcIZxoDHUCfaFmBn8qUA5nVgGBMRMaaKKWHzwywA7gaAZAAGAEE49V2BDSH5yQn3bBjJiDs6ZcMYevsApDdvYywZ/NzwFpX2KBRTX0qOrWVDcy/ABXsEgRDpUTiZ8JLu27Yd0ZZOo4SxqXW5Ddg+ATkCyX2f84SeSPD0ViLtuJ+6kjoYhB0PyC6gDnLGuOx4nEYh11sl6p24Pdc+dTCMtk0J2QOoTnwsIoaVzPzRTKe6w2WCRUXPsJJc19b2AgLbwzbA9M18n73Hliw5VNUTNuRFNPT3AupzgEq658/aLQVYTiUE8NIjjhCMPKwf5vmez/SS6ullM7QZZ7qzF3BkYv0wxkfhKGSHeltnvmoHNdcYp48AxDhSpSd9Cy+mkefakr3wsSV1DOMQy1HbC2gGQTgavbTxJjCDUAQCs+9hFvQzyrGu9gK019gKtm+LEAnBU4ldrcvfuGpM5nFn+wQZgBpM7NMh9nQIIX5zyWmhC9JTYeGs1NoP0CwEUGkYQfD0m3/34sUJS+Spx4dDzqNE2wHstDMRQexTbgdh/DpKvMgGmKcV9Vzb0WfMA8zjjc15Z/TNZwmONGr7jq7G0ZCfEPIYwHPTEn6n4//6+fPd7e2d976kAIwl3uBRAE2DSXjjdyT3vBPWaqkiPlNJ4OdJJuAgq5TgZceb3eJkn/eBo3KYnJ5ru/pMwHMTJxL3ZjPWWvSRciDBTYNkAzLyYAZw2sHMq0bEEkYbRtLdmmZ5NxMCBjAxhefdsvnNgvHDDEjXxSVtC5F5uS6jENjnONSwDDH/Qx4d4WTtkcWGpD18Oy+GCjZCaNuulNiOEcqFmD6rNsnGAk1yNpR5McI1NuP1NV4PONVjgVddUm4WycYOnrfi4JppTfBWgb6p1kOh1PVpUi43+811gpa9ZNVqREtVJczNuhJv63XX7Tnl7ptCozgg26+HtTWvVlNLPk4U6LuwIFwJFKOddMvd8qDSqBT/3N777xfNmjKN1JopbthufD2BawWYovzcKZcRUKg0isVidbBAHGQAsADqfcPoG+DWVRiDAK7s+dcr/aAxB1Qq1RrJAhwQrTnGB4La8a1qXUCAPzjbzlvlub0Zo7aorFHsZS3bBwcNw1gDWKi/mvrRs7m8W+4t1EipVBrjnAeHsTQEuK7AJI607lJPlvoiBrKY/+RZAqDarGIwgif/nv+8BNRXDiDgoUfXEtCL+2C8+vTx6ytI5nqtkq4AjT3PvjngqAGp+er3D5/gKm3OHVgeoFh5xMNTHaGRjuHJh1/Cnqi/7ZXLryvLAD7y6Qu9Oj60vvvnj+mXXiquLlcR+B+P778BPfj67rz7JaqLt5e58lyAsqcf392V3zzTXPF9Mf+//gO0y80OT8QzZwAAAABJRU5ErkJggg==",
+    "licence": "CC BY 3.0",
+    "credit": "Chris McAndrew",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Official%20portrait%20of%20Wes%20Streeting%20crop%202.jpg"
+   }
+  },
+  {
+   "id": "gb-foreign-secretary",
+   "wikidata_id": "Q216594",
+   "name": "Ed Miliband",
+   "office": "Secretary of State for Foreign and Commonwealth Affairs",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [
+    "Edward \"Ed\" Samuel Miliband",
+    "Edward Miliband",
+    "Edward Samuel Miliband"
+   ],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEXXxbIAAADRvaq4hW2tdVkuKCqVZlHKlHixemXEiG5LOTLw6euMWUduVkunalTPppLKmYRvRzdWSkQ7Mi8mGxevl4kaFhVPQjssIh369fbhzLqOeGxtOSzk18yMSDjCfGbj0bybcVhOLCO3pZXLspyPCw13ZFmUhXheUUpJJRrZy8SsXE52a2RsTEKQFRWGUj15dHa4gF6PNiobGiGQa2SNKSm0JC0NCxF8Uj1GHBOUiYSsGiTIj4Lu495mLiKMJB5gMB6pVD65qqKpbWGpjYMhHSS+knkuCwKcTUCekYa3tbh3Bw/HqaLEv8TcwZ3W1dfhrJ8+PUTlz8Dj3+EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC65uVBAAAAYHRSTlP/AP////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAACf6xD5AAAGQklEQVR42pWXh3bjNhaGYQAEAQhgL5IoyVaxbLl7PCUzk2TSk92Ube//LvuDlGxSopIJjo5NW7wf/ttQyMnRQVvj+FvkqDGhdJm7saSEHIeQo3NfXFS2tBg3Vb78jmDQzwQ46xXNq5ty6HlAlDYp9Q2UkD4VB4BGLs3X9tJLPc/TSZLqRGtv6N30OUL2zWsA+SHBvGmiYZ86Tqrdz4ogHOTPAKQBkCq9TLx0WMAH2KdZ5mVQkJb5IYEc2GNUukwSnXrDDBS4kRX4DIdemVAHIEcAO3OyHupLewn9WYG5vZqQFUUx1PrirCaQPsDO/OqDV2qdJt6wyNzckJ55xbB4VxRpUi7HewRyMD/VOimzsswwKebXw9qNYVFASVJ6F6RLOABcVR4CryFgONTW2DiOrY21RhBSjWxm+bgX8Czg6jJNi1RvNsPYBFyyekhhF4iDhm9Zsn2xC6DP9rnnUheb2HDOlVK+rxh75DyGBiQS4miHQLbV+wywhau7Oaz5ozMHQDHOA1MTkNvyWWwXsEVQV73aOnvW2AOglCNYjdbQvYCmed24yhHsxArYSxX6zYiiMJJBYEpn76W0QyA7Ac2YVhlEriXm98OwIUShe5JcWJRimnqHALptISfkwis9W0nYR88A9xQxxgV8Qx6X4zahB5DYinOYRf7OBQfwfRmsUd96mO8D6hRsXSDLNLFWCOk7c/WMiPA3JFiUUnbxAiAvgJ2CZWKTtRCP6sXab6QwyaUtEwCmXQDtAOglFFjexGDrRejcYQ6wLku48F/SItQAVwU7QHJpb+cMMcjDbRRdEFchCABc6jRtBXEHIC95pOsksXNMdxvr8jXaAHXks0pYgf8xiyCWq5b9+ABAcmsTvGyEFHqjDR45Gikb6njOpEUUK9IFbEPwkgZ071xxGVi9WKAhI2YmGx0L8YV1TZlY2rYnAdn10Q4QIllcwaryPPveIJfBQuvFbQxNUqzjvCOAzFoKtoxrseZIeSDj20obJJNnt7aAeACsNawNOKOvSFtRDfhWCa54wLkxZiJOTyWfTEz8uvrCcCasmbVzMA0/9QGQL+W6b2aEW1OkWExig2eJL+SrtsE0umsLagAcNcvqVQCvB/glAwnzgCONTPEugJ2TA0J0qh5RR6GvTjFqAFeSqQhcxk9nHUDQA/CvFXSjCJWCZaTwmc2kikJQfgoC2Unj9XknBnUu/GtWAyI5mZ2qL9UpjYLNN0EUOhfkzO9k8dWeAhBIxKRE+So5+VqqL//tn+Ifs5+/vpZuiZezqJPFNz2AENGD+3yykcoYl43JJNA/x1DPWMDDNiC8uzsAUOoAXJn3FQvkD2Iysa+NqBYbE9QS2q10lgNwcgCIUAZMTQyWQZaLe/QTVqhqcc9dFrqFKM9PegA0QgxULFEF+GB8L0Qg4hiArgfjcdAPWKGZVCy+ySwXZjaLJ4tNtkElcxmF3Vb6pR8QopnUvRDvwzMypeSPFbuNBUq5WwMA0FcOcNKjAJshF76cCRlSZNEINAQXnNEO4Wz16aQPQJbY1rnb2ZWU19fXsq4gHgied9WeRXfNxrIPyNHLWIKZ/Cli3wcmEHjEzib4ag/ATvYB22UxQAVwt4hiYTECSQQBv9he3Z8Fu821Y18D3O7enE0wtytiORci3AO87M4dwGoaBpiaP2IncPtRc8pBUBmhxwAnLQChg6nT7jYn5Y43O3sngB7YtwGN/pvvBgOK+NdO+MwR8AwHJKV7WWwfsp7nT7z/DQaj0IVPzF02kT4XxzqEXcDBMQ/fjx+evH+NBoNB7ipJCCzMsRuAiXwP0HPQpGf/ePKKGwBGjgCAjUvsT9iXXA66LvScVOn4w484oz397iR8xdCBINziSDGJceTg9C8AJzhgueOw9+N/BvXInQfCnXLhwjxgXUDfcb96qo/2XvEwqgm/GXOPGABgDA9C0gYcuXB4W8I/GwIV900Q4cCctgDHrzxbgjdtCFfy3iXC7XBy+uLCn126thKSBoBAoBfdWsLpC+Avrn0N4cOWMKJ1NYjlKL8gK0f4jItnjbjaShhNc2zS+VeDh4KOP+vi2SCeHnZOjOibN9FoMHp4l178jcu3l17VhNHg9fnHt3dmOrp597du727UDuhf3378+Pb8+Fv/Bzgger9WJAtDAAAAAElFTkSuQmCC",
+    "licence": "OGL 3",
+    "credit": "Lauren Hurley / No 10 Downing Street",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ed%20Miliband%202024%20%28cropped%29%202.jpg"
+   }
+  },
+  {
    "id": "gb-head-of-government",
    "wikidata_id": "Q269909",
    "name": "Andy Burnham",
@@ -684,6 +954,27 @@
     "licence": "Public domain",
     "credit": "White House",
     "source_url": "https://commons.wikimedia.org/wiki/File:King%20Charles%20III%20%28July%202023%29.jpg"
+   }
+  },
+  {
+   "id": "gb-home-secretary",
+   "wikidata_id": "Q695007",
+   "name": "Shabana Mahmood",
+   "office": "Home Secretary",
+   "role": "senior_official",
+   "country_iso": "GB",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "London",
+    "lat": 51.507222222,
+    "lon": -0.1275
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVEQ1EAAAAJBwoqVZcVExctJipAPkuadGpONzKje3F1V06LZVuQa2NpSkaqg3oaGySwiYMnGhkmTIk6OkZFKyctR3KDW1VjRT1aQjsiHiQ0MjoSKEkcOGcyIh0uWqO1ko4ZMlh9YVlsW2slPGZ3a3FYUFiSWWU9RF0TIDq4qq/DnJxGWIZPGyZMKR/NwsdhOURkbI2EN09RWXdhPzeQRVyUTWJoGS2ScF6Nd4Cfg4ceSIMeQXWkbWnDrbaqoJ98KkBOYZFpIjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADSDnACAAAAYHRSTlP/AP////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9V4okAAAE40lEQVR42pWXh3arOBCGFUCoIYpNM64pN7lte++77/9S+48Agw34JnNiH5/Y8zFdI3a3KGwkN371ZeXbEPZa9SUEe736PILdUl/zTcIhzXoZwRbVw2bjQYKAXpwvIdiS/po77SQhAn1s5glsQb9xak6/BXgenyWwee95qxMkgXcGeEk4g2C39AkQZNmZsFlPCWxOv+k18HjEbwjmTCjnAOvA6w2HvpRIpPsP0RYBlw50nkO71pB7ozPKCP4mTrCZ8nHPgn4mtXEihIq4S8m0Hti0enlrrRc4fQFRcRwLZIEDEF4RpoAwCDqANZFwEqdpHEt4xBO+ngNcGND0gL12xjsLQNBII9+MfWDzgDaEiAF54EyIyAVlyAc+C7jsWCr+1oNIRBEsiMTx+PEoRE4+8LEPbA4Qtv4HlEOmNQiR+C16eheGzAs2s4BLAxrygAC8yVDHXAulecbZr5GED3CiuRwwEwCFwKNXXeccCGliLaW090IEkyA4QHgVgh6wz2tW8wyAEsXMtNSbNgiXMw6A8DIEQ+dk/B0B4AIPmpBLlDMK4SIIDsDGiLYRHQX2E0CriKEANZfBNA0EYOE0BF7bSWhECYAwVpvyXmNKoLevoojHh9MQQH0vKwupCSCUiiCuFq+DcA3on59V1Ell5SyItInTWCnZBmECGBHW/SjKqxKAKq9qrVJhcp1+VMq2QQhvAPgIUJZ2n+e8ioRV9qsS7VCiFq/T4AAD4gyQCIFGDLkbK0rk0og/qZ/gxC3AeQDnINS5rKpaWhGrOMotQtIeNTOA8TjtTpFc1mSFrexzaUuBenYAmvTNDYA3Algp8yzLPuf2wcIWbaKyG9TLQeQDAPmzHEPl6e8PX3/4SzJKp34jQFuZf2PL55+++8/GEQDVEiBkXT8kY4DVFoTPP//z43OkUM9C8K7GLwDrcRrOMUTycKZUNcQihArF/Isx3XeXWaB2ngEENERsVaEaaDRDDI2kCcDNgzkL4APyQOeaEXQqUEv2X7ElQDiKAXUuB6EsTZQeVaqM7unJFWA9AvB+mAwErUtxjGNj8/7/V/Pg7m7kQjMAMH4yQtSwAv3M5HnpmEzlLo/OhsGDDKtJtt9ksMJahlzsJ6tSDxiiELJN5+b7JNvvQchA4NJtCVm35rDpyRQOcVy3q9n2tE32POdg7Dna4h7zLJg60APuXCWG65C9FOvt6XEH+WNLMxVTdc+pj4zQAa0oyWTxbQFQfimKle+v/NVuBSmKAvFrx2rlTmnN5zfndksoCv8su2Ll5DGvaZpTKeGQFnpbzG7e7bvvjwEwBOKzHywOZ+MAiEHyWCwDxoTVyb37/veaANgv6IVCPPlzq3+/rY0I2/5DhIcrt+IAYIKkKMLp1eG8MI4AxaH98GDQSdRHZAGGwc5/ubGpjoJw6gCfdAkAtSJONiG99yu/WAYMhKL34fBQRiqFxLQooZsf6dulZXsgrJIuqYdPMOCYunEQmfvM27rgFgvr/hmx2u4OfRiVsyCNUxBqLyhawvKVp4vi4IOiHTOFFTFWPuad/AMIty5dbRTPifzXYBzGxEgpDDwBwP/Ctc//fYV26E14MjRPHUJFON4L/xUXz+2OarklfGvcRHa7LlZO75VX366WSYQjOIpQb7h8n4viySm7K8Obbu895FDIiKp5+Vf/A5cYUVkt6b/AAAAAAElFTkSuQmCC",
+    "licence": "OGL 3",
+    "credit": "Lauren Hurley / No 10 Downing Street",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Shabana%20Mahmood%20Official%20Cabinet%20Portrait%2C%20September%202025%20%28cropped%29.jpg"
    }
   },
   {
@@ -1440,6 +1731,100 @@
    }
   },
   {
+   "id": "ru-defence-minister",
+   "wikidata_id": "Q4082839",
+   "name": "Andrei Belousov",
+   "office": "Minister of Defense of Russia",
+   "role": "senior_official",
+   "country_iso": "RU",
+   "organisation": null,
+   "aliases": [
+    "Andrei Removich Belousov"
+   ],
+   "seat": {
+    "name": "Moscow",
+    "lat": 55.750555555,
+    "lon": 37.6175
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWcJSebVltlIxqoUDjg3eMlEx5YNUemoKbXWVfgICNgW2fqpJ05RFUTKmDTvMCwN0IDK4GiiH7OPkS5wc7LgV59iadDQDxda4MfQogAAAAyNzs1O0Hvpo/Th2v2uacoJDbOt7LSx8gaFyglGyz5w7LolXlpZ3CyaU2tp67rmoPIdljk2NeKiJHSpZXkinDTmoXWk3luOSlWWWbu5ucTChPzsptPSVF1RTLPfWKSVTq3dVd2eYXb09O2srizmZLwFRkGKnKWmKW0t8SLSjPLalBxc3vIq6VQNzSNV0hVVFqUk5puU08GM4n49fevCgzTwby2hHFwR0+weWkaExiIe4RaY27MChB7g480KU5yKTCwWEeJeHnVEhesiolUKBmNBwo0xiqmAAAAYHRSTlP/////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////+WdVRwAAAH8ElEQVR42pWXB3vayhKGJcDgmuS0e69BiwpR7xSBaKFXGwPGxiWO//+/uN8KB+N2Ts648NjwvTszOzPaZU4/NAF2kRCp1T/+FPP+v5uwAQAD26YcMAThXwC05sP8oem6QlawXbzYwgVYgvaLgLYgNJdL13ZtWJbbvNoDYZDSVr8AEAvC4Ldqde7ZXCm7MY5DHFEozYD/B0DbKoip5rJa8bhI/xVGGZF+IJipdDr9d4B122qIqYe5J3PPgCcI8iCaBYV/RXgB6FvQi7aH5SP912fLCoJp1k3T4l/5sANQ8quJpWHDiA55KQJktx5wAIAgUMAu4hkQ5JV8u9a4AIArPce/0ZeQSFE08ZVJvyRsAclgPFbuWcEU7R33nzDQc+6FaYJxxb8kbAG3t0mfYQ7EugDAc/I2CaQ5cZFD8cLsfwBgp0pwO5uxpiBECdwm/6kSONe1UdEXmyzCMi8B17PH4fCRYfYBsJHDnRKARRF4REB+zOZPQGYX0Pl8Owz82wWzXx8MXAC47I6VngBN2lbaFpDZBSjHeWWRfJztXwh2VEU7epoATtc9Mh/QjnoPoDXyeaQg9jg7uBjsAuhuQsuVON0DwB6kdgGZ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",
+    "licence": "CC BY 4.0",
+    "credit": "Ministry of Defence",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Belousov-HR.jpg"
+   }
+  },
+  {
+   "id": "ru-duma-chairman",
+   "wikidata_id": "Q982461",
+   "name": "Vyacheslav Volodin",
+   "office": "Chairman of the State Duma",
+   "role": "senior_official",
+   "country_iso": "RU",
+   "organisation": null,
+   "aliases": [
+    "Vyacheslav Victorovich Volodin"
+   ],
+   "seat": {
+    "name": "Moscow",
+    "lat": 55.750555555,
+    "lon": 37.6175
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWTl9pZUbNmZ9IYFyOEUjubiKTEzOpCPJuMXGHitrIgGk1LMh8AAABoWk1sZFnJp5Crh3GwmYlKSs5cVk20lHrXuaeUeGfStJi0o5RuaWWKZ1SoqanjybZVRDeytbfl6e1PUdFMOS+VlZSMiIeXhXZlSTjDmobFys5QSUfQ1dncwq2VdFyleml2dnXW2+U4Nra8w8kXGSjw9PSGW0zc4eXm0sMkKEQqKC47NTArJo8ZGBa1u8N2eIcwLKptS0XPrKOPbGKXnKKcoqbkzMOujIDBmH1UV2rl0LxtUTxGKBoyNkg+PMFBPcNmaYQ5Jx1IRGU5N45JLiRkPS0yLHQKCxV9goakd107NnMeIThRSJZoW5NfYnZbUKtiWmw1GROeoJ/l+UohAAAAYHRSTlP///////////////8A//////////////////////////////////////////////////////////////////////////////////////////////////////////////9qRNghAAAHoUlEQVR42pWXC3/SSBfGq3t7L51khiRDLiQhN0gIUFpQqCCU3myrVeuq6213v/+3eJ8zAdpq+66O/dEKOf885znnDJOt7XvXLEmSOIlTvKT3X7V199uG4/SSRCZCJKkQaZokvd4PABysJI4T4dkIJwA4vbsRdwDiWa+HcNsOLBVvgwAlSQ+qvgPgLZeIXsXHNgFsERNAEZJ/AITtZRDH+LGFbVnC9gRsIB9siElIWZL8P0DY97w4CLy/PXVjxNseiUiVDCpI7B169wPC0MPn7UHgeULXKVwtmAgC/qXx314A/j2AURgi0psW7cCz63rdFl5A8V6cKi89245xAQA97S5APwyLJT5vFxSPpeuqBFAgU26LumXbSQB4EMSO9i2gDUAQIx6XCJ0AVseiH0sXJtd1HUBoarcBWKJP7gL04T8SQOoqvNFoPMJqWAi2LFIEMQH0BXHvWsIakPRHYfEuCAZFIGxdATqNZwrQ6ODvzopgk4nxzNGc2wAtBmCQDCgDm/RWACI0njUo3qriUxAO40TbJFEBHM0DwFu2g8EABdCVBIsIz6Cg0aAMyFTT5KlHgJytCRVAcwIAlvBYVVABcNvGallVUfSW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",
+    "licence": "CC BY 4.0",
+    "credit": "duma.gov.ru",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Vyacheslav%20Volodin%20%2815-01-2024%29.jpg"
+   }
+  },
+  {
+   "id": "ru-foreign-minister",
+   "wikidata_id": "Q58217",
+   "name": "Sergey Lavrov",
+   "office": "Minister of Foreign Affairs",
+   "role": "senior_official",
+   "country_iso": "RU",
+   "organisation": null,
+   "aliases": [
+    "Sergei Lavrov",
+    "Sergej Lavrov",
+    "Sergej Viktorovič Lavrov"
+   ],
+   "seat": {
+    "name": "Moscow",
+    "lat": 55.750555555,
+    "lon": 37.6175
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEXgjXlaISPcz+HdnZweH0ynnKSqqcTDbWOhV1YnHy81O4KILyjYs8Nab7CCfqOCQDu2xdl0QD5jT3A+TaAAAAAODRX69/0zNWr3t679xbfupZjt6flOVZHmmYxCSYuydXH6ycfTlo/tqqTRh3kSEBnLiYQqKVVraI9zR0ySV1fIeW+sa2iUZmk8RIdKWaZMSHFtWnDU2PVNKTFRZbTx2uqOSkmvZFuKeJA2NVlTNTkTFChYVXhqODmxhoorLWOsWVaLiKguJDE8QHxnO0R4dZUrGyiupbZSQ1n509lMOUxiXIaKW2PVp6xbdMq7gXvNxNPb4vvMuMtid83bo5haY5SRc3uQhJq3t8h1eKRCPmh6U1aumqmWmK2qeYN1ZXQoBwnRAzTfAAAAYHRSTlP//////////////////////////wD///////////////////////////////////////////////////////////////////////////////////////////////////9wZNmvAAAGz0lEQVR42pWXh3riOhCFIW2z7e4tcUG2EUa4m9gU00sIPZCQXjfZ93+LO5INS4BkdyeJPwg6v87MSMKOHbwZF1vFYnFrNkvB9e1Rsc3/9gejL6NiMTVKXaSKEi8Vt/bKfwCo9KbF1CIkHqJ4US4f/SaAq91fjFKpRCIBFwAUKaH4BQBG/TcAHMcNQT+igASDpIoAkKblnlE3DOMXAJBnuDKI53oKoB6K4lPPOOl5J/L1ewCORn8qimKYQHQRATKa3h4ZxolxLctvAzhm4EVECDEEC/pKBMS0CXIIT/74BoALo/O0DZoIINJg17S4C+p63fOuKxy3CRDpueE0nRqNUuLCAIt0etos/9UzDNmT69wSIbaq5wwYTglRASFAjq6Q2rw9OjqiiOvaEmEdUE6A3RQtXlhANr+qqs0m6O8BYMibAAs9dxvmHflPp2lBp6qqPZfLkMP9vSEzAPcasJBnuCZS1YgAVpieOmjeuH4P5r+HRjIAtwzglgJf2ZaDUTqtEFUhJQwelCsVY3zz4vs+ZHAtRyM3AzpN0tbwt0BBsVLwrRGUztQrpseu63tAuL6/XgMsyV/8plVyH13rKiGSoG0riqrBD4bLmesPh758/XXugNsEqLgqCeI/JlgTNddqW1ixVRU/P2uaqt4AYHgiy5VVwFICUMOrmG07NkYJu4Ft60feshznDLqgbpfH/X7Hrws6t0RYBXS2kYZUYmuiSBxbI4712VEJStNG3HjjYSev67UVwHILuDE0ThSRghLItjWFBXQ1PQULTX/ou+aLkeGWCKuAzDSVYFtHVAghP7eSqmnNpj92xZSmuVxmGcC9DhxunYSIsE3mu1pEhDay7GpqEP+Mly2sAVy69GAziEjDaL6brzTsOK7rPj/vx7US7rwNyHAmAgVCdPtoCtsOCCkE5JZlTfCkgZGtdt5zUIX0t6GPpX9+tG2R2VeofzBgTVw3bkGHXqXArQLAd8wOYDH9CNqIWVA07SxEuM0AE+2RWyKsATpIRDZSnMDSoIv0PEwjWMZAcLCrOlhV8Kvxa4A+QrHtNKwcaIXI9jICB9QCLWMc1lR12cBmAEjFBQAhTSN0fscNApxGuP+egwykAMbT84ADHha2Rqd33Il5pVrOqwpsAFRRTAEVJJ6eMoACZQ9raDY1Bzf7vwQQRXPsbZvABlYVhVWAWrAmeQtOtn9XUt4EsIP9NsR+UCIaAQChDizT7MdNy/deG1gH5MGzCtkr25qNHaLQFAiG/Lv5fHzoG/33HUAXqG3wzvJXARCzcaTvmr5fr/0qhcwZIapdsp0SHAcEAAReWhMz3682Jq6/J7yfAnzqxgiY/vDBhogpJEZKjmU9jvtgwPXvctmdlS4crAJMQljmcBLBaUTsUrtkWdSAafozKSd8epXE2naGlWSDVkFsDcWIwgBmNc/05+d/t7KQRCYTDd4EyOw7tI6IrSFIpdR2rG6+223c5HI5/qglHAqReB2QYeiqRQk0yAdw33baZn7cre5KADj3WkL2MCnUIga3OFTnhcnUPur1iYOhkLgE3htB2wq6kMCA6b/rgpD9r3B6KldqFMFO5UwkrulC8rBwenl5euhZcP4EgdnImxatYN7fK+ZogAEhm4VRp5cF6Ac3/2KhWrkA0tMCxOGn+lPXNM1GowF606xWy3tb0jkY2AMDFCAfFgpfTy/l6JuJSi9BesiicJjc6UmTrtmgEEoZlwd3kgQpSNQAAGSZjisUTudfrkwrs4AXyWTtSbqAmRtxWDz56thn+vMcTysQAkLC4ttZlpNRUFBSH8J0g8dG9WO8Yd7cPl1sMb10LrCAUXI2mQTIzxsMJs7S/8Fnws4dL0n8CGpXLc9yuaIkhQaO9BAABrIwOrl0hwJvs0wPHx3rPk8Bu7s3LwM+DErgc0JLbzEHyeRx9jXgAN5SsJzMCsf6DBR8uWOceJVdXor0Ev99RwhrQAlCpF/c5iUZAnxkBYPOuds58byTuncBhFDPsxZAHMNQwKzeaDJroE/qd6CfjQ3WFK+yFaXAD8IK0Bw+6TvCwTpAOIZICnUquJj1PKoXoCNRHeYGBEGv7bTWARGBGZC2eR5u62H+ytiICnmn/9TXBGHT7T4lRAbgV5ZP6g8VvczShzAWABpvPHAAQB/wTLEFd/VeZcymZ+8rG+WrjzzHgheO5weC96CPBwxG/25DAxX6+95Dl/49KhmUwNP9GX3koxDpgZawJei6LvzisS/UF2ENVPQjfp5B2MOWUNF/48GTir57sAwjAI26vp79O4++PO+zNbAAzKi+1fqDh+8HWMUP+u0c0NM3mH8XwCALQK7y9qj/Ab+49ZJI0EniAAAAAElFTkSuQmCC",
+    "licence": "CC BY 4.0",
+    "credit": "Пресс-служба Совета Федерации РФ",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B5%D1%80%D0%B3%D0%B5%D0%B9%20%D0%9B%D0%B0%D0%B2%D1%80%D0%BE%D0%B2%20%2829-05-2025%29%20%28cropped%29.jpg"
+   }
+  },
+  {
+   "id": "ru-fsb-director",
+   "wikidata_id": "Q516824",
+   "name": "Alexander Bortnikov",
+   "office": "Director of the Federal Security Service",
+   "role": "senior_official",
+   "country_iso": "RU",
+   "organisation": null,
+   "aliases": [
+    "Alexander Vasilyevich Bortnikov"
+   ],
+   "seat": {
+    "name": "Moscow",
+    "lat": 55.750555555,
+    "lon": 37.6175
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVfLiErLkLCw9qRQ0Shl6LFZT6/xNdfYW6gSzKxkX0AAAAWFhgLDAwcGyEnJy3Mh2vmqIyqaE/6x7DTlXj72cOzdFg5OUb707uTVDqJSDDXpIyzhXE1NDmRWUbwtJpwOiizeGR3RDDzu6TSm4P84suLdmtxamuVZVJJRUyXhHhOJRiulopKNTAjIB3Fd1moWDuQiY5MKyO0t86kW0WVl6/jmXvIe2Onq8VyYldaVVZ5e4ogHiUeISe3opVqWVJvNR7jnIEmHRseIBvXtaSojYJ6cnCHbGJXGxKdoLiDNxuupq7FyONjXGREQTzS1O2DfIs7QVRBPkPMgV2YcV6MjKOpNhGwa2TFbVPasZyIPCLdwrJ9UD1vTkJhLhxYWmpIS2LWz7RjAAAAYHRSTlP/////////////AP////////////////////////////////////////////////////////////////////////////////////////////////////////////////+YU1OoAAAGyUlEQVR42pWXCXubOBCGvfduJAQyhgACA6acdnzbiRM7aZo022vbbo+9j///L3ZGYBundredJ08wtr5Xo5nRgBpHBy3u/tG8+ePG6Yr87PCoxv6vu3n3ptlqPUBrtZqOuIuHnwEAeee4tdbL/03RvR1+ImAV5zD7cUmoKA9azQiwyScALrtx6rTW9qD0A6/Nbg6E6/8BkLMh6OXsraZE4GeJOG6LPB72CPkYgCzyPL6VymOUHksrHYFF3A7jS3KPsAMgbhzn8W+tauqtycUcd8CFhN0j1ADwy9njPBbNUt2U0mb5ofwmypPYJWQH0ajr2Vkcx06lr1t154g4XtBdQqOmJ+5lEv/QLJfe3Gciz3OpJ3Qv4KezOI9wwlLf7tS0nQ7cOXk+ZPsBJxUgdjbj22sDaXnb+Q1KgVFC0XYBJyUgSXI5GEdrG1uDtPbN6rabVQBaB5R64ibxbQeUbc1BoT7TZ/D3cIuKVt1VsgbQPYDHd8JxIsfRpanS4KrrTgXorp7tA1R6AJyJUg3CN2/WAD0q1VokxGqV043VACWBJWdxFIFG3Vgf7tZrcCIj6HZjQu4DTh49Kj0gABAgD1Rd36zioYZ5gMjAQvRA3MZ0x4UdwKMFAIRhGACIHAwmrB/TIBOhwVJU8KC7uAcgVQRkIbwVgaGqcxVdfqjN9DKIM/QCo+AIEWlzUiM0qhqqoniHAHDAiaok9Hm/D3FQgwDUjtYWQrwf7AIekZpdxsIIBGQNQtnvG5z3B4OJZ4W+H3oBfN3pvg2+4fUoNOoOXOd3qYDpYH5VNQw+GVh8YNu+79uWFYZcdzqO0N94u4CtB/RSU1PhqBDHNPX+DEPbtifc8kO0v7wwhXpwPGMW7gK2DlD//cALIE6GF9oo8v+2+qpX+IXfIydhyiEzzlN7lu0AagGgvcEgDRw1SD3LssPR9UlhqZpRjHzP84Bq6LBH+GDWqwFoHUBOBn1DRLpIhTcqeqNer/C0duT5vsWDQEBhOFBLfY1RcgBAvP7vhqNHRuiHEDaInqF1NN2AG48L3KS4q/QerUl2ALQ3f8ohgUYKxcDt0OYSoAfc4+C/BsXhQDlck0MAQtQB1KHhtAW3bNsyDKE1O44O+wHFaI7edOjBGBCaQg6hekEDOwIqKYJ21lbV2Qy3M9R0FGnHscK2GxIB6xVRSpbpTAtEuYtVrKUmtlJ1AExoTOUKBGMMEBsALbWgZq7Jsg5OzQ0AzPv9gVE2Y27N52Vr0YLe9ZIpZGkqO0sAqGuaLmPkRgM5xw3Z/5XbGDitrfMre/LrHAlaQtkFuyAKM1kVRBeUZibV7EKhl20dthC4wGEXXHmpwefc59x+ChkxjMC4XBLKlgTdRQVjDdCWaqYoMpN/egGM5YPB908tC/YRJBMm5z4QOA96DMoIJmem1LkueAC20WM0rhEwGdi/W0aQwkZOfwkgAPwKsmpgBBmVi5aE7OfGUSnf6in1OPpvW0EAFRSGHtZxkFoWN8QdhouRLQF2Iyv161RCnfdKADicep4FV7j4PkZGTUk5mOK1DijnL9NJacqhDVggA/3Ekx2l4WN21YRsBu8AlG0tIQRd4Fb4d1EUP4I1fI+nIXqgL8jyQikBCqTedbGp1vUSQCAKKef+FbSkr76aTCCIQWpbQFiZBNTKBQqUC5hZduWlomznL/+d8InnSUmAzsBehCXBZaVURipC+WDZ1cvaDkEAANkToKXahophCYb0QspLhcKOdgFbPbnGpmZN7Ksr3/Yw/KpheTY8mTfzI0BZP1w/0CvkL0t2ZGsymXCoo4cqNAjvS5fUAeToPmCtJwpNLKwgHswxBoE6Dzz/6usxUfYD1oS1HgHdwofMYfAsrMz0qnj18rwKQU2/A9joAZC9vCwKH7u7fL6ERe/d+HlGlQOAo00WqvgS9nw8HEEJ+cVoNCqK0Yvp6Xis4BIulLp+85q3DmPlASHj8XjYK6SNRlnyDgDntB7DD180tyFE2JMvx8+GixFab5GcT5+cjk1ai+HeN9VNfiEIw29Pn48f98CyF8mr6fT0dCp/Ogg4qukR8M/Ll0OXZeePE9C/m4IH8H5HPtDfe91fz6EodDFmlGYZY8lwOAT9s9OMVvQDr/slYrNbGFl+YcrayKanU1jCVLYyXB/5yJFnC4C2Cf0W2hc0sOR0DDmo1B878tSWAS9crgS42C3c8/Hz7+ie+fcc+7aAn81/kcDgE0RzCGWIP3zCwbMKNTxxXr+GB9CSuRmYPG0pn3j0XQPM19DyFdfMXiwSPKl8xuEbAab77xemqbBssUiS5BX7rNM7WpaZ/zBTMc/BDo/6D5bLTdLxjqjpAAAAAElFTkSuQmCC",
+    "licence": "CC BY 4.0",
+    "credit": "This file comes from the website of the President of the Russian Federation and is licensed under the Creative Commons Attribution 4.0 License. In short: you are free to distribute and modify the file as long as you attribute www.kremlin.ru. Note: Works published on site before April 8, 2015 are als",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Meeting%20with%20permanent%20members%20of%20the%20Security%20Council%20%28cropped%29.jpg"
+   }
+  },
+  {
    "id": "ru-head-of-government",
    "wikidata_id": "Q4298520",
    "name": "Mikhail Mishustin",
@@ -1482,6 +1867,30 @@
     "licence": "CC BY 4.0",
     "credit": "kremlin.ru",
     "source_url": "https://commons.wikimedia.org/wiki/File:Vladimir%20Putin%202%20September%202026.jpg"
+   }
+  },
+  {
+   "id": "ru-security-council-secretary",
+   "wikidata_id": "Q32024",
+   "name": "Sergei Shoigu",
+   "office": "Secretary of the Security Council of Russia",
+   "role": "senior_official",
+   "country_iso": "RU",
+   "organisation": null,
+   "aliases": [
+    "Sergei Kuzhugetovich Shoigu",
+    "Shoigu"
+   ],
+   "seat": {
+    "name": "Moscow",
+    "lat": 55.750555555,
+    "lon": 37.6175
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAAAkJC74+PmUZlG1h2zUpYvY19TEiXGKWUno6OfNlXmtmYscHCW5t7DLycbSmYSqdlpxRjeKeW2weWWvo5XruqStqaQVFRq1lXlUNiualZDms5mQioWRg3fiqZHFwrxnOS7xxK9xamZNKySla1YICA1wV0vSto7DvbSWdVd3ZFN6dXArGRRMR0c2MzlPJRxWU1Xh4dyISkV6UDw4Ixzl2dRzSkG3gV2lbmLLjICRbWWESTlWQTeFUz3Ywo6njoEeISnCemzc3OAgHibd4eGiXk59fYHBqH/Dv8BcXWLqrKG/pn5FHxfhnpWanKOZgF8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB3M5TKAAAAYHRSTlMA/////////////////////////////////////////////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAADlu/1bAAAHoklEQVR42pVXiWKbyBIUzHBII27EJZAwAiRL1uH7TJxks7vvfv//N696wEfy7GzStmWQqJrq7poGDQbvhghzYYVZFmV+PvjVyPPcz7KNL0SWZWFV4Tz8BXjhbzZ5AY41/kQk/DbDG2H0k/Ao8qu2zUVRFJW/Bl7kVV5VfhZZ1k/ALZHlftuuCyFE4fvC8sMQR+vWLzLLyrK/gNtWlBWbqmU8AYGAfjBxx3G471dZhrRy+4fLW5bIC+ATTVuGRAANXGjaVNN8v8iRRJgNf4SfW0i5YHx6NJkshUiwsBCONkGMuIhAIDL9PQbVtlYWLVHw5eToaLJKNCEJtOVkcjSZJkUuojAM7eFQfRMPAsuKwrwotCOKleYIHlACyykIJhovMhGGWagPVfUtvAr9UZRB+JLwl0cTzUmAJ/gRSRCP+NwCgf6WhqE6BF5AZc4nUgEROKjfdDqhFCZTTQhisOa2/v91gCw9isIsCgvfmU56AkSPJoIZCJClZSN0/bv627qK8glsHN/HosQAyHQ6m05A0Z3MHBFGK3s+t2V86x9LH1phSCX0OdalvhGeghjobDbTyFwQoev6dwwgsHV0UOT+xucjUo7ru+hp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",
+    "licence": "CC BY 4.0",
+    "credit": "Пресс-служба Президента Российской Федерации",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Shoigu%202024-10-10.jpg"
    }
   },
   {
