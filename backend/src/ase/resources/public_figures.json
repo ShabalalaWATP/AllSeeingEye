@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
  "source": "Wikidata (CC0) via the public SPARQL endpoint; portraits from Wikimedia Commons under the licence recorded per image",
- "retrieved_at": "2026-09-13T13:13:24.541821+00:00",
+ "retrieved_at": "2026-09-13T14:27:10.260459+00:00",
  "figures": [
   {
    "id": "au-head-of-government",
@@ -82,6 +82,52 @@
     "licence": "CC BY 2.0",
     "credit": "Palácio do Planalto from Brasilia, Brasil",
     "source_url": "https://commons.wikimedia.org/wiki/File:Foto%20oficial%20de%20Luiz%20In%C3%A1cio%20Lula%20da%20Silva%20%28estreita%29.jpg"
+   }
+  },
+  {
+   "id": "by-deputy-prime-minister",
+   "wikidata_id": "Q2393922",
+   "name": "Natallia Pyatkievich",
+   "office": "Deputy Prime Minister of the Republic of Belarus",
+   "role": "senior_official",
+   "country_iso": "BY",
+   "organisation": null,
+   "aliases": [
+    "Natallia Wladzimierawna Pyatkievich"
+   ],
+   "seat": {
+    "name": "Minsk",
+    "lat": 53.902246,
+    "lon": 27.561837
+   },
+   "portrait": {
+    "png_base64": "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",
+    "licence": "Attribution",
+    "credit": "Press Service of the President of the Republic of Belarus",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Natalia%20Petkevich.jpg"
+   }
+  },
+  {
+   "id": "by-foreign-minister",
+   "wikidata_id": "Q48326359",
+   "name": "Maxim Ryzhankow",
+   "office": "Minister of Foreign Affairs of Belarus",
+   "role": "senior_official",
+   "country_iso": "BY",
+   "organisation": null,
+   "aliases": [
+    "Maxim Uladzimieravich Ryzhankow"
+   ],
+   "seat": {
+    "name": "Minsk",
+    "lat": 53.902246,
+    "lon": 27.561837
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWcVWmmjp6SaJLk2N2frNFZJywmHB6n1utlbZRlXWXTjpvbtMfXrXtzha/IepLFxLq7wLuzlmyHUjp7gXt6kOk9UFZmWT/Qck0/QTuHOzBeLUAAAAD7/PvvprCbV4q2lW+tiGfKpXc0NDSWdleMaE9uWUlLSFHp6uZLOTAsKixSRTjDmnFxY09XVkyhV4vLqIs4OUZPVm9OJiung1zS19CRd2l1dnKlelppaWlJS2SUZ5BpSjnj593Vsoepp6u1mYrc5NnKyciKiYyKWUapeGo7QlKMaGW5pZJwVTuoZZCZhHFxhOxsSUXKtatveI6vdZORlJCytrPt2drysrdFPFAxFxlXZofNqLDPmazrnKmnaVJqeux5g4ibpK9XYnTGmoXIBYUxAAAAYHRSTlP///////////////////////////////////8A//////////////////////////////////////////////////////////////////////////////////////////+HV6o7AAAHBklEQVR42pWXB1viTBDH6YKe19/qapYkm0ZCKEkIRTqISvXsZ/n+3+KdWUC67934yPF4/H/zn9ndMBs42hmmyZjpXVRVQi53fyqw/c+eaSmGYQHBNP2q8/3n5eXlbwCa/lzOGLMsxY+D/vLnz18ENJ9My7KgAJMHUxSlOPwO+p/bEBuApxdIb2GYzEAbiLhW4hHw8D2yt/c/gKenp+DYSygKOAAGEDTNYGgiDuK9vUikGnwP8DR8mlSffCvx7ZsHBDBg/QkIzcoqSjASCp3w2A341vSfm5DYGz83YR1AKoqiruuacp3TrFCplC6dl9YISwAybiY8SxcVy/N9z8fMoi6KvAaX6YpfKp2k0+smFgDiND3fQoloQBdNzA/JjTKTJcG2NZ2FIPsMcLIJIKQKiS0R9YaC3YvFdE1DeV5Ing7cG617frKILYCm55mKARa0HDY/Z7Aek0FOhaR9OrjT9MR7AELCzeGLZWnoutfTDI1R0FJBSKWSydNT+4d7kyhhAelpHelVAEGAb/nQQ51J+V5Z/kol+kWY6pO2bYMFpTTLnl7yEJjriTr2PA9KEE0q5CVJogUBpMnUnHDgG6G3AtK4HGuAcNCHJiocINB8IZ8XUDoNBDS10slKLACEO3geWgo40JgEzikweO7khxlhEFRGq4D0JsAQAWDI0HjhLf0pMD5AF+27xGhW//JmCMz1hESaFuw6TQQAt4CEUwiUQ9gHpdGbdAZZBUyCPuwfUezlsQcU9dP+4QsAwsGpgzcP6RlgpifO2IPzJ2rYglkFsATwDgpKClSq3Z+/yWdOSsuAqxrtKoalGQIvAJbyzx7figVZlstGuecenJ+sBQfMDbT/acETkCmsJqDaLJd7Gp4GVpD7uD9ZcAZILzkgSwAakFuQi0k2bMC83OuVDS0HAJm24WDfaLnu3aaDZUAt0H5sydJFDZqGAM3Q9TIcRylFy4xprNu1R4GVNVgDNB7bX6N94awKbRcELFxmMmvJ+WRSgk5I9NUOvrV/9g8CyFvQx1arbd8NznDdkriSbdQJKTsFB4vSlH1/zs9AOr0oobEEaLQfHwV7MDibElKUFvLT0wgEik+F+/O1LqRLpSUAuaOFwhnoz2oC7iF+lqdn8fU1he+D8/an529CoWWASm1aG9RqNdwGwkIPANxRlI7mHQxBBALp8xEhywAyqAm1M76P8FmEcopn2j59LaSSqdfXc0wbwDj/+HH/4fj4mKgrAGIL9hRQmD7MBImCh33bpgWg3YM4nR5x6Y8fxxjkahVwZS8AGAWZ8gNh78ttGrwfTaUzMQeslgArIbyVgPqC1GqxVksOdFuP7eDDknIXgHyqcQCl+XyhAD5k2IxaX6Zy6zF4vBnrJcBK8DWAHQCPVQkJksyYTKkryx+3AcLrAFLl+V1pFhT3dKvtSnJgfxtgowTSuKAXlF5wtVyGiH5tBQLRvtu+3wK4Ci8O07yGCwx0kJfgcSIXwEKg7fak4DbA8dEGgFS7rssrgDbQvNQCE6xNZXl0/B5AVdU5YOLOAMjI5+EoyxJtS/L+u4CrSmWaHp6tFyYA8HEgT79d4bdWa3d3Ajjhaurg+RkXUjJdiU94EupxUYSaG9iuXwU0biPwegZr7uLzlZmS9KWAZtrtwMNuwBEHXKnEicef8fvhQpIlHNEMnHRhJzPWn+V/2NDPAGoFHKjD2+yQtxGT4pTLRx2j31fYwd17gCO+COHD25eXLG/FGfQPAWWc1DRN6dcaiVDwHiCL0/QAP4tvZ7URCR4O47fZPya4pNwDEPoc0GfdcOS6qGTjw1Bzf7adDsLhK3UxYEQO4+AfojPEeirQB07AYa3vd6ukCoDMtVLMZhOl0V2Y+wwvTSiH8fjt7Qsgip09bEhFrZ9hH7AOs0srpKoXgSBeK5glOwzywXl5yOLpXwCQ8XlHKxV1IJlIMLtdR1U5QMlAwNyNn40fRlbHPLgTFLGEjj4hdSTUK84Y88tsoIZJNXYNBRSXCNn1QVPpFLPFYiejv6h1JMCrOnFh1vyES1SNZaAFOMaKSIB0R9sB8P/6Z1IHBDSzThput9mAd2SiQ24+R4uZDidsDtsZ7IAOg6ZP0ADmHecwEg4sMwDEaUwB28b9TCeDlwNR3yNcTrwb1P8bu24QB61xSIYDdlw4dAwx5qEFQnyuz0U1RXNUUc8oqM6Ag87uKw9eUODHwd3oxbg8F/OaXlPt6Do7DZQVBLx36UKAGBtD26pMQQfRKHMajepnRc/owoe/HhUx8z/XPmxDp06c6thTogio1p06mfwNAMv6I6H8wsUTuhBsTADhaUDIfYZFJZ/QGaB/8eqri+NPxHEa7o2ey7mO46iOhXvgNy7fY6fiNJwmdCHarTtOBVoq/tbtHaPh4EaI9sFBZfen/gPdYFO2xj2NfgAAAABJRU5ErkJggg==",
+    "licence": "Attribution",
+    "credit": "Press Service of the President of the Republic of Belarus",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Maxim%20Ryzhenkov.jpg"
    }
   },
   {
@@ -357,6 +403,27 @@
    }
   },
   {
+   "id": "cn-public-security-minister",
+   "wikidata_id": "Q18109475",
+   "name": "Wang Xiaohong",
+   "office": "Minister of Public Security of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAADm29n7+PXw5uORZlNsRzZMNy/u4tyvhnPSuK0zKSqHWkdzVkvLppWmeWWxloyRdmuZcVvFmofSx8W2qKZ5UT1lOixSRkjUwrqmdVxzaGs1OEs8MjJoTEPmy8TkxbZVVnMzIxxZQzmEUz20o5u4kXvc1NG7s7YoGxfhu6yUbWJFLSWibFrOrKKXiYdIS2d5YllKKhohHiZHPUKZhHpcUVRkapObkpSLSjbCk3t9cW7EvcJXW4HTsZ0bHCewi4KtnaVlW2IbDRCGfYmVk6CIOCjp3uEdGBtxcIg5QVw5QWYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC3fr0iAAAAYHRSTlMA//////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAABD+vFhAAAGLElEQVR42p2XC1viOBSGbZuEJE2Tlpa2IHcQBNTxOl5mdq67M7v7/3/QfqcIAirj7HkeFbXfm3NNk4ODV81bWa1WO/hd87asRhb8LzmEa0QQ/KacpKUqvSDwgyXgTYi1PM0ezM3XFtnZeEIMIvhvlAflQ1EIoYui9b319UqLWAV+hfD9N+mdOG5rra9u+v3CFDeF0Aujfk1Y5651rElftMyVwM+2EEMhxJlfRfFqGGv55GYg2gNdmBaWXppuA7KIVwR/f+2KAZYVhTEG+mIohoSp/Ij9R4C/T2+0gPym1TLwHFGYjqEAEJMQrOZX+hcIK/eDeCAGmjyAaGhMHMfz83NQyAkhWkv5c8B6fSX0MWwhhrzDPn9xMClBic87RFic+cFLhHX+gtbgWA8GwjCWWOlOVXSqVBTVgYkNEYal/4IPTwlI4X97IEImpTySDlqVKvWHiup1aUFoi2v/BcKTA26AWIVJJFk9UjQM5ZJwJOOOLjrnLwCeHAjOKVc8sUnTAqC8rur1lKqiAIGJq7O49pywMfrw8lhQ6qUlB+B/+ai/v5eUhjhWzwCbe8e5GKCFkEAro1nP68J6PYoBiKMkYaL4mvm7hA09uqCthx2kIKKFaUMg66kZkiAtAFrc7gK8LQASPTyP/lAl1kYNo1mljxAEpTHpaB37O4QdwKIt5hFSF0lbZYKUEu2EgqoK0NoBeNuAC1RhjpUdEiaECVlTWpaYTscwGdUtR439bcKmflIBFnjSMWbIALAsNHyIsWBIDSbNBK8DKg8GwmEpKU9LJxljzWbC0JhH6GUUhy30Pg+8QAHAkTJqQ8kMpLbZBAb+g5DYpli4bcD2K8T73BCDuBex0Ygvvh0L0WDutBlytNcFQy7siehsRgDCjgN/jfiFU0d1G3JKQYcxz3dIR0eLi7yRNJng0T5AdHfHOQrX9bqO2RgzXfe8OkaDVRbDmby5FzAKOUPTzFSv+5lZa6Oe50UOKZXV1wkzf9X3AGppGOYMPUSt7FEj9rpdT53id3dEAMbmd2oPwAtsmCfqiJ3UVdfzur16Pep2Z7IpHTUkOoKxu3IvwIVcon5SzWaz03oz8pSagWLv0ciRbI4YC4O9ABWOsJVR19IeZme96F7a+swyWa/fSxaGbKsNngM8eICOgdYiYyzM87sRz3kYhk1rmwghLPcCvEDmMsLYMnaCp48aPKc3W84shuKEiCe1XwBUSE1L2QpZHCHthmOirE3CqhNC6Qf7Ad7cRhENUciSJIrZypKwIoTRLmD3PBXEzKFeDBNUtV/I5ktCiKCWHuwbZ3p9pzFlO8EsGt7pcM7zHGnkxloCjPcCqte/B7/hr2Uc6VuIPO/gA7YTW/lRW77hV7ZzpqM/1YLrkGzpNxI4pxiq5fH7fFsfbB/rHgEKO1mFoCEMq30Nk1kR+XgT8HiCXalr638wVK7RCPF2oXWrKlIdYQ1vU746Aj+5/2gpUgYANuTKbPWtaRphvuHAk/5geZTdAPhqyCvPrVyZxVbS4LH/kgMHB7VtPQhOcMM5WslW+wgCYKin2RRvnuFrwbYeAD7EghyJS5Lldga9UP7jg6T2Ni8BVfI3rJQGtefUP8jcaARvoM/V6sS8PMQfvAKo+bcPDhIiDAVfGT5d+yvnq8odbBNW5vnTn85Vmpyjk3Mhlp85j7Ogtr5CeNvHtI31p1o7ZVYLN/iTxXHLr636bveg+Lh84E8Lrc+UWwNgK5T7/i3GwL+oRyl//CDEn+8O9eVZtiY86un7XMXHosgmHgXx/LBM7n/48nf/UOtPrWwMQr7yAj01auRMZWe4QrQLE2feS8f19M9W/+NHAvw04/FYjU0Ot5eDRfpSZQ6H6MNDPPHKjeHj+/f9d/13+lK4cZYpdY024NVgjvI4LbMvt+1L3b5qv35lIcDHd1jm2hGgzBgfNUwDu/t1Sg7c0v1F77s0kQcI4vLBuWwKQurMRc5H3KU4cmbOXV3u18OWMZyPQfiQ0kmVpmAMfaoQVqHfcHPs9/VlkSGGaQq/yzJuuDKFqSzL3nh3PfzUzqbTaZamk8kZZb3dSicA/MbtWd+m0w9T+N3/dEj2SU8nv32D/6DKyQPq/s+/h4evP/UfV+OKJyYJNr4AAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "DHSgov",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Minister%20Wang%20Xiaohong%20of%20China%20in%20Vienna%2C%20Austria%20on%2018%20February%202024%20%28cropped%29.jpg"
+   }
+  },
+  {
    "id": "cn-state-security-minister",
    "wikidata_id": "Q18977835",
    "name": "Chen Yixin",
@@ -375,6 +442,27 @@
     "licence": "Public domain",
     "credit": "Radio Free Asia, part of the U.S. Agency for Global Media, crop by Abovfold",
     "source_url": "https://commons.wikimedia.org/wiki/File:Chen%20Yixin.jpg"
+   }
+  },
+  {
+   "id": "cn-vice-premier",
+   "wikidata_id": "Q8291839",
+   "name": "He Lifeng",
+   "office": "Vice Premier of the State Council of the People's Republic of China",
+   "role": "senior_official",
+   "country_iso": "CN",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Beijing",
+    "lat": 39.90403,
+    "lon": 116.407526
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWgjZPfZCDOLSJYXofrpSGOVjgoTpGiLy4cFB5sGiXisa1wXWgQPZ13iamWdXBaMVHP2/LCiH1zTDwXRXi6iymqvOGHJ0L5zhzFvskAHmKZgXqDfYm90PEAAADcBBqLWEsER8IERbaYZFatd20SKEp0RjniBRspOFQbNFaiaFotRGqut8twS0lRNjMtJy2lbWILGjV2U0wYFRa5g3pnOi4UN2tPRUwnGRkKSJTuvA/yxhKaa2OjrcZNKidIOUmOmK45MzkoPGNNV260xueVqMqwsr0QDBDK1eokHSMGG0MUIz0JOY6oqrbSCyJtZW5OJhzEjIOETUGYo7ZrXW26w9Z6hJhvd5BNSXEMLWrRFRjLlIzjBiPEydmtFykjK0cyQVgzFXm+AAAAYHRSTlP//////////////////////////////////////wD///////////////////////////////////////////////////////////////////////////////////////+rJ87MAAAG/UlEQVR42pWXB0PiSBTHI4iCZevd7TUZEjIMpJGEkHhSIkhvgnXXsn7/b3HvzSQsoG55u4Jg/r/5vzIDkY5eDcZ8jGbz1LJev0p6+W3b4uomO7VOTwFgBZb7CwDL7fXcAchOuXpgDYJgMHAzPwlgsKztuj0XMa4bWFbaDdwgcN3M/U8ANGYxRLiRHsPCV0jYLWR/ABjuzBhzHN8E65h60/dNE3JA4CBwM4VsofA9gFpNXjK/piiKg2EYpFbD3+kH0wrQxDSb3TCxBhirO8lLX8mLqNXK0W+KQqjZgDq4GQCsE1YAsvxZ1ZIz500+Dg6QpHy+pBDDTIOJAAwUAPISIJcDQDJ5CYByrQbKivipSJV8GQiO6ZuW9Qjy7GohloCcLMtqMXnrX6J7RaxehiwqFaCUy+DBmPmn5iPWccXDCiB3PGy1WNOA5cFApTKXKtwEf4QswMIbv9lI8CSymwBIIDdW2Vfr1FfQfx7kcwG4q/BUAGDOYLp30cJ0SZBifQ5r+NWym6aCq/KVK5gIPlXewxuOacFUNDOYwLdeSLEeHACgZ1lmDdctl7GL5TL2ELpoEKyiBf9Mb1rI3vM6PANUv1q9wcCHy6HrJgVRCcXUSwfnDRPmygwCs0m3QA3yLyuAXAywe+6pA+UGvUcJIXkoPjG8RsMEHgc0zN8+JaCGie0t0YlVgKwOeoHvOMQhtTwoCVrAJ6gqPjsUjoXUfyfbia3tk+1opqVYj1XUBr0BLESg+fOIoOBP5W7OEWDBTP0HcXJygjaym4Ck1bMMKBhMEsUaUIIOqNcwaryYxAwaqRNO2Mp+A+SWgB3mWsYbhTpekG7QxoKAF0LPzSB9bhpAI55p/sYB218KEWENIDdt01BqnukRhXevdJcnZEF4KxZggtLUdmQgnkdpqUdAstk0YI5E8kDI783hlwV/ieO8iDMAB5GFdcAOAHCQy7g8yPJ7dyWBIiV82/BS20A4iWvwHLAPDmD8sP2kVMrP9/byJXwFb8K7JUJ2t06wB9CFTQcyJ1waBixXKuP14Ppub+99hRBxupQBoAAgmgNRxiMptwngq5Wx/LCF5vPKXd7jh1yppAAgAQC0n9iKklgByJEDSBmuLXlkjqvm388JLZcwYEOVEluftvi5CHthHcANyElwQHgPCbQSzYCIeoTroaMA4N5FEzcAvI/7hiOaSCn1zr3oAYZI7IpdtM4B2ZcBO7dGtAUozjAGpQt4IdpKEtkEHAbfAcjHBr80DkrFY4r3VSFfvimzL9QAEbckJvBKEBwkQlNiay948oUXAXIUt5GQxCDsCUnxMiopPIwKhVcdYBw4Yh8RCqcar0TjHPvBAbtZ8bHyooOIML4VaxLv/LzRaMDjeYMSASC7ax3cTEEADg64azRvUGNBF3w3i0HYfcyu93AtBTlCgIVlHYloHm5IKCbdnU4LGwayq7sxqsLYEMLlqaCIk5F4mWl2utHFeDfKyzYcyOO3xlIuuileen/PMtPC/WuAuI3ywbiFB+BSKR6hId6fXTtz/6IDeUWPRfBNnECFfzBFUwGbYv9Bt0aZ+8Im4Ci3qob4S7o0qUdJlL4YCvrBk/q6pY4aUz4GhdVTeV0/HtYlcOBRh9cy0hOq6A8TazRS3z7yz0ZOEYCjNX11OAwn8KkCexgRYi/RD9SZ6A+Srdoqe2r+8TgVM330DHA8Vof2zdW+aRiCQcV+TBmSrl/NOEBraVqz+fYtYOIP12/2q58B0Nbrl9TB5Z14V4O+250wdQQATuBxtAo4xqhWVdsesk69PqOrp4IjdSFubFVFvaaxDcDRsYgxB6i2VNeBEC9PnH2pq+uTsA36kYri1lK/BOyA/mOVA2x7v96p65IhTDjOm0m3q3cvJkm1iBkwtpJB/CVrhydQrBa5AxbW63U9nJnmBwfsTyZoYKK31WIR/rMia7Vi/fJrHqz/sYoXAEBl1xd1Xe+Ekm8PHOniAvR69+rhqQirg4Ui08DF5hdNDRJAAObJwrADGv0f37b9m7rOoz+BPyOCsZaqas++qWqYANdDChc6pKC37fQIKsIurkD/0L9GABLgKu054Eiz1TiKKLlqp9kIBkdN+2H/6uqhfyMALbaqX/26z1AqCAB4d81G9vDrULWfZuymD9GOHBQ1rfjKDUcxthCe9cNR+zYN6ah2u91mbf1dH4onWsBev+WJCKPDdxfsqd2Gl0P76ToMr6/bs7DIAwjfu+kSAPs6bEvXN1q1uqOqh/V6WNc7N1oxIvzgto8TGAv1i5shNFZtdWBnnOn67zCH7Jn8xRtPALQOQ13XhlqrqgFA188geA1/8tZXbcEg1QEEFlqg/xf0v2tq8Rduvg87+qFaVavaZ62jn/UB0FF/6e5dpAKE6ufO2bv+2etX/Q+Sf2MiFSfK6gAAAABJRU5ErkJggg==",
+    "licence": "CC BY 4.0",
+    "credit": "Aaron Berkovich - European Commission",
+    "source_url": "https://commons.wikimedia.org/wiki/File:He%20Lifeng%20%28cropped%29%20%282023%29.jpg"
    }
   },
   {
@@ -2096,6 +2184,123 @@
    }
   },
   {
+   "id": "us-attorney-general",
+   "wikidata_id": "Q125628262",
+   "name": "Todd Blanche",
+   "office": "United States Attorney General",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Todd Wallace Blanche"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVcHxxgWlpaayaWJSKgXyiZX10vTVuhi2owVDHq5uPimnYcSJEnEiRfZ4jNppWlj5HBa09zM0icfYJth00aKWm3ijHKjQtphDHCNzXgyKW7xL0AAAANFy4VFBoCNZkTNlGNAROtaUpzAgq1dVIBOaMBKY0DGUOMVzcADC1tSDAODBDQiWialJMpJy7alG7FelOlmZeup6WYZUZNOSvMg1rY1dIsGA4vN0rimXaMWEeTiowSKEfOyMUBGXa5trEKKHM2Jhjp5+bFu7mZYjvLwrtUQzMSOW+Pd3RLSU6ropxsWU1qaG9KKBOOOk2sU26JSjPppIV3UjeMRFGwd2hvOCkbJDStWktPZxB1dnlIWgsBHIbNe2KpSmc6WRA3MjAmLEQ8TTXsAAAAYHRSTlP///////////////////////////////////8A//////////////////////////////////////////////////////////////////////////////////////////+HV6o7AAAH2UlEQVR42pWXCXuiyhKGAcEleyaz3HsDxpYY9rCJBDRo3JeoiWZf//+/uNUNGj2TnDOnsswzhu/tqq+qG6AOvwy+mj5axNdXUV+IcZx8AL6GfAqQZQLgq0dH/4j4BCA/8FX+c8LRHwBkf2QNRl8Bfkf8BXBywvsPUfsdapCrtEwI6RUrqt3jp78D8ACQ33Waxiakbf3B7/fpTKZHLwmbpVL+awAYD4R3XwYPZNq2ex3lmstkHKXT8ZcJlI7zXwB44j2kIJ/gf3jj8rJzTXNDjhsOlc4b1ldxAsf5fP4zQNinq1hHKCe80XDjGGYs2q1UKoZfjROAWCEsAdt2NCIlVDHEMBqNSkUFXaVx2RkOh+5bw/UhgQUg/xvAt5vEOv4BMNU3AyuVQJIUSZJuKHc47LhvR/knqOBzgOw/+DTpna1vV423CiUhUTTLZlk7LZdFhXIVt5EuPeWxGgPy6wC8tIxL9/Wa5xsdw3UQEk2zfIpDK5clyqUa7ySBfBKrgEQOAVPwMHI7DYVFCMvPSEAS0uVlpVEvHS8BpfM1QNJCSMGXfSj3uoXEchn0G1dXGxsbp6apNBpG/UO/BgCtn6QAqFvD7XSkFsLl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",
+    "licence": "Public domain",
+    "credit": "Ryan M. Biller",
+    "source_url": "https://commons.wikimedia.org/wiki/File:AG%20Todd%20Blanche%20Official%20Portrait.jpg"
+   }
+  },
+  {
+   "id": "us-chairman-joint-chiefs",
+   "wikidata_id": "Q107474595",
+   "name": "Dan Caine",
+   "office": "Chairman of the Joint Chiefs of Staff",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Dan \"Razin\" Caine",
+    "J. Daniel Caine",
+    "John Daniel \"Razin\" Caine",
+    "John Daniel Caine"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEXhyaGfWl+kj12nlJVcHx/Xt5bJo2hqcpulNj3Av8NwjK7OPy8bLkhfY1N8Vj5zNFDBf2kAAAAVGSckJzMJChIdIjEpFQpsWFJvZ2cQEhsxBwfWp4pOSEmNZlW0iG+KeHDvxajmtpdTQzkuOEpXU1JKODA1NDire2WMiIfIl3p6c28xQ1iDW01xY1jNnINFBAo0S2bT2eiJamZoSTnj6PXGydVSWGaQg3a7k3jd4u3rvKKxuMmTl6lIJyZvS0bhq46nc1yXclrDinCuloo3JBm8w9OXlJFvd4kwGiRrWWXO09yka1WlqrYIDiF5gpJsOy5GKRO1s7mYoq7w8/5CFRZXc5LIzuE6VXJDPkRxRRWzJStcYW6CSUwaMk2orsWTjqkC4E02AAAAYHRSTlP//////////////////////wD///////////////////////////////////////////////////////////////////////////////////////////////////////8zptTiAAAH1klEQVR42pWXh2KjuBaGPWV3b793JIEECIjpBkOMe4+d3qfXbe//FvccyU6ZbGZnNfE4djgf/6kSjRePLkbjOJZRECQWe/yqxiPGjFkB51zCS+Q5x89/AQCXs1jmZRnJOAkCyUc5Y4kvvhNgoT1NyrL0UUOcgCtCMu6LXH4HgEYE7M2YBzH8C2SAK47LIPeFH5nWnwDA1QQAJthwz3Ndt+S9GEhUln7uZ9KE9S0A2yy4adpsNnd2ppWXAoYH3B/lWRaZDwj3AFRSNL9ikThwHATsTJt7jgOQ0vf9LBMm+5pwB8CsKEsQQEg5AvsdtUCI0/L8Ls9H2SinCnAX0bgrn0aUkcCC968A+6kreZb5Gdf2Jn0IYJA9ixFGJADkqHUL2HNaLQBExxkgEmXPzPABAGIP1oQgRcrRJgQoYK8CQJtHYH+s82CC2K8BIgIBBAHoivQ2LkzRA8cBBT2OCkSsXWC0uA8wEJAIaSkA4eMNAAU4TtXyVj2ZZXmwCQEAOp27AIw8Y+FIYg1jHwHgB2cMOuDua+6mXspl5t/YmzYAOvcAuCwKGFlCEAI0nY5d13O8Nvcdz11zfpDTG4B5H6CsLWwiggqIX3oQ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",
+    "licence": "Public domain",
+    "credit": "U.S. Department of Defense",
+    "source_url": "https://commons.wikimedia.org/wiki/File:General%20John%20D.%20Caine.jpg"
+   }
+  },
+  {
+   "id": "us-cia-director",
+   "wikidata_id": "Q16980175",
+   "name": "John Ratcliffe",
+   "office": "Director of the Central Intelligence Agency",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "John Lee Ratcliffe"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUbbtMkYCOQVSUeUKWgkmZjWWZfHilpTDKXZl1cb5qhudW2zOCZFSogJB+ol6t7jKLar6OadY0cG2ENOKDd4OVTK1YqVlTdwbgwj+fFlndymM05hy5FkTORNUxGd8nBfnLXvsaxwb0AAAAoN1QCGmgaKUgiLEoII2+Sd24EFlazlo6uhnYQFy+SVyspJy7PppaOmKnYtqoKCBIBCkvGmIlLR0zT5veXo6+OARWLh481NDgYIzkDCDNsWFGOa2bv9/ysiYYxRWwzQlOpASOmeWuKZ1oINZZ1ZFaupqtyZ2odMU9UaI6QlZssN27H2u0EKYrhw7eSqMZziKhteJNJVnK7o5pOOjEXFhjMqaRIOkwTaNEYNHKvlHRYU1QohuZIWIVepUkNAAAAYHRSTlP/////////////////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////8Y3W8LAAAIXElEQVR42pWXB3va2BKGlUiid7Cduvdu1I4KQqACiGLk0KspBmNs8///xc4IcEni3WSM9ehBmne+KecgUd/eNI67ArPBrq7evot6yxm94cjp/ikc3D8ACOABH10Hb93ljua6vwmQZQBcubW4rrtbzgXHgw44ln4DwNdlXoZ7NYivb/3IpQ2c2sDRS+vgfwAmPC+vJK62Keka+Lno5ep6PL5xXR0AwTXT+zfA2OMleZnUSqXSphRfb7cuNsF+WIMC2wf0Qg32bUCizPG8UB2UdFsPNDrNZpM0CalWlSqx3QfQU9KJXZeFNwDyapxcgQJW39jcmqiqVbhFKxZvC0oLRGzW8bqp2QzYrwBmXVoKMgC0DehtqgCwCgV0vy0UFIVA/KBefwDvFSfzPwP4el3aySYA6pCBTdqooFhMFcEKBUtVB6y7iTMMy8kZnh5JvwLwPH8CDJqhNvhfXxQvLq5zF8WCqhKWWzOsbkojb7KIjn4E8CcAL0P/7GYnhAKui8Xr6wsEWADQH2wYslF0Lu2Te/M1gJeeFPByqXQEQAoAAB0pBAxcvb5P0hNjIfGS4AZfAmQZFUgnwMZuAOCjD7i4vk4VfcCDXheW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",
+    "licence": "Public domain",
+    "credit": "Office of the Director of Intelligence",
+    "source_url": "https://commons.wikimedia.org/wiki/File:John%20Ratcliffe%20official%20photo.jpg"
+   }
+  },
+  {
+   "id": "us-dni",
+   "wikidata_id": "Q28122984",
+   "name": "Jay Clayton",
+   "office": "Director of National Intelligence",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Walter Joseph \"Jay\" Clayton",
+    "Walter Joseph Clayton"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWeYFxvZGcRJF1dHy6bWiedEipQXIluhaDf4+Szo3Q7TmJPOE+gl5kWFyyeOUrIoaaJeIajq8XIdnd5UCzFwrrKusM5UYvKqmTkynQAAAAtOWYQJFYNKGUqM1kjK1HRl4gHGk8UFyyTVyw1Qm/mpY+teGs1KSe1hHZMNy7z9vmQAhqlZDPHinmVdm0lO4m2trjMioeWBCKRl6lQdo0WExqvqrErQ47l6e/Ix8/Od4hOWHWkBCVSZ4nZopGziolxRzTPknwyJR1PREvFuLiPa2SQZljQ1NjT2OUmGRbinIpyVUu0l5A7Mi5TQjm7w8x1hZhvd5WapLOIiZMNChQmGSlla4pHS2tFKiiJTCfJZXROZ3oaNIezucGZg3VtSkWmaUWAoTIYAAAAYHRSTlP/////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////+WdVRwAAAIJElEQVR42pWXB3/aSBPGBdiAW5zk2utdlRWKClhCIKoFpvcObnH//t/iZlZySWLeuxtjo5+l5z/Pzs6uJOFka1CRMqMjzYzIPtt+lbBFzCgGUw+kjhRlkb29DvsPAJSiXqSqtN9Rpb29fRal2uJfAigTGSGhBWOuTv6KMKZ9qVMvQf8FYEBERqO+54MJ2YBoRyRRI/vDhMqYFHn8BwDbaHHKmP+QXjHJMtozw5q1DeswzjQmQyX2Pt/9+f8ANEqYCA7YcuAbbeM1rA6lwt5hvXx/f5/NbgeIMHEiB9QlkMNnFAIsa+9Ru8+WMUS2BQByESov4h8UAaENnzaorXlsJqI8WyZULarFjwAilyIB/oxGxowDDC6HT1FGeRbkxaKq9n8FEEgvalHUM2oUi+0Z1BAo1rxtcT8XR5BexvRqcfRs/QKA1Ix5dR8NSO0RxI0VZG8+NW/aR6PixSVRMYpHo+ZO7GdAnYmUrJML7kBuj6xJX5hMmpN+T1cUxXQmN6OL4mWRA4o3z0KT/gjQfCygPygRAFx1RjPLsU1T13Vb+QYBCGFUHFncwoWVet7p/Fl5D4DeAT3TfFEDkD8xjI5j2goXY4xbtm61b+YahRIWm8+nqYN69cs7AAuLT2kU+wCW8IQDzl8BLftpZnWyrHhpNVOnqdOI5ybeACxsAEb5XIqSYXHA+asFqINgWPtRGeWgT0W8OlPfAbhexDbEMGbzidNqKfAZB4BzpdUzZoQ8ofw7ADreFZVfANdB/4hR+gIw5k96y7ZbLdSPuYOWYxnk4BT0KYA0pdIK2ioEfF4XMDchgQMqzqx539TtYAZeAI9z4yDF0wPD0g7r2WwIiP+elHANat61FtTSmk9MCEXR9Rb3byst25wbTZCe7qQAQuIcUOYAtvHiLCrW3aQXlFLoWz1oAtN0TCQocKjYptK5eQY9DuC0I9a9+AtApNd8FsXlYBkUQVAmPdMGmXOoIEA3Iw74gd5MYXSeOvHEoachoIwAbCKoYDROCF9Ll8J53zFb4Pv8XDHtMRxAJypK30QHEzEqlg+d6WeS5RYQENYeFgE2RCwj2P2gh0Go22OYzvE3ZCmY/0Ak93VP+Osathcso8C7SAw3AzASy2d29edwEYxtPZeDI5wIO2endnZSMs3eE+fxf4+QPksAIGpBBfhOxmL5PAJwFUH9x/A9HudyfDrtnLDTtFSmXtdXa+/QTdyXs6pcFuhmpQWDgM3/UyYPPxndFEzT/vZN1wVd+aaACRiObfcj0wgT1Ul1sChNN2sCDkhW2CTXYSczvzrN5JEgNLCPILXZ6+s5XVf0HAIat7c5mTGjNBwOq8NqOZqFLVrwXS/oZHbVdV20kMl8yvVx6huK2cAegDHoY0Wxb3Nnt2ih71ar1eGq/uWqLN4LPoElDHsB8Uol122AHMrwydHNcxMGYOYUnMMcfn+9vT3LCXCptbeoQu+VqiVvRQTYQmEILO52G65begALNSgjAs4VXTD1qdKAL2gJ8zaXgzEcMAoWSlfx603EmZY8AQvA5M0f3dK023UfGplgHhzdPldytv01ByPInQMN/J/lzs4+g8DqLFebjRaNWo8bdEBju8clBLgur0J+d1fv6Tq0jo5NiDWAYwHlEBJjRxcQzVTq6WbUhzFFY5mMUOUAXoV8pmY4eg9XI5Re4TFVhN7ZVw4QmGqIWWbByoaFGRPoZR7rdtwtlTigChZuaEPvObrOKwjulcZUh0u5vuFYqVTz+gm6egdXpgDpMzj1f4QA97gWo6pr6o7Tcxo8fa7hmA4k4/Lffjs93YGWxpX9/XsqJdRw4jO1/LHr8hpUSweyrG6qMIgeLEqoodJwHP1zNcKeGs48hvsRyHcCOTg4yeMQalCFUvehtHAjR1SmdD/5u647PQgHQ1d8r0yazdREtXBPgfj+HffHJqzGWg0M1Gq7YOFh4XXYkQzBvPQAR+FEIj3HnJrduwuZNHeeLbiv4ZbEI9W8uXwHEMD9HaWyigB6XalUpnr/8dF5NKe5RqV+BP8/aF7Crc2AewNG07q8VAGQRwDO/eFKpqBVZUmSJbpOV9JVswf1ayh6t+KrKsXT+HhwoV4ammwgDAEnsP52d2u7BxKkBzECIK4rQAATDVPRj9NDDS4GYxIg4P58QUWZ3+r5rowjyMegcpBBkogqE9BrxEtjVOEO14UveLJBC4imki9R/pwSAk4yNS6XMT9BAIamDTlh0HUHIYDBFQiXJRLpGDOu5wCUw78D/SsgtOAV6vsDAIBlWHagRQIMpeO/AU6ishzkfwcgxE+iAb9Q8JeVoSbRoIp4hmcL9AEAtK96eAiRQsIXAKz37+6WEbdyTSTKUEgCAozj6A1wwusuhefYC2GFI/Dv7hYlr+KjCEcfBh6/e0KR3wBEguHCJGAZhulBaXl3NxgukleBirzGj4AT+d0Z6fVCL52sLgr1dWVYuULy+5DkHx/z3gjQSVp4GB+kk4vC3TrNAS8Gw/j5QfONr6ovALBQqRYKS1gXrwD5R/1HABmLGDCuoAqFRH2RrqykfwK8EqBXqQaNyFvhIV0pFArQUqufHHz0uP92CUMLHOFVKksgJNOe/L4G0pYXjuC0TAIL8EtWAwAk9h/SpXfzRLa/8sDkcAglnKARf5FORBKFZXIgfaz/+aUrBEhU0wILa1hNENXBFv2vr31BJsoNAGJVeagnoJeGH8s/fPEMCCHAHwzrUIRl9WP5lldfXsmQUEonYAj1B+1D+daXbyCEgGV6jUXwNPKf3t75WwyfSr+yAP32q/4GvbdJ65TwIsYAAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "Office of the Director of National Intelligence",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Official%20portrait%20of%20Jay%20Clayton%20%282026%29.jpg"
+   }
+  },
+  {
+   "id": "us-fbi-director",
+   "wikidata_id": "Q104639732",
+   "name": "Kash Patel",
+   "office": "Director of the Federal Bureau of Investigation",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWZXVtYJSJrZGkeVl0rX5tadJjaq5NWNlSQICrPk2J4TyyWWjLa4eQxMDEZNFxvhpudiG/JiC+2o5uZfYOJNUWSpcIWRjzGvsC6hDJ7m8LBfS/Jwr2zwbkgP4AAAAATHCgYIjALCg0UFBT09/kOSo2QZ08IUpfFyMrR1dYoGRdwV0pOOCwtKC0TJkaPGSbQl3OtucgHWKSsd1ZrSTWvqq60trfm6+0zJRuzhGkTRXVQWGwrNkxxFyRPSUy3eSxqDRlwEhy2hVItR3XHjGlWQzaTlJaIWTKvmJO5w8qMWU0TSk+Km60vHCdqTEPapoaVpLKVd2yQqMV0lreGiIxyJTCac1apeWltam41RVFsi7BXVliOJS/YonovWZKriY2ZssqPXAtGAAAAYHRSTlP///////////////////////////////////////8A//////////////////////////////////////////////////////////////////////////////////////8Zbl6ZAAAIXUlEQVR42pWXB1vizBbHk0iRbtn6vvc6aUMqEFIIEJAiVUCaIKDg9/8W90wAV9f17u55HqPP7vx/OW3OTKirD417MZT5eBX1OzEYn8lkkq3OXwD4N3oOJTPDIR2Lhv8QgNifABkvoSi0tmEWjT8AlBGL3gJQxovSiu7hxtlgvP0NQJZWCK1WbzOQ9GJRPbxodNfB8Xg2/n8AvT0/YVdjJ/FKD4BqLFZdNOaDQXBgt4uNjwGI9dgM23Tkh6PYNzYRHeHGxWAwGLfPGo2H8gcAxkNgmQwqt6sg9uUHhpLA88F0OmiDfNssN8VfAZwBi5CH2EzG89Dx7dyRoafA/bPGZCsGNtGyKL4HXJ+lPOTNgyvoGjaD3sRASPPp4KzxIIppsayW4fkOcN7RM+yD46wgCAiD99WKosAP8YLbGKAviWmwADzfAWLfYvBefT5fsQQw5DjFdWlNo11XsyzNVbhJBDebRCoSyksQB4DWub5OQApXOpGzQ553Lc3CpmniRSNiUp2+RhebVfXEFxN9Kfka4BCAmmHZfRlomleiGJsRsNxN7iYCHOx6AZVETwBiqXT7JfEKwOgEwCICYJvMo8LRMXh95ObmJudb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",
+    "licence": "Public domain",
+    "credit": "Federal Bureau of Investigation",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Kash%20Patel%2C%20official%20FBI%20portrait.jpg"
+   }
+  },
+  {
    "id": "us-head-of-state",
    "wikidata_id": "Q22686",
    "name": "Donald Trump",
@@ -2114,6 +2319,191 @@
     "licence": "Public domain",
     "credit": "Daniel Torok",
     "source_url": "https://commons.wikimedia.org/wiki/File:Official%20Presidential%20Portrait%20of%20President%20Donald%20J.%20Trump%20%282025%29.jpg"
+   }
+  },
+  {
+   "id": "us-house-speaker",
+   "wikidata_id": "Q19880665",
+   "name": "Mike Johnson",
+   "office": "Speaker of the United States House of Representatives",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "James Michael Johnson",
+    "Michael Johnson",
+    "Speaker Johnson",
+    "Speaker Michael Johnson",
+    "Speaker Mike Johnson"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVlJSsiHCMrSSqWcFyrmZedknLapZpianLo39Y8W1BVLUiZrcPLk3xlVzwIHEq+wLzoxLJcg51hco7JvMjMcmyfxeGeQTxngnWBe4EAAAAnNlHT3OMZJTgQGCoFBw8cKkTZ4unK09wiLUW5xtE1RmfGy9EMFBkpKDHm6fGwppUyQ1fmtafx9vyTZlXLmYnZp5WPeGutd2pSOTFtVk1PSEm3hXSTpbPGu7FriKpLV26nm4h0l7SPmqttaGypqaxtRjiKWk7Mxrtud42tuMc0NTZ4hI9WdpNQZYxVVlfDiHhuS0WNqsN3aVJOZ3O4s6mPamQRJRSThm+GiI1URDc8UXZGWoXWrKMeMktIOkorGxqUlJMuO2OkalZPLChOChd8oboFGvrLAAAAYHRSTlP/////////////////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////+WdVRwAAAHk0lEQVR42pWXCXuiyBaGMWpMd9J9p3vmzr0pwAJkEwHZ1BBFjUs0JmoSzb79/38xpwo0mGWe7pNFH6vOe76zgAWz/6lF4yDsXSo6K7Ds57uYjz+uR7e348j3oyho6WxsvwEQh+OBpg0GY8eP/h+UEoKo/CJAFC+9gRYE/ngwCLTbaNiKASWwXwCwonCvDgLPCyLH1+7gJypEIgEopY8QbwA0EojXFsGZr3nzWq3mBJdBQYiToPZvALJJKGja3SAIJpP59R8VsHkQBCK7srcE5m18Vgw09S7jdSy7QvyrFTsaBKKeIiifAGCRKh3faZpn1eztbRK/Uq06wUDXdWGtQFSUjwBkVRAEVhhrg46VPbGr1QRQ88csJQhkB+lnqpbMhnyWAoLAytZW/gCwowJdiwEi8S/13wGEWADsavm+9ejuVbcr19vE//o6iGwlVYONdq4AVFscRol8y62d1CCJk26n61re3P37WhDZflt4rUJpEyC+9kloLDzf73a9J6/zdPe0mEwmuflf24Io1IfCq/9KA7PWn7iz+oRZeHedhadlXMef+Jbl2t2/IAUCEIl/PJIJ4S2AZfU54zue1+laTK3i2Ht7Wds+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",
+    "licence": "Public domain",
+    "credit": "United States Congress",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Speaker%20Mike%20Johnson%20Official%20Portrait%20%28cropped%29%28b%29.jpg"
+   }
+  },
+  {
+   "id": "us-secretary-of-defense",
+   "wikidata_id": "Q7172014",
+   "name": "Pete Hegseth",
+   "office": "United States Secretary of Defense",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Pentagon Pete",
+    "Peter B. Hegseth",
+    "Peter Brian \"Pete\" Hegseth",
+    "Peter Brian Hegseth",
+    "Peter Hegseth",
+    "Secretary of War"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAABVVVFJSUtqaWh2dm5qZVg3NTGVlo+KhXhpWU+ytrRLRDni6OosKShUWmTS1taKeW/c4uVHOTCKioeoqqqqppdcYmyrmI1weIXGycoYFhU5PEQvJRuzu8OFaVuRmaS6xMebpKg+QUeGbWWlhnrY3uEMCwomGhQsRHSTknvGxbipjIR7hY9jSDclOGobHSLu8/R1c10dISPFvbR9gHFdYVk2VJXCopZCLSNlTUWhe2scNmidope8wrcYJkxFTGktLEEwS4Y6XapqW2Ld4NhCPEJJZKdOZJM+QTpGWI9UUj5EKRwhHiGRcV/Jr6YCCCGYpcTLsZ+JfIHAm4/g39xLMh60k38WKWNSdKbj7d4AAAAAAAAAAAAAAAAAAAAAAACKthh6AAAAYHRSTlMA//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAADGqDy3AAAIZUlEQVR42pVXB3vbuBIUOkAIJASSolgkq7lILrFjO70n1+9er///j7wBZSe55ySXwJ9oW9IOtszOAoPBZxdjQrCbNfjWdWsoRA/Cea6KbzA3tztzDcMkSebZaJSNzr/SnDKVR+OkzrJsNByN6vm8Hg73s+HwayAklbQouAaCmmfDEUDq6bweDYcAGGbzPzB3Mi5WMKY4Z8wX2HrUAyAGAIzm8/mXt/+OEkpJVRIkDgtuJFk2nc8RSgSIHn0BYUkpI2RMmPpTSXwPgP+Jmk7fAwzPAfEZ87Ckwawfy4DkV3/VLM9ztUgK2gPsA2AUPRh+NhNUSudWT2aGMu6rf62L0X7cMCNskXwA2K3RJ5yQAQDBe39sVxWWRwVGwMgI3yuSadYD3EKcD5O7AcADKfzDqhTrsiofVggZAKNbAFRhf/Teh9HzO/bBUuMrb6rjVfXw2Jz6vKhj2vavuboLMFzw39vbIE2Obav1ujpGACZwdo0aAgTPRZJEALx2EHiA3h/bE0LzYV1Wx+u112t9XK21QgUZAUgEKACwD4D90W5FgEJ9DAD672XZ8frJbDZbeT/zlZAEhWSCiB4AjNwB7O/3KOiwj/LISJ7v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",
+    "licence": "Public domain",
+    "credit": "SECWAR",
+    "source_url": "https://commons.wikimedia.org/wiki/File:U.S.%20Army%20and%20Air%20National%20Guardsmen%20during%20a%20guard%20senior%20leader%20conference%20at%20the%20Temple%20Army%20National%20Guard%20Readiness%20Center%2C%20Arlington%2C%20Virginia%20on%20February%2025%2C%202026%20-%2024.jpg"
+   }
+  },
+  {
+   "id": "us-secretary-of-homeland-security",
+   "wikidata_id": "Q3448772",
+   "name": "Markwayne Mullin",
+   "office": "United States Secretary of Homeland Security",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVZHSGdnqbasJ6PMjaaXVjVwrIMMWN4YlZTO0To4Nq7j3K9xMMXTIIzBg1ib4vToH16hKDAf2iLNUIAAAAlKDYUGSodIjAuNEatqaoHCRT5+fcFN2u3tbbJx8dvBBESExuPiYyQdXaOaXGol5RLNyq0hm50VUszMjmQZ1LyyKxSAwvWpojLlnireW1NR02mhomXlZXntpjr6ehuaG2Ul6YzJRgqR2tOWWx4dXgFKFBveY3FurcKMlsNQnabc1nX1dSTeoK6usIHDCRpSDeHWU2mfIR7g5crLkCuoptvSk6md1srHBKHCBfjq4w1QVOGXWaRgnolGyjDinGKFSJYRDdyW2VUVFrNnIWNEhzCvsN1Uz1QZoj20bdbZXU3U3VqOTNEXEYzAAAAYHRSTlP/////////////////////////AP////////////////////////////////////////////////////////////////////////////////////////////////////9k9FHSAAAIGklEQVR42pWXB1vbyhKGBaGk3XNLdqWVvLJXXUZWsSUXbNwLLvQaIJD//y/urGRDaDk58zyAsf29O/PNaFcSvr0b0i/x/reEvxMHwdFR+mLvHwCwuFI7pmkiR3I4YG/3DwGBjBtcjRAyq1WnygMIuV2IPwAQtS7L0RRJqLComshEC9AvFogD9iD+BoAitRvL91SN0WIxHJo8nCowFmgPALm9XK72O4A0wIw1ET4iV8h0r0t+Z3QLFIFXIYIeADVG3wfIGMt1JGMZ1wtVu1Q6LK+XPa9kue5IWCx2cxBbEW2xdwAgfwpkWiXvsFyEWD8sWb4rZIAmpaQ5oW8BGuA6xhLKOMjlCRR/cELZK535dlVs5/b+oq0bctNsqq8BOCJsH8tB1LgfAMD8nCbwAwhpGXPNRO29B9LqrxGVUG32CsBanxoDMYg+bSKewQXXQwU8hXKZF3GBcrmEqgmbsL4xoy8BmGcgDQJDpXVeAVhY5hXwFDbL5ZLVMXHujqjqDWsSMiNfms8BGA/uJYzwQCJOgHEcmKXSvz0vNbGYdcLEbUjgRlXX+qPwC8vlfgU8mr+7fzQY4IaqAeB63bC8YtHzOyXLmrtVDAn0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",
+    "licence": "Public domain",
+    "credit": "U.S. Department of Homeland Security (DHS)",
+    "source_url": "https://commons.wikimedia.org/wiki/File:DHS%20Secretary%20Markwayne%20Mullin%20Official%20Portrait%20%2855166865268%29.jpg"
+   }
+  },
+  {
+   "id": "us-secretary-of-state",
+   "wikidata_id": "Q324546",
+   "name": "Marco Rubio",
+   "office": "United States Secretary of State",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Marco A. Rubio",
+    "Marco Antonio Rubio",
+    "Sec. Marco Rubio",
+    "Sec. Rubio",
+    "Secretary Marco Rubio",
+    "Secretary Rubio",
+    "Sen. Marco Rubio",
+    "Sen. Rubio",
+    "Senator Marco Rubio",
+    "Senator Rubio"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEUAAABDREgVGSgmJywKCw4SExc3O0bSp4quh3AdIS42Njg9QEZrZ21KOC709/nHl3l0dHmKaFQ1CAxxWUspGxhKCg+YeGQqIRzcs5dMV3LKnIS5lHmqemZlSTp5e4N5ZFRYRDa2ucSUclu2mIZQEheGiJLjtZepqbTm5+3GydKWmaVUUlc8SGfT09aVlp1OKimidl1qS0YIDSNoXmJaY3aysriagWnZ2uUlLUOMbmHjrI3lvKXswqi5oZCEWUvDiXW3i4LSon7UtqK9wMnNwreAfoMWIUAnGiJLP0OdoaxCJRve4eh9gIhgIidhaoTn496Hj6Xg3+ZuUz5BTm8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACK4jmOAAAAYHRSTlMA//////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAD2/0nxAAAF8klEQVR42pWXiXaiShCGpZteQBAQRBFU0OAaTTLZ19nu3Fnv/v7vcqu7wYjLTFI58Zhz8n/8VdXV3dRqBwObz1F7bWAIsxKUvlouPtuB+Eap+H0xAks9JqSN2+02gcACQV+IwCqIroMywEEQwFedSH0dfl4mV/oAMig8AKFeIOov1CsAEMCCIgg9hKa9TA8E8XiBwGAC/tRKwCECqurBQtu07bTne57vt4loRF0T+gMIikpCoW8LacIdiJinASamRkvAHkJfqwIC2084d7rdLhMR4jYkUcr3EVZVB2373yHoWREON9u6bmqHAa57gUqCANg9/xSezzofOh0BiAdQGnzYAooMtAkgkL8EsE5HEUJzC1AhGL8jVAEEABD1U4COLIIC7PeACgAq2wgAUQJH6scd9p4NSQGo7wHoyNgCiBbKDKAI9+PxmL3nUEQAfNH2JUEIQtUcoIZhLBvYuX946LBR7KR64G0+fwOAkI7pGwkwSoANiIFsY5f78NWLfd12fFPbRwAAshYX8FlYEABt4Kc979RxkqHHR+BgQMK7Ia16KPUIRflKe4OIArQDIkYgHXi+12Vxcpv6Xsy8tHPHzYqBgiAAi35uGcKC2Iy+BUE6sH0/5EOPdRhPwhFnndAf3w3MahG0Uo/0qE5v1jl8C3pXIYcx4B5UkcF6ZJ0xHzpsY5qeCUX5xQcU8rPKoTeUU3j6BFUci99xh8esa9brhwBIdoEcHQnAyUnPS95CCzxPDuP4XgDYw0gM9CGAjOZRC/ZxDE18EsvwtJewbtfhzj24CNnDYB9gUx8ctY4KgA8Okt5ZeNd1nG7i3DFnyMaLXYBWo7jMwfD/aLVUDrCMTjlPzmzbS0LOGH/vxOGY2bCv7gBco6yBlVvPgHTIE88b3IJ8NGKx2NVuF2Jr3wWU/q1+v38GgEAeTOkpD8+8kMsIuQDY8mjYASxoqXc/9d2TwoJpD2OvdwJr6XHEe2HMWHylyeNtB1AMkfXDdfuuew5JyHGwfRYPn55u34144sCGMuJXmjzedgCFHvy7rmu5Zy3ZSGynPIYiJMnbt/D4bszD0KYHAeTclc93LQuSCAoLIcxhGIomsJhz71HUcGclSkCzZbuulIs4aqnzPfWgEQmHldgdcRir6RzOBboLIKTZarX8NQCSaCsLKTQheQej9BiHofehMYctjdZ3UtCFvnV0bpUO3JOguGKkHk9gL3mMh4PB5bQR6WQPodaUgOaJ0J6fWwCyBICQhY1tjwOA3w6GvzUaM1hxQNhxUBOAZrP5RT3f8hdaIM9WCybCPhtAeFfLxrThqpHHdHsam1LfbPrnGtyrPutFINe309RO/WE4+qvRaCwxLhZ9BSEARQRE3wzc/+Tb/iC84mAfwkICYKgT0NwF6NuB83xl9WBDXkp9JvY6seFtuagVhB29bq7yyTL3JlOpbywEwFBlIOoAWV92mk2yIyf6YjW/7Gv9xlQSPqoDw1jvPQY2DECog2EfAFmrOUU3dN6QgEgaMDZ2L3GGGeXZugeg9eeajusR7Qv9ckcv6onx+nQufW8YyHMN4+i4rrkAcHXpn+AKAdcqAHGbXANwPplY+Dii88zNG1MMDqjFuzbZD6gpPVn7IPVJJgA0v55NJ/McDBjaO941yUYZjdomgJANB0S3ssnExRHN/rmeLjMsS0DkNYLsBdSeAeqa3M8ml5YR1fPp9+VsRYx9Naxe06oAtMqyy4URHV9Mr7OlJkoo67fBMLYvipspIDT/+HGCaRRF19ksQ6hcQxuA2n6AgiA8yWYWEoBZNnXXBtBPDEjCOgOazS6xUY+ii+x6RkllER/SC0LZBKLNwACsw+jP5XdVwi0DB94YCgdwX5lNsCEA/elsoZcdIL+Qq/UgAZYwcEOj47+nX0UJVQLldfJnL00KQH5k1MAUAPPlhV5WgKiVhH7x3iZqqM9zUFF6fDy5xKRMQAFe8OYI//U1ugE9ALK+XuyDAoDIS99d55QKAP1vQvVnPXnF2zOlNwIQ5apuBL1OXkLohaYrwOH/+h9ZKJBeWC8bvAAAAABJRU5ErkJggg==",
+    "licence": "Public domain",
+    "credit": "U.S. Department of State",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Official%20portrait%20of%20Secretary%20Marco%20Rubio.jpg"
+   }
+  },
+  {
+   "id": "us-secretary-of-the-treasury",
+   "wikidata_id": "Q7435987",
+   "name": "Scott Bessent",
+   "office": "United States Secretary of the Treasury",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Scott Kenneth Homer Bessent"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEWeY1RcYVphUyqomV2SXytgIhKPKR+onZAjIhIMHkoqkmgtUlbKpl9bmGmokTjc3eHY0ZuyusQQTitjnYjKYV/JUTjMmI+0wKzfy3pJPkLJgD5obIPGv8C/wHk1r4MAAADz1srz9/oZJTbTtqrNppaytrbox7ivh3XV19YGCRXk5+qxmI0OFyrJyMgCBi+rqaqUlpONFxHFmYjOxbUMEhqSdmjiu6ttZVCnem4IdkqxpZGIZlU4Ry6IiYkumG5NVDdvWEjszcIFFU4xOCoKaUPc5OewKiXLtpV3hIssN0tydnSwlnVteYZKOS6tZTCPhXcEWTXNq6K3NS+Yp6734tlUVVEEZTxwZi67xcutJBwlKDDFODMkKkcFhlaomUp0FRBeaCemAAAAYHRSTlP/////////////////////////////////////////AP/////////////////////////////////////////////////////////////////////////////////////t9SMgAAAIyklEQVR42pWXB1vq2hKGVzoQwLLbPbdJSEJ6gRASSgCp0kRARJGN//9fnFlB1O3Wc8+dJyDyMO/6pqxZCbr41K7ApgRBTMcE8fmv0Mdfr1YceE8j98qN4G06nk7H/wdAlp3VauWu7lVPduc1t+YCA+xvAlayI2Oz9FuvNnfhkzufRzieKfE3ALC0LK9kC/xVz8Lesku47hhEuC7/M/U/AGluhRdf3cuWqsL1Q46s2joCSa4Lean+BPsrQLI+PDvIdywVXhasL89d15Hho+NcAaD6s/c5wO4Qp2dn92cAidd0RNEwakY094PAn7sOjwHVXvUTAOHYnV1avr+/l13HdcFVPJik1AlyRvhyqgr+1epdgvoIwKkq0elQ3v39mTs2DEMSCzmwW3gVJIXclreBjP171ZtEy/kd0PV1dWQnEQBW7fXcObjnbrFhRH2WKBNf8PrV80QQtX8DzIizfxE7Iji1nPGsbTz7vxByYjtYd69AQO8ukaB2vwEgxmTSHJ0FaSsKSH8hFi5zrwh4vzTm8thPgYAbDAjOfwXYZGud7Ng2H+3l8bjNLUSxcNTwbFJNlmuZOxxBmUgEN6m3AM0ma4HdsZPTKeVG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",
+    "licence": "Public domain",
+    "credit": "United States Department of the Treasury",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Official%20portrait%20of%20Treasury%20Secretary%20Scott%20Bessent.jpg"
+   }
+  },
+  {
+   "id": "us-un-ambassador",
+   "wikidata_id": "Q55386653",
+   "name": "Mike Waltz",
+   "office": "United States Ambassador to the United Nations",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "Michael G. Waltz",
+    "Michael George Glen Waltz",
+    "Michael Waltz"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEVOIB/BfniFOEHj3uIfJk4AAABranF0c3nNl48lJzgWGSutd2+Oh42GGht3FRYdIjSOaWq3g3mMWVONdHcmK0PFi4RMODLMyM10VlGsp62SY1tvS0aLfINRSErYopu4iIO4s7o0OnPbqqTY0tinamVwW2QNG0c2Nk2MHSFtRDs5QnvCu8OGSUc6Q4N0KCymZVxPCAeYkplSQTy2k5BYWmZQVYpHSXcICheknKV6eIJuDA7Cg3tJKypLO0ZDSINVUlooGCgPERxyHSILDChqOTY1PYKkWlS+ucFeYWk5MTHJt7mNJCZ2O0HisagpL2Rva4Tn4+hPFiGAXmVwZlyLNzji2t/hqqeCgqGbmaihXWI9QEq5oJ+qfk7AfoXHklzc2+N1uxbCAAAAYHRSTlP//////wD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////2dcJSAAAG+0lEQVR42pWXiXajRhaGNZNRQQGCokDsWGAhy2ht7bvt9m53d3pPMplk5v3fYm4VSJYsKSd9jy0v0v/Vf5cqoFA8GpchxhaLvoOOf6pw+N/D4WUYWhb7tqylFaLh4+MPAIZDFD71Q5Djpydw8YR9Bz0i9DcBJhoOV7B4P/O/tPrwGxBY/A2AJEnDx9AKHd/3HXhJU9+3fJ7GQcQrwAT0N2Et9B2/JUMQ4iXwSh3fwtblIcQu4AYA+PPt19SiclmE0MWyDgEoHwPiAGEHcCZNJiv03nKWtMz1PMocIC8tCx/wsAU4OwPAipCak97qL3L4KjPCLVQir8M2orCtP7u5qhGDOD4zcHJ6enqSUypASC0oBNojFHb02HFI4Fi+LIqnp89bBMjCWaZO39kjbANuVgapIcOxHJ2vD/qTTR1kalnOi34PAPnfLElAvtQIsTxRPDlh8hdARaZpwQq/7hEKG/3V9XnLAAuEpAyw5Z9XAQAwlFsW0DYAxufzeen8nEIPiOF7rATcgbiTQt9C6DUhA9xcXb87L70rdTIAAQMfPnzYAlSgiukyDI8AMv35eankG18AAE1go8OngI+RLvI++rsAtAGsVK6G72uCvhiOrBOZeJSWgdNKU0opAYDf74fCQQAxOiroGUB9T2qGJ4t64vmUyicLJjYI8yOnfcsx9ixwQECuSwxQUkuqjwjVxW6F+Gmr/EFM0ttKv9+SwUHLIol8CICIobRUpgdAqYMI24i/nIqQ+UlZBjsVaCJUgqZ6QoXXBAZAgaJ0uAMI1TdAeJJtIwDI+b4qy910IRK0D6ghpCg9opZ4qPMOgY30S6YCgJ4dDABI0vvyqxoAoVBENQAoPT8jqKraYnMI63MXsrzIAAvd81qbEgjbAIel0ONJMEDpnVgGwGIB4wjbUO4uuBVd78r3Cy4VhAMO1knkgJNyt1sun7KBuqdZBlDOMnMgsNgC3KIaUXj4OUD9R0UsJy1dpElCb1tJqyuyiZK9BZRAyAAviEIBzpAMYHRywDfYvC1ZHIgV4hGYSR8OZjkBgL5Wg35NKMxv1w4UR+WAkqqLiQd6qAA/DQnlk+gZ6AUgvAA+O0YOUDoq60JJhVHWPS6Sk39T6hl6hQHQDiAnFNQ3/gbgZIB5l1W/XPkTKpcwgsw24x5AWAM6JMj0QfCeZ6B+g/3Pu1+p8CHWB0xPXwOEHKA6RkYwAsIBJbUyyI4RdpzL7MoE+5HS13pOAMC8g/I2BEGLA+beoCKySYTx4Zc2QzYIpcIeQGBFfKOqfu4ALHSgCOdzygDskgRdgPUNAzrR8gThEOANADokd2AYVGUO7nV9MOAEVn6DsPXBwaFgADiHWCMCBjBu4c85bDteBq4nENDLrvcXgGu6AcDhpM7TBUx+JVd7HnUcr9v10UFAkQFKLIkgYAAD6jhHMPsUTlVQsvBBTyuPWNnXF3NAqRWwJjAHxjf1SvkO/eMrw00OXKzpPa3YyiScHQFA68BCZgDVVlgKvldh9ySQOyBY/ejAjhRpgodImO0DeO//CdMUwN2dJGmmhKrVqtxlLhzqeck9/Y/9AADp7VtJ+x3NZjuAIus8IGiA6hJ8wMQYADYQEnYUg55S124+RIHE4u1kgi8FJWcUMwArwvUSs/c1DCENGeB/g0TWE7lLjWe7aUcRmkhrhBbmiOzCwvq4vJLWek3TQhsA1U/PBKoP6UM03SiUcgB/5Yj8yqR2sLQO0AOlzgH2pypsR7vKAJHr1qUdAnOxvrhKW6ExAI4Y4dNDWPt1PHSZgcid1iVtGwBR3AKA7zwFTcImnsKyP/0WX8QQPyugj6JeXco+M1kv9QIoYg1nK+MMoClV+7txdjEaX8Rj8yqw1wC88QmxdYfCSyfhDeBKqFYRrtfj8aj+L2mFEVhQeHm1w4Aiey93gAFQr1WDlaPU6o34zITZvJw2mwwA9DD0HMwJu7d53IOZA/DwsldTpgMXAHjWUwI3mrpCZtOX//ivxQCvbzTZ2yYEAExNCAIX8v7151Fcd5We+2C7A4Xnh/FbvLoCt8VjABN+aMjtRTA747g9qs9cN2o+T90pd1AX+nWWLt6/2Wb4DWDKAB/jdnscS70oarpTt4fz+PqEsxF4fbtv5jlwB1NwPb5rXMSNOLSbTddtKhrehHTkgSMvgqk9uu6zrVy02xftuGEqbJCbsw3APP7IkxXBxEMX5vfj3ajdHo3juAaAqIk2gL966MoBlwBoju8uGu12I47H0YMbPVwe1O8/9nFAOHVtd9iOL0ZxAzr5m+1Gbv2Q/PCDp2n+3gPAuNFoNxp3cQN2E0xS/ZD8yKOvWVcA0GiP7uJROx6PZ7bLu/gDD98AmMZtaCIYaMQfATDTfujpnQUsPhrdNUaNGNnHP/V/pQAat4MSaR8AAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "Unknown authorUnknown author",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Official%20Portrait%20of%20UN%20Ambassador%20Mike%20Waltz%20%28cropped%201%29.jpg"
+   }
+  },
+  {
+   "id": "us-vice-president",
+   "wikidata_id": "Q28935729",
+   "name": "JD Vance",
+   "office": "Vice President of the United States",
+   "role": "senior_official",
+   "country_iso": "US",
+   "organisation": null,
+   "aliases": [
+    "J. D. Hamel",
+    "J. D. Vance",
+    "J.D. Vance",
+    "James David Aikins",
+    "James David Hamel",
+    "James David Vance",
+    "James Donald Bowman"
+   ],
+   "seat": {
+    "name": "Washington, D.C.",
+    "lat": 38.895,
+    "lon": -77.036666666
+   },
+   "portrait": {
+    "png_base64": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABIFBMVEXXpJnem3hxHyRyeIiYdFsrFiN7g4xaWmfBfmK8i3IbL0GwvMnJw72AHSE4UGWTQD/hz8SmnaC2wLu5zOB5VT9MP0rHu8OQPkIAAAASIjEKGSkFCRMxFwpLJhNJGgkpCQOFAQFVNyisqafY4+2zhXI0JBloRTXXppPkqZCreWrMmIZ3AQIADiIwKiiNZlWVd21PCBHk6O7RlXlxVksSExbnspvQ2+VWRDitmJDJinNjPC85Mi6NamWKWUzktKHHyM7Q1NlVMB2oo5yqi4aWlZCzs7RnTEeNSUlLS05TVFN2d3V7YVbw9fk5Q02Rh4dqZ2lZGiOVhHisdVxqGCKJJieIFBYyO0WQNja4xdCOl6SpaVWUoq6oaWVLLCSkWVNaYWhY396/AAAAYHRSTlP///////////////////////////////8A//////////////////////////////////////////////////////////////////////////////////////////////9yfo8aAAAHBElEQVR42pWXCX+iSBPGSebc8z13V24bAW0UUCAiAqOJ8chl7nOSyff/FlvVDR4x2d9MxZiY8Pz76arqphEqb4ZiuVYZb18lvCFWLMsFvRLBbyr8tFT1BwCKrhDLTd1IhohADQTFIuQ7AbIM+tR1FZnp5UiRmRtLte3vAEgtWVZSuByHj3Bw6+lpN7ZV+LNtbyJeAFoQsmxhApBD4knoeb5pmsEFGCL2JmIdIDIAuHdTGM/v9XpOHaLRaASMEG8S1gDzFOQtF7KWuopNHZTuNDC2giTJZVm1NwgrgP29wxsASKyEat/r8bEbBWHrsyVH3IJNXgOIB88zUZIlV7YI1MwzwYDwBWIHAghJEpZZsFcqKizTJ2HwGsgW03NAQQiSCytSS4D6CkBucQBMQInNALNXZ/ovmIetreCnJ4UD+q8AsHocoChpTLxewPK/U0Zjq15PYGpMjwBtHSBj+XAWLWieNJ1lP3GAAP6/cEKjHoSRxfR9sqtqyioARxdFCQitVgSrgHgFgE2C1RJezgVMod8vAcoaQBafDw8QAQDLJaZjFgAoJXs50I4mYQACM1gHgF6a7e/tn4ADybVSy3Pgep9SiqpG3aRe7nnvPUpIvwQoCiesAIz9A0iBSyeE+E7P93zq2Srp507jIifQGMC0CZO/BLBlKz0fnt4g4JGGMQUHvj9JXaKR3NkJ7Kf05KBvBl5MyArAWgXIYsqq6FKahabjBNQms9Czc9NpBBceNQNYku8L/e4agOuxkJAC+QNNzHMzcDBAYyYOAHg0ArowwAHqCwDo9fYjzc9RB4lnRQDAVsBXVGCS3eUM9AIAxSsBsJk1m7ePj+ewhTj1BnZPwwEzWwkngIMlQNfZTitUIPc8iy3pQ7tZrV5Teu5TtID6BPKJCykAmhN46i6LNcDeKQPARjCbXFYhvkEFwIEDTbjjPCSOOXKS5MHZgV4GgLoBOJxxB+6n+fkUAbf1ESRh5NQFoZ4k1O5PcvtzclFnDspgABUBNy7TSyeH+0bPv0ICrfsZs+A4iUkzL/QeHj7TBD5uAlShxYc/+LhvGHujvMomcTiBAvawGfLcozm0suclQFsAtHIKqsD1p3PQG0aPMgvNMD7yfToyaR56j5QmFLqaBqb3/6UBBCglQJ/4TL9n9L4xC/04Dr0MFgPpT6fT/Nu3B1sNqR+S1wF6u+/3OMAwmYWr0I7D0IPFQ6kgCA0hSewQ7GwCNAHk7eZ2VgJ6LAvXkxg8hGbuOZSFCdl4H4bqS4CmCXq7CfEXWthDyOgWCUeEgAM/hA0BBs4foJz50SReK0IBaLK4zkZ7HNDLrrGSByncFuP4iI4EXFWJGdphrGrwtSgCALQSAN2DN0LDGIOFf8EUeu9JTFwC84AkQDvQHD7DeBCrAMwBFA0B1/moAKCF2z9pFruwu6ZxmFETvuJZygbkhDUAd1C9paMem4MxmjbD2ogeEbxHYjE8LwuJVerXABoHsNrn/j4DjA1f/1obQO/EcEJKSQoFIakSE11bEAoAfhAqJeAqm3MH45Ofu8PawPezEGy7uPVEStjLlgBNQz0DVJaA6vScNcN4X/69O+zWhvMsO5oQFw5brnsEOV4AtHXAdqFv/sa6aWykkng37HZr3f9knnd0FEL4vl83NgEKA0ybVYZoNqfzvb2x4Uqi/LGGhNqd72VZBmq4x/x6p7wBAAtsEs3mFVjYd/Em+XMX9WDinuthbXcGkbzUM4COtxYATBkA36ajU3bKEOV3tWGNxWDOAf/uDPHcprwGqPzGAdXqtitzgCT+Dy2wGI9gcxE6w+4JOzgqq4DizjRFPbz0iB9zkAAWOKHTGfYcAd5rB2zv+YCIF4DKFeagHUWlHEL6pdbl+s7x0Bscd4adU5nvnqKiFIDF3RkLocDworRASL8zAOqPw3a7/2ut+1GWIk4QXwIq2zqcqdE5Tp8ZEKWvSEDAXNfabW1YM0BaEiQlkvWVE0rE9MyBWAJOugxwPMA9q60fdsauDBdgJvkl0eohK5IKfZEB/L7nFk5vEKD9YQxnCJAgVXyQ9WMeV0rlP/H3E0zC8Xh+//wBCIfvhoeyKEoLky8PmnxkSNMCId0f147vxoOvd5/0s/bp4BeDZbdAVF4FrJmQbqCbB4Pa4O6drjefhsNBWmT4VUBF3AjpHqpf6w4Hmd6+bPud4Se50EvSa8f9Mv9LwA0mEVxMIAfb+n877xAgpfGKfv2BY13PLHSBMDgDwGX7oMOTEJ//wyOPtA44qXWgFAygbeuDAa510f2nh66XhK8wg84AO1G71E87M3klfW889i07QWK9gDk4Y4D2WQc64TsePFcMMAu1MZsCEAzjOx99VwAz6OfxGduGLts/8PBdNAwQDKwCA/zQ03uxPADw3Ol2++23r/obn2BD40g1HvwAAAAASUVORK5CYII=",
+    "licence": "Public domain",
+    "credit": "Emily J. Higgins",
+    "source_url": "https://commons.wikimedia.org/wiki/File:March%202026%20Official%20Vice%20Presidential%20Portrait%20of%20JD%20Vance.jpg"
    }
   },
   {

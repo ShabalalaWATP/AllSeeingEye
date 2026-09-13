@@ -620,8 +620,12 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [x] Authenticated `GET /api/figures` board with portraits inline; no image route.
 - [x] Off-by-default map layer with portrait markers, a panel, an inspector and the
   `/trackers/figures` page.
-- [x] Named senior posts for the UK, Russia and China resolved from fixed Wikidata
-  position items (roster of 87).
+- [x] Named senior posts for the UK, US, Russia, China and Belarus resolved from
+  fixed Wikidata position items (roster of 103).
+- [x] Official statement feeds for placements: GOV.UK MoD, No 10 and Home Office,
+  White House, US Department of Defense; CGTN China as state media.
+- [ ] Kremlin, State Department, Chinese MFA and Belarusian official feeds once a
+  usable HTTPS feed exists.
 - [ ] Hand-curated entries for Russian posts without a usable Wikidata position item
   (General Staff, SVR, press secretary).
 - [ ] Geocode place names in reports that name an official but carry no location.

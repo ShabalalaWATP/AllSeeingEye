@@ -136,6 +136,12 @@ REGIONAL = {
     "nikkei_asia": _focus(regions=("Asia",)),
     "times_of_israel": _focus("IL", regions=("Middle East",)),
     "dawn": _focus("PK"),
+    "gov_uk_mod_news": _focus("GB"),
+    "gov_uk_number_10": _focus("GB"),
+    "gov_uk_home_office": _focus("GB"),
+    "whitehouse_news": _focus("US"),
+    "us_dod_news": _focus("US"),
+    "cgtn_china": _focus("CN"),
     "digitraffic_ais": SourceCoverage(
         "regional",
         ("FI",),

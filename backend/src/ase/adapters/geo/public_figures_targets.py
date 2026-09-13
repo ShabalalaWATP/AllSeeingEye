@@ -44,6 +44,8 @@ COUNTRIES: tuple[tuple[str, str], ...] = (
 
 # Named senior posts: country ISO, roster key, Wikidata position item. The incumbent is
 # the newest open-ended holder with a recorded start date. Resolved on 13 September 2026.
+# Posts without a usable item (US national security adviser, Chinese Taiwan Affairs Office,
+# Belarusian defence, KGB and Security Council) are deliberately absent.
 POSITIONS: tuple[tuple[str, str, str], ...] = (
     ("GB", "gb-defence-secretary", "Q2747647"),
     ("GB", "gb-foreign-secretary", "Q1371091"),
@@ -63,6 +65,22 @@ POSITIONS: tuple[tuple[str, str, str], ...] = (
     ("CN", "cn-vice-president", "Q553169"),
     ("CN", "cn-cppcc-chairman", "Q3400466"),
     ("CN", "cn-state-security-minister", "Q17279714"),
+    ("CN", "cn-vice-premier", "Q508368"),
+    ("CN", "cn-public-security-minister", "Q6866288"),
+    ("US", "us-vice-president", "Q11699"),
+    ("US", "us-secretary-of-state", "Q14213"),
+    ("US", "us-secretary-of-defense", "Q735015"),
+    ("US", "us-secretary-of-the-treasury", "Q4215834"),
+    ("US", "us-attorney-general", "Q636207"),
+    ("US", "us-secretary-of-homeland-security", "Q642859"),
+    ("US", "us-chairman-joint-chiefs", "Q1763459"),
+    ("US", "us-cia-director", "Q27656"),
+    ("US", "us-dni", "Q1154057"),
+    ("US", "us-fbi-director", "Q1057168"),
+    ("US", "us-house-speaker", "Q912994"),
+    ("US", "us-un-ambassador", "Q1785225"),
+    ("BY", "by-foreign-minister", "Q2045068"),
+    ("BY", "by-deputy-prime-minister", "Q18690228"),
 )
 
 # key, organisation, office label as held on Wikidata, seat name, seat lat, seat lon

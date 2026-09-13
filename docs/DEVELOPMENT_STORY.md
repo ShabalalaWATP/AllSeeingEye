@@ -4601,3 +4601,12 @@ position item and were left out rather than hand-typed. The first report that no
 figures loaded was the operator's backend running pre-feature code without reload;
 it was restarted.
 
+A third request added Americans, more Chinese and Belarusians, and asked whether
+more sources were needed. Sixteen more position items took the roster to 103. The
+answer on sources was yes for officials: the store had no White House, Pentagon,
+MoD or No 10 feed, so six verified feeds were seeded (five official statement feeds
+and CGTN China as state media). Several official feeds could not be used and the
+reasons are recorded in the public figures document: the Kremlin serves its feed
+only over plain HTTP, State returns 407, Chinese and Belarusian ministries return
+HTML, and Xinhua's RSS stopped in 2017.
+

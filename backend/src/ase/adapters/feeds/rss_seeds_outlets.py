@@ -169,4 +169,16 @@ OUTLET_SEEDS: tuple[RssSeed, ...] = (
         homepage="https://tass.com/",
         flags=frozenset({"state_controlled"}),
     ),
+    seed(
+        "cgtn_china",
+        "CGTN China",
+        "China Global Television Network",
+        N,
+        "https://www.cgtn.com/subscribe/rss/section/china.xml",
+        C,
+        30,
+        STATE_MEDIA,
+        homepage="https://www.cgtn.com/china",
+        flags=frozenset({"state_controlled"}),
+    ),
 )

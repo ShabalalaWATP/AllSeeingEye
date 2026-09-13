@@ -1,7 +1,8 @@
 # Public figures tracker
 
 A curated roster of current heads of state, heads of government, named senior
-ministers and chiefs for the United Kingdom, Russia and China, and the leaders of
+ministers and chiefs for the United Kingdom, United States, Russia, China and
+Belarus, and the leaders of
 NATO, the United Nations, the European Commission and the European Council, shown on
 the map as circular portraits and on `/trackers/figures` as a board. Each marker is
 placed by the newest retained public report that names the office-holder, or at the
@@ -34,13 +35,17 @@ time, and it is the only network path in the feature.
 - Countries and organisations are a fixed list in `adapters/geo/public_figures_targets.py`.
 - Incumbents come from the country items (`P35` head of state, `P6` head of
   government) and, for organisations, from open-ended `P39` position statements.
-- Named senior posts are fixed Wikidata position items in `POSITIONS` (six for the
-  UK: defence, foreign, chancellor, home, Chief of the Defence Staff, Chief of SIS;
-  five for Russia: foreign, defence, Security Council secretary, FSB director, Duma
-  chairman; seven for China: foreign, defence, NPC chairman, CMC vice chairman, vice
-  president, CPPCC chairman, state security). The incumbent is the newest open-ended
-  holder with a recorded start date, because many historical holders on Wikidata
-  lack an end date. They carry the `senior_official` role and the country seat.
+- Named senior posts are fixed Wikidata position items in `POSITIONS`: six for the
+  UK (defence, foreign, chancellor, home, Chief of the Defence Staff, Chief of SIS),
+  twelve for the United States (vice president, State, Defense, Treasury, Attorney
+  General, Homeland Security, Chairman of the Joint Chiefs, CIA, DNI, FBI, Speaker,
+  UN ambassador), five for Russia (foreign, defence, Security Council secretary, FSB
+  director, Duma chairman), nine for China (foreign, defence, NPC chairman, CMC vice
+  chairman, vice president, CPPCC chairman, state security, vice premier, public
+  security) and two for Belarus (foreign minister, deputy prime minister). The
+  incumbent is the newest open-ended holder with a recorded start date, because many
+  historical holders on Wikidata lack an end date. They carry the `senior_official`
+  role and the country seat. The roster held 103 figures on 13 September 2026.
 - Office titles prefer the country's declared office item, then the person's newest
   current post whose label reads like the role, then a plain "Head of state" or
   "Head of government". Two roster entries (North Korea's premier, Latvia's prime
@@ -119,15 +124,36 @@ were checked visually on the development preview route with real portraits. The
 live import was run twice against Wikidata to produce the packaged roster; the
 marker rendering on the deck.gl globe was verified by layer tests only.
 
+## Reporting sources for placements
+
+Placements can only come from reporting the store retains, so the feeds matter as
+much as the roster. On 13 September 2026 six feeds were added for this purpose:
+GOV.UK Ministry of Defence, Prime Minister's Office and Home Office news, White
+House news and US Department of Defense news as official B-grade statement feeds,
+and CGTN China as C-grade state-controlled media. All were fetched live before
+being seeded. Official releases are interested-party sources and carry the
+`official` tag; state media carries `state_controlled` with doubtful credibility.
+
+Tried and left out: the Kremlin English feed serves only plain HTTP (its TLS
+handshake fails), the US State Department feed returns 407, the Chinese MFA and
+Belarusian presidential, MFA and defence sites return HTML rather than a feed,
+Xinhua's English RSS has not updated since 2017, and BelTA's English site returns
+403. BelTA's Russian-language feed works but Cyrillic text would not match the
+English names and aliases in the roster, so it was not added for this purpose.
+Belarusian and Chinese officials therefore depend on wire, broadcaster and
+regional English reporting, and most will sit at their seat most of the time.
+
 ## Follow-ups
 
 - Wikidata lists the incumbent on the retrieval date. A change of office is not
   visible until the roster is re-imported, so the roster date is shown everywhere.
 - Head-of-government coverage depends on Wikidata's `P6` statement; some countries
   return only a head of state.
-- Russia's Chief of the General Staff, SVR director and presidential press secretary
-  have no position item with a jurisdiction and current holder on Wikidata, so they
-  are not in the roster. Adding them needs a hand-curated entry, not an import rule.
+- Russia's Chief of the General Staff, SVR director and presidential press secretary,
+  the US national security adviser, China's Taiwan Affairs Office director and
+  Belarus's defence minister, KGB chairman and Security Council secretary have no
+  position item with a jurisdiction and current holder on Wikidata, so they are not
+  in the roster. Adding them needs a hand-curated entry, not an import rule.
 - Reporting that names an official without a geolocation leaves the marker at the
   seat. A later step could geocode the report's place names through the existing
   gazetteer path.

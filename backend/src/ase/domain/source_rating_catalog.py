@@ -144,6 +144,11 @@ CATALOGUE = {
     **_entries(
         {
             "gov_uk_fcdo_news": "B",
+            "gov_uk_mod_news": "B",
+            "gov_uk_number_10": "B",
+            "gov_uk_home_office": "B",
+            "whitehouse_news": "B",
+            "us_dod_news": "B",
             "gov_uk_travel_advice": "A",
             "us_state_travel_advisories": "A",
             "un_news": "B",
@@ -196,7 +201,7 @@ CATALOGUE = {
         "Language, nationality and a translated headline do not establish credibility.",
     ),
     **_entries(
-        {"tass_en": "C"},
+        {"tass_en": "C", "cgtn_china": "C"},
         "Inherited editorial assignment with a state-controlled-source caution.",
         "Attributable outlet reporting, including statements of government positions.",
         "publisher",

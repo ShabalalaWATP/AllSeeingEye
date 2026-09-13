@@ -1,4 +1,9 @@
-"""Official and institutional feeds, verified live on 5 September 2026."""
+"""Official and institutional feeds, verified live on 5 and 13 September 2026.
+
+The Kremlin, US State Department, Chinese MFA and BelTA English feeds were tried on
+13 September 2026 and left out: the Kremlin feed is served only over plain HTTP
+(its TLS handshake fails), State returns 407, and the others return HTML or 403.
+"""
 
 from __future__ import annotations
 
@@ -42,6 +47,66 @@ OFFICIAL_SEEDS: tuple[RssSeed, ...] = (
         ADVISORY,
         homepage="https://www.gov.uk/foreign-travel-advice",
         licence_note=OGL,
+    ),
+    seed(
+        "gov_uk_mod_news",
+        "GOV.UK Ministry of Defence news",
+        "Ministry of Defence",
+        P,
+        "https://www.gov.uk/government/organisations/ministry-of-defence.atom",
+        B,
+        30,
+        OFFICIAL,
+        homepage="https://www.gov.uk/government/organisations/ministry-of-defence",
+        licence_note=OGL,
+    ),
+    seed(
+        "gov_uk_number_10",
+        "GOV.UK Prime Minister's Office news",
+        "Prime Minister's Office, 10 Downing Street",
+        P,
+        "https://www.gov.uk/government/organisations/prime-ministers-office-10-downing-street.atom",
+        B,
+        30,
+        OFFICIAL,
+        homepage="https://www.gov.uk/government/organisations/prime-ministers-office-10-downing-street",
+        licence_note=OGL,
+    ),
+    seed(
+        "gov_uk_home_office",
+        "GOV.UK Home Office news",
+        "Home Office",
+        P,
+        "https://www.gov.uk/government/organisations/home-office.atom",
+        B,
+        30,
+        OFFICIAL,
+        homepage="https://www.gov.uk/government/organisations/home-office",
+        licence_note=OGL,
+    ),
+    seed(
+        "whitehouse_news",
+        "White House news",
+        "The White House",
+        P,
+        "https://www.whitehouse.gov/news/feed/",
+        B,
+        30,
+        OFFICIAL,
+        homepage="https://www.whitehouse.gov/news/",
+        licence_note="US Government work",
+    ),
+    seed(
+        "us_dod_news",
+        "US Department of Defense news",
+        "US Department of Defense",
+        P,
+        "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10",
+        B,
+        30,
+        OFFICIAL,
+        homepage="https://www.defense.gov/News/",
+        licence_note="US Government work",
     ),
     seed(
         "us_state_travel_advisories",
