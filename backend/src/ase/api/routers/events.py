@@ -15,6 +15,7 @@ from ase.application.ports.cooperative_feeds import CooperativeEventReader
 from ase.application.ports.feeds import EventQuery
 from ase.domain.errors import NotFound
 from ase.domain.events import BoundingBox, Category, Event
+from ase.domain.evidence_time import EvidenceTimeBasis, MapTimeBasis
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -59,6 +60,7 @@ async def list_events(
     ] = None,
     offset: Annotated[int, Query(ge=0, le=15_000)] = 0,
     sampling: Literal["newest", "geographic"] = "newest",
+    time_basis: Literal["publication", "map_record_time"] = "publication",
 ) -> EventsOut:
     query = EventQuery(
         categories=parse_categories(categories),
@@ -72,6 +74,9 @@ async def list_events(
         military=military,
         offset=offset,
         sampling=sampling,
+        time_basis=MapTimeBasis.MAP
+        if time_basis == "map_record_time"
+        else EvidenceTimeBasis.PUBLICATION,
     )
     container.map_interests.request(user.id, query)
 

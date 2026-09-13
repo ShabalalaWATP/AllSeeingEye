@@ -555,3 +555,20 @@ See [Map news and evidence](MAP_NEWS_AND_EVIDENCE.md) and the verified
 PHIA likelihood, analytical confidence and evidence grades. No claim of full
 NATO conformance or automatic factual verification is made. The new feeds do
 not provide complete archives or inferred incident coordinates.
+
+## 13 September 2026: visible news on the map and globe
+
+- [x] Add a bounded GDELT geocoded-news companion, separate from conflict roots.
+- [x] Load and refresh a geographic News sample when its master switch is enabled.
+- [x] Render clickable newspaper markers and explicitly labelled country references.
+- [x] Clear map selections when closed, disabled or excluded by the shared filters.
+- [x] Preserve unknown publication dates through research and report exports; use
+  typed indexing dates only for the separate map clock.
+- [x] Verify live connector output, map/globe browser fixtures, request cancellation,
+  focused backend checks and the isolated frontend production build.
+
+The wider isolated frontend run passed 2,290 tests. The infrastructure suite's
+missing packaged fixtures were added to the validation copy, after which all
+five of its tests passed alongside the final News regression checks. One
+pre-existing test remains skipped. No updated coverage percentage is claimed.
+Other concurrent Cyber/settings work was excluded from this validation snapshot.

@@ -134,7 +134,8 @@ export function buildEventLayers(
     ...loose,
     ...visible.filter(
       (event) =>
-        (['conflict', 'cyber'].includes(event.category) || iconFor(event) === 'wildfire') &&
+        (['conflict', 'cyber'].includes(event.category) ||
+          ['wildfire', 'news'].includes(iconFor(event) ?? '')) &&
         event.geo_confidence !== 'exact',
     ),
   ];

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import io
+import math
 import zipfile
 from datetime import UTC, datetime, timedelta
 
@@ -99,7 +100,8 @@ def read_export(data: bytes) -> list[list[str]]:
 
 def _number(value: str) -> float | None:
     try:
-        return float(value)
+        number = float(value)
+        return number if math.isfinite(number) else None
     except ValueError:
         return None
 
@@ -117,6 +119,8 @@ def _actor(name: str) -> str:
 
 class GdeltEventsConnector:
     spec = SPEC
+    root_codes = ROOT_CODES
+    skip_unchanged = True
 
     def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
         self._http = http
@@ -129,12 +133,11 @@ class GdeltEventsConnector:
         except NotModified:
             return []
         url = export_url(listing)
-        if url == self._last_export:
+        if self.skip_unchanged and url == self._last_export:
             return []
         rows = read_export(await self._http.get_bytes(url, conditional=False))
-        self._last_export = url
         now = self._clock.now()
-        candidates = [row for row in rows if row[28] in ROOT_CODES and row[56] and row[57]]
+        candidates = [row for row in rows if row[28] in self.root_codes and row[56] and row[57]]
         candidates.sort(key=lambda row: -(_number(row[31]) or 0))
         events: list[Event] = []
         seen: set[str] = set()
@@ -146,6 +149,7 @@ class GdeltEventsConnector:
             events.append(event)
             if len(events) >= MAX_EVENTS:
                 break
+        self._last_export = url
         return events
 
     def _to_event(self, row: list[str], now: datetime) -> Event | None:
@@ -156,7 +160,7 @@ class GdeltEventsConnector:
             point = Point(lon=lon, lat=lat)
         except ValueError:
             return None
-        subtype, label = ROOT_CODES[row[28]]
+        subtype, label = self.root_codes[row[28]]
         actors = [name for name in (_actor(row[6]), _actor(row[16])) if name]
         goldstein = _number(row[30])
         mentions = int(_number(row[31]) or 0)
@@ -176,7 +180,7 @@ class GdeltEventsConnector:
         return Event(
             id=event_id(self.spec.id, row[0]),
             source_id=self.spec.id,
-            category=Category.CONFLICT,
+            category=self.spec.category,
             subtype=subtype,
             title=title,
             summary=summary or None,

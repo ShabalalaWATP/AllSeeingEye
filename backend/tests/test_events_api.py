@@ -16,6 +16,7 @@ from ase.application.feeds.streams import StreamLimiter
 from ase.application.ports.feeds import BusMessage
 from ase.container import Container
 from ase.domain.events import Category, Point
+from ase.domain.news_time import news_index_date
 from ase.domain.users import User
 from ase.infrastructure.settings import Settings
 from ase.main import create_app
@@ -92,6 +93,33 @@ async def test_events_query_validation(client: AsyncClient, user: User) -> None:
     assert out_of_range.status_code == 422
     assert (
         await client.get("/api/events", params={"limit": 5000}, headers=bearer(token))
+    ).status_code == 422
+
+
+async def test_map_news_indexing_window_does_not_change_publication_queries(
+    client: AsyncClient, container: Container, user: User
+) -> None:
+    indexed = make_event("indexed", category=Category.NEWS, published_at=None).with_changes(
+        source_id="gdelt_news", source_dates=(news_index_date(NOW.strftime("%Y%m%d%H%M%S")),)
+    )
+    undated = make_event("unknown", category=Category.NEWS, published_at=None)
+    container.store.upsert([indexed, undated])
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    params = {"categories": "news", "since": (NOW - timedelta(hours=1)).isoformat()}
+    ordinary = await client.get("/api/events", params=params, headers=bearer(token))
+    assert ordinary.json()["count"] == 0
+    mapped = await client.get(
+        "/api/events",
+        params={**params, "time_basis": "map_record_time", "sampling": "geographic"},
+        headers=bearer(token),
+    )
+    assert mapped.status_code == 200
+    assert [item["id"] for item in mapped.json()["items"]] == [indexed.id]
+    assert mapped.json()["items"][0]["published_at"] is None
+    assert (
+        await client.get(
+            "/api/events", params={**params, "time_basis": "observed_at"}, headers=bearer(token)
+        )
     ).status_code == 422
 
 

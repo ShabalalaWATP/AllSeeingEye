@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Literal, Protocol
 
 from ase.domain.events import BoundingBox, Category, Event
-from ase.domain.evidence_time import EvidenceTimeBasis
+from ase.domain.evidence_time import EvidenceTimeBasis, MapTimeBasis
 from ase.domain.sources import SourceSpec
 
 
@@ -30,7 +30,7 @@ class EventQuery:
     source_ids: frozenset[str] = frozenset()
     limit: int = 500
     until: datetime | None = None
-    time_basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    time_basis: EvidenceTimeBasis | MapTimeBasis = EvidenceTimeBasis.PUBLICATION
     include_unknown_dates: bool = False
     military: bool | None = None
     offset: int = 0

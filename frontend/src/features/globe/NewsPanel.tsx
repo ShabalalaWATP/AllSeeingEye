@@ -20,11 +20,13 @@ export function NewsPanel({
   filters,
   country,
   windowHours,
+  mapStatus,
   onSelect,
 }: {
   filters: ReturnType<typeof useNewsFilters>;
   country: string | null;
   windowHours: number | null;
+  mapStatus?: { loading: boolean; error: unknown; mapped: number; countries: number };
   onSelect: (event: LiveEvent) => void;
 }) {
   const snapshot = useMapNewsFeed(country, windowHours);
@@ -53,6 +55,17 @@ export function NewsPanel({
         title="News briefing"
         description="Source-linked headlines, evidence and map locations."
       />
+      {filters.enabled && mapStatus && (
+        <p role={mapStatus.error ? 'alert' : 'status'} className="map-tool-notice">
+          {mapStatus.error
+            ? describeError(mapStatus.error)
+            : mapStatus.loading
+              ? 'Loading news map locations…'
+              : `${mapStatus.mapped} located reports · ${mapStatus.countries} country references on the map.`}{' '}
+          The map uses a geographic sample, refreshed every minute. GDELT recency uses indexing
+          time, not publication. This list shows recent headlines.
+        </p>
+      )}
       <p className="map-tool-help">
         {country ? `Nation: ${country}` : 'Worldwide'} ·{' '}
         {windowHours === null ? 'Retained period' : `Last ${windowHours} hours`}
@@ -174,6 +187,12 @@ export function NewsPanel({
                   {precisionLabel(lead)}
                   {records.length > 1 ? ` · ${records.length} related reports` : ''}
                 </p>
+                {lead.source_id === 'gdelt_news' && (
+                  <p className="text-[10px] leading-5 text-muted">
+                    GDELT-coded action geography, not a verified event position. Map recency uses
+                    GDELT indexing time; publisher publication time is unknown.
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { countByCategory, filterByCountry, filterByWindow, useEventsStore } from '@/stores/events';
+import { countByCategory, filterByCountry, useEventsStore } from '@/stores/events';
+import { filterMapWindow } from '@/lib/newsMapTime';
 import { useObservationFilters } from './ObservationControls';
 import { useSatelliteFilters } from './useSatelliteFilters';
 import { useHazardFilters } from './useHazardFilters';
@@ -9,6 +10,8 @@ import { useCyberFilters } from './useCyberFilters';
 import { useFiresFilters } from './useFiresFilters';
 import { fireKind } from '@/lib/hazards';
 import { isNewsCategory, useNewsFilters } from './newsFilters';
+import { useMapNewsFeed } from './useMapNewsFeed';
+import { usePageVisible } from '@/components/brand/useMotionPreferences';
 
 /** One event-scope pipeline for map symbols, lists, counts and selected details. */
 export function useDashboardEvents(now: number) {
@@ -25,9 +28,24 @@ export function useDashboardEvents(now: number) {
   const windowHours = useEventsStore((state) => state.windowHours);
   const setWindow = useEventsStore((state) => state.setWindow);
   const coverageBounds = useEventsStore((state) => state.coverageBounds);
-  const countryEvents = useMemo(() => filterByCountry(list, country), [list, country]);
+  const visible = usePageVisible();
+  const newsSnapshot = useMapNewsFeed(
+    country,
+    windowHours,
+    !hidden.includes('news') && visible,
+    true,
+  );
+  const combined = useMemo(
+    () => [
+      ...new Map(
+        [...list, ...(newsSnapshot.data?.items ?? [])].map((event) => [event.id, event]),
+      ).values(),
+    ],
+    [list, newsSnapshot.data],
+  );
+  const countryEvents = useMemo(() => filterByCountry(combined, country), [combined, country]);
   const scoped = useMemo(
-    () => filterByWindow(countryEvents, windowHours, now),
+    () => filterMapWindow(countryEvents, windowHours, now),
     [countryEvents, windowHours, now],
   );
   const counts = useMemo(() => countByCategory(scoped), [scoped]);
@@ -89,6 +107,7 @@ export function useDashboardEvents(now: number) {
     hazards,
     fires,
     news,
+    newsSnapshot,
     conflicts,
     quality,
     storySize,

@@ -16,7 +16,8 @@ import { useCameraSelection } from './cameras/useCameraSelection';
 import { useNow } from '@/lib/hooks/useNow';
 import { useMapReferenceData } from './useMapReferenceData';
 import { useDashboardEvents } from './useDashboardEvents';
-import { useCyberCountryContext } from './useCyberCountryContext';
+import { useReportingReferences } from './useReportingReferences';
+import { useNewsCountryLayers } from './useNewsCountryLayers';
 import { useCyberMapSelection } from './useCyberMapSelection';
 import { EventScopeStrip } from './EventScopeStrip';
 import { dashboardCataloguePanels } from './dashboardCataloguePanels';
@@ -96,38 +97,28 @@ export default function GlobePage() {
     storySize,
   } = data;
   const regions = useConflictRegions(supported && !hidden.includes('conflict'), country);
-  const cyber = useCyberCountryContext(
-    !hidden.includes('cyber') && visible,
-    countryByIso,
-    country,
-    data.windowHours,
-    now,
-    quality.filter,
-  );
+  const { cyber, news } = useReportingReferences(data, countryByIso, visible, now);
   const nation = country === null ? null : (countryByIso[country] ?? null);
 
   const cameras = useCameras();
   const infrastructure = useInfrastructure();
   const context = useContextSelection(country, tools.picking, symbolMode);
-  useNewsSelectionGuard({
-    context,
-    options: data.news.options,
-    windowHours: data.windowHours,
-    now,
-  });
+  useNewsSelectionGuard(context, data, now);
   useEyeMapContext(engine, supported, selected ?? context.event, cameras, infrastructure);
   const closeContext = context.close;
   const closeCamera = cameras.close;
   const closeInfrastructure = infrastructure.close;
   const closeRegion = regions.close;
   const closeCyber = cyber.close;
+  const closeNews = news.close;
   const closeCatalogues = useCallback(() => {
     closeCamera();
     closeInfrastructure();
     closeRegion();
     closeContext();
     closeCyber();
-  }, [closeCamera, closeInfrastructure, closeRegion, closeContext, closeCyber]);
+    closeNews();
+  }, [closeCamera, closeInfrastructure, closeRegion, closeContext, closeCyber, closeNews]);
   const {
     details,
     highlightedId,
@@ -144,6 +135,14 @@ export default function GlobePage() {
     select,
     engine,
     closeCatalogues,
+  );
+  const newsLayers = useNewsCountryLayers(
+    news,
+    context.event,
+    engine,
+    close,
+    tools.picking,
+    symbolMode,
   );
   const cyberSelection = useCyberMapSelection({
     cyber,
@@ -215,6 +214,7 @@ export default function GlobePage() {
     conflictRegionLayers: regionSelection.layers,
     contextLayers: context.layers,
     cyberCountryLayers: cyberSelection.layers,
+    newsCountryLayers: newsLayers,
     measured: toolLayers,
     supported,
     terminator,
@@ -322,6 +322,7 @@ export default function GlobePage() {
       />
       {!opsRoom && !tools.picking && (
         <GlobeInspectors
+          news={{ state: news, onSelect: selectContext }}
           cyber={{ state: cyber, onSelect: cyberSelection.selectRecord }}
           regions={regions}
           infrastructure={infrastructure}

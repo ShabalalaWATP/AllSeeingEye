@@ -1,5 +1,18 @@
 # Public news RSS verification, 13 September 2026
 
+## Map geography companion
+
+The separate `gdelt_news` bulk-event connector adds geographic reporting signals
+without changing the RSS count below. A bounded live connector check on
+13 September 2026 returned 400 linked records: 272 city, 63 administrative-area
+and 65 country-level locations. These are machine-coded, unverified action
+geographies, not publisher headquarters or inferred RSS headline locations.
+The source supplies indexing time, not publisher publication time. See
+[map news behaviour](MAP_NEWS_AND_EVIDENCE.md#geocoded-reporting) and the
+[GDELT event codebook](https://data.gdeltproject.org/documentation/GDELT-Event_Codebook-V2.0.pdf).
+
+## RSS verification
+
 Added 38 public feeds: 14 UK national/regional and 24 worldwide, taking the seeded RSS catalogue from 54 to 92. Verification used bounded public feed requests, then the actual NewsRssConnector and Normaliser. The final run yielded 1,506 dated, linked F6 records, with no retained summaries or inferred points. Live endpoint success is a snapshot, not an uptime or publisher-reliability guarantee.
 
 Each source polls at most every 30 minutes. Existing shared limits remain: 200 parsed items per feed, 5 MiB response cap, normalisation/deduplication, scheduler concurrency, 72-hour/40,000-item news retention and 512 MiB store budget. The additional schedule is 76 feed requests per hour before backoff or source controls.

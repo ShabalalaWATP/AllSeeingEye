@@ -24,8 +24,17 @@ pipeline. Backend source categories and saved research scopes remain unchanged.
 
 ## News briefing
 
-The News icon toggles news pins. Its Brief control opens a searchable headline
-list with publisher and subject choices. A panel-only authenticated snapshot
+The News icon loads a geographic sample of up to 300 retained reporting records
+on either the globe or map. It refreshes one minute after each completed request
+while visible and enabled, retaining the previous sample during refresh. Requests
+are cancelled on disable, scope changes and logout; slow requests do not overlap.
+The source-supplied country references have labelled newspaper badges. Reports
+with supplied city or regional geography have approximate location symbols.
+Selecting a marker highlights it, and closing details or excluding it clears the
+selection. Country badges are navigation references, not incident positions.
+
+Its Brief control opens a searchable headline list with publisher and subject
+choices. A separate panel-only authenticated snapshot
 loads at most 300 retained events, initially showing 15 grouped stories. More
 rows are revealed on request. Closing the panel removes its data-loading hook;
 it does not add a continuous poll or a model request.
@@ -46,6 +55,27 @@ Matching story IDs and identical links are grouped for readability. Counts are
 source feeds, not independent corroboration. Missing or unsafe URLs retain their
 headline text but have no external link. Source assessment explains each stored
 event grade. Coverage details are collapsed below the headlines.
+
+## Geocoded reporting
+
+`gdelt_news` complements the RSS headlines with public GDELT event exports,
+covering CAMEO roots 01 to 13 and 16. Conflict and protest roots remain in
+`gdelt_events`. These machine-coded action geographies are unreviewed F6 signals,
+not verified events or original publisher headlines. Original article links are
+retained. GDELT FIPS codes are not treated as ISO country codes: the existing
+country resolver attributes supplied coordinates.
+
+The connector collects at most 400 records per 15-minute poll, with the existing
+fixed export host, response/ZIP bounds, source controls and store deduplication.
+No key or model call is needed. A connection probe does not consume the next
+scheduled batch. Malformed non-finite numeric fields cannot discard the batch.
+
+GDELT DATEADDED is indexing time. It is retained as typed source metadata and
+used only by the explicitly selected `map_record_time` map query. Publication
+remains unknown, including in frozen report references and exports. Research
+publication/acquisition windows retain their existing semantics. The map clock
+is not an available research time basis. RSS without supplied geography remains
+unlocated, with no guessed headline geocoding or publisher headquarters pins.
 
 ## Source coverage and operating limits
 

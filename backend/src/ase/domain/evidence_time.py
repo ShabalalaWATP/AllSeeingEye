@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 
 from ase.domain.events import Event
+from ase.domain.news_time import news_indexing_time
 from ase.domain.project_time import commitment_bounds
 from ase.domain.sec_filing_time import filing_day_matches
 
@@ -15,11 +16,19 @@ class EvidenceTimeBasis(StrEnum):
     RECORDED = "recorded_time"
 
 
+class MapTimeBasis(StrEnum):
+    """Map-only clock, deliberately unavailable to research/report requests."""
+
+    MAP = "map_record_time"
+
+
 def evidence_time(
-    event: Event, basis: EvidenceTimeBasis = EvidenceTimeBasis.PUBLICATION
+    event: Event, basis: EvidenceTimeBasis | MapTimeBasis = EvidenceTimeBasis.PUBLICATION
 ) -> datetime | None:
-    if not isinstance(basis, EvidenceTimeBasis):
+    if not isinstance(basis, EvidenceTimeBasis | MapTimeBasis):
         raise ValueError("Unknown evidence time basis")
+    if basis is MapTimeBasis.MAP and event.source_id == "gdelt_news":
+        return news_indexing_time(event)
     if basis is EvidenceTimeBasis.RECORDED and event.project is not None:
         return None  # A commitment year has no exact occurrence timestamp.
     value = (
@@ -39,7 +48,7 @@ def publication_order(event: Event) -> datetime:
 
 def evidence_matches_time(
     event: Event,
-    basis: EvidenceTimeBasis,
+    basis: EvidenceTimeBasis | MapTimeBasis,
     since: datetime | None,
     until: datetime | None,
     *,
@@ -62,7 +71,7 @@ def evidence_matches_time(
     return (since is None or timestamp >= since) and (until is None or timestamp < until)
 
 
-def evidence_order(event: Event, basis: EvidenceTimeBasis) -> datetime:
+def evidence_order(event: Event, basis: EvidenceTimeBasis | MapTimeBasis) -> datetime:
     """Comparison key only; year bounds are never returned as occurrence timestamps."""
     if basis is EvidenceTimeBasis.RECORDED and event.project is not None:
         bounds = commitment_bounds(event.project)

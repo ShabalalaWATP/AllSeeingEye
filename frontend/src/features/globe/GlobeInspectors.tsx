@@ -1,6 +1,8 @@
 import type { ComponentProps } from 'react';
 import { ConflictRegionInspector } from './ConflictRegionInspector';
 import { CyberCountryInspector } from './CyberCountryInspector';
+import { NewsCountryInspector } from './NewsCountryInspector';
+import type { useNewsCountryContext } from './useNewsCountryContext';
 import { InfrastructureInspector } from './infrastructure/InfrastructureInspector';
 import { CameraInspector } from './cameras/CameraInspector';
 import { SelectedMapDetails } from './SelectedMapDetails';
@@ -16,6 +18,7 @@ export function GlobeInspectors({
   cameras,
   eventDetails,
   cyber,
+  news,
 }: {
   regions: ReturnType<typeof useConflictRegions>;
   infrastructure: ReturnType<typeof useInfrastructure>;
@@ -25,7 +28,19 @@ export function GlobeInspectors({
     state: ReturnType<typeof useCyberCountryContext>;
     onSelect: ComponentProps<typeof CyberCountryInspector>['onSelect'];
   };
+  news?: {
+    state: ReturnType<typeof useNewsCountryContext>;
+    onSelect: ComponentProps<typeof NewsCountryInspector>['onSelect'];
+  };
 }) {
+  if (news?.state.selected)
+    return (
+      <NewsCountryInspector
+        group={news.state.selected}
+        onClose={news.state.close}
+        onSelect={news.onSelect}
+      />
+    );
   if (cyber?.state.selected)
     return (
       <CyberCountryInspector

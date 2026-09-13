@@ -6,13 +6,13 @@ from datetime import datetime
 from math import floor
 
 from ase.domain.events import Category, Event
-from ase.domain.evidence_time import EvidenceTimeBasis, evidence_order
+from ase.domain.evidence_time import EvidenceTimeBasis, MapTimeBasis, evidence_order
 
 CELL_DEGREES = 10
 
 
 def geographic_page(
-    events: Sequence[Event], basis: EvidenceTimeBasis, offset: int, limit: int
+    events: Sequence[Event], basis: EvidenceTimeBasis | MapTimeBasis, offset: int, limit: int
 ) -> list[Event]:
     """Round-robin cells, then categories per cell, then newest records per category.
 

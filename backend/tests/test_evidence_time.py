@@ -169,6 +169,7 @@ def test_area_job_retains_pointless_observation_using_acquisition_date():
         terms=(),
         reused_evidence=(),
         seed_events=(),
+        subscription_baseline=None,
     )
     selected = select_for_job(store, {}, job, None)
     assert [item.event_id for item in selected.items] == [observation.id]

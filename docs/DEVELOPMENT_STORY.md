@@ -4385,3 +4385,36 @@ response sizes remain in place; no credentials, dependencies or migrations were
 added. The Cyber guide and active plan were updated. Local backend health and
 readiness returned 200 after restarting with the feed repair.
 The staged Gitleaks scan passed. Changes remain on local main without a remote.
+
+## 13 September 2026: make News visible on both map projections
+
+News headlines were available in the briefing but most RSS sources supplied no
+geography. Added a separate `gdelt_news` connector for non-conflict CAMEO roots,
+plus a bounded geographic snapshot when News is enabled. Reports with supplied
+locations receive newspaper symbols; source-supplied country context uses
+labelled country badges. Clicking and dismissing details updates the highlight.
+Shared source, subject, search, time and quality filters remain in force.
+
+The map snapshot refreshes one minute after completion without overlapping slow
+requests. It stops and discards late responses on disable, scope changes or
+logout. No guessed RSS coordinates, publisher headquarters, extra API keys,
+dependencies or model calls were introduced. A live connector probe returned
+400 linked records: 272 city, 63 administrative-area and 65 country references.
+
+Review identified and repaired non-finite numeric batch failures, connection
+tests consuming an export before ingestion, indexing timestamps masquerading as
+publication dates (including frozen reference exports), and country-inspector
+selections surviving disabled layers. GDELT indexing dates now remain typed
+source metadata, with a map-only query clock unavailable to research requests.
+Machine-coded geography and claims retain their unverified F6 status.
+
+Validation: 45 backend tests passed. An isolated News frontend snapshot built
+successfully and passed 2,290 tests in the wider run. One suite initially lacked
+its packaged infrastructure resources; restoring those validation fixtures and
+running the final eight suites passed all 46 tests, including its five tests.
+One existing test is skipped; the interrupted coverage run supplies no new
+coverage percentage. Final frontend typing, scoped lint, backend Ruff/mypy,
+file-length and staged secret checks passed. Browser fixtures displayed markers
+in both settled projections and exercised country-marker inspection. The local
+backend was restarted and health/readiness returned 200. Concurrent unrelated
+Cyber/settings work was preserved and excluded from the News validation snapshot.

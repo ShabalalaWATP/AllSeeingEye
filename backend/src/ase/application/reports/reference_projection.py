@@ -27,7 +27,8 @@ def _reference_date(item: EvidenceItem) -> str | None:
         ),
     )
     for source_date in ordered:
-        if source_date.status != "resolved":
+        # Indexing time is retained for map recency, never a publication citation date.
+        if source_date.status != "resolved" or source_date.method == "gdelt-dateadded-utc-v1":
             continue
         if source_date.value is not None:
             return _date(source_date.value)

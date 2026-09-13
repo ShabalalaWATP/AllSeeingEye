@@ -11651,6 +11651,7 @@ export interface operations {
                 military?: boolean | null;
                 offset?: number;
                 sampling?: "newest" | "geographic";
+                time_basis?: "publication" | "map_record_time";
             };
             header?: never;
             path?: never;

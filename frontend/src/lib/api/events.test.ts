@@ -53,6 +53,9 @@ describe('events api', () => {
       '?categories=disaster%2Ccyber&bbox=-10%2C35%2C5%2C60&country=GB&since=2026-09-04T00%3A00%3A00Z&limit=50',
     );
     expect(eventsQueryString({ categories: [] })).toBe('');
+    expect(eventsQueryString({ sampling: 'geographic', timeBasis: 'map_record_time' })).toBe(
+      '?sampling=geographic&time_basis=map_record_time',
+    );
   });
 
   it('passes the query through and unwraps the items', async () => {

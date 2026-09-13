@@ -7,6 +7,7 @@ import { useContextSelection } from './context/useContextSelection';
 import { DEFAULT_NEWS_OPTIONS } from './newsFilters';
 import type { NewsOptions } from './newsFilters';
 import { useNewsSelectionGuard } from './useNewsSelectionGuard';
+import type { LocationQualityFilter } from './geographicPrecision';
 
 const now = Date.parse('2026-09-13T12:00:00Z');
 const headline = liveEvent({
@@ -19,13 +20,23 @@ const headline = liveEvent({
   point: null,
   geo_confidence: 'none',
 });
-const defaults = { options: DEFAULT_NEWS_OPTIONS, windowHours: 168 as number | null, now };
+const defaults = {
+  options: DEFAULT_NEWS_OPTIONS,
+  windowHours: 168 as number | null,
+  now,
+  enabled: true,
+  quality: 'all' as LocationQualityFilter,
+};
 
 function harness(props = defaults) {
   return renderHook(
     (scope) => {
       const context = useContextSelection('GB', false, 'globe');
-      useNewsSelectionGuard({ ...scope, context });
+      useNewsSelectionGuard(
+        context,
+        { news: scope, quality: { filter: scope.quality }, windowHours: scope.windowHours },
+        scope.now,
+      );
       return context;
     },
     { initialProps: props },
@@ -57,11 +68,24 @@ it('keeps explicit unlocated inspection usable while the News map layer is off',
   act(() => result.current.choose(headline));
   rerender({
     ...defaults,
+    enabled: false,
     options: { ...DEFAULT_NEWS_OPTIONS, query: ' PORT ', source: 'bbc_world' },
   });
   expect(result.current.event).toBe(headline);
   expect(result.current.layers).toEqual([]);
   expect(useEventsStore.getState().hidden).toContain('news');
+});
+
+it('clears country-story context when News is switched off or its location quality is excluded', () => {
+  const { result, rerender } = harness();
+  const event = { ...headline, geo_confidence: 'country' as const };
+  act(() => result.current.choose(event));
+  rerender({ ...defaults, enabled: false });
+  expect(result.current.event).toBeNull();
+  rerender(defaults);
+  act(() => result.current.choose(event));
+  rerender({ ...defaults, quality: 'reported' });
+  expect(result.current.event).toBeNull();
 });
 
 it.each(['news', 'political', 'humanitarian', 'economic', 'social'] as const)(

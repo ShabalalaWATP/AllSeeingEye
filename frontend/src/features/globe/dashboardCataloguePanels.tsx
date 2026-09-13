@@ -2,6 +2,8 @@ import { catalogueControlPanels } from './catalogueControlPanels';
 import { trafficControlPanels } from './trafficControlPanels';
 import type { useDashboardEvents } from './useDashboardEvents';
 import type { GlobeEngineHandle } from './useGlobeEngine';
+import { isMappedEvent } from './geographicPrecision';
+import { isNewsCategory } from './newsFilters';
 
 type Catalogue = Parameters<typeof catalogueControlPanels>[0];
 type Traffic = Parameters<typeof trafficControlPanels>[0];
@@ -46,6 +48,23 @@ export function dashboardCataloguePanels({
         country: data.country,
         windowHours: data.windowHours,
         onSelect: onContextSelect,
+        mapStatus: {
+          loading: data.newsSnapshot.loading,
+          error: data.newsSnapshot.error,
+          mapped: data.quality.filtered.filter(
+            (event) => isNewsCategory(event.category) && isMappedEvent(event),
+          ).length,
+          countries: new Set(
+            data.quality.filtered
+              .filter(
+                (event) =>
+                  isNewsCategory(event.category) &&
+                  event.geo_confidence === 'country' &&
+                  event.country_iso,
+              )
+              .map((event) => event.country_iso),
+          ).size,
+        },
       },
       onContextSelect,
       onSatelliteSelect,

@@ -2544,6 +2544,20 @@
               "default": "newest",
               "title": "Sampling"
             }
+          },
+          {
+            "name": "time_basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "publication",
+                "map_record_time"
+              ],
+              "type": "string",
+              "default": "publication",
+              "title": "Time Basis"
+            }
           }
         ],
         "responses": {

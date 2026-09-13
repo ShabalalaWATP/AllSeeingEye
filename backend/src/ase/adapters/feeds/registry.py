@@ -35,6 +35,7 @@ from ase.adapters.feeds.firms_public import FirmsPublicConnector
 from ase.adapters.feeds.firms_sensors import FIRMS_SENSORS
 from ase.adapters.feeds.gdacs import GdacsConnector
 from ase.adapters.feeds.gdelt_events import GdeltEventsConnector
+from ase.adapters.feeds.gdelt_news import GdeltNewsConnector
 from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.feeds.humanitarian import IfrcGoConnector, WhoOutbreakConnector
 from ase.adapters.feeds.mastodon import MastodonConnector, load_watch
@@ -85,6 +86,7 @@ def build_connectors(
         SwpcScalesConnector(http, clock),
         CisaKevConnector(http, clock),
         GdeltEventsConnector(http, clock),
+        GdeltNewsConnector(http, clock),
         AdsbMilitaryConnector(http, clock, classifications=classifications),
         AdsbListConnector(
             http,

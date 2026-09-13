@@ -17,6 +17,7 @@ export interface EventsQuery {
   military?: boolean;
   offset?: number;
   sampling?: 'newest' | 'geographic';
+  timeBasis?: 'publication' | 'map_record_time';
 }
 
 export function eventsQueryString(query: EventsQuery): string {
@@ -32,6 +33,7 @@ export function eventsQueryString(query: EventsQuery): string {
   if (query.military !== undefined) params.set('military', String(query.military));
   if (query.offset !== undefined) params.set('offset', String(query.offset));
   if (query.sampling) params.set('sampling', query.sampling);
+  if (query.timeBasis) params.set('time_basis', query.timeBasis);
   const text = params.toString();
   return text ? `?${text}` : '';
 }
