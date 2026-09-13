@@ -4495,6 +4495,16 @@ rejection before body reads, SEC filing capacity ordering and unknown
 publication selection. The capacity ordering failures deserve early attention
 because they concern refusing work before authentication and admission.
 
+A second full backend run on the final state was started but could not be
+completed within the session, so the changes made after the first run (the
+source inventory, catalogue entries and test corrections) are covered by
+focused batches only: 115 container, source, research-input and economy tests,
+50 rating, inventory and plan-size tests, 109 publisher and news source tests
+and 83 cyber tests passed. Two economy briefing tests exceed their 15-second
+helper budget on this machine when other work is running; profiling shows the
+time in the pre-existing report-job checkpoint loop, with the new modules
+contributing about 60 milliseconds.
+
 ## 13 September 2026: make News visible on both map projections
 
 News headlines were available in the briefing but most RSS sources supplied no
