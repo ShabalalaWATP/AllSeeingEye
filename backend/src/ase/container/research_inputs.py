@@ -28,16 +28,20 @@ if TYPE_CHECKING:
     from ase.container.repositories import Repositories
 
 
-def input_services(
-    settings: Settings, clock: Clock
-) -> tuple[ResearchInputStore, DocumentImportPort]:
-    tools = MediaTools(
+def media_tools(settings: Settings) -> MediaTools:
+    """Trusted local executables from operator settings or PATH, never from uploads."""
+    return MediaTools(
         tesseract=shutil.which(settings.research_tesseract_path or "tesseract"),
         ffmpeg=shutil.which(settings.research_ffmpeg_path or "ffmpeg"),
         ffprobe=shutil.which(settings.research_ffprobe_path or "ffprobe"),
     )
+
+
+def input_services(
+    settings: Settings, clock: Clock
+) -> tuple[ResearchInputStore, DocumentImportPort]:
     return BoundedResearchInputStore(clock), DocumentResearchImporter(
-        DocumentImportRunner(media_tools=tools)
+        DocumentImportRunner(media_tools=media_tools(settings))
     )
 
 

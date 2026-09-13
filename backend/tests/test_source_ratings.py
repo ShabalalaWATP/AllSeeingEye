@@ -33,10 +33,14 @@ def test_every_registered_source_has_explicit_versioned_rating_context():
         assert rating.basis and rating.scope and rating.limitations
         assert rating.reviewed_at is None
         assert "measured accuracy percentage" in " ".join(rating.limitations)
-        if rating.provenance_role == "platform" or spec.id in {
-            seed.spec.id for seed in REGIONAL_SEEDS
-        }:
-            assert rating.status == "unassessed" and rating.assessed_grade is None
+        if (
+            rating.provenance_role == "platform"
+            or spec.id in {seed.spec.id for seed in REGIONAL_SEEDS}
+            # Publisher headline feeds are registered with an explicit F grade and stay
+            # unassessed until an editorial review records a basis; that is by design.
+            or spec.reliability is Reliability.F
+        ):
+            assert rating.status == "unassessed" and rating.assessed_grade is None, spec.id
         else:
             assert rating.status == "editorial", spec.id
             assert rating.assessed_grade is spec.reliability

@@ -11,6 +11,7 @@ from ase.domain.economy import EconomyPoint, EconomySeries, EconomySnapshot
 from ase.domain.economy_catalogue import INDICATORS, REGIONS
 from ase.domain.events import Category
 from ase.domain.research import ResearchBatch, ResearchFocus, ResearchMode, ResearchQuery
+from ase.domain.research_capacity import MAX_COLLECTION_PROVIDERS
 from feeds_helpers import make_event
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, login_token
 from report_job_api_helpers import job_settings, prepared, stored, work
@@ -141,7 +142,9 @@ def test_expanded_inventory_keeps_economic_selection_and_multilingual_company_pl
             subject="0000320193",
         )
     )
-    assert len(company.tasks) <= 64
+    # The enforced bound is the collection provider cap; the plan must stay inside it
+    # as publisher inventories grow, or planning would refuse company questions.
+    assert len(company.tasks) <= MAX_COLLECTION_PROVIDERS
     assert any(row.source_id == "research-sec-submissions" for row in company.tasks)
 
 

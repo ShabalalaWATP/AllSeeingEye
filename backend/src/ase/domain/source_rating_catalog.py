@@ -80,6 +80,7 @@ CATALOGUE = {
             "adsb_pia": "B",
             "adsb_emergency": "A",
             "adsb_areas": "B",
+            "adsb_global": "B",
         },
         "Inherited feed-specific editorial assignment for community receiver observations "
         "and associated aircraft database classifications.",
@@ -221,12 +222,21 @@ CATALOGUE = {
         "reconcile them or claim a fresh performance assessment.",
     ),
     **_entries(
-        {"gdelt_events": "C", "google_news_watchlists": "C"},
+        {"gdelt_events": "C", "google_news_watchlists": "C", "gdelt_news": "C"},
         "Inherited collection-service assignment for machine-coded or aggregated reporting; "
         "the original publisher has not inherited a reliability grade from the platform.",
         "Discovery/index metadata and supplied excerpts, not the original publisher's reliability.",
         "aggregator",
         "Coverage, translation, extraction and syndication can distort results. A resolved "
         "publisher link does not establish source independence or upgrade the retained feed grade.",
+    ),
+    **_entries(
+        {"ucdp_candidate": "B"},
+        "Inherited editorial assignment for a research programme's provisional monthly "
+        "candidate event release, whether read from the public CSV or the token-gated API.",
+        "Published candidate event records with their reported dates, places and counts.",
+        "originator",
+        "Candidate events are provisional and revised in later releases; coding, geocoding "
+        "and fatality estimates are the programme's and can change.",
     ),
 }

@@ -26,7 +26,72 @@ export const sourceContext: components['schemas']['SourceSummaryOut'] = {
     publisher_reliability_assessed: true,
     reviewed_at: null,
   },
+  connection: {
+    state: 'connected',
+    enabled: true,
+    environment_disabled: false,
+    active: true,
+    requirement: null,
+    health: {
+      status: 'healthy',
+      last_success: '2026-09-12T12:00:00Z',
+      last_error_at: null,
+      consecutive_failures: 0,
+      items_last_poll: 12,
+      next_poll_at: null,
+      polls: 3,
+    },
+    detail: 'Collecting on schedule.',
+  },
 };
+
+export const platformConnections: components['schemas']['PlatformConnectionOut'][] = [
+  {
+    id: 'assessment_model',
+    name: 'AI assessment model',
+    purpose: 'Writes briefings, reports and the Eye assistant’s answers.',
+    state: 'key_missing',
+    requirement: {
+      kind: 'model',
+      satisfied: false,
+      origin: 'none',
+      setting: null,
+      note: 'No enabled model profile can play this role. Add one under Admin, Models.',
+      optional: false,
+    },
+    detail: 'No model is available for your personal workspace.',
+  },
+  {
+    id: 'os_maps',
+    name: 'Ordnance Survey maps',
+    purpose: 'OS Road, Outdoor and Light base layers on the map.',
+    state: 'connected',
+    requirement: {
+      kind: 'api_key',
+      satisfied: true,
+      origin: 'environment',
+      setting: 'ASE_OS_MAPS_KEY',
+      note: 'ASE_OS_MAPS_KEY is set.',
+      optional: false,
+    },
+    detail: 'Configured.',
+  },
+  {
+    id: 'alert_webhook',
+    name: 'Alert webhook',
+    purpose: 'Posts fired indicators to an external https endpoint.',
+    state: 'not_configured',
+    requirement: {
+      kind: 'endpoint',
+      satisfied: false,
+      origin: 'none',
+      setting: 'ASE_ALERT_WEBHOOK_URL',
+      note: 'Set ASE_ALERT_WEBHOOK_URL on the server.',
+      optional: true,
+    },
+    detail: 'Optional.',
+  },
+];
 
 export const researchReceipt: components['schemas']['ResearchReceiptOut'] = {
   time_basis: 'publication',

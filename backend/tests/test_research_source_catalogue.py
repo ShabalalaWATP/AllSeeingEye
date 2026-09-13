@@ -130,9 +130,12 @@ async def test_api_combines_live_and_research_without_urls_or_secrets(
     response = await client.get("/api/sources", headers=bearer(token))
     assert response.status_code == 200, response.text
     items = response.json()["items"]
+    # Keyed feeds that are not built without a credential still appear, so the
+    # inventory is complete; they carry a "key missing" connection rather than health.
     assert {item["id"] for item in items} == {
         *(spec.id for spec in original),
         *(connector.spec.id for connector in container.connectors),
+        *(spec.id for spec in container.optional_connector_specs()),
     }
     assert len(items) == len({item["id"] for item in items})
     assert items == sorted(items, key=lambda item: (item["name"].casefold(), item["id"]))
@@ -154,6 +157,7 @@ async def test_api_combines_live_and_research_without_urls_or_secrets(
             "coverage_countries",
             "coverage_regions",
             "coverage_note",
+            "connection",
         }
     assert next(item for item in items if item["id"] == "research_media")["rating"]["basis"]
 

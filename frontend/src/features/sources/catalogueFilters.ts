@@ -1,5 +1,6 @@
 import type { CatalogueSource } from '@/lib/api/sourceContext';
 import { CATEGORY_STYLES } from '@/lib/categories';
+import { CONNECTION_META, connectionGroup } from './connectionPresentation';
 
 const nations = new Intl.DisplayNames(['en-GB'], { type: 'region' });
 const languages = new Intl.DisplayNames(['en-GB'], { type: 'language' });
@@ -29,6 +30,7 @@ export interface CatalogueFilters {
   language: string;
   access: string;
   mode: string;
+  connection: string;
 }
 export const EMPTY_FILTERS: CatalogueFilters = {
   query: '',
@@ -37,6 +39,7 @@ export const EMPTY_FILTERS: CatalogueFilters = {
   language: '',
   access: '',
   mode: '',
+  connection: '',
 };
 export function filterSources(sources: readonly CatalogueSource[], filters: CatalogueFilters) {
   const terms = filters.query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -55,11 +58,14 @@ export function filterSources(sources: readonly CatalogueSource[], filters: Cata
         coverageLabel(source),
         source.coverage_note,
         ...source.coverage_countries,
+        CONNECTION_META[source.connection.state].label,
+        source.connection.requirement?.setting ?? '',
       ]
         .join(' ')
         .toLocaleLowerCase();
       return (
         terms.every((term) => text.includes(term)) &&
+        (!filters.connection || connectionGroup(source.connection.state) === filters.connection) &&
         (!filters.topic || source.category === filters.topic) &&
         (!filters.nation ||
           (filters.nation === 'global'

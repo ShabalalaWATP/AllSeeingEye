@@ -92,6 +92,7 @@ from ase.container.repositories import build_repositories
 from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
 from ase.container.sec_filings import SecFilingWiring
+from ase.container.source_inventory import SourceInventoryWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
 from ase.infrastructure.rate_limit import InMemorySlidingWindowLimiter
@@ -110,6 +111,7 @@ class Container(
     EconomyWiring,
     EconomyBriefingWiring,
     CyberWiring,
+    SourceInventoryWiring,
 ):
     def __init__(
         self,
