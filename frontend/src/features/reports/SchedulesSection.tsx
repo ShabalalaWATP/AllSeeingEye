@@ -17,6 +17,7 @@ import type { Schedule, ScheduleRequest } from '@/lib/api/schedules';
 import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import type { CollectionPlan } from '@/lib/api/direction';
+import { formatUtc } from '@/lib/format';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
 
 import { ScheduleForm } from './ScheduleForm';
@@ -89,14 +90,42 @@ export function SchedulesSection({
         (status === 'paused' && !item.enabled) ||
         (status === 'attention' && item.last_error !== null),
     ) ?? [];
+  const active = schedules.data?.filter((item) => item.enabled) ?? [];
+  const paused = schedules.data?.filter((item) => !item.enabled) ?? [];
+  const attention = schedules.data?.filter((item) => item.last_error !== null) ?? [];
+  const nextRun = active.map((item) => item.next_run_at).sort()[0];
+  const figures = [
+    { label: 'Active', value: String(active.length), tone: 'text-good' },
+    { label: 'Paused', value: String(paused.length), tone: 'text-muted' },
+    {
+      label: 'Needs attention',
+      value: String(attention.length),
+      tone: attention.length ? 'text-amber' : 'text-muted',
+    },
+    { label: 'Next run', value: nextRun ? formatUtc(nextRun) : 'None scheduled', tone: '' },
+  ];
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
+      {schedules.data && (
+        <ul aria-label="Subscription figures" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {figures.map((figure) => (
+            <li
+              key={figure.label}
+              className="rounded-xl border border-line/70 bg-surface/60 px-4 py-3"
+            >
+              <p className="text-[11px] text-muted">{figure.label}</p>
+              <p className={`mt-1 truncate text-xl font-semibold tracking-tight ${figure.tone}`}>
+                {figure.value}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold">Your subscriptions</h2>
           <p className="mt-1 text-xs text-muted">
-            {schedules.data?.filter((item) => item.enabled).length ?? 0} active ·{' '}
-            {schedules.data?.filter((item) => !item.enabled).length ?? 0} paused
+            {active.length} active · {paused.length} paused
           </p>
         </div>
         <SelectField
@@ -179,25 +208,27 @@ export function SchedulesSection({
           </tbody>
         </Table>
       )}
-      <ScheduleForm
-        key={`${workspaces.key}:${editing?.id ?? 'new'}:${revision}`}
-        initial={editing ?? undefined}
-        onCancel={
-          editing
-            ? () => {
-                setEditing(null);
-                save.clearError();
-              }
-            : undefined
-        }
-        workspaces={workspaces}
-        plans={plans}
-        templates={templates}
-        countries={countries}
-        busy={save.busy || toggle.busy || remove.busy}
-        error={save.error === null ? null : describeError(save.error)}
-        onSubmit={(request) => void save.run(request)}
-      />
+      <div className="rounded-2xl border border-line/70 bg-surface/40 px-5 pb-6 sm:px-7">
+        <ScheduleForm
+          key={`${workspaces.key}:${editing?.id ?? 'new'}:${revision}`}
+          initial={editing ?? undefined}
+          onCancel={
+            editing
+              ? () => {
+                  setEditing(null);
+                  save.clearError();
+                }
+              : undefined
+          }
+          workspaces={workspaces}
+          plans={plans}
+          templates={templates}
+          countries={countries}
+          busy={save.busy || toggle.busy || remove.busy}
+          error={save.error === null ? null : describeError(save.error)}
+          onSubmit={(request) => void save.run(request)}
+        />
+      </div>
     </div>
   );
 }

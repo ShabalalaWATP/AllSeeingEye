@@ -124,19 +124,24 @@ function PhotoGeolocationForm({
         </p>
       </div>
       <form aria-label="Analyse a photograph" onSubmit={submit} className="min-w-0">
-        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <PhotoGeolocationUpload
-            input={input}
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="min-w-0 rounded-2xl border border-line/70 bg-surface/50 p-4 sm:p-5">
+            <PhotoGeolocationUpload
+              input={input}
+              disabled={busy}
+              onUpload={upload}
+              validation={validation}
+              onRemove={(id) => {
+                analysis.clear();
+                setConsentKey('');
+                void input.remove(id);
+              }}
+            />
+          </div>
+          <fieldset
             disabled={busy}
-            onUpload={upload}
-            validation={validation}
-            onRemove={(id) => {
-              analysis.clear();
-              setConsentKey('');
-              void input.remove(id);
-            }}
-          />
-          <fieldset disabled={busy} className="min-w-0 space-y-5 disabled:opacity-70">
+            className="min-w-0 space-y-5 rounded-2xl border border-line/70 bg-surface/50 p-4 disabled:opacity-70 sm:p-5"
+          >
             <TextAreaField
               label={
                 input.receipts.length === 1
