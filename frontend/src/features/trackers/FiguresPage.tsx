@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { CountryChips, countryOptions, matchesCountries } from '@/components/ui/CountryChips';
 import { describeError } from '@/lib/api/errors';
 import {
   BASIS_LABELS,
@@ -95,10 +96,13 @@ function FigureCard({
 export function FiguresBoard({ board }: { board: FigureBoard }) {
   const [open, setOpen] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [countries, setCountries] = useState<ReadonlySet<string>>(new Set());
+  const options = useMemo(() => countryOptions(board.figures), [board.figures]);
   const term = query.trim().toLocaleLowerCase('en-GB');
   const visible = useMemo(
     () =>
       [...board.figures]
+        .filter((figure) => matchesCountries(figure, countries))
         .filter((figure) =>
           term
             ? `${figure.name} ${figure.office} ${figure.country_iso ?? ''} ${figure.organisation ?? ''}`
@@ -107,8 +111,15 @@ export function FiguresBoard({ board }: { board: FigureBoard }) {
             : true,
         )
         .sort((a, b) => b.mentions - a.mentions || a.name.localeCompare(b.name, 'en-GB')),
-    [board.figures, term],
+    [board.figures, term, countries],
   );
+  const toggleCountry = (code: string) =>
+    setCountries((old) => {
+      const next = new Set(old);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
   const reported = board.figures.filter((figure) => figure.placement.basis !== 'seat').length;
   return (
     <>
@@ -132,6 +143,13 @@ export function FiguresBoard({ board }: { board: FigureBoard }) {
           className="mt-1 min-h-11 w-full rounded border border-line bg-surface px-2"
         />
       </label>
+      <CountryChips
+        label="Countries"
+        options={options}
+        selected={countries}
+        onToggle={toggleCountry}
+        onClear={() => setCountries(new Set())}
+      />
       <ul aria-label="Public figures" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {visible.map((figure) => (
           <FigureCard

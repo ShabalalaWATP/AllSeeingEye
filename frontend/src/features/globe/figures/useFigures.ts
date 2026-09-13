@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
+import { countryOptions, matchesCountries } from '@/components/ui/CountryChips';
 import { fetchFigures, type FigureBoard, type PublicFigure } from '@/lib/api/figures';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
 const REFRESH_MS = 5 * 60_000;
+const EMPTY: ReadonlySet<string> = new Set();
 
 function matches(figure: PublicFigure, term: string): boolean {
   if (!term) return true;
@@ -31,6 +33,7 @@ export function useFigures() {
   const [revision, setRevision] = useState(0);
   const [query, setQuery] = useState('');
   const [reportedOnly, setReportedOnly] = useState(false);
+  const [countries, setCountries] = useState<ReadonlySet<string>>(EMPTY);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,15 +63,18 @@ export function useFigures() {
 
   const data = board?.scope === scope ? board.value : null;
   const term = query.trim().toLocaleLowerCase('en-GB');
+  const options = useMemo(() => countryOptions(data?.figures ?? []), [data]);
   const visible = useMemo(
     () =>
       enabled && data
         ? data.figures.filter(
             (figure) =>
-              matches(figure, term) && (!reportedOnly || figure.placement.basis !== 'seat'),
+              matches(figure, term) &&
+              matchesCountries(figure, countries) &&
+              (!reportedOnly || figure.placement.basis !== 'seat'),
           )
         : [],
-    [enabled, data, term, reportedOnly],
+    [enabled, data, term, countries, reportedOnly],
   );
   const selected = useMemo(
     () => visible.find((figure) => figure.id === selectedId) ?? null,
@@ -80,6 +86,14 @@ export function useFigures() {
     setError(null);
     if (!value) setSelectedId(null);
   }, []);
+  const toggleCountry = useCallback((code: string) => {
+    setCountries((old) => {
+      const next = new Set(old);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  }, []);
   return {
     enabled,
     setEnabled: toggleEnabled,
@@ -90,6 +104,10 @@ export function useFigures() {
     setQuery: useCallback((value: string) => setQuery(value.slice(0, 120)), []),
     reportedOnly,
     setReportedOnly,
+    countries,
+    countryOptions: options,
+    toggleCountry,
+    clearCountries: useCallback(() => setCountries(EMPTY), []),
     visible,
     selected,
     select: useCallback((figure: PublicFigure | null) => setSelectedId(figure?.id ?? null), []),

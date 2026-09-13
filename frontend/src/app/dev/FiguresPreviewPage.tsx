@@ -7,6 +7,7 @@
 import { useState } from 'react';
 
 import { LeftRail } from '@/app/shell/LeftRail';
+import { countryOptions, matchesCountries } from '@/components/ui/CountryChips';
 import { TopBar } from '@/app/shell/TopBar';
 import { FigureInspector } from '@/features/globe/figures/FigureInspector';
 import { FigurePanel } from '@/features/globe/figures/FigurePanel';
@@ -29,12 +30,14 @@ function usePreviewState(): FigureState {
   const [enabled, setEnabled] = useState(true);
   const [query, setQuery] = useState('');
   const [reportedOnly, setReportedOnly] = useState(false);
+  const [countries, setCountries] = useState<ReadonlySet<string>>(new Set());
   const [selected, setSelected] = useState<PublicFigure | null>(board.figures[0] ?? null);
   const term = query.trim().toLocaleLowerCase('en-GB');
   const visible = enabled
     ? board.figures.filter(
         (figure) =>
           `${figure.name} ${figure.office}`.toLocaleLowerCase('en-GB').includes(term) &&
+          matchesCountries(figure, countries) &&
           (!reportedOnly || figure.placement.basis !== 'seat'),
       )
     : [];
@@ -48,6 +51,16 @@ function usePreviewState(): FigureState {
     setQuery,
     reportedOnly,
     setReportedOnly,
+    countries,
+    countryOptions: countryOptions(board.figures),
+    toggleCountry: (code: string) =>
+      setCountries((old) => {
+        const next = new Set(old);
+        if (next.has(code)) next.delete(code);
+        else next.add(code);
+        return next;
+      }),
+    clearCountries: () => setCountries(new Set()),
     visible,
     selected,
     select: setSelected,

@@ -30,6 +30,16 @@ describe('public figures tracker', () => {
     await user.type(screen.getByRole('searchbox', { name: 'Find a figure' }), 'burnham');
     expect(within(list).getAllByRole('listitem')).toHaveLength(1);
     expect(within(list).getByText(/Seat of office · 0 mentions/)).toBeVisible();
+    await user.clear(screen.getByRole('searchbox', { name: 'Find a figure' }));
+    const countries = screen.getByRole('group', { name: 'Countries' });
+    await user.click(within(countries).getByRole('button', { name: /^UA/ }));
+    await user.click(within(countries).getByRole('button', { name: /^Orgs/ }));
+    expect([...list.children].map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Volodymyr Zelenskyy'),
+      expect.stringContaining('Mark Rutte'),
+    ]);
+    await user.click(within(countries).getByRole('button', { name: 'All' }));
+    expect(list.children).toHaveLength(3);
     expect(screen.queryByRole('link', { name: 'Generate report' })).not.toBeInTheDocument();
   });
 

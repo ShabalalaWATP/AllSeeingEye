@@ -1,3 +1,4 @@
+import { CountryChips } from '@/components/ui/CountryChips';
 import { BASIS_LABELS, type PublicFigure } from '@/lib/api/figures';
 import { formatUtc } from '@/lib/format';
 
@@ -82,6 +83,13 @@ export function FigurePanel({
               className="mt-2 min-h-11 w-full rounded border border-line bg-surface p-2"
             />
           </label>
+          <CountryChips
+            label="Countries"
+            options={figures.countryOptions}
+            selected={figures.countries}
+            onToggle={figures.toggleCountry}
+            onClear={figures.clearCountries}
+          />
           <ul aria-label="Figures on the map" className="max-h-80 space-y-1 overflow-y-auto">
             {figures.visible.map((figure) => (
               <li key={figure.id}>

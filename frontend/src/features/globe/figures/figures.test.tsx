@@ -23,6 +23,14 @@ function state(overrides: Partial<FigureState> = {}): FigureState {
     setQuery: vi.fn(),
     reportedOnly: false,
     setReportedOnly: vi.fn(),
+    countries: new Set<string>(),
+    countryOptions: [
+      { code: 'GB', count: 1 },
+      { code: 'UA', count: 1 },
+      { code: 'ORG', count: 1 },
+    ],
+    toggleCountry: vi.fn(),
+    clearCountries: vi.fn(),
     visible: figureBoard.figures,
     selected: null,
     select: vi.fn(),
@@ -45,8 +53,21 @@ describe('public figures layer', () => {
     expect(result.current.visible.map((figure) => figure.id)).toEqual(['ua-head-of-state', 'nato']);
     act(() => result.current.setQuery('rutte'));
     expect(result.current.visible.map((figure) => figure.id)).toEqual(['nato']);
+    act(() => result.current.setQuery(''));
+    act(() => result.current.setReportedOnly(false));
+    expect(result.current.countryOptions.map((option) => option.code)).toEqual(['GB', 'UA', 'ORG']);
+    act(() => result.current.toggleCountry('GB'));
+    act(() => result.current.toggleCountry('ORG'));
+    expect(result.current.visible.map((figure) => figure.id)).toEqual([
+      'gb-head-of-government',
+      'nato',
+    ]);
+    act(() => result.current.toggleCountry('GB'));
+    expect(result.current.visible.map((figure) => figure.id)).toEqual(['nato']);
+    act(() => result.current.clearCountries());
+    expect(result.current.visible).toHaveLength(3);
     act(() => result.current.select(result.current.visible[0] ?? null));
-    expect(result.current.selected?.name).toBe('Mark Rutte');
+    expect(result.current.selected?.name).toBe('Volodymyr Zelenskyy');
     act(() => result.current.setEnabled(false));
     expect(result.current.visible).toEqual([]);
     expect(result.current.selected).toBeNull();
@@ -122,6 +143,19 @@ describe('public figures layer', () => {
     expect(figures.setReportedOnly).toHaveBeenCalledWith(true);
     await user.type(screen.getByRole('searchbox', { name: 'Find a figure' }), 'ru');
     expect(figures.setQuery).toHaveBeenCalled();
+    const countries = screen.getByRole('group', { name: 'Countries' });
+    expect(within(countries).getByRole('button', { name: 'All' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(countries).getByRole('button', { name: /^GB/ }));
+    expect(figures.toggleCountry).toHaveBeenCalledWith('GB');
+    expect(within(countries).getByRole('button', { name: /^Orgs/ })).toHaveAttribute(
+      'title',
+      'Organisations',
+    );
+    await user.click(within(countries).getByRole('button', { name: 'All' }));
+    expect(figures.clearCountries).toHaveBeenCalled();
   });
 
   it('hides the roster and shows the doctrine note while the layer is off', () => {
