@@ -29,10 +29,11 @@
   category, terms, threshold and workspace before Add indicator. A path has no area.
   The default is No report; nothing is submitted by opening the form.
 
-The compact event-scope strip states map-area sampling or the worldwide sample,
-nation, retained/selected publication time and removable refinements. Topics & time
-explains the independent scopes of cameras, infrastructure, GNSS, regional conflict
-markers and context panels. These controls do not change a source's precision.
+Active refinements live in their own panels; the former event-scope strip across
+the top of the map was removed on 13 September 2026 so the view stays clear.
+Topics & time explains the independent scopes of cameras, infrastructure, GNSS,
+regional conflict markers and context panels. These controls do not change a
+source's precision.
 An event excluded by a filter loses its details and highlight; restoring the filter
 does not silently reselect it. Deliberate unplotted records remain inspectable.
 

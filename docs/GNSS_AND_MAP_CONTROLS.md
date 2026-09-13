@@ -2,7 +2,9 @@
 
 Implemented locally on 9 September 2026. GNSS is an independent map presentation
 category, using the existing authenticated aviation accuracy endpoint. It does
-not require a new provider account or database migration.
+not require a new provider account or database migration. Since 13 September the
+cyber workspace reads the same endpoint and groups amber and red cells into
+named regions for reading; see `CYBER_THREAT_INTELLIGENCE.md`.
 
 ## Where controls live
 

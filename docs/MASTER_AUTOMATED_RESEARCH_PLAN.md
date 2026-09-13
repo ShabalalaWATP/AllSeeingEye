@@ -572,3 +572,41 @@ missing packaged fixtures were added to the validation copy, after which all
 five of its tests passed alongside the final News regression checks. One
 pre-existing test remains skipped. No updated coverage percentage is claimed.
 Other concurrent Cyber/settings work was excluded from this validation snapshot.
+
+## 13 September 2026: cyber workspace rebuild, shell and themes
+
+- [x] Replace the tabbed cyber page with one scrolling CTI workspace: figures,
+  charts, AI assessment, themed lenses, nation-state, GNSS, vulnerabilities,
+  actors, activity, briefing and sources, with a sticky section bar.
+- [x] Add deterministic lenses (nation-state, NATO and allies, UK infrastructure,
+  Ukraine, GNSS interference, critical infrastructure) as bounded text matches
+  with per-record labels, tallies and daily series.
+- [x] Derive `state_association` from packaged MITRE profile wording and expose
+  records-per-state tallies; keep every value labelled as the profile's wording.
+- [x] Verify and add nine publisher feeds, a `news_report` kind, a 30-day period
+  and 30-day retention; accept colon offsets in RFC 822 feed dates.
+- [x] Extend the briefing prompt with the themed headings within the term limit.
+- [x] Narrow and collapse the rail, refresh the top bar, remove the map event
+  strip, add five dark themes and validated chart colours.
+- [x] Add a development-only fixture preview route for layout checks.
+- [ ] Evaluate real-model briefing quality for the themed headings.
+- [ ] Observe the new feeds over several days for freshness and duplicates.
+
+Validation is recorded in the development story. Focused backend batches
+passed; the full backend and coverage-gated frontend runs are reported there.
+
+## 13 September 2026: sources and connections inventory
+
+- [x] List every source, including keyed feeds that are not built without a
+  credential, with a derived connection state and the setting that unlocks it.
+- [x] Expose delivery health to signed-in users without error text or URLs.
+- [x] Add platform connections (model, encryption, maps, email, cameras,
+  webhook, archiving, screening, media tools, PDF runtime) as configuration facts.
+- [x] Rebuild the Sources page with totals, an attention list, a platform grid
+  and a Connection filter; rename the Settings link.
+- [x] Refresh the Subscriptions and Geolocation pages with header cards, step
+  guides and figures.
+- [ ] Add a bounded live probe for keyed research capabilities so a wrong key
+  is visible before the first research run.
+
+See [Sources and connections](SOURCES_AND_CONNECTIONS.md).

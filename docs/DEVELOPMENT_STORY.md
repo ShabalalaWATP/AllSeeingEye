@@ -4386,6 +4386,115 @@ added. The Cyber guide and active plan were updated. Local backend health and
 readiness returned 200 after restarting with the feed repair.
 The staged Gitleaks scan passed. Changes remain on local main without a remote.
 
+## Cyber workspace rebuild, shell refresh and themes, 13 September 2026
+
+The cyber page was rebuilt as one scrolling CTI workspace with a sticky section
+bar instead of tabs. It now opens with six stat tiles and sparklines, a stacked
+daily volume chart with legend and table view, share-by-kind, country, NATO
+member and source bars, then the AI assessment's executive paragraph and key
+points at the top of the page. Six themed lens cards (nation-state activity,
+NATO members and allies, UK critical national infrastructure, Ukraine, GNSS
+interference, critical infrastructure and OT) show counts, trends, the
+briefing's own passage under that heading when present, and the latest matched
+records. A nation-state section lists records per state named in mentioned
+actors' MITRE profiles; a GNSS section groups the aviation tracker's aircraft
+accuracy cells into named regions and can enable the map layer. Vulnerabilities,
+the actor reference, filtered activity, the full cited briefing and source
+coverage follow. Periods now include 30 days.
+
+Backend support: a `cyber_themes` domain module classifies bounded headline
+text and explicit metadata into lenses; snapshots carry per-record lenses, lens
+tallies with daily series and records-per-state tallies. Actor references gain
+`state_association`, derived at catalogue load from the packaged profile's own
+attribution wording with hedged and target-only sentences excluded; 94 of 176
+groups resolve, the rest stay unlabelled. Nine publisher feeds were verified
+with the application's user agent and added (CISA advisories, CERT-UA, Canadian
+Cyber Centre, CERT-FR, FBI IC3, SANS ISC, Unit 42, The Record, BleepingComputer),
+with a `news_report` kind so journalism is never counted as research. Cyber
+retention rose to 30 days and 8,000 records. The briefing prompt asks for the
+themed headings and to state absence rather than infer; its upstream term list
+stays within the twelve-term limit and names only English publishers. The shared
+date resolver now accepts RFC 822 offsets written with a colon.
+
+Shell: the left rail is narrower, icon-led and collapsible (button, `[` key,
+remembered per browser); the top bar is a translucent strip with an accent
+hairline, a UTC clock and the same personal controls. The map's event-scope
+strip was removed; its refinements remain in their panels. Five dark themes
+(Midnight, Aurora, Phosphor, Crimson, Graphite) join Obsidian, Slate and
+Daylight, validated end to end through the profile API. Chart colours use six
+categorical slots checked with the data-visualisation validator on the dark
+and light surfaces. A development-only `/dev/cyber-preview` route renders the
+workspace and shell from test fixtures so layout can be inspected without an
+account; it is not registered in production builds.
+
+Validation: backend Ruff, formatting, strict mypy and both import contracts
+passed; 202 focused cyber, profile, source and date tests passed, and the full
+backend suite result is recorded in the plan. Frontend types, lint and the
+production build passed. The coverage-gated frontend run passed 2,312 tests with
+one existing skip at 95.37% statements, 90.47% branches, 93.88% functions and
+96.54% lines, after updating three dashboard tests that had relied on the
+removed strip. Browser checks used the fixture preview at 1440 pixels for
+every section, the collapsed rail and each theme; no live account was used.
+Live feed probes were bounded one-time requests and establish delivery, not
+editorial reliability or complete archives. No real-model briefing quality
+evaluation was performed.
+
+## Sources and connections, subscriptions and geolocation, 13 September 2026
+
+The user-facing source catalogue previously omitted keyed feeds that were not
+configured and showed no delivery or credential state, so an operator could not
+tell from the app which API keys were missing. A new application service,
+`SourceInventory`, merges the scheduler's live connectors, the on-demand research
+specifications and the keyed connectors the registry only builds once a
+credential exists (AISStream, BarentsWatch AIS, ACLED, the ReliefWeb API). Each
+entry carries a derived connection state (connected, idle, key unverified,
+degraded, failing, key missing, not configured, on demand, switched off, excluded
+by configuration), delivery health without error text, and the requirement that
+unlocks it: the documented setting name, whether it is present and where it
+comes from. NASA FIRMS reads the encrypted administrator credential store per
+request; nothing else changes without an API restart. A second endpoint lists
+platform connections: the viewer's AI assessment model, credential encryption,
+OS Maps, email, WSDOT cameras, the alert webhook, archiving, conflict screening,
+local OCR and video tools and the optional PDF runtime. Values never leave the
+server; only booleans, origins and setting names do.
+
+The Sources page became Sources and connections: totals tiles that filter the
+catalogue, a needs-attention list with the setting to add, the platform grid, a
+Connection filter and per-row badges with health times and requirement notes.
+The Settings link was renamed to match. Subscriptions gained a header card with
+the three-step flow and figures for active, paused, attention and next run;
+Geolocation gained the same header treatment and card framing for the upload
+and question columns. A second development-only route,
+`/dev/pages-preview`, frames these layouts from fixtures for inspection.
+
+Validation: backend Ruff, formatting, strict mypy and import contracts passed;
+23 focused source-inventory, summary, catalogue and control tests passed.
+Frontend types and lint passed; the sources, settings, subscriptions and
+geolocation suites passed (68 tests), and the layouts were inspected in the
+fixture preview at 1440 pixels. The coverage-gated frontend run then passed
+2,314 tests with one existing skip at 95.27% statements, 90.45% branches,
+93.71% functions and 96.46% lines. No live credential was configured or
+probed; the inventory reports configuration facts, not provider reachability.
+
+The first full backend run of the day (6,401 passed, 82 skipped, 16 failed,
+94.56% coverage, 2 hours 17 minutes) exposed two groups of failures. Six were
+caused by the new cyber publishers: seed-count assertions moved from 37 to 46,
+the publisher research test now queries a non-English seed in its own language,
+and two economy briefing tests that failed under load passed on rerun. Ten
+already fail on the committed HEAD, confirmed by running them in a clean
+worktree. Two of those sit in the source registry this work extends and were
+fixed: the rating test now treats explicit F-grade publisher feeds as
+unassessed by design, catalogue entries were added for `gdelt_news`,
+`ucdp_candidate` and `adsb_global`, and the company-plan size test now asserts
+the enforced provider cap rather than a stale constant. Eight remain as
+pre-existing follow-ups outside this change: automatic planning eligibility,
+direction advocacy status, input declaration rate limiting, the photo
+geolocation structured-output schema (missing `photos` and
+`cross_photo_analysis`), fixed-interval validation, research input capacity
+rejection before body reads, SEC filing capacity ordering and unknown
+publication selection. The capacity ordering failures deserve early attention
+because they concern refusing work before authentication and admission.
+
 ## 13 September 2026: make News visible on both map projections
 
 News headlines were available in the briefing but most RSS sources supplied no

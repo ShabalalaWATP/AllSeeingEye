@@ -1,150 +1,148 @@
 # Cyber threat intelligence workspace
 
-Implemented 12 September 2026. Open **Cyber intelligence** in the main navigation
-(`/cyber`). This workspace combines public reporting, historical actor reference
-and a personal cited briefing. It does not claim to measure all cyberattacks.
+Implemented 12 September 2026 and rebuilt as a single scrolling CTI page on
+13 September 2026. Open **Cyber intelligence** in the main navigation (`/cyber`).
+The workspace combines public reporting, historical actor reference, themed
+lenses, the aircraft-derived GNSS interference proxy and a personal cited
+briefing. It does not claim to measure all cyberattacks.
 
-## Operator workflow
+## Page structure
 
-Choose 2, 5, 7 or 14 days. The exact start and end dates are displayed separately
-from the briefing's 24-hour refresh interval. The overview summarises collected
-record types, daily publication volume, actor-name mentions and source-supplied
-country context. A missing observation is never a measured zero threat level.
+Nothing is hidden behind tabs. A sticky section bar jumps between:
 
-- **Activity:** search returned titles, source names, CVEs and products; narrow by
-  evidence type, country context or matched actor. Each entry has its source,
-  publication date, grade and a link to start deeper research.
-- **Threat actors:** search 176 MITRE Enterprise ATT&CK profiles by name,
-  associated name, identifier or description. Inspect historical descriptions,
-  technique links, reference dates and current name matches. Associated names
-  can overlap only partly; a mention is not verified incident attribution.
-- **Exploited vulnerabilities:** view CISA KEV additions, affected products,
-  reported ransomware use and required action. The catalogue addition date is
-  not the start of exploitation. Federal directive deadlines are labelled with
-  their scope rather than presented as universal deadlines.
-- **Intelligence briefing:** an executive overview, developments, defensive
-  implications, watch conditions and references, using the existing professional
-  report reader. Open the saved report for Word, PDF or Markdown export.
+| Section | Content |
+| --- | --- |
+| Overview | Six stat tiles with daily sparklines, a stacked daily volume chart by record kind (with legend and table view), share by kind, countries in the evidence, NATO member context and source output. |
+| Assessment | The executive paragraph and key points of the AI briefing for the period, with progress, pause and error states, plus a short reading guide. |
+| Focus areas | Six lens cards: nation-state activity, NATO members and allies, UK critical national infrastructure, Ukraine, GNSS interference and navigation warfare, critical infrastructure and OT. Each shows its count and trend, the briefing's own passage under that heading when one exists, the latest matched records and a filter action. |
+| Nation-state | Records per state named in mentioned actors' MITRE profiles, and the actors mentioned with their profile association. |
+| GNSS | Amber and red aircraft-accuracy cells grouped into named regions, the worst cells, the latest observation time, a map hand-off that enables the GNSS layer, and reporting that mentions jamming or spoofing. |
+| Vulnerabilities | CISA KEV additions with required action, ransomware-use flag and scoped due dates. |
+| Actors | The MITRE ATT&CK reference with search, inspector, technique links and the profile's state association. |
+| Activity | Every returned record with source, grade, lenses and matched names; filters for keyword, evidence type, country context, lens and actor. |
+| Briefing | The complete cited report in the professional reader. |
+| Sources | Delivery health, retained counts and the coverage note. |
 
-The personal Deep briefing uses the normal research pipeline and configured AI
-connection. Its admission identity is per owner and reporting window, with reuse
-for 24 hours. Country, actor and keyword display filters do not admit another job
-or silently change the worldwide briefing. Progress, errors and incomplete
-reports remain visible. No real-model quality evaluation was performed for this
-milestone; fixture rendering and workflow tests do not establish analytical accuracy.
+Periods are 2, 5, 7, 14 or 30 days and are carried in the URL. The cyber retention
+budget is 30 days and 8,000 records so the longest period can be served from the
+bounded in-memory store; publisher archives are still not recovered on restart.
+
+## Lenses
+
+A lens is a deterministic keyword and metadata match over the bounded headline
+text of each record (`ase/domain/cyber_themes.py`). It says the record mentions a
+topic. It never establishes who acted, whether an incident occurred, or that an
+unmatched record is unrelated. The rules are:
+
+- **Nation-state:** state-sponsorship and espionage vocabulary, state-service
+  acronyms, numbered APT/UNC designators, vendor naming families, or a mention of
+  a group whose reference profile records a state association.
+- **NATO members and allies:** alliance, allied-government and defence terms, or a
+  member state named together with incident language. A ransomware claim against a
+  firm in a member state is not automatically alliance activity.
+- **UK critical national infrastructure:** UK context (UK terms, a GB country code
+  or an NCSC publication) combined with infrastructure or sector terms, or a GB
+  connectivity signal.
+- **Ukraine:** CERT-UA publications, UA-attributed records, Ukrainian places and
+  organisations, and tracked UAC clusters.
+- **GNSS interference:** GNSS, GPS and constellation names, jamming, or spoofing in
+  a navigation context. E-mail spoofing does not match.
+- **Critical infrastructure and OT:** industrial control, energy, water, transport,
+  health and telecommunications terms, including ICS vendor names that appear in
+  CISA advisories.
+
+Snapshots return each record's lenses, a per-lens count with a daily series, and
+records-per-state tallies.
+
+## State associations
+
+The packaged MITRE ATT&CK projection is unchanged. At load time the catalogue
+derives `state_association` from each profile's own wording
+(`assessed_state_association` in `ase/domain/cyber_actors.py`): explicit cues such
+as "attributed to", "sponsored by", "operating out of", nationality-plus-role
+phrases such as "Chinese state-sponsored" or "North Korea-aligned", and named
+organs such as GRU or IRGC. Hedged sentences ("circumstantial", "may be",
+"reportedly", "allegedly", "similarities to", "no confirmed link") and phrases
+that describe targets are ignored. On the packaged v19.2 release this yields
+associations for 94 of 176 groups; the remainder are financially motivated,
+unattributed, hedged or described only by language. The UI always labels the
+value as the profile's wording, not an attribution of any new report. Review the
+derived values whenever the packaged release is updated, because MITRE wording
+changes over time.
 
 ## Sources and current coverage
 
-Seven public publisher feeds were added without new credentials. Probes on
-12 September returned usable XML from all seven; publication freshness differs.
+Sixteen public publisher feeds are registered without new credentials. The nine
+added on 13 September were probed with the application's own user agent and
+returned XML with dated items:
 
-| Publisher | Content | Source |
-| --- | --- | --- |
-| UK NCSC | Threat reports and separate news/threat statements | [Official RSS directory](https://www.ncsc.gov.uk/information/rss-feeds) |
-| Microsoft | Threat Intelligence reporting | [Threat Intelligence](https://www.microsoft.com/en-us/security/blog/topic/threat-intelligence/) |
-| Cisco Talos | Threat research | [Talos Intelligence](https://blog.talosintelligence.com/) |
-| Google / Mandiant | Threat research | [Google Threat Intelligence](https://cloud.google.com/blog/topics/threat-intelligence) |
-| CERT-EU | Threat intelligence publications | [CERT-EU publications](https://cert.europa.eu/publications/threat-intelligence) |
-| Australia ACSC | Official advisories | [ACSC advisories](https://www.cyber.gov.au/about-us/view-all-content/advisories) |
+| Publisher | Content | Language | Feed |
+| --- | --- | --- | --- |
+| UK NCSC | Threat reports; news and threat statements | en | ncsc.gov.uk RSS |
+| Microsoft | Threat Intelligence reporting | en | Security blog feed |
+| Cisco Talos | Threat research | en | blog.talosintelligence.com |
+| Google / Mandiant | Threat research | en | Threat Intelligence feed |
+| CERT-EU | Threat intelligence publications | en | cert.europa.eu |
+| Australia ACSC | Official advisories | en | cyber.gov.au |
+| US CISA | Cybersecurity and ICS advisories, KEV notices | en | cisa.gov/cybersecurity-advisories/all.xml |
+| CERT-UA | Incident and threat reports | uk | cert.gov.ua/api/articles/rss |
+| Canadian Centre for Cyber Security | Alerts and advisories | en | cyber.gc.ca RSS API |
+| CERT-FR (ANSSI) | Alerts and advisories | fr | cert.ssi.gouv.fr/feed |
+| FBI IC3 | Public service announcements | en | ic3.gov/PSA/RSS |
+| SANS Internet Storm Center | Handler diaries | en | isc.sans.edu/rssfeed.xml |
+| Palo Alto Unit 42 | Threat research | en | unit42.paloaltonetworks.com/feed |
+| The Record | Specialist cyber news | en | therecord.media/feed |
+| BleepingComputer | Specialist cyber news | en | bleepingcomputer.com/feed |
 
-Publisher collection retains headlines, dates, attribution and links, not full
-articles. These new sources start with explicit unassessed F6 grades. Publisher
-authority is not automatically a credibility score. NCSC's two feeds share one
-organisation for independence assessment. Feed-supplied publisher geography is
-discarded. CERT-EU CET/CEST dates use a source-specific fixed-offset normalisation
-with the original date and method retained as provenance.
+The two news outlets use the new `news_report` record kind so journalism is never
+counted as vendor or official research. All publisher records start with explicit
+unassessed F6 grades and keep headlines, dates, attribution and links only.
+CERT-UA and CERT-FR items are retained in their own language for the workspace;
+the English-language briefing request names only English publishers because
+private collection follows the owner's research languages. ENISA news,
+WeLiveSecurity, CCDCOE, SSSCIP, NCSC Ireland and Google TAG answered 403 or 404
+and were not added. IC3 writes RFC 822 dates with a colon in the numeric offset;
+the shared date resolver now removes that colon before parsing without changing the
+declared zone.
 
-The working existing API connectors are included:
+The existing API connectors remain: CISA KEV (recorded exploitation), Ransomware.live
+(unverified criminal claims) and IODA (connectivity signals, not attacks). The
+GNSS section reads the aviation tracker's jamming map, an ADS-B accuracy proxy for
+roughly the last 24 hours; see `GNSS_AND_MAP_CONTROLS.md` for what the cells can
+and cannot say. Region boxes are reading aids, not attribution.
 
-| Source | Meaning | Probe result on 12 September |
-| --- | --- | --- |
-| [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) | Recorded exploitation, bounded recent catalogue additions | 44 recent entries |
-| [Ransomware.live](https://www.ransomware.live/) | Publicly relayed criminal victim claims, not independently verified breaches | 100 claims |
-| [IODA](https://ioda.inetintel.cc.gatech.edu/) | Country connectivity signals, not proof of malicious cause or a continuing outage | 146 warning/critical records |
+## AI briefing
 
-These are one-time delivery observations, not availability guarantees. CISA RSS
-requests returned 403 and were not activated as empty feeds; KEV remains separate.
-The NCSC threat-report feed was reachable but its newest item was dated 7 May
-2025. It may therefore contribute no records to a recent period. The source
-coverage disclosure shows delivery status and last successful collection; delivery
-health alone does not establish fresh publication or editorial reliability.
-
-The actor reference is a packaged, licensed projection of MITRE Enterprise ATT&CK
-v19.2, with 176 non-revoked/non-deprecated groups and 4,628 direct technique
-associations. No runtime external request is needed. The pinned commit, checksum,
-licence and offline update instructions are in the
-[reference provenance](../backend/src/ase/adapters/cyber_reference/README.md).
-Administrative source controls can disable both reference release and derived
-name matches. Profiles are historical, not a current activity or sponsorship list.
+The personal briefing uses the normal research pipeline and configured AI
+connection, one job per owner and period, reused for 24 hours. Its prompt now asks
+for explicit headings for nation-state activity, activity against NATO members and
+allied governments, UK critical national infrastructure, Ukraine, and GNSS
+interference and navigation warfare, and instructs the model to say when a heading
+has no evidence rather than infer activity. At most twelve upstream search terms
+are allowed, so the term list balances broad recall with the themed topics. The
+page reads themed passages back out of the saved report by heading; when a heading
+is absent the card says so. No real-model quality evaluation was performed for this
+milestone.
 
 ## Map and globe
 
-The dedicated **Cyber** shield switch and adjacent filter control live on the
-left layer rail. It is off by default, preserving the existing conflicts-only
-default. Cyber no longer has a duplicated toggle under Topics & time.
-
-Type and keyword filters work in both projections. Enabling **Cyber** now also
-shows source-attributed ransomware victim and outage country references. **Show
-approximate country context** starts selected and can be cleared independently;
-that choice survives switching the layer off and on within the session. These
-labelled count markers use country centres as reference
-locations. They are not incident coordinates, attacker origins or attack paths.
-Advisories and KEV records do not acquire locations from publisher headquarters.
-
-Selecting a reference marker opens its source records and highlights the selected
-context; closing the inspector clears it. Genuinely located events retain the
-existing geographic precision checks and receive a shield symbol. Country-only
-records remain in the Not plotted precision group, even when reference markers
-are displayed. Shared country, time and location-quality controls still apply.
-
-**Open cyber map** deliberately enables Cyber and its labelled country context,
-carrying the selected period, country, type and search. It preserves other layer
-choices. It does not manufacture a point for the selected report.
-
-The map snapshot refreshes 60 seconds after each completed request while Cyber
-is enabled and the page is visible. Requests do not overlap; hiding the page,
-disabling Cyber or changing account/access cancels pending work. An initially
-empty snapshot can therefore populate after the feed workers warm up. The
-filter panel distinguishes collected records, country references and located
-records, and explains when the selected records cannot be placed on the map.
-
-The IODA poll now requests the latest hour every 15 minutes, still capped at
-300 input rows. A 13 September public probe found the previous 24-hour request
-filled its limit with early records and missed recent alerts available in a
-one-hour request. Overlapping polls build the existing retained history; startup
-does not backfill a complete day. Busy hours can still hit the cap and this is
-not complete outage coverage. See the [IODA API](https://api.ioda.inetintel.cc.gatech.edu/v2/).
+The Cyber layer, country references and **Open cyber map** behave as before. The
+GNSS section's **Show GNSS cells on the map** enables the interference layer before
+navigating. The former event-scope strip at the top of the map was removed on
+13 September; the same refinements remain in their panels.
 
 ## Bounds and security
 
-- Fourteen-day cyber retention uses the existing 5,000-category item cap and
-  global memory budget. It does not recover missing publisher archives or survive
-  process restart. Only selected frozen report evidence is persisted.
-- Page counts cover the admitted dated selection. The newest 200 records are
-  returned for browsing, with 30 initially rendered. Actor lists render 24 at a
-  time. The separate map context snapshot is bounded to 500 records and 25 list
-  entries, independent of viewport streaming.
-- Snapshot preparation runs in a bounded thread outside the event loop and
-  shared source-control guard. Source controls and current session access are
-  checked again before release. A 5,000-record synthetic benchmark measured
-  2.492 seconds preparation and 0.004 seconds guarded release on the development
-  host; this is not a production latency guarantee.
-- Read-only snapshot requests retry a busy response at most four times, honouring
-  short server cooldowns. Changing period, access or identity cancels the old
-  request and retry timer. Longer cooldowns remain explicit errors with manual
-  retry. Briefing creation is not automatically replayed by this retry policy.
-- Only known publication dates inside the selected half-open period contribute
-  to snapshot counts. Daily chart endpoints may represent partial calendar days;
-  multiple IODA sensor records are not distinct attacks.
-- Source text remains bounded plain text. Links use existing safe-link rendering;
-  no source HTML, criminal leak links, malware downloads or active scanning is
-  introduced. The existing guarded network client handles collection.
-- Reports use existing owner/session authorisation and citation validation.
-  Access changes hide old client data and cancel outstanding scoped work.
+- Lens matching runs in the same bounded worker as name matching; text is capped at
+  3,000 characters per record and profiles at 800 characters.
+- Snapshot responses remain bounded: 200 returned records, 31 timeline days, six
+  lens tallies, at most 20 state tallies with 12 group identifiers each.
+- Source controls still govern release: disabling the MITRE reference removes name
+  matches, the derived nation-state lens and state tallies in the same response.
 - No new runtime dependency, API key, migration or production infrastructure is
-  required. Broader archive depth, source diversity and real-model quality remain
-  evaluation work rather than assumed coverage.
+  required. Feeds were verified once on 13 September; delivery health alone does not
+  establish fresh publication or editorial reliability.
 
 The APIs are `GET /api/cyber?days=2`, `GET /api/cyber/actors` and
-`POST /api/cyber/briefing?days=2`. Supported periods are 2, 5, 7 and 14. These are
-authenticated APIs; generated OpenAPI types are the frontend contract.
+`POST /api/cyber/briefing?days=2`. Supported periods are 2, 5, 7, 14 and 30.
+These are authenticated APIs; generated OpenAPI types are the frontend contract.
