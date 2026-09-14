@@ -20,7 +20,6 @@ from ase.adapters.geo.camera_curated import HostPolicy, collect, curated_rows
 from ase.application.ports.cameras import CameraSource
 from ase.domain.cameras import Camera
 
-
 ENDPOINT = "https://tarktee.transpordiamet.ee/api/v1/datex/v3.6/roadCameraLocations"
 MEDIA_HOSTS = frozenset({"tarktee.transpordiamet.ee", "ristmikud.tallinn.ee"})
 FRAME_HOSTS = frozenset({"www.youtube.com"})

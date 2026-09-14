@@ -45,7 +45,7 @@ it('loads a relayed frame through the session and releases superseded blobs', as
       expect(new URL(request.url).searchParams.get('_ase_refresh')).toMatch(/^\d+-\d+$/);
       if (calls === 1) {
         await new Promise((resolve) => setTimeout(resolve, 30));
-        return HttpResponse.text('down', { status: 503 });
+        return HttpResponse.arrayBuffer(new ArrayBuffer(0), { status: 503 });
       }
       if (calls === 2) await new Promise((resolve) => setTimeout(resolve, 30));
       return HttpResponse.arrayBuffer(new Uint8Array([255, 216, 255]).buffer, {
@@ -84,7 +84,7 @@ it('reports a relayed frame the server refuses', async () => {
   expect(screen.queryByRole('img')).not.toBeInTheDocument();
   releaseCameraFrame(null);
   releaseCameraFrame('https://example.test/not-a-blob');
-  const fetcher = vi.fn(() => Promise.resolve(new Blob(['x'])));
+  const fetcher = vi.fn((_path: string) => Promise.resolve(new Blob(['x'])));
   await expect(
     loadCameraFrame('/api/cameras/frames/traffic-scotland/16.jpg', 4, fetcher),
   ).resolves.toMatch(/^blob:/);
