@@ -21,6 +21,7 @@ it('opens frontline access options without claiming a connected layer or losing 
   expect(panel.queryByRole('switch')).not.toBeInTheDocument();
   expect(panel.queryByRole('checkbox')).not.toBeInTheDocument();
   expect(panel.getByText('Humanitarian use only')).toBeInTheDocument();
+  expect(panel.getByText(/ASE_UKRAINE_DEEPSTATE_ACCESS/)).toBeInTheDocument();
   for (const link of panel.getAllByRole('link')) {
     expect(link.getAttribute('href')).toMatch(/^https:\/\//);
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');

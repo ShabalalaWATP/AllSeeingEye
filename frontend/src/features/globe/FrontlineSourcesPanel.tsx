@@ -14,7 +14,7 @@ const sources = [
     coverage: 'Ukraine control areas and frontlines',
     access: 'Approved API access required',
     description:
-      'API access depends on the intended use. Permission to view the public map does not authorise this application to proxy or redistribute its geometry.',
+      'API access depends on the intended use. Permission to view the public map does not authorise this application to proxy or redistribute its geometry. Once access is granted, the operator enables the layer on the Ukraine war page with ASE_UKRAINE_DEEPSTATE_ACCESS.',
     mapUrl: 'https://deepstatemap.live/',
     accessUrl: 'https://api.deepstatemap.live/request',
     accessLabel: 'View API access request',
@@ -24,7 +24,7 @@ const sources = [
     coverage: 'Ukraine frontline, weekly published snapshots',
     access: 'Humanitarian use only',
     description:
-      'A dated line derived from ISW / Critical Threats. Its humanitarian-only restriction does not establish permission for a general OSINT deployment.',
+      'A dated line derived from ISW / Critical Threats. Its humanitarian-only restriction does not establish permission for a general OSINT deployment; a humanitarian deployment enables it on the Ukraine war page with ASE_UKRAINE_OCHA_HUMANITARIAN.',
     mapUrl: 'https://gis.unocha.org/server/rest/services/Hosted/UKR_Front_Line/FeatureServer/0',
     accessUrl: 'https://gis.unocha.org/portal/home/item.html?id=ff87995e5ccb4c6bb77f116b22e2ff45',
     accessLabel: 'View dataset terms',

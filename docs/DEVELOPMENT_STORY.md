@@ -4747,3 +4747,10 @@ DeepStateMap when access is granted, OCHA's line for humanitarian deployments, W
 photographed losses after its terms are read; each keeps its last good snapshot and reports
 stale or unavailable rather than substituting another source, and the map names the provider
 and its terms under the legend.
+
+Phase 5 closed the Ukraine tracker plan on 14 September 2026 with the documentation sweep:
+the conflict coverage register names the ISW, General Staff, Kyiv Independent and Bellingcat
+feeds, the frontline directory records the DeepState licence as read and the delivered
+adapter contract, the map tools note points at the page, the research plan carries the
+checklist and follow-ups, and the operator document gained a daily-operation section with
+the five import commands. The globe's Frontlines directory now says where the flags live.

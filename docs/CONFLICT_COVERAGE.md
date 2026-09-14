@@ -46,6 +46,10 @@ states without exposing upstream error text or credentials.
 | ReliefWeb API | Humanitarian context with original publishers | Optional approved application name. Latest 100 metadata records hourly. Replaces the existing ReliefWeb RSS connector when configured. |
 | ReliefWeb RSS / Crisis Group | Existing context feeds | Public upstream availability varies. A configured source is not evidence that its latest poll succeeded. |
 
+| ISW daily assessments | Published analysis of the Russia-Ukraine war | Public WordPress posts index, hourly, ten newest posts, title, link, date and a short excerpt; `isw_assessments`, grade B, credibility possibly true. Added 13 September 2026 for the Ukraine tracker. |
+| General Staff of Ukraine claims | A belligerent's own daily loss figures | Public mirror API every six hours, one event per day with the figures in attributes; `ukraine_general_staff`, grade C, tagged interested party. Shown as claims, never merged. |
+| Kyiv Independent, Bellingcat | Ukrainian reporting and investigations | Public RSS seeds under the normal source controls. |
+
 Set optional values in the ignored backend environment, never in frontend code:
 `ASE_UCDP_ACCESS_TOKEN`, `ASE_UCDP_CANDIDATE_VERSION`,
 `ASE_ACLED_ACCESS_TOKEN`, `ASE_RELIEFWEB_APPNAME`.
@@ -73,7 +77,9 @@ historical event database or migrations were introduced.
 - [Crisis Group RSS directory](https://www.crisisgroup.org/rss-0): its advertised
   CrisisWatch link redirected to the HTML directory when checked. No new working
   CrisisWatch feed is claimed or simulated.
-- ISW/CTP, Airwars and HDX remain candidate enrichment sources. Their accessible
+- ISW's daily assessments are now read through its posts index (its RSS refuses
+  automated readers); its control-of-terrain geodata still needs written consent and is
+  not drawn. Airwars and HDX remain candidate enrichment sources. Their accessible
   machine interfaces, reuse terms and duplication with existing originators must
   be resolved before activation. HDX redistribution of ACLED must not count as a
   second independent dataset. No paid access or scraping bypass is implemented.

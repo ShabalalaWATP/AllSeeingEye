@@ -76,6 +76,16 @@ JSON/GeoJSON query support does not establish permission to copy or redistribute
 
 ### DeepState
 
+Update, 13 September 2026: the licence was read in full. Section 2 reserves the grant of
+API use to the rights holder, offers it free to volunteer, charitable and Ukraine-defence
+bodies (proof on request) and by prior agreement to commercial users, and forbids
+unauthorised proxying or redistribution; section 3 lets screenshots and visuals that
+carry the DeepStateMap mark be reused freely. The `api/history/last` endpoint answers
+without a key today. The Ukraine war page carries a fixed adapter for it that stays
+off until the operator sets `ASE_UKRAINE_DEEPSTATE_ACCESS=granted`, which is the
+operator's declaration that access was granted through the request form; the plan in
+`docs/UKRAINE_WAR_TRACKER_PLAN.md` section 9 holds a request text.
+
 The [official licence](https://deepstatemap.live/license.html), revised 3 September
 2025, controls API use and prohibits unauthorised proxying/redistribution.
 Commercial use requires prior agreement; specific charitable/volunteer and Ukraine
@@ -88,6 +98,10 @@ cache. ASE leaves this connection disabled until reuse rights are confirmed and
 keeps download time separate from the age of the underlying assessment.
 
 ### UN OCHA Ukraine
+
+Update, 13 September 2026: the same adapter can read this layer when
+`ASE_UKRAINE_OCHA_HUMANITARIAN=true`, a flag the operator sets only for a humanitarian
+deployment. The page shows the provider, its status and terms under the map legend.
 
 The [hosted frontline layer](https://gis.unocha.org/server/rest/services/Hosted/UKR_Front_Line/FeatureServer/0)
 supports JSON/GeoJSON lines and describes weekly updates. The ten features checked
@@ -118,6 +132,17 @@ political violence but do not supply territorial control merely because events a
 geolocated. ASE must not manufacture a frontline by joining incident locations.
 
 ## Required contract for a future authorised connection
+
+Delivered on 14 September 2026 for the Ukraine war page as
+`backend/src/ase/adapters/feeds/ukraine_frontline.py`: fixed provider URLs behind the
+feed HTTP client's public-host guard, a 5 MB byte bound, 400 features and 60,000
+vertices, one request per six hours (DeepState) or seven days (OCHA), the last good
+snapshot kept and served as stale on failure, provider classes preserved (occupied,
+liberated, unknown, pre-2022 territories, line) with the assessment stamp and download
+time kept apart, flags off by default, and a legend note instead of any substitution.
+The VIINA control layer on the same page is the permission-free default and is drawn
+in different hues so the two are never confused. The globe's Conflict panel is
+unchanged; the provider layers live on the Ukraine page only.
 
 1. Confirm provider rights, authentication, actual regions and supported geometry.
 2. Add a fixed provider adapter behind the existing outbound guard; no arbitrary URL

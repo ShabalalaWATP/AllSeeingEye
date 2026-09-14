@@ -425,3 +425,13 @@ infrastructure state, narrowed by a `group` prop, so a selection made from one i
 still highlighted when the other is open. The standalone Network button left the rail;
 the network map's country markers now load while the connectivity tab is open, which
 the tab reports to the map through a callback rather than by panel label.
+
+## Ukraine war page, 13 and 14 September 2026
+
+The left rail gained "Ukraine war" (`/conflicts/ukraine`), a scrolling workspace rather than a
+globe layer: a 2D mercator map of reported control from VIINA 2.0 over geoBoundaries
+oblasts, provider frontline layers behind operator flags, grouped updates with lenses,
+claimed, visually confirmed and documented figures, a timeline, force trees and an equipment
+catalogue. `docs/UKRAINE_WAR_TRACKER.md` describes it; `docs/UKRAINE_WAR_TRACKER_PLAN.md`
+records the source research. The globe's Conflict panel and Frontlines directory are
+unchanged and still list the access routes for DeepState, ISW and OCHA.

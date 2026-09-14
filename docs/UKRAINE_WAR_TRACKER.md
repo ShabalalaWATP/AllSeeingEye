@@ -70,6 +70,30 @@ the three news lenses with charts and the sources footer.
 Loaders are cached per process, so restart the API after re-running an importer. The page
 polls its board every five minutes while visible.
 
+## Daily operation
+
+Run from `backend/` with the virtual environment; each command is bounded and idempotent
+and rewrites one packaged file. Restart the API afterwards because loaders are cached.
+
+```bash
+uv run ase import-ukraine-control        # daily: VIINA control snapshot (about 55 MB download)
+uv run ase import-ukraine-losses         # daily: Oryx newest day and a month of totals
+uv run ase import-ukraine-casualties     # monthly: HRMMU pages and curated references
+uv run ase import-ukraine-reference      # after editing a seed: Wikidata and Commons images
+uv run ase import-ukraine-oblasts        # rarely: geoBoundaries outlines
+```
+
+Schedule the first two with the operating system's scheduler if wanted; the application
+installs none. Every importer takes `--contact` for the User-Agent and `--destination`
+for a path outside the package. Review `git diff` of the packaged JSON before committing
+it: a changed release stamp, a missing month or a shrunken image count is visible there.
+
+If the control import fails, the previous snapshot stays in place and the page keeps
+showing its assessment date. If HRMMU changes the wording of its monthly summary, the
+month keeps its link and shows no figures until the sentence pattern in
+`ukraine_casualties_import.py` is updated. If the Oryx mirror stops updating, the page
+shows the last recorded day; the mirror's freshness is visible on the card.
+
 ## Endpoints
 
 - `GET /api/conflicts/ukraine` returns the board: day number and its basis (claimed by the

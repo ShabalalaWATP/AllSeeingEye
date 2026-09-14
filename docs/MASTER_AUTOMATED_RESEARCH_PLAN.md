@@ -648,6 +648,13 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
 - [x] Curated Russian, Chinese and North Korean data centres and satellite control sites.
 - [x] Technology and communications rail control grouping cables, stations, data
   centres, semiconductor sites and connectivity signals.
+- [x] Ukraine war tracker (13 and 14 September 2026): VIINA control map, General Staff
+  claims, ISW assessments, Kyiv Independent and Bellingcat seeds, timeline, forces and
+  equipment with Commons images, Oryx and HRMMU importers, lens charts, flagged
+  DeepState, OCHA and WarSpotting providers. See `docs/UKRAINE_WAR_TRACKER.md`.
+- [ ] Ukraine tracker follow-ups: DeepState access request (operator), a WarSpotting
+  terms read before enabling the layer, the HRMMU sentence regex when the mission
+  changes its wording, and the reference seeds' as-of dates refreshed with events.
 - [ ] Site coordinates for the city-level Russian and Chinese stations (Bear Lakes,
   Kashgar, Jiamusi, Miyun, Kunming, Sanya) from open imagery references.
 
