@@ -4778,3 +4778,12 @@ Norway's API, which needs a public system identifier header, sent through a came
 method rather than the shared feed client another session was refactoring. Queensland and
 Puerto Rico completed the set. Streams were accepted only where the host sent open CORS and
 the URL carried no token; SANRAL was left out because its terms forbid automated extraction.
+
+A UK-focused camera search on 15 September 2026 added 430 cameras. National Highways turned out
+to share its roughly 4,000 cameras only with nominated media partners, and Newcastle's Urban
+Observatory camera feeds had gone dark, so the gains came from councils and crossings instead:
+the Tyne and Wear camera site, joined from its map settings and camera list, road weather
+cameras in North Yorkshire and Cumbria, Derbyshire's traffic cameras, and a curated set of island,
+Highland and crossing cameras and streams. Every curated URL was checked live before entry; the
+Isle of Man firewall refused Python's client but served browsers, which is the only client that
+loads those images.

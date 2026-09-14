@@ -5,7 +5,8 @@ image only as a base64 fragment inside a small HTML snippet. The server relays o
 JPEG per request through `/api/cameras/frames/traffic-scotland/<sid>.jpg`, for sids present
 in the last index only, with a short cache and a concurrency bound. Nothing else is proxied.
 Durham County Council publishes its camera positions as open data and embeds the images from
-a contractor host without a key. The remaining UK entries are curated YouTube embeds.
+a contractor host without a key. `uk-live` holds curated YouTube embeds and `uk-local` a
+curated set of council, Isle of Man and crossing cameras whose image or HLS URLs are fixed.
 """
 
 import asyncio
@@ -27,16 +28,32 @@ from ase.domain.cameras import Camera
 INDEX = "https://www.traffic.gov.scot/tsis/cameras"
 FRAME = "https://www.traffic.gov.scot/tsis/camerahtml?sid="
 PAGE = "https://www.traffic.gov.scot/traffic-cameras"
-MEDIA_HOSTS = frozenset({"dcc.ussgroup.co.uk"})
+MEDIA_HOSTS = frozenset(
+    {
+        "dcc.ussgroup.co.uk",
+        "images.gov.im",
+        "files.argyll-bute.gov.uk",
+        "www.cne-siar.gov.uk",
+        "www.tamarcrossings.org.uk",
+        "stream1.mgw-is.uk",
+        "stream2.mgw-is.uk",
+        "camsecure.co",
+    }
+)
 FRAME_HOSTS = frozenset({"www.youtube.com"})
-EXTERNAL_HOSTS = MEDIA_HOSTS | FRAME_HOSTS | {"www.traffic.gov.scot", "www.durham.gov.uk"}
+EXTERNAL_HOSTS = (
+    MEDIA_HOSTS
+    | FRAME_HOSTS
+    | {"www.traffic.gov.scot", "www.durham.gov.uk", "www.argyll-bute.gov.uk"}
+)
 NAMES = {
     "traffic-scotland": "Traffic Scotland",
     "durham": "Durham County Council",
     "uk-live": "UK public streams",
+    "uk-local": "UK council, island and crossing cameras",
 }
 PAGES = {"durham": "https://www.durham.gov.uk/trafficcameras"}
-CURATED = ("durham", "uk-live")
+CURATED = ("durham", "uk-live", "uk-local")
 POLICY = HostPolicy(MEDIA_HOSTS, FRAME_HOSTS, EXTERNAL_HOSTS, NAMES, PAGES)
 SCOTLAND_BOUNDS = (54.5, 61.0, -8.7, 0.0)
 SID = re.compile(r"[0-9]{1,6}")

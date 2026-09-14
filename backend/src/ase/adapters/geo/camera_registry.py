@@ -6,6 +6,7 @@ from ase.adapters.feeds.http import FeedHttpClient
 from ase.adapters.geo import (
     camera_americas,
     camera_britain,
+    camera_britain_councils,
     camera_east,
     camera_europe,
     camera_europe_maps,
@@ -71,6 +72,7 @@ def build_sources(
         *camera_world.build_sources(http),
         *camera_world_directory.build_sources(http),
         *camera_britain.build_sources(http),
+        *camera_britain_councils.build_sources(http),
         *camera_east.build_sources(http),
         *camera_europe_open.build_sources(http),
         *camera_europe_maps.build_sources(http),

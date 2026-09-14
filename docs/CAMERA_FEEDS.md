@@ -85,6 +85,14 @@ statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configur
 90% thresholds remain unchanged.
 
 
+## 15 September: more UK councils, islands and crossings
+
+The North East's Tyne and Wear camera network (323), North Yorkshire (21), Westmorland and
+Furness (33) and Derbyshire (8) now load from their councils' public pages, and a curated set of
+45 Isle of Man, Argyll and Bute, Western Isles, Tamar Crossings, Mersey Gateway and Farnham
+cameras and streams was added. National Highways remains unavailable because its images are
+licensed only to nominated media partners. Details are in `docs/CAMERA_EUROPE.md`.
+
 ## 14 September: a worldwide official-source sweep
 
 Thirty more official keyless providers joined the registry after live verification: sixteen

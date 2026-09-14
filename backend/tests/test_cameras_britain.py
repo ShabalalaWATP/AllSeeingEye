@@ -126,7 +126,7 @@ def test_curated_catalogues_keep_hosts_and_provenance() -> None:
                 str(camera.external_url).startswith("https://www.durham.gov.uk/")
                 for camera in cameras
             )
-        else:
+        elif provider == "uk-live":
             assert all(camera.coordinate_precision == "approximate" for camera in cameras)
             assert all(camera.stream_type == "iframe" for camera in cameras)
             assert all(
@@ -134,6 +134,16 @@ def test_curated_catalogues_keep_hosts_and_provenance() -> None:
                 for camera in cameras
             )
             assert all("not verified" in camera.attribution for camera in cameras)
+        else:
+            assert all(camera.coordinate_precision == "approximate" for camera in cameras)
+            assert all(camera.snapshot_url or camera.stream_type == "hls" for camera in cameras)
+            assert all("not verified" in camera.attribution for camera in cameras)
+    local = {camera.id: camera for camera in curated("uk-local")}
+    assert local["uk-local:mersey-gateway-runcorn"].stream_url == (
+        "https://stream1.mgw-is.uk/hls/stream.m3u8"
+    )
+    assert str(local["uk-local:iom-peel"].snapshot_url).startswith("https://images.gov.im/")
+    assert len(local) >= 40
     scotland = [camera for camera in curated("uk-live") if "Scotland" in camera.attribution]
     assert not scotland  # attribution names the owner, never a guessed nation
     assert len([camera for camera in curated("uk-live") if camera.latitude > 55]) >= 10
@@ -160,7 +170,8 @@ async def test_build_sources_are_distinct_and_fetch_the_fixed_index() -> None:
     http = AsyncMock()
     http.get_bytes.return_value = index([ROW])
     sources = build_sources(http)
-    assert [source.id for source in sources] == ["traffic-scotland", "durham", "uk-live"]
+    ids = [source.id for source in sources]
+    assert ids == ["traffic-scotland", "durham", "uk-live", "uk-local"]
     assert len(await sources[0].fetch()) == 1
     http.get_bytes.assert_awaited_once_with(INDEX, conditional=False, max_redirects=0)
     for source in sources[1:]:

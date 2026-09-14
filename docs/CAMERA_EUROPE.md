@@ -103,3 +103,26 @@ catalogue or session-bound), Slovenia (encrypted aggregator, NAP needs credentia
 (no camera layer), Catalonia (http images with redirects), Euskadi (failing image hosts), Anas,
 Trento and South Tyrol (none, http only or third-party licence), Istanbul (503) and the
 Bulgarian, Romanian, Georgian, Maltese and Cypriot portals (unreachable or positions only).
+
+## 15 September 2026: more UK councils, islands and crossings
+
+A UK-only search added 430 cameras, each catalogue fetched live and every hand-placed image or
+stream URL checked the same day.
+
+| Provider (id) | Source | Observed |
+| --- | --- | --- |
+| North East Traffic Cameras (`northeast`) | The Tyne and Wear UTMC site: positions from the map page's Leaflet settings, images from its camera list, joined by node (`camera_britain_councils.py`). Durham UTMC entries are skipped because `durham` carries them, and images older than 24 hours are left out | 323 cameras across Newcastle, Gateshead, Sunderland, North and South Tyneside and Northumberland, all updated within six hours |
+| North Yorkshire Council (`northyorkshire`) | Road weather camera GeoJSON; cameras reporting an error are skipped | 21 cameras |
+| Westmorland and Furness Council (`westmorland`) | The weather camera page's station list, images built from each station id | 33 cameras across Cumbria |
+| Derbyshire County Council (`derbyshire`) | Traffic camera GeoJSON, which lists coordinates latitude first | 8 cameras |
+| UK council, island and crossing cameras (`uk-local`) | Curated fixed URLs with approximate positions: Isle of Man Government harbour and Mountain Road cameras (10), Argyll and Bute Council road cameras (15, positions geocoded from site names), Comhairle nan Eilean Siar road cameras (12), Tamar Crossings bridge and ferry cameras (4), Mersey Gateway HLS streams (2) and Farnham Town Council South Street HLS streams (2) | 45 entries; the Mersey Gateway and Farnham playlists and segments send open CORS. The Isle of Man firewall rejects non-browser clients, but browsers load its images normally |
+
+Examined and left out: National Highways (images go only to nominated media partners over its
+Video Information Highway, Crown copyright), Newcastle Urban Observatory (camera brokers inactive
+and no positions), Perth and Kinross (no positions), Carmarthenshire (images frozen for a week),
+Southampton ROMANSE and Hertfordshire (hosts do not resolve), Nottingham and Reading (TLS
+certificate mismatches), Sheffield, Leicester and Bristol open data (locations without images),
+Birmingham, Hull, Cardiff, Devon and Smart Cambridge (no image feed), the Humber Bridge
+(discontinued), Forth bridges, CMAL harbours and Cairngorm (Traffic Scotland imagery or embedded
+players only), Guernsey (timed out), Jersey's airport loop (one camera cycling ten files) and the
+community-run Snow Gate Cameras (not a public body).
