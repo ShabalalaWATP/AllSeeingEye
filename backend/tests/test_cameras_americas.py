@@ -94,6 +94,23 @@ def test_ibi_media_flags_and_coordinates():
     assert parse_record(cfg, row) is None
 
 
+def test_new_ibi_hosts_keep_media_to_their_own_provider():
+    configs = {cfg.id: cfg for cfg in CONFIGS}
+    newyork, pennsylvania = configs["newyork"], configs["pennsylvania"]
+    row = ibi_row()
+    row["latLng"]["geography"]["wellKnownText"] = "POINT (-73.69 43.24)"
+    row["images"][0]["videoUrl"] = "https://s51.nysdot.skyvdn.com/rtplive/R1_033/playlist.m3u8"
+    cam = parse_record(newyork, row)
+    assert cam and cam.snapshot_url == "https://511ny.org/map/Cctv/1"
+    assert cam.stream_url and cam.stream_type == "hls"
+    # A New York stream host is not a Pennsylvania host, and positions stay inside the state.
+    row["latLng"]["geography"]["wellKnownText"] = "POINT (-80.14 40.32)"
+    pa = parse_record(pennsylvania, row)
+    assert pa and pa.snapshot_url == "https://www.511pa.com/map/Cctv/1" and pa.stream_url is None
+    assert parse_record(newyork, row) is None
+    assert {"saskatchewan", "yukon", "manitoba", "alaska", "newengland"} <= configs.keys()
+
+
 @pytest.mark.parametrize(
     "row",
     [
@@ -292,7 +309,7 @@ async def test_empty_and_truncated_index_fail_refresh():
 
 async def test_published_links_and_all_sources_registered():
     sources = build_sources(AsyncMock())
-    assert len(sources) == 21 and len({source.id for source in sources}) == 21
+    assert len(sources) == 37 and len({source.id for source in sources}) == 37
     links = await AmericanPublishedLinks().fetch()
     assert len(links) == 4
     assert links[2].snapshot_url is None and links[2].external_url

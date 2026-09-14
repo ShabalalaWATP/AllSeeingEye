@@ -49,9 +49,39 @@ MEDIA_HOSTS = {
     "511in.org",
     "gsccam.butlersheriff.org",
     "towercam.butlersheriff.org",
+    "511ny.org",
+    "www.511pa.com",
+    "newengland511.org",
+    "511.idaho.gov",
+    "ctroads.org",
+    "511.alaska.gov",
+    "511.novascotia.ca",
+    "511.gnb.ca",
+    "hotline.gov.sk.ca",
+    "511nl.ca",
+    "511yukon.ca",
+    "www.manitoba511.ca",
+    "s7.nysdot.skyvdn.com",
+    "s9.nysdot.skyvdn.com",
+    "s51.nysdot.skyvdn.com",
+    "s52.nysdot.skyvdn.com",
+    "s53.nysdot.skyvdn.com",
+    "atmsqf.iowadot.gov",
+    "kscam.carsprogram.org",
+    "video.dot.state.mn.us",
+    "www.kcscout.net",
 }
 FRAME_HOSTS: set[str] = set()
-EXTERNAL_HOSTS = MEDIA_HOSTS | {"www.youtube.com", "www.earthcam.com", "mdotjboss.state.mi.us"}
+EXTERNAL_HOSTS = MEDIA_HOSTS | {
+    "www.youtube.com",
+    "www.earthcam.com",
+    "mdotjboss.state.mi.us",
+    # CARS 511 operator map pages, linked per camera; never loaded as media.
+    "511mn.org",
+    "www.511ia.org",
+    "www.kandrive.gov",
+    "mass511.com",
+}
 
 PROVIDER_HOSTS = {
     "wsdot": {"images.wsdot.wa.gov"},
@@ -90,6 +120,29 @@ PROVIDER_HOSTS = {
     "arizona": {"az511.gov"},
     "indiana": {"public.carsprogram.org", "skysfs4.trafficwise.org", "511in.org"},
     "us-published": {"gsccam.butlersheriff.org", "towercam.butlersheriff.org"},
+    "newyork": {
+        "511ny.org",
+        "s7.nysdot.skyvdn.com",
+        "s9.nysdot.skyvdn.com",
+        "s51.nysdot.skyvdn.com",
+        "s52.nysdot.skyvdn.com",
+        "s53.nysdot.skyvdn.com",
+    },
+    "pennsylvania": {"www.511pa.com"},
+    "newengland": {"newengland511.org"},
+    "idaho": {"511.idaho.gov"},
+    "connecticut": {"ctroads.org"},
+    "alaska": {"511.alaska.gov"},
+    "novascotia": {"511.novascotia.ca"},
+    "newbrunswick": {"511.gnb.ca"},
+    "saskatchewan": {"hotline.gov.sk.ca"},
+    "newfoundland": {"511nl.ca"},
+    "yukon": {"511yukon.ca"},
+    "minnesota": {"public.carsprogram.org", "video.dot.state.mn.us"},
+    "iowa": {"atmsqf.iowadot.gov"},
+    "kansas": {"kscam.carsprogram.org", "www.kcscout.net"},
+    "massachusetts": {"public.carsprogram.org"},
+    "manitoba": {"www.manitoba511.ca"},
 }
 
 

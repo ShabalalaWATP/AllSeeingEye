@@ -5,6 +5,8 @@ from dataclasses import replace
 from urllib.parse import urlencode
 
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.geo.camera_americas_cars import CONFIGS as CARS_CONFIGS
+from ase.adapters.geo.camera_americas_cars import CarsCameraSource
 from ase.adapters.geo.camera_americas_common import FRAME_HOSTS, MEDIA_HOSTS, camera, unique
 from ase.adapters.geo.camera_americas_ibi import CONFIGS, IbiCameraSource
 from ase.adapters.geo.camera_americas_parsers import parse_index
@@ -167,5 +169,6 @@ def build_sources(
         WsdotCameraSource(http, wsdot_access_code),
         *(AmericanCameraSource(provider, http) for provider in ENDPOINTS),
         *(IbiCameraSource(cfg, http) for cfg in CONFIGS),
+        *(CarsCameraSource(cfg, http) for cfg in CARS_CONFIGS),
         AmericanPublishedLinks(),
     )

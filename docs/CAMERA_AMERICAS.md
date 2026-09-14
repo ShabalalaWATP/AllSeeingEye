@@ -31,6 +31,18 @@ hosts. A camera record cannot choose an arbitrary remote proxy target.
 | Georgia | GDOT public IBI catalogue, snapshots. Authentication-required streams are not offered. |
 | North Carolina | NCDOT public IBI catalogue at canonical www host, snapshots. Authentication-required streams are not offered. |
 | Arizona | ADOT public IBI catalogue, snapshots. |
+| New York 511NY | Public IBI catalogue, 1,868 snapshots and about 1,560 ungated HLS streams on five fixed hosts (`s7`, `s9`, `s51`, `s52`, `s53.nysdot.skyvdn.com`). Playlist, chunklist and segments share the host and send `Access-Control-Allow-Origin: *`; verified 14 September 2026. |
+| Pennsylvania 511PA | Public IBI catalogue, 1,500 snapshots. Its streams are authentication-required and not offered. |
+| New England 511 | Public IBI catalogue for Vermont, New Hampshire and Maine, 406 snapshots. |
+| Idaho 511 | Public IBI catalogue, 442 snapshots (some are large PNG panoramas). |
+| Connecticut CTroads | Public IBI catalogue, 347 snapshots. Streams are authentication-required and not offered. |
+| Alaska 511 | Public IBI catalogue, 129 snapshots. |
+| Nova Scotia, New Brunswick, Newfoundland and Labrador, Manitoba, Yukon 511 | Public IBI catalogues, 57, 57, 48, 49 and 13 snapshots. New Brunswick answered 429 to rapid probes, so its single page is fetched once per refresh. |
+| Saskatchewan Highway Hotline | Public IBI catalogue, 56 snapshots. |
+| Minnesota MnDOT 511 | Public CARS GraphQL map query (`camera_americas_cars.py`), 1,527 cameras with snapshots and 1,247 HLS streams from `video.dot.state.mn.us`, which sends open CORS on playlists and segments. |
+| Iowa 511 | Public CARS map query, 852 snapshots from `atmsqf.iowadot.gov`. Its streams use port 8888, which the media policy refuses, so they are not offered. |
+| Kansas KanDrive | Public CARS map query, 536 cameras (520 snapshots from `kscam.carsprogram.org` and KC Scout's `www.kcscout.net`). Its streams carry five-minute signed tokens that would expire inside the catalogue cache, so they are not offered. |
+| Massachusetts Mass511 | Public CARS map query, 306 snapshots. The TrafficLand restream host timed out, so streams are not offered. |
 | Published US webcams | Two Butler County public webcams, CincyVision YouTube public livestream and Cincinnati-Covington EarthCam. Third-party player pages remain external links; curated positions are marked approximate. |
 
 The three curated Toronto OSIRIS fallback points are deliberately excluded: they

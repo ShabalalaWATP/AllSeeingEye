@@ -28,6 +28,36 @@ CONFIGS = (
     IbiConfig("georgia", "GDOT", "https://511ga.org", (30.3, 35.1, -85.7, -80.8)),
     IbiConfig("northcarolina", "NCDOT", "https://www.drivenc.gov", (33.8, 36.6, -84.4, -75.4)),
     IbiConfig("arizona", "ADOT", "https://az511.gov", (31.3, 37.1, -115.0, -109.0)),
+    IbiConfig("newyork", "511NY", "https://511ny.org", (40.4, 45.1, -79.9, -71.7)),
+    IbiConfig("pennsylvania", "511PA", "https://www.511pa.com", (39.6, 42.4, -80.6, -74.6)),
+    IbiConfig(
+        "newengland", "New England 511", "https://newengland511.org", (41.2, 47.5, -73.8, -66.8)
+    ),
+    IbiConfig("idaho", "Idaho 511", "https://511.idaho.gov", (41.9, 49.1, -117.4, -110.9)),
+    IbiConfig("connecticut", "CTroads", "https://ctroads.org", (40.9, 42.1, -73.8, -71.7)),
+    IbiConfig("alaska", "Alaska 511", "https://511.alaska.gov", (51.0, 71.6, -180.0, -129.9)),
+    IbiConfig(
+        "novascotia", "Nova Scotia 511", "https://511.novascotia.ca", (43.3, 47.1, -66.5, -59.6)
+    ),
+    IbiConfig(
+        "newbrunswick", "New Brunswick 511", "https://511.gnb.ca", (44.5, 48.2, -69.1, -63.7)
+    ),
+    IbiConfig(
+        "saskatchewan",
+        "Saskatchewan Highway Hotline",
+        "https://hotline.gov.sk.ca",
+        (48.9, 60.1, -110.1, -101.3),
+    ),
+    IbiConfig(
+        "newfoundland",
+        "511 Newfoundland and Labrador",
+        "https://511nl.ca",
+        (46.5, 60.5, -67.9, -52.5),
+    ),
+    IbiConfig("yukon", "511 Yukon", "https://511yukon.ca", (59.9, 69.7, -141.1, -123.7)),
+    IbiConfig(
+        "manitoba", "Manitoba 511", "https://www.manitoba511.ca", (48.9, 60.1, -102.1, -88.9)
+    ),
 )
 
 
