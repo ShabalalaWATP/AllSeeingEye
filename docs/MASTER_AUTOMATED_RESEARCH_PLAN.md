@@ -652,6 +652,9 @@ See [Sources and connections](SOURCES_AND_CONNECTIONS.md).
   claims, ISW assessments, Kyiv Independent and Bellingcat seeds, timeline, forces and
   equipment with Commons images, Oryx and HRMMU importers, lens charts, flagged
   DeepState, OCHA and WarSpotting providers. See `docs/UKRAINE_WAR_TRACKER.md`.
+- [x] Camera providers for Britain (Traffic Scotland relay, Durham, UK streams), Estonia
+  (Tark Tee, Tallinn), the Baltic states, Russia, Israel, Iraq and China (14 September
+  2026); TrafficWatchNI, Traffic Wales and National Highways examined and left out.
 - [ ] Ukraine tracker follow-ups: DeepState access request (operator), a WarSpotting
   terms read before enabling the layer, the HRMMU sentence regex when the mission
   changes its wording, and the reference seeds' as-of dates refreshed with events.

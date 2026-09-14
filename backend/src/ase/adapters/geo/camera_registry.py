@@ -3,7 +3,14 @@
 from dataclasses import dataclass
 
 from ase.adapters.feeds.http import FeedHttpClient
-from ase.adapters.geo import camera_americas, camera_europe, camera_world, camera_world_directory
+from ase.adapters.geo import (
+    camera_americas,
+    camera_britain,
+    camera_east,
+    camera_europe,
+    camera_world,
+    camera_world_directory,
+)
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.cameras import OfficialCameraSource
 from ase.application.ports.cameras import CameraSource
@@ -35,6 +42,16 @@ class GuardedCameraSource:
             # Cancellation inherits BaseException and is deliberately not swallowed.
             raise ValueError("Public camera provider unavailable") from exc
 
+    async def frame(self, frame_id: str) -> bytes | None:
+        reader = getattr(self.source, "frame", None)
+        if reader is None:
+            return None
+        try:
+            data = await reader(frame_id)
+        except Exception as exc:
+            raise ValueError("Public camera frame unavailable") from exc
+        return data if isinstance(data, bytes) else None
+
 
 def build_sources(
     http: CameraHttpClient,
@@ -50,6 +67,8 @@ def build_sources(
         *camera_europe.build_sources(http),
         *camera_world.build_sources(http),
         *camera_world_directory.build_sources(http),
+        *camera_britain.build_sources(http),
+        *camera_east.build_sources(http),
     )
     if len({source.id for source in sources}) != len(sources):
         raise ValueError("Duplicate camera provider IDs")

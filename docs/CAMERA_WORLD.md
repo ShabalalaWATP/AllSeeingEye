@@ -56,3 +56,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## 14 September 2026: Israel, Iraq, Iran and China
+
+| Provider (id) | Content | Observed on 14 September 2026 |
+| --- | --- | --- |
+| Israel public streams (`israel-live`) | Five YouTube embeds around the Western Wall and the Old City: the Western Wall Heritage Foundation's main plaza camera, two Mount of Olives prayer bridge views, the Western Wall channel and JFMM's Jerusalem views | All five confirmed embeddable through oEmbed. EarthCam's Western Wall stream already lives in the Middle East provider and was not duplicated. Israel's road operators (Netivei Israel, Ayalon Highways) sit behind bot protection and returned 403; no Tel Aviv, Haifa or Eilat owner-operated stream was found. |
+| Iraq and Iran public streams (`iraq-iran-live`) | Three YouTube embeds of the Imam Hussein and Al-Abbas shrines in Karbala from the Al-Abbas Holy Shrine's own channels | Confirmed embeddable. Seven further Karbala re-streams by unrelated channels were excluded. No owner-operated public camera was found for Baghdad, Erbil, Basra, Tehran, Isfahan or Mashhad in English, Arabic or Persian; Tehran's traffic control site was unreachable. Multi-camera "OSINT" aggregator streams were deliberately not added because their provenance and rights are unclear. |
+| China public streams (`china-live`) | Eight YouTube embeds: the Shanghai Bund and Oriental Pearl Tower, CGTN's rolling China travel cameras (marked as multi-location), the Chengdu panda base, the Gengda Valley pandas, and four Hong Kong views (Aberdeen Harbour, Victoria Harbour from East Kowloon, Ap Lei Chau, the international airport) | Confirmed embeddable. Mainland searches in English, Japanese and Chinese for Beijing, Guangzhou, Shenzhen, Chongqing, Harbin, Xi'an, Hangzhou, Lhasa and Xinjiang found no owner-operated fixed camera; the existing Skyline pages for Qingdao and Shanghai remain external links. The official Hong Kong Transport Department source is unchanged. |
+
+Each row keeps the owner's channel name in the attribution, an approximate locality position
+and the oEmbed check date. An embeddable stream today is not a promise of playback tomorrow.

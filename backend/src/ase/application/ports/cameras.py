@@ -13,3 +13,9 @@ class CameraSource(Protocol):
     def name(self) -> str: ...
 
     async def fetch(self) -> tuple[Camera, ...]: ...
+
+
+class CameraFrameSource(CameraSource, Protocol):
+    """A source whose provider serves images only inline, so the server relays one frame."""
+
+    async def frame(self, frame_id: str) -> bytes | None: ...

@@ -7,10 +7,18 @@ export type Camera = components['schemas']['CameraOut'];
 export type CameraCatalogue = components['schemas']['CameraCatalogueOut'];
 export type CameraProvider = Camera['provider'];
 
+const FRAME_PATH = /^\/api\/cameras\/frames\/[a-z][a-z0-9-]{0,39}\/[A-Za-z0-9_-]{1,40}\.jpg$/;
+
+/** Same-origin relay paths for the providers that only serve images inline. */
+export function isCameraFramePath(value: string | null | undefined): boolean {
+  return typeof value === 'string' && FRAME_PATH.test(value);
+}
+
 /** Restrict browser requests as well as validating the server's public catalogue. */
 export function isCameraImageUrl(value: string | null | undefined): boolean {
   try {
     if (!value) return false;
+    if (isCameraFramePath(value)) return true;
     const url = new URL(value);
     if (url.protocol !== 'https:' || url.username || url.password || url.port || url.hash)
       return false;

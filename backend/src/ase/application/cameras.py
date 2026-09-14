@@ -98,6 +98,21 @@ class CameraCatalogueService:
             groups = active
         return CameraCatalogue(tuple(cameras), tuple(statuses), now)
 
+    async def frame(self, actor: User, provider: str, frame_id: str) -> bytes | None:
+        """One relayed frame from a source that declares frames; other sources answer None."""
+        if not actor.is_active:
+            raise Unauthenticated()
+        for cached in self._sources:
+            if cached.source.id != provider:
+                continue
+            reader = getattr(cached.source, "frame", None)
+            if reader is None:
+                return None
+            async with asyncio.timeout(20):
+                data = await reader(frame_id)
+            return data if isinstance(data, bytes) and data else None
+        raise ValueError("Unknown camera provider")
+
     async def initial_catalogue(self, actor: User) -> CameraCatalogue:
         keys = [key for key in ("tfl", "hongkong", "fintraffic") if key in self.provider_ids]
         results = await asyncio.gather(*(self.catalogue(actor, key) for key in keys))

@@ -85,6 +85,21 @@ statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configur
 90% thresholds remain unchanged.
 
 
+## 14 September: Britain, the Baltic states, Russia and the Middle East
+
+Ten providers joined the registry on request: Traffic Scotland's 415-camera official
+index with a same-origin frame relay (the first provider whose images the server
+relays, because the operator only serves them inline), Durham County Council's 30
+open-data sites, Estonia's 181-location DATEX II publication, Tallinn's 251 junction
+snapshots and six curated stream groups (UK 47, Baltic 6, Russia 11, Israel 5, Iraq 3,
+China 8), every stream confirmed embeddable through oEmbed that day. Details and the
+providers that were examined and refused are in `docs/CAMERA_EUROPE.md` and
+`docs/CAMERA_WORLD.md`. The relay is not a proxy: it accepts one provider, sids from
+that provider's last index only, bounds each frame to 2 MiB and JPEG, caches for 45
+seconds and revalidates the session. Nineteen backend tests across the two new modules,
+one feed-client test for the Accept override and twelve frontend camera tests cover the
+parsers, the relay, host policy, the frame path rule and the panel groups.
+
 ## 8 September: regional discovery and partial catalogues
 
 Compared the 57 ASE providers with OSIRIS commit

@@ -5614,6 +5614,61 @@
         ]
       }
     },
+    "/api/cameras/frames/{provider}/{frame_id}.jpg": {
+      "get": {
+        "tags": [
+          "cameras"
+        ],
+        "summary": "Camera Frame",
+        "description": "A JPEG relayed from a fixed provider endpoint for a camera in its last index.",
+        "operationId": "camera_frame_api_cameras_frames__provider___frame_id__jpg_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "frame_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Frame Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cameras": {
       "get": {
         "tags": [

@@ -207,13 +207,16 @@ class FeedHttpClient:
         conditional: bool = True,
         max_redirects: int = MAX_REDIRECTS,
         credential: FeedCredential | None = None,
+        accept: str | None = None,
     ) -> bytes:
+        """`accept` overrides the JSON-first default for upstreams that frame XML correctly
+        only when asked for it."""
         if credential is not None:
             credential.require_origin(url)
             conditional, max_redirects = False, 0
         try:
             async with asyncio.timeout(self._total_timeout_seconds):
-                return await self._get_bytes(url, conditional, max_redirects, credential)
+                return await self._get_bytes(url, conditional, max_redirects, credential, accept)
         except TimeoutError as exc:
             if credential is not None:
                 raise FeedFetchError("Authenticated feed request failed.") from None
@@ -229,6 +232,7 @@ class FeedHttpClient:
         conditional: bool,
         max_redirects: int,
         credential: FeedCredential | None,
+        accept: str | None = None,
     ) -> bytes:
         if not 0 <= max_redirects <= MAX_REDIRECTS:
             raise ValueError("Invalid redirect budget")
@@ -237,6 +241,7 @@ class FeedHttpClient:
             address = await assert_public_host(current)
             headers: dict[str, str] = {
                 "Accept-Encoding": "identity",
+                **({"Accept": accept} if accept else {}),
                 **({credential.header_name: credential.authorization} if credential else {}),
             }
             validators = self._validators.get(url) if conditional else None

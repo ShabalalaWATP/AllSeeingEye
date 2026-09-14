@@ -52,3 +52,29 @@ external-only RWS behaviour, fixed request arguments and retired providers.
 Ruff formatting/checks and focused mypy apply to all European modules. Live
 probes are separate from the deterministic test suite and do not establish
 browser playback, freshness or all-camera availability.
+
+## 14 September 2026: Britain, the Baltic states and Russia
+
+Requested coverage: more UK providers with Scotland and the Cheltenham area in focus, plus
+Russia, Estonia and Latvia. The search favoured official keyless indexes first and public
+operator streams second; nothing private, credentialed or scraped from a login was added.
+
+| Provider (id) | What it is | Observed on 14 September 2026 |
+| --- | --- | --- |
+| Traffic Scotland (`traffic-scotland`) | Transport Scotland's trunk-road cameras, fixed JSON index `https://www.traffic.gov.scot/tsis/cameras` with sid, title, position, road and region | 415 cameras parsed live. The operator serves each image only as a base64 JPEG inside a small HTML fragment (`/tsis/camerahtml?sid=N`), so the server relays one decoded frame per request at `/api/cameras/frames/traffic-scotland/<sid>.jpg`: sids limited to the last index, 45-second cache of at most 512 frames, two concurrent upstream requests, a 2 MiB frame bound, JPEG magic checked, session revalidated, `private, max-age=30`. A live frame of 7,954 bytes decoded. The site's own map key (Google Maps) was not copied. |
+| Durham County Council (`durham`) | Council traffic cameras: positions from the council's Open Government Licence dataset on Data Mill North, images embedded by the council pages from its contractor host `dcc.ussgroup.co.uk` without a key | 30 live sites with an image mapping (one listed site had none). A sample JPEG returned 42,725 bytes without a referrer. Positions are exact; each entry links its council page. |
+| UK public streams (`uk-live`) | Curated YouTube embeds owned by councils, harbours, railway trusts, seabird centres, weather sites, hotels and cafes across Scotland, England, Wales and Northern Ireland | 47 streams, each confirmed embeddable through YouTube oEmbed on 14 September 2026 (title and owner recorded). 15 further candidates refused embedding and were dropped. Positions are the locality, approximate. Scotland: Edinburgh, Fort William (two), Linlithgow, Aberdour, Lochgelly, Loch Ness, Glasgow Airport, Stornoway, Greenock, Bass Rock, Loch Arkaig. Gloucestershire: the Dean Forest Railway at Lydney (two). No public stream of Cheltenham itself was found. |
+| Estonia, Tark Tee (`estonia`) | Transpordiamet's public DATEX II `roadCameraLocations` publication: position, Estonian name and the current image link on `tarktee.transpordiamet.ee` | 181 locations. The server frames its JSON variant with two Transfer-Encoding headers, which the pinned client refuses; the adapter asks for XML, which arrives with a plain Content-Length. Image links carry a capture timestamp and are refreshed with the 15-minute catalogue. |
+| Tallinn junction cameras (`tallinn`) | The city transport department's public junction snapshot page `ristmikud.tallinn.ee`, images at `/last/camNNN.jpg` | 254 cameras listed, 251 placed. The page carries no coordinates, so each junction name was geocoded once with Nominatim during the build and the position is labelled approximate. A sample JPEG returned 60,892 bytes at 1280 by 720. |
+| Baltic public streams (`baltic-live`) | Curated YouTube embeds | 6 streams: Tallinn (two), Kuressaare, the RMK Elistvere animal park, Streets in Riga, Riga Zoo. No official Latvian camera index was found: the national access point map publishes no camera layer and the road administration's site has no camera pages. |
+| Russia public streams (`russia-live`) | Curated YouTube embeds, principally the Mobotix Webcams Russia channel in Saint Petersburg and the Omsk multichannel camera | 11 streams. Searches for Moscow, Sochi, Vladivostok, Kazan, Yekaterinburg, Murmansk, Kaliningrad, Novosibirsk, Rostov and Crimea in English and Russian returned no owner-operated live camera. Aggregator re-streams of unclear provenance were excluded. |
+
+Not added and why: TrafficWatchNI (Northern Ireland) hotlink-protects its images and its map
+data endpoint refuses requests without the site's own session; Traffic Wales embeds a private
+API key on its camera page; National Highways publishes cameras only behind a subscription
+key; the Scottish city councils' pages returned 403 or 404.
+
+The registry gained 39 hosts and providers in total across this and the eastern module; the
+browser allowlist, adapter host sets and the Caddy CSP `img-src` list carry
+`tarktee.transpordiamet.ee`, `ristmikud.tallinn.ee` and `dcc.ussgroup.co.uk`. Relayed
+frames are same-origin and need no policy change.

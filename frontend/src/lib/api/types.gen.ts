@@ -1541,6 +1541,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cameras/frames/{provider}/{frame_id}.jpg": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Camera Frame
+         * @description A JPEG relayed from a fixed provider endpoint for a camera in its last index.
+         */
+        get: operations["camera_frame_api_cameras_frames__provider___frame_id__jpg_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cameras": {
         parameters: {
             query?: never;
@@ -14767,6 +14787,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CapabilitiesOut"];
+                };
+            };
+        };
+    };
+    camera_frame_api_cameras_frames__provider___frame_id__jpg_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+                frame_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

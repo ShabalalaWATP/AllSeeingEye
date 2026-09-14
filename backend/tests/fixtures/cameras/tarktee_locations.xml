@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns17:payload xsi:type="ns4:PredefinedLocationsPublication" lang="en" modelBaseVersion="3" xmlns="http://datex2.eu/schema/3/trafficRegulation" xmlns:ns2="http://datex2.eu/schema/3/common" xmlns:ns4="http://datex2.eu/schema/3/locationReferencing" xmlns:ns3="http://datex2.eu/schema/3/locationExtension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns6="http://datex2.eu/schema/3/commonExtension" xmlns:ns5="http://datex2.eu/schema/3/parking" xmlns:ns8="http://datex2.eu/schema/3/facilities" xmlns:ns7="http://datex2.eu/schema/3/controlledZone" xmlns:ns13="http://datex2.eu/schema/3/trafficManagementPlan" xmlns:ns9="http://datex2.eu/schema/3/situation" xmlns:ns12="http://datex2.eu/schema/3/urbanExtensions" xmlns:ns11="http://datex2.eu/schema/3/vms" xmlns:ns10="http://datex2.eu/schema/3/roadTrafficData" xmlns:ns17="http://datex2.eu/schema/3/d2Payload" xmlns:ns16="http://datex2.eu/schema/3/energyInfrastructure" xmlns:ns15="http://datex2.eu/schema/3/reroutingManagementEnhanced" xmlns:ns14="http://datex2.eu/schema/3/faultAndStatus">
+    <ns2:feedType>Traffic camera locations</ns2:feedType>
+    <ns2:publicationTime>2026-09-14T04:06:02.125+03:00</ns2:publicationTime>
+    <ns2:publicationCreator>
+        <ns2:country>ee</ns2:country>
+        <ns2:nationalIdentifier>MNT</ns2:nationalIdentifier>
+    </ns2:publicationCreator>
+    <ns4:headerInformation>
+        <ns2:confidentiality>noRestriction</ns2:confidentiality>
+        <ns2:informationStatus>real</ns2:informationStatus>
+    </ns4:headerInformation>
+    <ns4:predefinedLocationReference xsi:type="ns4:PredefinedLocation" id="a84734fc-8f1d-47af-ba22-8323cd6eb367" version="0">
+        <ns4:predefinedLocationName>
+            <ns2:values>
+                <ns2:value lang="et">Kaimi</ns2:value>
+            </ns2:values>
+        </ns4:predefinedLocationName>
+        <ns4:location xsi:type="ns4:PointLocation">
+            <ns4:pointByCoordinates>
+                <ns4:pointCoordinates>
+                    <ns4:latitude>58.34474</ns4:latitude>
+                    <ns4:longitude>26.3853</ns4:longitude>
+                </ns4:pointCoordinates>
+            </ns4:pointByCoordinates>
+        </ns4:location>
+        <ns4:_predefinedLocationExtension>
+            <ns6:roadCameraLocationExtension>
+                <ns6:urlLink>
+                    <ns2:urlLinkAddress>https://tarktee.transpordiamet.ee/images/987/987_202609140351.jpg</ns2:urlLinkAddress>
+                    <ns2:urlLinkType>image</ns2:urlLinkType>
+                </ns6:urlLink>
+            </ns6:roadCameraLocationExtension>
+        </ns4:_predefinedLocationExtension>
+    </ns4:predefinedLocationReference>
+<ns4:predefinedLocationReference xsi:type="ns4:PredefinedLocation" id="63b6d697-3070-45e7-aa38-95e3fd42a633" version="0">
+        <ns4:predefinedLocationName>
+            <ns2:values>
+                <ns2:value lang="et">Kolgaküla</ns2:value>
+            </ns2:values>
+        </ns4:predefinedLocationName>
+        <ns4:location xsi:type="ns4:PointLocation">
+            <ns4:pointByCoordinates>
+                <ns4:pointCoordinates>
+                    <ns4:latitude>59.52601</ns4:latitude>
+                    <ns4:longitude>25.69951</ns4:longitude>
+                </ns4:pointCoordinates>
+            </ns4:pointByCoordinates>
+        </ns4:location>
+        <ns4:_predefinedLocationExtension>
+            <ns6:roadCameraLocationExtension>
+                <ns6:urlLink>
+                    <ns2:urlLinkAddress>https://tarktee.transpordiamet.ee/images/803/803_202609140352.jpg</ns2:urlLinkAddress>
+                    <ns2:urlLinkType>image</ns2:urlLinkType>
+                </ns6:urlLink>
+            </ns6:roadCameraLocationExtension>
+        </ns4:_predefinedLocationExtension>
+    </ns4:predefinedLocationReference>
+<ns4:predefinedLocationReference xsi:type="ns4:PredefinedLocation" id="outside" version="0">
+        <ns4:predefinedLocationName>
+            <ns2:values>
+                <ns2:value lang="et">Kaimi</ns2:value>
+            </ns2:values>
+        </ns4:predefinedLocationName>
+        <ns4:location xsi:type="ns4:PointLocation">
+            <ns4:pointByCoordinates>
+                <ns4:pointCoordinates>
+                    <ns4:latitude>10.0</ns4:latitude>
+                    <ns4:longitude>26.3853</ns4:longitude>
+                </ns4:pointCoordinates>
+            </ns4:pointByCoordinates>
+        </ns4:location>
+        <ns4:_predefinedLocationExtension>
+            <ns6:roadCameraLocationExtension>
+                <ns6:urlLink>
+                    <ns2:urlLinkAddress>https://tarktee.transpordiamet.ee/images/987/987_202609140351.jpg</ns2:urlLinkAddress>
+                    <ns2:urlLinkType>image</ns2:urlLinkType>
+                </ns6:urlLink>
+            </ns6:roadCameraLocationExtension>
+        </ns4:_predefinedLocationExtension>
+    </ns4:predefinedLocationReference>
+<ns4:predefinedLocationReference xsi:type="ns4:PredefinedLocation" id="no-image" version="0">
+        <ns4:predefinedLocationName>
+            <ns2:values>
+                <ns2:value lang="et">Kolgaküla</ns2:value>
+            </ns2:values>
+        </ns4:predefinedLocationName>
+        <ns4:location xsi:type="ns4:PointLocation">
+            <ns4:pointByCoordinates>
+                <ns4:pointCoordinates>
+                    <ns4:latitude>59.52601</ns4:latitude>
+                    <ns4:longitude>25.69951</ns4:longitude>
+                </ns4:pointCoordinates>
+            </ns4:pointByCoordinates>
+        </ns4:location>
+        <ns4:_predefinedLocationExtension>
+            <ns6:roadCameraLocationExtension>
+                
+            </ns6:roadCameraLocationExtension>
+        </ns4:_predefinedLocationExtension>
+    </ns4:predefinedLocationReference>
+</ns17:payload>

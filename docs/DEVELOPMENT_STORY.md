@@ -4754,3 +4754,16 @@ feeds, the frontline directory records the DeepState licence as read and the del
 adapter contract, the map tools note points at the page, the research plan carries the
 checklist and follow-ups, and the operator document gained a daily-operation section with
 the five import commands. The globe's Frontlines directory now says where the flags live.
+
+The camera registry grew by ten providers on 14 September 2026 after a request for more
+CCTV across the UK, Scotland and Cheltenham in particular, and for Russia, Estonia, Latvia,
+Israel, Iraq, Iran and China. Traffic Scotland's official index became the first provider
+whose frames the server relays, because the operator only serves images inline as base64,
+so a narrow same-origin endpoint decodes one bounded JPEG per request for sids in the last
+index. Durham County Council's open data and Estonia's DATEX II publication arrived as plain
+official indexes (the Estonian server has to be asked for XML; its JSON variant is framed
+with two Transfer-Encoding headers), Tallinn's junction page was geocoded once, and 80
+public YouTube streams were checked through oEmbed before entry, with 15 refusals and every
+aggregator re-stream left out. Latvia, Iran and mainland China yielded no owner-operated
+public camera beyond a handful of streams; that gap is recorded rather than filled with
+unverified sources.

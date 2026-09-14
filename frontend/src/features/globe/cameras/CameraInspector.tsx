@@ -1,6 +1,7 @@
 import { CameraStream } from './CameraStream';
+import { loadCameraFrame, releaseCameraFrame } from './cameraFrames';
 import { useEffect, useRef, useState } from 'react';
-import { isCameraImageUrl, type Camera } from '@/lib/api/cameras';
+import { isCameraFramePath, isCameraImageUrl, type Camera } from '@/lib/api/cameras';
 
 /** Remount for a different camera so one facility never inherits another's image. */
 export function CameraInspector({ camera, onClose }: { camera: Camera; onClose: () => void }) {
@@ -9,7 +10,7 @@ export function CameraInspector({ camera, onClose }: { camera: Camera; onClose: 
 function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => void }) {
   const closeButton = useRef<HTMLButtonElement>(null);
   const activeRequest = useRef(0);
-  const [request, setRequest] = useState<{ id: number; url: string } | null>(null);
+  const [request, setRequest] = useState<{ id: number; url: string | null } | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'loaded' | 'error' | 'expired'>('idle');
   useEffect(() => {
     const opener = document.activeElement;
@@ -26,6 +27,7 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
       if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
     };
   }, [onClose]);
+  useEffect(() => () => releaseCameraFrame(request?.url), [request]);
   useEffect(() => {
     if (!request) return;
     // TfL images must not remain displayed beyond 15 minutes after request.
@@ -76,11 +78,27 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
             onClick={() => {
               if (!safe || !camera.snapshot_url) return;
               const id = (request?.id ?? 0) + 1;
+              activeRequest.current = id;
+              setState('loading');
+              if (isCameraFramePath(camera.snapshot_url)) {
+                // Relayed frames arrive through the session as a blob, then load like any image.
+                setRequest({ id, url: null });
+                loadCameraFrame(camera.snapshot_url, id).then(
+                  (objectUrl) => {
+                    if (activeRequest.current === id) setRequest({ id, url: objectUrl });
+                    else releaseCameraFrame(objectUrl);
+                  },
+                  () => {
+                    if (activeRequest.current !== id) return;
+                    activeRequest.current = 0;
+                    setState('error');
+                  },
+                );
+                return;
+              }
               // Only append a locally generated value after canonical URL validation.
               const url = new URL(camera.snapshot_url);
               url.searchParams.set('_ase_refresh', `${Date.now()}-${id}`);
-              activeRequest.current = id;
-              setState('loading');
               setRequest({ id, url: url.href });
             }}
             className="min-h-11 rounded border border-line px-3 text-cyan"
@@ -91,7 +109,7 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
         {camera.snapshot_url && !safe && (
           <p role="alert">This image address is not an approved camera source.</p>
         )}
-        {safe && request && (state === 'loading' || state === 'loaded') && (
+        {safe && request?.url && (state === 'loading' || state === 'loaded') && (
           <img
             key={request.id}
             src={request.url}

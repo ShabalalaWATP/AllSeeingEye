@@ -53,6 +53,15 @@ it('accepts only exact official image locations and bounded valid catalogues', (
     'https://s3-eu-west-1.amazonaws.com/other/C1.jpg',
   ])
     expect(isCameraImageUrl(url)).toBe(false);
+  expect(isCameraImageUrl('/api/cameras/frames/traffic-scotland/16.jpg')).toBe(true);
+  for (const path of [
+    '/api/cameras/frames/traffic-scotland/../16.jpg',
+    '/api/cameras/frames/Traffic/16.jpg',
+    '/api/cameras/frames/traffic-scotland/16.png',
+    '/api/other/traffic-scotland/16.jpg',
+    'https://localhost/api/cameras/frames/traffic-scotland/16.jpg',
+  ])
+    expect(isCameraImageUrl(path)).toBe(false);
   expect(cameraCatalogueSchema.safeParse(catalogue).success).toBe(true);
   expect(
     cameraCatalogueSchema.safeParse({ ...catalogue, cameras: [{ ...camera, latitude: 91 }] })

@@ -199,3 +199,22 @@ async def test_literal_addresses_need_no_pinning() -> None:
     assert await assert_public_host("https://93.184.216.34/feed") is None
     assert pin_url("http://feeds.test/x?y=1", "2001:db8::1") == "http://[2001:db8::1]/x?y=1"
     assert pin_url("https://feeds.test:8443/x", "93.184.216.34") == "https://93.184.216.34:8443/x"
+
+
+async def test_accept_override_replaces_the_json_first_default(no_dns: None) -> None:
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers["accept"])
+        return httpx.Response(200, content=b"<a/>")
+
+    client = make_client(handler)
+    assert await client.get_bytes("https://feeds.test/a.xml", conditional=False) == b"<a/>"
+    assert (
+        await client.get_bytes(
+            "https://feeds.test/a.xml", conditional=False, accept="application/xml"
+        )
+        == b"<a/>"
+    )
+    assert seen == ["application/json, text/*;q=0.8, */*;q=0.5", "application/xml"]
+    await client.aclose()

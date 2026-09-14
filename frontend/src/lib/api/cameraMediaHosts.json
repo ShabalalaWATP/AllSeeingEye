@@ -24,6 +24,7 @@
     "d2wse1.its.nv.gov",
     "d2wse2.its.nv.gov",
     "d3wse1.its.nv.gov",
+    "dcc.ussgroup.co.uk",
     "drivebc.ca",
     "drivenc.gov",
     "etraffic.dgt.es",
@@ -45,11 +46,13 @@
     "pics.smartburgas.eu",
     "prod-ut.ibi511.com",
     "public.carsprogram.org",
+    "ristmikud.tallinn.ee",
     "s3-eu-west-1.amazonaws.com",
     "skysfs4.trafficwise.org",
     "stream.inmoves.nl",
     "stream.uzivobeograd.rs",
     "streaming1.neotel.net.mk",
+    "tarktee.transpordiamet.ee",
     "tdcctv.data.one.gov.hk",
     "towercam.butlersheriff.org",
     "traffic.ottawa.ca",
@@ -73,5 +76,8 @@
     "www.vegagerdin.is",
     "wzmedia.dot.ca.gov"
   ],
-  "frames": ["ipcamlive.com", "www.youtube.com"]
+  "frames": [
+    "ipcamlive.com",
+    "www.youtube.com"
+  ]
 }

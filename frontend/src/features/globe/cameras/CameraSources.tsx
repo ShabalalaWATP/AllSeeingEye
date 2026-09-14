@@ -24,6 +24,13 @@ const GROUPS: Record<string, readonly string[]> = {
     'greece',
     'turkey',
     'europe-live',
+    'traffic-scotland',
+    'durham',
+    'uk-live',
+    'estonia',
+    'tallinn',
+    'baltic-live',
+    'russia-live',
   ],
   'United States': [
     'wsdot',
@@ -54,6 +61,9 @@ const GROUPS: Record<string, readonly string[]> = {
     'eastasia',
     'seasia',
     'westasia',
+    'israel-live',
+    'iraq-iran-live',
+    'china-live',
   ],
   'Australia and New Zealand': ['australia', 'newzealand'],
   'Africa and Latin America': ['africa-live', 'latam-live'],
@@ -70,6 +80,17 @@ const SEARCH_ALIASES: Record<string, string> = {
   australia: 'New South Wales NSW',
   'spain-dgt': 'Spain',
   drivebc: 'British Columbia',
+  'traffic-scotland': 'Scotland United Kingdom Britain trunk roads motorways',
+  durham: 'England United Kingdom North East Durham County Council',
+  'uk-live':
+    'United Kingdom Britain Scotland England Wales Northern Ireland Gloucestershire Lydney',
+  estonia: 'Estonia Baltic Transpordiamet Tark Tee roads',
+  tallinn: 'Estonia Tallinn junctions',
+  'baltic-live': 'Estonia Latvia Riga Tallinn Kuressaare',
+  'russia-live': 'Russia Saint Petersburg Omsk',
+  'israel-live': 'Israel Jerusalem Western Wall',
+  'iraq-iran-live': 'Iraq Iran Karbala',
+  'china-live': 'China Shanghai Beijing Chengdu Hong Kong',
 };
 
 /** Group discovery changes subscriptions only. Media still loads on selection. */
