@@ -8,8 +8,11 @@ from ase.adapters.geo import (
     camera_britain,
     camera_east,
     camera_europe,
+    camera_europe_maps,
+    camera_europe_open,
     camera_world,
     camera_world_directory,
+    camera_world_open,
 )
 from ase.adapters.geo.camera_http import CameraHttpClient
 from ase.adapters.geo.cameras import OfficialCameraSource
@@ -69,6 +72,9 @@ def build_sources(
         *camera_world_directory.build_sources(http),
         *camera_britain.build_sources(http),
         *camera_east.build_sources(http),
+        *camera_europe_open.build_sources(http),
+        *camera_europe_maps.build_sources(http),
+        *camera_world_open.build_sources(http),
     )
     if len({source.id for source in sources}) != len(sources):
         raise ValueError("Duplicate camera provider IDs")

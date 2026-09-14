@@ -78,3 +78,28 @@ The registry gained 39 hosts and providers in total across this and the eastern 
 browser allowlist, adapter host sets and the Caddy CSP `img-src` list carry
 `tarktee.transpordiamet.ee`, `ristmikud.tallinn.ee` and `dcc.ussgroup.co.uk`. Relayed
 frames are same-origin and need no policy change.
+
+## 14 September 2026: official indexes across Europe
+
+A second search looked for keyless official catalogues whose images load without a referrer,
+cookie or token. Eight passed, all fetched live through the camera HTTP client
+(`camera_europe_open.py` for JSON indexes, `camera_europe_maps.py` for KML and WFS maps).
+
+| Provider (id) | Catalogue and capability | Observed |
+| --- | --- | --- |
+| Lithuania (`lithuania`) | eismoinfo.lt camera table; positions are LKS-94 grid metres converted with an inverse transverse Mercator that matches PROJ to under a millimetre | 296 snapshots; reuse permitted with credit |
+| Ireland (`ireland`) | TII's CARS camera API, public still views | 247 snapshots; TII data is CC BY 4.0, this API is undocumented |
+| Norway (`norway`) | Statens vegvesen road weather and camera API. It answers 400 without an `X-System-ID` header, so the adapter sends the fixed public name `theallseeingeye` through a dedicated identified GET that refuses anything resembling a secret | 842 snapshots, 136 HLS streams on `kamera.vegvesen.no` with open CORS |
+| Hungary (`hungary`) | Utinform webcam GeoJSON; the image URL is built from place id and camera number, and only cameras with an image under 15 minutes old are kept, as the operator's site does | 482 snapshots, served as `application/octet-stream` without nosniff, so browsers render them |
+| Autostrade per l'Italia (`autostrade`) | Motorway webcam JSON with relative frame paths under fixed prefixes | 986 cameras, 830 stills and 981 short MP4 clips on `video.autostrade.it`; no licence found, treat as operator terms |
+| Luxembourg (`luxembourg`) | CITA camera KML (CC0 on data.public.lu); images built from the placemark id | 94 snapshots |
+| Madrid (`madrid`) | City of Madrid Informo CCTV KML; the image is read from the escaped description and must be on `informo.madrid.es` | 357 snapshots |
+| Lyon (`lyon`) | Metropole de Lyon Criter web cameras over WFS GeoJSON | 15 snapshots |
+
+Examined and left out: Germany's Autobahn API (webcams withdrawn), Hamburg and NRW (no image
+catalogue or session-bound), Slovenia (encrypted aggregator, NAP needs credentials), Denmark
+(no reachable layer), Flanders (embedding refused), Wallonia (session cookie), Czechia
+(unreachable), Poland GDDKiA (bot protection), Croatia (no coordinates), Slovakia and Portugal
+(no camera layer), Catalonia (http images with redirects), Euskadi (failing image hosts), Anas,
+Trento and South Tyrol (none, http only or third-party licence), Istanbul (503) and the
+Bulgarian, Romanian, Georgian, Maltese and Cypriot portals (unreachable or positions only).

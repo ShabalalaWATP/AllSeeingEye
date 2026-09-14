@@ -4767,3 +4767,14 @@ public YouTube streams were checked through oEmbed before entry, with 15 refusal
 aggregator re-stream left out. Latvia, Iran and mainland China yielded no owner-operated
 public camera beyond a handful of streams; that gap is recorded rather than filled with
 unverified sources.
+
+A worldwide sweep for official keyless cameras on 14 September 2026 added thirty providers
+after each catalogue and a sample image were fetched live. Two research passes covered Europe
+and the rest of the world while the 511 platforms were probed directly: IBI's shared camera
+list endpoint answered on twelve more US and Canadian sites, and the Castle Rock CARS map query
+on four more states, which became a generic adapter. Europe contributed eight operators, among
+them Lithuania's grid-metre positions (converted in code and checked against PROJ) and
+Norway's API, which needs a public system identifier header, sent through a camera-client
+method rather than the shared feed client another session was refactoring. Queensland and
+Puerto Rico completed the set. Streams were accepted only where the host sent open CORS and
+the URL carried no token; SANRAL was left out because its terms forbid automated extraction.

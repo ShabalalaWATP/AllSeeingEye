@@ -85,6 +85,18 @@ statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configur
 90% thresholds remain unchanged.
 
 
+## 14 September: a worldwide official-source sweep
+
+Thirty more official keyless providers joined the registry after live verification: sixteen
+US and Canadian 511 systems (twelve on the IBI platform, four through a generic Castle Rock
+CARS adapter, with New York and Minnesota HLS streams), eight European national or city
+operators (Lithuania, Ireland, Norway with streams, Hungary, Autostrade per l'Italia with MP4
+clips, Luxembourg, Madrid, Lyon), Queensland and Puerto Rico. Together they returned about
+11,700 cameras on 14 September 2026. Streams are offered only from fixed hosts that answered
+with open CORS and unsigned URLs; tokenised Kansas streams and Iowa's port-8888 streams are
+not. The per-region tables in `docs/CAMERA_AMERICAS.md`, `docs/CAMERA_EUROPE.md` and
+`docs/CAMERA_WORLD.md` list every source and every refusal.
+
 ## 14 September: every region on by default
 
 Opening CCTV from the map's camera button now switches public cameras on, and the button stays

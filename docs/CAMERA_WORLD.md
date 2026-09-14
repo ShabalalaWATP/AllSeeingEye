@@ -67,3 +67,18 @@ SOFTWARE.
 
 Each row keeps the owner's channel name in the attribution, an approximate locality position
 and the oEmbed check date. An embeddable stream today is not a promise of playback tomorrow.
+
+## 14 September 2026: Queensland and Puerto Rico
+
+| Provider (id) | Catalogue and capability | Observed |
+| --- | --- | --- |
+| QLDTraffic (`queensland`) | Queensland Department of Transport and Main Roads web camera GeoJSON, CC BY 4.0 on data.qld.gov.au (`camera_world_open.py`) | 136 snapshots on `cameras.qldtraffic.qld.gov.au` |
+| ACT Puerto Rico ITS (`puertorico`) | The public map's read-only JSON POST `GetCctv` with an empty body, through the existing bounded camera POST | 42 snapshots on `its.act.pr.gov`, relative image paths resolved against that host |
+
+Examined and left out: Seoul TOPIS and Rio Grande do Sul DAER (a second request per camera for
+media), SANRAL i-traffic (its terms forbid automated extraction), Victoria, Western Australia,
+South Australia, Northern Territory, Tasmania and the ACT (no public camera feed or
+unreachable), Macau (no coordinates), Taipei and the Taiwan Freeway Bureau (no image URLs or
+unreachable), Malaysia (reCAPTCHA or unreachable), Thailand, the Philippines, Jakarta, Bandung,
+Ho Chi Minh City, Dubai, Saudi Arabia, Izmir, Santiago, Buenos Aires, Sao Paulo and Montevideo
+(no usable catalogue, blocked or unreachable).
