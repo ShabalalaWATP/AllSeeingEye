@@ -3,33 +3,48 @@ import { BasisBadge } from '@/components/ui/BasisBadge';
 import { Button } from '@/components/ui/Button';
 import { Table, Td, Th } from '@/components/ui/Table';
 import { describeError } from '@/lib/api/errors';
+import { STATUS_LABELS, type ControlStatus, type ControlSummary } from '@/lib/api/ukraine';
 import {
-  STATUS_LABELS,
-  fetchUkraineControl,
-  type ControlStatus,
-  type ControlSummary,
-  type UkraineControl,
-} from '@/lib/api/ukraine';
+  FRONTLINE_KIND_LABELS,
+  type UkraineFrontline,
+  type UkraineSpotted,
+} from '@/lib/api/ukraineMap';
 import { formatUtc } from '@/lib/format';
 
 import { STATUS_RGB } from './controlLayers';
-import { useUkraineMap, type Hover } from './useUkraineMap';
+import { FRONTLINE_RGB, SPOTTED_RGB } from './providerLayers';
+import { useUkraineMap, type Hover, type MapLoaders } from './useUkraineMap';
 
 const LEGEND: readonly ControlStatus[] = ['ru', 'contested', 'ua'];
 
-function swatch(status: ControlStatus) {
-  const [r, g, b] = STATUS_RGB[status];
+function rgb([r, g, b]: readonly [number, number, number]) {
   return { backgroundColor: `rgb(${r} ${g} ${b})` };
 }
 
 function Tooltip({ hover }: { hover: Hover }) {
-  const { settlement, x, y } = hover;
+  if (hover.kind === 'loss') {
+    const { loss } = hover;
+    return (
+      <div
+        role="tooltip"
+        className="pointer-events-none absolute z-20 max-w-64 rounded border border-line bg-ground/95 p-2 text-xs shadow-lg"
+        style={{ left: hover.x + 12, top: hover.y + 12 }}
+      >
+        <p className="font-medium text-text">{loss.model}</p>
+        <p className="text-muted">
+          {loss.equipment_type}, {loss.status.toLowerCase()} {loss.on}
+        </p>
+        <p className="text-muted">{loss.place} · photographed loss, WarSpotting</p>
+      </div>
+    );
+  }
+  const { settlement } = hover;
   const [wiki, boosted, deepstate] = settlement.votes;
   return (
     <div
       role="tooltip"
       className="pointer-events-none absolute z-20 max-w-64 rounded border border-line bg-ground/95 p-2 text-xs shadow-lg"
-      style={{ left: x + 12, top: y + 12 }}
+      style={{ left: hover.x + 12, top: hover.y + 12 }}
     >
       <p className="font-medium text-text">{settlement.name}</p>
       <p className="text-muted">
@@ -70,13 +85,41 @@ export function ControlTable({ summary }: { summary: ControlSummary }) {
   );
 }
 
-export function UkraineMap({
-  load = fetchUkraineControl,
+function describeFrontline(frontline: UkraineFrontline): string {
+  if (frontline.status === 'disabled') return `off. ${frontline.reason}`;
+  const name = frontline.attribution ?? frontline.provider ?? 'provider';
+  const assessed = frontline.assessed_at ? `, assessed ${frontline.assessed_at}` : '';
+  return `${name} (${frontline.status}${assessed}). ${frontline.terms ?? ''}`;
+}
+
+/** Which provider layers are drawn, or why none is; never a silent substitution. */
+function ProviderNote({
+  frontline,
+  spotted,
 }: {
-  load?: () => Promise<UkraineControl>;
+  frontline: UkraineFrontline | null;
+  spotted: UkraineSpotted | null;
 }) {
-  const { container, supported, failed, hover, control, refit } = useUkraineMap(load);
+  return (
+    <ul aria-label="Provider layers" className="flex flex-col gap-1 text-xs text-muted">
+      <li>Frontline provider: {frontline ? describeFrontline(frontline) : 'loading'}</li>
+      <li>
+        Spotted losses:{' '}
+        {spotted
+          ? spotted.status === 'disabled'
+            ? `off. ${spotted.reason}`
+            : `${spotted.attribution} (${spotted.status}, ${spotted.losses.length} markers)`
+          : 'loading'}
+      </li>
+    </ul>
+  );
+}
+
+export function UkraineMap({ loaders }: { loaders?: MapLoaders }) {
+  const { container, supported, failed, hover, control, frontline, spotted, refit } =
+    useUkraineMap(loaders);
   const summary = control.data?.summary ?? null;
+  const kinds = [...new Set((frontline.data?.features ?? []).map((feature) => feature.kind))];
   return (
     <section id="map" aria-labelledby="ukraine-map-heading" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -120,7 +163,11 @@ export function UkraineMap({
       <ul aria-label="Map legend" className="flex flex-wrap gap-3 text-xs text-muted">
         {LEGEND.map((status) => (
           <li key={status} className="flex items-center gap-1.5">
-            <span aria-hidden="true" className="size-3 rounded-sm" style={swatch(status)} />
+            <span
+              aria-hidden="true"
+              className="size-3 rounded-sm"
+              style={rgb(STATUS_RGB[status])}
+            />
             {STATUS_LABELS[status]}
           </li>
         ))}
@@ -128,7 +175,24 @@ export function UkraineMap({
           <span aria-hidden="true" className="size-3 rounded-full border border-line" />
           Settlements near the reported line
         </li>
+        {kinds.map((kind) => (
+          <li key={kind} className="flex items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className="size-3 rounded-sm"
+              style={rgb(FRONTLINE_RGB[kind])}
+            />
+            {FRONTLINE_KIND_LABELS[kind]}
+          </li>
+        ))}
+        {spotted.data && spotted.data.losses.length > 0 ? (
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="size-3 rounded-full" style={rgb(SPOTTED_RGB)} />
+            Photographed losses (WarSpotting)
+          </li>
+        ) : null}
       </ul>
+      <ProviderNote frontline={frontline.data} spotted={spotted.data} />
       {summary ? (
         <>
           <p className="text-xs text-muted">{summary.method_note}</p>

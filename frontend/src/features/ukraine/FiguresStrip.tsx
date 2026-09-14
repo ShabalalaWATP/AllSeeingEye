@@ -3,6 +3,8 @@ import { BasisBadge } from '@/components/ui/BasisBadge';
 import { Table, Td, Th } from '@/components/ui/Table';
 import type { ClaimedLosses, ControlSummary, UkraineBoard } from '@/lib/api/ukraine';
 
+import { HarmCard, OryxCards } from './ConfirmedFigures';
+
 const SPARK_DAYS = 30;
 
 function ClaimCard({
@@ -94,6 +96,8 @@ export function FiguresStrip({ board }: { board: UkraineBoard }) {
           />
         ))}
         {board.control ? <ControlCard summary={board.control} /> : null}
+        {board.confirmed ? <OryxCards confirmed={board.confirmed} /> : null}
+        {board.civilian_harm ? <HarmCard harm={board.civilian_harm} /> : null}
       </ul>
       {latest ? (
         <details className="text-sm">

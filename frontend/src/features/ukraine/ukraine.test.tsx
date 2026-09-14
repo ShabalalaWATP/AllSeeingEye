@@ -49,7 +49,10 @@ describe('Ukraine war page', () => {
     expect(screen.getByText('Nothing retained for this group in the window.')).toBeInTheDocument();
     expect(within(groups).getByRole('button', { name: /Ukrainian reporting \(1\)/ })).toBeVisible();
     await user.click(within(groups).getByRole('button', { name: /Ukrainian reporting/ }));
-    expect(screen.getByRole('link', { name: 'Mobilisation rules tightened' })).toBeInTheDocument();
+    const ukrainian = screen.getByRole('list', { name: 'Ukrainian reporting' });
+    expect(
+      within(ukrainian).getByRole('link', { name: 'Mobilisation rules tightened' }),
+    ).toBeInTheDocument();
   });
 
   it('badges claimed figures as claims and links the original post', async () => {
@@ -59,8 +62,8 @@ describe('Ukraine war page', () => {
       { name: 'Headline figures' },
       { timeout: 5000 },
     );
-    const cards = within(figures).getAllByRole('listitem');
-    expect(cards).toHaveLength(7);
+    const cards = [...figures.querySelectorAll(':scope > li')] as HTMLElement[];
+    expect(cards).toHaveLength(10);
     expect(within(cards[1]!).getByText('12,344')).toBeInTheDocument();
     expect(within(cards[1]!).getByText('+2 claimed on 2026-09-13')).toBeInTheDocument();
     expect(within(figures).getAllByText('Claimed')).toHaveLength(6);

@@ -66,6 +66,10 @@ class Settings(BaseSettings):
     )
     aisstream_api_key: SecretStr | None = None
     cloudflare_radar_token: SecretStr | None = None
+    # Ukraine frontline providers stay off until the operator records the terms they rest on.
+    ukraine_deepstate_access: str | None = Field(default=None, pattern=r"^granted$")
+    ukraine_ocha_humanitarian: bool = False
+    ukraine_warspotting: bool = False
     barentswatch_client_id: SecretStr | None = None
     barentswatch_client_secret: SecretStr | None = None
     firms_map_key: SecretStr | None = None

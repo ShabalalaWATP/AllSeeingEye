@@ -5,6 +5,7 @@ from fastapi.responses import Response as RawResponse
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser
 from ase.api.schemas_ukraine import ControlOut, UkraineBoardOut
+from ase.api.schemas_ukraine_frontline import FrontlineOut, SpottedOut
 from ase.api.schemas_ukraine_reference import UkraineReferenceOut
 from ase.api.session_guard import validate_request_session
 from ase.domain.errors import NotFound
@@ -30,6 +31,28 @@ async def ukraine_control(
     payload = ControlOut.build(container.ukraine_control, container.ukraine_outlines)
     await validate_request_session(container, claims)
     response.headers["Cache-Control"] = "private, max-age=3600"
+    return payload
+
+
+@router.get("/frontline")
+async def ukraine_frontline(
+    user: CurrentUser, claims: ClaimsDep, response: Response, container: ContainerDep
+) -> FrontlineOut:
+    """Provider geometry when a flag enables one; otherwise the disabled state and why."""
+    payload = FrontlineOut.from_state(await container.ukraine_providers.snapshot())
+    await validate_request_session(container, claims)
+    response.headers["Cache-Control"] = "private, max-age=900"
+    return payload
+
+
+@router.get("/spotted")
+async def ukraine_spotted(
+    user: CurrentUser, claims: ClaimsDep, response: Response, container: ContainerDep
+) -> SpottedOut:
+    """Geolocated visually confirmed losses when the operator has enabled the layer."""
+    payload = SpottedOut.from_state(await container.ukraine_providers.spotted())
+    await validate_request_session(container, claims)
+    response.headers["Cache-Control"] = "private, max-age=900"
     return payload
 
 

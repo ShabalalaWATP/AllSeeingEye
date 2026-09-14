@@ -12,6 +12,7 @@ from ase.application.ports import Clock
 from ase.application.ports.feeds import EventQuery, EventStore
 from ase.application.ports.trackers import ConflictDirectory
 from ase.domain.events import Category, Event
+from ase.domain.ukraine.confirmed import CivilianHarm, ConfirmedLosses
 from ase.domain.ukraine.control import ControlSnapshot
 from ase.domain.ukraine.lenses import Lens, lenses_for
 from ase.domain.ukraine.losses import MAX_CLAIMS, ClaimedLosses, claim_from_attributes, war_day
@@ -45,6 +46,15 @@ class Freshness:
 
 
 @dataclass(frozen=True, slots=True)
+class LensSeries:
+    """Items per day for one lens, split by reporting group, over the window."""
+
+    lens: Lens
+    days: tuple[date, ...]
+    groups: Mapping[UpdateGroup, tuple[int, ...]]
+
+
+@dataclass(frozen=True, slots=True)
 class UkraineBoard:
     generated_at: datetime
     day_number: int
@@ -56,6 +66,9 @@ class UkraineBoard:
     claims: tuple[ClaimedLosses, ...]
     control: ControlSnapshot | None
     freshness: Freshness
+    confirmed: ConfirmedLosses | None
+    civilian_harm: CivilianHarm | None
+    lens_series: tuple[LensSeries, ...]
 
 
 class UkraineBoardService:
@@ -65,8 +78,11 @@ class UkraineBoardService:
         clock: Clock,
         conflicts: ConflictDirectory,
         control: ControlSnapshot | None,
+        confirmed: ConfirmedLosses | None = None,
+        civilian_harm: CivilianHarm | None = None,
     ) -> None:
         self._store, self._clock, self._conflicts, self._control = store, clock, conflicts, control
+        self._confirmed, self._civilian_harm = confirmed, civilian_harm
 
     @property
     def control(self) -> ControlSnapshot | None:
@@ -99,6 +115,9 @@ class UkraineBoardService:
             lens_counts=Counter(lens for entry in updates for lens in entry.lenses),
             claims=claims,
             control=self._control,
+            confirmed=self._confirmed,
+            civilian_harm=self._civilian_harm,
+            lens_series=lens_series(updates, now),
             freshness=Freshness(
                 control_assessed=self._control.assessment_date if self._control else None,
                 assessment_published=max(
@@ -148,3 +167,24 @@ class UkraineBoardService:
 
 def _recency(event: Event) -> datetime:
     return event.published_at or event.observed_at
+
+
+def lens_series(updates: list[UpdateEntry], now: datetime) -> tuple[LensSeries, ...]:
+    """Counts per day and group for each lens; a text match per item, never a judgement."""
+    days = tuple(now.date() - timedelta(days=offset) for offset in range(WINDOW.days - 1, -1, -1))
+    index = {day: position for position, day in enumerate(days)}
+    series: list[LensSeries] = []
+    for lens in Lens:
+        counts = {group: [0] * len(days) for group in UpdateGroup}
+        for entry in updates:
+            position = index.get(_recency(entry.event).date())
+            if lens in entry.lenses and position is not None:
+                counts[entry.group][position] += 1
+        series.append(
+            LensSeries(
+                lens=lens,
+                days=days,
+                groups={group: tuple(values) for group, values in counts.items()},
+            )
+        )
+    return tuple(series)

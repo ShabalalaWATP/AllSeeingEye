@@ -2,10 +2,10 @@
 
 A left-rail workspace at `/conflicts/ukraine` that shows reported territorial control, the
 belligerents' own figures, published assessments and retained reporting on Russia's war in
-Ukraine. Phases 1 and 2 of `docs/UKRAINE_WAR_TRACKER_PLAN.md` are delivered: the map,
-headline figures, grouped updates with lenses, the timeline, force organisation, the
-equipment catalogue and the sources footer. Loss and casualty importers, lenses with
-charts and the flagged frontline providers follow in later phases.
+Ukraine. Phases 1 to 4 of `docs/UKRAINE_WAR_TRACKER_PLAN.md` are delivered: the map with
+flagged provider layers, headline figures including visually confirmed losses and documented
+civilian harm, grouped updates, the timeline, force organisation, the equipment catalogue,
+the three news lenses with charts and the sources footer.
 
 ## What the page shows
 
@@ -22,8 +22,11 @@ charts and the flagged frontline providers follow in later phases.
   casualties, strikes, diplomacy) are bounded vocabulary matches, never judgements.
 - **Headline figures.** The General Staff of Ukraine's cumulative claims of Russian losses
   for six categories with the day's stated increase and a 30-day sparkline of daily
-  increases, each badged `Claimed`, plus the reported count of Russian-held places badged
-  `Reported`. A table lists every claimed category.
+  increases, each badged `Claimed`; the reported count of Russian-held places badged
+  `Reported`; Oryx totals per side with the destroyed, damaged, abandoned and captured
+  split and a month of daily totals, badged `Visually confirmed`; and the latest month of
+  civilians killed and injured verified by the UN monitoring mission, badged `Documented`.
+  A table lists every claimed category.
 - **Timeline.** A phase ribbon from 2014 to the current year over dated event cards with a
   theme filter; each card carries plain English, a source link and, where Commons holds a
   licensed image of the subject, a captioned image.
@@ -36,6 +39,16 @@ charts and the flagged frontline providers follow in later phases.
   infantry fighting vehicles and carriers; aviation; naval), each with sub-headings and a
   Russia and a Ukraine column of cards: image, role, description, origin, reported numbers
   naming whose, links and an as-of date. A compare toggle renders the speciality as a table.
+- **Lenses.** Equipment, workforce and casualty news: for each lens a stacked column chart
+  of retained items per day by reporting group over the window and the matching items. The
+  casualties lens also carries the HRMMU monthly table and the curated casualty references
+  (Mediazona and BBC named dead, UALosses, the presidential statement, Russian ministry
+  claims not collected, the Kiel support tracker), each with its basis and date.
+- **Provider layers.** With a flag set, the map draws DeepStateMap's occupied, liberated,
+  unknown and pre-2022 areas or OCHA's weekly line in provider hues distinct from the VIINA
+  vote, and WarSpotting's geolocated photographed losses as markers with a hover tooltip.
+  A note under the legend names the provider, its status (ready, stale, unavailable) and its
+  terms, or says why the layer is off. The page never substitutes one provider for another.
 - **Sources.** Attribution, licence and the doctrine in plain words.
 
 ## Data and cadence
@@ -49,6 +62,11 @@ charts and the flagged frontline providers follow in later phases.
 | Kyiv Independent, Bellingcat | Public RSS | New seeds in the outlet list, under the normal source controls. |
 | Reference notes | Hand-written seeds `ukraine_equipment_seeds.json`, `ukraine_forces_seeds.json`, `ukraine_timeline_seeds.json` | `uv run ase import-ukraine-reference` resolves each seed through the Wikidata entity client (explicit `wikidata_id` wins, otherwise a search whose label shares a word), adds the article link, and caches the Commons image named by P18 as a 480 px JPEG under 60 KB with its licence and credit, into `resources/ukraine_reference.json` and `resources/ukraine_images/`. Around 110 images, 3.7 MB. |
 
+| Oryx losses | `leedrake5/Russia-Ukraine` daily CSV mirror (MIT) of Oryx | `uv run ase import-ukraine-losses`, daily. Fetches the newest day file within seven days and a month of totals, keeps plain equipment types mapped to the page's specialities, writes `resources/ukraine_losses.json`. |
+| Civilian harm | HRMMU monthly pages at ukraine.ohchr.org plus `ukraine_casualty_references_seeds.json` | `uv run ase import-ukraine-casualties`, monthly. Reads the listing and each monthly page for the fixed sentence with killed and injured; months without it keep their link and no figures. Writes `resources/ukraine_casualties.json`. |
+| Frontline providers | DeepStateMap `api/history/last` or the OCHA `UKR_Front_Line` layer | Runtime, behind `ASE_UKRAINE_DEEPSTATE_ACCESS=granted` or `ASE_UKRAINE_OCHA_HUMANITARIAN=true`: one bounded request every six hours (DeepState) or seven days (OCHA), the last good snapshot kept and served as stale on failure. Off by default. |
+| Spotted losses | WarSpotting monthly API | Runtime, behind `ASE_UKRAINE_WARSPOTTING=true`: the current and previous month every six hours, at most 3,000 markers. Off by default. |
+
 Loaders are cached per process, so restart the API after re-running an importer. The page
 polls its board every five minutes while visible.
 
@@ -60,6 +78,9 @@ polls its board every five minutes while visible.
 - `GET /api/conflicts/ukraine/control` returns the settlements, areas and outlines.
   `private, max-age=3600`; the payload changes only when the operator re-imports.
 
+- `GET /api/conflicts/ukraine/frontline` and `/spotted` return a provider state (disabled,
+  ready, stale, unavailable) with its reason, terms and, when ready, the geometry or markers.
+  `private, max-age=900`.
 - `GET /api/conflicts/ukraine/reference` returns the specialities, themes, equipment,
   forces, phases, events and the image manifest; 404 until the operator has imported.
 - `GET /api/conflicts/ukraine/images/{id}.jpg` serves one cached image from the package
@@ -79,7 +100,10 @@ feeds keep their caution. DeepStateMap, ISW control-of-terrain geodata and the U
 frontline layer are not drawn: their terms require the rights holder's permission or a
 humanitarian purpose. `docs/FRONTLINES_AND_UNREST.md` and the map's Conflict panel carry
 the access routes, and the plan's section 9 holds a request text the operator may send to
-DeepState.
+DeepState. Setting a provider flag is the operator's declaration that the terms are met; the
+code only reads the flag. Oryx counts are photographed losses and undercount by design;
+HRMMU figures are verified civilian casualties and the mission says the true numbers are
+higher, above all in occupied territory.
 
 ## Reference content and its limits
 
@@ -100,6 +124,9 @@ round-trip through event attributes, the lens vocabulary, the update grouping an
 relevance rule, both connectors on saved fixtures, the board service and the two
 endpoints. `tests/test_ukraine_reference.py` covers the seed files, the packaged catalogue and images,
 seed resolution on fakes, the bounds and validation, and the two endpoints.
+`tests/test_ukraine_figures.py` covers the Oryx and HRMMU importers on mock transports,
+the packaged figures, the bounds, the lens series, the three provider parsers, the flagged
+providers' caching and stale states, and the board and provider endpoints.
 `frontend/src/features/ukraine/ukraine.test.tsx` covers the page without
 WebGL, the tabs and lenses, the claim badges and links, a failed board, the rail entry
 and the layer colours; `reference.test.tsx` covers the timeline filters, the force

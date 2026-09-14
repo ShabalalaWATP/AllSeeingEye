@@ -2901,6 +2901,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conflicts/ukraine/frontline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Frontline
+         * @description Provider geometry when a flag enables one; otherwise the disabled state and why.
+         */
+        get: operations["ukraine_frontline_api_conflicts_ukraine_frontline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conflicts/ukraine/spotted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Spotted
+         * @description Geolocated visually confirmed losses when the operator has enabled the layer.
+         */
+        get: operations["ukraine_spotted_api_conflicts_ukraine_spotted_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/conflicts/ukraine/reference": {
         parameters: {
             query?: never;
@@ -3869,6 +3909,24 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** CasualtyReferenceOut */
+        CasualtyReferenceOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Text */
+            text: string;
+            /** Basis */
+            basis: string;
+            /** Url */
+            url: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+        };
         /**
          * Category
          * @enum {string}
@@ -4001,6 +4059,40 @@ export interface components {
          * @enum {string}
          */
         CitationStatus: "absent" | "context_insufficient" | "excerpt_present" | "review_required";
+        /** CivilianHarmMonthOut */
+        CivilianHarmMonthOut: {
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+            /** Published On */
+            published_on: string | null;
+            /** Killed */
+            killed: number | null;
+            /** Injured */
+            injured: number | null;
+        };
+        /** CivilianHarmOut */
+        CivilianHarmOut: {
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Source Url */
+            source_url: string;
+            /** Attribution */
+            attribution: string;
+            /** Months */
+            months: components["schemas"]["CivilianHarmMonthOut"][];
+            /** References */
+            references: components["schemas"]["CasualtyReferenceOut"][];
+        };
         /** ClaimCitation */
         ClaimCitation: {
             /** Label */
@@ -4490,6 +4582,29 @@ export interface components {
             changed_fields: string[];
             /** Explanations */
             explanations: string[];
+        };
+        /** ConfirmedLossesOut */
+        ConfirmedLossesOut: {
+            /**
+             * Recorded On
+             * Format: date
+             */
+            recorded_on: string;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Attribution */
+            attribution: string;
+            /** Licence */
+            licence: string;
+            /** Source Url */
+            source_url: string;
+            /** Rows */
+            rows: components["schemas"]["LossRowOut"][];
+            /** Days */
+            days: components["schemas"]["LossDayOut"][];
         };
         /** ConflictBoardOut */
         ConflictBoardOut: {
@@ -5960,6 +6075,44 @@ export interface components {
             /** Latest Update */
             latest_update: string | null;
         };
+        /** FrontlineFeatureOut */
+        FrontlineFeatureOut: {
+            kind: components["schemas"]["FrontlineKind"];
+            /** Label */
+            label: string;
+            /** Polygons */
+            polygons: number[][][][];
+            /** Lines */
+            lines: number[][][];
+        };
+        /**
+         * FrontlineKind
+         * @enum {string}
+         */
+        FrontlineKind: "occupied" | "liberated" | "unknown" | "historical" | "line";
+        /** FrontlineOut */
+        FrontlineOut: {
+            status: components["schemas"]["FrontlineStatus"];
+            /** Reason */
+            reason: string;
+            /** Provider */
+            provider: string | null;
+            /** Attribution */
+            attribution: string | null;
+            /** Terms */
+            terms: string | null;
+            /** Assessed At */
+            assessed_at: string | null;
+            /** Downloaded At */
+            downloaded_at: string | null;
+            /** Features */
+            features: components["schemas"]["FrontlineFeatureOut"][];
+        };
+        /**
+         * FrontlineStatus
+         * @enum {string}
+         */
+        FrontlineStatus: "disabled" | "ready" | "stale" | "unavailable";
         /** FrozenExcerpt */
         FrozenExcerpt: {
             /**
@@ -6767,6 +6920,16 @@ export interface components {
          * @enum {string}
          */
         Lens: "equipment" | "workforce" | "casualties" | "strikes" | "diplomacy";
+        /** LensSeriesOut */
+        LensSeriesOut: {
+            lens: components["schemas"]["Lens"];
+            /** Days */
+            days: string[];
+            /** Groups */
+            groups: {
+                [key: string]: number[];
+            };
+        };
         /** LibraryItemOut */
         LibraryItemOut: {
             report: components["schemas"]["ReportSummaryOut"];
@@ -7027,6 +7190,35 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** LossDayOut */
+        LossDayOut: {
+            /**
+             * On
+             * Format: date
+             */
+            on: string;
+            side: components["schemas"]["Side"];
+            /** Total */
+            total: number;
+        };
+        /** LossRowOut */
+        LossRowOut: {
+            side: components["schemas"]["Side"];
+            /** Equipment Type */
+            equipment_type: string;
+            /** Group */
+            group: string;
+            /** Destroyed */
+            destroyed: number;
+            /** Damaged */
+            damaged: number;
+            /** Abandoned */
+            abandoned: number;
+            /** Captured */
+            captured: number;
+            /** Total */
+            total: number;
         };
         /** MapCameraFields */
         MapCameraFields: {
@@ -10592,6 +10784,42 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** SpottedLossOut */
+        SpottedLossOut: {
+            /** Id */
+            id: number;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Model */
+            model: string;
+            /** Equipment Type */
+            equipment_type: string;
+            /** Status */
+            status: string;
+            /** Lost By */
+            lost_by: string;
+            /**
+             * On
+             * Format: date
+             */
+            on: string;
+            /** Place */
+            place: string;
+        };
+        /** SpottedOut */
+        SpottedOut: {
+            status: components["schemas"]["FrontlineStatus"];
+            /** Reason */
+            reason: string;
+            /** Attribution */
+            attribution: string;
+            /** Downloaded At */
+            downloaded_at: string | null;
+            /** Losses */
+            losses: components["schemas"]["SpottedLossOut"][];
+        };
         /** StoreStatsOut */
         StoreStatsOut: {
             /** Total */
@@ -10894,6 +11122,10 @@ export interface components {
             headline_categories: string[];
             control: components["schemas"]["ControlSummaryOut"] | null;
             freshness: components["schemas"]["FreshnessOut"];
+            confirmed: components["schemas"]["ConfirmedLossesOut"] | null;
+            civilian_harm: components["schemas"]["CivilianHarmOut"] | null;
+            /** Lens Series */
+            lens_series: components["schemas"]["LensSeriesOut"][];
         };
         /** UkraineReferenceOut */
         UkraineReferenceOut: {
@@ -17194,6 +17426,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ControlOut"];
+                };
+            };
+        };
+    };
+    ukraine_frontline_api_conflicts_ukraine_frontline_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FrontlineOut"];
+                };
+            };
+        };
+    };
+    ukraine_spotted_api_conflicts_ukraine_spotted_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpottedOut"];
                 };
             };
         };

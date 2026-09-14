@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ukraineControl } from '@/test/fixtures.ukraine';
+import { ukraineFrontlineReady, ukraineSpottedReady } from '@/test/fixtures.ukraineFigures';
 import { applySession } from '@/test/render';
 
 const engine = {
@@ -39,13 +40,21 @@ describe('UkraineMap with a renderer', () => {
   it('mounts a mercator map, draws the snapshot, shows hover details and refits', async () => {
     const user = userEvent.setup();
     const load = () => Promise.resolve(ukraineControl);
-    const { unmount } = render(<UkraineMap load={load} />);
+    const { unmount } = render(
+      <UkraineMap
+        loaders={{
+          control: load,
+          frontline: () => Promise.resolve(ukraineFrontlineReady),
+          spotted: () => Promise.resolve(ukraineSpottedReady),
+        }}
+      />,
+    );
     expect(screen.getByRole('region', { name: 'Reported control map' })).toBeInTheDocument();
     expect(engine.setProjection).toHaveBeenCalledWith('mercator');
     expect(engine.setBaseLayer).toHaveBeenCalledWith('dark');
     expect(engine.mount).toHaveBeenCalledTimes(1);
     expect(engine.fitBounds).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(engine.setLayers).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(engine.setLayers).toHaveBeenCalled());
     const layers = engine.setLayers.mock.calls[0]![0] as SettlementLayer[];
     const settlements = layers.find((layer) => layer.id === 'ukraine-settlements')!;
     act(() => settlements.props.onHover({ object: ukraineControl.settlements[0], x: 10, y: 20 }));
@@ -58,6 +67,14 @@ describe('UkraineMap with a renderer', () => {
     expect(await screen.findByRole('tooltip')).not.toHaveTextContent('since');
     await user.click(screen.getByRole('button', { name: 'Fit to Ukraine' }));
     expect(engine.fitBounds).toHaveBeenCalledTimes(2);
+    const layerIds = (engine.setLayers.mock.calls.at(-1)![0] as { id: string }[]).map((l) => l.id);
+    expect(layerIds).toContain('ukraine-frontline-areas');
+    expect(layerIds).toContain('ukraine-spotted-losses');
+    const spottedLayer = (engine.setLayers.mock.calls.at(-1)![0] as SettlementLayer[]).find(
+      (layer) => layer.id === 'ukraine-spotted-losses',
+    )!;
+    act(() => spottedLayer.props.onHover({ object: ukraineSpottedReady.losses[0], x: 5, y: 6 }));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('photographed loss, WarSpotting');
     act(() => engine.handlers.error?.({}));
     expect(await screen.findByText(/renderer reported an error/)).toBeInTheDocument();
     unmount();

@@ -21,6 +21,9 @@ export type TimelinePhase = components['schemas']['TimelinePhaseOut'];
 export type TimelineEvent = components['schemas']['TimelineEventOut'];
 export type ReferenceImage = components['schemas']['ReferenceImageOut'];
 export type Side = components['schemas']['Side'];
+export type ConfirmedLosses = components['schemas']['ConfirmedLossesOut'];
+export type CivilianHarm = components['schemas']['CivilianHarmOut'];
+export type LensSeries = components['schemas']['LensSeriesOut'];
 
 const statusSchema = z.enum(['ua', 'ru', 'contested', 'unknown']);
 const groupSchema = z.enum(['assessments', 'ukrainian', 'russian', 'international']);
@@ -73,6 +76,63 @@ const summarySchema: z.ZodType<ControlSummary> = z.object({
     .max(300),
 });
 
+const sideEnum = z.enum(['ru', 'ua']);
+const lossRowSchema = z.object({
+  side: sideEnum,
+  equipment_type: z.string().max(80),
+  group: z.string().max(40),
+  destroyed: z.number().int().nonnegative(),
+  damaged: z.number().int().nonnegative(),
+  abandoned: z.number().int().nonnegative(),
+  captured: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+});
+const confirmedSchema = z.object({
+  recorded_on: z.string(),
+  retrieved_at: z.string(),
+  attribution: z.string().max(300),
+  licence: z.string().max(120),
+  source_url: z.string().max(300),
+  rows: z.array(lossRowSchema).max(120),
+  days: z
+    .array(z.object({ on: z.string(), side: sideEnum, total: z.number().int().nonnegative() }))
+    .max(62),
+});
+const civilianHarmSchema = z.object({
+  retrieved_at: z.string(),
+  source_url: z.string().max(300),
+  attribution: z.string().max(300),
+  months: z
+    .array(
+      z.object({
+        month: z.string(),
+        title: z.string().max(160),
+        url: z.string().max(600),
+        published_on: z.string().nullable(),
+        killed: z.number().int().nonnegative().nullable(),
+        injured: z.number().int().nonnegative().nullable(),
+      }),
+    )
+    .max(36),
+  references: z
+    .array(
+      z.object({
+        id: z.string().max(60),
+        label: z.string().max(160),
+        text: z.string().max(600),
+        basis: z.string().max(20),
+        url: z.string().max(600),
+        as_of: z.string(),
+      }),
+    )
+    .max(12),
+});
+const lensSeriesSchema = z.object({
+  lens: lensSchema,
+  days: z.array(z.string()).max(31),
+  groups: z.record(z.string().max(20), z.array(z.number().int().nonnegative()).max(31)),
+});
+
 export const ukraineBoardSchema: z.ZodType<UkraineBoard> = z.object({
   generated_at: z.string(),
   day_number: z.number().int().positive(),
@@ -93,6 +153,9 @@ export const ukraineBoardSchema: z.ZodType<UkraineBoard> = z.object({
     claim_reported: z.string().nullable(),
     latest_update: z.string().nullable(),
   }),
+  confirmed: confirmedSchema.nullable(),
+  civilian_harm: civilianHarmSchema.nullable(),
+  lens_series: z.array(lensSeriesSchema).max(5),
 });
 
 export const ukraineControlSchema: z.ZodType<UkraineControl> = z.object({

@@ -8,6 +8,7 @@ from typing import Literal, Self
 from pydantic import BaseModel, Field
 
 from ase.api.schemas_events import EventOut
+from ase.api.schemas_ukraine_losses import CivilianHarmOut, ConfirmedLossesOut, LensSeriesOut
 from ase.application.ukraine import UkraineBoard, UpdateEntry
 from ase.domain.ukraine.control import ControlSnapshot, ControlStatus, NamedOutline
 from ase.domain.ukraine.lenses import Lens
@@ -139,6 +140,9 @@ class UkraineBoardOut(BaseModel):
     headline_categories: list[str]
     control: ControlSummaryOut | None
     freshness: FreshnessOut
+    confirmed: ConfirmedLossesOut | None
+    civilian_harm: CivilianHarmOut | None
+    lens_series: list[LensSeriesOut]
 
     @classmethod
     def from_board(cls, board: UkraineBoard) -> Self:
@@ -155,6 +159,13 @@ class UkraineBoardOut(BaseModel):
             categories=dict(LOSS_CATEGORIES),
             headline_categories=list(HEADLINE_CATEGORIES),
             control=ControlSummaryOut.from_snapshot(board.control) if board.control else None,
+            confirmed=(
+                ConfirmedLossesOut.from_snapshot(board.confirmed) if board.confirmed else None
+            ),
+            civilian_harm=(
+                CivilianHarmOut.from_snapshot(board.civilian_harm) if board.civilian_harm else None
+            ),
+            lens_series=[LensSeriesOut.from_series(series) for series in board.lens_series],
             freshness=FreshnessOut(
                 control_assessed=freshness.control_assessed,
                 assessment_published=freshness.assessment_published,

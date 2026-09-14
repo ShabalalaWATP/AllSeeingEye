@@ -6,7 +6,9 @@ from typing import Annotated
 import typer
 
 from ase.adapters.geo.bounded_download import DEFAULT_CONTACT
+from ase.adapters.geo.ukraine_casualties_import import import_ukraine_casualties
 from ase.adapters.geo.ukraine_control_import import import_ukraine_control
+from ase.adapters.geo.ukraine_losses_import import import_ukraine_losses
 from ase.adapters.geo.ukraine_oblasts_import import import_ukraine_oblasts
 from ase.adapters.geo.ukraine_reference_import import import_ukraine_reference
 
@@ -56,3 +58,31 @@ def import_reference(
         raise typer.Exit(1) from exc
     typer.echo(f"Wrote {count} reference entries to {destination}.")
     typer.echo("Review image licences and credits before committing the catalogue.")
+
+
+def import_losses(
+    destination: Annotated[Path, typer.Option(help="Confirmed losses JSON to write.")] = RESOURCES
+    / "ukraine_losses.json",
+    contact: Contact = DEFAULT_CONTACT,
+) -> None:
+    """Fetch the newest Oryx daily file and a month of totals from the mirror."""
+    try:
+        count = import_ukraine_losses(str(destination), contact=contact)
+    except Exception as exc:
+        typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
+        raise typer.Exit(1) from exc
+    typer.echo(f"Wrote {count} confirmed loss rows to {destination}.")
+
+
+def import_casualties(
+    destination: Annotated[Path, typer.Option(help="Civilian harm JSON to write.")] = RESOURCES
+    / "ukraine_casualties.json",
+    contact: Contact = DEFAULT_CONTACT,
+) -> None:
+    """Read the HRMMU monthly civilian harm pages and the curated casualty references."""
+    try:
+        count = import_ukraine_casualties(str(destination), contact=contact)
+    except Exception as exc:
+        typer.echo(f"Import failed: {type(exc).__name__}. Check connectivity and retry.")
+        raise typer.Exit(1) from exc
+    typer.echo(f"Wrote {count} civilian harm months to {destination}.")

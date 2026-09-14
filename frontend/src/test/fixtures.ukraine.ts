@@ -1,6 +1,7 @@
 import type { UkraineBoard, UkraineControl } from '@/lib/api/ukraine';
 
 import { liveEvent } from './fixtures.events';
+import { civilianHarm, confirmedLosses, lensSeries } from './fixtures.ukraineFigures';
 
 const totals = {
   personnel_units: 1506900,
@@ -138,6 +139,9 @@ export const ukraineBoard: UkraineBoard = {
     claim_reported: '2026-09-13',
     latest_update: '2026-09-13T20:00:00Z',
   },
+  confirmed: confirmedLosses,
+  civilian_harm: civilianHarm,
+  lens_series: lensSeries,
 };
 
 const square = [

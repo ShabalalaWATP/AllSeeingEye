@@ -9700,6 +9700,60 @@
         ]
       }
     },
+    "/api/conflicts/ukraine/frontline": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Frontline",
+        "description": "Provider geometry when a flag enables one; otherwise the disabled state and why.",
+        "operationId": "ukraine_frontline_api_conflicts_ukraine_frontline_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontlineOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/conflicts/ukraine/spotted": {
+      "get": {
+        "tags": [
+          "trackers"
+        ],
+        "summary": "Ukraine Spotted",
+        "description": "Geolocated visually confirmed losses when the operator has enabled the layer.",
+        "operationId": "ukraine_spotted_api_conflicts_ukraine_spotted_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpottedOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/conflicts/ukraine/reference": {
       "get": {
         "tags": [
@@ -12500,6 +12554,45 @@
         ],
         "title": "CapturedIdentityValueOut"
       },
+      "CasualtyReferenceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "text",
+          "basis",
+          "url",
+          "as_of"
+        ],
+        "title": "CasualtyReferenceOut"
+      },
       "Category": {
         "type": "string",
         "enum": [
@@ -12941,6 +13034,107 @@
           "review_required"
         ],
         "title": "CitationStatus"
+      },
+      "CivilianHarmMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "format": "date",
+            "title": "Month"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "published_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published On"
+          },
+          "killed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Killed"
+          },
+          "injured": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Injured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "title",
+          "url",
+          "published_on",
+          "killed",
+          "injured"
+        ],
+        "title": "CivilianHarmMonthOut"
+      },
+      "CivilianHarmOut": {
+        "properties": {
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/CivilianHarmMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/CasualtyReferenceOut"
+            },
+            "type": "array",
+            "title": "References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "retrieved_at",
+          "source_url",
+          "attribution",
+          "months",
+          "references"
+        ],
+        "title": "CivilianHarmOut"
       },
       "ClaimCitation": {
         "properties": {
@@ -14251,6 +14445,57 @@
           "explanations"
         ],
         "title": "ConfidenceChange"
+      },
+      "ConfirmedLossesOut": {
+        "properties": {
+          "recorded_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Recorded On"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "licence": {
+            "type": "string",
+            "title": "Licence"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LossRowOut"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/LossDayOut"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recorded_on",
+          "retrieved_at",
+          "attribution",
+          "licence",
+          "source_url",
+          "rows",
+          "days"
+        ],
+        "title": "ConfirmedLossesOut"
       },
       "ConflictBoardOut": {
         "properties": {
@@ -18549,6 +18794,161 @@
         ],
         "title": "FreshnessOut"
       },
+      "FrontlineFeatureOut": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/FrontlineKind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "polygons": {
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Polygons"
+          },
+          "lines": {
+            "items": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "polygons",
+          "lines"
+        ],
+        "title": "FrontlineFeatureOut"
+      },
+      "FrontlineKind": {
+        "type": "string",
+        "enum": [
+          "occupied",
+          "liberated",
+          "unknown",
+          "historical",
+          "line"
+        ],
+        "title": "FrontlineKind"
+      },
+      "FrontlineOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FrontlineStatus"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          },
+          "assessed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessed At"
+          },
+          "downloaded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downloaded At"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/FrontlineFeatureOut"
+            },
+            "type": "array",
+            "title": "Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "reason",
+          "provider",
+          "attribution",
+          "terms",
+          "assessed_at",
+          "downloaded_at",
+          "features"
+        ],
+        "title": "FrontlineOut"
+      },
+      "FrontlineStatus": {
+        "type": "string",
+        "enum": [
+          "disabled",
+          "ready",
+          "stale",
+          "unavailable"
+        ],
+        "title": "FrontlineStatus"
+      },
       "FrozenExcerpt": {
         "properties": {
           "field": {
@@ -20789,6 +21189,38 @@
         ],
         "title": "Lens"
       },
+      "LensSeriesOut": {
+        "properties": {
+          "lens": {
+            "$ref": "#/components/schemas/Lens"
+          },
+          "days": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "groups": {
+            "additionalProperties": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lens",
+          "days",
+          "groups"
+        ],
+        "title": "LensSeriesOut"
+      },
       "LibraryItemOut": {
         "properties": {
           "report": {
@@ -21558,6 +21990,82 @@
           "password"
         ],
         "title": "LoginIn"
+      },
+      "LossDayOut": {
+        "properties": {
+          "on": {
+            "type": "string",
+            "format": "date",
+            "title": "On"
+          },
+          "side": {
+            "$ref": "#/components/schemas/Side"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "on",
+          "side",
+          "total"
+        ],
+        "title": "LossDayOut"
+      },
+      "LossRowOut": {
+        "properties": {
+          "side": {
+            "$ref": "#/components/schemas/Side"
+          },
+          "equipment_type": {
+            "type": "string",
+            "title": "Equipment Type"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "destroyed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Destroyed"
+          },
+          "damaged": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Damaged"
+          },
+          "abandoned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Abandoned"
+          },
+          "captured": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Captured"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "side",
+          "equipment_type",
+          "group",
+          "destroyed",
+          "damaged",
+          "abandoned",
+          "captured",
+          "total"
+        ],
+        "title": "LossRowOut"
       },
       "MapCameraFields": {
         "properties": {
@@ -31902,6 +32410,107 @@
         ],
         "title": "SpecialityOut"
       },
+      "SpottedLossOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "equipment_type": {
+            "type": "string",
+            "title": "Equipment Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "lost_by": {
+            "type": "string",
+            "title": "Lost By"
+          },
+          "on": {
+            "type": "string",
+            "format": "date",
+            "title": "On"
+          },
+          "place": {
+            "type": "string",
+            "title": "Place"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lat",
+          "lon",
+          "model",
+          "equipment_type",
+          "status",
+          "lost_by",
+          "on",
+          "place"
+        ],
+        "title": "SpottedLossOut"
+      },
+      "SpottedOut": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/FrontlineStatus"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "attribution": {
+            "type": "string",
+            "title": "Attribution"
+          },
+          "downloaded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downloaded At"
+          },
+          "losses": {
+            "items": {
+              "$ref": "#/components/schemas/SpottedLossOut"
+            },
+            "type": "array",
+            "title": "Losses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "reason",
+          "attribution",
+          "downloaded_at",
+          "losses"
+        ],
+        "title": "SpottedOut"
+      },
       "StoreStatsOut": {
         "properties": {
           "total": {
@@ -32660,6 +33269,33 @@
           },
           "freshness": {
             "$ref": "#/components/schemas/FreshnessOut"
+          },
+          "confirmed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConfirmedLossesOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "civilian_harm": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CivilianHarmOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lens_series": {
+            "items": {
+              "$ref": "#/components/schemas/LensSeriesOut"
+            },
+            "type": "array",
+            "title": "Lens Series"
           }
         },
         "type": "object",
@@ -32675,7 +33311,10 @@
           "categories",
           "headline_categories",
           "control",
-          "freshness"
+          "freshness",
+          "confirmed",
+          "civilian_harm",
+          "lens_series"
         ],
         "title": "UkraineBoardOut"
       },

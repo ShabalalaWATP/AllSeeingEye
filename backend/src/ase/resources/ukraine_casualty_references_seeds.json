@@ -1,0 +1,45 @@
+{
+  "note": "Curated casualty and support references shown beside the documented and claimed figures. Each names its basis and date and links the publisher; none is merged with another.",
+  "items": [
+    {
+      "id": "mediazona-bbc-russian-dead",
+      "label": "Mediazona and BBC News Russian: named Russian military dead",
+      "text": "A running count of Russian soldiers whose deaths are confirmed one by one from obituaries, regional notices, cemetery records and relatives' posts, updated roughly fortnightly. It is a floor, not an estimate of total deaths; the publishers say the true figure is far higher.",
+      "basis": "documented",
+      "url": "https://en.zona.media/article/2022/05/20/casualties_eng",
+      "as_of": "2026-06-30"
+    },
+    {
+      "id": "ualosses-ukrainian-dead",
+      "label": "UALosses: named Ukrainian military dead",
+      "text": "A volunteer database of Ukrainian service members confirmed killed, compiled from obituaries, memorial pages and official notices, with a public search. A floor rather than a total, and not an official figure.",
+      "basis": "documented",
+      "url": "https://ualosses.org/",
+      "as_of": "2026-06-30"
+    },
+    {
+      "id": "zelenskyy-statement-2026",
+      "label": "President Zelenskyy's stated Ukrainian military deaths",
+      "text": "In February 2026 the President put Ukrainian battlefield deaths at about 55,000, with a large number also listed as missing in action. Independent trackers consider the figure low; it is the government's own statement.",
+      "basis": "claimed",
+      "url": "https://en.wikipedia.org/wiki/Casualties_of_the_Russo-Ukrainian_War",
+      "as_of": "2026-02-24"
+    },
+    {
+      "id": "russian-mod-claims",
+      "label": "Russian Ministry of Defence claims",
+      "text": "Russia's ministry publishes its own claims of Ukrainian losses in daily briefings. No machine-readable feed was found and the figures are not collected here; they reach the updates only through state-tagged agency reporting.",
+      "basis": "claimed",
+      "url": "https://en.wikipedia.org/wiki/Casualties_of_the_Russo-Ukrainian_War",
+      "as_of": "2026-06-30"
+    },
+    {
+      "id": "kiel-support-tracker",
+      "label": "Kiel Institute Ukraine Support Tracker",
+      "text": "The Kiel Institute's tracker records military, financial and humanitarian aid committed and delivered to Ukraine by donor government, released as a spreadsheet with each update. Read the release notes before comparing donors; commitments and deliveries differ.",
+      "basis": "reported",
+      "url": "https://www.ifw-kiel.de/topics/war-against-ukraine/ukraine-support-tracker/",
+      "as_of": "2026-06-30"
+    }
+  ]
+}
