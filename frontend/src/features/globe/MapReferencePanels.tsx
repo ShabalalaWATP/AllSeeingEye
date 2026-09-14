@@ -40,7 +40,16 @@ export function mapReferencePanels(props: {
     <ControlPanel key="grid" side="right" label="British National Grid" icon="grid">
       <BritishGridTool {...props.grid} />
     </ControlPanel>,
-    <ControlPanel key="cctv" side="left" label="CCTV" icon="camera">
+    <ControlPanel
+      key="cctv"
+      side="left"
+      label="CCTV"
+      icon="camera"
+      on={props.cameras.cameras.enabled}
+      onOpen={() => {
+        if (!props.cameras.cameras.enabled) props.cameras.cameras.setEnabled(true);
+      }}
+    >
       <CameraPanel {...props.cameras} />
     </ControlPanel>,
     <ControlPanel key="figures" side="left" label="Public figures" icon="figure">

@@ -122,6 +122,18 @@ export function useCameras() {
       if (!current) return;
       clearTimeout(publishTimer);
       publish();
+      // Every provider the server lists starts switched on. Only providers the user has
+      // never toggled are added, so a region switched off stays off.
+      const discovered = [...cache.current.values()]
+        .flatMap((entry) => entry.value.providers.map((provider) => provider.id))
+        .filter((id) => !(id in providers));
+      if (discovered.length) {
+        setProviders((old) => ({
+          ...Object.fromEntries(discovered.map((id) => [id, true])),
+          ...old,
+        }));
+        return;
+      }
       setError(
         failed
           ? 'Some camera catalogues could not be loaded. Please try again.'

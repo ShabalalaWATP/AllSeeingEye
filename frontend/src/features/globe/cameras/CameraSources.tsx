@@ -114,7 +114,7 @@ export function CameraSources({ cameras }: { cameras: CameraState }) {
         />
       </label>
       <p className="text-muted">
-        {providers.length} supported sources. Enable a region below to load it.
+        {providers.length} supported sources, all on unless switched off below.
       </p>
       {!providers.length && !cameras.loading && (
         <p role="status" className="rounded border border-line p-3 text-muted">

@@ -257,7 +257,7 @@ it('builds clickable camera icons with a separate selection halo on both project
   }
 });
 
-it('discovers dormant providers by country and enables a region on demand', async () => {
+it('switches on every provider the server lists and keeps a region the user turns off', async () => {
   const requested: (string | null)[] = [];
   server.use(
     http.get('/api/cameras', ({ request }) => {
@@ -291,14 +291,16 @@ it('discovers dormant providers by country and enables a region on demand', asyn
   render(<Harness />);
   await user.click(screen.getByRole('switch', { name: /Show public cameras/ }));
   await screen.findByRole('searchbox', { name: 'Find a country, region or provider' });
-  await waitFor(() => expect(requested).toEqual(['tfl', 'hongkong', 'fintraffic']));
-  await user.type(
-    screen.getByRole('searchbox', { name: 'Find a country, region or provider' }),
-    'poland',
-  );
-  await user.click(screen.getByRole('button', { name: 'Enable UK and Europe' }));
+  // Poland was never requested by the user: it is discovered from the first answers and loads.
   await screen.findByRole('button', { name: 'Warsaw' });
   expect(requested).toEqual(['tfl', 'hongkong', 'fintraffic', 'poland']);
-  await user.click(screen.getByRole('button', { name: 'Disable UK and Europe' }));
+  expect(screen.getByRole('switch', { name: 'Poland public cameras' })).toBeChecked();
+  await user.click(screen.getByRole('switch', { name: 'Poland public cameras' }));
   expect(screen.queryByRole('button', { name: 'Warsaw' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Refresh catalogue' }));
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Refresh catalogue' })).toBeEnabled(),
+  );
+  expect(screen.getByRole('switch', { name: 'Poland public cameras' })).not.toBeChecked();
+  expect(requested.filter((id) => id === 'poland')).toHaveLength(1);
 });

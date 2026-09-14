@@ -101,7 +101,8 @@
   outline-offset: -2px;
 }
 .map-icon-button[aria-checked='true'],
-.map-icon-button[aria-expanded='true'] {
+.map-icon-button[aria-expanded='true'],
+.map-icon-button[data-on='true'] {
   color: var(--color-ember);
   background: #79d8eb12;
 }

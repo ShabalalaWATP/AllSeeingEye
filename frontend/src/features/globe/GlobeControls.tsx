@@ -22,6 +22,10 @@ interface PanelProps {
   entry?: boolean;
   caption?: string;
   size?: 'medium';
+  /** The layer this panel controls is shown, so the rail button stays lit while closed. */
+  on?: boolean;
+  /** Runs when the rail button opens the panel, before it renders. */
+  onOpen?: () => void;
 }
 export function ControlPanel({ children }: PanelProps) {
   return children;
@@ -85,8 +89,10 @@ export function GlobeControls({
             title={props.label}
             aria-expanded={active === props.label}
             aria-controls={active === props.label ? id : undefined}
+            data-on={props.on ? 'true' : undefined}
             onClick={(event) => {
               setOpener(event.currentTarget);
+              if (active !== props.label) props.onOpen?.();
               setActive(active === props.label ? null : props.label);
             }}
           >

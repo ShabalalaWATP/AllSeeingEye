@@ -85,6 +85,15 @@ statement, 90.07% branch, 93.70% function and 96.62% line coverage. All configur
 90% thresholds remain unchanged.
 
 
+## 14 September: every region on by default
+
+Opening CCTV from the map's camera button now switches public cameras on, and the button stays
+lit while they are shown, so the panel switch and the rail button always agree. Every provider
+the server lists starts switched on: the first three answers name the rest, which then load
+four at a time. A region the user switches off stays off, including after a catalogue refresh.
+A live count on 14 September found 67 providers returning about 32,000 cameras in 27 seconds
+of server time, well under the 75,000-camera browser cap.
+
 ## 14 September: Britain, the Baltic states, Russia and the Middle East
 
 Ten providers joined the registry on request: Traffic Scotland's 415-camera official

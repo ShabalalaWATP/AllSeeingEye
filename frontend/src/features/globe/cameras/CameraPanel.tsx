@@ -39,8 +39,9 @@ export function CameraPanel({
         </span>
       </button>
       <p className="text-muted">
-        Worldwide public camera sources. Enable a region to load its catalogue. Snapshots, video and
-        provider links are labelled separately. Open camera details to request an image or playback.
+        Worldwide public camera sources. Every region loads when cameras are shown; switch off any
+        you do not need. Snapshots, video and provider links are labelled separately. Open camera
+        details to request an image or playback.
       </p>
       {cameras.enabled && (
         <>
