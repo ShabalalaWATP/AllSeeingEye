@@ -36,7 +36,6 @@ from ase.application.schedules.manage import (
 )
 from ase.application.schedules.runner import ScheduleRunner
 from ase.application.schedules.selected_index_acquisition import SelectedIndexAcquisition
-from ase.application.teams.board import TeamBoardService
 from ase.application.teams.invitations import TeamInvitationService
 from ase.application.teams.service import TeamService
 from ase.application.trackers.aviation import (
@@ -120,17 +119,6 @@ class FeatureWiring(ReportWiring):
         repos = self.repositories(session)
         return TeamService(
             SqlTeamRepository(session), repos.users, self.clock, self._auditor(repos), repos.uow
-        )
-
-    def team_board(self, session: AsyncSession) -> TeamBoardService:
-        repos = self.repositories(session)
-        return TeamBoardService(
-            repos.team_board,
-            SqlTeamRepository(session),
-            repos.users,
-            self.clock,
-            self._auditor(repos),
-            repos.uow,
         )
 
     def team_invitations(self, session: AsyncSession) -> TeamInvitationService:

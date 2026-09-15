@@ -96,6 +96,7 @@ from ase.container.research_inputs import ResearchInputWiring
 from ase.container.sec_filings import SecFilingWiring
 from ase.container.source_inventory import SourceInventoryWiring
 from ase.container.source_requirements import source_requirements
+from ase.container.team_board import TeamBoardWiring
 from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
@@ -119,6 +120,7 @@ class Container(
     PublicFigureWiring,
     ReferenceWiring,
     UkraineWiring,
+    TeamBoardWiring,
 ):
     def __init__(
         self,
