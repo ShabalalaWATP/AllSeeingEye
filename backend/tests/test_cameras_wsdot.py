@@ -39,7 +39,7 @@ async def test_configured_wsdot_replaces_retired_endpoint_without_duplicate_prov
     http = AsyncMock()
     http.get_secret_bytes.return_value = json.dumps([ROW, ROW]).encode()
     sources = build_sources(http, wsdot_access_code=KEY)
-    assert len(sources) == len({source.id for source in sources}) == 21
+    assert len(sources) == len({source.id for source in sources}) == 37
     source = next(source for source in sources if source.id == "wsdot")
     cameras = await source.fetch()
     assert len(cameras) == 1 and cameras[0].id == "wsdot:42"

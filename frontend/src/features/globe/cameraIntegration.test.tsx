@@ -64,8 +64,9 @@ it.each(['globe', 'map'] as const)(
   async (mode) => {
     useGlobeStore.setState({ mode });
     const { user } = renderApp('/', 'user');
+    // Opening CCTV from the rail switches public cameras on; the panel switch mirrors it.
     await user.click(await screen.findByRole('button', { name: 'CCTV' }));
-    await user.click(screen.getByRole('switch', { name: /Show public cameras/ }));
+    expect(screen.getByRole('switch', { name: /Show public cameras/ })).toBeChecked();
     await waitFor(() =>
       expect(layers().find((item) => item.id === 'public-camera-icons')).toBeDefined(),
     );
