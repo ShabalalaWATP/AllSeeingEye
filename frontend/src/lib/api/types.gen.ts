@@ -935,6 +935,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/teams/{team_id}/invitations/by-username": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Team Invitation By Username
+         * @description Invite an exact handle; the response never reveals whether the account exists.
+         */
+        post: operations["send_team_invitation_by_username_api_teams__team_id__invitations_by_username_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/teams/{team_id}/invitations/{invitation_id}": {
         parameters: {
             query?: never;
@@ -14093,6 +14113,30 @@ export interface components {
             /** Members */
             members: components["schemas"]["MemberOut"][];
         };
+        /**
+         * TeamHandleInvitationIn
+         * @description Invite an exact username, including accounts that are not discoverable.
+         */
+        TeamHandleInvitationIn: {
+            /** Username */
+            username: string;
+            /** Note */
+            note?: string | null;
+        };
+        /** TeamHandleInvitationSubmittedOut */
+        TeamHandleInvitationSubmittedOut: {
+            /**
+             * Status
+             * @default submitted
+             * @constant
+             */
+            status: "submitted";
+            /**
+             * Message
+             * @default If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list.
+             */
+            message: string;
+        };
         /** TeamIn */
         TeamIn: {
             /** Name */
@@ -16633,6 +16677,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamInvitationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_team_invitation_by_username_api_teams__team_id__invitations_by_username_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamHandleInvitationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamHandleInvitationSubmittedOut"];
                 };
             };
             /** @description Validation Error */

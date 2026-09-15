@@ -93,13 +93,20 @@ class TeamInvitationService:
         recipient_id: UUID,
         note: str | None,
         context: RequestContext,
+        *,
+        require_discoverable: bool = True,
     ) -> TeamInvitation:
         current, team = await self._team_authority(actor, team_id)
         target = await self._users.lock_by_id(recipient_id)
         if target is None or not target.is_active:
             raise InvalidRequest("Choose an active directory account.")
         profile = await self._directory_profiles.get(target.id)
-        if profile is None or not profile.is_discoverable or profile.username is None:
+        # Exact-handle invitations may reach a non-discoverable account that has a handle.
+        if (
+            profile is None
+            or profile.username is None
+            or (require_discoverable and not profile.is_discoverable)
+        ):
             raise InvalidRequest("Choose an account that is visible in the operator directory.")
         if target.role is Role.ADMIN and not current.is_admin:
             raise Forbidden("Administrators must be added by another Administrator.")
@@ -140,6 +147,17 @@ class TeamInvitationService:
         )
         await self._uow.commit()
         return invitation
+
+    async def authorise_sender(self, actor: User, team_id: UUID, note: str | None) -> None:
+        """Check caller-side invitation preconditions without creating anything."""
+
+        try:
+            _current, _team = await self._team_authority(actor, team_id)
+            _note(note)
+            if await self._invitations.count_pending(team_id) >= MAX_PENDING_INVITATIONS:
+                raise InvalidRequest("This team has reached its pending invitation limit.")
+        finally:
+            await self._uow.rollback()
 
     async def inbox(
         self, actor: User, *, status: InvitationStatus | None, limit: int, offset: int

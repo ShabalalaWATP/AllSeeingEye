@@ -16,6 +16,7 @@ from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.warning import SqlWarningStore
 from ase.adapters.research.selected_event_cache import USGS_SELECTED_POLICY, PublicEventCachePages
+from ase.application.account.directory_handles import HandleInvitationUseCase
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
     CreatePlanUseCase,
@@ -142,6 +143,16 @@ class FeatureWiring(ReportWiring):
             repos.directory_profiles,
             self.clock,
             self._auditor(repos),
+            repos.uow,
+        )
+
+    def handle_invitations(self, session: AsyncSession) -> HandleInvitationUseCase:
+        repos = self.repositories(session)
+        return HandleInvitationUseCase(
+            self.team_invitations(session),
+            repos.directory_profiles,
+            repos.users,
+            self.limiter,
             repos.uow,
         )
 

@@ -2973,6 +2973,65 @@
         }
       }
     },
+    "/api/teams/{team_id}/invitations/by-username": {
+      "post": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "Send Team Invitation By Username",
+        "description": "Invite an exact handle; the response never reveals whether the account exists.",
+        "operationId": "send_team_invitation_by_username_api_teams__team_id__invitations_by_username_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamHandleInvitationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamHandleInvitationSubmittedOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/teams/{team_id}/invitations/{invitation_id}": {
       "delete": {
         "tags": [
@@ -42613,6 +42672,52 @@
           "members"
         ],
         "title": "TeamDetailOut"
+      },
+      "TeamHandleInvitationIn": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 280
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "title": "TeamHandleInvitationIn",
+        "description": "Invite an exact username, including accounts that are not discoverable."
+      },
+      "TeamHandleInvitationSubmittedOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "submitted",
+            "title": "Status",
+            "default": "submitted"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list."
+          }
+        },
+        "type": "object",
+        "title": "TeamHandleInvitationSubmittedOut"
       },
       "TeamIn": {
         "properties": {
