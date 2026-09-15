@@ -14,6 +14,9 @@ from typing import Literal
 
 Authority = Literal["uksl", "ofac_sdn"]
 MAX_BYTES = 32 * 1024 * 1024
+# The native UK list carries full statements of reasons and exceeded 32 MiB in 2026;
+# only the bounded normalised snapshot must stay within MAX_BYTES.
+MAX_SOURCE_BYTES = 128 * 1024 * 1024
 MAX_ROWS = 100_000
 SOURCE_URLS = {
     "uksl": "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv",
@@ -72,8 +75,8 @@ def _cell(value: str) -> str:
 def parse_csv(
     data: bytes, authority: Authority, published_at: datetime
 ) -> tuple[DesignationRecord, ...]:
-    if not data or len(data) > MAX_BYTES:
-        raise ValueError("Designation CSV exceeds 32 MiB")
+    if not data or len(data) > MAX_SOURCE_BYTES:
+        raise ValueError("Designation CSV exceeds 128 MiB")
     stream = io.StringIO(data.decode("utf-8-sig"), newline="")
     if authority == "uksl":
         report_date = stream.readline().strip()
@@ -98,15 +101,19 @@ def parse_csv(
         for index, row in enumerate(rows):
             if index >= MAX_ROWS or None in row or any(value is None for value in row.values()):
                 raise ValueError("Invalid or oversized UKSL CSV")
+            latin = _cell(
+                " ".join(row.get(f"Name {number}", "").strip() for number in range(1, 7)).strip()
+            )
+            native = _cell(row.get("Name non-latin script", ""))
+            if not latin and not native:
+                # The single UK list repeats a designation on detail-only rows (further
+                # addresses or documents); its named rows carry the identity.
+                continue
             records.append(
                 DesignationRecord(
                     _cell(row["Unique ID"]),
-                    _cell(
-                        " ".join(
-                            row.get(f"Name {number}", "").strip() for number in range(1, 7)
-                        ).strip()
-                    ),
-                    _cell(row.get("Name non-latin script", "")),
+                    latin or native,
+                    native,
                     _cell(row.get("Designation Type", row.get("Individual, Entity, Ship", ""))),
                     _cell(row["Regime Name"]),
                     _cell(row["Date Designated"]),
@@ -118,9 +125,15 @@ def parse_csv(
     if authority != "ofac_sdn":
         raise ValueError("Unsupported designation authority")
     output = []
+    ended = False
     for index, columns in enumerate(csv.reader(stream, strict=True)):
+        # OFAC's legacy flat files end with a DOS end-of-file marker line.
+        if columns == ["\x1a"] and not ended:
+            ended = True
+            continue
         if (
-            index >= MAX_ROWS
+            ended
+            or index >= MAX_ROWS
             or len(columns) != 12
             or not re.fullmatch(r"[0-9]{1,12}", columns[0].strip())
         ):

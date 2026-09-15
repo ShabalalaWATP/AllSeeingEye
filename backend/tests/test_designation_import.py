@@ -13,7 +13,11 @@ from ase.adapters.research_records.designation_import import (
     import_designation_csv,
     load_designation_snapshot,
 )
-from ase.adapters.research_records.designation_snapshot import MAX_BYTES, parse_csv
+from ase.adapters.research_records.designation_snapshot import (
+    MAX_BYTES,
+    MAX_SOURCE_BYTES,
+    parse_csv,
+)
 from ase.adapters.research_records.designations import DesignationProvider
 from ase.domain.research import CollectionStatus, ResearchFocus
 from research_records_helpers import CLOCK, QUERY
@@ -94,7 +98,10 @@ def test_unsupported_or_retired_formats_never_publish(tmp_path: Path, content: b
 def test_invalid_date_path_version_and_oversized_csv_are_rejected(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="report date"):
         parse_csv(uksl_csv(), "uksl", PUBLISHED.replace(day=2))
-    with pytest.raises(ValueError, match="32 MiB"):
+    with pytest.raises(ValueError, match="128 MiB"):
+        parse_csv(b"x" * (MAX_SOURCE_BYTES + 1), "uksl", PUBLISHED)
+    # A native list larger than the normalised snapshot bound is still parsed.
+    with pytest.raises(ValueError, match="report-date header"):
         parse_csv(b"x" * (MAX_BYTES + 1), "uksl", PUBLISHED)
     source = tmp_path / "source.csv"
     source.write_bytes(uksl_csv())
@@ -155,3 +162,29 @@ async def test_native_ofac_primary_format_has_explicit_missing_file_limits(tmp_p
     target.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="schema"):
         load_designation_snapshot(target)
+
+
+OFAC_ROW = '36,"AEROCARIBBEAN AIRLINES",-0- ,"CUBA",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- \r\n'
+
+
+def test_ofac_trailing_end_of_file_marker_is_accepted_only_at_the_end() -> None:
+    records = parse_csv((OFAC_ROW + "\x1a").encode(), "ofac_sdn", PUBLISHED)
+    assert [record.name for record in records] == ["AEROCARIBBEAN AIRLINES"]
+    with pytest.raises(ValueError, match="12-column"):
+        parse_csv((OFAC_ROW + "\x1a\r\n" + OFAC_ROW).encode(), "ofac_sdn", PUBLISHED)
+
+
+def test_uksl_detail_rows_are_skipped_and_native_only_names_are_kept() -> None:
+    rows = io.StringIO(newline="")
+    rows.write("Report Date: 03-Sep-2026\n")
+    writer = csv.writer(rows)
+    writer.writerow(HEADERS)
+    shared = ["Iran regime", "01/01/2020", "03/09/2026"]
+    writer.writerow(["IRN0001", "", "Example Entity", "Primary Name", *shared, "", "Entity"])
+    writer.writerow(["IRN0001", "", "", "", *shared, "", "Entity"])
+    writer.writerow(["IRN0001", "", "", "Alias", *shared, "شرکت", "Entity"])
+    records = parse_csv(rows.getvalue().encode("utf-8"), "uksl", PUBLISHED)
+    assert [(record.name, record.native_name) for record in records] == [
+        ("Example Entity", ""),
+        ("شرکت", "شرکت"),
+    ]

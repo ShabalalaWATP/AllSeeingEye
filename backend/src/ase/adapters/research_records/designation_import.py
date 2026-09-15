@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ase.adapters.research_records.designation_snapshot import (
     MAX_BYTES,
+    MAX_SOURCE_BYTES,
     Authority,
     DesignationRecord,
     DesignationSnapshot,
@@ -26,7 +27,7 @@ def import_designation_csv(
     licence: str,
 ) -> Path:
     with source_path.open("rb") as source:
-        data = source.read(MAX_BYTES + 1)
+        data = source.read(MAX_SOURCE_BYTES + 1)
     snapshot = DesignationSnapshot(
         authority,
         version,
