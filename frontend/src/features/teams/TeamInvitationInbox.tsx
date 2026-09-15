@@ -47,8 +47,9 @@ export function TeamInvitationInbox({ onAccepted }: { onAccepted: () => Promise<
       }
       setItems((current) => current.filter((item) => item.id !== invitation.id));
     } catch (reason) {
-      setError(describeError(reason));
+      // Reload first: `load` clears the error, which would hide why the response failed.
       await load();
+      setError(describeError(reason));
     } finally {
       setBusy(false);
     }
