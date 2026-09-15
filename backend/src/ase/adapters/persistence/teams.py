@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
+from ase.adapters.persistence.directory_profile import DirectoryProfileRow
 from ase.adapters.persistence.models import UserRow
 from ase.domain.errors import NotFound
 from ase.domain.teams import MembershipRole, Team, TeamMember, TeamMembership
@@ -146,8 +147,10 @@ class SqlTeamRepository:
 
     async def list_members(self, team_id: UUID) -> list[TeamMember]:
         rows = await self._session.execute(
-            select(TeamMembershipRow, UserRow)
-            .join(UserRow)
+            select(TeamMembershipRow, UserRow, DirectoryProfileRow.username)
+            .select_from(TeamMembershipRow)
+            .join(UserRow, UserRow.id == TeamMembershipRow.user_id)
+            .outerjoin(DirectoryProfileRow, DirectoryProfileRow.user_id == UserRow.id)
             .where(
                 TeamMembershipRow.team_id == team_id,
             )
@@ -157,14 +160,14 @@ class SqlTeamRepository:
         return [
             TeamMember(
                 user.id,
-                user.email,
                 user.display_name,
                 Role(user.role),
                 user.is_active,
                 MembershipRole(member.role),
                 member.joined_at,
+                username,
             )
-            for member, user in rows
+            for member, user, username in rows
         ]
 
     async def count_members(self, team_id: UUID) -> int:
@@ -203,6 +206,36 @@ class SqlTeamRepository:
                 TeamMembershipRow.team_id == team_id,
                 TeamMembershipRow.role == MembershipRole.MANAGER.value,
                 UserRow.is_active.is_(True),
+            )
+        )
+        return int(await self._session.scalar(statement) or 0)
+
+    async def count_teams_only_managed_by(self, user_id: UUID) -> int:
+        """Count active teams where this active account is the sole active Manager."""
+        other = TeamMembershipRow.__table__.alias("other_manager")
+        other_user = UserRow.__table__.alias("other_user")
+        another_active_manager = (
+            select(other.c.user_id)
+            .join(other_user, other_user.c.id == other.c.user_id)
+            .where(
+                other.c.team_id == TeamMembershipRow.team_id,
+                other.c.user_id != user_id,
+                other.c.role == MembershipRole.MANAGER.value,
+                other_user.c.is_active.is_(True),
+            )
+            .exists()
+        )
+        statement = (
+            select(func.count())
+            .select_from(TeamMembershipRow)
+            .join(TeamRow, TeamRow.id == TeamMembershipRow.team_id)
+            .join(UserRow, UserRow.id == TeamMembershipRow.user_id)
+            .where(
+                TeamMembershipRow.user_id == user_id,
+                TeamMembershipRow.role == MembershipRole.MANAGER.value,
+                TeamRow.is_active.is_(True),
+                UserRow.is_active.is_(True),
+                ~another_active_manager,
             )
         )
         return int(await self._session.scalar(statement) or 0)

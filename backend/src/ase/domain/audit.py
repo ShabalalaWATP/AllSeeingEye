@@ -83,6 +83,7 @@ class AuditAction(StrEnum):
     TEAM_MEMBER_SET = "team_member_set"
     TEAM_MEMBER_REMOVED = "team_member_removed"
     TEAM_MEMBER_LEFT = "team_member_left"
+    TEAM_AUTHORITY_MIGRATED = "team_authority_migrated"
     TEAM_INVITATION_CREATED = "team_invitation_created"
     TEAM_INVITATION_ACCEPTED = "team_invitation_accepted"
     TEAM_INVITATION_DECLINED = "team_invitation_declined"

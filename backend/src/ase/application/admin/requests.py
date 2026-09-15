@@ -18,7 +18,7 @@ from ase.application.ports import (
     UserRepository,
 )
 from ase.domain.audit import AuditAction
-from ase.domain.errors import AlreadyDecided, EmailTaken, Forbidden, NotFound
+from ase.domain.errors import AlreadyDecided, EmailTaken, Forbidden, InvalidRequest, NotFound
 from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import AccountRequest, RequestStatus, Role, User
 
@@ -72,6 +72,8 @@ class ApproveRequestUseCase:
     async def execute(
         self, actor: User, request_id: UUID, role: Role, context: RequestContext
     ) -> ApprovalResult:
+        if role is Role.MANAGER:
+            raise InvalidRequest("The global manager role is retired. Use team Manager membership.")
         await _lock_reviewer(self._users, actor)
         request = await self._requests.get(request_id)
         if request is None:

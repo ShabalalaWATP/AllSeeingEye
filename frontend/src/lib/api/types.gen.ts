@@ -813,23 +813,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/teams/{team_id}/leave": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Leave Team */
-        post: operations["leave_team_api_teams__team_id__leave_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/teams/{team_id}/members/{user_id}": {
         parameters: {
             query?: never;
@@ -842,6 +825,24 @@ export interface paths {
         post?: never;
         /** Remove Member */
         delete: operations["remove_member_api_teams__team_id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Member Role */
+        patch: operations["change_member_role_api_teams__team_id__members__user_id__patch"];
+        trace?: never;
+    };
+    "/api/teams/{team_id}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave Team */
+        post: operations["leave_team_api_teams__team_id__leave_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -9177,7 +9178,10 @@ export interface components {
             credibility: number;
             contribution: components["schemas"]["Contribution"];
         };
-        /** MemberIn */
+        /**
+         * MemberIn
+         * @description Administrator direct add. Team Managers use invitations instead.
+         */
         MemberIn: {
             /**
              * Email
@@ -9187,17 +9191,20 @@ export interface components {
             /** @default member */
             role: components["schemas"]["MembershipRole"];
         };
-        /** MemberOut */
+        /**
+         * MemberOut
+         * @description Roster entry. Login email is deliberately absent: teams are self-service.
+         */
         MemberOut: {
             /**
              * User Id
              * Format: uuid
              */
             user_id: string;
-            /** Email */
-            email: string;
             /** Display Name */
             display_name: string;
+            /** Username */
+            username: string | null;
             account_role: components["schemas"]["Role"];
             /** Is Active */
             is_active: boolean;
@@ -9207,6 +9214,10 @@ export interface components {
              * Format: date-time
              */
             joined_at: string;
+        };
+        /** MemberRoleIn */
+        MemberRoleIn: {
+            role: components["schemas"]["MembershipRole"];
         };
         /** MembershipOut */
         MembershipOut: {
@@ -16263,12 +16274,13 @@ export interface operations {
             };
         };
     };
-    leave_team_api_teams__team_id__leave_post: {
+    remove_member_api_teams__team_id__members__user_id__delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 team_id: string;
+                user_id: string;
             };
             cookie?: never;
         };
@@ -16292,13 +16304,48 @@ export interface operations {
             };
         };
     };
-    remove_member_api_teams__team_id__members__user_id__delete: {
+    change_member_role_api_teams__team_id__members__user_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 team_id: string;
                 user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberRoleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MembershipOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    leave_team_api_teams__team_id__leave_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
             };
             cookie?: never;
         };

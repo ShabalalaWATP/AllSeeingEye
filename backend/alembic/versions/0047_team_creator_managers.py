@@ -2,10 +2,19 @@
 
 Revision ID: 0047
 Revises: 0046
+
+Every creator membership this revision adds or promotes is inventoried per team
+in the administrator audit log and the migration log, so the authority granted
+without an interactive actor remains reviewable.
 """
+
+import logging
+from datetime import UTC, datetime
 
 import sqlalchemy as sa
 from alembic import op
+
+log = logging.getLogger("alembic.runtime.migration")
 
 revision = "0047"
 down_revision = "0046"
@@ -49,6 +58,31 @@ def upgrade() -> None:
         users.c.id == teams.c.created_by,
         users.c.is_active.is_(True),
     )
+    connection = op.get_bind()
+    promoted = [
+        row.id
+        for row in connection.execute(
+            sa.select(teams.c.id)
+            .select_from(
+                teams.join(users, users.c.id == teams.c.created_by).join(
+                    memberships,
+                    sa.and_(
+                        memberships.c.team_id == teams.c.id,
+                        memberships.c.user_id == teams.c.created_by,
+                    ),
+                )
+            )
+            .where(users.c.is_active.is_(True), memberships.c.role != "manager")
+        )
+    ]
+    inserted = [
+        row.id
+        for row in connection.execute(
+            sa.select(teams.c.id)
+            .select_from(teams.join(users, users.c.id == teams.c.created_by))
+            .where(users.c.is_active.is_(True), ~already_member)
+        )
+    ]
     op.execute(sa.update(memberships).where(active_creator_membership).values(role="manager"))
     op.execute(
         sa.insert(memberships).from_select(
@@ -68,6 +102,36 @@ def upgrade() -> None:
             .where(users.c.is_active.is_(True), ~already_member),
         )
     )
+    _record_inventory(connection, promoted, "creator_membership_promoted")
+    _record_inventory(connection, inserted, "creator_membership_added")
+
+
+def _record_inventory(connection: sa.Connection, team_ids: list[object], reason: str) -> None:
+    """Audit each team whose creator gained Manager authority, without personal data."""
+    if not team_ids:
+        return
+    audit = sa.table(
+        "audit_log",
+        sa.column("at", sa.DateTime(timezone=True)),
+        sa.column("actor_user_id", sa.Uuid()),
+        sa.column("action", sa.String(64)),
+        sa.column("subject", sa.String(320)),
+        sa.column("ip", sa.String(64)),
+        sa.column("details", sa.JSON()),
+    )
+    now = datetime.now(UTC)
+    for team_id in team_ids:
+        connection.execute(
+            audit.insert().values(
+                at=now,
+                actor_user_id=None,
+                action="team_authority_migrated",
+                subject=f"team:{team_id}",
+                ip=None,
+                details={"revision": revision, "team_id": str(team_id), "reason": reason},
+            )
+        )
+    log.warning("0047 %s: %d team(s) inventoried in the audit log", reason, len(team_ids))
 
 
 def downgrade() -> None:

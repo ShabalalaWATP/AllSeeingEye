@@ -73,7 +73,7 @@ export function AddMemberForm({
   onSave,
 }: {
   admin: boolean;
-  /** Team managers can grant team-manager membership to ordinary accounts. */
+  /** Administrators may add an account directly as a member or manager. */
   allowManagerRole?: boolean;
   busy: boolean;
   onSave: (input: MemberInput) => void;
@@ -95,7 +95,7 @@ export function AddMemberForm({
         autoComplete="off"
         required
         maxLength={320}
-        hint="Use an existing active account. No invitation email is sent."
+        hint="Administrator direct add for an existing active account. The account is added without an invitation."
         value={email}
         disabled={busy}
         onChange={(event) => {
@@ -121,8 +121,7 @@ export function AddMemberForm({
       </Button>
       {allowManagerRole ? (
         <p className="text-xs text-muted sm:col-span-3">
-          Managers can assign team-manager access to ordinary active accounts. Site administrator
-          access is managed separately.
+          Direct adds are recorded in the audit log. Team managers invite people instead.
         </p>
       ) : null}
     </form>

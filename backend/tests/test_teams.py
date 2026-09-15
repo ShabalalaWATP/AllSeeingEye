@@ -69,24 +69,23 @@ async def test_team_manager_membership_grants_management_without_global_role(
     async with team_service(container) as service:
         led = await service.create(admin, "Led", CONTEXT)
         other = await service.create(admin, "Other", CONTEXT)
-        await service.set_member(
-            admin, led.id, email=manager.email, role=MembershipRole.MANAGER, context=CONTEXT
-        )
-        await service.set_member(
-            manager, led.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
-        )
-        with pytest.raises(NotFound):
+        for team, role in ((led, MembershipRole.MANAGER), (other, MembershipRole.MEMBER)):
             await service.set_member(
-                manager, other.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
+                admin, team.id, email=manager.email, role=role, context=CONTEXT
             )
-        await service.set_member(
-            admin, other.id, email=manager.email, role=MembershipRole.MEMBER, context=CONTEXT
-        )
+            await service.set_member(
+                admin, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
+            )
+        await service.change_role(manager, led.id, user.id, MembershipRole.MANAGER, CONTEXT)
+        await service.change_role(manager, led.id, user.id, MembershipRole.MEMBER, CONTEXT)
         with pytest.raises(Forbidden):
-            await service.set_member(
-                manager, other.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
+            await service.change_role(manager, other.id, user.id, MembershipRole.MANAGER, CONTEXT)
+        outsider_team = await service.create(admin, "Outsider", CONTEXT)
+        with pytest.raises(NotFound):
+            await service.change_role(
+                manager, outsider_team.id, admin.id, MembershipRole.MEMBER, CONTEXT
             )
-        # Team leadership is now a membership capability, independent of the
+        # Team leadership is a membership capability, independent of the
         # legacy global Manager role.
     async with container.session_factory() as session:
         repos = container.repositories(session)
@@ -105,15 +104,12 @@ async def test_team_manager_can_manage_non_admin_accounts_but_not_admins(
             admin, team.id, email=manager.email, role=MembershipRole.MANAGER, context=CONTEXT
         )
         await service.set_member(
-            manager, team.id, email=user.email, role=MembershipRole.MANAGER, context=CONTEXT
+            admin, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
         )
-        await service.set_member(
-            manager, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
-        )
+        await service.change_role(manager, team.id, user.id, MembershipRole.MANAGER, CONTEXT)
+        await service.change_role(manager, team.id, user.id, MembershipRole.MEMBER, CONTEXT)
         with pytest.raises(Forbidden):
-            await service.set_member(
-                manager, team.id, email=admin.email, role=MembershipRole.MEMBER, context=CONTEXT
-            )
+            await service.change_role(manager, team.id, admin.id, MembershipRole.MEMBER, CONTEXT)
         with pytest.raises(Forbidden):
             await service.remove_member(manager, team.id, admin.id, CONTEXT)
 
@@ -127,7 +123,7 @@ async def test_members_read_roster_and_revocation_removes_access(
             admin, team.id, email=manager.email, role=MembershipRole.MANAGER, context=CONTEXT
         )
         await service.set_member(
-            manager, team.id, email=user.email.upper(), role=MembershipRole.MEMBER, context=CONTEXT
+            admin, team.id, email=user.email.upper(), role=MembershipRole.MEMBER, context=CONTEXT
         )
         assert [item.id for item in await service.list_teams(user)] == [team.id]
         _, roster = await service.roster(user, team.id)
@@ -246,9 +242,7 @@ async def test_last_manager_cannot_be_demoted_removed_or_leave(
     async with team_service(container) as service:
         team = await service.create(user, "Protected", CONTEXT)
         with pytest.raises(InvalidRequest, match="retain at least one"):
-            await service.set_member(
-                user, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
-            )
+            await service.change_role(user, team.id, user.id, MembershipRole.MEMBER, CONTEXT)
         with pytest.raises(InvalidRequest, match="retain at least one"):
             await service.remove_member(user, team.id, user.id, CONTEXT)
 

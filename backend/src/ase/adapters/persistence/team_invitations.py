@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import ColumnElement, Select
 
 from ase.adapters.persistence.directory_profile import DirectoryProfileRow
 from ase.adapters.persistence.models import UserRow
@@ -43,6 +45,35 @@ def _invitation(
         recipient_display_name=recipient_display_name,
         recipient_username=recipient_username,
     )
+
+
+def _lapsed(now: datetime) -> ColumnElement[bool]:
+    return and_(
+        TeamInvitationRow.status == InvitationStatus.PENDING.value,
+        TeamInvitationRow.expires_at <= now,
+    )
+
+
+def _live_pending(now: datetime) -> ColumnElement[bool]:
+    return and_(
+        TeamInvitationRow.status == InvitationStatus.PENDING.value,
+        TeamInvitationRow.expires_at > now,
+    )
+
+
+def _status_filter(
+    statement: Select[tuple[TeamInvitationRow]], status: InvitationStatus | None, now: datetime
+) -> Select[tuple[TeamInvitationRow]]:
+    """Present a lapsed pending row as expired even before a write retires it."""
+    if status is InvitationStatus.PENDING:
+        return statement.where(_live_pending(now))
+    if status is InvitationStatus.EXPIRED:
+        return statement.where(
+            or_(TeamInvitationRow.status == InvitationStatus.EXPIRED.value, _lapsed(now))
+        )
+    if status is not None:
+        return statement.where(TeamInvitationRow.status == status.value)
+    return statement
 
 
 class SqlTeamInvitationRepository:
@@ -99,17 +130,33 @@ class SqlTeamInvitationRepository:
         row.revision = invitation.revision
         await self._session.flush()
 
-    async def find_pending(self, team_id: UUID, recipient_id: UUID) -> TeamInvitation | None:
+    async def find_pending(
+        self, team_id: UUID, recipient_id: UUID, now: datetime
+    ) -> TeamInvitation | None:
         row = await self._session.scalar(
             select(TeamInvitationRow)
             .where(
                 TeamInvitationRow.team_id == team_id,
                 TeamInvitationRow.recipient_id == recipient_id,
-                TeamInvitationRow.status == InvitationStatus.PENDING.value,
+                _live_pending(now),
             )
             .order_by(TeamInvitationRow.created_at.desc())
         )
         return _invitation(row) if row else None
+
+    async def expire_lapsed(self, team_id: UUID, now: datetime) -> int:
+        # Expiry is not a recipient response, so responded_at stays empty.
+        result = await self._session.execute(
+            update(TeamInvitationRow)
+            .where(TeamInvitationRow.team_id == team_id, _lapsed(now))
+            .values(
+                status=InvitationStatus.EXPIRED.value,
+                revision=TeamInvitationRow.revision + 1,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        await self._session.flush()
+        return int(getattr(result, "rowcount", 0) or 0)
 
     async def _page(
         self,
@@ -117,6 +164,7 @@ class SqlTeamInvitationRepository:
         *,
         limit: int,
         offset: int,
+        now: datetime,
     ) -> TeamInvitationPage:
         total = int(
             await self._session.scalar(select(func.count()).select_from(statement.subquery())) or 0
@@ -143,39 +191,50 @@ class SqlTeamInvitationRepository:
                     DirectoryProfileRow.user_id == row.recipient_id
                 )
             )
-            items.append(
-                _invitation(
-                    row,
-                    team_name=team_name,
-                    inviter_display_name=inviter_name,
-                    recipient_display_name=recipient_name,
-                    recipient_username=recipient_username,
-                )
+            item = _invitation(
+                row,
+                team_name=team_name,
+                inviter_display_name=inviter_name,
+                recipient_display_name=recipient_name,
+                recipient_username=recipient_username,
             )
+            if item.status is InvitationStatus.PENDING and item.expires_at <= now:
+                item = replace(item, status=InvitationStatus.EXPIRED)
+            items.append(item)
         return TeamInvitationPage(tuple(items), total=total, offset=offset, limit=limit)
 
     async def list_for_recipient(
-        self, recipient_id: UUID, *, status: InvitationStatus | None, limit: int, offset: int
+        self,
+        recipient_id: UUID,
+        *,
+        status: InvitationStatus | None,
+        limit: int,
+        offset: int,
+        now: datetime,
     ) -> TeamInvitationPage:
         statement = select(TeamInvitationRow).where(TeamInvitationRow.recipient_id == recipient_id)
-        if status is not None:
-            statement = statement.where(TeamInvitationRow.status == status.value)
-        return await self._page(statement, limit=limit, offset=offset)
+        statement = _status_filter(statement, status, now)
+        return await self._page(statement, limit=limit, offset=offset, now=now)
 
     async def list_for_team(
-        self, team_id: UUID, *, status: InvitationStatus | None, limit: int, offset: int
+        self,
+        team_id: UUID,
+        *,
+        status: InvitationStatus | None,
+        limit: int,
+        offset: int,
+        now: datetime,
     ) -> TeamInvitationPage:
         statement = select(TeamInvitationRow).where(TeamInvitationRow.team_id == team_id)
-        if status is not None:
-            statement = statement.where(TeamInvitationRow.status == status.value)
-        return await self._page(statement, limit=limit, offset=offset)
+        statement = _status_filter(statement, status, now)
+        return await self._page(statement, limit=limit, offset=offset, now=now)
 
-    async def count_pending(self, team_id: UUID) -> int:
+    async def count_pending(self, team_id: UUID, now: datetime) -> int:
         return int(
             await self._session.scalar(
                 select(func.count()).where(
                     TeamInvitationRow.team_id == team_id,
-                    TeamInvitationRow.status == InvitationStatus.PENDING.value,
+                    _live_pending(now),
                 )
             )
             or 0

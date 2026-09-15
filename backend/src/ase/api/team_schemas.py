@@ -27,9 +27,16 @@ class TeamUpdateIn(BaseModel):
 
 
 class MemberIn(BaseModel):
+    """Administrator direct add. Team Managers use invitations instead."""
+
     model_config = ConfigDict(extra="forbid")
     email: EmailStr = Field(max_length=320)
     role: MembershipRole = MembershipRole.MEMBER
+
+
+class MemberRoleIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    role: MembershipRole
 
 
 class TeamOut(BaseModel):
@@ -48,10 +55,12 @@ class TeamsOut(BaseModel):
 
 
 class MemberOut(BaseModel):
+    """Roster entry. Login email is deliberately absent: teams are self-service."""
+
     model_config = ConfigDict(from_attributes=True)
     user_id: UUID
-    email: str
     display_name: str
+    username: str | None
     account_role: Role
     is_active: bool
     role: MembershipRole

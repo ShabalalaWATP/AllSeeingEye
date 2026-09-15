@@ -14,6 +14,7 @@ from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
 from ase.adapters.llm.router import RoutingLlmGateway
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
+from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.admin.audit import ListAuditUseCase
 from ase.application.admin.firms_credentials import AdminFirmsCredentials
@@ -139,8 +140,9 @@ class AdminWiring:
     def update_user(self, session: AsyncSession) -> UpdateUserUseCase:
         r = self.repositories(session)
         return UpdateUserUseCase(
-            r.users, r.refresh_tokens, r.password_tokens, self.clock, self._auditor(r), r.uow
-        )
+            r.users, r.refresh_tokens, r.password_tokens, self.clock, self._auditor(r), r.uow,
+            SqlTeamRepository(session),
+        )  # fmt: skip
 
     def issue_reset_link(self, session: AsyncSession) -> IssueResetLinkUseCase:
         r = self.repositories(session)

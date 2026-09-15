@@ -16,8 +16,9 @@ from ase.application.ports import (
     UnitOfWork,
     UserRepository,
 )
+from ase.application.ports.teams import TeamRepository
 from ase.domain.audit import AuditAction
-from ase.domain.errors import Forbidden, NotFound, UserInactive
+from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, UserInactive
 from ase.domain.tokens import PasswordToken, TokenPurpose, ttl_for
 from ase.domain.users import Role, User
 
@@ -61,8 +62,10 @@ class UpdateUserUseCase:
         clock: Clock,
         auditor: Auditor,
         uow: UnitOfWork,
+        teams: TeamRepository,
     ) -> None:
         self._users = users
+        self._teams = teams
         self._refresh_tokens = refresh_tokens
         self._password_tokens = password_tokens
         self._clock = clock
@@ -79,6 +82,8 @@ class UpdateUserUseCase:
     ) -> User:
         require_admin(actor)
         forbid_self_modification(actor, user_id)
+        if role is Role.MANAGER:
+            raise InvalidRequest("The global manager role is retired. Use team Manager membership.")
         # Self-modification is forbidden and the serialised actor must remain an
         # active admin, so changing another account always leaves that admin.
         user = await _lock_accounts(self._users, actor, user_id)
@@ -87,6 +92,15 @@ class UpdateUserUseCase:
             user.role = role
             changes["role"] = role.value
         if is_active is not None and is_active != user.is_active:
+            if not is_active:
+                # Still under the administration guard, so no concurrent team change
+                # can appoint or remove a Manager between this check and the write.
+                orphaned = await self._teams.count_teams_only_managed_by(user.id)
+                if orphaned:
+                    raise Conflict(
+                        f"This account is the only active Manager of {orphaned} active "
+                        "team(s). Appoint another Manager or archive those teams first."
+                    )
             user.is_active = is_active
             changes["is_active"] = is_active
         if changes:

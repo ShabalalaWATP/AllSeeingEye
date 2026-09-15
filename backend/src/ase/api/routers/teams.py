@@ -9,6 +9,7 @@ from ase.api.schemas_ai_usage import AiUsageSummaryOut, AiUsageSummaryPageOut
 from ase.api.team_schemas import (
     MemberIn,
     MemberOut,
+    MemberRoleIn,
     MembershipOut,
     TeamDetailOut,
     TeamIn,
@@ -101,6 +102,20 @@ async def set_member(
     member = await container.teams(session).set_member(
         user, team_id, email=str(body.email), role=body.role, context=context
     )
+    return MembershipOut.model_validate(member)
+
+
+@router.patch("/{team_id}/members/{user_id}")
+async def change_member_role(
+    team_id: UUID,
+    user_id: UUID,
+    body: MemberRoleIn,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> MembershipOut:
+    member = await container.teams(session).change_role(user, team_id, user_id, body.role, context)
     return MembershipOut.model_validate(member)
 
 

@@ -37,9 +37,10 @@ class TeamMember:
     """The intentionally limited identity information exposed in an authorised roster."""
 
     user_id: UUID
-    email: str
     display_name: str
     account_role: Role
     is_active: bool
     role: MembershipRole
     joined_at: datetime
+    # Directory handle only. Login email is never part of a team roster.
+    username: str | None = None

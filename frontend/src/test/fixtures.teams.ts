@@ -31,8 +31,8 @@ export const team: Team = {
 function member(user: User, role: TeamMember['role']): TeamMember {
   return {
     user_id: user.id,
-    email: user.email,
     display_name: user.display_name,
+    username: user.id === manager.id ? 'mina_manager' : null,
     account_role: user.role,
     is_active: user.is_active,
     role,
@@ -72,15 +72,31 @@ export function setupTeams(
     http.put('/api/teams/:id/members', async ({ request }) => {
       const body = (await request.json()) as { email: string; role: TeamMember['role'] };
       writes.push({ method: 'PUT', body });
-      detail.members = detail.members.map((item) =>
-        item.email === body.email ? { ...item, role: body.role } : item,
-      );
       return HttpResponse.json({
         team_id: team.id,
         user_id: plainUser.id,
         role: body.role,
         joined_at: team.created_at,
       });
+    }),
+    http.patch('/api/teams/:id/members/:userId', async ({ params, request }) => {
+      const userId = String(params.userId);
+      const body = (await request.json()) as { role: TeamMember['role'] };
+      writes.push({ method: 'PATCH', userId, body });
+      detail.members = detail.members.map((item) =>
+        item.user_id === userId ? { ...item, role: body.role } : item,
+      );
+      return HttpResponse.json({
+        team_id: team.id,
+        user_id: userId,
+        role: body.role,
+        joined_at: team.created_at,
+      });
+    }),
+    http.post('/api/teams/:id/leave', () => {
+      writes.push({ method: 'LEAVE' });
+      detail.members = detail.members.filter((item) => item.user_id !== actor.id);
+      return new HttpResponse(null, { status: 204 });
     }),
     http.delete('/api/teams/:id/members/:userId', ({ params }) => {
       const userId = String(params.userId);

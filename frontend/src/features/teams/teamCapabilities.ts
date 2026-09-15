@@ -38,7 +38,8 @@ export function teamCapabilities(user: User, detail: TeamDetail | null): TeamCap
     canManageTeam: isAdmin || (activeTeam && isManager),
     // A manager cannot leave a team if that would remove its last manager. The
     // server enforces the invariant; this flag only controls the affordance.
-    canLeave: activeTeam && isMember,
+    // Administrators ask another administrator to remove their membership.
+    canLeave: activeTeam && isMember && !isAdmin,
   };
 }
 
