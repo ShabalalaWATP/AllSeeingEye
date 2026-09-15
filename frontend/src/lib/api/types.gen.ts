@@ -3954,6 +3954,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conflicts/ukraine/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ukraine Digest
+         * @description The fortnightly model digest and the few before it; a reader never forces new spend.
+         */
+        get: operations["ukraine_digest_api_conflicts_ukraine_digest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conflicts/ukraine/digest/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Ukraine Digest
+         * @description Administrators may ask for a digest before the fortnight is up; audited and limited.
+         */
+        post: operations["refresh_ukraine_digest_api_conflicts_ukraine_digest_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/conflicts/ukraine/reference": {
         parameters: {
             query?: never;
@@ -6771,6 +6811,79 @@ export interface components {
          * @enum {string}
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
+        /** DigestChangeOut */
+        DigestChangeOut: {
+            /** Text */
+            text: string;
+            /** Source Ids */
+            source_ids: string[];
+        };
+        /** DigestCitationOut */
+        DigestCitationOut: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Source Id */
+            source_id: string;
+            /** Label */
+            label: string;
+            /** Dated On */
+            dated_on: string | null;
+            /** Url */
+            url: string | null;
+        };
+        /**
+         * DigestEntryOut
+         * @description One stored digest with its provenance; the prompt is never kept or returned.
+         */
+        DigestEntryOut: {
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Model */
+            model: string;
+            /** Evidence Items */
+            evidence_items: number;
+            /** Source Ids */
+            source_ids: string[];
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            battlefield: components["schemas"]["DigestStrandOut"];
+            political: components["schemas"]["DigestStrandOut"];
+            /** Watch */
+            watch: string[];
+            /** Caveats */
+            caveats: string[];
+            /** Citations */
+            citations: components["schemas"]["DigestCitationOut"][];
+        };
+        /**
+         * DigestStatus
+         * @enum {string}
+         */
+        DigestStatus: "ready" | "none" | "generating" | "unavailable" | "validation_failed";
+        /** DigestStrandOut */
+        DigestStrandOut: {
+            /** Summary */
+            summary: string;
+            /** Changes */
+            changes: components["schemas"]["DigestChangeOut"][];
+        };
         /**
          * DirectoryField
          * @description Optional profile fields whose directory visibility the owner controls.
@@ -14963,6 +15076,21 @@ export interface components {
             civilian_harm: components["schemas"]["CivilianHarmOut"] | null;
             /** Lens Series */
             lens_series: components["schemas"]["LensSeriesOut"][];
+        };
+        /** UkraineDigestOut */
+        UkraineDigestOut: {
+            status: components["schemas"]["DigestStatus"];
+            /** Reason */
+            reason: string | null;
+            /** Stale */
+            stale: boolean;
+            /** Generating */
+            generating: boolean;
+            /** Interval Days */
+            interval_days: number;
+            latest: components["schemas"]["DigestEntryOut"] | null;
+            /** Previous */
+            previous: components["schemas"]["DigestEntryOut"][];
         };
         /** UkraineReferenceOut */
         UkraineReferenceOut: {
@@ -23599,6 +23727,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SpottedOut"];
+                };
+            };
+        };
+    };
+    ukraine_digest_api_conflicts_ukraine_digest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UkraineDigestOut"];
+                };
+            };
+        };
+    };
+    refresh_ukraine_digest_api_conflicts_ukraine_digest_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UkraineDigestOut"];
                 };
             };
         };
