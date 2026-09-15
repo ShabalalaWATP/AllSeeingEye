@@ -23,6 +23,9 @@ class TeamInvitationRow(Base):
         Index("ix_team_invitations_recipient_status", "recipient_id", "status"),
         Index("ix_team_invitations_team_status", "team_id", "status"),
         Index("ix_team_invitations_expires", "expires_at"),
+        Index("ix_team_invitations_team", "team_id"),
+        Index("ix_team_invitations_recipient", "recipient_id"),
+        Index("ix_team_invitations_inviter", "inviter_id"),
         Index(
             "uq_team_invitations_pending_pair",
             "team_id",
@@ -34,15 +37,13 @@ class TeamInvitationRow(Base):
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
-    team_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("teams.id", ondelete="CASCADE"), index=True
-    )
-    recipient_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), index=True)
-    inviter_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), index=True)
+    team_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("teams.id", ondelete="CASCADE"))
+    recipient_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
+    inviter_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
     role: Mapped[str] = mapped_column(String(16))
     note: Mapped[str | None] = mapped_column(String(280), nullable=True)
-    status: Mapped[str] = mapped_column(String(16), index=True)
+    status: Mapped[str] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
-    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
     responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")

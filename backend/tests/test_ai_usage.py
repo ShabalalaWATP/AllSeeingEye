@@ -210,6 +210,8 @@ async def test_team_policy_requires_an_explicit_team_destination(container, user
                 updated_at=NOW,
             )
         )
+        # PostgreSQL enforces the membership foreign key, so the team must exist first.
+        await session.flush()
         session.add(
             TeamMembershipRow(team_id=team_id, user_id=user.id, role="member", joined_at=NOW)
         )

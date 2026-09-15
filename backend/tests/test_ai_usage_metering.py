@@ -52,6 +52,8 @@ async def test_ask_eye_report_question_on_team_edition_charges_the_team(containe
                 updated_at=NOW,
             )
         )
+        # PostgreSQL enforces the membership foreign key, so the team must exist first.
+        await session.flush()
         session.add(
             TeamMembershipRow(team_id=team_id, user_id=user.id, role="member", joined_at=NOW)
         )

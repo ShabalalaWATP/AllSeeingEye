@@ -11,6 +11,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -48,6 +49,8 @@ class DirectoryProfileRow(Base):
         CheckConstraint(
             "country IS NULL OR length(country) = 2", name="ck_directory_profile_country"
         ),
+        # Discovery lists opted-in profiles by handle (migration 0046).
+        Index("ix_directory_profiles_discoverable", "is_discoverable", "username"),
     )
 
     user_id: Mapped[UUID] = mapped_column(
@@ -57,13 +60,11 @@ class DirectoryProfileRow(Base):
     job_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
     organisation: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
     biography: Mapped[str | None] = mapped_column(Text, nullable=True)
-    country: Mapped[str | None] = mapped_column(String(2), nullable=True, index=True)
+    country: Mapped[str | None] = mapped_column(String(2), nullable=True)
     languages: Mapped[list[str]] = mapped_column(JSON, default=list)
     expertise: Mapped[list[str]] = mapped_column(JSON, default=list)
     timezone: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    is_discoverable: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="0", index=True
-    )
+    is_discoverable: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     show_job_title: Mapped[bool] = mapped_column(Boolean, default=True, server_default="1")
     show_organisation: Mapped[bool] = mapped_column(Boolean, default=True, server_default="1")
     show_biography: Mapped[bool] = mapped_column(Boolean, default=True, server_default="1")

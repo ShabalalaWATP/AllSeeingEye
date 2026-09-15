@@ -154,7 +154,8 @@ class LlmProfileRow(Base):
     __tablename__ = "llm_profiles"
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
-    name: Mapped[str] = mapped_column(String(80), unique=True)
+    # Migration 0002 enforces this with the unique index ix_llm_profiles_name.
+    name: Mapped[str] = mapped_column(String(80), unique=True, index=True)
     base_url: Mapped[str] = mapped_column(String(512))
     model: Mapped[str] = mapped_column(String(2048))
     api_key_encrypted: Mapped[str] = mapped_column(Text)

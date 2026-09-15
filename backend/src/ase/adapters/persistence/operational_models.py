@@ -13,6 +13,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     Text,
@@ -90,6 +91,7 @@ class ActivitySampleRow(Base):
     __tablename__ = "activity_samples"
     __table_args__ = (
         UniqueConstraint("kind", "key", "hour", name="uq_activity_samples_kind_key_hour"),
+        Index("ix_activity_samples_kind_hour", "kind", "hour"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
