@@ -14,6 +14,14 @@ class FeedDeferred(Exception):
         self.retry_at = retry_at
 
 
+class FeedBlocked(FeedDeferred):
+    """The upstream refuses this client, registration or account tier until something changes.
+
+    The message is fixed, server-authored text with no URL, credential or response body, so
+    it may be shown to every signed-in user as the reason a source is not collecting.
+    """
+
+
 class FeedRateLimited(Exception):
     """The upstream asked for fewer requests; `retry_after` is its bounded wait, if stated."""
 

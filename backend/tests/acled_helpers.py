@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import SecretStr
 
-from ase.adapters.feeds.acled_http import AcledRefreshRejected, AcledUnauthorised
+from ase.adapters.feeds.acled_http import AcledForbidden, AcledRefreshRejected, AcledUnauthorised
 from ase.adapters.feeds.http import FeedCredential, FeedFetchError
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.ports.acled_credentials import StoredAcledRefreshToken
@@ -76,6 +76,10 @@ class MemoryStore:
 
 def rejected() -> AcledRefreshRejected:
     return AcledRefreshRejected("ACLED refused the refresh token.")
+
+
+def forbidden() -> AcledForbidden:
+    return AcledForbidden("ACLED refused data access for this account.")
 
 
 def unauthorised() -> AcledUnauthorised:

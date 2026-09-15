@@ -18,7 +18,7 @@ from ase.adapters.store.memory import InMemoryEventStore
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Normaliser, Pipeline
 from ase.application.feeds.scheduler import FeedScheduler
-from ase.application.ports.feed_diagnostics import FeedDeferred
+from ase.application.ports.feed_diagnostics import FeedBlocked
 from feeds_helpers import NOW, FakeClock
 
 
@@ -48,7 +48,7 @@ def connector_for(source_id: str, error: Exception):
 )
 async def test_known_refusal_is_deferred_with_an_operator_reason(source_id, error) -> None:
     connector, http = connector_for(source_id, error)
-    with pytest.raises(FeedDeferred) as caught:
+    with pytest.raises(FeedBlocked) as caught:
         await connector.fetch()
     assert str(caught.value) == AUTOMATION_REFUSALS[source_id]
     assert "imitate a browser" in str(caught.value)
@@ -89,4 +89,22 @@ async def test_scheduler_shows_the_reason_without_counting_a_failure() -> None:
     assert entry.consecutive_failures == 0
     assert all(len(reason) <= 300 for reason in AUTOMATION_REFUSALS.values())  # health keeps 300
     assert entry.last_error == AUTOMATION_REFUSALS["cyber_cisa_advisories"]
+    assert entry.blocked_reason == AUTOMATION_REFUSALS["cyber_cisa_advisories"]
     assert entry.next_poll_at == NOW + REFUSAL_RECHECK
+    health.record_success("cyber_cisa_advisories", 3, 1.0, NOW, REFUSAL_RECHECK)
+    assert health.get("cyber_cisa_advisories").blocked_reason is None
+
+
+def test_only_blocks_carry_a_public_reason() -> None:
+    health = HealthRegistry()
+    health.record_deferred("cached", "cooldown with https://private.test/path", NOW, NOW)
+    assert health.get("cached").blocked_reason is None
+    health.record_deferred("refused", "Fixed reason.", NOW, NOW, blocked=True)
+    assert health.get("refused").blocked_reason == "Fixed reason."
+    health.record_rate_limited("refused", "throttled", NOW, None)
+    assert health.get("refused").blocked_reason is None
+    health.record_deferred("refused", "Fixed reason.", NOW, NOW, blocked=True)
+    health.record_failure("refused", "boom", NOW)
+    assert health.get("refused").blocked_reason is None
+    health.record_deferred("refused", "Fixed reason.", NOW, NOW, blocked=True)
+    assert health.reset("refused").blocked_reason is None

@@ -82,6 +82,27 @@ def media_requirement(settings: Settings) -> SourceRequirement:
     )
 
 
+ACLED_TIER_NOTE = (
+    "API access needs a myACLED Research, Partner or Enterprise tier; accounts registered "
+    "with a public email address get Open access, which has no API."
+)
+RELIEFWEB_APPROVAL_NOTE = (
+    "ReliefWeb answers only pre-approved appnames (since 1 November 2025); an unapproved "
+    "name is refused with HTTP 403 and shown here as blocked upstream."
+)
+
+
+def reliefweb_requirement(settings: Settings) -> SourceRequirement:
+    return _configured(
+        "api_key",
+        "ASE_RELIEFWEB_APPNAME",
+        bool(settings.reliefweb_appname),
+        f"A ReliefWeb appname is configured on the server. {RELIEFWEB_APPROVAL_NOTE}",
+        "Request a pre-approved appname from ReliefWeb, then set ASE_RELIEFWEB_APPNAME on the "
+        f"server. {RELIEFWEB_APPROVAL_NOTE}",
+    )
+
+
 def _secret_set(value: SecretStr | None) -> bool:
     return value is not None and bool(value.get_secret_value().strip())
 
@@ -104,6 +125,7 @@ def acled_requirement(settings: Settings) -> SourceRequirement:
             "Run the ACLED OAuth password grant and set ASE_ACLED_REFRESH_TOKEN on the server "
             "to enable ACLED events."
         )
+    note += f" {ACLED_TIER_NOTE}"
     return SourceRequirement(
         "credentials",
         refresh or access,
@@ -133,9 +155,7 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
             "Create a BarentsWatch AIS client and set both settings on the server.",
         ),
         ACLED_SPEC.id: acled_requirement(settings),
-        RELIEFWEB_SPEC.id: _key(
-            "ASE_RELIEFWEB_APPNAME", bool(settings.reliefweb_appname), "the ReliefWeb reports API"
-        ),
+        RELIEFWEB_SPEC.id: reliefweb_requirement(settings),
         CLOUDFLARE_RADAR.id: _key(
             "ASE_CLOUDFLARE_RADAR_TOKEN",
             bool(settings.cloudflare_radar_token),

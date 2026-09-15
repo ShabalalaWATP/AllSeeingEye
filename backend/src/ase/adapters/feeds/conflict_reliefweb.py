@@ -10,8 +10,9 @@ from typing import Any
 from urllib.parse import urlencode
 
 from ase.adapters.feeds.conflict_values import public_link, text, when
-from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, FeedHttpStatusError, NotModified
 from ase.application.ports import Clock
+from ase.application.ports.feed_diagnostics import FeedBlocked
 from ase.domain.events import (
     Category,
     Credibility,
@@ -25,6 +26,12 @@ from ase.domain.events import (
 from ase.domain.sources import SourceKind, SourceSpec
 
 MAX_REPORTS = 100
+APPNAME_RECHECK = timedelta(hours=12)
+APPNAME_NOT_APPROVED = (
+    "ReliefWeb refused the configured application name (HTTP 403). Since 1 November 2025 "
+    "the API only answers pre-approved appnames; request approval from ReliefWeb, then keep "
+    "ASE_RELIEFWEB_APPNAME. The application rechecks every 12 hours."
+)
 SPEC = SourceSpec(
     id="reliefweb_reports",
     name="ReliefWeb humanitarian reports (API)",
@@ -67,6 +74,10 @@ class ReliefWebReportsConnector:
             payload = await self._http.get_json(self._url)
         except NotModified:
             return []
+        except FeedHttpStatusError as exc:
+            if exc.status_code != 403:
+                raise
+            raise FeedBlocked(APPNAME_NOT_APPROVED, self._clock.now() + APPNAME_RECHECK) from None
         if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
             raise FeedFetchError("ReliefWeb returned an invalid report envelope.")
         if len(payload["data"]) > MAX_REPORTS:

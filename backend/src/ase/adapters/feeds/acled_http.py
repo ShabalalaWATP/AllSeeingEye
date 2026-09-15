@@ -34,6 +34,10 @@ class AcledUnauthorised(FeedFetchError):
     """ACLED refused the bearer token; the caller may refresh it once."""
 
 
+class AcledForbidden(FeedFetchError):
+    """ACLED accepted the token but the account tier has no API data access."""
+
+
 class AcledRefreshRejected(FeedFetchError):
     """The token endpoint refused the refresh token itself (expired, revoked or malformed)."""
 
@@ -85,7 +89,7 @@ class AcledHttpClient(FeedHttpClient):
                 raise FeedFetchError("ACLED authentication failed.") from None
 
     async def read_json(self, url: str, credential: FeedCredential) -> Any:
-        """One bearer GET without redirects; 401 is the only status reported to the caller."""
+        """One bearer GET without redirects; only 401 and 403 are reported to the caller."""
         credential.require_origin(url)
         with protect_http_logs():
             try:
@@ -106,11 +110,15 @@ class AcledHttpClient(FeedHttpClient):
                     ) as response:
                         if response.status_code == 401:
                             raise AcledUnauthorised("ACLED refused the access token.")
+                        if response.status_code == 403:
+                            raise AcledForbidden("ACLED refused data access for this account.")
                         if response.status_code != 200:
                             raise ValueError
                         return json.loads(await _read_limited(response, DATA_MAX_BYTES))
             except AcledUnauthorised:
                 raise AcledUnauthorised("ACLED refused the access token.") from None
+            except AcledForbidden:
+                raise AcledForbidden("ACLED refused data access for this account.") from None
             except Exception:
                 raise FeedFetchError("Authenticated feed request failed.") from None
 

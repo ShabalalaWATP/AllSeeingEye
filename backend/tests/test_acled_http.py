@@ -15,6 +15,7 @@ from acled_helpers import CIPHER, ENV_REFRESH, MemoryStore, grant
 from ase.adapters.feeds import acled_http
 from ase.adapters.feeds.acled_http import (
     TOKEN_URL,
+    AcledForbidden,
     AcledHttpClient,
     AcledRefreshRejected,
     AcledUnauthorised,
@@ -114,8 +115,8 @@ async def test_malformed_refresh_tokens_are_never_sent(monkeypatch, value) -> No
     assert calls == []
 
 
-async def test_bearer_read_reports_401_and_hides_other_statuses(monkeypatch) -> None:
-    statuses = iter([401, 403, 200])
+async def test_bearer_read_reports_401_and_403_and_hides_other_statuses(monkeypatch) -> None:
+    statuses = iter([401, 403, 500, 200])
 
     def handle(request: httpx.Request) -> httpx.Response:
         assert request.headers["authorization"] == "Bearer synthetic-access-0001"
@@ -127,9 +128,13 @@ async def test_bearer_read_reports_401_and_hides_other_statuses(monkeypatch) -> 
     try:
         with pytest.raises(AcledUnauthorised):
             await http.read_json(READ_URL, CREDENTIAL)
+        with pytest.raises(AcledForbidden) as forbidden:
+            await http.read_json(READ_URL, CREDENTIAL)
+        assert "secret" not in str(forbidden.value)
         with pytest.raises(FeedFetchError) as error:
             await http.read_json(READ_URL, CREDENTIAL)
-        assert "secret" not in str(error.value) and not isinstance(error.value, AcledUnauthorised)
+        assert "secret" not in str(error.value)
+        assert not isinstance(error.value, AcledUnauthorised | AcledForbidden)
         assert (await http.read_json(READ_URL, CREDENTIAL))["status"] == 200
     finally:
         await http.aclose()
