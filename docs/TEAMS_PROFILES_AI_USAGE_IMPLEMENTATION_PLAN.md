@@ -213,7 +213,7 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | D01 | T02, P02 | **Implemented for the current slice.** My teams entry, creation journey, personal/team context and capability-driven dashboard shell are wired. |
 | D02 | D01 | **Implemented.** `GET /api/teams/{id}/dashboard` returns pinned posts, unread count, five recent team reports, next five subscription runs and bounded action-needed items; the Overview tab renders them with exact links. |
 | D03 | D01 | **Implemented.** Author-only edits, moderator removal and pins with an audited reason, public tombstones, revision-conditional writes returning 409, a locked three-pin cap, per-membership read cursors and unread counts. |
-| D04 | D02, D03, Q04 | **Partial.** Usage widgets, overview data and archive/restore UX are present. Visibility-aware board polling and mobile/visual browser acceptance remain. |
+| D04 | D02, D03, Q04 | **Partial.** Usage widgets, overview data, archive/restore UX and visibility-aware refresh (board every 30 seconds, overview every 60, paused while hidden, backing off after failures and stopping on revoked access, without discarding drafts or loaded pages) are present. Mobile/visual browser acceptance remains. |
 | V01 | All above | **Partial.** Integrated with `main`; full backend and frontend suites with coverage gates; SQLite and PostgreSQL 17 migration round trips from populated `0044` data; teams, directory, board, allowance, pruning and race tests on PostgreSQL. Authenticated browser journeys and the security review remain. |
 | V02 | V01 | **Not started.** Operator migration checklist, monitoring, feature switches (self-service creation, directory, board, enforcement) and bounded live provider smoke. |
 
@@ -344,3 +344,9 @@ Release complete means ordinary users can create and manage teams, invite people
 - **Pruning:** settled and released reservations are deleted 90 days after their
   period ends, counters and totals after 400 days, in bounded hourly batches from
   admission (migration `0054` adds the supporting index).
+- **Board refresh:** a shared `useVisiblePolling` hook refreshes the board first page and
+  the team overview while the page is visible, merges posts by id and revision, keeps
+  drafts, edits and moderation prompts, and stops with a "Team access changed" state
+  on 403 or 404.
+- **Checks at merge:** frontend 2,605 tests with 90.3 percent branch coverage; 639
+  affected backend tests on SQLite; ruff, mypy, import contracts and file length.
