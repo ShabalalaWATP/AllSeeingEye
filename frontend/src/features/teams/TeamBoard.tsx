@@ -71,6 +71,19 @@ export function TeamBoard({
           </span>
         ) : null}
       </div>
+      {/* The live region stays mounted so screen readers announce later updates. */}
+      <p aria-live="polite" className={board.refreshNotice ? 'text-xs text-muted' : 'sr-only'}>
+        {board.refreshNotice}
+      </p>
+      {board.accessLost ? (
+        <Alert tone="warning" title="Team access changed">
+          This board is no longer available to your account, so automatic refresh has stopped. Any
+          unsent draft is kept in this tab. Refresh the team list to check your current workspaces.{' '}
+          <Button variant="ghost" onClick={() => void board.load()}>
+            Retry
+          </Button>
+        </Alert>
+      ) : null}
       {board.error ? (
         <Alert tone="error">
           {board.error}{' '}
@@ -87,7 +100,7 @@ export function TeamBoard({
           </Button>
         </Alert>
       ) : null}
-      {canWrite ? (
+      {board.accessLost ? null : canWrite ? (
         <div className="border border-line bg-surface/50 p-4">
           <TextAreaField
             label={
@@ -127,7 +140,7 @@ export function TeamBoard({
       {board.loading && board.posts.length === 0 ? (
         <LoadingNote label="Loading team board" />
       ) : null}
-      {!board.loading && !board.error && board.posts.length === 0 ? (
+      {!board.loading && !board.error && !board.accessLost && board.posts.length === 0 ? (
         <div className="border border-dashed border-line bg-surface/30 p-8 text-center">
           <h4 className="text-base font-semibold">No board updates yet</h4>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">

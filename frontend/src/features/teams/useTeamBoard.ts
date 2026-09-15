@@ -10,19 +10,18 @@ import {
   removeBoardPost,
   type TeamBoardPost,
 } from '@/lib/api/teamBoard';
+import { useVisiblePolling, type PollOutcome } from '@/lib/hooks/useVisiblePolling';
+
+import { appendPage, countNewPosts, mergeFirstPage, newestPost } from './boardMerge';
+import { isTeamAccessLoss as isAccessLoss } from './teamCapabilities';
 
 export type BoardAction = 'remove' | 'pin';
 
-function newest(posts: readonly TeamBoardPost[]): TeamBoardPost | undefined {
-  return posts.reduce<TeamBoardPost | undefined>(
-    (latest, post) => (latest === undefined || post.created_at > latest.created_at ? post : latest),
-    undefined,
-  );
-}
+export const BOARD_REFRESH_INTERVAL = 30_000;
 
-function merge(current: TeamBoardPost[], incoming: readonly TeamBoardPost[]): TeamBoardPost[] {
-  const known = new Set(incoming.map((post) => post.id));
-  return [...current.filter((post) => !known.has(post.id)), ...incoming];
+function notifyNew(count: number): string | null {
+  if (count === 0) return null;
+  return count === 1 ? '1 new post added' : `${count} new posts added`;
 }
 
 /**
@@ -38,19 +37,78 @@ export function useTeamBoard(teamId: string) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState<string | null>(null);
+  const [accessLost, setAccessLost] = useState(false);
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [replyTo, setReplyTo] = useState<TeamBoardPost | null>(null);
   const [editing, setEditing] = useState<TeamBoardPost | null>(null);
   const editingRef = useRef<TeamBoardPost | null>(null);
+  const shown = useRef<TeamBoardPost[]>([]);
+  const olderLoaded = useRef(false);
+  const activeRequests = useRef(0);
   useEffect(() => {
     editingRef.current = editing;
   }, [editing]);
+  useEffect(() => {
+    shown.current = [...posts, ...replies];
+  }, [posts, replies]);
+
+  // Stop showing content the account can no longer see; drafts stay local to this tab.
+  const loseAccess = useCallback(() => {
+    setAccessLost(true);
+    setPosts([]);
+    setReplies([]);
+    setNextOffset(null);
+    setUnread(0);
+    setRefreshNotice(null);
+  }, []);
+
+  const refresh = useCallback(
+    async (signal: AbortSignal): Promise<PollOutcome> => {
+      // Explicit loads and writes take priority; a manual load also aborts this request.
+      if (activeRequests.current > 0) return 'skipped';
+      try {
+        const page = await listBoardPosts(teamId, 0, 20, signal);
+        const incoming = [...page.items, ...page.replies];
+        const added = countNewPosts(shown.current, incoming);
+        setPosts((current) => mergeFirstPage(current, page.items));
+        setReplies((current) => mergeFirstPage(current, page.replies));
+        if (!olderLoaded.current) setNextOffset(page.next_offset);
+        setUnread(page.unread_count);
+        setRefreshNotice(notifyNew(added));
+        const latest = newestPost(incoming);
+        if (latest && added > 0 && page.unread_count > 0 && document.visibilityState !== 'hidden') {
+          void markBoardRead(teamId, latest.id).catch(() => undefined);
+        }
+        return 'ok';
+      } catch (caught) {
+        if (signal.aborted) return 'skipped';
+        const failure = asApiError(caught);
+        if (!isAccessLoss(failure.status)) {
+          setRefreshNotice('Automatic refresh failed. The board will try again shortly.');
+          return 'failed';
+        }
+        loseAccess();
+        return 'stop';
+      }
+    },
+    [loseAccess, teamId],
+  );
+  const { markLoaded } = useVisiblePolling({
+    enabled: !accessLost && !loading,
+    intervalMs: BOARD_REFRESH_INTERVAL,
+    poll: refresh,
+  });
 
   const load = useCallback(async () => {
+    activeRequests.current += 1;
     setLoading(true);
     setError(null);
     try {
       const page = await listBoardPosts(teamId);
+      olderLoaded.current = false;
+      setAccessLost(false);
+      setRefreshNotice(null);
       setPosts(page.items);
       setReplies(page.replies);
       setNextOffset(page.next_offset);
@@ -61,16 +119,21 @@ export function useTeamBoard(teamId: string) {
         const fresh = [...page.items, ...page.replies].find((post) => post.id === current.id);
         setEditing(fresh?.deleted_at === null ? fresh : null);
       }
-      const latest = newest([...page.items, ...page.replies]);
-      if (latest && page.unread_count > 0) {
+      const latest = newestPost([...page.items, ...page.replies]);
+      if (latest && page.unread_count > 0 && document.visibilityState !== 'hidden') {
         void markBoardRead(teamId, latest.id).catch(() => undefined);
       }
     } catch (caught) {
-      setError(describeError(asApiError(caught)));
+      const failure = asApiError(caught);
+      if (isAccessLoss(failure.status)) loseAccess();
+      else setError(describeError(failure));
     } finally {
+      // A failed load also counts as a recent attempt, so polling does not retry at once.
+      markLoaded();
+      activeRequests.current -= 1;
       setLoading(false);
     }
-  }, [teamId]);
+  }, [loseAccess, markLoaded, teamId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -80,14 +143,17 @@ export function useTeamBoard(teamId: string) {
   const loadMore = useCallback(async () => {
     if (nextOffset === null || busy) return;
     setBusy(true);
+    activeRequests.current += 1;
     try {
       const page = await listBoardPosts(teamId, nextOffset);
-      setPosts((current) => merge(current, page.items));
-      setReplies((current) => merge(current, page.replies));
+      olderLoaded.current = true;
+      setPosts((current) => appendPage(current, page.items));
+      setReplies((current) => appendPage(current, page.replies));
       setNextOffset(page.next_offset);
     } catch (caught) {
       setError(describeError(asApiError(caught)));
     } finally {
+      activeRequests.current -= 1;
       setBusy(false);
     }
   }, [busy, nextOffset, teamId]);
@@ -103,6 +169,7 @@ export function useTeamBoard(teamId: string) {
     if (!text || busy) return;
     setBusy(true);
     setError(null);
+    activeRequests.current += 1;
     try {
       if (editing) await editBoardPost(teamId, editing.id, text, editing.revision);
       else await createBoardPost(teamId, text, replyTo?.id);
@@ -114,6 +181,7 @@ export function useTeamBoard(teamId: string) {
     } catch (caught) {
       handleFailure(caught);
     } finally {
+      activeRequests.current -= 1;
       setBusy(false);
     }
   }
@@ -122,6 +190,7 @@ export function useTeamBoard(teamId: string) {
     if (busy) return false;
     setBusy(true);
     setError(null);
+    activeRequests.current += 1;
     try {
       if (action === 'remove') await removeBoardPost(teamId, post.id, post.revision, reason);
       else await pinBoardPost(teamId, post.id, !post.is_pinned, post.revision, reason);
@@ -131,6 +200,7 @@ export function useTeamBoard(teamId: string) {
       handleFailure(caught);
       return false;
     } finally {
+      activeRequests.current -= 1;
       setBusy(false);
     }
   }
@@ -167,6 +237,8 @@ export function useTeamBoard(teamId: string) {
     busy,
     error,
     conflict,
+    accessLost,
+    refreshNotice,
     draft,
     replyTo,
     editing,

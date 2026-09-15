@@ -213,7 +213,7 @@ describe('TeamBoard', () => {
     ]);
   });
 
-  it('offers a retry when the board cannot be loaded', async () => {
+  it('offers a retry when the board is no longer available', async () => {
     let fail = true;
     server.use(
       http.get(`${base}/posts`, () =>
@@ -221,7 +221,8 @@ describe('TeamBoard', () => {
       ),
     );
     const user = renderBoard(plainUser.id, memberCapabilities);
-    expect(await screen.findByText('Not found.')).toBeInTheDocument();
+    expect(await screen.findByText('Team access changed')).toBeInTheDocument();
+    expect(screen.queryByLabelText('New board post')).not.toBeInTheDocument();
     fail = false;
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('No board updates yet')).toBeInTheDocument();
