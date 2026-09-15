@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { describeError } from '@/lib/api/errors';
-import { getTeamAiUsage, type AiUsageSummary } from '@/lib/api/aiUsage';
 import type { User } from '@/lib/api/schemas';
 import type { TeamDetail } from '@/lib/api/teams';
 
 import { TeamBoard } from './TeamBoard';
+import { TeamOverview } from './TeamOverview';
 import type { TeamCapabilities } from './teamCapabilities';
 
 export type TeamDashboardTab = 'overview' | 'research' | 'board' | 'members';
@@ -37,170 +34,6 @@ function StatusPill({ active }: { active: boolean }) {
       />
       {active ? 'Active workspace' : 'Archived workspace'}
     </span>
-  );
-}
-
-function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return (
-    <div className="border-l-2 border-ember/60 pl-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-text">{value}</p>
-      <p className="mt-1 text-xs text-muted">{detail}</p>
-    </div>
-  );
-}
-
-function TeamAllowance({ teamId }: { teamId: string }) {
-  const [items, setItems] = useState<AiUsageSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setItems(await getTeamAiUsage(teamId));
-    } catch (reason) {
-      setError(describeError(reason));
-    } finally {
-      setLoading(false);
-    }
-  };
-  const rows = items ?? [];
-
-  return (
-    <details
-      className="border border-line/70 bg-surface/40 p-5"
-      onToggle={(event) => {
-        if (event.currentTarget.open && items === null && !loading) void load();
-      }}
-    >
-      <summary className="cursor-pointer text-sm font-semibold">AI allowance</summary>
-      <div className="mt-4">
-        {loading ? <p className="text-sm text-muted">Loading allowance…</p> : null}
-        {error ? <p className="text-sm text-critical">{error}</p> : null}
-        {items !== null && rows.length === 0 ? (
-          <p className="text-sm text-muted">No allowance policy is active for this workspace.</p>
-        ) : null}
-        {rows.length > 0 ? (
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {rows.map((item) => {
-              const requestLimit = item.policy.request_limit;
-              const tokenLimit = item.policy.token_limit;
-              return (
-                <li key={item.policy.id} className="border border-line/70 p-3 text-sm">
-                  <p className="font-medium capitalize">
-                    {item.policy.scope} · {item.policy.period}
-                  </p>
-                  <p className="mt-1 text-muted">
-                    Requests: {item.used_requests}
-                    {requestLimit === null ? ' / unlimited' : ` / ${requestLimit}`}
-                  </p>
-                  <p className="text-muted">
-                    Tokens: {item.used_tokens.toLocaleString()}
-                    {tokenLimit === null ? ' / unlimited' : ` / ${tokenLimit.toLocaleString()}`}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
-        ) : null}
-      </div>
-    </details>
-  );
-}
-
-function Overview({
-  detail,
-  capabilities,
-  teamId,
-  onTabChange,
-}: {
-  detail: TeamDetail;
-  capabilities: TeamCapabilities;
-  teamId: string;
-  onTabChange: (tab: TeamDashboardTab) => void;
-}) {
-  const memberCount = detail.members.length;
-  const activeMembers = detail.members.filter((member) => member.is_active).length;
-  const managers = detail.members.filter(
-    (member) => member.is_active && member.role === 'manager',
-  ).length;
-  const created = detail.team.created_at.slice(0, 10);
-
-  return (
-    <div className="flex flex-col gap-7" aria-labelledby="team-overview-heading">
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
-          Workspace pulse
-        </p>
-        <h3 id="team-overview-heading" className="mt-2 text-xl font-semibold">
-          A calm view of who can work here
-        </h3>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Keep the team small and purposeful. Use Members to manage access, Research to create
-          shared analysis, and Board for short operational notes.
-        </p>
-      </div>
-      <div className="grid gap-6 border-y border-line/70 py-6 sm:grid-cols-3">
-        <Stat label="People" value={String(memberCount)} detail={`${activeMembers} active`} />
-        <Stat label="Managers" value={String(managers)} detail="Team-level managers" />
-        <Stat label="Created" value={created} detail="Workspace start date" />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.7fr)]">
-        <section
-          className="rounded-card border border-line bg-surface/60 p-5"
-          aria-labelledby="team-next-heading"
-        >
-          <h4 id="team-next-heading" className="text-sm font-semibold">
-            Next actions
-          </h4>
-          <ul className="mt-4 space-y-3 text-sm text-muted">
-            <li className="flex gap-3">
-              <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-ember" />
-              <span>
-                {memberCount === 0
-                  ? 'Add the first colleague from Members.'
-                  : `${activeMembers} active ${activeMembers === 1 ? 'person is' : 'people are'} available to collaborate.`}
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-cyan" />
-              <span>Start a research task and save the finished report into this workspace.</span>
-            </li>
-            <li className="flex gap-3">
-              <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-amber" />
-              <span>Use the Board for short handovers, questions, and context between runs.</span>
-            </li>
-          </ul>
-        </section>
-        <section className="border border-line/70 p-5" aria-labelledby="team-access-heading">
-          <h4 id="team-access-heading" className="text-sm font-semibold">
-            Your access
-          </h4>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            {capabilities.isAdmin
-              ? 'Administrator access applies across this workspace.'
-              : capabilities.isManager
-                ? 'You are a team manager and can maintain ordinary member access.'
-                : capabilities.isMember
-                  ? 'You can use shared team workspaces and view the roster.'
-                  : 'Your membership is currently read-only.'}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => onTabChange('members')}>
-              Open members
-            </Button>
-            {capabilities.canManageMembers ? (
-              <Button variant="ghost" onClick={() => onTabChange('members')}>
-                Manage access
-              </Button>
-            ) : null}
-          </div>
-        </section>
-      </div>
-      <TeamAllowance teamId={teamId} />
-    </div>
   );
 }
 
@@ -328,10 +161,9 @@ export function TeamDashboard({
         className="min-w-0 pb-8"
       >
         {activeTab === 'overview' ? (
-          <Overview
-            detail={detail}
-            capabilities={capabilities}
+          <TeamOverview
             teamId={detail.team.id}
+            capabilities={capabilities}
             onTabChange={onTabChange}
           />
         ) : null}

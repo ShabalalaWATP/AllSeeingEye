@@ -129,14 +129,17 @@ describe('TeamsPage', () => {
   });
 
   it('exposes the dashboard sections and keeps the roster workflow one click away', async () => {
-    const { user } = setupTeams(plainUser);
+    const { user } = setupTeams(plainUser, roster, [
+      http.get('/api/teams/:id/dashboard', () => apiError(404, 'not_found', 'Not found.')),
+      http.get('/api/teams/:id/board/posts', () => apiError(404, 'not_found', 'Not found.')),
+    ]);
     await memberRow('Uma User');
     expect(screen.getByRole('tab', { name: /Overview/ })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByRole('tab', { name: /Members/ })).toHaveAttribute('aria-selected', 'true');
 
     await user.click(screen.getByRole('tab', { name: /Overview/ }));
     expect(
-      await screen.findByRole('heading', { name: 'A calm view of who can work here' }),
+      await screen.findByRole('heading', { name: 'What needs attention in this team' }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /Research/ }));
     expect(
