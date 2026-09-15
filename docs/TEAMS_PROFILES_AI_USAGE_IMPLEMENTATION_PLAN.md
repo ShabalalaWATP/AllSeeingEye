@@ -192,7 +192,7 @@ Proposed API surface, reconciled with existing routes before coding:
 | `GET /api/me/ai-usage`, `GET /api/teams/{id}/ai-usage` | Authorised totals and effective allowances |
 | `/api/admin/ai-policies` | Revisioned scope policy list/create/update and effective preview |
 
-Retain existing tested model connection/assignment endpoints. Keep the existing email-based direct member PUT as a bounded, authenticated path for managers adding known active accounts, and offer directory-backed invitations for people discovery and consent. Never leave either route as a privilege bypass. Use strict bounded schemas, 409 for stale revisions and 404 for inaccessible object ids. Regenerate OpenAPI and clients together.
+Retain existing tested model connection/assignment endpoints. The email-based `PUT /api/teams/{id}/members` is an Administrator-only direct add, audited, and refuses every non-Administrator caller with one response before any account lookup, so it cannot reveal whether an email exists, is inactive or belongs to an Administrator. Managers add people only through directory-backed invitations, which require the recipient's consent, and change roles by account id through `PATCH /api/teams/{id}/members/{user_id}`. Rosters return display name and directory username, never login email. Never leave either route as a privilege bypass. Use strict bounded schemas, 409 for stale revisions and 404 for inaccessible object ids. Regenerate OpenAPI and clients together.
 
 ## 8. Ordered implementation tasks
 

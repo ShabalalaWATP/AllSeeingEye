@@ -4,7 +4,14 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
 import type { User } from '@/lib/api/schemas';
-import { getTeam, removeMember, setMember, updateTeam } from '@/lib/api/teams';
+import {
+  changeMemberRole,
+  getTeam,
+  leaveTeam,
+  removeMember,
+  setMember,
+  updateTeam,
+} from '@/lib/api/teams';
 
 import { AddMemberForm, TeamNameForm } from './TeamForms';
 import { ConfirmAction, TeamRoster } from './TeamRoster';
@@ -114,7 +121,8 @@ export function TeamPanel({
               ) : null}
               {!admin && canManage ? (
                 <p className="text-sm text-muted">
-                  You manage members and can grant team-manager access to ordinary active accounts.
+                  You manage members. Invite people from the directory, then promote members to team
+                  manager when needed.
                 </p>
               ) : null}
               <TeamRoster
@@ -132,14 +140,14 @@ export function TeamPanel({
                 }}
                 onRole={(member, role) => {
                   void action.run(
-                    () => setMember(id, { email: member.email, role }),
+                    () => changeMemberRole(id, member.user_id, role),
                     'Team role updated.',
                     reload,
                   );
                 }}
               />
               <TeamInvitationPanel teamId={id} canManage={canManage} />
-              {canManage && detail.team.is_active ? (
+              {admin && detail.team.is_active ? (
                 <AddMemberForm
                   admin={admin}
                   allowManagerRole
@@ -148,6 +156,23 @@ export function TeamPanel({
                     void action.run(() => setMember(id, input), 'Membership saved.', reload);
                   }}
                 />
+              ) : null}
+              {capabilities.canLeave ? (
+                <div className="border-t border-line pt-4">
+                  <ConfirmAction
+                    label="Leave team"
+                    question="Leave this team? You will lose access to its research and board."
+                    busy={action.busy}
+                    onConfirm={() => {
+                      void action.run(() => leaveTeam(id), 'You left the team.', refreshList);
+                    }}
+                  />
+                  {capabilities.isManager ? (
+                    <p className="mt-2 text-xs text-muted">
+                      Appoint another manager first. The last active manager cannot leave.
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
               {canManageTeam ? (
                 <details className="border-t border-line pt-4">

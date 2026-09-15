@@ -33,7 +33,8 @@ describe('TeamsPage', () => {
       ),
     });
     await memberRow('Mina Manager');
-    expect(screen.getByRole('form', { name: 'Add team member' })).toBeInTheDocument();
+    expect(screen.getByText('Team settings')).toBeInTheDocument();
+    expect(screen.getByText(/Invite people from the directory/)).toBeInTheDocument();
   });
 
   it('does not grant manager authority from a stale account designation', async () => {
@@ -47,16 +48,47 @@ describe('TeamsPage', () => {
     expect(screen.queryByRole('button', { name: 'Remove member' })).not.toBeInTheDocument();
   });
 
-  it('lets designated managers add ordinary members by email without an account directory', async () => {
+  it('makes managers invite people and change roles by account id, never by email', async () => {
     const { user, writes } = setupTeams(manager);
-    await user.type(await screen.findByLabelText('Account email'), 'new@example.com');
-    expect(screen.getByLabelText('Team role')).toBeInTheDocument();
-    expect(screen.getByText(/Managers can assign team-manager access/)).toBeInTheDocument();
-    expect(screen.getByText('Team settings')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Add member' }));
-    expect(await screen.findByText('Membership saved.')).toBeInTheDocument();
-    expect(writes).toEqual([{ method: 'PUT', body: { email: 'new@example.com', role: 'member' } }]);
+    const row = await memberRow('Uma User');
+    expect(screen.queryByRole('form', { name: 'Add team member' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Account email')).not.toBeInTheDocument();
+    await user.click(row.getByRole('button', { name: 'Make manager' }));
+    expect(await screen.findByText('Team role updated.')).toBeInTheDocument();
+    expect(writes).toEqual([{ method: 'PATCH', userId: plainUser.id, body: { role: 'manager' } }]);
     expect((await memberRow('Mina Manager')).queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('lets a member leave after confirming', async () => {
+    const { user, writes } = setupTeams(plainUser);
+    await memberRow('Uma User');
+    await user.click(screen.getByRole('button', { name: 'Leave team' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(writes).toEqual([]);
+    await user.click(screen.getByRole('button', { name: 'Leave team' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm leave team' }));
+    await waitFor(() => {
+      expect(writes).toEqual([{ method: 'LEAVE' }]);
+    });
+  });
+
+  it('explains when the last active manager cannot leave', async () => {
+    const { user } = setupTeams(manager, roster, [
+      http.post('/api/teams/:id/leave', () =>
+        apiError(
+          422,
+          'invalid_request',
+          'Each active team must retain at least one active Manager.',
+        ),
+      ),
+    ]);
+    await memberRow('Uma User');
+    expect(screen.getByText(/The last active manager cannot leave/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Leave team' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm leave team' }));
+    expect(
+      await screen.findByText('Each active team must retain at least one active Manager.'),
+    ).toBeInTheDocument();
   });
 
   it('confirms removal and supports cancellation without sending a request', async () => {
@@ -87,13 +119,15 @@ describe('TeamsPage', () => {
       (await memberRow('Mina Manager')).getByRole('button', { name: 'Set as member' }),
     );
     await screen.findByText('Team role updated.');
+    expect(writes[1]).toEqual({ method: 'PATCH', userId: manager.id, body: { role: 'member' } });
     await user.click(
       (await memberRow('Mina Manager')).getByRole('button', { name: 'Make manager' }),
     );
     await waitFor(() => {
       expect(writes).toHaveLength(3);
     });
-    expect(writes[2]).toEqual({ method: 'PUT', body: { email: manager.email, role: 'manager' } });
+    expect(writes[2]).toEqual({ method: 'PATCH', userId: manager.id, body: { role: 'manager' } });
+    expect(screen.queryByRole('button', { name: 'Leave team' })).not.toBeInTheDocument();
   });
 
   it('creates and selects a named team', async () => {
@@ -177,13 +211,14 @@ describe('TeamsPage', () => {
 
   it('discards stale roster authority after a denied membership change', async () => {
     const { user } = setupTeams(manager);
-    await screen.findByLabelText('Account email');
+    const row = await memberRow('Uma User');
     server.use(
-      http.put('/api/teams/:id/members', () => apiError(403, 'forbidden', 'Membership changed.')),
+      http.patch('/api/teams/:id/members/:userId', () =>
+        apiError(403, 'forbidden', 'Membership changed.'),
+      ),
       http.get('/api/teams/:id', () => apiError(404, 'not_found', 'Team not found.')),
     );
-    await user.type(screen.getByLabelText('Account email'), 'admin@example.com');
-    await user.click(screen.getByRole('button', { name: 'Add member' }));
+    await user.click(row.getByRole('button', { name: 'Make manager' }));
     expect(await screen.findByText('Membership changed.')).toBeInTheDocument();
     await screen.findByText('Team not found.');
     expect(screen.queryByRole('table')).not.toBeInTheDocument();

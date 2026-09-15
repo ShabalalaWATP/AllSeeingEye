@@ -123,7 +123,9 @@ export function TeamRoster({
           <li key={member.user_id} className="flex min-w-0 flex-col gap-3 py-4">
             <div>
               <p className="break-words font-medium">{member.display_name}</p>
-              <p className="mt-1 break-all text-sm text-muted">{member.email}</p>
+              {member.username ? (
+                <p className="mt-1 break-all text-sm text-muted">@{member.username}</p>
+              ) : null}
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -168,7 +170,9 @@ export function TeamRoster({
           <tr key={member.user_id}>
             <Td>
               <span className="font-medium">{member.display_name}</span>
-              <span className="block break-all text-xs text-muted">{member.email}</span>
+              {member.username ? (
+                <span className="block break-all text-xs text-muted">@{member.username}</span>
+              ) : null}
             </Td>
             <Td>
               <span className="capitalize">{member.account_role}</span>

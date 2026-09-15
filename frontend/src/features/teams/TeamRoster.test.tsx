@@ -43,7 +43,8 @@ describe('compact team roster', () => {
   it('labels member identity and both roles without duplicate desktop rows', async () => {
     setupTeams(manager);
     const managerRow = await member('Mina Manager');
-    expect(managerRow.getByText('manager@example.com')).toBeVisible();
+    expect(managerRow.getByText('@mina_manager')).toBeVisible();
+    expect(screen.queryByText('manager@example.com')).not.toBeInTheDocument();
     expect(managerRow.getByText('Account')).toBeVisible();
     expect(managerRow.getByText('Team role')).toBeVisible();
     expect(managerRow.queryByRole('button')).not.toBeInTheDocument();

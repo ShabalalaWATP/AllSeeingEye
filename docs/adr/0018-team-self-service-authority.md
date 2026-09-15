@@ -53,10 +53,20 @@ not invent a replacement or silently widen access. The backfilled memberships
 are valid data and are retained if the migration is downgraded, while the
 supporting index is removed.
 
-The existing email-based member endpoint remains available during the
-invitation migration. Its application service still enforces the same
-membership and Administrator protection rules. Invitation-only writes,
-directory discovery and team board features are separate follow-up milestones.
+The email-based member endpoint is now an Administrator-only direct add.
+Managers add people through consent-based invitations and change roles by
+account id. Non-Administrator callers receive one refusal before any account
+lookup, so the endpoint cannot be used to enumerate accounts. Rosters expose
+display name and directory username, not login email.
+
+Migration `0050` demotes team Manager memberships held by ordinary `user`
+accounts before retiring the global Manager role, because those memberships
+granted no authority under the earlier two-part rule. It records per-team
+inventories (identifiers and counts only) in the audit log for demotions and for
+active teams left without an active Manager. Migration `0047` records the
+creator memberships it adds or promotes in the same way. Administrators cannot
+deactivate an account that is the only active Manager of an active team until a
+replacement is appointed or the team is archived.
 
 ## Consequences and verification
 
