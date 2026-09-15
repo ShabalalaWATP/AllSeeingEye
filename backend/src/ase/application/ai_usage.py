@@ -1,4 +1,4 @@
-"""Admission accounting for AI usage: reserve, dispatch, finish and reconcile.
+"""Admission accounting for AI usage: reserve, dispatch, finish, reconcile and prune.
 
 Each step opens its own short transaction; none is held across a provider request.
 """
@@ -17,6 +17,8 @@ from uuid import UUID, uuid4
 
 from ase.application.ports.ai_usage import AiUsageRepository
 from ase.domain.ai_usage import (
+    PERIOD_RETENTION,
+    RESERVATION_RETENTION,
     STALE_RESERVATION_AGE,
     AiAttribution,
     AiCallOutcome,
@@ -30,6 +32,8 @@ log = logging.getLogger(__name__)
 SETTLEMENT_SECONDS = 3.0
 RECONCILE_INTERVAL_SECONDS = 60.0
 RECONCILE_BATCH = 20
+PRUNE_INTERVAL_SECONDS = 3600.0
+PRUNE_BATCH = 500
 
 
 class AiUsageTransaction(Protocol):
@@ -57,6 +61,17 @@ class AiReconciliation:
     unknown: int = 0
 
 
+@dataclass(frozen=True, slots=True)
+class AiUsagePruned:
+    reservations: int = 0
+    counters: int = 0
+    totals: int = 0
+
+    def reached(self, limit: int) -> bool:
+        """Whether any table filled its batch, so more expired rows may remain."""
+        return max(self.reservations, self.counters, self.totals) >= limit
+
+
 class AiUsageAccounting:
     """Open short database transactions around a model call, never across the network."""
 
@@ -73,6 +88,7 @@ class AiUsageAccounting:
         self._clock = clock
         self._monotonic = monotonic
         self._next_reconcile = 0.0
+        self._next_prune = 0.0
 
     async def reserve(
         self,
@@ -84,7 +100,7 @@ class AiUsageAccounting:
         requested_tokens: int,
     ) -> AiReservationBatch:
         """Admit one call under every applicable policy, or record it for observation only."""
-        await self._maybe_reconcile()
+        await self._maintain()
         now = self._clock.now()
         call_id = uuid4()
         async with self._session_factory() as session:
@@ -195,17 +211,58 @@ class AiUsageAccounting:
                 raise
         return AiReconciliation(released, unknown)
 
-    async def _maybe_reconcile(self) -> None:
+    async def prune(self, limit: int = PRUNE_BATCH) -> AiUsagePruned:
+        """Delete expired finished reservations, counters and totals in one short transaction.
+
+        Held (``reserved`` or ``unknown``) reservations, and counters still carrying a
+        held reservation, are kept; current periods are never touched.
+        """
+        now = self._clock.now()
+        async with self._session_factory() as session:
+            repository = self._repository_factory(session)
+            try:
+                pruned = AiUsagePruned(
+                    await repository.prune_reservations(now - RESERVATION_RETENTION, limit),
+                    await repository.prune_counters(now - PERIOD_RETENTION, limit),
+                    await repository.prune_totals(now - PERIOD_RETENTION, limit),
+                )
+                await session.commit()
+            except BaseException:
+                await session.rollback()
+                raise
+        if pruned != AiUsagePruned():
+            log.info(
+                "ai_usage.pruned",
+                extra={
+                    "reservations": pruned.reservations,
+                    "counters": pruned.counters,
+                    "totals": pruned.totals,
+                },
+            )
+        return pruned
+
+    async def _maintain(self) -> None:
         """Opportunistic, throttled and bounded; a failure never blocks admission."""
         current = self._monotonic()
-        if current < self._next_reconcile:
-            return
-        self._next_reconcile = current + RECONCILE_INTERVAL_SECONDS
-        try:
-            async with asyncio.timeout(SETTLEMENT_SECONDS):
-                await self.reconcile()
-        except Exception:
-            log.warning("ai_usage.reconcile_failed", exc_info=True)
+        if current >= self._next_reconcile:
+            self._next_reconcile = current + RECONCILE_INTERVAL_SECONDS
+            try:
+                async with asyncio.timeout(SETTLEMENT_SECONDS):
+                    await self.reconcile()
+            except Exception:
+                log.warning("ai_usage.reconcile_failed", exc_info=True)
+        if current >= self._next_prune:
+            self._next_prune = current + PRUNE_INTERVAL_SECONDS
+            try:
+                async with asyncio.timeout(SETTLEMENT_SECONDS):
+                    pruned = await self.prune()
+            except Exception as exc:
+                # The exception type only: driver messages can echo bound parameters.
+                log.warning("ai_usage.prune_failed", extra={"error": type(exc).__name__})
+                return
+            if pruned.reached(PRUNE_BATCH):
+                # A full batch suggests a backlog; drain it at the reconciliation pace.
+                self._next_prune = current + RECONCILE_INTERVAL_SECONDS
 
 
 async def finish_with_deadline(
