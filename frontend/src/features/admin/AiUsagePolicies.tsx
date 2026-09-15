@@ -113,7 +113,7 @@ export function AiUsagePolicies({
         </Alert>
       ) : null}
       <AiPolicyForm
-        key={editing?.id ?? 'new'}
+        key={`policy-form:${editing?.id ?? 'new'}`}
         users={users}
         teams={teams}
         editing={editing}
@@ -195,7 +195,7 @@ export function AiUsagePolicies({
       ) : null}
       {overridesFor ? (
         <AiPolicyOverrides
-          key={overridesFor.id}
+          key={`policy-overrides:${overridesFor.id}`}
           policy={overridesFor}
           label={policyLabel(overridesFor, users, teams)}
         />
