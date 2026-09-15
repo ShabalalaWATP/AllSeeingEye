@@ -2692,6 +2692,7 @@
           "team-board"
         ],
         "summary": "Delete Post",
+        "description": "Author removal. Moderators use the remove action so a reason stays out of URLs.",
         "operationId": "delete_post_api_teams__team_id__board_posts__post_id__delete",
         "security": [
           {
@@ -2733,6 +2734,74 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/board/posts/{post_id}/remove": {
+      "post": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Remove Post",
+        "operationId": "remove_post_api_teams__team_id__board_posts__post_id__remove_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamBoardRemoveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2798,6 +2867,112 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TeamBoardPostOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/board/read": {
+      "post": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Mark Read",
+        "operationId": "mark_read_api_teams__team_id__board_read_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamBoardReadIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardUnreadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/dashboard": {
+      "get": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Team Dashboard",
+        "operationId": "team_dashboard_api_teams__team_id__dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDashboardOut"
                 }
               }
             }
@@ -42341,6 +42516,13 @@
             "type": "array",
             "title": "Items"
           },
+          "replies": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardPostOut"
+            },
+            "type": "array",
+            "title": "Replies"
+          },
           "total": {
             "type": "integer",
             "title": "Total"
@@ -42363,15 +42545,21 @@
               }
             ],
             "title": "Next Offset"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count"
           }
         },
         "type": "object",
         "required": [
           "items",
+          "replies",
           "total",
           "offset",
           "limit",
-          "next_offset"
+          "next_offset",
+          "unread_count"
         ],
         "title": "TeamBoardPageOut"
       },
@@ -42385,6 +42573,18 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Expected Revision"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
           }
         },
         "additionalProperties": false,
@@ -42458,6 +42658,18 @@
             "format": "date-time",
             "title": "Updated At"
           },
+          "edited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          },
           "parent_id": {
             "anyOf": [
               {
@@ -42486,6 +42698,21 @@
             ],
             "title": "Deleted At"
           },
+          "removal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "author",
+                  "moderator"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          },
           "revision": {
             "type": "integer",
             "title": "Revision"
@@ -42500,9 +42727,11 @@
           "text",
           "created_at",
           "updated_at",
+          "edited_at",
           "parent_id",
           "is_pinned",
           "deleted_at",
+          "removal",
           "revision"
         ],
         "title": "TeamBoardPostOut"
@@ -42528,6 +42757,286 @@
           "expected_revision"
         ],
         "title": "TeamBoardPostUpdateIn"
+      },
+      "TeamBoardReadIn": {
+        "properties": {
+          "last_seen_post_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Last Seen Post Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "last_seen_post_id"
+        ],
+        "title": "TeamBoardReadIn"
+      },
+      "TeamBoardRemoveIn": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision"
+        ],
+        "title": "TeamBoardRemoveIn",
+        "description": "Moderators must give a reason for removing someone else's post; it is audited only."
+      },
+      "TeamBoardUnreadOut": {
+        "properties": {
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unread_count"
+        ],
+        "title": "TeamBoardUnreadOut"
+      },
+      "TeamDashboardActionOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "owner_not_member",
+              "edition_failed",
+              "edition_blocked"
+            ],
+            "title": "Kind"
+          },
+          "schedule_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Schedule Id"
+          },
+          "schedule_name": {
+            "type": "string",
+            "title": "Schedule Name"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "edition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "schedule_id",
+          "schedule_name",
+          "occurred_at",
+          "edition_id"
+        ],
+        "title": "TeamDashboardActionOut"
+      },
+      "TeamDashboardOut": {
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/TeamDashboardTeamOut"
+          },
+          "pinned": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardPostOut"
+            },
+            "type": "array",
+            "title": "Pinned"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count"
+          },
+          "recent_reports": {
+            "items": {
+              "$ref": "#/components/schemas/TeamDashboardReportOut"
+            },
+            "type": "array",
+            "title": "Recent Reports"
+          },
+          "upcoming_runs": {
+            "items": {
+              "$ref": "#/components/schemas/TeamDashboardRunOut"
+            },
+            "type": "array",
+            "title": "Upcoming Runs"
+          },
+          "action_items": {
+            "items": {
+              "$ref": "#/components/schemas/TeamDashboardActionOut"
+            },
+            "type": "array",
+            "title": "Action Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team",
+          "pinned",
+          "unread_count",
+          "recent_reports",
+          "upcoming_runs",
+          "action_items"
+        ],
+        "title": "TeamDashboardOut"
+      },
+      "TeamDashboardReportOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "template": {
+            "type": "string",
+            "title": "Template"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "latest_version": {
+            "type": "integer",
+            "title": "Latest Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "template",
+          "status",
+          "latest_version",
+          "created_at"
+        ],
+        "title": "TeamDashboardReportOut"
+      },
+      "TeamDashboardRunOut": {
+        "properties": {
+          "schedule_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Schedule Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "cadence": {
+            "type": "string",
+            "title": "Cadence"
+          },
+          "next_run_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Next Run At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schedule_id",
+          "name",
+          "cadence",
+          "next_run_at"
+        ],
+        "title": "TeamDashboardRunOut"
+      },
+      "TeamDashboardTeamOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "member",
+                  "manager"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_active",
+          "role",
+          "member_count"
+        ],
+        "title": "TeamDashboardTeamOut"
       },
       "TeamDetailOut": {
         "properties": {

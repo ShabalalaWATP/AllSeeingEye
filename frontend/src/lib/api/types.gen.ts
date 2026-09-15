@@ -876,12 +876,32 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete Post */
+        /**
+         * Delete Post
+         * @description Author removal. Moderators use the remove action so a reason stays out of URLs.
+         */
         delete: operations["delete_post_api_teams__team_id__board_posts__post_id__delete"];
         options?: never;
         head?: never;
         /** Edit Post */
         patch: operations["edit_post_api_teams__team_id__board_posts__post_id__patch"];
+        trace?: never;
+    };
+    "/api/teams/{team_id}/board/posts/{post_id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove Post */
+        post: operations["remove_post_api_teams__team_id__board_posts__post_id__remove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/teams/{team_id}/board/posts/{post_id}/pin": {
@@ -895,6 +915,40 @@ export interface paths {
         put?: never;
         /** Pin Post */
         post: operations["pin_post_api_teams__team_id__board_posts__post_id__pin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}/board/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["mark_read_api_teams__team_id__board_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Team Dashboard */
+        get: operations["team_dashboard_api_teams__team_id__dashboard_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -13980,6 +14034,8 @@ export interface components {
         TeamBoardPageOut: {
             /** Items */
             items: components["schemas"]["TeamBoardPostOut"][];
+            /** Replies */
+            replies: components["schemas"]["TeamBoardPostOut"][];
             /** Total */
             total: number;
             /** Offset */
@@ -13988,6 +14044,8 @@ export interface components {
             limit: number;
             /** Next Offset */
             next_offset: number | null;
+            /** Unread Count */
+            unread_count: number;
         };
         /** TeamBoardPinIn */
         TeamBoardPinIn: {
@@ -13995,6 +14053,8 @@ export interface components {
             pinned: boolean;
             /** Expected Revision */
             expected_revision: number;
+            /** Reason */
+            reason?: string | null;
         };
         /** TeamBoardPostIn */
         TeamBoardPostIn: {
@@ -14034,12 +14094,16 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Edited At */
+            edited_at: string | null;
             /** Parent Id */
             parent_id: string | null;
             /** Is Pinned */
             is_pinned: boolean;
             /** Deleted At */
             deleted_at: string | null;
+            /** Removal */
+            removal: ("author" | "moderator") | null;
             /** Revision */
             revision: number;
         };
@@ -14049,6 +14113,121 @@ export interface components {
             text: string;
             /** Expected Revision */
             expected_revision: number;
+        };
+        /** TeamBoardReadIn */
+        TeamBoardReadIn: {
+            /**
+             * Last Seen Post Id
+             * Format: uuid
+             */
+            last_seen_post_id: string;
+        };
+        /**
+         * TeamBoardRemoveIn
+         * @description Moderators must give a reason for removing someone else's post; it is audited only.
+         */
+        TeamBoardRemoveIn: {
+            /** Expected Revision */
+            expected_revision: number;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** TeamBoardUnreadOut */
+        TeamBoardUnreadOut: {
+            /** Unread Count */
+            unread_count: number;
+        };
+        /** TeamDashboardActionOut */
+        TeamDashboardActionOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "owner_not_member" | "edition_failed" | "edition_blocked";
+            /**
+             * Schedule Id
+             * Format: uuid
+             */
+            schedule_id: string;
+            /** Schedule Name */
+            schedule_name: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Edition Id */
+            edition_id: string | null;
+        };
+        /** TeamDashboardOut */
+        TeamDashboardOut: {
+            team: components["schemas"]["TeamDashboardTeamOut"];
+            /** Pinned */
+            pinned: components["schemas"]["TeamBoardPostOut"][];
+            /** Unread Count */
+            unread_count: number;
+            /** Recent Reports */
+            recent_reports: components["schemas"]["TeamDashboardReportOut"][];
+            /** Upcoming Runs */
+            upcoming_runs: components["schemas"]["TeamDashboardRunOut"][];
+            /** Action Items */
+            action_items: components["schemas"]["TeamDashboardActionOut"][];
+        };
+        /** TeamDashboardReportOut */
+        TeamDashboardReportOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Template */
+            template: string;
+            /** Status */
+            status: string;
+            /** Latest Version */
+            latest_version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** TeamDashboardRunOut */
+        TeamDashboardRunOut: {
+            /**
+             * Schedule Id
+             * Format: uuid
+             */
+            schedule_id: string;
+            /** Name */
+            name: string;
+            /** Cadence */
+            cadence: string;
+            /**
+             * Next Run At
+             * Format: date-time
+             */
+            next_run_at: string;
+        };
+        /** TeamDashboardTeamOut */
+        TeamDashboardTeamOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Is Active */
+            is_active: boolean;
+            /** Role */
+            role: ("member" | "manager") | null;
+            /** Member Count */
+            member_count: number;
         };
         /** TeamDetailOut */
         TeamDetailOut: {
@@ -16506,6 +16685,42 @@ export interface operations {
             };
         };
     };
+    remove_post_api_teams__team_id__board_posts__post_id__remove_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+                post_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamBoardRemoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamBoardPostOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     pin_post_api_teams__team_id__board_posts__post_id__pin_post: {
         parameters: {
             query?: never;
@@ -16529,6 +16744,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeamBoardPostOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_read_api_teams__team_id__board_read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamBoardReadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamBoardUnreadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    team_dashboard_api_teams__team_id__dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamDashboardOut"];
                 };
             };
             /** @description Validation Error */
