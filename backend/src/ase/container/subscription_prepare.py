@@ -176,8 +176,8 @@ class SubscriptionPreparation:
                     if (
                         active.workflow is not EditionWorkflow.PENDING
                         or active.job_id is not None
-                        or active.due_at_utc is None
-                        or active.due_at_utc >= plan.latest
+                        # A job-less manual edition waiting for capacity yields to the slot.
+                        or (active.due_at_utc is not None and active.due_at_utc >= plan.latest)
                         or active.frozen_revision != frozen.revision
                         or active.compatibility_fingerprint != frozen.compatibility_fingerprint
                         or await ledger.attempts(active.id)

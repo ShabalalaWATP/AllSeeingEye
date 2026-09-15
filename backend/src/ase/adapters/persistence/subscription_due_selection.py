@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.subscription_edition_models import SubscriptionEditionRow
+from ase.application.schedules.edition_planning import BUDGET_BLOCK_REASON, BUDGET_RETRY_AFTER
 from ase.application.schedules.runner import DueCursor
 from ase.domain.report_jobs import job_timestamp
 from ase.domain.subscription_editions import EditionWorkflow
@@ -106,6 +107,17 @@ async def due_edition_rows(
     cursor: DueCursor | None,
 ) -> tuple[list[tuple[SubscriptionEditionRow, UUID]], DueCursor | None]:
     job_timestamp(now)
+    due_at = func.coalesce(SubscriptionEditionRow.due_at_utc, SubscriptionEditionRow.created_at)
+    pending = and_(
+        SubscriptionEditionRow.workflow == EditionWorkflow.PENDING.value,
+        or_(SubscriptionEditionRow.due_at_utc.is_(None), SubscriptionEditionRow.due_at_utc <= now),
+    )
+    budget_retry = and_(
+        SubscriptionEditionRow.workflow == EditionWorkflow.BLOCKED.value,
+        SubscriptionEditionRow.job_id.is_(None),
+        SubscriptionEditionRow.safe_reason == BUDGET_BLOCK_REASON,
+        SubscriptionEditionRow.updated_at <= now - BUDGET_RETRY_AFTER,
+    )
     ranked = (
         select(
             SubscriptionEditionRow.id.label("item_id"),
@@ -113,14 +125,13 @@ async def due_edition_rows(
             func.row_number()
             .over(
                 partition_by=ScheduleRow.created_by,
-                order_by=(SubscriptionEditionRow.due_at_utc, SubscriptionEditionRow.id),
+                order_by=(due_at, SubscriptionEditionRow.id),
             )
             .label("owner_rank"),
         )
         .join(ScheduleRow, SubscriptionEditionRow.subscription_id == ScheduleRow.id)
         .where(
-            SubscriptionEditionRow.workflow == EditionWorkflow.PENDING.value,
-            SubscriptionEditionRow.due_at_utc <= now,
+            or_(pending, budget_retry),
             ScheduleRow.enabled.is_(True),
             ScheduleRow.archived_at.is_(None),
         )

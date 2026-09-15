@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from typing import TYPE_CHECKING
@@ -11,7 +10,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.operational_models import ScheduleRow
-from ase.adapters.persistence.schedules import SqlScheduleStore, _from_row
+from ase.adapters.persistence.schedules import _from_row
 from ase.adapters.persistence.subscription_briefs import load_schedule_brief
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.dto import RequestContext
@@ -20,18 +19,18 @@ from ase.application.schedules.brief_link import standing_request_from_brief
 from ase.application.schedules.edition_planning import (
     DuePlan,
     admission_wait,
-    plan_due_slots,
 )
 from ase.application.schedules.revision_snapshot import (
     revision_from_schedule,
 )
 from ase.application.schedules.runner import DueCursor
+from ase.container.subscription_admission_recovery import rebase_overdue, reopen_budget_block
 from ase.container.subscription_catchup import record_skipped, skip_covered_due, skip_unstarted
+from ase.container.subscription_due_tick import SubscriptionDueTick
 from ase.container.subscription_prepare import SubscriptionPreparation
 from ase.domain.audit import AuditAction
-from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, RateLimited
+from ase.domain.errors import Conflict, NotFound, RateLimited
 from ase.domain.report_jobs import ReportJob
-from ase.domain.research_brief_values import BriefValidationError
 from ase.domain.schedules import Schedule
 from ase.domain.subscription_editions import (
     EditionTrigger,
@@ -46,12 +45,8 @@ if TYPE_CHECKING:
     from ase.container import Container
     from ase.domain.users import User
 
-log = logging.getLogger(__name__)
-SCHEDULE_DUE_LIMIT = 16
-PENDING_DUE_LIMIT = 16
 
-
-class SubscriptionAdmission(SubscriptionPreparation):
+class SubscriptionAdmission(SubscriptionDueTick, SubscriptionPreparation):
     """Prepare outside locks; reserve, admit and move cadence in one transaction."""
 
     def __init__(self, container: Container) -> None:
@@ -76,11 +71,21 @@ class SubscriptionAdmission(SubscriptionPreparation):
             access.require_write(row.created_by, row.team_id)
             await check_session(session)
             existing = await SqlSubscriptionEditionRepository(session).get(identity)
-            if existing is not None:
+            if existing is not None and (
+                existing.workflow is not EditionWorkflow.PENDING
+                or existing.job_id is not None
+                or not row.enabled
+            ):
                 return existing
             if not row.enabled:
                 raise Conflict("Enable the subscription before running it.")
             schedule = _from_row(row)
+        if existing is not None:
+            # A repeated request retries a job-less edition left waiting for capacity.
+            await self.enqueue(edition_id=identity, requester=actor, check_session=check_session)
+            async with self.container.session_factory() as session:
+                retried = await SqlSubscriptionEditionRepository(session).get(identity)
+            return retried or existing
         frozen, edition, candidate, owner = await self._prepare_manual(schedule, request_id, actor)
         async with (
             self.container.source_admission.guard(),
@@ -107,52 +112,25 @@ class SubscriptionAdmission(SubscriptionPreparation):
                 await session.rollback()
                 raise
 
-    async def tick(self) -> int:
-        now = self.container.clock.now()
-        store = SqlScheduleStore(self.container.session_factory, self.container.access_policy)
-        due, self._schedule_cursor = await store.due_batch(
-            now, limit=SCHEDULE_DUE_LIMIT, cursor=self._schedule_cursor
-        )
-        async with self.container.session_factory() as session:
-            pending_rows, self._pending_cursor = await SqlSubscriptionEditionRepository(
-                session
-            ).due_batch(now, limit=PENDING_DUE_LIMIT, cursor=self._pending_cursor)
-        pending = [edition for edition, _ in pending_rows]
-        count = 0
-        for schedule in due:
-            if await self._safe_enqueue(schedule=schedule):
-                count += 1
-        due_latest = {}
-        for item in due:
-            try:
-                due_latest[item.id] = plan_due_slots(item, now).latest
-            except ValueError:
-                continue
-        for edition in pending:
-            if edition.due_at_utc != due_latest.get(
-                edition.subscription_id
-            ) and await self._safe_enqueue(edition_id=edition.id):
-                count += 1
-        return count
-
-    async def _safe_enqueue(
-        self, *, schedule: Schedule | None = None, edition_id: UUID | None = None
-    ) -> bool:
-        try:
-            return await self.enqueue(schedule=schedule, edition_id=edition_id)
-        except (BriefValidationError, Conflict, Forbidden, InvalidRequest, NotFound, RateLimited):
-            log.warning("subscription_admission_blocked")
-            return False
-        except Exception:
-            # Provider and source exception text can contain private inputs.
-            log.warning("subscription_admission_failed")
-            return False
-
     async def enqueue(
-        self, *, schedule: Schedule | None = None, edition_id: UUID | None = None
+        self,
+        *,
+        schedule: Schedule | None = None,
+        edition_id: UUID | None = None,
+        requester: User | None = None,
+        check_session: Callable[[AsyncSession], Awaitable[None]] | None = None,
     ) -> bool:
         if (schedule is None) == (edition_id is None):
             raise ValueError("Choose a due schedule or pending edition.")
+        if schedule is not None:
+            schedule = await rebase_overdue(self.container, schedule)
+            if schedule is None:
+                return False
+        await reopen_budget_block(
+            self.container,
+            schedule_id=schedule.id if schedule is not None else None,
+            edition_id=edition_id,
+        )
         if schedule is not None and await skip_covered_due(self.container, schedule):
             return False
         prepared = await self._prepare(schedule=schedule, edition_id=edition_id)
@@ -165,7 +143,15 @@ class SubscriptionAdmission(SubscriptionPreparation):
         ):
             try:
                 return await self._admit(
-                    session, frozen, edition, candidate, actor, plan, superseded
+                    session,
+                    frozen,
+                    edition,
+                    candidate,
+                    actor,
+                    plan,
+                    superseded,
+                    requester=requester,
+                    check_session=check_session,
                 )
             except BaseException:
                 await session.rollback()

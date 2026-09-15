@@ -95,28 +95,33 @@ async def _advance_lineage(
     if edition.gaps or merged_intervals(edition.effective_intervals) != (edition.requested,):
         return
     current = await repository.get_lineage(edition.subscription_id)
+    fresh = False
     if (
         current is not None
         and current.compatibility_fingerprint != edition.compatibility_fingerprint
     ):
-        return  # A later substantive revision has its own baseline lineage.
+        latest = await repository.latest_revision(edition.subscription_id)
+        if latest is None or latest.compatibility_fingerprint != edition.compatibility_fingerprint:
+            return  # A stale revision cannot replace the current definition's lineage.
+        fresh = True  # A substantive change starts a new baseline lineage.
+    prior = None if fresh else current
     intervals = merged_intervals(
-        (*current.covered_intervals, *edition.effective_intervals)
-        if current is not None
+        (*prior.covered_intervals, *edition.effective_intervals)
+        if prior is not None
         else edition.effective_intervals
     )
     baseline_id = edition.version_id
-    if current is not None and current.analytical_baseline_version_id is not None:
-        previous = await repository.get_by_version(current.analytical_baseline_version_id)
+    if prior is not None and prior.analytical_baseline_version_id is not None:
+        previous = await repository.get_by_version(prior.analytical_baseline_version_id)
         if previous is not None and previous.requested.end > edition.requested.end:
-            baseline_id = current.analytical_baseline_version_id
+            baseline_id = prior.analytical_baseline_version_id
     lineage = SubscriptionLineage(
         subscription_id=edition.subscription_id,
         compatibility_fingerprint=edition.compatibility_fingerprint,
         analytical_baseline_version_id=baseline_id,
         covered_intervals=intervals,
         complete_cutoff=_complete_cutoff(
-            intervals, current.complete_cutoff if current is not None else None
+            intervals, prior.complete_cutoff if prior is not None else None
         ),
         updated_at=now,
         revision=current.revision + 1 if current is not None else 1,

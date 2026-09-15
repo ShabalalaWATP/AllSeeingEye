@@ -131,19 +131,33 @@ async def _save_analytical_lineage(
     ledger: SqlSubscriptionEditionRepository, edition: SubscriptionEdition, now: datetime
 ) -> tuple[SubscriptionLineage, bool]:
     current = await ledger.get_lineage(edition.subscription_id)
-    if (
-        current is not None
-        and current.compatibility_fingerprint != edition.compatibility_fingerprint
-    ):
-        raise Conflict("The current subscription lineage is incompatible.")
     if edition.accepted_as_baseline:
-        if current is None or current.analytical_baseline_version_id != edition.version_id:
+        if (
+            current is None
+            or current.analytical_baseline_version_id != edition.version_id
+            or current.compatibility_fingerprint != edition.compatibility_fingerprint
+        ):
             raise Conflict("A newer analytical baseline replaced this accepted edition.")
         return current, False
-    if current is not None and current.analytical_baseline_version_id is not None:
+    # The caller has verified that this edition matches the current definition, so an
+    # incompatible lineage belongs to a superseded definition and is replaced afresh.
+    compatible = (
+        current is not None
+        and current.compatibility_fingerprint == edition.compatibility_fingerprint
+    )
+    if compatible and current is not None and current.analytical_baseline_version_id is not None:
         previous = await ledger.get_by_version(current.analytical_baseline_version_id)
         if previous is None or previous.requested.end > edition.requested.end:
             raise Conflict("A newer or unverified analytical baseline already exists.")
+    fresh = SubscriptionLineage(
+        subscription_id=edition.subscription_id,
+        compatibility_fingerprint=edition.compatibility_fingerprint,
+        analytical_baseline_version_id=edition.version_id,
+        covered_intervals=(),
+        complete_cutoff=None,
+        updated_at=now,
+        revision=current.revision + 1 if current is not None else 1,
+    )
     lineage = (
         replace(
             current,
@@ -151,15 +165,8 @@ async def _save_analytical_lineage(
             updated_at=now,
             revision=current.revision + 1,
         )
-        if current is not None
-        else SubscriptionLineage(
-            subscription_id=edition.subscription_id,
-            compatibility_fingerprint=edition.compatibility_fingerprint,
-            analytical_baseline_version_id=edition.version_id,
-            covered_intervals=(),
-            complete_cutoff=None,
-            updated_at=now,
-        )
+        if compatible and current is not None
+        else fresh
     )
     saved = (
         current

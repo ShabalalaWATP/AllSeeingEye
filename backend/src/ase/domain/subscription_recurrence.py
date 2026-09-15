@@ -181,4 +181,9 @@ def requested_window(
         return RequestedWindow(ObservationInterval(due - baseline_lookback, due), overlap, False)
     positive_span = due - cutoff
     overlap = min(MAX_OVERLAP, positive_span / 4)
-    return RequestedWindow(ObservationInterval(cutoff - overlap, due), overlap, False)
+    # Never request more than the research lookback bound; older dates stay uncovered
+    # in the lineage rather than making every later edition invalid.
+    start = max(cutoff - overlap, due - MAX_LOOKBACK)
+    if start > cutoff - overlap:
+        overlap = timedelta()
+    return RequestedWindow(ObservationInterval(start, due), overlap, False)

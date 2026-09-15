@@ -14,6 +14,7 @@ from ase.application.ports.direction import PlanRepository
 from ase.application.ports.schedules import ScheduleRepository
 from ase.application.ports.trackers import ConflictDirectory
 from ase.application.schedules.definition import ScheduleInput, build_schedule
+from ase.application.schedules.edition_planning import rebased_next_run
 from ase.domain.audit import AuditAction
 from ase.domain.errors import InvalidRequest, NotFound
 from ase.domain.schedules import Schedule
@@ -159,11 +160,12 @@ class SetScheduleEnabledUseCase:
     """Stage only the activation flag; the caller commits alongside retained work."""
 
     def __init__(
-        self, schedules: ScheduleRepository, access: AccessPolicy, auditor: Auditor
+        self, schedules: ScheduleRepository, access: AccessPolicy, auditor: Auditor, clock: Clock
     ) -> None:
         self._schedules = schedules
         self._access = access
         self._auditor = auditor
+        self._clock = clock
 
     async def stage(
         self,
@@ -182,6 +184,10 @@ class SetScheduleEnabledUseCase:
         if existing.enabled is enabled:
             return existing, False
         updated = replace(existing, enabled=enabled)
+        rebased = rebased_next_run(existing, self._clock.now()) if enabled else None
+        if rebased is not None:
+            # A long pause cannot be caught up automatically; resume at the latest slot.
+            updated = replace(updated, next_run_at=rebased)
         await self._schedules.save(updated)
         await self._auditor.record(
             AuditAction.SCHEDULE_UPDATED,

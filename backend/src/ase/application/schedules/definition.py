@@ -8,6 +8,7 @@ from datetime import datetime
 from uuid import UUID
 
 from ase.application.reports.templates import TEMPLATES
+from ase.application.schedules.edition_planning import rebased_next_run
 from ase.application.schedules.validation import validate_subscription_scope
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchFocus, ResearchMode
@@ -202,6 +203,10 @@ def build_schedule(  # noqa: PLR0912
         )
     )
     reschedule = reschedule or (previous is not None and previous.local_hour != recurrence.hour)
+    next_run_at = recurrence.preview(now, 1)[0].utc
+    if previous is not None and not reschedule:
+        rebased = rebased_next_run(previous, now) if data.enabled and not previous.enabled else None
+        next_run_at = rebased or previous.next_run_at
     return Schedule(
         id=schedule_id,
         name=name[:120],
@@ -216,9 +221,7 @@ def build_schedule(  # noqa: PLR0912
         enabled=data.enabled,
         created_by=owner,
         created_at=created,
-        next_run_at=recurrence.preview(now, 1)[0].utc
-        if reschedule or previous is None
-        else previous.next_run_at,
+        next_run_at=next_run_at,
         last_run_at=None if previous is None else previous.last_run_at,
         last_report_id=None if reset or previous is None else previous.last_report_id,
         last_error=None if reset or previous is None else previous.last_error,

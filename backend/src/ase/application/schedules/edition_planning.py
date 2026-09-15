@@ -16,9 +16,18 @@ from ase.domain.subscription_editions import (
     SubscriptionRevision,
     scheduled_edition_id,
 )
-from ase.domain.subscription_recurrence import RequestedWindow, WindowPolicy, requested_window
+from ase.domain.subscription_recurrence import (
+    LocalRecurrence,
+    RequestedWindow,
+    WindowPolicy,
+    requested_window,
+)
 
 MAX_COALESCED_SLOTS = 366
+BUDGET_RETRY_AFTER = timedelta(hours=1)
+BUDGET_BLOCK_REASON = "monthly_budget_exhausted"
+# Search spans comfortably exceed each cadence's longest gap (daily to annual).
+_SLOT_SEARCH_DAYS = (2, 8, 33, 94, 186, 368, 734)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +59,35 @@ def plan_due_slots(schedule: Schedule, now: datetime) -> DuePlan:
             return DuePlan(tuple(slots), next_at)
         slots.append(next_at)
     raise ValueError("Automatic catch-up exceeds 366 missed calendar slots.")
+
+
+def latest_slot_at_or_before(recurrence: LocalRecurrence, now: datetime) -> datetime | None:
+    """Find the most recent calendar slot without walking the whole missed history."""
+    for days in _SLOT_SEARCH_DAYS:
+        cursor = now - timedelta(days=days)
+        latest = None
+        for _ in range(MAX_COALESCED_SLOTS):
+            occurrence = recurrence.preview(cursor, 1)[0].utc
+            if occurrence > now:
+                break
+            latest = cursor = occurrence
+        if latest is not None:
+            return latest
+    return None
+
+
+def rebased_next_run(schedule: Schedule, now: datetime) -> datetime | None:
+    """Skip ahead to the latest due slot once automatic catch-up exceeds its bound.
+
+    Returns None when the stored due slot is in the future or still recoverable.
+    """
+    if schedule.next_run_at > now:
+        return None
+    try:
+        plan_due_slots(schedule, now)
+    except ValueError:
+        return latest_slot_at_or_before(schedule.recurrence, now)
+    return None
 
 
 def window_for_slot(
@@ -102,7 +140,26 @@ def admission_wait(
     return replace(
         edition,
         workflow=EditionWorkflow.BLOCKED if budget_exhausted else EditionWorkflow.PENDING,
-        safe_reason="monthly_budget_exhausted" if budget_exhausted else "capacity_wait",
+        safe_reason=BUDGET_BLOCK_REASON if budget_exhausted else "capacity_wait",
+        updated_at=now,
+        revision=edition.revision + 1,
+    )
+
+
+def budget_retry_due(edition: SubscriptionEdition, now: datetime) -> bool:
+    """A job-less admission budget block is retried later rather than wedging the slot."""
+    return (
+        edition.workflow is EditionWorkflow.BLOCKED
+        and edition.job_id is None
+        and edition.safe_reason == BUDGET_BLOCK_REASON
+        and now - edition.updated_at >= BUDGET_RETRY_AFTER
+    )
+
+
+def reopened_for_admission(edition: SubscriptionEdition, now: datetime) -> SubscriptionEdition:
+    return replace(
+        edition,
+        workflow=EditionWorkflow.PENDING,
         updated_at=now,
         revision=edition.revision + 1,
     )

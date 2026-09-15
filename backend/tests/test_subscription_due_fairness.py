@@ -9,7 +9,7 @@ from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.schedules.manage import ScheduleInput
 from ase.application.schedules.revision_snapshot import revision_from_schedule
-from ase.container import subscription_enqueue
+from ase.container import subscription_due_tick
 from ase.domain.subscription_editions import (
     EditionCoverage,
     EditionQuality,
@@ -130,8 +130,8 @@ async def test_overlapping_bounded_ticks_keep_every_slot_or_due_row(
     )
     schedule_ids = await _overdue_schedules(container, user, other)
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment"]})
-    monkeypatch.setattr(subscription_enqueue, "SCHEDULE_DUE_LIMIT", 2)
-    monkeypatch.setattr(subscription_enqueue, "PENDING_DUE_LIMIT", 2)
+    monkeypatch.setattr(subscription_due_tick, "SCHEDULE_DUE_LIMIT", 2)
+    monkeypatch.setattr(subscription_due_tick, "PENDING_DUE_LIMIT", 2)
     now = container.clock.now()
     await asyncio.gather(container.schedule_runner.run_once(), container.schedule_runner.run_once())
     async with container.session_factory() as session:

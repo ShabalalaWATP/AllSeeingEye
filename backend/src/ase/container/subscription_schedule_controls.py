@@ -150,7 +150,10 @@ async def control_schedule(
         try:
             repos = container.repositories(session)
             schedule, changed = await SetScheduleEnabledUseCase(
-                repos.schedules, container.access_policy(session), container._auditor(repos)
+                repos.schedules,
+                container.access_policy(session),
+                container._auditor(repos),
+                container.clock,
             ).stage(actor, schedule_id, enabled, context)
             edition = await SqlSubscriptionEditionRepository(session).active(schedule_id)
             if not enabled:
