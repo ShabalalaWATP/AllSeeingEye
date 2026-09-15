@@ -34,6 +34,9 @@ from ase.domain.ukraine.losses import (
 )
 
 SERIES_DAYS = 90
+# The mirror refuses limits above 50 (HTTP 422 since September 2026); offset pages the window.
+PAGE_SIZE = 50
+MAX_PAGES = -(-MAX_CLAIMS // PAGE_SIZE)
 SPEC = SourceSpec(
     id="ukraine_general_staff",
     name="General Staff of Ukraine daily loss claims",
@@ -58,25 +61,24 @@ class GeneralStaffLossesConnector:
     def __init__(self, http: FeedHttpClient, clock: Clock) -> None:
         self._http, self._clock = http, clock
 
-    def _url(self, today: date) -> str:
+    def _url(self, today: date, offset: int = 0) -> str:
         start = today - timedelta(days=SERIES_DAYS)
         query = urlencode(
-            {"date_from": start.isoformat(), "date_to": today.isoformat(), "limit": MAX_CLAIMS}
+            {
+                "date_from": start.isoformat(),
+                "date_to": today.isoformat(),
+                "limit": PAGE_SIZE,
+                "offset": offset,
+            }
         )
         return f"{self.spec.url}?{query}"
 
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
         try:
-            payload = await self._http.get_json(self._url(now.date()))
+            records = await self._records(now.date())
         except NotModified:
             return []
-        data = payload.get("data") if isinstance(payload, dict) else None
-        records = data.get("records") if isinstance(data, dict) else None
-        if not isinstance(records, list):
-            raise FeedFetchError("General Staff mirror returned an invalid envelope.")
-        if len(records) > MAX_CLAIMS:
-            raise FeedFetchError("General Staff mirror returned more records than requested.")
         events: dict[str, Event] = {}
         for row in records:
             claim = parse_claim(row)
@@ -84,6 +86,24 @@ class GeneralStaffLossesConnector:
                 event = self._to_event(claim, now)
                 events[event.id] = event
         return list(events.values())
+
+    async def _records(self, today: date) -> list[Any]:
+        """Offset pages of at most PAGE_SIZE rows until a short page, within MAX_CLAIMS."""
+        rows: list[Any] = []
+        for page in range(MAX_PAGES):
+            payload = await self._http.get_json(
+                self._url(today, page * PAGE_SIZE), conditional=False
+            )
+            data = payload.get("data") if isinstance(payload, dict) else None
+            records = data.get("records") if isinstance(data, dict) else None
+            if not isinstance(records, list):
+                raise FeedFetchError("General Staff mirror returned an invalid envelope.")
+            if len(records) > PAGE_SIZE:
+                raise FeedFetchError("General Staff mirror returned more records than requested.")
+            rows.extend(records)
+            if len(records) < PAGE_SIZE:
+                break
+        return rows
 
     def _to_event(self, claim: ClaimedLosses, now: datetime) -> Event:
         headline = ", ".join(

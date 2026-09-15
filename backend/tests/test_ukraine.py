@@ -11,6 +11,7 @@ from types import MappingProxyType
 import pytest
 from httpx import AsyncClient
 
+from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.feeds.isw_assessments import IswAssessmentsConnector
 from ase.adapters.feeds.ukraine_general_staff import GeneralStaffLossesConnector, parse_claim
 from ase.adapters.geo import ukraine_control_import as importer
@@ -190,13 +191,35 @@ async def test_general_staff_connector_emits_one_claim_per_day() -> None:
     http = FakeHttp({"russianwarship.rip": payload})
     connector = GeneralStaffLossesConnector(http, FakeClock(NOW))  # type: ignore[arg-type]
     events = await connector.fetch()
-    assert "date_from=2026-06-07" in http.requests[0] and "limit=100" in http.requests[0]
+    assert "date_from=2026-06-07" in http.requests[0] and "limit=50" in http.requests[0]
+    assert len(http.requests) == 1  # a short first page ends the walk
     assert len(events) == 2 and {e.subtype for e in events} == {"claimed_losses"}
     latest = max(events, key=lambda e: e.published_at or NOW)
     assert latest.attributes["total_tanks"] == 12344 and latest.attributes["day"] == 1663
     assert "claims" in latest.title and "not independently verified" in (latest.summary or "")
     assert latest.url == "https://www.facebook.com/GeneralStaff.ua/posts/example"
     assert "interested_party" in latest.tags
+
+
+async def test_general_staff_connector_pages_within_the_mirror_limit() -> None:
+    template = json.loads((FIXTURES / "general_staff.json").read_text("utf-8"))["data"]["records"]
+
+    def page(first_day: int, count: int) -> dict:
+        start = date(2026, 6, 7)
+        rows = [
+            {**template[0], "date": (start + timedelta(days=first_day + i)).isoformat()}
+            for i in range(count)
+        ]
+        return {"data": {"records": rows}}
+
+    http = FakeHttp({"offset=0": page(0, 50), "offset=50": page(50, 41)})
+    events = await GeneralStaffLossesConnector(http, FakeClock(NOW)).fetch()  # type: ignore[arg-type]
+    assert len(http.requests) == 2 and all("limit=50" in url for url in http.requests)
+    assert len(events) == 91
+
+    oversized = FakeHttp({"offset=0": page(0, 51)})
+    with pytest.raises(FeedFetchError, match="more records"):
+        await GeneralStaffLossesConnector(oversized, FakeClock(NOW)).fetch()  # type: ignore[arg-type]
 
 
 async def test_isw_connector_keeps_only_daily_assessments_as_plain_text() -> None:
