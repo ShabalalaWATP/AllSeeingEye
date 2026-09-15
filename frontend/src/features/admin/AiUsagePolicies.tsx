@@ -91,7 +91,7 @@ export function AiUsagePolicies({
   const active = policies.filter((policy) => policy.enabled);
 
   return (
-    <section aria-label="AI access and usage" className="space-y-5 border-t border-line pt-6">
+    <section aria-label="AI access and usage" className="space-y-5">
       <header>
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ember">
           AI access &amp; usage
@@ -130,10 +130,10 @@ export function AiUsagePolicies({
         </p>
       ) : null}
       {!loading && active.length > 0 ? (
-        <div className="overflow-x-auto border border-line">
+        <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full text-left text-sm">
             <caption className="sr-only">Active AI allowance policies</caption>
-            <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
+            <thead className="border-b border-line bg-surface-2/60 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-3 py-3">Scope</th>
                 <th className="px-3 py-3">Reset</th>

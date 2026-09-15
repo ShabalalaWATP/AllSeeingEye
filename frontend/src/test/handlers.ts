@@ -277,6 +277,22 @@ export const handlers = [
     return HttpResponse.json({ ok: true, latency_ms: 812.4, model: 'llama3.1:8b', error: null });
   }),
 
+  http.get('/api/admin/ai-usage/preview', ({ request }) => {
+    const gate = requireAdmin(request);
+    if (!gate.ok) return gate.response;
+    return HttpResponse.json({
+      items: [],
+      observed: {
+        period_start: '2026-09-01T00:00:00Z',
+        period_end: '2026-10-01T00:00:00Z',
+        used_requests: 0,
+        used_tokens: 0,
+        unknown_requests: 0,
+      },
+      unknown_calls: 0,
+    });
+  }),
+
   http.get('/api/admin/sources', ({ request }) => {
     const gate = requireAdmin(request);
     if (!gate.ok) return gate.response;

@@ -1,50 +1,55 @@
-import { Link } from 'react-router';
+import { useState } from 'react';
 
-import { adminSections } from '@/lib/adminNavigation';
+import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminPage } from '@/components/admin/AdminPage';
+import { Button } from '@/components/ui/Button';
+import { useAuthStore } from '@/stores/auth';
 
+import { PeopleCard, RequestsCard, SecurityCard } from './overview/AccessCards';
+import { AuditCard } from './overview/AuditCard';
+import { ConnectionsCard, SourcesCard, UsageCard } from './overview/ServiceCards';
+
+/** Each tile loads its own bounded data, so one failing service never hides the others. */
 export default function AdminOverviewPage() {
+  const name = useAuthStore((state) => state.user?.display_name);
+  const [round, setRound] = useState(0);
   return (
-    <section className="h-full overflow-y-auto px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
-      <div className="max-w-4xl">
-        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">
-          Administrator workspace
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Administration</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
+    <AdminPage
+      eyebrow="Operations console"
+      title="Administration"
+      width="wide"
+      description={
+        <p className="max-w-2xl">
           Manage access, configure the services used by researchers and review administrative
           activity. Changes here can affect people across the application.
         </p>
-        <div className="mt-9 border-t border-line">
-          {adminSections.map((section) => (
-            <section
-              key={section.title}
-              aria-label={section.title}
-              className="border-b border-line py-6 md:grid md:grid-cols-[11rem_1fr] md:gap-8"
-            >
-              <h2 className="mb-4 text-sm font-semibold md:mb-0 md:pt-3">{section.title}</h2>
-              <div>
-                {section.items.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="group flex items-start justify-between gap-4 rounded-md px-3 py-3 hover:bg-surface-2 focus-visible:bg-surface-2"
-                  >
-                    <span>
-                      <span className="block text-sm font-medium">{item.label}</span>
-                      <span className="mt-1 block text-sm leading-6 text-muted">
-                        {item.description}
-                      </span>
-                    </span>
-                    <span aria-hidden="true" className="pt-1 text-muted group-hover:text-text">
-                      →
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+      }
+      meta={
+        name === undefined ? undefined : (
+          <p className="text-xs text-muted">
+            Signed in as <span className="font-medium text-text">{name}</span>
+          </p>
+        )
+      }
+      actions={
+        <Button variant="secondary" onClick={() => setRound((value) => value + 1)}>
+          <AdminIcon name="refresh" size={16} />
+          Refresh overview
+        </Button>
+      }
+    >
+      <div
+        key={round}
+        className="grid grid-flow-row-dense grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+      >
+        <RequestsCard />
+        <PeopleCard />
+        <SecurityCard />
+        <SourcesCard className="md:col-span-2" />
+        <ConnectionsCard />
+        <AuditCard className="md:col-span-2 xl:col-span-2" />
+        <UsageCard />
       </div>
-    </section>
+    </AdminPage>
   );
 }

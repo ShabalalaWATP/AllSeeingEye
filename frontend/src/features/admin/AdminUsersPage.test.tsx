@@ -7,6 +7,7 @@ import { apiError } from '@/test/handlers';
 import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
 
+import { matchesUser } from './AdminUsersPage';
 import { SELF_MODIFICATION_MESSAGE } from './UserRow';
 
 async function findRow(name: string): Promise<HTMLElement> {
@@ -83,5 +84,26 @@ describe('AdminUsersPage', () => {
     server.use(http.get('/api/admin/users', () => apiError(500, 'server_error', 'Database down.')));
     renderApp('/admin/users', 'admin');
     expect(await screen.findByRole('alert')).toHaveTextContent('Database down.');
+  });
+  it('filters accounts locally and explains an empty match', async () => {
+    const { user } = renderApp('/admin/users', 'admin');
+    await findRow('Uma User');
+    const totals = screen.getByRole('list', { name: 'Account totals' });
+    expect(within(totals).getByText('2 active')).toBeInTheDocument();
+    const filter = screen.getByRole('searchbox', { name: 'Filter accounts' });
+    await user.type(filter, 'ADMIN@');
+    expect(within(screen.getByRole('table')).queryByText('Uma User')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Ada Admin')).toBeInTheDocument();
+    await user.clear(filter);
+    await user.type(filter, 'nobody');
+    expect(screen.getByText('No accounts match this filter.')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('matches on name, email and role', () => {
+    expect(matchesUser(plainUser, '')).toBe(true);
+    expect(matchesUser(plainUser, ' uma ')).toBe(true);
+    expect(matchesUser(adminUser, 'admin')).toBe(true);
+    expect(matchesUser(plainUser, 'admin')).toBe(false);
   });
 });

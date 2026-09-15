@@ -66,6 +66,7 @@ const CyberPreviewPage = lazy(() => import('@/app/dev/CyberPreviewPage'));
 const PagesPreviewPage = lazy(() => import('@/app/dev/PagesPreviewPage'));
 const FiguresPreviewPage = lazy(() => import('@/app/dev/FiguresPreviewPage'));
 const UkrainePreviewPage = lazy(() => import('@/app/dev/UkrainePreviewPage'));
+const AdminPreviewPage = lazy(() => import('@/app/dev/AdminPreviewPage'));
 
 const devRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -74,6 +75,7 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
       { path: '/dev/pages-preview', element: <PagesPreviewPage /> },
       { path: '/dev/figures-preview', element: <FiguresPreviewPage /> },
       { path: '/dev/ukraine-preview', element: <UkrainePreviewPage /> },
+      { path: '/dev/admin-preview', element: <AdminPreviewPage /> },
     ]
   : [];
 

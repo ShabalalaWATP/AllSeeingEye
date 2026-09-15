@@ -1,13 +1,14 @@
+import { StatusPill, type StatusTone } from '@/components/admin/StatusPill';
 import { Td } from '@/components/ui/Table';
 import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
 import { formatAgo, formatInterval } from '@/lib/format';
 import { SourceActions } from './SourceActions';
 
-const STATUS_CLASSES: Record<SourceHealth['status'], string> = {
-  healthy: 'bg-emerald-400/15 text-emerald-300',
-  degraded: 'bg-amber-400/15 text-amber-300',
-  idle: 'bg-zinc-500/15 text-zinc-300',
-  disabled: 'bg-zinc-500/15 text-muted',
+const STATUS_TONES: Record<SourceHealth['status'], StatusTone> = {
+  healthy: 'good',
+  degraded: 'critical',
+  idle: 'info',
+  disabled: 'neutral',
 };
 
 export interface SourceRowProps {
@@ -26,10 +27,10 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
       : `${health.items_last_poll} items, ${formatAgo(health.last_success, now)}`;
   return (
     <tr>
-      <Td>
+      <Td className="min-w-60 py-3">
         <div className="font-medium text-text">{source.name}</div>
         <div className="text-xs text-muted">{source.organisation}</div>
-        <div className="mt-1 text-xs text-muted">
+        <div className={`mt-1 text-xs ${source.enabled === false ? 'text-amber' : 'text-muted'}`}>
           Collection {source.enabled === false ? 'disabled' : 'enabled'}
         </div>
         {source.licence_note && (
@@ -54,11 +55,12 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
         {formatInterval(source.poll_interval_seconds)}
       </Td>
       <Td>
-        <span
-          className={`rounded px-1.5 py-0.5 font-mono text-[11px] uppercase ${STATUS_CLASSES[health.status]}`}
-        >
-          {health.status}
-        </span>
+        <StatusPill tone={STATUS_TONES[health.status]}>{health.status}</StatusPill>
+        {health.consecutive_failures > 0 && (
+          <span className="mt-1 block text-[11px] text-muted">
+            {health.consecutive_failures} failed in a row
+          </span>
+        )}
       </Td>
       <Td className="whitespace-nowrap">
         {lastPoll}
@@ -75,7 +77,7 @@ export function SourceRow({ source, now, onReset, onActivation }: SourceRowProps
           </span>
         )}
       </Td>
-      <Td>
+      <Td className="min-w-64 py-3">
         <SourceActions source={source} onReset={onReset} onActivation={onActivation} />
       </Td>
     </tr>

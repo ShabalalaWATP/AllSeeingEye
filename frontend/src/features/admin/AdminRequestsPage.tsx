@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react';
 
+import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminPage, AdminSection, EmptyState } from '@/components/admin/AdminPage';
+import { StatusPill } from '@/components/admin/StatusPill';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { LinkReveal } from '@/components/ui/LinkReveal';
 import { Table, Th } from '@/components/ui/Table';
 import { listPendingAccountRequests } from '@/lib/api/admin';
@@ -17,7 +21,7 @@ interface Approval {
 }
 
 export default function AdminRequestsPage() {
-  const { data, error, loading, setData } = useResource(listPendingAccountRequests);
+  const { data, error, loading, setData, reload } = useResource(listPendingAccountRequests);
   const [approval, setApproval] = useState<Approval | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -29,8 +33,24 @@ export default function AdminRequestsPage() {
   );
 
   return (
-    <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <h1 className="text-xl font-semibold">Account requests</h1>
+    <AdminPage
+      eyebrow="Access and teams"
+      title="Account requests"
+      description="Review applications, approve account access with an initial role, or reject with an optional reason. Approval issues a single-use activation link."
+      meta={
+        data === null ? undefined : data.length === 0 ? (
+          <StatusPill tone="good">Queue clear</StatusPill>
+        ) : (
+          <StatusPill tone="warning">{data.length} awaiting decision</StatusPill>
+        )
+      }
+      actions={
+        <Button variant="secondary" busy={loading} onClick={() => void reload()}>
+          <AdminIcon name="refresh" size={16} />
+          Refresh
+        </Button>
+      }
+    >
       {approval === null ? null : approval.response.activation_link === null ? (
         <Alert tone="success">
           {approval.email} approved. The activation email has been sent and expires{' '}
@@ -45,41 +65,49 @@ export default function AdminRequestsPage() {
       )}
       {notice === null ? null : <Alert tone="info">{notice}</Alert>}
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
-      {data === null ? (
-        loading ? (
-          <LoadingNote label="Loading requests" />
-        ) : null
-      ) : data.length === 0 ? (
-        <p className="text-sm text-muted">No pending requests.</p>
-      ) : (
-        <Table caption="Pending account requests">
-          <thead>
-            <tr>
-              <Th>Requester</Th>
-              <Th>Reason</Th>
-              <Th>Requested</Th>
-              <Th>Decision</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((request) => (
-              <AccountRequestRow
-                key={request.id}
-                request={request}
-                onApproved={(response) => {
-                  setApproval({ email: request.email, response });
-                  setNotice(null);
-                  remove(request.id);
-                }}
-                onRejected={() => {
-                  setNotice(`The request from ${request.email} was rejected.`);
-                  remove(request.id);
-                }}
-              />
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </section>
+      <AdminSection
+        title="Pending requests"
+        icon="requests"
+        description="Newest applications appear in the order they were received. Decisions take effect immediately."
+      >
+        {data === null ? (
+          loading ? (
+            <LoadingNote label="Loading requests" />
+          ) : null
+        ) : data.length === 0 ? (
+          <EmptyState title="No pending requests.">
+            New applications from the request account page will appear here.
+          </EmptyState>
+        ) : (
+          <Table caption="Pending account requests" stickyHeader>
+            <thead>
+              <tr>
+                <Th>Requester</Th>
+                <Th>Reason</Th>
+                <Th>Requested</Th>
+                <Th>Decision</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((request) => (
+                <AccountRequestRow
+                  key={request.id}
+                  request={request}
+                  onApproved={(response) => {
+                    setApproval({ email: request.email, response });
+                    setNotice(null);
+                    remove(request.id);
+                  }}
+                  onRejected={() => {
+                    setNotice(`The request from ${request.email} was rejected.`);
+                    remove(request.id);
+                  }}
+                />
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </AdminSection>
+    </AdminPage>
   );
 }

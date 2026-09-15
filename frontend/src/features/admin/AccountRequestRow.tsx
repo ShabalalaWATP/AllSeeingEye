@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { PersonCell } from '@/components/admin/PersonCell';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
@@ -35,13 +36,16 @@ export function AccountRequestRow({ request, onApproved, onRejected }: AccountRe
 
   return (
     <tr>
-      <Td>
-        <div className="font-medium">{request.display_name}</div>
-        <div className="text-muted">{request.email}</div>
+      <Td className="min-w-52 py-3">
+        <PersonCell name={request.display_name} email={request.email} />
       </Td>
-      <Td>{request.reason ?? <span className="text-muted">No reason given</span>}</Td>
-      <Td className="font-mono text-xs whitespace-nowrap">{formatUtc(request.created_at)}</Td>
-      <Td>
+      <Td className="max-w-sm min-w-48 py-3 leading-6">
+        {request.reason ?? <span className="text-muted italic">No reason given</span>}
+      </Td>
+      <Td className="py-3 font-mono text-xs whitespace-nowrap text-muted">
+        {formatUtc(request.created_at)}
+      </Td>
+      <Td className="min-w-72 py-3">
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-end gap-2">
             <SelectField
@@ -70,14 +74,15 @@ export function AccountRequestRow({ request, onApproved, onRejected }: AccountRe
             </Button>
           </div>
           {rejecting ? (
-            <div className="flex flex-wrap items-end gap-2">
+            <div className="flex flex-wrap items-end gap-2 rounded-lg border border-critical/40 bg-critical/5 p-3">
               <TextField
                 label="Reason (optional)"
                 name="reason"
                 maxLength={500}
                 value={reason}
                 disabled={busy}
-                className="w-64"
+                hint="Up to 500 characters."
+                className="w-full min-w-48 sm:w-64"
                 onChange={(event) => {
                   setReason(event.target.value);
                 }}
