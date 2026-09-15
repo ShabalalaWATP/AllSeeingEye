@@ -10,17 +10,20 @@ from ase.domain.teams import MembershipRole
 from ase.domain.users import Role
 
 TeamName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+TeamDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 
 
 class TeamIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: TeamName
+    description: TeamDescription | None = None
 
 
 class TeamUpdateIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: TeamName | None = None
     is_active: bool | None = None
+    description: TeamDescription | None = None
 
 
 class MemberIn(BaseModel):
@@ -37,6 +40,7 @@ class TeamOut(BaseModel):
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    description: str | None
 
 
 class TeamsOut(BaseModel):

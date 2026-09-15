@@ -17,6 +17,9 @@ const teamSchema = z.object({
   created_by: z.uuid(),
   created_at: z.string(),
   updated_at: z.string(),
+  // Older deployments may omit the optional description while migrations are
+  // being rolled out. Normalise that response to the contract's null value.
+  description: z.string().nullable().default(null),
 }) satisfies z.ZodType<Team>;
 
 const teamsSchema = z.object({ items: z.array(teamSchema) }) satisfies z.ZodType<
@@ -49,8 +52,8 @@ export async function listTeams(): Promise<Team[]> {
 export function getTeam(id: string): Promise<TeamDetail> {
   return apiCall(`/api/teams/${encodeURIComponent(id)}`, { schema: detailSchema });
 }
-export function createTeam(name: string): Promise<Team> {
-  const body: components['schemas']['TeamIn'] = { name };
+export function createTeam(name: string, description?: string): Promise<Team> {
+  const body: components['schemas']['TeamIn'] = description ? { name, description } : { name };
   return apiCall('/api/teams', { method: 'POST', body, schema: teamSchema });
 }
 export function updateTeam(id: string, body: TeamUpdate): Promise<Team> {

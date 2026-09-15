@@ -5,11 +5,19 @@ import json
 from collections.abc import Mapping
 from typing import Any
 
+from ase.application.ai_usage_gateway import AllowanceLlmGateway, AllowanceWebSearchGateway
 from ase.application.ports.llm import LlmGateway
 from ase.application.ports.web_search import WebSearchGateway, WebSearchRequest, WebSearchResult
 from ase.application.report_jobs.budget import ReportCallBudget
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmRequest, LlmResult
+
+__all__ = [
+    "AllowanceLlmGateway",
+    "AllowanceWebSearchGateway",
+    "BudgetedLlmGateway",
+    "BudgetedWebSearchGateway",
+]
 
 
 def _hash_request(values: Mapping[str, Any]) -> str:

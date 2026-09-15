@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     claim_models,
+    directory_profile,
     firms_credentials,
     identity_models,
     llm_bindings,
@@ -22,6 +23,8 @@ from ase.adapters.persistence import (  # noqa: F401 (registers feature tables)
     recovery_models,
     report_search,
     source_control_models,
+    team_board_models,
+    team_invitation_models,
     teams,
     token_families,
     totp,

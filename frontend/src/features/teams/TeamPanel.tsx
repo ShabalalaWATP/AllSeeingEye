@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -8,6 +8,9 @@ import { getTeam, removeMember, setMember, updateTeam } from '@/lib/api/teams';
 
 import { AddMemberForm, TeamNameForm } from './TeamForms';
 import { ConfirmAction, TeamRoster } from './TeamRoster';
+import { TeamDashboard, type TeamDashboardTab } from './TeamDashboard';
+import { TeamInvitationPanel } from './TeamInvitationPanel';
+import { teamCapabilities } from './teamCapabilities';
 import { useTeamAction, useTeamsResource } from './useTeams';
 
 export function TeamPanel({
@@ -23,14 +26,21 @@ export function TeamPanel({
   const resource = useTeamsResource(load);
   const action = useTeamAction();
   const detail = resource.data;
-  const admin = user.role === 'admin';
-  const canManage =
-    detail !== null &&
-    detail.team.is_active &&
-    (admin ||
-      (user.role === 'manager' &&
-        detail.members.some((member) => member.user_id === user.id && member.role === 'manager')));
+  const capabilities = teamCapabilities(user, detail);
+  const admin = capabilities.isAdmin;
+  const canManage = capabilities.canManageMembers;
+  const canManageTeam = capabilities.canManageTeam;
+  // Keep the roster as the landing view so existing team workflows remain one
+  // click from the team selector. Overview, Research, and Board are available
+  // alongside it in the dashboard tabs.
+  const [activeTab, setActiveTab] = useState<TeamDashboardTab>('members');
   const reload = resource.reload;
+  const accessRevoked =
+    resource.error?.status === 401 ||
+    resource.error?.status === 403 ||
+    ['forbidden', 'membership_required', 'team_access_revoked'].includes(
+      resource.error?.code ?? '',
+    );
   return (
     <section className="flex min-w-0 flex-col gap-5" aria-label="Selected team">
       {action.error ? <Alert tone="error">{action.error}</Alert> : null}
@@ -40,8 +50,13 @@ export function TeamPanel({
         </p>
       ) : null}
       {resource.error ? (
-        <Alert tone="error">
-          {describeError(resource.error)}{' '}
+        <Alert
+          tone={accessRevoked ? 'warning' : 'error'}
+          title={accessRevoked ? 'Team access changed' : undefined}
+        >
+          {accessRevoked
+            ? 'Your access to this team may have changed. Refresh the team list to check your current workspaces.'
+            : describeError(resource.error)}{' '}
           <Button
             variant="ghost"
             onClick={() => {
@@ -54,14 +69,13 @@ export function TeamPanel({
       ) : null}
       {resource.loading ? <LoadingNote label="Loading team roster" /> : null}
       {detail ? (
-        <>
-          <header className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="break-words text-xl font-semibold">{detail.team.name}</h2>
-              <p className="mt-1 text-sm text-muted">
-                {detail.members.length} members · {detail.team.is_active ? 'Active' : 'Archived'}
-              </p>
-            </div>
+        <TeamDashboard
+          detail={detail}
+          user={user}
+          capabilities={capabilities}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          actions={
             <Button
               variant="ghost"
               disabled={action.busy}
@@ -71,105 +85,139 @@ export function TeamPanel({
             >
               Refresh roster
             </Button>
-          </header>
-          {!detail.team.is_active ? (
-            <p className="text-sm text-muted">
-              This team is archived. Its roster is read-only until an administrator reactivates it.
-            </p>
-          ) : null}
-          {!admin && !canManage ? (
-            <p className="text-sm text-muted">
-              You can view this roster. Membership changes require a designated team manager or
-              administrator.
-            </p>
-          ) : null}
-          {!admin && canManage ? (
-            <p className="text-sm text-muted">
-              You manage ordinary members of this team. Administrators assign team managers.
-            </p>
-          ) : null}
-          <TeamRoster
-            members={detail.members}
-            admin={admin}
-            canManage={canManage}
-            busy={action.busy}
-            onRemove={(member) => {
-              void action.run(() => removeMember(id, member.user_id), 'Member removed.', reload);
-            }}
-            onRole={(member, role) => {
-              void action.run(
-                () => setMember(id, { email: member.email, role }),
-                'Team role updated.',
-                reload,
-              );
-            }}
-          />
-          {canManage ? (
-            <AddMemberForm
-              admin={admin}
-              busy={action.busy}
-              onSave={(input) => {
-                void action.run(() => setMember(id, input), 'Membership saved.', reload);
-              }}
-            />
-          ) : null}
-          {admin ? (
-            <details className="border-t border-line pt-4">
-              <summary className="cursor-pointer text-sm font-medium">Team settings</summary>
-              <div className="mt-4 flex flex-col gap-4">
-                <TeamNameForm
-                  key={detail.team.name}
-                  name={detail.team.name}
+          }
+          members={
+            <div className="flex flex-col gap-6" aria-labelledby="team-members-heading">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember">
+                  People and access
+                </p>
+                <h3 id="team-members-heading" className="mt-2 text-xl font-semibold">
+                  Members
+                </h3>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                  {detail.members.length} people are listed in this workspace. Membership changes
+                  are recorded and checked again by the server.
+                </p>
+              </div>
+              {!detail.team.is_active ? (
+                <Alert tone="warning">
+                  This team is archived. Its roster is read-only until an administrator reactivates
+                  it.
+                </Alert>
+              ) : null}
+              {!admin && !canManage ? (
+                <p className="text-sm text-muted">
+                  You can view this roster. Membership changes require a designated team manager or
+                  administrator.
+                </p>
+              ) : null}
+              {!admin && canManage ? (
+                <p className="text-sm text-muted">
+                  You manage members and can grant team-manager access to ordinary active accounts.
+                </p>
+              ) : null}
+              <TeamRoster
+                members={detail.members}
+                actor={user}
+                team={detail.team}
+                canManage={canManage}
+                busy={action.busy}
+                onRemove={(member) => {
+                  void action.run(
+                    () => removeMember(id, member.user_id),
+                    'Member removed.',
+                    reload,
+                  );
+                }}
+                onRole={(member, role) => {
+                  void action.run(
+                    () => setMember(id, { email: member.email, role }),
+                    'Team role updated.',
+                    reload,
+                  );
+                }}
+              />
+              <TeamInvitationPanel teamId={id} canManage={canManage} />
+              {canManage && detail.team.is_active ? (
+                <AddMemberForm
+                  admin={admin}
+                  allowManagerRole
                   busy={action.busy}
-                  onSave={(name) => {
-                    void action.run(
-                      () => updateTeam(id, { name }),
-                      'Team renamed.',
-                      async () => {
-                        await reload();
-                        await refreshList();
-                      },
-                    );
+                  onSave={(input) => {
+                    void action.run(() => setMember(id, input), 'Membership saved.', reload);
                   }}
                 />
-                {detail.team.is_active ? (
-                  <ConfirmAction
-                    label="Archive team"
-                    question="Archive this team and make its roster read-only?"
-                    busy={action.busy}
-                    onConfirm={() => {
-                      void action.run(
-                        () => updateTeam(id, { is_active: false }),
-                        'Team archived.',
-                        async () => {
-                          await reload();
-                          await refreshList();
-                        },
-                      );
-                    }}
-                  />
-                ) : (
-                  <Button
-                    variant="secondary"
-                    busy={action.busy}
-                    onClick={() => {
-                      void action.run(
-                        () => updateTeam(id, { is_active: true }),
-                        'Team reactivated.',
-                        async () => {
-                          await reload();
-                          await refreshList();
-                        },
-                      );
-                    }}
-                  >
-                    Reactivate team
-                  </Button>
-                )}
-              </div>
-            </details>
-          ) : null}
-        </>
+              ) : null}
+              {canManageTeam ? (
+                <details className="border-t border-line pt-4">
+                  <summary className="cursor-pointer text-sm font-medium">Team settings</summary>
+                  <div className="mt-4 flex flex-col gap-4">
+                    <TeamNameForm
+                      key={`${detail.team.name}:${detail.team.description ?? ''}`}
+                      name={detail.team.name}
+                      description={detail.team.description}
+                      busy={action.busy}
+                      onSave={(name, description) => {
+                        const body =
+                          description === undefined && detail.team.description === null
+                            ? { name }
+                            : { name, description: description?.trim() ?? null };
+                        void action.run(
+                          () => updateTeam(id, body),
+                          'Team details saved.',
+                          async () => {
+                            await reload();
+                            await refreshList();
+                          },
+                        );
+                      }}
+                    />
+                    {detail.team.is_active ? (
+                      <ConfirmAction
+                        label="Archive team"
+                        question="Archive this team and make its roster read-only?"
+                        busy={action.busy}
+                        onConfirm={() => {
+                          void action.run(
+                            () => updateTeam(id, { is_active: false }),
+                            'Team archived.',
+                            async () => {
+                              await reload();
+                              await refreshList();
+                            },
+                          );
+                        }}
+                      />
+                    ) : admin ? (
+                      <Button
+                        variant="secondary"
+                        busy={action.busy}
+                        onClick={() => {
+                          void action.run(
+                            () => updateTeam(id, { is_active: true }),
+                            'Team reactivated.',
+                            async () => {
+                              await reload();
+                              await refreshList();
+                            },
+                          );
+                        }}
+                      >
+                        Reactivate team
+                      </Button>
+                    ) : null}
+                    {!admin && !detail.team.is_active ? (
+                      <p className="text-sm text-muted">
+                        Only a site administrator can reactivate an archived team.
+                      </p>
+                    ) : null}
+                  </div>
+                </details>
+              ) : null}
+            </div>
+          }
+        />
       ) : null}
     </section>
   );

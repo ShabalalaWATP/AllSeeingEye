@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.application.ai_usage import AiUsageAccounting
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.service import MapAssistant
@@ -47,6 +48,14 @@ class AssistantWiring:
     def assistant_capacity(self) -> AssistantCapacity:
         return AssistantCapacity()
 
+    @cached_property
+    def ai_usage_accounting(self) -> AiUsageAccounting:
+        return AiUsageAccounting(
+            self.session_factory,
+            lambda session: self.repositories(session).ai_usage,
+            self.clock,
+        )
+
     def map_assistant(self, session: AsyncSession) -> MapAssistant:
         repos = self.repositories(session)
 
@@ -74,4 +83,5 @@ class AssistantWiring:
             repos.uow,
             self.assistant_capacity,
             record_usage,
+            self.ai_usage_accounting,
         )

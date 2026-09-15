@@ -36,6 +36,10 @@ export function UserRow({ user, onUpdated, onResetLink }: UserRowProps) {
       : error.code === 'self_modification'
         ? SELF_MODIFICATION_MESSAGE
         : describeError(error);
+  const options =
+    user.role === 'manager'
+      ? [{ value: 'manager', label: 'Legacy manager' }, ...roleOptions]
+      : roleOptions;
 
   return (
     <tr>
@@ -47,7 +51,7 @@ export function UserRow({ user, onUpdated, onResetLink }: UserRowProps) {
         <SelectField
           label={`Role for ${user.email}`}
           labelHidden
-          options={roleOptions}
+          options={options}
           value={user.role}
           disabled={busy}
           className="w-28"

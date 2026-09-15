@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from ase.api.routers import (
     account,
     account_sessions,
+    admin_ai_usage,
     admin_audit,
     admin_firms_credentials,
     admin_llm,
@@ -14,6 +15,7 @@ from ase.api.routers import (
     admin_requests,
     admin_sources,
     admin_users,
+    ai_usage,
     annotation_comparisons,
     annotation_monitors,
     assistant,
@@ -26,6 +28,7 @@ from ase.api.routers import (
     cyber,
     daily_briefing,
     direction,
+    directory,
     economy,
     economy_news,
     events,
@@ -58,6 +61,8 @@ from ase.api.routers import (
     social,
     sources,
     stream,
+    team_board,
+    team_invitations,
     teams,
     terrain,
     tiles,
@@ -75,6 +80,7 @@ api_router.include_router(daily_briefing.router)
 api_router.include_router(report_jobs.router)
 api_router.include_router(assistant.router)
 api_router.include_router(assistant_history.router)
+api_router.include_router(ai_usage.router)
 api_router.include_router(health.router)
 api_router.include_router(navigation.router)
 api_router.include_router(terrain.router)
@@ -83,9 +89,12 @@ api_router.include_router(auth.router)
 api_router.include_router(totp.router)
 api_router.include_router(mfa.router)
 api_router.include_router(teams.router)
+api_router.include_router(team_board.router)
+api_router.include_router(team_invitations.router)
 api_router.include_router(me.router)
 api_router.include_router(account.router)
 api_router.include_router(profile.router)
+api_router.include_router(directory.router)
 api_router.include_router(account_sessions.router)
 api_router.include_router(recovery.router)
 api_router.include_router(events.router)
@@ -123,6 +132,7 @@ api_router.include_router(admin_audit.router)
 api_router.include_router(admin_sources.router)
 api_router.include_router(admin_llm.router)
 api_router.include_router(admin_llm_discovery.router)
+api_router.include_router(admin_ai_usage.router)
 
 
 api_router.include_router(admin_firms_credentials.router)

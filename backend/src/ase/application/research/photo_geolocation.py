@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
+from ase.application.ai_usage import AiUsageAccounting
 from ase.application.model_routing import ModelRouting
 from ase.application.ports import Clock, RateLimiter, UnitOfWork
 from ase.application.ports.llm import LlmGateway, SecretCipher
@@ -54,10 +55,11 @@ class PhotoGeolocation:
         uow: UnitOfWork,
         admission: asyncio.Semaphore,
         record_usage: UsageRecorder,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self._access, self._routing, self._store = access, routing, store
         self._clock = clock
-        self._vision = PhotoVision(gateway, cipher, clock, record_usage)
+        self._vision = PhotoVision(gateway, cipher, clock, record_usage, ai_usage)
         self._limiter, self._uow, self._admission = limiter, uow, admission
 
     def _require_capacity(self, actor: User, ids: tuple[UUID, ...]) -> None:
@@ -132,6 +134,7 @@ class PhotoGeolocation:
                     request,
                     before_send,
                     photo_ids=tuple(f"photo-{index}" for index in range(1, len(ids) + 1)),
+                    team_id=team_id,
                 )
                 provenance = PhotoProvenance(
                     profile_id=profile.id,

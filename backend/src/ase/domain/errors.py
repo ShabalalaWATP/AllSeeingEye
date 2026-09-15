@@ -92,6 +92,11 @@ class EmailTaken(AppError):
     default_message = "A user with this email address already exists."
 
 
+class UsernameTaken(AppError):
+    code = "username_taken"
+    default_message = "That directory username is already in use."
+
+
 class SelfModification(AppError):
     code = "self_modification"
     default_message = "You cannot change your own role or active status."

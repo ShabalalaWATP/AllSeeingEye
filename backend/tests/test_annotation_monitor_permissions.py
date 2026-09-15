@@ -21,7 +21,7 @@ from test_saved_map_views import claims_for
     [
         (Role.USER, MembershipRole.MEMBER, False),
         (Role.MANAGER, MembershipRole.MEMBER, False),
-        (Role.USER, MembershipRole.MANAGER, False),
+        (Role.USER, MembershipRole.MANAGER, True),
         (Role.MANAGER, MembershipRole.MANAGER, True),
         (Role.ADMIN, None, True),
     ],
@@ -39,8 +39,8 @@ async def test_delete_shares_existing_scope_manager_policy_and_preserves_parent(
         )
     )
     if role is Role.USER and membership is MembershipRole.MANAGER:
-        # Deliberately seed inconsistent retained membership: normal assignment rejects it.
-        # The monitor must still require the account-level management capability.
+        # Deliberately seed the membership directly so this case verifies that
+        # team leadership is sufficient without a legacy global Manager role.
         async with container.session_factory() as session:
             session.add(
                 TeamMembershipRow(

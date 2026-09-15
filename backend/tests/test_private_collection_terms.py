@@ -64,8 +64,9 @@ async def test_background_queries_drop_deactivated_revoked_and_archived_owners(
     inactive = await create_user(
         container, email="inactive@example.com", password=None, is_active=False
     )
+    owner = await create_user(container, email="owner@example.com", password=None)
     async with container.session_factory() as session:
-        team = await container.teams(session).create(admin, "Team", CONTEXT)
+        team = await container.teams(session).create(owner, "Team", CONTEXT)
         await container.teams(session).set_member(
             admin, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
         )

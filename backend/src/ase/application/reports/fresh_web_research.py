@@ -5,6 +5,8 @@ import json
 import time
 from dataclasses import replace
 
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceWebSearchGateway
 from ase.application.ports.llm import SecretCipher
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.ports.source_controls import SourceAdmission
@@ -32,10 +34,12 @@ class FreshWebResearch:
         clock: Clock,
         limiter: RateLimiter,
         usage_sink: WebSearchUsageSink | None = None,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self._gateway, self._admission = gateway, admission
         self._clock, self._limiter = clock, limiter
         self._usage_sink = usage_sink
+        self._ai_usage = ai_usage
 
     async def collect(
         self,
@@ -65,8 +69,17 @@ class FreshWebResearch:
         output_budget = min(profile.token_budget(DEFAULT_WEB_OUTPUT_TOKENS), MAX_WEB_OUTPUT_TOKENS)
         started = time.perf_counter()
         try:
+            gateway: WebSearchGateway = self._gateway
+            if self._ai_usage is not None:
+                gateway = AllowanceWebSearchGateway(
+                    gateway,
+                    self._ai_usage,
+                    owner_id=job.actor.id,
+                    team_id=job.request.team_id,
+                    profile_id=profile.id,
+                )
             async with asyncio.timeout(90):
-                result = await self._gateway.search(
+                result = await gateway.search(
                     key,
                     profile.model,
                     WebSearchRequest(context, output_budget, profile.reasoning_effort),

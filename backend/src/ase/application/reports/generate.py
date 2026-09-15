@@ -11,6 +11,7 @@ from dataclasses import replace
 from uuid import UUID
 
 from ase.application.access import AccessPolicy
+from ase.application.ai_usage import AiUsageAccounting
 from ase.application.auditing import Auditor
 from ase.application.dto import RateLimits, RequestContext
 from ase.application.model_routing import ModelRouting, RoleProfiles
@@ -90,6 +91,7 @@ class GenerateReportUseCase:
         claims: ClaimRepository | None = None,
         web_research: FreshWebResearch | None = None,
         projector: AsyncReportProjector | None = None,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
         self._producer = Producer(
@@ -106,6 +108,7 @@ class GenerateReportUseCase:
             if claims is not None
             else None,
             projector=projector,
+            ai_usage=ai_usage,
         )
         self._builder = ReportJobBuilder(countries, conflicts, aois, self._backgrounds)
         self._plans = plans

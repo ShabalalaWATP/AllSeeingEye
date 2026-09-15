@@ -21,6 +21,7 @@ class Team:
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    description: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

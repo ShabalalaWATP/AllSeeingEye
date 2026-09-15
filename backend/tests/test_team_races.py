@@ -14,7 +14,7 @@ from team_helpers import CONTEXT, team_service
 from token_race_helpers import race_container as race_container  # noqa: PLC0414
 
 
-@pytest.mark.parametrize("revocation", ["membership", "account_role", "archive"])
+@pytest.mark.parametrize("revocation", ["membership", "archive"])
 async def test_waiting_manager_revalidates_authority(
     race_container: Container,
     monkeypatch: pytest.MonkeyPatch,
@@ -53,19 +53,11 @@ async def test_waiting_manager_revalidates_authority(
     pending = asyncio.create_task(add(), name="waiting-manager")
     try:
         await asyncio.wait_for(reached.wait(), 10)
-        if revocation == "account_role":
-            async with container.session_factory() as session:
-                await container.update_user(session).execute(
-                    admin, manager.id, Role.USER, None, CONTEXT
-                )
-        else:
-            async with team_service(container) as service:
-                if revocation == "membership":
-                    await service.remove_member(admin, team.id, manager.id, CONTEXT)
-                else:
-                    await service.update(
-                        admin, team.id, name=None, is_active=False, context=CONTEXT
-                    )
+        async with team_service(container) as service:
+            if revocation == "membership":
+                await service.remove_member(admin, team.id, manager.id, CONTEXT)
+            else:
+                await service.update(admin, team.id, name=None, is_active=False, context=CONTEXT)
         release.set()
         with pytest.raises((NotFound, Unauthenticated, InvalidRequest)):
             await pending
@@ -95,6 +87,5 @@ async def test_concurrent_duplicate_member_requests_keep_single_membership(
 
     await asyncio.gather(add(), add())
     async with team_service(container) as service:
-        assert [member.user_id for member in (await service.roster(admin, team.id))[1]] == [
-            target.id
-        ]
+        roster = await service.roster(admin, team.id)
+        assert [member.user_id for member in roster[1]].count(target.id) == 1

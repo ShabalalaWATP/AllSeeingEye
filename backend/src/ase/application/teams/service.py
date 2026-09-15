@@ -14,12 +14,25 @@ from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticat
 from ase.domain.teams import MembershipRole, Team, TeamMember, TeamMembership
 from ase.domain.users import Role, User, normalise_email
 
+DESCRIPTION_UNSET = object()
+MAX_ACTIVE_TEAMS_PER_ACCOUNT = 5
+MAX_TEAM_MEMBERS = 100
+
 
 def _name(value: str) -> str:
     result = value.strip()
     if not result or len(result) > 120 or any(ord(char) < 32 for char in result):
         raise InvalidRequest("Team names must contain 1 to 120 printable characters.")
     return result
+
+
+def _description(value: str | None) -> str | None:
+    if value is None:
+        return None
+    result = value.strip()
+    if len(result) > 500 or any(ord(char) < 32 for char in result):
+        raise InvalidRequest("Team descriptions must contain at most 500 printable characters.")
+    return result or None
 
 
 class TeamService:
@@ -67,13 +80,31 @@ class TeamService:
         team = await self.get(actor, team_id)
         return team, await self._teams.list_members(team_id)
 
-    async def create(self, actor: User, name: str, context: RequestContext) -> Team:
+    async def create(
+        self,
+        actor: User,
+        name: str,
+        context: RequestContext,
+        *,
+        description: str | None = None,
+    ) -> Team:
         actor = await self._actor(actor, mutation=True)
-        if not actor.is_admin:
-            raise Forbidden()
+        if (
+            not actor.is_admin
+            and await self._teams.count_active_created_by(actor.id) >= MAX_ACTIVE_TEAMS_PER_ACCOUNT
+        ):
+            raise InvalidRequest(
+                f"An account can create at most {MAX_ACTIVE_TEAMS_PER_ACCOUNT} active teams."
+            )
         now = self._clock.now()
-        team = Team(uuid4(), _name(name), True, actor.id, now, now)
+        team = Team(uuid4(), _name(name), True, actor.id, now, now, _description(description))
         await self._teams.add(team)
+        # The creator's membership is part of the same transaction as the team
+        # row. This makes a newly created team immediately usable and prevents
+        # an orphaned team with no Manager after a successful response.
+        await self._teams.put_membership(
+            TeamMembership(team.id, actor.id, MembershipRole.MANAGER, now)
+        )
         await self._auditor.record(
             AuditAction.TEAM_CREATED, actor=actor.id, subject=str(team.id), ip=context.ip
         )
@@ -87,14 +118,10 @@ class TeamService:
         *,
         name: str | None,
         is_active: bool | None,
+        description: str | object | None = DESCRIPTION_UNSET,
         context: RequestContext,
     ) -> Team:
-        actor = await self._actor(actor, mutation=True)
-        if not actor.is_admin:
-            raise Forbidden()
-        team = await self._teams.get_for_update(team_id)
-        if team is None:
-            raise NotFound()
+        actor, team = await self._team_editor(actor, team_id, allow_archived=True)
         changes: dict[str, object] = {}
         if name is not None:
             team.name = _name(name)
@@ -102,8 +129,13 @@ class TeamService:
         if is_active is not None:
             team.is_active = is_active
             changes["is_active"] = is_active
+        if description is not DESCRIPTION_UNSET:
+            if description is not None and not isinstance(description, str):
+                raise InvalidRequest("Supply a valid team description.")
+            team.description = _description(description)
+            changes["description"] = team.description
         if not changes:
-            raise InvalidRequest("Supply a team name or active status.")
+            raise InvalidRequest("Supply a team name, description or active status.")
         team.updated_at = self._clock.now()
         await self._teams.save(team)
         await self._auditor.record(
@@ -116,22 +148,27 @@ class TeamService:
         await self._uow.commit()
         return team
 
-    async def _membership_actor(self, actor: User, team_id: UUID) -> User:
+    async def _team_editor(
+        self, actor: User, team_id: UUID, *, allow_archived: bool = False
+    ) -> tuple[User, Team]:
+        """Reload a team and require its current Manager or Administrator authority."""
         actor = await self._actor(actor, mutation=True)
         team = await self._teams.get_for_update(team_id)
         membership = await self._teams.get_membership(team_id, actor.id)
         if team is None or (not actor.is_admin and membership is None):
             raise NotFound()
-        if not actor.is_admin and not (
-            actor.role is Role.MANAGER
-            and membership is not None
-            and membership.role is MembershipRole.MANAGER
+        if not actor.is_admin and (
+            membership is None or membership.role is not MembershipRole.MANAGER
         ):
             raise Forbidden()
-        if not team.is_active:
+        if not team.is_active and not (allow_archived and actor.is_admin):
             raise InvalidRequest(
                 "Archived teams are read-only. An administrator can reactivate them."
             )
+        return actor, team
+
+    async def _membership_actor(self, actor: User, team_id: UUID) -> User:
+        actor, _ = await self._team_editor(actor, team_id)
         return actor
 
     async def set_member(
@@ -154,14 +191,22 @@ class TeamService:
         if target is None or not target.is_active:
             raise InvalidRequest("An eligible active account could not be added.")
         existing = await self._teams.get_membership(team_id, target.id)
-        if not actor.is_admin and (
-            target.role is not Role.USER
-            or role is not MembershipRole.MEMBER
-            or (existing is not None and existing.role is not MembershipRole.MEMBER)
-        ):
+        # A team Manager may manage ordinary account memberships, including
+        # promoting or demoting another ordinary account. Site Administrator
+        # memberships remain outside that authority boundary.
+        if not actor.is_admin and target.role is Role.ADMIN:
             raise Forbidden()
-        if role is MembershipRole.MANAGER and target.role not in (Role.MANAGER, Role.ADMIN):
-            raise InvalidRequest("Team managers must have a manager or administrator account role.")
+        if actor.is_admin and target.id == actor.id:
+            raise Forbidden("Ask another Administrator to change an Administrator membership.")
+        if existing is None and await self._teams.count_members(team_id) >= MAX_TEAM_MEMBERS:
+            raise InvalidRequest(f"A team can have at most {MAX_TEAM_MEMBERS} members.")
+        if (
+            existing is not None
+            and existing.role is MembershipRole.MANAGER
+            and role is MembershipRole.MEMBER
+            and await self._teams.count_active_managers(team_id) <= 1
+        ):
+            raise InvalidRequest("Each active team must retain at least one active Manager.")
         member = TeamMembership(
             team_id, target.id, role, existing.joined_at if existing else self._clock.now()
         )
@@ -176,6 +221,33 @@ class TeamService:
         await self._uow.commit()
         return member
 
+    async def leave(self, actor: User, team_id: UUID, context: RequestContext) -> None:
+        """Leave a team while preserving its final active Manager invariant."""
+        actor = await self._actor(actor, mutation=True)
+        team = await self._teams.get_for_update(team_id)
+        membership = await self._teams.get_membership(team_id, actor.id)
+        if team is None or membership is None:
+            raise NotFound()
+        if not team.is_active:
+            raise InvalidRequest(
+                "Archived teams are read-only. An administrator can reactivate them."
+            )
+        if actor.is_admin:
+            raise Forbidden("Ask another Administrator to remove an administrator membership.")
+        if membership.role is MembershipRole.MANAGER and (
+            await self._teams.count_active_managers(team_id) <= 1
+        ):
+            raise InvalidRequest("Each active team must retain at least one active Manager.")
+        await self._teams.remove_membership(team_id, actor.id)
+        await self._auditor.record(
+            AuditAction.TEAM_MEMBER_LEFT,
+            actor=actor.id,
+            subject=str(team_id),
+            ip=context.ip,
+            details={"user_id": str(actor.id)},
+        )
+        await self._uow.commit()
+
     async def remove_member(
         self, actor: User, team_id: UUID, user_id: UUID, context: RequestContext
     ) -> None:
@@ -184,12 +256,16 @@ class TeamService:
         if membership is None:
             raise NotFound()
         target = await self._users.lock_by_id(user_id)
-        if not actor.is_admin and (
-            target is None
-            or target.role is not Role.USER
-            or membership.role is not MembershipRole.MEMBER
-        ):
+        if target is None:
+            raise NotFound()
+        if not actor.is_admin and target.role is Role.ADMIN:
             raise Forbidden()
+        if actor.is_admin and target.id == actor.id:
+            raise Forbidden("Ask another Administrator to remove an Administrator membership.")
+        if membership.role is MembershipRole.MANAGER and (
+            await self._teams.count_active_managers(team_id) <= 1
+        ):
+            raise InvalidRequest("Each active team must retain at least one active Manager.")
         await self._teams.remove_membership(team_id, user_id)
         await self._auditor.record(
             AuditAction.TEAM_MEMBER_REMOVED,

@@ -2,8 +2,10 @@
 
 import math
 import secrets
+from uuid import UUID
 
 from ase.adapters.llm.openai_responses import OPENAI_BASE
+from ase.application.ai_usage import AiUsageAccounting
 from ase.application.model_routing import RoleProfiles
 from ase.application.ports.llm import LlmGateway, SecretCipher
 from ase.application.ports.web_search import (
@@ -13,7 +15,12 @@ from ase.application.ports.web_search import (
     WebSearchResult,
 )
 from ase.application.report_jobs.budget import JobInterrupted, ReportCallBudget
-from ase.application.report_jobs.model_calls import BudgetedLlmGateway, BudgetedWebSearchGateway
+from ase.application.report_jobs.model_calls import (
+    AllowanceLlmGateway,
+    AllowanceWebSearchGateway,
+    BudgetedLlmGateway,
+    BudgetedWebSearchGateway,
+)
 from ase.domain.llm import (
     MAX_OUTPUT_TOKENS,
     TEXT_ROLES,
@@ -63,9 +70,13 @@ class _RoutedLlmGateway:
         cipher: SecretCipher,
         gateway: LlmGateway,
         budget: ReportCallBudget,
+        accounting: AiUsageAccounting | None = None,
+        owner_id: UUID | None = None,
+        team_id: UUID | None = None,
     ) -> None:
         self._profiles, self._cipher = profiles, cipher
         self._gateway, self._budget = gateway, budget
+        self._accounting, self._owner_id, self._team_id = accounting, owner_id, team_id
 
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
@@ -81,7 +92,18 @@ class _RoutedLlmGateway:
             raise JobInterrupted(MISMATCH)
         # Identical legacy profiles need the stage's explicit internal profile ID.
         profile_id = next(iter(matching_ids))
-        gateway = BudgetedLlmGateway(self._gateway, self._budget.with_profile(profile_id))
+        gateway: LlmGateway = BudgetedLlmGateway(
+            self._gateway, self._budget.with_profile(profile_id)
+        )
+        if self._accounting is not None and self._owner_id is not None:
+            gateway = AllowanceLlmGateway(
+                gateway,
+                self._accounting,
+                owner_id=self._owner_id,
+                team_id=self._team_id,
+                profile_id=profile_id,
+                purpose_prefix="report",
+            )
         return await gateway.complete(base_url, api_key, model, request)
 
 
@@ -92,9 +114,13 @@ class _RoutedWebGateway:
         cipher: SecretCipher,
         gateway: WebSearchGateway,
         budget: ReportCallBudget,
+        accounting: AiUsageAccounting | None = None,
+        owner_id: UUID | None = None,
+        team_id: UUID | None = None,
     ) -> None:
         self._direction, self._cipher = direction, cipher
         self._gateway, self._budget = gateway, budget
+        self._accounting, self._owner_id, self._team_id = accounting, owner_id, team_id
 
     async def search(self, api_key: str, model: str, request: WebSearchRequest) -> WebSearchResult:
         profile = self._direction
@@ -108,7 +134,17 @@ class _RoutedWebGateway:
             or not _key_matches(self._cipher, profile, api_key)
         ):
             raise JobInterrupted(MISMATCH)
-        gateway = BudgetedWebSearchGateway(self._gateway, self._budget.with_profile(profile.id))
+        gateway: WebSearchGateway = BudgetedWebSearchGateway(
+            self._gateway, self._budget.with_profile(profile.id)
+        )
+        if self._accounting is not None and self._owner_id is not None:
+            gateway = AllowanceWebSearchGateway(
+                gateway,
+                self._accounting,
+                owner_id=self._owner_id,
+                team_id=self._team_id,
+                profile_id=profile.id,
+            )
         return await gateway.search(api_key, model, request)
 
 
@@ -118,6 +154,10 @@ async def bind_report_job_gateways(
     gateway: LlmGateway,
     web_gateway: WebSearchGateway,
     budget: ReportCallBudget,
+    *,
+    ai_usage: AiUsageAccounting | None = None,
+    owner_id: UUID | None = None,
+    team_id: UUID | None = None,
 ) -> tuple[LlmGateway, WebSearchGateway]:
     """Hold only private per-run profile copies; ledger records contain no secrets."""
     profiles = []
@@ -129,6 +169,22 @@ async def bind_report_job_gateways(
     if direction is not None and not direction.allows(LlmRole.DIRECTION):
         direction = None
     return (
-        _RoutedLlmGateway(tuple(profiles), cipher, gateway, budget),
-        _RoutedWebGateway(direction, cipher, web_gateway, budget),
+        _RoutedLlmGateway(
+            tuple(profiles),
+            cipher,
+            gateway,
+            budget,
+            ai_usage,
+            owner_id,
+            team_id,
+        ),
+        _RoutedWebGateway(
+            direction,
+            cipher,
+            web_gateway,
+            budget,
+            ai_usage,
+            owner_id,
+            team_id,
+        ),
     )

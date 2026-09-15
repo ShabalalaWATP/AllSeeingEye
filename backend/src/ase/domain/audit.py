@@ -78,6 +78,20 @@ class AuditAction(StrEnum):
     TEAM_UPDATED = "team_updated"
     TEAM_MEMBER_SET = "team_member_set"
     TEAM_MEMBER_REMOVED = "team_member_removed"
+    TEAM_MEMBER_LEFT = "team_member_left"
+    TEAM_INVITATION_CREATED = "team_invitation_created"
+    TEAM_INVITATION_ACCEPTED = "team_invitation_accepted"
+    TEAM_INVITATION_DECLINED = "team_invitation_declined"
+    TEAM_INVITATION_WITHDRAWN = "team_invitation_withdrawn"
+    TEAM_BOARD_POST_CREATED = "team_board_post_created"
+    TEAM_BOARD_POST_EDITED = "team_board_post_edited"
+    TEAM_BOARD_POST_REMOVED = "team_board_post_removed"
+    TEAM_BOARD_POST_PINNED = "team_board_post_pinned"
+    TEAM_BOARD_POST_UNPINNED = "team_board_post_unpinned"
+    DIRECTORY_PROFILE_UPDATED = "directory_profile_updated"
+    AI_USAGE_POLICY_CREATED = "ai_usage_policy_created"
+    AI_USAGE_POLICY_UPDATED = "ai_usage_policy_updated"
+    AI_USAGE_POLICY_DISABLED = "ai_usage_policy_disabled"
 
 
 @dataclass(slots=True)

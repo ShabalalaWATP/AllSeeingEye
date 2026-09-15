@@ -866,3 +866,35 @@ record. No production deployment or live model acceptance run is claimed.
 The public methodology references are guidance for phrasing and uncertainty,
 not an official UK or NATO certification. See [Ask Eye](EYE_ASSISTANT.md) for
 the source and conversation boundaries.
+
+## 15 September 2026: teams, profiles and AI usage
+
+- [x] Create an isolated `codex/teams-profiles-ai-usage` branch/worktree so this
+  implementation does not touch concurrent work in `main`.
+- [x] Make team authority membership-based, allow any active account to create a
+  team, assign the creator as Manager atomically, protect Administrators and keep
+  the final active Manager invariant.
+- [x] Add team descriptions, explicit leave, archive/recovery behaviour and
+  capability-driven Team dashboard tabs.
+- [x] Add opt-in directory profiles with bounded fields, unique handles, privacy-safe
+  search and an Account settings editor.
+- [x] Add a durable AI allowance ledger with atomic reservations, settlement,
+  calendar periods, administrator policy controls, audit events and Ask Eye
+  integration, plus a personal usage view.
+- [x] Add an administrator effective-policy preview for personal and team
+  destinations before changing assignments.
+- [x] Add a bounded team message board with replies, pins, revision checks and
+  moderation tombstones.
+- [x] Add directory-backed invitations, acceptance/decline, withdrawal, expiry,
+  pending caps and duplicate protection, alongside the bounded direct-add path.
+- [x] Retire legacy global Manager account values through migration 0040 while
+  preserving explicit team-manager memberships and expiring old sessions.
+- [x] Enforce bounded team creation and roster sizes, and add database uniqueness
+  for active AI allowance targets through migration 0041.
+- [x] Apply the allowance ledger to Ask Eye, synchronous and queued report
+  generation, native web search, automatic claim proposals and photo geolocation.
+- [ ] Complete subscription/system model paths, effective-policy previews,
+  reconciliation and the remaining browser acceptance matrix.
+
+The detailed status and evidence log is in
+[TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md).

@@ -863,6 +863,32 @@
         }
       }
     },
+    "/api/ai-usage/me": {
+      "get": {
+        "tags": [
+          "ai-usage"
+        ],
+        "summary": "My Ai Usage",
+        "operationId": "my_ai_usage_api_ai_usage_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageSummaryPageOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "tags": [
@@ -2155,6 +2181,54 @@
         }
       }
     },
+    "/api/teams/{team_id}/ai-usage": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Team Ai Usage",
+        "operationId": "team_ai_usage_api_teams__team_id__ai_usage_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageSummaryPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/teams/{team_id}/members": {
       "put": {
         "tags": [
@@ -2213,6 +2287,47 @@
         }
       }
     },
+    "/api/teams/{team_id}/leave": {
+      "post": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Leave Team",
+        "operationId": "leave_team_api_teams__team_id__leave_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/teams/{team_id}/members/{user_id}": {
       "delete": {
         "tags": [
@@ -2250,6 +2365,737 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/board/posts": {
+      "get": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "List Posts",
+        "operationId": "list_posts_api_teams__team_id__board_posts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Create Post",
+        "operationId": "create_post_api_teams__team_id__board_posts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamBoardPostIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/board/posts/{post_id}": {
+      "patch": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Edit Post",
+        "operationId": "edit_post_api_teams__team_id__board_posts__post_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamBoardPostUpdateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Delete Post",
+        "operationId": "delete_post_api_teams__team_id__board_posts__post_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/board/posts/{post_id}/pin": {
+      "post": {
+        "tags": [
+          "team-board"
+        ],
+        "summary": "Pin Post",
+        "operationId": "pin_post_api_teams__team_id__board_posts__post_id__pin_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Post Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamBoardPinIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamBoardPostOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/team-invitations": {
+      "get": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "My Invitations",
+        "operationId": "my_invitations_api_me_team_invitations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/InvitationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "pending",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/invitations": {
+      "get": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "List Team Invitations",
+        "operationId": "list_team_invitations_api_teams__team_id__invitations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/InvitationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "pending",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "Send Team Invitation",
+        "operationId": "send_team_invitation_api_teams__team_id__invitations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/invitations/{invitation_id}": {
+      "delete": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "Withdraw Team Invitation",
+        "operationId": "withdraw_team_invitation_api_teams__team_id__invitations__invitation_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/team-invitations/{invitation_id}/accept": {
+      "post": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "Accept Team Invitation",
+        "operationId": "accept_team_invitation_api_me_team_invitations__invitation_id__accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationActionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/team-invitations/{invitation_id}/decline": {
+      "post": {
+        "tags": [
+          "team-invitations"
+        ],
+        "summary": "Decline Team Invitation",
+        "operationId": "decline_team_invitation_api_me_team_invitations__invitation_id__decline_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationActionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamInvitationOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2403,6 +3249,149 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/directory/users": {
+      "get": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Search Directory",
+        "operationId": "search_directory_api_directory_users_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 80,
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/directory-profile": {
+      "get": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Get Directory Profile",
+        "operationId": "get_directory_profile_api_me_directory_profile_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryProfileOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Update Directory Profile",
+        "operationId": "update_directory_profile_api_me_directory_profile_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectoryProfileUpdateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryProfileOut"
                 }
               }
             }
@@ -9380,6 +10369,293 @@
         ]
       }
     },
+    "/api/admin/ai-usage/policies": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Policies",
+        "operationId": "list_policies_api_admin_ai_usage_policies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AiUsagePolicyOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Policies Api Admin Ai Usage Policies Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create Policy",
+        "operationId": "create_policy_api_admin_ai_usage_policies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiUsagePolicyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsagePolicyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/ai-usage/policies/{policy_id}": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update Policy",
+        "operationId": "update_policy_api_admin_ai_usage_policies__policy_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiUsagePolicyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsagePolicyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Disable Policy",
+        "operationId": "disable_policy_api_admin_ai_usage_policies__policy_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ai-usage/reservations": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Reservations",
+        "operationId": "list_reservations_api_admin_ai_usage_reservations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageReservationsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ai-usage/preview": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Preview Effective Usage",
+        "description": "Show the policies that would apply to a user for an optional team destination.",
+        "operationId": "preview_effective_usage_api_admin_ai_usage_preview_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageSummaryPageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/sources/firms_viirs_noaa20/connection": {
       "get": {
         "tags": [
@@ -10063,6 +11339,415 @@
           "trend"
         ],
         "title": "ActivityOut"
+      },
+      "AiAllowancePeriod": {
+        "type": "string",
+        "enum": [
+          "day",
+          "week",
+          "month"
+        ],
+        "title": "AiAllowancePeriod"
+      },
+      "AiPolicyScope": {
+        "type": "string",
+        "enum": [
+          "global",
+          "user",
+          "team"
+        ],
+        "title": "AiPolicyScope"
+      },
+      "AiUsagePolicyIn": {
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/AiPolicyScope"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "period": {
+            "$ref": "#/components/schemas/AiAllowancePeriod",
+            "default": "month"
+          },
+          "request_limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2147483647.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Limit"
+          },
+          "token_limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2147483647.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Limit"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope"
+        ],
+        "title": "AiUsagePolicyIn"
+      },
+      "AiUsagePolicyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/AiPolicyScope"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "period": {
+            "$ref": "#/components/schemas/AiAllowancePeriod"
+          },
+          "request_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Limit"
+          },
+          "token_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Limit"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scope",
+          "target_id",
+          "period",
+          "request_limit",
+          "token_limit",
+          "enabled",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AiUsagePolicyOut"
+      },
+      "AiUsageReservationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Policy Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "reserved_tokens": {
+            "type": "integer",
+            "title": "Reserved Tokens"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "settled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settled At"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "actual_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Tokens"
+          },
+          "ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ok"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "policy_id",
+          "user_id",
+          "profile_id",
+          "model",
+          "purpose",
+          "period_start",
+          "period_end",
+          "reserved_tokens",
+          "status",
+          "created_at",
+          "settled_at",
+          "prompt_tokens",
+          "completion_tokens",
+          "actual_tokens",
+          "ok",
+          "error"
+        ],
+        "title": "AiUsageReservationOut"
+      },
+      "AiUsageReservationsOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsageReservationOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AiUsageReservationsOut"
+      },
+      "AiUsageSummaryOut": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/AiUsagePolicyOut"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "used_requests": {
+            "type": "integer",
+            "title": "Used Requests"
+          },
+          "reserved_requests": {
+            "type": "integer",
+            "title": "Reserved Requests"
+          },
+          "remaining_requests": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Requests"
+          },
+          "used_tokens": {
+            "type": "integer",
+            "title": "Used Tokens"
+          },
+          "reserved_tokens": {
+            "type": "integer",
+            "title": "Reserved Tokens"
+          },
+          "remaining_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy",
+          "period_start",
+          "period_end",
+          "used_requests",
+          "reserved_requests",
+          "remaining_requests",
+          "used_tokens",
+          "reserved_tokens",
+          "remaining_tokens"
+        ],
+        "title": "AiUsageSummaryOut"
+      },
+      "AiUsageSummaryPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsageSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AiUsageSummaryPageOut"
       },
       "AlertOut": {
         "properties": {
@@ -16403,6 +18088,427 @@
         ],
         "title": "DayBucketOut"
       },
+      "DirectoryPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DirectoryUserOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit",
+          "next_offset"
+        ],
+        "title": "DirectoryPageOut"
+      },
+      "DirectoryProfileOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "job_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Title"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "biography": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Biography"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "expertise": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expertise"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "is_discoverable": {
+            "type": "boolean",
+            "title": "Is Discoverable"
+          },
+          "show_timezone": {
+            "type": "boolean",
+            "title": "Show Timezone"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "username",
+          "job_title",
+          "organisation",
+          "biography",
+          "country",
+          "languages",
+          "expertise",
+          "timezone",
+          "is_discoverable",
+          "show_timezone",
+          "revision",
+          "updated_at"
+        ],
+        "title": "DirectoryProfileOut"
+      },
+      "DirectoryProfileUpdateIn": {
+        "properties": {
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "job_title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Title"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "biography": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Biography"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$"
+                },
+                "type": "array",
+                "maxItems": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "expertise": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expertise"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "is_discoverable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Discoverable"
+          },
+          "show_timezone": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Show Timezone"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DirectoryProfileUpdateIn"
+      },
+      "DirectoryUserOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "job_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Title"
+          },
+          "organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organisation"
+          },
+          "biography": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Biography"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "expertise": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expertise"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "username",
+          "display_name",
+          "job_title",
+          "organisation",
+          "biography",
+          "country",
+          "languages",
+          "expertise",
+          "timezone"
+        ],
+        "title": "DirectoryUserOut"
+      },
       "DoctrineReferenceOut": {
         "properties": {
           "title": {
@@ -20598,6 +22704,17 @@
           "method"
         ],
         "title": "InputTextTransformationIn"
+      },
+      "InvitationStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "accepted",
+          "declined",
+          "withdrawn",
+          "expired"
+        ],
+        "title": "InvitationStatus"
       },
       "JamCellOut": {
         "properties": {
@@ -32627,6 +34744,203 @@
         ],
         "title": "TallyOut"
       },
+      "TeamBoardPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TeamBoardPostOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit",
+          "next_offset"
+        ],
+        "title": "TeamBoardPageOut"
+      },
+      "TeamBoardPinIn": {
+        "properties": {
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pinned",
+          "expected_revision"
+        ],
+        "title": "TeamBoardPinIn"
+      },
+      "TeamBoardPostIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TeamBoardPostIn"
+      },
+      "TeamBoardPostOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Author Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "title": "Is Pinned"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "author_id",
+          "author_name",
+          "text",
+          "created_at",
+          "updated_at",
+          "parent_id",
+          "is_pinned",
+          "deleted_at",
+          "revision"
+        ],
+        "title": "TeamBoardPostOut"
+      },
+      "TeamBoardPostUpdateIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "expected_revision"
+        ],
+        "title": "TeamBoardPostUpdateIn"
+      },
       "TeamDetailOut": {
         "properties": {
           "team": {
@@ -32654,6 +34968,18 @@
             "maxLength": 120,
             "minLength": 1,
             "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           }
         },
         "additionalProperties": false,
@@ -32662,6 +34988,225 @@
           "name"
         ],
         "title": "TeamIn"
+      },
+      "TeamInvitationActionIn": {
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TeamInvitationActionIn"
+      },
+      "TeamInvitationCreateIn": {
+        "properties": {
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recipient Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 280
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "recipient_id"
+        ],
+        "title": "TeamInvitationCreateIn"
+      },
+      "TeamInvitationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recipient Id"
+          },
+          "inviter_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Inviter Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MembershipRole"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "responded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responded At"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "inviter_display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inviter Display Name"
+          },
+          "recipient_display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Display Name"
+          },
+          "recipient_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "recipient_id",
+          "inviter_id",
+          "role",
+          "note",
+          "status",
+          "created_at",
+          "expires_at",
+          "responded_at",
+          "revision",
+          "team_name",
+          "inviter_display_name",
+          "recipient_display_name",
+          "recipient_username"
+        ],
+        "title": "TeamInvitationOut"
+      },
+      "TeamInvitationPageOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TeamInvitationOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit",
+          "next_offset"
+        ],
+        "title": "TeamInvitationPageOut"
       },
       "TeamOut": {
         "properties": {
@@ -32692,6 +35237,17 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           }
         },
         "type": "object",
@@ -32701,7 +35257,8 @@
           "is_active",
           "created_by",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "description"
         ],
         "title": "TeamOut"
       },
@@ -32730,6 +35287,18 @@
               }
             ],
             "title": "Is Active"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           }
         },
         "additionalProperties": false,

@@ -25,6 +25,7 @@ from ase.infrastructure.settings import Settings
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import async_sessionmaker
 
+    from ase.application.ai_usage import AiUsageAccounting
     from ase.container.repositories import Repositories
 
 
@@ -54,6 +55,7 @@ class ResearchInputWiring:
         cipher: SecretCipher
         llm: LlmGateway
         session_factory: async_sessionmaker[AsyncSession]
+        ai_usage_accounting: AiUsageAccounting
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
         def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
@@ -94,4 +96,5 @@ class ResearchInputWiring:
             repos.uow,
             self.photo_admission,
             record_usage,
+            self.ai_usage_accounting,
         )

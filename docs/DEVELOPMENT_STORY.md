@@ -4787,3 +4787,27 @@ cameras in North Yorkshire and Cumbria, Derbyshire's traffic cameras, and a cura
 Highland and crossing cameras and streams. Every curated URL was checked live before entry; the
 Isle of Man firewall refused Python's client but served browsers, which is the only client that
 loads those images.
+
+On 15 September 2026, the teams, profiles and AI usage work moved into the isolated
+`codex/teams-profiles-ai-usage` worktree so concurrent `main` development remained
+untouched. Team authority now follows current membership: any active account can
+create a team and becomes its first Manager, ordinary Managers can maintain ordinary
+members, Administrators are protected from team-level removal and the last active
+Manager cannot be removed. Team descriptions, archive/recovery and explicit leave
+are persisted through migration 0037.
+
+The same slice added opt-in directory profiles and a privacy-safe paginated search,
+with the editor under Account settings, plus migration 0036. A durable AI allowance
+ledger (migration 0035) now reserves and settles Ask Eye requests atomically, shows
+personal usage, and exposes administrator policy controls with audit events. A
+bounded plain-text team board (migration 0038) provides replies, pins, optimistic
+revisions and moderation tombstones. OpenAPI was exported from the branch and the
+frontend client regenerated. Migration 0039 adds directory-backed invitations with
+acceptance, decline, withdrawal, expiry and duplicate protection. Migration 0040
+retires the legacy global Manager account role while preserving team memberships and
+invalidating old sessions. The allowance ledger also covers synchronous and queued
+reports, native web search, automatic claim proposals and photo geolocation; system
+subscription paths, reconciliation and final browser acceptance remain open.
+Active team creation is bounded to five teams per account, roster membership to 100 people, and
+migration 0041 adds database uniqueness for active AI allowance targets.
+Administrators can also preview the effective account and team policies before applying a change.

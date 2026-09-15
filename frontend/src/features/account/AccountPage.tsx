@@ -4,10 +4,12 @@ import { ProfileSecurity } from '@/components/account/ProfileSecurity';
 import { useAuthStore } from '@/stores/auth';
 
 import { ChangePasswordForm } from './ChangePasswordForm';
+import { DirectoryProfile } from './DirectoryProfile';
 import { ProfilePreferences } from './ProfilePreferences';
 
 const sections = [
   { id: 'profile', label: 'Profile', detail: 'Your identity and region' },
+  { id: 'directory', label: 'Directory profile', detail: 'Optional team discovery' },
   { id: 'security', label: 'Security', detail: 'Sign-in and active sessions' },
 ] as const;
 export type ProfileSection = (typeof sections)[number]['id'];
@@ -85,6 +87,8 @@ export default function AccountPage() {
                 <ProfileSecurity />
                 <ChangePasswordForm key={`${user.id}:${user.role}`} actorId={user.id} />
               </div>
+            ) : selected.id === 'directory' ? (
+              <DirectoryProfile />
             ) : (
               <ProfilePreferences key={selected.id} section={selected.id} />
             )}

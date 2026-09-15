@@ -42,12 +42,10 @@ async def test_orphan_legacy_scope_is_admin_only(
         assert ordinary.visibility.user_id == user.id
 
 
-def test_manager_requires_account_capability_and_team_designation(
-    container: Container, user: User
-) -> None:
+def test_manager_requires_team_designation_only(container: Container, user: User) -> None:
     unrelated_owner = uuid4()
     for role, membership in (
-        (Role.USER, MembershipRole.MANAGER),
+        (Role.USER, MembershipRole.MEMBER),
         (Role.MANAGER, MembershipRole.MEMBER),
     ):
         decision, team = team_context(replace(user, role=role), container, membership=membership)
@@ -55,7 +53,7 @@ def test_manager_requires_account_capability_and_team_designation(
         with pytest.raises(Forbidden):
             decision.require_write(unrelated_owner, team.id)
     decision, team = team_context(
-        replace(user, role=Role.MANAGER), container, membership=MembershipRole.MANAGER
+        replace(user, role=Role.USER), container, membership=MembershipRole.MANAGER
     )
     decision.require_write(unrelated_owner, team.id)
     with pytest.raises(NotFound):
@@ -83,14 +81,11 @@ async def test_background_requires_active_owner_and_active_current_membership(
     container: Container, admin: User, user: User
 ) -> None:
     async with container.session_factory() as session:
-        team = await container.teams(session).create(admin, "Team", CONTEXT)
+        team = await container.teams(session).create(user, "Team", CONTEXT)
         policy = container.access_policy(session)
         await policy.background(user.id, None)
         with pytest.raises(Forbidden):
             await policy.background(admin.id, team.id)
-        await container.teams(session).set_member(
-            admin, team.id, email=user.email, role=MembershipRole.MEMBER, context=CONTEXT
-        )
         decision = await policy.background(user.id, team.id, for_update=True)
         assert decision.visibility.team_ids == (team.id,)
         await session.rollback()

@@ -25,19 +25,23 @@ describe('TeamsPage', () => {
     expect(screen.queryByRole('button', { name: /Remove|Make|reset/i })).not.toBeInTheDocument();
   });
 
-  it('requires both a manager account and manager membership', async () => {
-    setupTeams(manager, {
-      ...roster,
-      members: roster.members.map((member) => ({ ...member, role: 'member' })),
-    });
-    await memberRow('Mina Manager');
-    expect(screen.queryByRole('form', { name: 'Add team member' })).not.toBeInTheDocument();
-  });
-
-  it('does not grant manager authority to a user with a stale manager designation', async () => {
+  it('grants team-manager controls from membership, regardless of account role', async () => {
     setupTeams(plainUser, {
       ...roster,
-      members: roster.members.map((member) => ({ ...member, role: 'manager' })),
+      members: roster.members.map((member) =>
+        member.user_id === plainUser.id ? { ...member, role: 'manager' } : member,
+      ),
+    });
+    await memberRow('Mina Manager');
+    expect(screen.getByRole('form', { name: 'Add team member' })).toBeInTheDocument();
+  });
+
+  it('does not grant manager authority from a stale account designation', async () => {
+    setupTeams(manager, {
+      ...roster,
+      members: roster.members.map((member) =>
+        member.user_id === manager.id ? { ...member, role: 'member' } : member,
+      ),
     });
     await memberRow('Uma User');
     expect(screen.queryByRole('button', { name: 'Remove member' })).not.toBeInTheDocument();
@@ -46,8 +50,9 @@ describe('TeamsPage', () => {
   it('lets designated managers add ordinary members by email without an account directory', async () => {
     const { user, writes } = setupTeams(manager);
     await user.type(await screen.findByLabelText('Account email'), 'new@example.com');
-    expect(screen.queryByLabelText('Team role')).not.toBeInTheDocument();
-    expect(screen.queryByText('Team settings')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Team role')).toBeInTheDocument();
+    expect(screen.getByText(/Managers can assign team-manager access/)).toBeInTheDocument();
+    expect(screen.getByText('Team settings')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add member' }));
     expect(await screen.findByText('Membership saved.')).toBeInTheDocument();
     expect(writes).toEqual([{ method: 'PUT', body: { email: 'new@example.com', role: 'member' } }]);
@@ -79,7 +84,7 @@ describe('TeamsPage', () => {
       body: { email: 'lead@example.com', role: 'manager' },
     });
     await user.click(
-      (await memberRow('Mina Manager')).getByRole('button', { name: 'Make member' }),
+      (await memberRow('Mina Manager')).getByRole('button', { name: 'Set as member' }),
     );
     await screen.findByText('Team role updated.');
     await user.click(
@@ -92,13 +97,53 @@ describe('TeamsPage', () => {
   });
 
   it('creates and selects a named team', async () => {
-    const { user, writes } = setupTeams(adminUser);
+    const { user, writes } = setupTeams(plainUser);
     await user.click(screen.getByText('Create a team'));
     await user.type(screen.getByLabelText('New team name'), 'Southern desk');
     await user.click(screen.getByRole('button', { name: 'Create team' }));
     expect(await screen.findByRole('heading', { name: 'Southern desk' })).toBeInTheDocument();
-    expect(screen.getByText('No members in this team.')).toBeInTheDocument();
+    expect(await screen.findByText('No members in this team.')).toBeInTheDocument();
     expect(writes[0]).toEqual({ method: 'POST', body: { name: 'Southern desk' } });
+  });
+
+  it('lets any active account start a team from the empty state', async () => {
+    const { user, writes } = setupTeams(plainUser, roster, [
+      http.get('/api/teams', () => HttpResponse.json({ items: [] })),
+    ]);
+    await screen.findByText('No workspaces yet');
+    await user.click(screen.getByRole('button', { name: 'Create a team' }));
+    await user.type(screen.getByLabelText('New team name'), 'Field notes');
+    await user.click(screen.getByRole('button', { name: 'Create team' }));
+    expect(writes[0]).toEqual({ method: 'POST', body: { name: 'Field notes' } });
+    expect(await screen.findByText('Team created. You are its first manager.')).toBeInTheDocument();
+  });
+
+  it('explains when a team roster is no longer available to the current account', async () => {
+    setupTeams(plainUser, roster, [
+      http.get('/api/teams/:id', () =>
+        apiError(403, 'membership_required', 'Membership required.'),
+      ),
+    ]);
+    expect(await screen.findByText('Team access changed')).toBeInTheDocument();
+    expect(screen.queryByRole('table', { name: 'Team members' })).not.toBeInTheDocument();
+  });
+
+  it('exposes the dashboard sections and keeps the roster workflow one click away', async () => {
+    const { user } = setupTeams(plainUser);
+    await memberRow('Uma User');
+    expect(screen.getByRole('tab', { name: /Overview/ })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: /Members/ })).toHaveAttribute('aria-selected', 'true');
+
+    await user.click(screen.getByRole('tab', { name: /Overview/ }));
+    expect(
+      await screen.findByRole('heading', { name: 'A calm view of who can work here' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Research/ }));
+    expect(
+      await screen.findByRole('heading', { name: 'Research for this team' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Board/ }));
+    expect(await screen.findByRole('heading', { name: /Northern desk board/ })).toBeInTheDocument();
   });
 
   it('renames, archives and reactivates teams through administrator settings', async () => {
@@ -153,7 +198,7 @@ describe('TeamsPage', () => {
       useAuthStore.getState().setSession(tokenFor(plainUser));
     });
     expect(screen.queryByText('Mina Manager')).not.toBeInTheDocument();
-    await screen.findByText(/You are not assigned to a team/);
+    await screen.findByText(/No workspaces yet/);
     act(() => {
       useAuthStore.getState().clearSession();
     });
@@ -167,7 +212,7 @@ describe('TeamsPage', () => {
     await screen.findByText('Teams unavailable.');
     server.use(http.get('/api/teams', () => HttpResponse.json({ items: [] })));
     await user.click(screen.getByRole('button', { name: 'Retry teams' }));
-    await screen.findByText(/No teams yet/);
+    await screen.findByText(/No workspaces yet/);
   });
 
   it('rejects malformed server rosters and retries successfully', async () => {

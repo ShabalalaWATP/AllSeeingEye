@@ -13,6 +13,7 @@ import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAcce
 import { useAuthStore } from '@/stores/auth';
 
 import { LlmPersonalConnections } from './LlmPersonalConnections';
+import { AiUsagePolicies } from './AiUsagePolicies';
 import { LlmConnectionSummary } from './LlmConnectionSummary';
 import type { ConnectionSelection } from './LlmConnectionSummary';
 import { LlmConnectionJourney } from './LlmConnectionJourney';
@@ -43,6 +44,7 @@ function ConnectionWorkspace() {
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' });
   const [notice, setNotice] = useState<string | null>(null);
   const [reuseId, setReuseId] = useState<string | null>(null);
+  const [showUsage, setShowUsage] = useState(false);
   const upsert = useCallback(
     (profile: LlmProfile) => {
       setData((current) =>
@@ -331,6 +333,27 @@ function ConnectionWorkspace() {
             )}
           </section>
         )}
+        {editor.mode === 'closed' ? (
+          showUsage ? (
+            <>
+              <Button variant="ghost" onClick={() => setShowUsage(false)}>
+                Close allowance controls
+              </Button>
+              <AiUsagePolicies users={data?.users ?? []} teams={data?.teams ?? []} />
+            </>
+          ) : (
+            <section className="border-t border-line pt-6">
+              <h2 className="text-base font-semibold">AI access and usage</h2>
+              <p className="mt-1 text-sm text-muted">
+                Set bounded daily, weekly or monthly request and token allowances for the site,
+                individual users or teams.
+              </p>
+              <Button className="mt-3" variant="secondary" onClick={() => setShowUsage(true)}>
+                Open allowance controls
+              </Button>
+            </section>
+          )
+        ) : null}
       </div>
     </section>
   );

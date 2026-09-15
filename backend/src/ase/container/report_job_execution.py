@@ -47,7 +47,14 @@ async def execute_job(
         await session.rollback()
         budget = ReportCallBudget(checkpoints.mutate, checkpoints.check, profile_id=job.profile.id)
         gateway, web_gateway = await bind_report_job_gateways(
-            routing, container.cipher, container.llm, container.web_search_gateway, budget
+            routing,
+            container.cipher,
+            container.llm,
+            container.web_search_gateway,
+            budget,
+            ai_usage=container.ai_usage_accounting,
+            owner_id=job.actor.id,
+            team_id=stored.team_id,
         )
         generator = container.generate_report(
             session,

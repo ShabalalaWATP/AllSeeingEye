@@ -18,6 +18,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
+from ase.adapters.persistence import ai_usage_models as _ai_usage_models  # noqa: F401
 from ase.adapters.persistence import (
     annotation_monitor_models as _annotation_monitor_models,  # noqa: F401
 )
@@ -25,6 +26,10 @@ from ase.adapters.persistence import (
     assistant_history_models as _assistant_history_models,  # noqa: F401
 )
 from ase.adapters.persistence import report_job_models as _report_job_models  # noqa: F401
+from ase.adapters.persistence import team_board_models as _team_board_models  # noqa: F401
+from ase.adapters.persistence import (
+    team_invitation_models as _team_invitation_models,  # noqa: F401
+)
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.operational_models import (
     ActivitySampleRow,

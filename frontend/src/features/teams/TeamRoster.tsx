@@ -2,7 +2,10 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Table, Td, Th } from '@/components/ui/Table';
+import type { User } from '@/lib/api/schemas';
 import type { TeamMember } from '@/lib/api/teams';
+
+import { memberCapabilities } from './teamCapabilities';
 import { useCompactRoster } from './useCompactRoster';
 
 export function ConfirmAction({
@@ -52,7 +55,8 @@ export function ConfirmAction({
 
 interface TeamRosterProps {
   members: TeamMember[];
-  admin: boolean;
+  actor: User;
+  team: { is_active: boolean };
   canManage: boolean;
   busy: boolean;
   onRemove: (member: TeamMember) => void;
@@ -61,26 +65,28 @@ interface TeamRosterProps {
 
 function MemberActions({
   member,
-  admin,
+  actor,
+  team,
+  canManage,
   busy,
   onRemove,
   onRole,
-}: Omit<TeamRosterProps, 'members' | 'canManage'> & { member: TeamMember }) {
+}: Omit<TeamRosterProps, 'members' | 'admin'> & { member: TeamMember }) {
+  const permissions = memberCapabilities(actor, member, team, canManage);
+  const isSelf = member.user_id === actor.id;
   return (
     <div className="flex flex-wrap gap-2">
-      {admin &&
-      member.is_active &&
-      (member.account_role === 'manager' || member.account_role === 'admin') ? (
+      {permissions.canChangeRole && member.is_active ? (
         <Button
           variant="secondary"
           className="min-h-11"
           disabled={busy}
           onClick={() => onRole(member, member.role === 'manager' ? 'member' : 'manager')}
         >
-          {member.role === 'manager' ? 'Make member' : 'Make manager'}
+          {member.role === 'manager' ? 'Set as member' : 'Make manager'}
         </Button>
       ) : null}
-      {admin || (member.account_role === 'user' && member.role === 'member') ? (
+      {permissions.canRemove ? (
         <ConfirmAction
           label="Remove member"
           question={`Remove ${member.display_name} from this team?`}
@@ -88,11 +94,26 @@ function MemberActions({
           onConfirm={() => onRemove(member)}
         />
       ) : null}
+      {isSelf ? <span className="self-center text-xs text-muted">You</span> : null}
+      {!isSelf &&
+      !permissions.canChangeRole &&
+      !permissions.canRemove &&
+      member.account_role !== 'user' ? (
+        <span className="self-center text-xs text-muted">Administrator protected</span>
+      ) : null}
     </div>
   );
 }
 
-export function TeamRoster({ members, admin, canManage, busy, onRemove, onRole }: TeamRosterProps) {
+export function TeamRoster({
+  members,
+  actor,
+  team,
+  canManage,
+  busy,
+  onRemove,
+  onRole,
+}: TeamRosterProps) {
   const compact = useCompactRoster();
   if (!members.length) return <p className="py-5 text-sm text-muted">No members in this team.</p>;
   if (compact)
@@ -120,7 +141,9 @@ export function TeamRoster({ members, admin, canManage, busy, onRemove, onRole }
             {canManage ? (
               <MemberActions
                 member={member}
-                admin={admin}
+                actor={actor}
+                team={team}
+                canManage={canManage}
                 busy={busy}
                 onRemove={onRemove}
                 onRole={onRole}
@@ -158,7 +181,9 @@ export function TeamRoster({ members, admin, canManage, busy, onRemove, onRole }
               <Td>
                 <MemberActions
                   member={member}
-                  admin={admin}
+                  actor={actor}
+                  team={team}
+                  canManage={canManage}
                   busy={busy}
                   onRemove={onRemove}
                   onRole={onRole}

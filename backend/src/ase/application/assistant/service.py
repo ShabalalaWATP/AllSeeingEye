@@ -7,6 +7,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import replace
 
 from ase.application.access import AccessPolicy
+from ase.application.ai_usage import AiReservationBatch, AiUsageAccounting, settle_with_deadline
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.intent import interpret_question
 from ase.application.assistant.model import AssistantAnswerInvalid, answer_question
@@ -54,11 +55,13 @@ class MapAssistant:
         uow: UnitOfWork,
         capacity: AssistantCapacity,
         record_usage: UsageRecorder,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self.access, self.routing, self.retrieval = access, routing, retrieval
         self.admission, self.gateway, self.cipher = admission, gateway, cipher
         self.clock, self.limiter, self.uow = clock, limiter, uow
         self.capacity, self.record_usage = capacity, record_usage
+        self.ai_usage = ai_usage
 
     async def _authorise(
         self, actor: User, check_session: SessionCheck, *, final: bool = False
@@ -219,10 +222,20 @@ class MapAssistant:
         sent = False
         error: str | None = None
         usage_saved = True
+        ai_reservation: AiReservationBatch | None = None
+        ai_usage_saved = True
         try:
             async with self.admission.guard():
                 await self._sources_enabled(context)
                 await self._authorise(actor, check_session)
+            if self.ai_usage is not None:
+                ai_reservation = await self.ai_usage.reserve(
+                    actor.id,
+                    profile_id=profile.id,
+                    model=profile.model,
+                    purpose="map_assistant",
+                    requested_tokens=profile.token_budget(32_000),
+                )
             sent = True
             paragraphs, result = await answer_question(
                 self.gateway,
@@ -278,12 +291,42 @@ class MapAssistant:
                         error=error,
                     ),
                 )
+                if self.ai_usage is not None:
+                    ai_usage_saved = await settle_with_deadline(
+                        self.ai_usage,
+                        ai_reservation,
+                        ok=error is None,
+                        prompt_tokens=(
+                            result.prompt_tokens
+                            if result
+                            else known.prompt_tokens
+                            if known
+                            else None
+                        ),
+                        completion_tokens=(
+                            result.completion_tokens
+                            if result
+                            else known.completion_tokens
+                            if known
+                            else None
+                        ),
+                        error=error,
+                    )
         if not usage_saved:
             context = replace(
                 context,
                 notes=(
                     *context.notes,
                     "Usage storage unconfirmed; the uncertain database write was not retried.",
+                ),
+            )
+        if not ai_usage_saved:
+            context = replace(
+                context,
+                notes=(
+                    *context.notes,
+                    "AI allowance settlement unconfirmed; the uncertain database "
+                    "write was not retried.",
                 ),
             )
         # Accounting can await storage. Nothing protected is released until all

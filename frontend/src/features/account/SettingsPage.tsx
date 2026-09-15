@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router';
 
 import { useAuthStore } from '@/stores/auth';
 
+import { AiUsageSummary } from './AiUsageSummary';
 import { AppearancePreferences } from './AppearancePreferences';
 import { ProfilePreferences } from './ProfilePreferences';
 
@@ -10,6 +11,7 @@ const sections = [
   { id: 'region', label: 'Time & region' },
   { id: 'research', label: 'Research defaults' },
   { id: 'reports', label: 'Report preferences' },
+  { id: 'ai-usage', label: 'AI allowance' },
 ] as const;
 
 const resources = [
@@ -70,7 +72,9 @@ export default function SettingsPage() {
             </Link>
           </nav>
           <div key={`${actor.id}:${selected.id}`} className="min-w-0 max-w-3xl">
-            {selected.id === 'appearance' ? (
+            {selected.id === 'ai-usage' ? (
+              <AiUsageSummary />
+            ) : selected.id === 'appearance' ? (
               <AppearancePreferences />
             ) : (
               <ProfilePreferences section={selected.id} />

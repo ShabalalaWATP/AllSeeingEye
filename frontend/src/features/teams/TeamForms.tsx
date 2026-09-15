@@ -1,26 +1,30 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
-import { SelectField, TextField } from '@/components/ui/Field';
+import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import type { MemberInput } from '@/lib/api/teams';
 
 export function TeamNameForm({
   name = '',
+  description = '',
   busy,
   onSave,
 }: {
   name?: string;
+  description?: string | null;
   busy: boolean;
-  onSave: (name: string) => void;
+  onSave: (name: string, description?: string) => void;
 }) {
   const [value, setValue] = useState(name);
+  const [descriptionValue, setDescriptionValue] = useState(description ?? '');
+  const trimmedDescription = descriptionValue.trim();
   return (
     <form
       className="flex flex-wrap items-end gap-3"
       aria-label={name ? 'Rename team' : 'Create team'}
       onSubmit={(event) => {
         event.preventDefault();
-        if (value.trim()) onSave(value.trim());
+        if (value.trim()) onSave(value.trim(), trimmedDescription || undefined);
       }}
     >
       <div className="min-w-0 flex-1">
@@ -35,7 +39,27 @@ export function TeamNameForm({
           }}
         />
       </div>
-      <Button type="submit" busy={busy} disabled={!value.trim() || value.trim() === name}>
+      <div className="basis-full">
+        <TextAreaField
+          label="Team description"
+          hint="Optional, up to 500 characters. Explain the workspace's purpose for colleagues."
+          maxLength={500}
+          rows={2}
+          value={descriptionValue}
+          disabled={busy}
+          onChange={(event) => {
+            setDescriptionValue(event.target.value);
+          }}
+        />
+      </div>
+      <Button
+        type="submit"
+        busy={busy}
+        disabled={
+          !value.trim() ||
+          (value.trim() === name && trimmedDescription === (description ?? '').trim())
+        }
+      >
         {name ? 'Save name' : 'Create team'}
       </Button>
     </form>
@@ -44,10 +68,13 @@ export function TeamNameForm({
 
 export function AddMemberForm({
   admin,
+  allowManagerRole = admin,
   busy,
   onSave,
 }: {
   admin: boolean;
+  /** Team managers can grant team-manager membership to ordinary accounts. */
+  allowManagerRole?: boolean;
   busy: boolean;
   onSave: (input: MemberInput) => void;
 }) {
@@ -75,7 +102,7 @@ export function AddMemberForm({
           setEmail(event.target.value);
         }}
       />
-      {admin ? (
+      {allowManagerRole ? (
         <SelectField
           label="Team role"
           value={role}
@@ -92,9 +119,10 @@ export function AddMemberForm({
       <Button type="submit" busy={busy}>
         Add member
       </Button>
-      {admin ? (
+      {allowManagerRole ? (
         <p className="text-xs text-muted sm:col-span-3">
-          Team managers must already have a manager or administrator account.
+          Managers can assign team-manager access to ordinary active accounts. Site administrator
+          access is managed separately.
         </p>
       ) : null}
     </form>

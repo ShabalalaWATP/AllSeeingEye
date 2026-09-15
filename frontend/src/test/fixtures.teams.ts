@@ -26,6 +26,7 @@ export const team: Team = {
   created_by: adminUser.id,
   created_at: '2026-09-06T10:00:00Z',
   updated_at: '2026-09-06T10:00:00Z',
+  description: null,
 };
 function member(user: User, role: TeamMember['role']): TeamMember {
   return {

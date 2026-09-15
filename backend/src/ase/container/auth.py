@@ -12,6 +12,7 @@ from ase.adapters.persistence.profile import SqlProfileRepository
 from ase.adapters.persistence.recovery_codes import SqlRecoveryCodeRepository
 from ase.adapters.persistence.totp import SqlTotpRepository
 from ase.adapters.security.totp import EncryptedTotpProvider
+from ase.application.account.directory_profile import DirectoryProfileUseCase
 from ase.application.account.profile import ProfileUseCase
 from ase.application.account.session_management import AccountSessionManagement
 from ase.application.auth.account_requests import ForgotPasswordUseCase, RequestAccountUseCase
@@ -150,6 +151,18 @@ class AuthWiring:
             r.uow,
             r.refresh_tokens,
             self.clock,
+        )
+
+    def directory_profile(self, session: AsyncSession) -> DirectoryProfileUseCase:
+        r = self.repositories(session)
+        return DirectoryProfileUseCase(
+            r.users,
+            r.directory_profiles,
+            self._auditor(r),
+            r.uow,
+            r.refresh_tokens,
+            self.clock,
+            self.limiter,
         )
 
     def account_sessions(self, session: AsyncSession) -> AccountSessionManagement:

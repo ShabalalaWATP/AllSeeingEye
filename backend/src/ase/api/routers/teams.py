@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.schemas_ai_usage import AiUsageSummaryOut, AiUsageSummaryPageOut
 from ase.api.team_schemas import (
     MemberIn,
     MemberOut,
@@ -15,6 +16,7 @@ from ase.api.team_schemas import (
     TeamsOut,
     TeamUpdateIn,
 )
+from ase.application.teams.service import DESCRIPTION_UNSET
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 
@@ -33,7 +35,9 @@ async def create_team(
     container: ContainerDep,
     context: ContextDep,
 ) -> TeamOut:
-    team = await container.teams(session).create(user, body.name, context)
+    team = await container.teams(session).create(
+        user, body.name, context, description=body.description
+    )
     return TeamOut.model_validate(team)
 
 
@@ -48,6 +52,21 @@ async def get_team(
     )
 
 
+@router.get("/{team_id}/ai-usage", response_model=AiUsageSummaryPageOut)
+async def team_ai_usage(
+    team_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+) -> AiUsageSummaryPageOut:
+    # Resolving the team first prevents a non-member from learning whether a
+    # team policy exists. Administrators can inspect any team, including an
+    # archived workspace, while members retain read-only visibility.
+    await container.teams(session).get(user, team_id)
+    summaries = await container.ai_usage_accounting.summaries(user.id, team_id=team_id)
+    return AiUsageSummaryPageOut(items=[AiUsageSummaryOut.from_summary(item) for item in summaries])
+
+
 @router.patch("/{team_id}")
 async def update_team(
     team_id: UUID,
@@ -58,7 +77,14 @@ async def update_team(
     context: ContextDep,
 ) -> TeamOut:
     team = await container.teams(session).update(
-        user, team_id, name=body.name, is_active=body.is_active, context=context
+        user,
+        team_id,
+        name=body.name,
+        is_active=body.is_active,
+        description=(
+            body.description if "description" in body.model_fields_set else DESCRIPTION_UNSET
+        ),
+        context=context,
     )
     return TeamOut.model_validate(team)
 
@@ -76,6 +102,18 @@ async def set_member(
         user, team_id, email=str(body.email), role=body.role, context=context
     )
     return MembershipOut.model_validate(member)
+
+
+@router.post("/{team_id}/leave", status_code=204, response_class=Response)
+async def leave_team(
+    team_id: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> Response:
+    await container.teams(session).leave(user, team_id, context)
+    return Response(status_code=204)
 
 
 @router.delete("/{team_id}/members/{user_id}", status_code=204, response_class=Response)

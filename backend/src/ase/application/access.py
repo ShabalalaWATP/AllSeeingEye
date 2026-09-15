@@ -8,7 +8,7 @@ from ase.application.ports.teams import TeamRepository
 from ase.domain.access import Visibility
 from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
 from ase.domain.teams import MembershipRole, Team
-from ase.domain.users import Role, User
+from ase.domain.users import User
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,11 +53,7 @@ class AccessContext:
         self.require_create(team_id)
         if created_by == self.actor.id:
             return
-        if (
-            team_id is not None
-            and self.actor.role is Role.MANAGER
-            and self.memberships.get(team_id) is MembershipRole.MANAGER
-        ):
+        if team_id is not None and self.memberships.get(team_id) is MembershipRole.MANAGER:
             return
         raise Forbidden()
 

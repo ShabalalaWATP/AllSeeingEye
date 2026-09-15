@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ase.adapters.llm.openai_web_search import OpenAiWebSearchGateway
 from ase.adapters.persistence.web_search_usage import SqlWebSearchUsage
+from ase.application.ai_usage import AiUsageAccounting
 from ase.application.reports.fresh_web_research import FreshWebResearch
 
 if TYPE_CHECKING:
@@ -20,6 +21,7 @@ class WebResearchWiring:
         limiter: RateLimiter
         source_admission: SourceAdmission
         session_factory: async_sessionmaker[AsyncSession]
+        ai_usage_accounting: AiUsageAccounting
 
     async def close_web_search(self) -> None:
         if "web_search_gateway" in self.__dict__:
@@ -37,4 +39,5 @@ class WebResearchWiring:
             self.clock,
             self.limiter,
             SqlWebSearchUsage(self.session_factory).record,
+            self.ai_usage_accounting,
         )

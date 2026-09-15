@@ -41,6 +41,8 @@ class AutomaticClaims:
         version: ReportVersion,
         actor_id: UUID,
         profile_for: Callable[[LlmRole], Awaitable[LlmProfile | None]],
+        *,
+        gateway: LlmGateway | None = None,
     ) -> PendingAutomaticClaims:
         """No repository writes: caller buffers usage until final report authorisation.
 
@@ -67,7 +69,10 @@ class AutomaticClaims:
                     anchor, ClaimGenerationReceipt(ClaimGenerationStatus.RATE_LIMITED)
                 )
         draft = await propose_claims(
-            self.gateway, profile, self.cipher.decrypt(profile.api_key_encrypted), version
+            gateway or self.gateway,
+            profile,
+            self.cipher.decrypt(profile.api_key_encrypted),
+            version,
         )
         status = ClaimGenerationStatus(draft.status)
         origin = None

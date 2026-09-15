@@ -2,7 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 
-from ase.application.ports.llm import LlmUsageRepository
+from ase.application.ports.llm import LlmGateway, LlmUsageRepository
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
@@ -20,10 +20,18 @@ async def complete_production(
     before_persist: Callable[[], Awaitable[None]] | None,
     progress: Progress | None,
     usage: LlmUsageRepository,
+    gateway: LlmGateway | None = None,
 ) -> ProductionResult:
     pending = None
     if automatic_claims is not None:
-        pending = await automatic_claims.prepare(version, job.actor.id, profile_for)
+        if gateway is None or gateway is automatic_claims.gateway:
+            # Keep the established call shape for existing integrations and
+            # lightweight test doubles when no decorator is in use.
+            pending = await automatic_claims.prepare(version, job.actor.id, profile_for)
+        else:
+            pending = await automatic_claims.prepare(
+                version, job.actor.id, profile_for, gateway=gateway
+            )
         if pending.usage is not None:
             call = pending.usage
             totals.usage.append(call)

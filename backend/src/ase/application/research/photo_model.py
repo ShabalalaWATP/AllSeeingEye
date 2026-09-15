@@ -9,6 +9,8 @@ from uuid import UUID
 
 from pydantic import ValidationError
 
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
 from ase.domain.errors import InvalidRequest
@@ -70,6 +72,7 @@ class PhotoVision:
     cipher: SecretCipher
     clock: Clock
     record_usage: UsageRecorder
+    ai_usage: AiUsageAccounting | None = None
 
     async def analyse(
         self,
@@ -79,6 +82,7 @@ class PhotoVision:
         check_session: SessionCheck,
         *,
         photo_ids: tuple[str, ...] = (),
+        team_id: UUID | None = None,
     ) -> tuple[PhotoAssessment, LlmResult]:
         started = time.perf_counter()
         result: LlmResult | None = None
@@ -87,7 +91,17 @@ class PhotoVision:
             # Include admission and provider processing in a finite request lifetime.
             async with asyncio.timeout(120):
                 await check_session()
-                result = await self.gateway.complete(
+                gateway: LlmGateway = self.gateway
+                if self.ai_usage is not None:
+                    gateway = AllowanceLlmGateway(
+                        gateway,
+                        self.ai_usage,
+                        owner_id=actor_id,
+                        team_id=team_id,
+                        profile_id=profile.id,
+                        purpose_prefix="photo",
+                    )
+                result = await gateway.complete(
                     profile.base_url,
                     self.cipher.decrypt(profile.api_key_encrypted),
                     profile.model,

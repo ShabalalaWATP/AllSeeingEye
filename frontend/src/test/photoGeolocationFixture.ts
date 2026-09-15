@@ -79,6 +79,7 @@ export function photoWorkspaces(): Workspaces {
           created_by: plainUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          description: null,
         },
         members: [],
       },

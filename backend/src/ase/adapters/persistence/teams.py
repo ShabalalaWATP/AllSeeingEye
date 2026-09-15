@@ -3,7 +3,18 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, String, Uuid, delete, select, update
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    String,
+    Uuid,
+    delete,
+    func,
+    select,
+    update,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,11 +34,15 @@ class TeamRow(Base):
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class TeamMembershipRow(Base):
     __tablename__ = "team_memberships"
-    __table_args__ = (CheckConstraint("role IN ('member', 'manager')", name="ck_membership_role"),)
+    __table_args__ = (
+        CheckConstraint("role IN ('member', 'manager')", name="ck_membership_role"),
+        Index("ix_team_memberships_team_role", "team_id", "role"),
+    )
 
     team_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("teams.id"), primary_key=True)
     user_id: Mapped[UUID] = mapped_column(
@@ -38,7 +53,15 @@ class TeamMembershipRow(Base):
 
 
 def _team(row: TeamRow) -> Team:
-    return Team(row.id, row.name, row.is_active, row.created_by, row.created_at, row.updated_at)
+    return Team(
+        row.id,
+        row.name,
+        row.is_active,
+        row.created_by,
+        row.created_at,
+        row.updated_at,
+        row.description,
+    )
 
 
 class SqlTeamRepository:
@@ -54,6 +77,7 @@ class SqlTeamRepository:
                 created_by=team.created_by,
                 created_at=team.created_at,
                 updated_at=team.updated_at,
+                description=team.description,
             )
         )
         await self._session.flush()
@@ -75,7 +99,12 @@ class SqlTeamRepository:
         row = await self._session.get(TeamRow, team.id)
         if row is None:
             raise NotFound()
-        row.name, row.is_active, row.updated_at = team.name, team.is_active, team.updated_at
+        row.name, row.is_active, row.updated_at, row.description = (
+            team.name,
+            team.is_active,
+            team.updated_at,
+            team.description,
+        )
         await self._session.flush()
 
     async def list_visible(self, user_id: UUID, *, administrator: bool) -> list[Team]:
@@ -86,6 +115,19 @@ class SqlTeamRepository:
             )
         rows = await self._session.scalars(statement.order_by(TeamRow.name, TeamRow.id))
         return [_team(row) for row in rows]
+
+    async def count_active_created_by(self, user_id: UUID) -> int:
+        return int(
+            await self._session.scalar(
+                select(func.count())
+                .select_from(TeamRow)
+                .where(
+                    TeamRow.created_by == user_id,
+                    TeamRow.is_active.is_(True),
+                )
+            )
+            or 0
+        )
 
     async def get_membership(self, team_id: UUID, user_id: UUID) -> TeamMembership | None:
         row = await self._session.scalar(
@@ -125,6 +167,16 @@ class SqlTeamRepository:
             for member, user in rows
         ]
 
+    async def count_members(self, team_id: UUID) -> int:
+        return int(
+            await self._session.scalar(
+                select(func.count())
+                .select_from(TeamMembershipRow)
+                .where(TeamMembershipRow.team_id == team_id)
+            )
+            or 0
+        )
+
     async def memberships_for_user(self, user_id: UUID) -> list[TeamMembership]:
         rows = await self._session.scalars(
             select(TeamMembershipRow)
@@ -135,6 +187,25 @@ class SqlTeamRepository:
             TeamMembership(row.team_id, row.user_id, MembershipRole(row.role), row.joined_at)
             for row in rows
         ]
+
+    async def count_active_managers(self, team_id: UUID) -> int:
+        """Return managers whose account is still active.
+
+        Team mutations hold the team's row lock before calling this method. The
+        join deliberately counts current account state, so an inactive account
+        cannot keep an active team looking managed.
+        """
+        statement = (
+            select(func.count())
+            .select_from(TeamMembershipRow)
+            .join(UserRow, UserRow.id == TeamMembershipRow.user_id)
+            .where(
+                TeamMembershipRow.team_id == team_id,
+                TeamMembershipRow.role == MembershipRole.MANAGER.value,
+                UserRow.is_active.is_(True),
+            )
+        )
+        return int(await self._session.scalar(statement) or 0)
 
     async def put_membership(self, membership: TeamMembership) -> None:
         # Callers hold the team mutation lock, so duplicate requests cannot race the insert.

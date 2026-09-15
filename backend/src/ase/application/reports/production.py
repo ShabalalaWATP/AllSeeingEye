@@ -10,6 +10,8 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import replace
 from functools import partial
 
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
@@ -62,6 +64,7 @@ class Producer:
         automatic_claims: AutomaticClaims | None = None,
         web_research: FreshWebResearch | None = None,
         projector: AsyncReportProjector | None = None,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self._store = store
         self._source_profiles = source_profiles
@@ -74,6 +77,7 @@ class Producer:
         self._automatic_claims = automatic_claims
         self._web_research = web_research
         self._projector = projector
+        self._ai_usage = ai_usage
 
     async def produce(
         self,
@@ -98,6 +102,16 @@ class Producer:
         progress: Progress | None = None,
         checkpoints: ProductionCheckpoints | None = None,
     ) -> ProductionResult:
+        gateway: LlmGateway = self._gateway
+        if self._ai_usage is not None:
+            gateway = AllowanceLlmGateway(
+                gateway,
+                self._ai_usage,
+                owner_id=job.actor.id,
+                team_id=job.request.team_id,
+                profile_id=None,
+                purpose_prefix="report",
+            )
         snapshot = await checkpoints.load_collection() if checkpoints is not None else None
         totals = (
             replace(
@@ -110,7 +124,7 @@ class Producer:
         )
         await reached(progress, ResearchStage.PLANNING)
         if snapshot is None:
-            direction = await self._direct(job, profile_for, totals)
+            direction = await self._direct(job, profile_for, totals, gateway)
             store, receipt, query = await prepare_collection(
                 job,
                 direction,
@@ -119,7 +133,7 @@ class Producer:
                 self._private_store_factory,
                 self._store,
                 progress,
-                gateway=self._gateway,
+                gateway=gateway,
                 cipher=self._cipher,
                 profile_for=profile_for,
                 web_research=self._web_research,
@@ -166,7 +180,7 @@ class Producer:
                 )
             )
             draft = await draft_fn(
-                self._gateway,
+                gateway,
                 job.profile,
                 self._cipher.decrypt(job.profile.api_key_encrypted),
                 job.template,
@@ -215,7 +229,7 @@ class Producer:
                 job,
                 body,
                 selection,
-                gateway=self._gateway,
+                gateway=gateway,
                 cipher=self._cipher,
                 profile_for=profile_for,
                 totals=totals,
@@ -231,7 +245,7 @@ class Producer:
                 query=query,
                 store=store,
                 collection=self._research,
-                gateway=self._gateway,
+                gateway=gateway,
                 cipher=self._cipher,
                 profile_for=profile_for,
                 totals=totals,
@@ -252,7 +266,9 @@ class Producer:
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
         elif job.request.devils_advocacy and body.key_judgements and draft.body is not None:
             await reached(progress, ResearchStage.CHALLENGING)
-            body, advocacy = await self._advocate(job, profile_for, body, selection.items, totals)
+            body, advocacy = await self._advocate(
+                job, profile_for, body, selection.items, totals, gateway
+            )
         version = await build_version(
             job,
             draft,
@@ -276,10 +292,11 @@ class Producer:
             before_persist,
             progress,
             self._usage,
+            gateway=gateway if self._ai_usage is not None else None,
         )
 
     async def _direct(
-        self, job: Job, profile_for: ProfileLookup, totals: Totals
+        self, job: Job, profile_for: ProfileLookup, totals: Totals, gateway: LlmGateway
     ) -> Direction | None:
         if job.direction is not None:
             return job.direction
@@ -300,7 +317,7 @@ class Producer:
             return None
         key = self._cipher.decrypt(profile.api_key_encrypted)
         draft = await direct(
-            self._gateway,
+            gateway,
             profile,
             key,
             question,
@@ -319,6 +336,7 @@ class Producer:
         body: ReportBody,
         evidence: Sequence[EvidenceItem],
         totals: Totals,
+        gateway: LlmGateway,
     ) -> tuple[ReportBody, DevilsAdvocacy | None]:
         profile = await profile_for(LlmRole.DEVIL)
         if profile is None:
@@ -332,7 +350,7 @@ class Producer:
             )
             return body, None
         key = self._cipher.decrypt(profile.api_key_encrypted)
-        draft = await advocate(self._gateway, profile, key, body, evidence)
+        draft = await advocate(gateway, profile, key, body, evidence)
         purpose = f"report:{job.template.id}:advocacy"
         totals.usage.append(usage_entry(job, profile, purpose, draft.advocacy is not None, draft))
         totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
