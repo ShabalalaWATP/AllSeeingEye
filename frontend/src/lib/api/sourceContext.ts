@@ -28,6 +28,8 @@ export const CONNECTION_STATES = [
   'not_configured',
   'disabled_by_admin',
   'disabled_by_environment',
+  'blocked_upstream',
+  'available',
 ] as const;
 export type ConnectionState = (typeof CONNECTION_STATES)[number];
 
@@ -59,6 +61,7 @@ const healthSummarySchema = z.object({
   items_last_poll: z.number().int().nonnegative(),
   next_poll_at: z.string().nullable(),
   polls: z.number().int().nonnegative(),
+  blocked_reason: z.string().max(300).nullable(),
 }) satisfies z.ZodType<components['schemas']['SourceHealthSummaryOut']>;
 
 export const sourceConnectionSchema = z.object({
@@ -91,11 +94,53 @@ export const sourceSummarySchema = z.object({
   connection: sourceConnectionSchema,
 }) satisfies z.ZodType<components['schemas']['SourceSummaryOut']>;
 
+export const ASSET_FAMILIES = [
+  'camera_index',
+  'map_layer',
+  'ukraine_dataset',
+  'reference_dataset',
+] as const;
+export type AssetFamily = (typeof ASSET_FAMILIES)[number];
+
+// Homepages become link targets, so only absolute https addresses are accepted.
+const homepageSchema = z
+  .string()
+  .max(500)
+  .refine((value) => value.startsWith('https://'), 'Homepages must use https.');
+
+export const sourceAssetSchema = z.object({
+  id: z.string().max(120),
+  name: z.string().max(200),
+  family: z.enum(ASSET_FAMILIES),
+  delivery: z.enum([
+    'official_index',
+    'curated_catalogue',
+    'third_party_directory',
+    'bundled_snapshot',
+    'request_service',
+    'browser_direct',
+  ]),
+  organisation: z.string().max(200),
+  description: z.string().max(500),
+  licence_note: z.string().max(1000),
+  homepage: homepageSchema.nullable(),
+  coverage_note: z.string().max(300),
+  refresh_note: z.string().max(300),
+  state: z.enum(CONNECTION_STATES),
+  detail: z.string().max(500),
+  requirement: requirementSchema.nullable(),
+  as_of: z.string().max(40).nullable(),
+  records: z.number().int().nonnegative().nullable(),
+}) satisfies z.ZodType<components['schemas']['SourceAssetOut']>;
+export type SourceAsset = z.infer<typeof sourceAssetSchema>;
+
 export async function fetchSourceCatalogue() {
-  const response = await apiCall('/api/sources', {
-    schema: z.object({ items: z.array(sourceSummarySchema).max(2000) }),
+  return apiCall('/api/sources', {
+    schema: z.object({
+      items: z.array(sourceSummarySchema).max(2000),
+      assets: z.array(sourceAssetSchema).max(1000).default([]),
+    }),
   });
-  return response.items;
 }
 
 export type CatalogueSource = z.infer<typeof sourceSummarySchema>;

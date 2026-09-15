@@ -17,7 +17,7 @@ from ase.adapters.feeds.http import FeedFetchError, FeedHttpClient, NotModified
 from ase.adapters.feeds.rss_access import REFUSAL_RECHECK, automation_refusal
 from ase.application.feeds.pipeline import strip_html
 from ase.application.ports import Clock
-from ase.application.ports.feed_diagnostics import FeedDeferred
+from ase.application.ports.feed_diagnostics import FeedBlocked
 from ase.domain.events import (
     Credibility,
     Event,
@@ -196,7 +196,7 @@ class RssConnector:
             reason = automation_refusal(self.spec.id, exc)
             if reason is None:
                 raise
-            raise FeedDeferred(reason, self._clock.now() + REFUSAL_RECHECK) from None
+            raise FeedBlocked(reason, self._clock.now() + REFUSAL_RECHECK) from None
         body = text.lstrip("\ufeff")
         if _looks_like_html(body):
             raise FeedFetchError(f"{self.spec.id}: returned an HTML page, not an RSS or Atom feed")

@@ -42,7 +42,15 @@ RESEARCH = SourceSpec(
 )
 
 
-def inventory(connectors=(), research=(), optional=(), requirements=None, disabled=(), health=None):
+def inventory(
+    connectors=(),
+    research=(),
+    optional=(),
+    requirements=None,
+    disabled=(),
+    health=None,
+    collecting=True,
+):
     admission = SimpleNamespace(
         enabled_many=AsyncMock(
             side_effect=lambda ids: {key: not key.startswith("off_") for key in ids}
@@ -56,6 +64,7 @@ def inventory(connectors=(), research=(), optional=(), requirements=None, disabl
         health or HealthRegistry(),
         admission,
         disabled,
+        collecting=collecting,
     )
 
 
@@ -123,6 +132,40 @@ async def test_health_and_credentials_map_to_states():
     assert states["keyed_live"] is ConnectionState.KEY_UNVERIFIED
 
 
+async def test_upstream_blocks_show_their_fixed_reason_and_feeds_off_is_explicit():
+    health = HealthRegistry()
+    health.record_deferred(
+        KEV_SPEC.id, "Publisher refuses automated clients.", NOW, NOW, blocked=True
+    )
+    health.record_deferred("cached", "Cooldown active.", NOW, NOW)
+    keyed = replace(KEYED, id="keyed_live")
+    cached = replace(KEYED, id="cached", requires_key=False)
+    satisfied = SourceRequirement("api_key", True, "environment", "ASE_LIVE_KEY", "Configured.")
+    connectors = tuple(SimpleNamespace(spec=spec) for spec in (KEV_SPEC, keyed, cached))
+    rows = await inventory(
+        connectors=connectors,
+        research=(RESEARCH,),
+        requirements={"keyed_live": satisfied},
+        health=health,
+    ).list()
+    by_id = {row.spec.id: row.connection for row in rows}
+    assert by_id[KEV_SPEC.id].state is ConnectionState.BLOCKED_UPSTREAM
+    assert by_id[KEV_SPEC.id].detail == "Publisher refuses automated clients."
+    assert by_id["cached"].state is ConnectionState.DEGRADED
+    health.record_deferred("keyed_live", "Appname not approved.", NOW, NOW, blocked=True)
+    rows = await inventory(
+        connectors=connectors,
+        research=(RESEARCH,),
+        requirements={"keyed_live": satisfied},
+        health=health,
+        collecting=False,
+    ).list()
+    by_id = {row.spec.id: row.connection for row in rows}
+    assert by_id["keyed_live"].state is ConnectionState.DISABLED_BY_ENVIRONMENT
+    assert "ASE_FEEDS_ENABLED" in by_id["keyed_live"].detail
+    assert by_id[RESEARCH.id].state is ConnectionState.ON_DEMAND
+
+
 async def test_research_capabilities_report_on_demand_or_missing_requirements():
     snapshot = SourceRequirement(
         "snapshot", False, "none", "ASE_UKSL_SNAPSHOT_PATH", "Import a snapshot."
@@ -184,6 +227,8 @@ async def test_catalogue_api_reports_connection_state_for_every_source(client, u
             "not_configured",
             "disabled_by_admin",
             "disabled_by_environment",
+            "blocked_upstream",
+            "available",
         }
         for item in items.values()
     )
@@ -200,9 +245,13 @@ async def test_platform_connections_never_carry_values_and_flag_a_missing_model(
     assert rows["os_maps"]["requirement"]["setting"] == "ASE_OS_MAPS_KEY"
     assert rows["email"]["state"] in {"connected", "key_missing"}
     assert rows["alert_webhook"]["requirement"]["optional"] is True
+    # The test environment switches feeds and archiving off; the page says so, not "missing".
+    for key in ("live_feeds", "url_archive", "conflict_screening"):
+        assert rows[key]["state"] == "disabled_by_environment"
+        assert rows[key]["requirement"]["kind"] == "toggle"
     assert {
         "credential_encryption",
-        "highway_cameras",
+        "live_feeds",
         "url_archive",
         "conflict_screening",
         "media_tools",

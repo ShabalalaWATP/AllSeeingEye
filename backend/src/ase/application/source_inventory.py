@@ -30,6 +30,8 @@ class ConnectionState(StrEnum):
     NOT_CONFIGURED = "not_configured"
     DISABLED_BY_ADMIN = "disabled_by_admin"
     DISABLED_BY_ENVIRONMENT = "disabled_by_environment"
+    BLOCKED_UPSTREAM = "blocked_upstream"
+    AVAILABLE = "available"
 
 
 RequirementKind = Literal[
@@ -109,6 +111,8 @@ class SourceInventory:
         admission: SourceAdmission,
         disabled: tuple[str, ...] = (),
         resolve_requirement: RequirementResolver | None = None,
+        *,
+        collecting: bool = True,
     ) -> None:
         self._connectors = {connector.spec.id: connector for connector in connectors}
         self._research = {spec.id: spec for spec in research_specs}
@@ -121,6 +125,7 @@ class SourceInventory:
         self._health, self._admission = health, admission
         self._disabled = frozenset(disabled)
         self._resolve = resolve_requirement
+        self._collecting = collecting
 
     async def list(self) -> list[InventoryEntry]:
         enabled = await self._admission.enabled_many(tuple(self._specs))
@@ -143,6 +148,8 @@ class SourceInventory:
         state, detail = _state(
             scheduled, active, enabled, environment_disabled, requirement, health
         )
+        if state in _WAITING and not self._collecting:
+            state, detail = ConnectionState.DISABLED_BY_ENVIRONMENT, FEEDS_OFF
         return InventoryEntry(
             spec,
             "scheduled" if scheduled else "on_demand",
@@ -151,6 +158,18 @@ class SourceInventory:
             ),
         )
 
+
+FEEDS_OFF = "Live feed collection is switched off on this server (ASE_FEEDS_ENABLED=false)."
+_WAITING = frozenset(
+    {
+        ConnectionState.CONNECTED,
+        ConnectionState.IDLE,
+        ConnectionState.KEY_UNVERIFIED,
+        ConnectionState.DEGRADED,
+        ConnectionState.FAILING,
+        ConnectionState.BLOCKED_UPSTREAM,
+    }
+)
 
 _DETAILS = {
     ConnectionState.DISABLED_BY_ENVIRONMENT: (
@@ -190,6 +209,8 @@ def _state(
         state = ConnectionState.ON_DEMAND
     elif not active or health is None:
         state = ConnectionState.NOT_CONFIGURED
+    elif health.blocked_reason:
+        return ConnectionState.BLOCKED_UPSTREAM, health.blocked_reason
     else:
         state = _HEALTH_STATES[health.status]
         if state is ConnectionState.IDLE and requirement is not None and requirement.satisfied:

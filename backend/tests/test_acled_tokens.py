@@ -16,12 +16,15 @@ from acled_helpers import (
     ENV_REFRESH,
     FakeAcledHttp,
     MemoryStore,
+    forbidden,
     grant,
     rejected,
     transient,
     unauthorised,
 )
 from ase.adapters.feeds.acled_tokens import (
+    ENTITLEMENT_MESSAGE,
+    ENTITLEMENT_RECHECK,
     REJECTED_BACKOFF,
     REVOKED_MESSAGE,
     AcledTokens,
@@ -31,7 +34,7 @@ from ase.adapters.feeds.conflict_acled import AcledConnector
 from ase.adapters.feeds.http import FeedFetchError
 from ase.adapters.security.cipher import FernetCipher
 from ase.application.ports.acled_credentials import StoredAcledRefreshToken
-from ase.application.ports.feed_diagnostics import FeedDeferred
+from ase.application.ports.feed_diagnostics import FeedBlocked, FeedDeferred
 from feeds_helpers import NOW, FakeClock
 
 URL = "https://acleddata.com/api/acled/read?page=1"
@@ -84,6 +87,19 @@ async def test_a_second_401_is_an_entitlement_error_without_further_refreshes() 
     with pytest.raises(FeedFetchError, match="entitlement"):
         await provider.get_json(URL)
     assert len(http.refreshed) == 2
+
+
+@pytest.mark.parametrize("reads", [[forbidden()], [unauthorised(), forbidden()]])
+async def test_a_403_is_reported_as_the_account_tier_block(reads: list[Any]) -> None:
+    http = FakeAcledHttp(grant(1), grant(2), reads=reads)
+    provider = tokens(http, FakeClock(NOW), MemoryStore())
+    with pytest.raises(FeedBlocked) as error:
+        await provider.get_json(URL)
+    assert str(error.value) == ENTITLEMENT_MESSAGE
+    assert "Research, Partner or Enterprise" in ENTITLEMENT_MESSAGE
+    assert error.value.retry_at == NOW + ENTITLEMENT_RECHECK
+    assert len(http.refreshed) == len(reads)
+    assert len(ENTITLEMENT_MESSAGE) <= 300
 
 
 async def test_concurrent_polls_share_a_single_refresh() -> None:

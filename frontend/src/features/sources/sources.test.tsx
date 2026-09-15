@@ -67,6 +67,7 @@ const failing: CatalogueSource = {
       items_last_poll: 0,
       next_poll_at: null,
       polls: 6,
+      blocked_reason: null,
     },
     detail: 'Paused after repeated failures until an administrator resets it.',
   },
@@ -132,13 +133,14 @@ it('shows connection state, missing keys and platform services without any value
   );
   const { user } = renderApp('/sources', 'user');
   await screen.findByRole('heading', { name: 'BBC World' });
-  const totals = within(screen.getByRole('list', { name: 'Connection totals' }));
-  expect(totals.getByRole('button', { name: /Collecting\s?1/ })).toBeVisible();
-  expect(totals.getByRole('button', { name: /Needs attention\s?1/ })).toBeVisible();
-  expect(totals.getByRole('button', { name: /Key or setup missing\s?1/ })).toBeVisible();
+  const totals = within(screen.getByRole('list', { name: 'Totals by state' }));
+  expect(totals.getByRole('button', { name: /Live or available\s?1/ })).toBeVisible();
+  expect(totals.getByRole('button', { name: /Retrying or failing\s?1/ })).toBeVisible();
+  expect(totals.getByRole('button', { name: /Needs key or setup\s?1/ })).toBeVisible();
   expect(totals.getByRole('button', { name: /On demand\s?1/ })).toBeVisible();
-  expect(totals.getByRole('button', { name: /Switched off\s?0/ })).toBeVisible();
-  const attention = within(screen.getByRole('region', { name: 'Sources needing attention' }));
+  expect(totals.getByRole('button', { name: /Blocked upstream\s?0/ })).toBeVisible();
+  expect(totals.getByRole('button', { name: /Off by operator choice\s?0/ })).toBeVisible();
+  const attention = within(screen.getByRole('region', { name: 'Needs attention' }));
   expect(attention.getByText('Broken feed')).toBeVisible();
   expect(attention.getByText('AISStream ship positions')).toBeVisible();
   expect(attention.getAllByText('ASE_AISSTREAM_API_KEY')).not.toHaveLength(0);
@@ -148,11 +150,11 @@ it('shows connection state, missing keys and platform services without any value
   expect(platform.getByText(/Add one under Admin, Models/)).toBeVisible();
   expect(platform.getByText('Optional, not set')).toBeVisible();
   expect(platform.getAllByText('Connected')).not.toHaveLength(0);
-  await user.click(totals.getByRole('button', { name: /Key or setup missing\s?1/ }));
-  expect(screen.getByLabelText('Connection')).toHaveValue('key_missing');
+  await user.click(totals.getByRole('button', { name: /Needs key or setup\s?1/ }));
+  expect(screen.getByLabelText('Connection')).toHaveValue('setup');
   expect(screen.getByRole('heading', { name: 'AISStream ship positions' })).toBeVisible();
   expect(screen.queryByRole('heading', { name: 'BBC World' })).not.toBeInTheDocument();
-  await user.selectOptions(screen.getByLabelText('Connection'), 'attention');
+  await user.selectOptions(screen.getByLabelText('Connection'), 'retrying');
   expect(screen.getByRole('heading', { name: 'Broken feed' })).toBeVisible();
   expect(screen.getByText(/6 consecutive failures/)).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Clear filters' }));
@@ -218,7 +220,7 @@ it('combines topic, country, language and access filters and resets them', async
   await user.selectOptions(screen.getByLabelText('Topic'), 'news');
   await user.selectOptions(screen.getByLabelText('Language'), 'uk');
   await user.selectOptions(screen.getByLabelText('Access'), 'key');
-  await user.selectOptions(screen.getByLabelText('Collection'), 'on_demand');
+  await user.selectOptions(screen.getByLabelText('Family'), 'research');
   expect(screen.getByRole('heading', { name: 'Ukraine bulletin' })).toBeVisible();
   expect(screen.queryByRole('heading', { name: 'BBC World' })).not.toBeInTheDocument();
   await user.selectOptions(screen.getByLabelText('Country or region'), 'region:Eastern Europe');

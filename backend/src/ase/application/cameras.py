@@ -36,6 +36,11 @@ class CameraCatalogueService:
         self._limit = asyncio.Semaphore(4)
 
     @property
+    def sources(self) -> tuple[CameraSource, ...]:
+        """Registered providers in registry order, for descriptive inventories."""
+        return tuple(cached.source for cached in self._sources)
+
+    @property
     def provider_ids(self) -> tuple[str, ...]:
         return tuple(source.source.id for source in self._sources)
 

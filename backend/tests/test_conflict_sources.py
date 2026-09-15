@@ -9,9 +9,14 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from ase.adapters.feeds.conflict_acled import AcledConnector
-from ase.adapters.feeds.conflict_reliefweb import ReliefWebReportsConnector
+from ase.adapters.feeds.conflict_reliefweb import (
+    APPNAME_NOT_APPROVED,
+    APPNAME_RECHECK,
+    ReliefWebReportsConnector,
+)
 from ase.adapters.feeds.conflict_ucdp import UcdpCandidateConnector
-from ase.adapters.feeds.http import FeedFetchError, NotModified
+from ase.adapters.feeds.http import FeedFetchError, FeedHttpStatusError, NotModified
+from ase.application.ports.feed_diagnostics import FeedBlocked
 from ase.domain.events import Category, Credibility, GeoConfidence
 from feeds_helpers import NOW, FakeClock
 
@@ -279,6 +284,20 @@ async def test_reliefweb_partial_fields_and_untrusted_links() -> None:
 async def test_reliefweb_rejects_bad_envelope(payload: Any) -> None:
     with pytest.raises(FeedFetchError):
         await ReliefWebReportsConnector(Http(payload), FakeClock(NOW), "approved").fetch()  # type: ignore[arg-type]
+
+
+async def test_reliefweb_unapproved_appname_is_a_clear_upstream_block() -> None:
+    refused = Http(FeedHttpStatusError(403, "https://api.reliefweb.int/v2/reports?appname=x"))
+    connector = ReliefWebReportsConnector(refused, FakeClock(NOW), "unapproved")  # type: ignore[arg-type]
+    with pytest.raises(FeedBlocked) as error:
+        await connector.fetch()
+    assert str(error.value) == APPNAME_NOT_APPROVED
+    assert "pre-approved" in str(error.value) and "appname=" not in str(error.value)
+    assert error.value.retry_at == NOW + APPNAME_RECHECK
+    assert len(APPNAME_NOT_APPROVED) <= 300
+    failing = Http(FeedHttpStatusError(500, "https://api.reliefweb.int/v2/reports"))
+    with pytest.raises(FeedHttpStatusError):
+        await ReliefWebReportsConnector(failing, FakeClock(NOW), "approved").fetch()  # type: ignore[arg-type]
 
 
 async def test_reliefweb_conditional_304_is_no_change() -> None:

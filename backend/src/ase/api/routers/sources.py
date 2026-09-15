@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from ase.api.deps import ContainerDep, CurrentUser, SessionDep
 from ase.api.schemas_source_ratings import SourceRatingOut
 from ase.application.feeds.health import SourceHealth, SourceStatus
+from ase.application.source_assets import AssetDelivery, AssetFamily, SourceAsset
 from ase.application.source_inventory import (
     ConnectionState,
     InventoryEntry,
@@ -47,7 +48,10 @@ class SourceRequirementOut(BaseModel):
 
 
 class SourceHealthSummaryOut(BaseModel):
-    """Delivery health without error text, which can embed operator URLs."""
+    """Delivery health without error text, which can embed operator URLs.
+
+    `blocked_reason` is fixed server-authored text for an upstream refusal, never raw error text.
+    """
 
     status: SourceStatus
     last_success: datetime | None
@@ -56,6 +60,7 @@ class SourceHealthSummaryOut(BaseModel):
     items_last_poll: int
     next_poll_at: datetime | None
     polls: int
+    blocked_reason: str | None
 
     @classmethod
     def from_health(cls, value: SourceHealth) -> "SourceHealthSummaryOut":
@@ -67,6 +72,7 @@ class SourceHealthSummaryOut(BaseModel):
             items_last_poll=value.items_last_poll,
             next_poll_at=value.next_poll_at,
             polls=value.polls,
+            blocked_reason=value.blocked_reason,
         )
 
 
@@ -138,8 +144,53 @@ class SourceSummaryOut(BaseModel):
         )
 
 
+class SourceAssetOut(BaseModel):
+    """A camera index, map layer or dataset: public publisher metadata and state only."""
+
+    id: str
+    name: str
+    family: AssetFamily
+    delivery: AssetDelivery
+    organisation: str
+    description: str
+    licence_note: str
+    homepage: str | None
+    coverage_note: str
+    refresh_note: str
+    state: ConnectionState
+    detail: str
+    requirement: SourceRequirementOut | None
+    as_of: str | None
+    records: int | None
+
+    @classmethod
+    def from_asset(cls, value: SourceAsset) -> "SourceAssetOut":
+        return cls(
+            id=value.id,
+            name=value.name,
+            family=value.family,
+            delivery=value.delivery,
+            organisation=value.organisation,
+            description=value.description,
+            licence_note=value.licence_note,
+            homepage=value.homepage if (value.homepage or "").startswith("https://") else None,
+            coverage_note=value.coverage_note,
+            refresh_note=value.refresh_note,
+            state=value.state,
+            detail=value.detail,
+            requirement=(
+                SourceRequirementOut.from_requirement(value.requirement)
+                if value.requirement
+                else None
+            ),
+            as_of=value.as_of,
+            records=value.records,
+        )
+
+
 class SourcesOut(BaseModel):
     items: list[SourceSummaryOut]
+    assets: list[SourceAssetOut] = []
 
 
 class PlatformConnectionOut(BaseModel):
@@ -172,7 +223,11 @@ async def list_sources(
 ) -> SourcesOut:
     response.headers["Cache-Control"] = "private, no-store"
     entries = await container.source_inventory(session).list()
-    return SourcesOut(items=[SourceSummaryOut.from_entry(entry) for entry in entries])
+    assets = container.source_assets(user)
+    return SourcesOut(
+        items=[SourceSummaryOut.from_entry(entry) for entry in entries],
+        assets=[SourceAssetOut.from_asset(asset) for asset in assets],
+    )
 
 
 @router.get("/connections")

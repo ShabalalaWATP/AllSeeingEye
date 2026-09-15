@@ -16,6 +16,7 @@ from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventStore, CooperativeGrader
 from ase.application.ports.feed_diagnostics import (
     DiagnosticFeedConnector,
+    FeedBlocked,
     FeedDeferred,
     FeedRateLimited,
 )
@@ -180,7 +181,13 @@ class FeedScheduler:
         """A deliberate deferral or an upstream throttle schedules the next attempt."""
         source_id = connector.spec.id
         if isinstance(exc, FeedDeferred):
-            entry = self._health.record_deferred(source_id, str(exc), started, exc.retry_at)
+            entry = self._health.record_deferred(
+                source_id,
+                str(exc),
+                started,
+                exc.retry_at,
+                blocked=isinstance(exc, FeedBlocked),
+            )
         elif isinstance(connector, GuardedFeedConnector):
             return await self._guarded_failure(connector, generation, started)
         else:

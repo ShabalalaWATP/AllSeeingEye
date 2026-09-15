@@ -17,6 +17,7 @@ from pydantic import SecretStr
 
 from ase.adapters.feeds.acled_http import (
     ORIGIN,
+    AcledForbidden,
     AcledHttpClient,
     AcledRefreshRejected,
     AcledUnauthorised,
@@ -24,13 +25,14 @@ from ase.adapters.feeds.acled_http import (
 from ase.adapters.feeds.http import FeedCredential, FeedFetchError
 from ase.application.ports import Clock
 from ase.application.ports.acled_credentials import AcledCredentialStore, StoredAcledRefreshToken
-from ase.application.ports.feed_diagnostics import FeedDeferred
+from ase.application.ports.feed_diagnostics import FeedBlocked, FeedDeferred
 from ase.application.ports.llm import SecretCipher
 
 log = structlog.get_logger(__name__)
 
 EARLY_REFRESH = timedelta(minutes=10)
 REJECTED_BACKOFF = timedelta(hours=1)
+ENTITLEMENT_RECHECK = timedelta(hours=12)
 FAILURE_BACKOFF = timedelta(minutes=5)
 MAX_LIFETIME_SECONDS = 86400
 REVOKED_MESSAGE = (
@@ -38,6 +40,11 @@ REVOKED_MESSAGE = (
     "ASE_ACLED_REFRESH_TOKEN"
 )
 UNAVAILABLE_MESSAGE = "ACLED authentication unavailable; retrying after a short cooldown."
+ENTITLEMENT_MESSAGE = (
+    "ACLED accepted the credentials but refused data access (HTTP 403). API access needs a "
+    "myACLED Research, Partner or Enterprise tier; accounts registered with a public email "
+    "address get Open access, which has no API. The application rechecks every 12 hours."
+)
 _TOKEN = re.compile(r"[A-Za-z0-9._~+/-]+=*")
 
 
@@ -83,20 +90,30 @@ class AcledTokens:
         await self._http.aclose()
 
     async def get_json(self, url: str) -> Any:
-        """A 401 refreshes the access token once and retries; a second 401 is an error."""
+        """A 401 refreshes the access token once and retries; a second 401 is an error.
+
+        A 403 is the account's entitlement, not the token, so it is reported as a block.
+        """
         credential = await self.credential()
         try:
             return await self._http.read_json(url, credential)
         except AcledUnauthorised:
             self.invalidate(credential)
+        except AcledForbidden:
+            raise self._entitlement_block() from None
         credential = await self.credential()
         try:
             return await self._http.read_json(url, credential)
+        except AcledForbidden:
+            raise self._entitlement_block() from None
         except AcledUnauthorised:
             self.invalidate(credential)
             raise FeedFetchError(
                 "ACLED refused a freshly refreshed access token; check account entitlement."
             ) from None
+
+    def _entitlement_block(self) -> FeedBlocked:
+        return FeedBlocked(ENTITLEMENT_MESSAGE, self._clock.now() + ENTITLEMENT_RECHECK)
 
     def invalidate(self, credential: FeedCredential) -> None:
         """Never let an older failed request discard a newer refreshed token."""
