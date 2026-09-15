@@ -214,7 +214,7 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | D02 | D01 | **Implemented.** `GET /api/teams/{id}/dashboard` returns pinned posts, unread count, five recent team reports, next five subscription runs and bounded action-needed items; the Overview tab renders them with exact links. |
 | D03 | D01 | **Implemented.** Author-only edits, moderator removal and pins with an audited reason, public tombstones, revision-conditional writes returning 409, a locked three-pin cap, per-membership read cursors and unread counts. |
 | D04 | D02, D03, Q04 | **Partial.** Usage widgets, overview data and archive/restore UX are present. Visibility-aware board polling and mobile/visual browser acceptance remain. |
-| V01 | All above | **Partial.** Integrated with `main`, full backend and frontend suites with coverage gates, and SQLite migration round trips. PostgreSQL migration runs, authenticated browser journeys and the security review remain. |
+| V01 | All above | **Partial.** Integrated with `main`; full backend and frontend suites with coverage gates; SQLite and PostgreSQL 17 migration round trips from populated `0044` data; teams, directory, board, allowance, pruning and race tests on PostgreSQL. Authenticated browser journeys and the security review remain. |
 | V02 | V01 | **Not started.** Operator migration checklist, monitoring, feature switches (self-service creation, directory, board, enforcement) and bounded live provider smoke. |
 
 Implementation lanes can be separated after T00 into team authority, profiles/invitations and usage accounting. Assign explicit file ownership if delegation is used. One integration owner regenerates contracts and resolves migrations after each lane settles.
@@ -320,3 +320,27 @@ Release complete means ordinary users can create and manage teams, invite people
 - **Remaining:** feature switches, visibility-aware board polling, an administrator
   review action for unknown calls, PostgreSQL
   migration runs and authenticated browser journeys.
+
+### 15 September 2026, PostgreSQL verification, board refresh and pruning
+
+- **PostgreSQL 17:** a disposable Docker container (`postgres:17`, loopback only)
+  ran `tests/test_teams_usage_migration_postgres.py`, which upgrades populated `0044`
+  data to head, checks retired Manager authority and audit inventory, partial unique
+  indexes for pending invitations and site policies, downgrade guards and model
+  parity, then round trips. The existing PostgreSQL migration and concurrency tests
+  (55) passed. The teams, directory, board and AI usage test files (147) plus the
+  allowance, pruning and race tests ran against PostgreSQL through
+  `ASE_TEST_DATABASE_URL` and `ASE_TOKEN_RACE_TEST_URL`.
+- **Defects found:** model index declarations for board posts, invitations, directory
+  profiles, assistant conversations, activity samples and model profiles differed from
+  their migrations; the models now mirror the migrated schema. Two allowance tests
+  inserted memberships before their team, which only PostgreSQL rejected. The
+  subscription edition PostgreSQL check could never run (missing driver, masked
+  password, UUID/text comparison) and was repaired.
+- **Rerun:** point `ASE_TEAMS_MIGRATION_POSTGRES_URL`, `ASE_TEST_MIGRATION_POSTGRES_URL`
+  (database name must start with `ase_s01_disposable_`), the other
+  `ASE_*_POSTGRES_URL` test variables, `ASE_TEST_DATABASE_URL` and
+  `ASE_TOKEN_RACE_TEST_URL` at an owned disposable loopback server only.
+- **Pruning:** settled and released reservations are deleted 90 days after their
+  period ends, counters and totals after 400 days, in bounded hourly batches from
+  admission (migration `0054` adds the supporting index).
