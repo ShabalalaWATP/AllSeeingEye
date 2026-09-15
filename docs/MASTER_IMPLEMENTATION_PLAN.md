@@ -4,6 +4,25 @@ Maintained by the implementation-plan keeper. Phases follow `05_ROADMAP.md`; dec
 
 ## Current status
 
+15 September team collaboration planning: the
+[Teams, profiles and AI usage plan](TEAMS_PROFILES_AI_USAGE_IMPLEMENTATION_PLAN.md)
+specifies user-created teams, membership-based Managers, protected administrators,
+profile discovery and invitations, a simple dashboard/message board, and unified
+individual/team AI allowances. It includes ordered tasks, migration rules and
+acceptance gates. This is a planning deliverable; its implementation tasks are pending.
+
+14 September Research and Subscriptions planning: Alex accepted the deep audit's
+recommended changes. The [approved execution plan](RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md)
+now specifies ordered, bounded tasks for a smaller model, including correctness
+repairs, durable subscription editions, shared briefs, twenty topic presets,
+source acquisition, claim assessment, professional reports and additional AI tools.
+Its task packets define contracts, ownership, dependencies, regression cases,
+operational acceptance and handoff instructions. All implementation tasks in that
+plan remain pending; writing the plan did not change application behaviour,
+connect providers, run new model acceptance or migrate a database. See the
+[underlying audit](RESEARCH_AND_SUBSCRIPTIONS_AUDIT_2026_09_14.md) for observed
+defects and the separate limits of its earlier validation.
+
 8 September FIRMS acceptance: encrypted administrator draft/test/confirm,
 next-poll activation and generation-guarded source publication passed full
 backend acceptance (3,328 passed, 84 skipped, 95.05% coverage) on the accepted

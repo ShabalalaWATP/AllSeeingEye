@@ -2471,7 +2471,7 @@ Reduced the ten-city clock panel to a compact four-city strip, removed its headi
 country codes and oversized time display, and reduced the space reserved beneath
 map controls. The map surface uses neutral charcoal tones without the decorative
 gradient. Seven focused clock/control tests passed; the actual clock component
-was visually inspected at 390 Ã— 844 and 1440 Ã— 900 in an isolated local Vite page.
+was visually inspected at 390 × 844 and 1440 × 900 in an isolated local Vite page.
 That is component evidence, not whole-dashboard GPU acceptance.
 
 Reviewed the public OSIRIS source at fac8d1b and official provider documentation.
@@ -3236,7 +3236,7 @@ measurement. Delivery remains on local `main`, with no Git remote configured.
 
 ## 10 September 2026: RF reach, obstruction and optional area shading
 
-The radio planner now has explicit transmitter-to-receiver and 360Â° area studies.
+The radio planner now has explicit transmitter-to-receiver and 360° area studies.
 An area ignores a saved receiver without deleting it; removing the receiver
 returns to an area study. Optional coverage shading changes only the saved
 overlay, without another terrain request, continuous animation or polling.
@@ -3620,7 +3620,7 @@ remain in force. One source admission can use up to eleven HTTP requests, with
 shared pacing and its own deadline; the preview and receipt disclose this cost.
 
 At 00:52 UTC the actual research service accepted six measurements from two London
-stations for the preceding 24 hours, with UK OGL attribution and original Âµg/mÂ³
+stations for the preceding 24 hours, with UK OGL attribution and original µg/m³
 units. An earlier station check returned one measurement from 2016 beside a newer
 sensor reading, confirming why station activity cannot stand in for sensor dates.
 This milestone supplies bounded latest values, not complete historical coverage,
@@ -4639,7 +4639,7 @@ researched oil, gas and semiconductor sites. Wikidata's SPARQL endpoint was fail
 a small entity-API client (search and fetch) was written and used for everything:
 cable segments gained operator, owner and links from OpenStreetMap tags and linked
 Wikidata items (376 of 429 named), nuclear
-plants and curated ground stations were matched by name within 0.5Â° (64 and
+plants and curated ground stations were matched by name within 0.5° (64 and
 84 matched), and two new layers were built from curated key-site
 lists resolved through Wikidata plus OpenStreetMap breadth: 2789 oil and gas
 sites and 98 semiconductor sites, with city-level placement stated
@@ -4736,6 +4736,24 @@ resume. Numeric citation checks and source membership improve traceability but
 do not establish full semantic accuracy; fresh provider coverage and a claim-level
 evaluation set remain open.
 
+## 14 September 2026: approved Research and Subscriptions execution plan
+
+Alex accepted the Research and Subscriptions audit recommendations and requested
+a full plan that a smaller model could implement. The
+[execution entry point](RESEARCH_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md) links seven
+ordered task packets and a specification for twenty editable presets. It covers
+the reproduced relevance and scheduling defects, durable edition identities and
+retry safeguards, shared versioned briefs, primary-source acquisition, retained
+coverage, doctrine and claim checks, report/export consistency, change assessment,
+user journeys and bounded AI tools. Each task defines ownership, dependencies,
+behavioural acceptance and validation; the plan includes a completion register and
+a compact restart/handoff prompt.
+
+This delivery is documentation only. Application implementation and operational
+acceptance remain pending in the register. Existing concurrent Ukraine feature
+changes were preserved. No source keys, database records or model settings were
+changed as part of this planning work.
+
 Phases 3 and 4 of the Ukraine tracker landed on 14 September 2026. Oryx's visually
 confirmed losses arrive through the MIT-licensed daily CSV mirror (the newest day and a month
 of totals), the UN monitoring mission's monthly civilian harm pages are read for their one
@@ -4787,3 +4805,13 @@ cameras in North Yorkshire and Cumbria, Derbyshire's traffic cameras, and a cura
 Highland and crossing cameras and streams. Every curated URL was checked live before entry; the
 Isle of Man firewall refused Python's client but served browsers, which is the only client that
 loads those images.
+
+On 15 September 2026 the Research and Subscriptions programme that had been built in the
+working tree was reviewed, repaired and merged. The first complete backend run of the tree found
+40 failures. Ten already failed on `main` and three passed when run on their own. The other 27
+were genuine defects or tests that had quietly stopped testing anything: historical report hashes had shifted when new fields
+entered canonical bytes, collection checkpoints accepted foreign schema versions, and area
+research excluded its own area sources, while security tests for revoked membership, secret
+redaction and disconnect cancellation had become no-ops because reports without evidence no
+longer call the model. Each defect was fixed in code and each test was made to exercise its guard
+again. The development database was backed up, rehearsed and migrated to `0044`.
