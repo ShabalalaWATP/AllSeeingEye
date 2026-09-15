@@ -2258,7 +2258,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiUsageSummaryPageOut"
+                  "$ref": "#/components/schemas/TeamAiUsageOut"
                 }
               }
             }
@@ -12717,6 +12717,158 @@
         }
       }
     },
+    "/api/admin/ai-usage/policies/{policy_id}/overrides": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Overrides",
+        "operationId": "list_overrides_api_admin_ai_usage_policies__policy_id__overrides_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiPolicyOverridesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create Override",
+        "operationId": "create_override_api_admin_ai_usage_policies__policy_id__overrides_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Policy Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiPolicyOverrideIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiPolicyOverrideOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ai-usage/overrides/{override_id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Revoke Override",
+        "operationId": "revoke_override_api_admin_ai_usage_overrides__override_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "override_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Override Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiPolicyOverrideOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/ai-usage/reservations": {
       "get": {
         "tags": [
@@ -12773,7 +12925,7 @@
           "admin"
         ],
         "summary": "Preview Effective Usage",
-        "description": "Show the policies that would apply to a user for an optional team destination.",
+        "description": "Show the policies a call would be charged to, for an account or system work.",
         "operationId": "preview_effective_usage_api_admin_ai_usage_preview_get",
         "security": [
           {
@@ -12784,10 +12936,17 @@
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "User Id"
             }
           },
@@ -12807,6 +12966,16 @@
               ],
               "title": "Team Id"
             }
+          },
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "System"
+            }
           }
         ],
         "responses": {
@@ -12815,7 +12984,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiUsageSummaryPageOut"
+                  "$ref": "#/components/schemas/AiUsagePreviewOut"
                 }
               }
             }
@@ -13526,10 +13695,205 @@
         ],
         "title": "AiAllowancePeriod"
       },
+      "AiLimitOverrideIn": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/AiLimitState"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2147483647.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "AiLimitOverrideIn",
+        "description": "``limit`` needs a value (zero blocks); other states must not carry one."
+      },
+      "AiLimitOverrideOut": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/AiLimitState"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "value"
+        ],
+        "title": "AiLimitOverrideOut"
+      },
+      "AiLimitState": {
+        "type": "string",
+        "enum": [
+          "inherit",
+          "limit",
+          "unlimited",
+          "blocked"
+        ],
+        "title": "AiLimitState"
+      },
+      "AiMemberUsageOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "observed": {
+            "$ref": "#/components/schemas/AiUsageTotalsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name",
+          "observed"
+        ],
+        "title": "AiMemberUsageOut"
+      },
+      "AiPolicyOverrideIn": {
+        "properties": {
+          "requests": {
+            "$ref": "#/components/schemas/AiLimitOverrideIn"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/AiLimitOverrideIn"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Effective From"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "requests",
+          "tokens",
+          "effective_from",
+          "expires_at"
+        ],
+        "title": "AiPolicyOverrideIn"
+      },
+      "AiPolicyOverrideOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Policy Id"
+          },
+          "requests": {
+            "$ref": "#/components/schemas/AiLimitOverrideOut"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/AiLimitOverrideOut"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Effective From"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "policy_id",
+          "requests",
+          "tokens",
+          "effective_from",
+          "expires_at",
+          "created_by",
+          "created_at",
+          "revoked_at"
+        ],
+        "title": "AiPolicyOverrideOut"
+      },
+      "AiPolicyOverridesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiPolicyOverrideOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AiPolicyOverridesOut"
+      },
       "AiPolicyScope": {
         "type": "string",
         "enum": [
           "global",
+          "system",
           "user",
           "team"
         ],
@@ -13676,6 +14040,32 @@
         ],
         "title": "AiUsagePolicyOut"
       },
+      "AiUsagePreviewOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsageSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "observed": {
+            "$ref": "#/components/schemas/AiUsageTotalsOut"
+          },
+          "unknown_calls": {
+            "type": "integer",
+            "title": "Unknown Calls",
+            "description": "Provider calls held as unknown pending review."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "observed",
+          "unknown_calls"
+        ],
+        "title": "AiUsagePreviewOut"
+      },
       "AiUsageReservationOut": {
         "properties": {
           "id": {
@@ -13683,15 +14073,43 @@
             "format": "uuid",
             "title": "Id"
           },
+          "call_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Call Id"
+          },
           "policy_id": {
             "type": "string",
             "format": "uuid",
             "title": "Policy Id"
           },
           "user_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "User Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "system": {
+            "type": "boolean",
+            "title": "System"
           },
           "profile_id": {
             "anyOf": [
@@ -13735,6 +14153,18 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "dispatched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dispatched At"
           },
           "settled_at": {
             "anyOf": [
@@ -13807,8 +14237,11 @@
         "type": "object",
         "required": [
           "id",
+          "call_id",
           "policy_id",
           "user_id",
+          "team_id",
+          "system",
           "profile_id",
           "model",
           "purpose",
@@ -13817,6 +14250,7 @@
           "reserved_tokens",
           "status",
           "created_at",
+          "dispatched_at",
           "settled_at",
           "prompt_tokens",
           "completion_tokens",
@@ -13856,6 +14290,40 @@
             "type": "string",
             "format": "date-time",
             "title": "Period End"
+          },
+          "request_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Limit",
+            "description": "Effective limit after any active override."
+          },
+          "token_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Limit",
+            "description": "Effective limit after any active override."
+          },
+          "override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiPolicyOverrideOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "used_requests": {
             "type": "integer",
@@ -13901,6 +14369,9 @@
           "policy",
           "period_start",
           "period_end",
+          "request_limit",
+          "token_limit",
+          "override",
           "used_requests",
           "reserved_requests",
           "remaining_requests",
@@ -13918,13 +14389,53 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "observed": {
+            "$ref": "#/components/schemas/AiUsageTotalsOut"
           }
         },
         "type": "object",
         "required": [
-          "items"
+          "items",
+          "observed"
         ],
         "title": "AiUsageSummaryPageOut"
+      },
+      "AiUsageTotalsOut": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "used_requests": {
+            "type": "integer",
+            "title": "Used Requests"
+          },
+          "used_tokens": {
+            "type": "integer",
+            "title": "Used Tokens"
+          },
+          "unknown_requests": {
+            "type": "integer",
+            "title": "Unknown Requests"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end",
+          "used_requests",
+          "used_tokens",
+          "unknown_requests"
+        ],
+        "title": "AiUsageTotalsOut",
+        "description": "Observed usage this UTC calendar month, whether or not a limit is configured."
       },
       "AlertOut": {
         "properties": {
@@ -42243,6 +42754,68 @@
           "max_severity"
         ],
         "title": "TallyOut"
+      },
+      "TeamAiUsageOut": {
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Team Id"
+          },
+          "view": {
+            "type": "string",
+            "enum": [
+              "member",
+              "manager",
+              "admin"
+            ],
+            "title": "View"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AiUsageSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "own": {
+            "$ref": "#/components/schemas/AiUsageTotalsOut"
+          },
+          "team": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiUsageTotalsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AiMemberUsageOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Members"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "view",
+          "items",
+          "own",
+          "team",
+          "members"
+        ],
+        "title": "TeamAiUsageOut"
       },
       "TeamBoardPageOut": {
         "properties": {
