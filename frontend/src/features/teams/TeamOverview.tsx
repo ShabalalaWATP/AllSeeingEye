@@ -4,7 +4,7 @@ import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import type { TeamDashboard, TeamDashboardAction } from '@/lib/api/teamBoard';
 
-import { TeamAllowance } from './TeamAllowance';
+import { TeamAiUsage } from './TeamAiUsage';
 import type { TeamDashboardTab } from './TeamDashboard';
 import type { TeamCapabilities } from './teamCapabilities';
 import { useTeamDashboard } from './useTeamDashboard';
@@ -186,7 +186,7 @@ export function TeamOverview({
       {data ? (
         <DashboardBody data={data} capabilities={capabilities} onTabChange={onTabChange} />
       ) : null}
-      <TeamAllowance teamId={teamId} />
+      <TeamAiUsage teamId={teamId} />
     </div>
   );
 }

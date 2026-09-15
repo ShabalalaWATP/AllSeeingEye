@@ -1,4 +1,4 @@
-"""Migration 0054 classifies existing tombstones and adds board read cursors."""
+"""Migration 0052 classifies existing tombstones and adds board read cursors."""
 
 from __future__ import annotations
 
@@ -45,9 +45,9 @@ def _insert(connection, text_value: str, deleted: bool) -> str:  # type: ignore[
 def test_board_moderation_migration_upgrade_and_downgrade() -> None:
     board, moderation = (
         _load("0048_team_board.py"),
-        _load("0054_team_board_moderation_and_reads.py"),
+        _load("0052_team_board_moderation_and_reads.py"),
     )
-    assert moderation.revision == "0054" and moderation.down_revision == "0051"
+    assert moderation.revision == "0052" and moderation.down_revision == "0051"
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:

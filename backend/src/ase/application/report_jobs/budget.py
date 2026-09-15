@@ -20,6 +20,7 @@ from ase.application.report_jobs.budget_limits import (
 from ase.application.report_jobs.fresh_web_allocation import check_web_discovery_dispatch
 from ase.application.report_jobs.stage_budget import check_stage_budget
 from ase.application.report_jobs.stage_reservations import ModelStage
+from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmResult
 from ase.domain.subscription_monthly_budget import MonthlyBudgetExhausted
@@ -28,6 +29,7 @@ __all__ = [
     "MAX_CALLS",
     "MAX_COUNTER",
     "MAX_OUTPUT_TOKENS",
+    "CallNotDispatched",
     "JobBudgetExhausted",
     "JobInterrupted",
     "ReportCallBudget",
@@ -60,6 +62,10 @@ class JobBudgetExhausted(InvalidRequest):
 class JobInterrupted(InvalidRequest):
     code = "report_job_interrupted"
     default_message = "Report generation stopped before its progress could be safely confirmed."
+
+
+class CallNotDispatched(JobInterrupted):
+    """An inner guard stopped the call before any provider request was sent."""
 
 
 def _calls(payload: Payload) -> list[Payload]:
@@ -266,6 +272,10 @@ class ReportCallBudget:
                 "prompt_tokens": token_count(result.prompt_tokens),
                 "completion_tokens": token_count(result.completion_tokens),
             }
+        except (AiAllowanceExceeded, CallNotDispatched):
+            # The AI allowance refused or could not record dispatch: nothing was sent.
+            final = dict(NOT_DISPATCHED)
+            raise
         except LlmTokenBudgetExhausted as exc:
             final = {
                 "status": "failed",

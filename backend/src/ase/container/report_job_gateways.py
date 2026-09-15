@@ -21,6 +21,7 @@ from ase.application.report_jobs.model_calls import (
     BudgetedLlmGateway,
     BudgetedWebSearchGateway,
 )
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.llm import (
     MAX_OUTPUT_TOKENS,
     TEXT_ROLES,
@@ -92,18 +93,18 @@ class _RoutedLlmGateway:
             raise JobInterrupted(MISMATCH)
         # Identical legacy profiles need the stage's explicit internal profile ID.
         profile_id = next(iter(matching_ids))
-        gateway: LlmGateway = BudgetedLlmGateway(
-            self._gateway, self._budget.with_profile(profile_id)
-        )
+        # The allowance wraps the provider directly, inside the job budget, so a job
+        # refusal never reserves allowance and an allowance refusal is not dispatched.
+        provider: LlmGateway = self._gateway
         if self._accounting is not None and self._owner_id is not None:
-            gateway = AllowanceLlmGateway(
-                gateway,
+            provider = AllowanceLlmGateway(
+                provider,
                 self._accounting,
-                owner_id=self._owner_id,
-                team_id=self._team_id,
+                attribution=AiAttribution.actor(self._owner_id, self._team_id),
                 profile_id=profile_id,
                 purpose_prefix="report",
             )
+        gateway = BudgetedLlmGateway(provider, self._budget.with_profile(profile_id))
         return await gateway.complete(base_url, api_key, model, request)
 
 
@@ -134,17 +135,15 @@ class _RoutedWebGateway:
             or not _key_matches(self._cipher, profile, api_key)
         ):
             raise JobInterrupted(MISMATCH)
-        gateway: WebSearchGateway = BudgetedWebSearchGateway(
-            self._gateway, self._budget.with_profile(profile.id)
-        )
+        provider: WebSearchGateway = self._gateway
         if self._accounting is not None and self._owner_id is not None:
-            gateway = AllowanceWebSearchGateway(
-                gateway,
+            provider = AllowanceWebSearchGateway(
+                provider,
                 self._accounting,
-                owner_id=self._owner_id,
-                team_id=self._team_id,
+                attribution=AiAttribution.actor(self._owner_id, self._team_id),
                 profile_id=profile.id,
             )
+        gateway = BudgetedWebSearchGateway(provider, self._budget.with_profile(profile.id))
         return await gateway.search(api_key, model, request)
 
 

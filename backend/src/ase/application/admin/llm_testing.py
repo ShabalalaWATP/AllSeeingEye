@@ -10,6 +10,8 @@ from uuid import UUID
 
 from ase.application.access import AccessPolicy
 from ase.application.admin.model_catalogue import model_catalogue
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceEmbeddingGateway, AllowanceLlmGateway
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.policy import require_admin
@@ -23,6 +25,7 @@ from ase.application.ports.llm import (
     LlmUsageRepository,
     SecretCipher,
 )
+from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.audit import AuditAction
 from ase.domain.errors import EncryptionUnavailable, InvalidRequest, NotFound
 from ase.domain.llm import LlmMessage, LlmProfile, LlmProvider, LlmRequest, LlmRole, LlmUsage
@@ -67,7 +70,9 @@ class TestLlmProfileUseCase:
         *,
         embeddings: EmbeddingGateway | None = None,
         access: AccessPolicy,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
+        self._ai_usage = ai_usage
         self._profiles = profiles
         self._usage = usage
         self._cipher = cipher
@@ -122,9 +127,9 @@ class TestLlmProfileUseCase:
         await self._uow.commit()  # Never hold database locks across model work.
         embeddings_only = profile.roles == frozenset({LlmRole.EMBEDDINGS})
         outcome = (
-            await self._call_embeddings(profile)
+            await self._call_embeddings(profile, actor.id)
             if embeddings_only
-            else await self._call(profile, request)
+            else await self._call(profile, request, actor.id)
         )
         require_admin((await self._access.context(actor, for_update=True)).actor)
         current = await self._profiles.get(profile_id)
@@ -177,19 +182,30 @@ class TestLlmProfileUseCase:
         await self._uow.commit()
         return outcome
 
-    async def _call_embeddings(self, profile: LlmProfile) -> TestOutcome:
+    async def _call_embeddings(self, profile: LlmProfile, actor_id: UUID) -> TestOutcome:
         if self._embeddings is None:
             return TestOutcome(
                 ok=False, latency_ms=0, error="The embeddings gateway is unavailable."
             )
+        embeddings: EmbeddingGateway = self._embeddings
+        if self._ai_usage is not None:
+            embeddings = AllowanceEmbeddingGateway(
+                embeddings,
+                self._ai_usage,
+                attribution=AiAttribution.actor(actor_id),
+                profile_id=profile.id,
+                purpose="connection_test:embeddings",
+            )
         try:
             api_key = self._cipher.decrypt(profile.api_key_encrypted)
-            result = await self._embeddings.embed(
+            result = await embeddings.embed(
                 profile.base_url, api_key, profile.model, ("Semantic search connection test.",)
             )
             if len(result.vectors) != 1:
                 raise ValueError("Expected one embedding.")
             checked_vector(result.vectors[0])
+        except AiAllowanceExceeded:
+            raise
         except Exception:
             return TestOutcome(
                 ok=False,
@@ -203,10 +219,23 @@ class TestLlmProfileUseCase:
             prompt_tokens=result.prompt_tokens,
         )
 
-    async def _call(self, profile: LlmProfile, request: LlmRequest) -> TestOutcome:
+    async def _call(self, profile: LlmProfile, request: LlmRequest, actor_id: UUID) -> TestOutcome:
+        gateway: LlmGateway = self._gateway
+        if self._ai_usage is not None:
+            # Connection tests are charged to the administrator who runs them.
+            gateway = AllowanceLlmGateway(
+                gateway,
+                self._ai_usage,
+                attribution=AiAttribution.actor(actor_id),
+                profile_id=profile.id,
+                purpose_prefix="admin",
+                strict=False,
+            )
         try:
             api_key = self._cipher.decrypt(profile.api_key_encrypted)
-            result = await self._gateway.complete(profile.base_url, api_key, profile.model, request)
+            result = await gateway.complete(profile.base_url, api_key, profile.model, request)
+        except AiAllowanceExceeded:
+            raise
         except LlmGatewayError as exc:
             return TestOutcome(ok=False, latency_ms=0.0, error=str(exc))
         except Exception:  # Never expose unexpected provider/cipher exception text.

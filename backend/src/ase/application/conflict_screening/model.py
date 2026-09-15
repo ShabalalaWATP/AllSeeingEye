@@ -16,6 +16,7 @@ from ase.application.conflict_screening.records import (
 )
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
+from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole, LlmUsage
 
 CALL_SECONDS = 45
@@ -115,6 +116,9 @@ class LlmConflictScreener:
             )
             verdicts = parse_verdicts(result.content, items)
             usage.ok = True
+        except AiAllowanceExceeded:
+            # Refused before dispatch: no provider usage exists to record.
+            raise LlmGatewayError("The system AI allowance is exhausted.") from None
         except TimeoutError:
             usage.error = "The conflict screening model timed out."
         except (ValueError, RecursionError):

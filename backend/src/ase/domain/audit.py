@@ -99,6 +99,8 @@ class AuditAction(StrEnum):
     AI_USAGE_POLICY_CREATED = "ai_usage_policy_created"
     AI_USAGE_POLICY_UPDATED = "ai_usage_policy_updated"
     AI_USAGE_POLICY_DISABLED = "ai_usage_policy_disabled"
+    AI_USAGE_OVERRIDE_CREATED = "ai_usage_override_created"
+    AI_USAGE_OVERRIDE_REVOKED = "ai_usage_override_revoked"
 
 
 @dataclass(slots=True)

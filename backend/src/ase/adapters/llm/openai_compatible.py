@@ -24,7 +24,7 @@ from ase.adapters.llm.openai_responses import (
     parse_response,
     uses_responses,
 )
-from ase.application.ports.llm import LlmGatewayError
+from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
 from ase.domain.llm import LlmMessage, LlmRequest, LlmResult, normalise_base_url
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
@@ -215,7 +215,7 @@ class OpenAiCompatibleGateway:
                         )
                     content.extend(chunk)
         except (TimeoutError, httpx.TimeoutException):
-            raise LlmGatewayError("The model endpoint timed out.") from None
+            raise LlmGatewayTimeout("The model endpoint timed out.") from None
         except httpx.HTTPError as exc:
             raise LlmGatewayError(
                 f"Could not reach the model endpoint: {type(exc).__name__}"
@@ -224,5 +224,5 @@ class OpenAiCompatibleGateway:
         result = parse_response(data, model, 0) if native else parse_completion(data, model, 0)
         latency_ms = (time.perf_counter() - started) * 1000
         if latency_ms > timeout * 1000:
-            raise LlmGatewayError("The model endpoint timed out.")
+            raise LlmGatewayTimeout("The model endpoint timed out.")
         return replace(result, latency_ms=latency_ms)

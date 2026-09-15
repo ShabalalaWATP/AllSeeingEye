@@ -3685,6 +3685,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/ai-usage/policies/{policy_id}/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Overrides */
+        get: operations["list_overrides_api_admin_ai_usage_policies__policy_id__overrides_get"];
+        put?: never;
+        /** Create Override */
+        post: operations["create_override_api_admin_ai_usage_policies__policy_id__overrides_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/ai-usage/overrides/{override_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke Override */
+        delete: operations["revoke_override_api_admin_ai_usage_overrides__override_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/ai-usage/reservations": {
         parameters: {
             query?: never;
@@ -3711,7 +3746,7 @@ export interface paths {
         };
         /**
          * Preview Effective Usage
-         * @description Show the policies that would apply to a user for an optional team destination.
+         * @description Show the policies a call would be charged to, for an account or system work.
          */
         get: operations["preview_effective_usage_api_admin_ai_usage_preview_get"];
         put?: never;
@@ -4041,10 +4076,98 @@ export interface components {
          */
         AiAllowancePeriod: "day" | "week" | "month";
         /**
+         * AiLimitOverrideIn
+         * @description ``limit`` needs a value (zero blocks); other states must not carry one.
+         */
+        AiLimitOverrideIn: {
+            state: components["schemas"]["AiLimitState"];
+            /** Value */
+            value?: number | null;
+        };
+        /** AiLimitOverrideOut */
+        AiLimitOverrideOut: {
+            state: components["schemas"]["AiLimitState"];
+            /** Value */
+            value: number | null;
+        };
+        /**
+         * AiLimitState
+         * @enum {string}
+         */
+        AiLimitState: "inherit" | "limit" | "unlimited" | "blocked";
+        /** AiMemberUsageOut */
+        AiMemberUsageOut: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            observed: components["schemas"]["AiUsageTotalsOut"];
+        };
+        /** AiPolicyOverrideIn */
+        AiPolicyOverrideIn: {
+            requests: components["schemas"]["AiLimitOverrideIn"];
+            tokens: components["schemas"]["AiLimitOverrideIn"];
+            /**
+             * Effective From
+             * Format: date-time
+             */
+            effective_from: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /** AiPolicyOverrideOut */
+        AiPolicyOverrideOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Policy Id
+             * Format: uuid
+             */
+            policy_id: string;
+            requests: components["schemas"]["AiLimitOverrideOut"];
+            tokens: components["schemas"]["AiLimitOverrideOut"];
+            /**
+             * Effective From
+             * Format: date-time
+             */
+            effective_from: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Revoked At */
+            revoked_at: string | null;
+        };
+        /** AiPolicyOverridesOut */
+        AiPolicyOverridesOut: {
+            /** Items */
+            items: components["schemas"]["AiPolicyOverrideOut"][];
+        };
+        /**
          * AiPolicyScope
          * @enum {string}
          */
-        AiPolicyScope: "global" | "user" | "team";
+        AiPolicyScope: "global" | "system" | "user" | "team";
         /** AiUsagePolicyIn */
         AiUsagePolicyIn: {
             scope: components["schemas"]["AiPolicyScope"];
@@ -4092,6 +4215,17 @@ export interface components {
              */
             updated_at: string;
         };
+        /** AiUsagePreviewOut */
+        AiUsagePreviewOut: {
+            /** Items */
+            items: components["schemas"]["AiUsageSummaryOut"][];
+            observed: components["schemas"]["AiUsageTotalsOut"];
+            /**
+             * Unknown Calls
+             * @description Provider calls held as unknown pending review.
+             */
+            unknown_calls: number;
+        };
         /** AiUsageReservationOut */
         AiUsageReservationOut: {
             /**
@@ -4100,15 +4234,21 @@ export interface components {
              */
             id: string;
             /**
+             * Call Id
+             * Format: uuid
+             */
+            call_id: string;
+            /**
              * Policy Id
              * Format: uuid
              */
             policy_id: string;
-            /**
-             * User Id
-             * Format: uuid
-             */
-            user_id: string;
+            /** User Id */
+            user_id: string | null;
+            /** Team Id */
+            team_id: string | null;
+            /** System */
+            system: boolean;
             /** Profile Id */
             profile_id: string | null;
             /** Model */
@@ -4134,6 +4274,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Dispatched At */
+            dispatched_at: string | null;
             /** Settled At */
             settled_at: string | null;
             /** Prompt Tokens */
@@ -4165,6 +4307,17 @@ export interface components {
              * Format: date-time
              */
             period_end: string;
+            /**
+             * Request Limit
+             * @description Effective limit after any active override.
+             */
+            request_limit: number | null;
+            /**
+             * Token Limit
+             * @description Effective limit after any active override.
+             */
+            token_limit: number | null;
+            override: components["schemas"]["AiPolicyOverrideOut"] | null;
             /** Used Requests */
             used_requests: number;
             /** Reserved Requests */
@@ -4182,6 +4335,29 @@ export interface components {
         AiUsageSummaryPageOut: {
             /** Items */
             items: components["schemas"]["AiUsageSummaryOut"][];
+            observed: components["schemas"]["AiUsageTotalsOut"];
+        };
+        /**
+         * AiUsageTotalsOut
+         * @description Observed usage this UTC calendar month, whether or not a limit is configured.
+         */
+        AiUsageTotalsOut: {
+            /**
+             * Period Start
+             * Format: date-time
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date-time
+             */
+            period_end: string;
+            /** Used Requests */
+            used_requests: number;
+            /** Used Tokens */
+            used_tokens: number;
+            /** Unknown Requests */
+            unknown_requests: number;
         };
         /** AlertOut */
         AlertOut: {
@@ -14098,6 +14274,25 @@ export interface components {
             /** Max Severity */
             max_severity: number | null;
         };
+        /** TeamAiUsageOut */
+        TeamAiUsageOut: {
+            /**
+             * Team Id
+             * Format: uuid
+             */
+            team_id: string;
+            /**
+             * View
+             * @enum {string}
+             */
+            view: "member" | "manager" | "admin";
+            /** Items */
+            items: components["schemas"]["AiUsageSummaryOut"][];
+            own: components["schemas"]["AiUsageTotalsOut"];
+            team: components["schemas"]["AiUsageTotalsOut"] | null;
+            /** Members */
+            members: components["schemas"]["AiMemberUsageOut"][] | null;
+        };
         /** TeamBoardPageOut */
         TeamBoardPageOut: {
             /** Items */
@@ -16496,7 +16691,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AiUsageSummaryPageOut"];
+                    "application/json": components["schemas"]["TeamAiUsageOut"];
                 };
             };
             /** @description Validation Error */
@@ -22892,6 +23087,103 @@ export interface operations {
             };
         };
     };
+    list_overrides_api_admin_ai_usage_policies__policy_id__overrides_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiPolicyOverridesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_override_api_admin_ai_usage_policies__policy_id__overrides_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiPolicyOverrideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiPolicyOverrideOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_override_api_admin_ai_usage_overrides__override_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                override_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiPolicyOverrideOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_reservations_api_admin_ai_usage_reservations_get: {
         parameters: {
             query?: {
@@ -22925,9 +23217,10 @@ export interface operations {
     };
     preview_effective_usage_api_admin_ai_usage_preview_get: {
         parameters: {
-            query: {
-                user_id: string;
+            query?: {
+                user_id?: string | null;
                 team_id?: string | null;
+                system?: boolean;
             };
             header?: never;
             path?: never;
@@ -22941,7 +23234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AiUsageSummaryPageOut"];
+                    "application/json": components["schemas"]["AiUsagePreviewOut"];
                 };
             };
             /** @description Validation Error */

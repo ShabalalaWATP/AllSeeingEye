@@ -7,7 +7,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import replace
 
 from ase.application.access import AccessPolicy
-from ase.application.ai_usage import AiReservationBatch, AiUsageAccounting, settle_with_deadline
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.intent import interpret_question
 from ase.application.assistant.model import AssistantAnswerInvalid, answer_question
@@ -23,6 +24,7 @@ from ase.application.ports.llm import (
     SecretCipher,
 )
 from ase.application.ports.source_controls import SourceAdmission
+from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.assistant import (
     AssistantAnswer,
     AssistantContext,
@@ -249,28 +251,34 @@ class MapAssistant:
         sent = False
         error: str | None = None
         usage_saved = True
-        ai_reservation: AiReservationBatch | None = None
-        ai_usage_saved = True
+        gateway: LlmGateway = self.gateway
+        metered: AllowanceLlmGateway | None = None
+        if self.ai_usage is not None:
+            # Report Q&A on a team edition is team work; everything else is personal.
+            team_id = context.report.team_id if context.report else None
+            gateway = metered = AllowanceLlmGateway(
+                self.gateway,
+                self.ai_usage,
+                attribution=AiAttribution.actor(actor.id, team_id),
+                profile_id=profile.id,
+                purpose_prefix="map_assistant",
+                strict=False,
+            )
         try:
             async with self.admission.guard():
                 await self._sources_enabled(context)
                 await self._authorise(actor, check_session, report=context.report)
-            if self.ai_usage is not None:
-                ai_reservation = await self.ai_usage.reserve(
-                    actor.id,
-                    profile_id=profile.id,
-                    model=profile.model,
-                    purpose="map_assistant",
-                    requested_tokens=profile.token_budget(32_000),
-                )
             sent = True
             paragraphs, result = await answer_question(
-                self.gateway,
+                gateway,
                 self.cipher,
                 profile,
                 question,
                 context,
             )
+        except AiAllowanceExceeded:
+            sent = False  # Refused before dispatch; nothing reached the provider.
+            raise
         except (AssistantAnswerInvalid, LlmTokenBudgetExhausted) as exc:
             known = exc
             error = (
@@ -318,27 +326,6 @@ class MapAssistant:
                         error=error,
                     ),
                 )
-                if self.ai_usage is not None:
-                    ai_usage_saved = await settle_with_deadline(
-                        self.ai_usage,
-                        ai_reservation,
-                        ok=error is None,
-                        prompt_tokens=(
-                            result.prompt_tokens
-                            if result
-                            else known.prompt_tokens
-                            if known
-                            else None
-                        ),
-                        completion_tokens=(
-                            result.completion_tokens
-                            if result
-                            else known.completion_tokens
-                            if known
-                            else None
-                        ),
-                        error=error,
-                    )
         if not usage_saved:
             context = replace(
                 context,
@@ -347,7 +334,7 @@ class MapAssistant:
                     "Usage storage unconfirmed; the uncertain database write was not retried.",
                 ),
             )
-        if not ai_usage_saved:
+        if metered is not None and not metered.settlement_confirmed:
             context = replace(
                 context,
                 notes=(

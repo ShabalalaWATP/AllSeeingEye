@@ -340,7 +340,11 @@ class FeatureWiring(ReportWiring):
 
     def build_translation_queue(self) -> TranslationQueue:
         translator = LlmTranslator(
-            self._translation_profile, self._translation_usage, self.cipher, self.llm, self.clock
+            self._translation_profile,
+            self._translation_usage,
+            self.cipher,
+            cast("Container", self).system_llm_gateway(),
+            self.clock,
         )
         return TranslationQueue(self.store, self.bus, translator, self.clock)
 

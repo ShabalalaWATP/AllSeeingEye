@@ -46,6 +46,7 @@ from ase.application.reports.sections import draft_sections
 from ase.application.reports.selection import Selection
 from ase.application.reports.subscription_updates import update_guidance
 from ase.domain.advocacy import DevilsAdvocacy
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.evidence import quality_of_information
 from ase.domain.grading import SourceProfile
 from ase.domain.report_records import ReportVersion
@@ -108,8 +109,7 @@ class Producer:
         return AllowanceLlmGateway(
             self._gateway,
             self._ai_usage,
-            owner_id=job.actor.id,
-            team_id=job.request.team_id,
+            attribution=AiAttribution.actor(job.actor.id, job.request.team_id),
             profile_id=None,
             purpose_prefix="report",
         )

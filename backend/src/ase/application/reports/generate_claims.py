@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from typing import Literal
 from uuid import UUID, uuid4
 
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.dto import AccessClaims, RequestContext
 from ase.application.model_routing import ModelRouting
 from ase.application.ports import Clock, UnitOfWork
@@ -12,6 +14,7 @@ from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCiph
 from ase.application.ports.services import RateLimiter
 from ase.application.reports.claim_proposal_model import claim_input_supported, propose_claims
 from ase.application.reports.claims import ReportClaims
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.claim_origin import ClaimModelOrigin
 from ase.domain.claim_revisions import ClaimRevision
 from ase.domain.errors import NoModelAvailable, RateLimited
@@ -35,10 +38,12 @@ class GenerateClaims:
         clock: Clock,
         limiter: RateLimiter,
         uow: UnitOfWork,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
         self.claims, self.routing, self.gateway = claims, routing, gateway
         self.cipher, self.usage, self.clock = cipher, usage, clock
         self.limiter, self.uow = limiter, uow
+        self.ai_usage = ai_usage
 
     async def execute(
         self, actor: AccessClaims, report_id: UUID, number: int, context: RequestContext
@@ -63,8 +68,19 @@ class GenerateClaims:
             retry = self.limiter.hit(bucket, limit, 3600)
             if retry is not None:
                 raise RateLimited(retry)
+        gateway = self.gateway
+        if self.ai_usage is not None:
+            # Charged to the requesting account and the report's team destination.
+            gateway = AllowanceLlmGateway(
+                gateway,
+                self.ai_usage,
+                attribution=AiAttribution.actor(actor.user_id, anchor.team_id),
+                profile_id=profile.id,
+                purpose_prefix="claims",
+                strict=False,
+            )
         try:
-            draft = await propose_claims(self.gateway, profile, key, anchor.version)
+            draft = await propose_claims(gateway, profile, key, anchor.version)
         except asyncio.CancelledError:
             # The provider may have incurred cost even when it returned no token counts.
             # Finish bounded accounting in this session, never detach a database task.

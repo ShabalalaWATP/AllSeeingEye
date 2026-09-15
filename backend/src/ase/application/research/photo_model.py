@@ -13,6 +13,7 @@ from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmProfile, LlmRequest, LlmResult, LlmUsage
 from ase.domain.photo_geolocation import PhotoAssessment
@@ -96,8 +97,7 @@ class PhotoVision:
                     gateway = AllowanceLlmGateway(
                         gateway,
                         self.ai_usage,
-                        owner_id=actor_id,
-                        team_id=team_id,
+                        attribution=AiAttribution.actor(actor_id, team_id),
                         profile_id=profile.id,
                         purpose_prefix="photo",
                     )

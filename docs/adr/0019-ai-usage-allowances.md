@@ -15,35 +15,105 @@ work without holding a database transaction open while a provider is called.
 ## Decision
 
 Add a separate policy and ledger bounded by three calendar periods: day, week and
-month. Policies can target the site, one user or one team. A policy has independent
-request and token ceilings. `None` means unlimited; zero is an explicit deny-all
-ceiling and is never interpreted as unlimited.
+month. Policies can target the site (`global`), shared unattended work (`system`), one
+user or one team. A policy has independent request and token ceilings. `None` means
+unlimited; zero is an explicit deny-all ceiling and is never interpreted as unlimited.
 
-Admission creates a short-lived reservation in its own transaction. The counter row is
-updated with a conditional SQL `UPDATE`, so concurrent reservations cannot both pass a
-finite ceiling. The provider call then happens without an open database transaction.
-Settlement moves the reservation into used counters exactly once, records known provider
-token counts and conservatively charges the reserved amount when counts are unknown.
-The existing `llm_usage` record remains the detailed provider audit and is not replaced.
+### Admission and settlement
+
+Admission creates one reservation row per applicable policy in its own transaction,
+grouped by a `call_id`. The counter row is updated with a conditional relative SQL
+`UPDATE`, so concurrent reservations cannot both pass a finite ceiling. Dispatch is
+recorded in a second short transaction immediately before the provider request; if it
+cannot be recorded the call is not sent. The provider call then happens without an
+open database transaction. Every later counter change is also a relative conditional
+`UPDATE`; rows are touched in a deterministic order (the call's reservations, then
+counters by policy id, then the totals row), so workers cannot overwrite each other's
+increments or deadlock.
+
+The gateway decorators wrap the provider gateway directly and classify each outcome:
+
+| Outcome | Reservation | Counters |
+| --- | --- | --- |
+| Exception before the provider request (cancellation while reserving or recording dispatch) | `released` | reservation returned; no request, no tokens |
+| Provider answered | `settled` | one request; reported prompt plus completion tokens, or the reserved amount when a completed call reports no counts |
+| Provider error (including token budget exhaustion) | `settled` | one request; only the tokens the error reported, usually zero |
+| Timeout or cancellation after dispatch | `unknown` | reservation held; not released and not resent |
+
+Reconciliation runs opportunistically during admission, at most once a minute per
+process, in a bounded batch of 20 calls. A reservation still `reserved` after one hour
+(`STALE_RESERVATION_AGE`) is released when dispatch was never recorded and marked
+`unknown` when it was, keeping the charge conservative. The administrator preview
+reports the number of calls held as unknown. There is no automatic release of unknown
+calls; an explicit review action is future work.
+
+In the durable report job path the allowance decorator sits inside the job's
+`ReportCallBudget`, so a job refusal never reserves allowance, and an allowance refusal
+is recorded in the job ledger as `not_dispatched` and does not consume the job's output
+budget. The monthly owner and subscription ceilings in `monthly_report_usage.py` remain
+a separate admission check and are not charged twice in this ledger.
+
+### Attribution and observation
 
 Global and user policies apply to personal work. A team policy applies only when the
-caller supplies an explicit, currently joined team destination. This prevents a
-personal Ask Eye question from consuming the allowance of every team the account joins.
-The destination check belongs in the accounting adapter as well as in higher-level
-services, so a future team report path cannot bypass membership by passing an arbitrary
-team identifier.
+caller supplies an explicit team destination for which the account is a current member
+or an active site administrator; otherwise the call is attributed to the account alone.
+This prevents a personal Ask Eye question from consuming the allowance of every team the
+account joins, and prevents an arbitrary team identifier from charging, or exhausting,
+another team's allowance. System work is charged to the global and system policies.
 
-Installations with no enabled policy preserve existing behaviour. Administrators enable
-enforcement by creating a policy through the administrative API. Policy deletion is
-implemented as a revisioned disable operation so historical reservations remain
-auditable.
+Usage is always recorded, with or without a policy. `ai_usage_totals` keeps one monthly
+row per system bucket, per account and per account within a team, so observation mode
+has bounded storage and managers can see member totals. Reservation rows are written
+only when a policy applies. Members see only their own attributed team usage, team
+Managers see the team aggregate and member totals, and administrators can view any team
+through `GET /api/teams/{id}/ai-usage` without membership.
+
+### Temporary overrides
+
+`ai_usage_policy_overrides` holds dated overrides of a policy with `effective_from` and
+`expires_at` (at most 366 days, at most ten open per policy). Each limit states
+`inherit`, `limit` (a whole number, where zero blocks), `unlimited` or `blocked`. The most
+recently created override active at the time of admission replaces the base limits.
+Revocation is recorded rather than deleting the row. Creation, revocation and admission
+serialise on the same policy row lock, and creation and revocation are audited.
+
+Policy deletion remains a revisioned disable operation so historical reservations stay
+auditable. Provider assignment and encrypted credentials remain in the existing
+model-routing implementation.
+
+## Model call inventory
+
+Verified on 15 September 2026 against `backend/src/ase`. "Covered" means the provider
+call passes through an allowance decorator.
+
+| Path | Provider call | Attribution | Covered |
+| --- | --- | --- | --- |
+| Ask Eye map questions | `application/assistant/model.py` via `MapAssistant._answer` | Actor, personal | Yes |
+| Ask Eye report Q&A | same | Actor, plus the report's team when the edition is team-owned | Yes |
+| Interactive report generation and regeneration (all stages, automatic claims) | `reports/production.py` `_metered_gateway` | Report actor and request team | Yes |
+| Indicator alert reports | same interactive path | Indicator owner and team | Yes |
+| Durable report jobs: subscriptions, schedules, daily, economy and cyber briefings | `container/report_job_gateways.py` | Stored job owner and team (subscription editions carry the subscription owner and team); one reservation per call, no second wrapper | Yes |
+| Native web search, interactive and jobs | `reports/fresh_web_research.py`, `_RoutedWebGateway` | Report actor and team | Yes |
+| Photo geolocation | `research/photo_model.py` | Actor and optional team | Yes |
+| Manual claim generation | `reports/generate_claims.py` | Requesting account and the report's team | Yes |
+| Semantic report search, index and query embeddings | `reports/search.py` | Actor, personal (the index spans all visible reports) | Yes |
+| Administrator connection test, completion and embeddings probes | `admin/llm_testing.py` | The administrator running the test | Yes |
+| Feed title translation | `adapters/llm/translator.py`, built in `container/features.py` | System | Yes |
+| Conflict screening of shared feeds | `application/conflict_screening/model.py` | System | Yes |
+| Model discovery (`list_models`) | `adapters/llm/openai_compatible.py` | Not a completion; lists models only | No, not billable model usage |
+
+Tests cover each newly metered path except conflict screening, which uses the same
+`system_llm_gateway()` wiring as feed translation but has no dedicated allowance test.
 
 ## Consequences
 
 The admission path is fail-closed when an enabled policy is exhausted and reports a
-stable `ai_usage_limit` error. Provider assignment and encrypted credentials remain in
-the existing model-routing implementation. Scheduled reports, translation and other
-model-backed paths still need to call the accounting service before they are covered by
-the shared policy; their existing budgets continue to protect them until that work is
-completed.
-
+stable `ai_usage_limit` error. Feed translation leaves titles untried when the system
+allowance is exhausted and retries on its normal interval rather than busy looping.
+Reservation rows grow per metered call while policies exist, in the same order as the
+existing `llm_usage` audit table; no automatic pruning is installed. Only timeouts are
+treated as unknown after dispatch; a transport error after the request was written is
+counted as a failed request with zero tokens. The PostgreSQL lock ordering is verified by
+design and by the SQLite concurrency tests; the suite has no disposable PostgreSQL run
+recorded for this change.

@@ -50,6 +50,10 @@ class LlmGatewayError(Exception):
     """The model endpoint could not be used; the message never contains the key."""
 
 
+class LlmGatewayTimeout(LlmGatewayError):
+    """The request was sent but no answer arrived in time; the provider may still bill it."""
+
+
 class LlmTokenBudgetExhausted(LlmGatewayError):
     """An explicit output limit, not a transient failure; do not repeat the same budget.
 

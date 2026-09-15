@@ -63,7 +63,9 @@ def build_conflict_screening(container: Container) -> ConflictScreeningQueue:
     return ConflictScreeningQueue(
         container.store,
         container.bus,
-        LlmConflictScreener(container.llm, container.cipher, container.clock, save_usage),
+        LlmConflictScreener(
+            container.system_llm_gateway(), container.cipher, container.clock, save_usage
+        ),
         GlobalScreeningRuntime(container),
         container.source_admission,
         container.clock,

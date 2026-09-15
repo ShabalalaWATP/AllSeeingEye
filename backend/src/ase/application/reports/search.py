@@ -7,6 +7,8 @@ import time
 from collections.abc import Sequence
 
 from ase.application.access import AccessPolicy
+from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceEmbeddingGateway
 from ase.application.model_routing import ModelRouting
 from ase.application.ports.embeddings import EmbeddingGateway, ReportEmbeddingRepository
 from ase.application.ports.llm import (
@@ -19,6 +21,7 @@ from ase.application.ports.reports import ReportRepository
 from ase.application.ports.repositories import UnitOfWork
 from ase.application.ports.services import Clock, RateLimiter
 from ase.application.reports.access import GetReportUseCase
+from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution
 from ase.domain.errors import InvalidRequest, NoModelAvailable, NotFound, RateLimited
 from ase.domain.llm import LlmProfile, LlmUsage
 from ase.domain.report_records import ReportRecord
@@ -57,7 +60,9 @@ class ReportSearchService:
         uow: UnitOfWork,
         access: AccessPolicy,
         bindings: LlmBindingRepository | None = None,
+        ai_usage: AiUsageAccounting | None = None,
     ) -> None:
+        self._ai_usage = ai_usage
         self._reports = reports
         self._embeddings = embeddings
         self._routing = ModelRouting(profiles, bindings)
@@ -102,11 +107,22 @@ class ReportSearchService:
         started = time.perf_counter()
         try:
             key = self._cipher.decrypt(profile.api_key_encrypted)
+            gateway = self._gateway
+            if self._ai_usage is not None:
+                # The index spans every visible report, so it is personal work.
+                gateway = AllowanceEmbeddingGateway(
+                    gateway,
+                    self._ai_usage,
+                    attribution=AiAttribution.actor(actor.id),
+                    profile_id=profile.id,
+                )
             async with asyncio.timeout(35):
-                result = await self._gateway.embed(profile.base_url, key, profile.model, texts)
+                result = await gateway.embed(profile.base_url, key, profile.model, texts)
             vectors = tuple(checked_vector(vector) for vector in result.vectors)
             if len(vectors) != len(texts) or len({len(vector) for vector in vectors}) != 1:
                 raise ValueError("Invalid vectors.")
+        except AiAllowanceExceeded:
+            raise
         except Exception as exc:
             await self._usage.add(
                 LlmUsage(

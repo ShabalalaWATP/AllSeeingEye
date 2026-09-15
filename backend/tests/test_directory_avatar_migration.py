@@ -1,4 +1,4 @@
-"""Migration 0055 adds field visibility and avatars without widening privacy on downgrade."""
+"""Migration 0053 adds field visibility and avatars without widening privacy on downgrade."""
 
 from __future__ import annotations
 
@@ -28,8 +28,8 @@ def _load(name: str) -> ModuleType:
 
 def test_directory_avatar_migration_round_trip_and_guards() -> None:
     profiles_migration = _load("0046")
-    module = _load("0055")
-    assert module.revision == "0055" and module.down_revision == "0054"
+    module = _load("0053")
+    assert module.revision == "0053" and module.down_revision == "0052"
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:

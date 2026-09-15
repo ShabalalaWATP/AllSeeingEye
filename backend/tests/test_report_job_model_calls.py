@@ -6,14 +6,16 @@ from uuid import uuid4
 
 import pytest
 
+from ai_usage_helpers import FakeAccounting
 from ase.application.ports.llm import LlmTokenBudgetExhausted
 from ase.application.ports.web_search import WebSearchError, WebSearchRequest, WebSearchResult
-from ase.application.report_jobs.budget import ReportCallBudget, output_used
+from ase.application.report_jobs.budget import CallNotDispatched, ReportCallBudget, output_used
 from ase.application.report_jobs.model_calls import (
     AllowanceLlmGateway,
     BudgetedLlmGateway,
     BudgetedWebSearchGateway,
 )
+from ase.domain.ai_usage import AiAllowanceExceeded, AiAttribution, AiCallOutcome
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmImage, LlmMessage, LlmProvider, LlmResult, ReasoningEffort
 from report_job_budget_helpers import REQUEST, Gateway, Ledger
@@ -21,21 +23,6 @@ from test_report_job_budget import call
 
 WEB_REQUEST = WebSearchRequest("private-query-marker", 16000, ReasoningEffort.MAX)
 WEB_RESPONSE = WebSearchResult("private-output-marker", (), (), "luna", 1, 4, 100, 200)
-_DEFAULT_BATCH = object()
-
-
-class Allowance:
-    def __init__(self, batch=_DEFAULT_BATCH):
-        self.batch = batch
-        self.reserved = None
-        self.settled = []
-
-    async def reserve(self, *args, **kwargs):
-        self.reserved = (args, kwargs)
-        return self.batch
-
-    async def settle(self, batch, **kwargs):
-        self.settled.append((batch, kwargs))
 
 
 class RawGateway:
@@ -182,36 +169,61 @@ async def test_optional_profile_is_not_fabricated():
 
 
 async def test_allowance_gateway_reserves_input_and_output_then_settles_actual_usage():
-    accounting = Allowance()
+    accounting = FakeAccounting()
+    attribution = AiAttribution.actor(uuid4(), uuid4())
     wrapped = AllowanceLlmGateway(
-        RawGateway(),
-        accounting,
-        owner_id=uuid4(),
-        team_id=uuid4(),
-        profile_id=uuid4(),
+        RawGateway(), accounting, attribution=attribution, profile_id=uuid4()
     )
     result = await wrapped.complete("https://model.example", "secret", "luna", REQUEST)
     assert result.completion_tokens == 34
-    assert accounting.reserved is not None
-    assert accounting.reserved[1]["requested_tokens"] > REQUEST.max_output_tokens
-    assert accounting.settled[0][1] == {
-        "ok": True,
-        "prompt_tokens": 12,
-        "completion_tokens": 34,
-        "error": None,
-    }
+    assert accounting.reserved[0][0] == attribution
+    assert accounting.reserved[0][1]["requested_tokens"] > REQUEST.max_output_tokens
+    assert len(accounting.dispatched) == 1
+    assert accounting.finished == [
+        (
+            AiCallOutcome.COMPLETED,
+            {"prompt_tokens": 12, "completion_tokens": 34, "error": None},
+        )
+    ]
 
 
 async def test_allowance_gateway_settles_failed_provider_call_without_leaking_error_text():
-    accounting = Allowance()
+    accounting = FakeAccounting()
     wrapped = AllowanceLlmGateway(
         RawGateway(error=RuntimeError("private-provider-response")),
         accounting,
-        owner_id=uuid4(),
-        team_id=None,
+        attribution=AiAttribution.actor(uuid4()),
         profile_id=uuid4(),
     )
     with pytest.raises(RuntimeError, match="private-provider-response"):
         await wrapped.complete("https://model.example", "secret", "luna", REQUEST)
-    assert accounting.settled[0][1]["ok"] is False
-    assert accounting.settled[0][1]["error"] == "provider_error"
+    assert accounting.finished[0][0] is AiCallOutcome.FAILED
+    assert accounting.finished[0][1]["error"] == "provider_error"
+
+
+async def test_unrecorded_dispatch_is_never_sent_and_is_released():
+    accounting = FakeAccounting()
+    accounting.dispatch_error = OSError("storage unavailable")
+    raw = RawGateway()
+    raw.calls = 0
+    wrapped = AllowanceLlmGateway(
+        raw, accounting, attribution=AiAttribution.actor(uuid4()), profile_id=None
+    )
+    with pytest.raises(CallNotDispatched):
+        await wrapped.complete("https://model.example", "secret", "luna", REQUEST)
+    assert accounting.finished[0][0] is AiCallOutcome.NOT_DISPATCHED
+
+
+async def test_allowance_refusal_inside_job_budget_is_recorded_as_not_dispatched():
+    ledger = Ledger()
+    accounting = FakeAccounting(reserve_error=AiAllowanceExceeded())
+    inner = AllowanceLlmGateway(
+        Gateway(ledger), accounting, attribution=AiAttribution.actor(uuid4()), profile_id=None
+    )
+    with pytest.raises(AiAllowanceExceeded):
+        await BudgetedLlmGateway(inner, ledger.budget()).complete(
+            "https://model.example", "test", "luna", REQUEST
+        )
+    [entry] = ledger.payload["calls"]
+    assert (entry["status"], entry["error"]) == ("failed", "not_dispatched")
+    assert output_used(ledger.payload) == 0

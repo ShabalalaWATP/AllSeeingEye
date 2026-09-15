@@ -14,6 +14,7 @@ from ase.application.ports.web_search import (
     WebSearchError,
     WebSearchRequest,
     WebSearchResult,
+    WebSearchTimeout,
 )
 
 RESPONSES_URL = "https://api.openai.com/v1/responses"
@@ -118,7 +119,7 @@ class OpenAiWebSearchGateway:
                         raise WebSearchError("The web-search response exceeded its byte limit.")
                     content.extend(chunk)
         except (TimeoutError, httpx.TimeoutException):
-            raise WebSearchError("The web search exceeded its 90-second deadline.") from None
+            raise WebSearchTimeout("The web search exceeded its 90-second deadline.") from None
         except httpx.HTTPError:
             raise WebSearchError("Could not reach the OpenAI web-search endpoint.") from None
         try:

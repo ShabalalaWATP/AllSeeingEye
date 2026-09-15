@@ -21,6 +21,7 @@ from ase.application.report_jobs.budget import JobBudgetExhausted
 from ase.application.report_jobs.fresh_web_allocation import validate_web_discovery_plan
 from ase.application.reports.fresh_web_context import web_query_context
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.errors import EncryptionUnavailable
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage
 from ase.domain.research import ResearchFocus, ResearchQuery
@@ -98,8 +99,7 @@ class FreshWebResearch:
                 gateway = AllowanceWebSearchGateway(
                     gateway,
                     self._ai_usage,
-                    owner_id=job.actor.id,
-                    team_id=job.request.team_id,
+                    attribution=AiAttribution.actor(job.actor.id, job.request.team_id),
                     profile_id=profile.id,
                 )
             async with asyncio.timeout(WEB_ALLOCATED_SECONDS):

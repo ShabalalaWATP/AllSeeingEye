@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import async_sessionmaker
 
     from ase.adapters.store.memory import InMemoryEventStore
+    from ase.application.ai_usage import AiUsageAccounting
     from ase.application.auditing import Auditor
     from ase.application.dto import RateLimits
     from ase.application.ports.archive import Archiver
@@ -99,6 +100,7 @@ class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
         llm: LlmGateway
         embedding_gateway: EmbeddingGateway
         embedding_lock: asyncio.Lock
+        ai_usage_accounting: AiUsageAccounting
         source_profiles: Mapping[str, SourceProfile]
         archiver: Archiver
         notifier: AlertNotifier
@@ -151,6 +153,7 @@ class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
             lock=self.embedding_lock,
             uow=r.uow,
             access=self.access_policy(session),
+            ai_usage=self.ai_usage_accounting,
         )
 
     def research_library(self, session: AsyncSession) -> ResearchLibrary:
@@ -216,6 +219,7 @@ class ReportWiring(ReportGenerationWiring, ReportJobWiring, WebResearchWiring):
             self.clock,
             self.limiter,
             r.uow,
+            self.ai_usage_accounting,
         )
 
     def export_map_image(self, session: AsyncSession) -> ExportMapImage:
