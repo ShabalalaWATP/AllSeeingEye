@@ -37,6 +37,10 @@ class WebSearchError(Exception):
     """Safe, fixed operator-facing message; never an upstream response body."""
 
 
+class WebSearchTimeout(WebSearchError):
+    """The search was sent but did not finish in time; its cost is unknown."""
+
+
 class WebSearchGateway(Protocol):
     async def search(self, api_key: str, model: str, request: WebSearchRequest) -> WebSearchResult:
         """One Responses request, at most three tool calls; cancellation closes transport."""

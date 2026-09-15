@@ -6,12 +6,16 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.application.ai_usage import AiUsageAccounting
+from ase.application.ai_usage_gateway import AllowanceLlmGateway
+from ase.application.ai_usage_views import AiUsageViews
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.service import MapAssistant
 from ase.application.model_routing import ModelRouting
+from ase.domain.ai_usage import AiAttribution
 from ase.domain.llm import LlmUsage
 
 if TYPE_CHECKING:
@@ -58,6 +62,21 @@ class AssistantWiring:
             lambda session: self.repositories(session).ai_usage,
             self.clock,
         )
+
+    def system_llm_gateway(self) -> "LlmGateway":
+        """Shared unattended work (feed translation, conflict screening) uses the system budget."""
+        return AllowanceLlmGateway(
+            self.llm,
+            self.ai_usage_accounting,
+            attribution=AiAttribution.system_work(),
+            profile_id=None,
+            purpose_prefix="system",
+            strict=False,
+        )
+
+    def ai_usage_views(self, session: AsyncSession) -> AiUsageViews:
+        repos = self.repositories(session)
+        return AiUsageViews(repos.ai_usage, SqlTeamRepository(session), repos.users, self.clock)
 
     def map_assistant(self, session: AsyncSession) -> MapAssistant:
         repos = self.repositories(session)

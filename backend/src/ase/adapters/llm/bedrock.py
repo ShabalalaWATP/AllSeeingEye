@@ -13,7 +13,7 @@ from urllib.parse import quote
 import httpx
 
 from ase.adapters.llm.bedrock_schema import project_schema
-from ase.application.ports.llm import LlmGatewayError
+from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
 from ase.domain.bedrock import normalise_bedrock_base_url
 from ase.domain.llm import MAX_API_KEY_LENGTH, LlmRequest, LlmResult
 
@@ -229,10 +229,10 @@ class BedrockConverseGateway:
                         raise LlmGatewayError("Bedrock exceeded the allowed response size.")
                     content.extend(chunk)
         except (TimeoutError, httpx.TimeoutException):
-            raise LlmGatewayError("Bedrock timed out.") from None
+            raise LlmGatewayTimeout("Bedrock timed out.") from None
         except httpx.HTTPError:
             raise LlmGatewayError("Could not reach Bedrock.") from None
         result = parse_response(_decode(content), model, (time.perf_counter() - started) * 1000)
         if time.perf_counter() - started > self._timeout:
-            raise LlmGatewayError("Bedrock timed out.")
+            raise LlmGatewayTimeout("Bedrock timed out.")
         return result

@@ -2,25 +2,29 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 
-from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.api.deps import AdminUser, ContainerDep, ContextDep, SessionDep
 from ase.api.schemas_ai_usage import (
     AiUsagePolicyIn,
     AiUsagePolicyOut,
+    AiUsagePreviewOut,
     AiUsageReservationOut,
     AiUsageReservationsOut,
-    AiUsageSummaryOut,
-    AiUsageSummaryPageOut,
 )
-from ase.application.ai_usage import AiUsagePolicyAdmin
+from ase.api.schemas_ai_usage_overrides import (
+    AiPolicyOverrideIn,
+    AiPolicyOverrideOut,
+    AiPolicyOverridesOut,
+)
+from ase.application.ai_usage_admin import AiUsagePolicyAdmin
 from ase.application.auditing import Auditor
+from ase.domain.ai_usage import AiUsagePolicy
+from ase.domain.ai_usage_overrides import AiPolicyOverride
 from ase.domain.audit import AuditAction
-from ase.domain.errors import NotFound
 
 router = APIRouter(prefix="/admin/ai-usage", tags=["admin"])
 
@@ -29,8 +33,43 @@ def _service(session: SessionDep, container: ContainerDep) -> AiUsagePolicyAdmin
     return AiUsagePolicyAdmin(container.repositories(session).ai_usage, container.clock)
 
 
-def _audit(session: SessionDep, container: ContainerDep) -> Auditor:
-    return Auditor(container.repositories(session).audit, container.clock)
+async def _audit(
+    session: SessionDep,
+    container: ContainerDep,
+    action: AuditAction,
+    *,
+    actor: UUID,
+    subject: str,
+    ip: str | None,
+    details: dict[str, Any] | None = None,
+) -> None:
+    auditor = Auditor(container.repositories(session).audit, container.clock)
+    await auditor.record(action, actor=actor, subject=subject, ip=ip, details=details)
+    await container.repositories(session).uow.commit()
+
+
+def _policy_details(policy: AiUsagePolicy) -> dict[str, Any]:
+    return {
+        "scope": policy.scope.value,
+        "target_id": str(policy.target_id) if policy.target_id else None,
+        "period": policy.period.value,
+        "request_limit": policy.request_limit,
+        "token_limit": policy.token_limit,
+        "enabled": policy.enabled,
+        "revision": policy.revision,
+    }
+
+
+def _override_details(override: AiPolicyOverride) -> dict[str, Any]:
+    return {
+        "policy_id": str(override.policy_id),
+        "requests": override.requests.state.value,
+        "request_limit": override.requests.value,
+        "tokens": override.tokens.state.value,
+        "token_limit": override.tokens.value,
+        "effective_from": override.effective_from.isoformat(),
+        "expires_at": override.expires_at.isoformat(),
+    }
 
 
 @router.get("/policies")
@@ -50,21 +89,15 @@ async def create_policy(
     context: ContextDep,
 ) -> AiUsagePolicyOut:
     policy = await _service(session, container).create(admin, body.to_input())
-    await _audit(session, container).record(
+    await _audit(
+        session,
+        container,
         AuditAction.AI_USAGE_POLICY_CREATED,
         actor=admin.id,
         subject=str(policy.id),
         ip=context.ip,
-        details={
-            "scope": policy.scope.value,
-            "target_id": str(policy.target_id) if policy.target_id else None,
-            "period": policy.period.value,
-            "request_limit": policy.request_limit,
-            "token_limit": policy.token_limit,
-            "enabled": policy.enabled,
-        },
+        details=_policy_details(policy),
     )
-    await container.repositories(session).uow.commit()
     return AiUsagePolicyOut.from_policy(policy)
 
 
@@ -78,22 +111,15 @@ async def update_policy(
     context: ContextDep,
 ) -> AiUsagePolicyOut:
     policy = await _service(session, container).update(admin, policy_id, body.to_input())
-    await _audit(session, container).record(
+    await _audit(
+        session,
+        container,
         AuditAction.AI_USAGE_POLICY_UPDATED,
         actor=admin.id,
         subject=str(policy.id),
         ip=context.ip,
-        details={
-            "scope": policy.scope.value,
-            "target_id": str(policy.target_id) if policy.target_id else None,
-            "period": policy.period.value,
-            "request_limit": policy.request_limit,
-            "token_limit": policy.token_limit,
-            "enabled": policy.enabled,
-            "revision": policy.revision,
-        },
+        details=_policy_details(policy),
     )
-    await container.repositories(session).uow.commit()
     return AiUsagePolicyOut.from_policy(policy)
 
 
@@ -106,14 +132,66 @@ async def disable_policy(
     context: ContextDep,
 ) -> Response:
     await _service(session, container).disable(admin, policy_id)
-    await _audit(session, container).record(
+    await _audit(
+        session,
+        container,
         AuditAction.AI_USAGE_POLICY_DISABLED,
         actor=admin.id,
         subject=str(policy_id),
         ip=context.ip,
     )
-    await container.repositories(session).uow.commit()
     return Response(status_code=204)
+
+
+@router.get("/policies/{policy_id}/overrides")
+async def list_overrides(
+    policy_id: UUID, admin: AdminUser, session: SessionDep, container: ContainerDep
+) -> AiPolicyOverridesOut:
+    items = await _service(session, container).list_overrides(admin, policy_id)
+    return AiPolicyOverridesOut(items=[AiPolicyOverrideOut.from_override(item) for item in items])
+
+
+@router.post("/policies/{policy_id}/overrides", status_code=201)
+async def create_override(
+    policy_id: UUID,
+    body: AiPolicyOverrideIn,
+    admin: AdminUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> AiPolicyOverrideOut:
+    override = await _service(session, container).create_override(admin, policy_id, body.to_input())
+    await _audit(
+        session,
+        container,
+        AuditAction.AI_USAGE_OVERRIDE_CREATED,
+        actor=admin.id,
+        subject=str(override.id),
+        ip=context.ip,
+        details=_override_details(override),
+    )
+    return AiPolicyOverrideOut.from_override(override)
+
+
+@router.delete("/overrides/{override_id}")
+async def revoke_override(
+    override_id: UUID,
+    admin: AdminUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> AiPolicyOverrideOut:
+    override = await _service(session, container).revoke_override(admin, override_id)
+    await _audit(
+        session,
+        container,
+        AuditAction.AI_USAGE_OVERRIDE_REVOKED,
+        actor=admin.id,
+        subject=str(override.id),
+        ip=context.ip,
+        details={"policy_id": str(override.policy_id)},
+    )
+    return AiPolicyOverrideOut.from_override(override)
 
 
 @router.get("/reservations", response_model=AiUsageReservationsOut)
@@ -130,23 +208,17 @@ async def list_reservations(
     )
 
 
-@router.get("/preview", response_model=AiUsageSummaryPageOut)
+@router.get("/preview", response_model=AiUsagePreviewOut)
 async def preview_effective_usage(
     admin: AdminUser,
     session: SessionDep,
     container: ContainerDep,
-    user_id: UUID,
+    user_id: UUID | None = None,
     team_id: UUID | None = None,
-) -> AiUsageSummaryPageOut:
-    """Show the policies that would apply to a user for an optional team destination."""
-    _ = admin
-    target = await container.repositories(session).users.get_by_id(user_id)
-    if target is None:
-        raise NotFound()
-    if team_id is not None:
-        teams = SqlTeamRepository(session)
-        team = await teams.get(team_id)
-        if team is None or await teams.get_membership(team_id, user_id) is None:
-            raise NotFound()
-    summaries = await container.ai_usage_accounting.summaries(user_id, team_id=team_id)
-    return AiUsageSummaryPageOut(items=[AiUsageSummaryOut.from_summary(item) for item in summaries])
+    system: bool = False,
+) -> AiUsagePreviewOut:
+    """Show the policies a call would be charged to, for an account or system work."""
+    preview = await container.ai_usage_views(session).preview(
+        admin, user_id=user_id, team_id=team_id, system=system
+    )
+    return AiUsagePreviewOut.from_preview(preview)

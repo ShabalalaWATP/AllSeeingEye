@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
-from ase.api.schemas_ai_usage import AiUsageSummaryOut, AiUsageSummaryPageOut
+from ase.api.schemas_ai_usage import TeamAiUsageOut
 from ase.api.team_schemas import (
     MemberIn,
     MemberOut,
@@ -52,19 +52,19 @@ async def get_team(
     )
 
 
-@router.get("/{team_id}/ai-usage", response_model=AiUsageSummaryPageOut)
+@router.get("/{team_id}/ai-usage")
 async def team_ai_usage(
     team_id: UUID,
     user: CurrentUser,
     session: SessionDep,
     container: ContainerDep,
-) -> AiUsageSummaryPageOut:
-    # Resolving the team first prevents a non-member from learning whether a
-    # team policy exists. Administrators can inspect any team, including an
-    # archived workspace, while members retain read-only visibility.
-    await container.teams(session).get(user, team_id)
-    summaries = await container.ai_usage_accounting.summaries(user.id, team_id=team_id)
-    return AiUsageSummaryPageOut(items=[AiUsageSummaryOut.from_summary(item) for item in summaries])
+    response: Response,
+) -> TeamAiUsageOut:
+    # Members see their own attributed usage, Managers see aggregates and member
+    # totals, administrators see any team. Non-members receive 404.
+    response.headers["Cache-Control"] = "no-store"
+    usage = await container.ai_usage_views(session).team(user, team_id)
+    return TeamAiUsageOut.from_usage(usage)
 
 
 @router.patch("/{team_id}")

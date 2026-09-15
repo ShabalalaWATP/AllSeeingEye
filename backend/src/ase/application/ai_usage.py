@@ -1,8 +1,13 @@
-"""Admission and administration services for AI usage policies."""
+"""Admission accounting for AI usage: reserve, dispatch, finish and reconcile.
+
+Each step opens its own short transaction; none is held across a provider request.
+"""
 
 from __future__ import annotations
 
 import asyncio
+import logging
+import time
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
@@ -10,20 +15,21 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Protocol
 from uuid import UUID, uuid4
 
-from ase.application.policy import require_admin
 from ase.application.ports.ai_usage import AiUsageRepository
 from ase.domain.ai_usage import (
-    AiAllowancePeriod,
-    AiPolicyScope,
-    AiUsagePolicy,
+    STALE_RESERVATION_AGE,
+    AiAttribution,
+    AiCallOutcome,
     AiUsageReservation,
-    AiUsageSummary,
 )
-from ase.domain.errors import Conflict, NotFound
-from ase.domain.users import User
 
 if TYPE_CHECKING:
     from ase.application.ports import Clock
+
+log = logging.getLogger(__name__)
+SETTLEMENT_SECONDS = 3.0
+RECONCILE_INTERVAL_SECONDS = 60.0
+RECONCILE_BATCH = 20
 
 
 class AiUsageTransaction(Protocol):
@@ -34,12 +40,21 @@ class AiUsageTransaction(Protocol):
     async def rollback(self) -> None: ...
 
 
-
 @dataclass(frozen=True, slots=True)
 class AiReservationBatch:
-    """All policy reservations for one provider request."""
+    """Every policy reservation for one provider call, plus its observed attribution."""
 
+    call_id: UUID
+    attribution: AiAttribution
+    reserved_at: datetime
+    requested_tokens: int
     reservations: tuple[AiUsageReservation, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class AiReconciliation:
+    released: int = 0
+    unknown: int = 0
 
 
 class AiUsageAccounting:
@@ -50,188 +65,168 @@ class AiUsageAccounting:
         session_factory: Callable[[], AbstractAsyncContextManager[AiUsageTransaction]],
         repository_factory: Callable[[Any], AiUsageRepository],
         clock: Clock,
+        *,
+        monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self._session_factory = session_factory
         self._repository_factory = repository_factory
         self._clock = clock
+        self._monotonic = monotonic
+        self._next_reconcile = 0.0
 
     async def reserve(
         self,
-        user_id: UUID,
+        attribution: AiAttribution,
         *,
-        team_id: UUID | None = None,
         profile_id: UUID | None,
         model: str,
         purpose: str,
         requested_tokens: int,
-    ) -> AiReservationBatch | None:
+    ) -> AiReservationBatch:
+        """Admit one call under every applicable policy, or record it for observation only."""
+        await self._maybe_reconcile()
+        now = self._clock.now()
+        call_id = uuid4()
         async with self._session_factory() as session:
             repository = self._repository_factory(session)
-            policies = await repository.effective_policies(user_id, team_id=team_id)
-            if not policies:
-                # Existing installations without an administrator policy retain their
-                # historical behaviour. Adding a global policy enables enforcement.
-                return None
-            reservations: list[AiUsageReservation] = []
             try:
-                for policy in policies:
-                    reservations.append(
-                        await repository.reserve(
-                            policy.id,
-                            user_id=user_id,
-                            profile_id=profile_id,
-                            model=model,
-                            purpose=purpose,
-                            requested_tokens=requested_tokens,
-                            now=self._clock.now(),
-                        )
+                if (
+                    attribution.team_id is not None
+                    and attribution.user_id is not None
+                    and not await repository.can_attribute_to_team(
+                        attribution.user_id, attribution.team_id
                     )
+                ):
+                    # A caller cannot charge, or read, a team it cannot act for.
+                    attribution = AiAttribution.actor(attribution.user_id)
+                policies = await repository.effective_policies(attribution)
+                reservations = [
+                    await repository.reserve(
+                        policy.id,
+                        call_id=call_id,
+                        attribution=attribution,
+                        profile_id=profile_id,
+                        model=model,
+                        purpose=purpose,
+                        requested_tokens=requested_tokens,
+                        now=now,
+                    )
+                    for policy in sorted(policies, key=lambda item: item.id)
+                ]
                 await session.commit()
             except BaseException:
                 await session.rollback()
                 raise
-            return AiReservationBatch(tuple(reservations))
+        return AiReservationBatch(call_id, attribution, now, requested_tokens, tuple(reservations))
 
-    async def settle(
-        self,
-        batch: AiReservationBatch | None,
-        *,
-        ok: bool,
-        prompt_tokens: int | None,
-        completion_tokens: int | None,
-        error: str | None,
-    ) -> None:
-        if batch is None:
+    async def mark_dispatched(self, batch: AiReservationBatch) -> None:
+        if not batch.reservations:
             return
         async with self._session_factory() as session:
-            repository = self._repository_factory(session)
             try:
-                for reservation in batch.reservations:
-                    await repository.settle(
-                        reservation.id,
-                        ok=ok,
-                        prompt_tokens=prompt_tokens,
-                        completion_tokens=completion_tokens,
-                        error=error,
-                        now=self._clock.now(),
-                    )
+                await self._repository_factory(session).mark_dispatched(
+                    batch.call_id, self._clock.now()
+                )
                 await session.commit()
             except BaseException:
                 await session.rollback()
                 raise
 
-    async def summaries(
-        self, user_id: UUID, *, team_id: UUID | None = None
-    ) -> list[AiUsageSummary]:
+    async def finish(
+        self,
+        batch: AiReservationBatch,
+        outcome: AiCallOutcome,
+        *,
+        prompt_tokens: int | None = None,
+        completion_tokens: int | None = None,
+        error: str | None = None,
+    ) -> None:
+        async with self._session_factory() as session:
+            try:
+                await self._repository_factory(session).finish(
+                    batch.call_id,
+                    outcome=outcome,
+                    attribution=batch.attribution,
+                    reserved_at=batch.reserved_at,
+                    requested_tokens=batch.requested_tokens,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    error=error,
+                    now=self._clock.now(),
+                )
+                await session.commit()
+            except BaseException:
+                await session.rollback()
+                raise
+
+    async def reconcile(self, limit: int = RECONCILE_BATCH) -> AiReconciliation:
+        """Release stale undispatched reservations; hold dispatched ones as unknown."""
+        now = self._clock.now()
+        released = unknown = 0
         async with self._session_factory() as session:
             repository = self._repository_factory(session)
-            return await repository.summary(user_id, now=self._clock.now(), team_id=team_id)
+            try:
+                for stale in await repository.stale_reservations(
+                    now - STALE_RESERVATION_AGE, limit
+                ):
+                    outcome = (
+                        AiCallOutcome.NOT_DISPATCHED
+                        if stale.dispatched_at is None
+                        else AiCallOutcome.UNKNOWN
+                    )
+                    await repository.finish(
+                        stale.call_id,
+                        outcome=outcome,
+                        attribution=stale.attribution,
+                        reserved_at=stale.created_at,
+                        requested_tokens=stale.reserved_tokens,
+                        prompt_tokens=None,
+                        completion_tokens=None,
+                        error="reconciled_stale_reservation",
+                        now=now,
+                    )
+                    if outcome is AiCallOutcome.UNKNOWN:
+                        unknown += 1
+                    else:
+                        released += 1
+                await session.commit()
+            except BaseException:
+                await session.rollback()
+                raise
+        return AiReconciliation(released, unknown)
+
+    async def _maybe_reconcile(self) -> None:
+        """Opportunistic, throttled and bounded; a failure never blocks admission."""
+        current = self._monotonic()
+        if current < self._next_reconcile:
+            return
+        self._next_reconcile = current + RECONCILE_INTERVAL_SECONDS
+        try:
+            async with asyncio.timeout(SETTLEMENT_SECONDS):
+                await self.reconcile()
+        except Exception:
+            log.warning("ai_usage.reconcile_failed", exc_info=True)
 
 
-@dataclass(frozen=True, slots=True)
-class AiPolicyInput:
-    scope: AiPolicyScope
-    target_id: UUID | None
-    period: AiAllowancePeriod
-    request_limit: int | None
-    token_limit: int | None
-    enabled: bool
-
-
-def _policy_from_input(data: AiPolicyInput, *, now: datetime, policy_id: UUID) -> AiUsagePolicy:
-    return AiUsagePolicy(
-        policy_id,
-        data.scope,
-        data.target_id,
-        data.period,
-        data.request_limit,
-        data.token_limit,
-        data.enabled,
-        1,
-        now,
-        now,
-    )
-
-
-class AiUsagePolicyAdmin:
-    """Admin-only CRUD; policy edits become effective on the next admission decision."""
-
-    def __init__(self, repository: AiUsageRepository, clock: Clock) -> None:
-        self._repository = repository
-        self._clock = clock
-
-    async def list(self, actor: User) -> list[AiUsagePolicy]:
-        require_admin(actor)
-        return await self._repository.list_policies()
-
-    async def create(self, actor: User, data: AiPolicyInput) -> AiUsagePolicy:
-        require_admin(actor)
-        existing = await self._repository.find_policy(data.scope, data.target_id)
-        if existing is not None:
-            raise Conflict("An AI policy already exists for this target.")
-        policy = _policy_from_input(data, now=self._clock.now(), policy_id=uuid4())
-        await self._repository.add_policy(policy)
-        return policy
-
-    async def update(self, actor: User, policy_id: UUID, data: AiPolicyInput) -> AiUsagePolicy:
-        require_admin(actor)
-        current = await self._repository.get_policy(policy_id)
-        if current is None:
-            raise NotFound()
-        existing = await self._repository.find_policy(data.scope, data.target_id)
-        if existing is not None and existing.id != current.id:
-            raise Conflict("An AI policy already exists for this target.")
-        updated = AiUsagePolicy(
-            current.id,
-            data.scope,
-            data.target_id,
-            data.period,
-            data.request_limit,
-            data.token_limit,
-            data.enabled,
-            current.revision + 1,
-            current.created_at,
-            self._clock.now(),
-        )
-        await self._repository.save_policy(updated)
-        return updated
-
-    async def disable(self, actor: User, policy_id: UUID) -> None:
-        require_admin(actor)
-        current = await self._repository.get_policy(policy_id)
-        if current is None:
-            raise NotFound()
-        await self.update(
-            actor,
-            policy_id,
-            AiPolicyInput(
-                current.scope,
-                current.target_id,
-                current.period,
-                current.request_limit,
-                current.token_limit,
-                False,
-            ),
-        )
-
-
-async def settle_with_deadline(
+async def finish_with_deadline(
     accounting: AiUsageAccounting,
-    batch: AiReservationBatch | None,
+    batch: AiReservationBatch,
+    outcome: AiCallOutcome,
     *,
-    ok: bool,
-    prompt_tokens: int | None,
-    completion_tokens: int | None,
-    error: str | None,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
+    error: str | None = None,
 ) -> bool:
-    """Keep provider cleanup bounded; never retry an uncertain settlement."""
-    if batch is None:
-        return True
+    """Keep provider cleanup bounded; never retry an uncertain settlement.
+
+    An unconfirmed write leaves the reservation ``reserved``; reconciliation later
+    releases it or holds it as unknown, depending on whether dispatch was recorded.
+    """
     try:
-        async with asyncio.timeout(3):
-            await accounting.settle(
+        async with asyncio.timeout(SETTLEMENT_SECONDS):
+            await accounting.finish(
                 batch,
-                ok=ok,
+                outcome,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 error=error,

@@ -31,6 +31,7 @@ class AssistantReportContext:
     version: int
     title: str
     data_cutoff: datetime | None
+    team_id: UUID | None = None
 
 
 @dataclass(frozen=True, slots=True)
