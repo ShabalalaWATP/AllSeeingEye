@@ -5,12 +5,27 @@ import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import { asApiError, describeError } from '@/lib/api/errors';
 import {
+  DIRECTORY_FIELDS,
   getDirectoryProfile,
   updateDirectoryProfile,
+  type DirectoryField,
   type DirectoryProfile as DirectoryProfileData,
 } from '@/lib/api/directoryProfile';
+import { useAuthStore } from '@/stores/auth';
+
+import { DirectoryAvatarEditor } from './DirectoryAvatarEditor';
 
 const timezones = () => ['UTC', ...Intl.supportedValuesOf('timeZone')];
+
+const fieldLabels: Record<DirectoryField, string> = {
+  job_title: 'Job title',
+  organisation: 'Organisation',
+  biography: 'Biography',
+  country: 'Country',
+  languages: 'Languages',
+  expertise: 'Expertise',
+  timezone: 'Timezone',
+};
 
 function splitList(value: string): string[] {
   return [
@@ -30,6 +45,7 @@ export function DirectoryProfile() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const displayName = useAuthStore((state) => state.user?.display_name ?? 'You');
 
   async function load() {
     setLoading(true);
@@ -70,6 +86,26 @@ export function DirectoryProfile() {
     setError(null);
   };
   const dirty = JSON.stringify(currentDraft) !== JSON.stringify(currentProfile);
+  const toggleField = (field: DirectoryField, shown: boolean) => {
+    const selected = new Set(currentDraft.visible_fields);
+    if (shown) selected.add(field);
+    else selected.delete(field);
+    edit(
+      'visible_fields',
+      DIRECTORY_FIELDS.filter((item) => selected.has(item)),
+    );
+  };
+  // Avatar changes save immediately and bump the revision; keep unsaved text edits.
+  const avatarChanged = (updated: DirectoryProfileData) => {
+    const sync = { avatar_url: updated.avatar_url, revision: updated.revision };
+    setProfile((current) =>
+      current ? { ...current, ...sync, updated_at: updated.updated_at } : current,
+    );
+    setDraft((current) =>
+      current ? { ...current, ...sync, updated_at: updated.updated_at } : current,
+    );
+    setSaved(false);
+  };
 
   async function submit() {
     if (busy || !dirty) return;
@@ -91,7 +127,7 @@ export function DirectoryProfile() {
         expertise: splitList(currentDraft.expertise.join(', ')),
         timezone: currentDraft.timezone ?? null,
         is_discoverable: currentDraft.is_discoverable,
-        show_timezone: currentDraft.show_timezone,
+        visible_fields: currentDraft.visible_fields,
         expected_revision: currentProfile.revision,
       });
       setProfile(updated);
@@ -121,6 +157,12 @@ export function DirectoryProfile() {
           email, MFA state and private activity never appear in directory search.
         </p>
       </header>
+      <DirectoryAvatarEditor
+        profile={currentProfile}
+        name={displayName}
+        disabled={busy}
+        onChange={avatarChanged}
+      />
       <fieldset disabled={busy} className="flex flex-col gap-5">
         <TextField
           label="Username"
@@ -191,23 +233,26 @@ export function DirectoryProfile() {
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-3 text-sm">
-          <input
-            id="directory-show-timezone"
-            type="checkbox"
-            className="mt-1 size-4 accent-cyan"
-            checked={currentDraft.show_timezone}
-            onChange={(event) => edit('show_timezone', event.target.checked)}
-          />
-          <div>
-            <label htmlFor="directory-show-timezone" className="font-medium">
-              Show my timezone
-            </label>
-            <p className="mt-1 text-xs text-muted">
-              Useful for handovers. It stays private until you enable this.
-            </p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-medium">Show in directory results</legend>
+          <p className="text-xs text-muted">
+            Choose which filled-in fields other people see. Timezone stays private unless you tick
+            it. Teammates always see your display name and avatar.
+          </p>
+          <div className="mt-1 grid gap-2 sm:grid-cols-2">
+            {DIRECTORY_FIELDS.map((field) => (
+              <label key={field} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-cyan"
+                  checked={currentDraft.visible_fields.includes(field)}
+                  onChange={(event) => toggleField(field, event.target.checked)}
+                />
+                {fieldLabels[field]}
+              </label>
+            ))}
           </div>
-        </div>
+        </fieldset>
       </fieldset>
       {error ? <Alert tone="error">{error}</Alert> : null}
       {saved ? <Alert tone="success">Directory profile saved.</Alert> : null}

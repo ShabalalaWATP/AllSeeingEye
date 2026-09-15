@@ -18,6 +18,7 @@ async def test_owner_can_read_and_update_directory_profile(
     assert initial.json()["is_discoverable"] is False
     assert initial.json()["username"] is None
     assert initial.json()["timezone"] is None
+    assert "timezone" not in initial.json()["visible_fields"]
 
     updated = await client.patch(
         "/api/me/directory-profile",
@@ -32,7 +33,7 @@ async def test_owner_can_read_and_update_directory_profile(
             "expertise": ["Conflict", "conflict", "Maritime"],
             "timezone": "Europe/London",
             "is_discoverable": True,
-            "show_timezone": True,
+            "visible_fields": ["organisation", "timezone"],
         },
     )
     assert updated.status_code == 200, updated.text
@@ -42,15 +43,19 @@ async def test_owner_can_read_and_update_directory_profile(
     assert result["languages"] == ["en", "ru"]
     assert result["expertise"] == ["Conflict", "Maritime"]
     assert result["timezone"] == "Europe/London"
+    assert result["visible_fields"] == ["organisation", "timezone"]
+    assert result["avatar_url"] is None
     assert result["revision"] == 2
 
     private = await client.patch(
         "/api/me/directory-profile",
         headers=headers,
-        json={"show_timezone": False, "expected_revision": result["revision"]},
+        json={"visible_fields": ["organisation"], "expected_revision": result["revision"]},
     )
     assert private.status_code == 200
-    assert private.json()["timezone"] is None
+    # Visibility governs other accounts; the owner still sees the saved value.
+    assert private.json()["timezone"] == "Europe/London"
+    assert private.json()["visible_fields"] == ["organisation"]
 
 
 async def test_directory_search_only_returns_active_opted_in_profiles(
@@ -138,6 +143,9 @@ async def test_username_is_unique_and_updates_are_revision_checked(
         {"languages": ["en"] * 9},
         {"expertise": ["x"] * 11},
         {"timezone": "Mars/Base"},
+        {"visible_fields": ["email"]},
+        {"visible_fields": None},
+        {"show_timezone": True},
     ],
 )
 async def test_invalid_directory_profile_changes_are_rejected(

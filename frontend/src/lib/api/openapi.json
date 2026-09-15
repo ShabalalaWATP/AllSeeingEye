@@ -3461,6 +3461,113 @@
         ]
       }
     },
+    "/api/me/directory-profile/avatar": {
+      "put": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Upload Directory Avatar",
+        "operationId": "upload_directory_avatar_api_me_directory_profile_avatar_put",
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "maxLength": 2097152,
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryProfileOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Remove Directory Avatar",
+        "operationId": "remove_directory_avatar_api_me_directory_profile_avatar_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryProfileOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/directory/users/{user_id}/avatar": {
+      "get": {
+        "tags": [
+          "directory"
+        ],
+        "summary": "Get Directory Avatar",
+        "operationId": "get_directory_avatar_api_directory_users__user_id__avatar_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/webp": {},
+              "image/png": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/sessions": {
       "get": {
         "tags": [
@@ -20866,6 +20973,20 @@
         ],
         "title": "DecisionMethod"
       },
+      "DirectoryField": {
+        "type": "string",
+        "enum": [
+          "job_title",
+          "organisation",
+          "biography",
+          "country",
+          "languages",
+          "expertise",
+          "timezone"
+        ],
+        "title": "DirectoryField",
+        "description": "Optional profile fields whose directory visibility the owner controls."
+      },
       "DirectoryPageOut": {
         "properties": {
           "items": {
@@ -21000,9 +21121,23 @@
             "type": "boolean",
             "title": "Is Discoverable"
           },
-          "show_timezone": {
-            "type": "boolean",
-            "title": "Show Timezone"
+          "visible_fields": {
+            "items": {
+              "$ref": "#/components/schemas/DirectoryField"
+            },
+            "type": "array",
+            "title": "Visible Fields"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
           },
           "revision": {
             "type": "integer",
@@ -21033,7 +21168,8 @@
           "expertise",
           "timezone",
           "is_discoverable",
-          "show_timezone",
+          "visible_fields",
+          "avatar_url",
           "revision",
           "updated_at"
         ],
@@ -21159,16 +21295,20 @@
             ],
             "title": "Is Discoverable"
           },
-          "show_timezone": {
+          "visible_fields": {
             "anyOf": [
               {
-                "type": "boolean"
+                "items": {
+                  "$ref": "#/components/schemas/DirectoryField"
+                },
+                "type": "array",
+                "maxItems": 7
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Show Timezone"
+            "title": "Visible Fields"
           },
           "expected_revision": {
             "anyOf": [
@@ -21201,6 +21341,17 @@
           "display_name": {
             "type": "string",
             "title": "Display Name"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
           },
           "job_title": {
             "anyOf": [
@@ -21277,6 +21428,7 @@
           "user_id",
           "username",
           "display_name",
+          "avatar_url",
           "job_title",
           "organisation",
           "biography",
@@ -21285,7 +21437,8 @@
           "expertise",
           "timezone"
         ],
-        "title": "DirectoryUserOut"
+        "title": "DirectoryUserOut",
+        "description": "A search result. Fields the owner has not selected are always null or empty."
       },
       "DoctrineReferenceOut": {
         "properties": {

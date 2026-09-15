@@ -1,45 +1,36 @@
+/** Owner directory profile, avatar and opt-in people search; responses are validated. */
 import { z } from 'zod';
 
-import { apiCall } from './client';
+import { apiBlob, apiCall } from './client';
+import type { components } from './types.gen';
 
-export interface DirectoryProfile {
-  user_id: string;
-  username: string | null;
-  job_title: string | null;
-  organisation: string | null;
-  biography: string | null;
-  country: string | null;
-  languages: string[];
-  expertise: string[];
-  timezone: string | null;
-  is_discoverable: boolean;
-  show_timezone: boolean;
-  revision: number;
-  updated_at: string | null;
-}
+export type DirectoryProfile = components['schemas']['DirectoryProfileOut'];
+export type DirectoryUser = components['schemas']['DirectoryUserOut'];
+export type DirectoryPage = components['schemas']['DirectoryPageOut'];
+export type DirectoryField = components['schemas']['DirectoryField'];
+export type DirectoryProfileChanges = components['schemas']['DirectoryProfileUpdateIn'];
 
-export interface DirectoryUser {
-  user_id: string;
-  username: string;
-  display_name: string;
-  job_title: string | null;
-  organisation: string | null;
-  biography: string | null;
-  country: string | null;
-  languages: string[];
-  expertise: string[];
-  timezone: string | null;
-}
+export const DIRECTORY_FIELDS = [
+  'job_title',
+  'organisation',
+  'biography',
+  'country',
+  'languages',
+  'expertise',
+  'timezone',
+] as const satisfies readonly DirectoryField[];
 
-export interface DirectoryPage {
-  items: DirectoryUser[];
-  total: number;
-  offset: number;
-  limit: number;
-  next_offset: number | null;
-}
+/** Accepted upload size, mirroring the server limit so obvious mistakes fail early. */
+export const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+export const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-const profileSchema: z.ZodType<DirectoryProfile> = z.object({
+// Only same-origin, versioned avatar routes are accepted from the server.
+const avatarUrlSchema = z
+  .string()
+  .regex(/^\/api\/directory\/users\/[0-9a-f-]{36}\/avatar\?v=[0-9a-f]{16}$/)
+  .nullable();
+
+const profileSchema = z.object({
   user_id: z.uuid(),
   username: z.string().nullable(),
   job_title: z.string().nullable(),
@@ -50,14 +41,17 @@ const profileSchema: z.ZodType<DirectoryProfile> = z.object({
   expertise: z.array(z.string()),
   timezone: z.string().nullable(),
   is_discoverable: z.boolean(),
-  show_timezone: z.boolean(),
+  visible_fields: z.array(z.enum(DIRECTORY_FIELDS)),
+  avatar_url: avatarUrlSchema,
   revision: z.number().int().min(1),
   updated_at: z.string().nullable(),
-});
-const userSchema: z.ZodType<DirectoryUser> = z.object({
+}) satisfies z.ZodType<DirectoryProfile>;
+
+const userSchema = z.object({
   user_id: z.uuid(),
   username: z.string(),
   display_name: z.string(),
+  avatar_url: avatarUrlSchema,
   job_title: z.string().nullable(),
   organisation: z.string().nullable(),
   biography: z.string().nullable(),
@@ -65,22 +59,19 @@ const userSchema: z.ZodType<DirectoryUser> = z.object({
   languages: z.array(z.string()),
   expertise: z.array(z.string()),
   timezone: z.string().nullable(),
-});
-const pageSchema: z.ZodType<DirectoryPage> = z.object({
+}) satisfies z.ZodType<DirectoryUser>;
+
+const pageSchema = z.object({
   items: z.array(userSchema),
   total: z.number().int().nonnegative(),
   offset: z.number().int().nonnegative(),
   limit: z.number().int().positive(),
   next_offset: z.number().int().nonnegative().nullable(),
-});
+}) satisfies z.ZodType<DirectoryPage>;
 
 export function getDirectoryProfile(): Promise<DirectoryProfile> {
   return apiCall('/api/me/directory-profile', { schema: profileSchema });
 }
-
-export type DirectoryProfileChanges = Partial<
-  Omit<DirectoryProfile, 'user_id' | 'revision' | 'updated_at' | 'timezone'>
-> & { timezone?: string | null; expected_revision?: number };
 
 export function updateDirectoryProfile(body: DirectoryProfileChanges): Promise<DirectoryProfile> {
   return apiCall('/api/me/directory-profile', {
@@ -93,4 +84,21 @@ export function updateDirectoryProfile(body: DirectoryProfileChanges): Promise<D
 export function searchDirectory(query: string, limit = 20, offset = 0): Promise<DirectoryPage> {
   const params = new URLSearchParams({ q: query, limit: String(limit), offset: String(offset) });
   return apiCall(`/api/directory/users?${params.toString()}`, { schema: pageSchema });
+}
+
+export function uploadDirectoryAvatar(file: Blob): Promise<DirectoryProfile> {
+  return apiCall('/api/me/directory-profile/avatar', {
+    method: 'PUT',
+    rawBody: file,
+    schema: profileSchema,
+  });
+}
+
+export function removeDirectoryAvatar(): Promise<DirectoryProfile> {
+  return apiCall('/api/me/directory-profile/avatar', { method: 'DELETE', schema: profileSchema });
+}
+
+/** Avatars need the bearer token, so they are fetched as blobs rather than plain image URLs. */
+export function fetchDirectoryAvatar(avatarUrl: string, signal?: AbortSignal): Promise<Blob> {
+  return apiBlob(avatarUrl, signal ? { signal } : {});
 }

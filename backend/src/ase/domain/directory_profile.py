@@ -8,8 +8,9 @@ authenticated operator only when the owner has explicitly enabled discovery.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import StrEnum
 from typing import Final
 from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -39,6 +40,23 @@ MAX_BIOGRAPHY = 500
 MAX_EXPERTISE_LABEL = 40
 MAX_EXPERTISE = 10
 MAX_LANGUAGES = 8
+AVATAR_DIGEST_PATTERN: Final = re.compile(r"^[0-9a-f]{64}$")
+
+
+class DirectoryField(StrEnum):
+    """Optional profile fields whose directory visibility the owner controls."""
+
+    JOB_TITLE = "job_title"
+    ORGANISATION = "organisation"
+    BIOGRAPHY = "biography"
+    COUNTRY = "country"
+    LANGUAGES = "languages"
+    EXPERTISE = "expertise"
+    TIMEZONE = "timezone"
+
+
+# Timezone is private by default; the other self-described fields are shown once filled in.
+DEFAULT_VISIBLE_FIELDS: Final = frozenset(DirectoryField) - {DirectoryField.TIMEZONE}
 
 
 def normalise_username(value: str | None) -> str | None:
@@ -122,7 +140,8 @@ class DirectoryProfile:
     expertise: tuple[str, ...] = ()
     timezone: str | None = None
     is_discoverable: bool = False
-    show_timezone: bool = False
+    visible_fields: frozenset[DirectoryField] = field(default=DEFAULT_VISIBLE_FIELDS)
+    avatar_sha256: str | None = None
     revision: int = 1
     updated_at: datetime | None = None
 
@@ -139,14 +158,24 @@ class DirectoryProfile:
         object.__setattr__(self, "timezone", _timezone(self.timezone))
         if not isinstance(self.is_discoverable, bool):
             raise ValueError("Directory visibility must be a boolean")
-        if not isinstance(self.show_timezone, bool):
-            raise ValueError("Timezone visibility must be a boolean")
+        try:
+            visible = frozenset(DirectoryField(item) for item in self.visible_fields)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Choose supported directory fields") from exc
+        object.__setattr__(self, "visible_fields", visible)
+        if self.avatar_sha256 is not None and not AVATAR_DIGEST_PATTERN.fullmatch(
+            self.avatar_sha256
+        ):
+            raise ValueError("Avatar digest is invalid")
         if self.is_discoverable and self.username is None:
             raise ValueError("Choose a username before enabling directory visibility")
-        if self.show_timezone and self.timezone is None:
-            raise ValueError("Choose a timezone before showing it in the directory")
         if self.revision < 1:
             raise ValueError("Directory profile revision must be positive")
+
+    def shows(self, name: DirectoryField) -> bool:
+        """Whether an optional field may appear in results seen by other accounts."""
+
+        return name in self.visible_fields
 
 
 @dataclass(frozen=True, slots=True)

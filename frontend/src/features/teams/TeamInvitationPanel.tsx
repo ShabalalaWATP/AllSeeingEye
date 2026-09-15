@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { DirectoryAvatar } from '@/components/account/DirectoryAvatar';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField, TextField } from '@/components/ui/Field';
@@ -160,12 +161,19 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
                         key={person.user_id}
                         className="flex flex-wrap items-center justify-between gap-3 p-4"
                       >
-                        <div>
-                          <p className="font-medium">{person.display_name}</p>
-                          <p className="text-xs text-muted">
-                            @{person.username}
-                            {person.organisation ? ` · ${person.organisation}` : ''}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <DirectoryAvatar
+                            avatarUrl={person.avatar_url}
+                            name={person.display_name}
+                            size={36}
+                          />
+                          <div>
+                            <p className="font-medium">{person.display_name}</p>
+                            <p className="text-xs text-muted">
+                              @{person.username}
+                              {person.organisation ? ` · ${person.organisation}` : ''}
+                            </p>
+                          </div>
                         </div>
                         <Button
                           variant="secondary"

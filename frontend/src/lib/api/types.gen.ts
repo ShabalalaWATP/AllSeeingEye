@@ -1090,6 +1090,41 @@ export interface paths {
         patch: operations["update_directory_profile_api_me_directory_profile_patch"];
         trace?: never;
     };
+    "/api/me/directory-profile/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upload Directory Avatar */
+        put: operations["upload_directory_avatar_api_me_directory_profile_avatar_put"];
+        post?: never;
+        /** Remove Directory Avatar */
+        delete: operations["remove_directory_avatar_api_me_directory_profile_avatar_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/directory/users/{user_id}/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Directory Avatar */
+        get: operations["get_directory_avatar_api_directory_users__user_id__avatar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/sessions": {
         parameters: {
             query?: never;
@@ -6485,6 +6520,12 @@ export interface components {
          * @enum {string}
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
+        /**
+         * DirectoryField
+         * @description Optional profile fields whose directory visibility the owner controls.
+         * @enum {string}
+         */
+        DirectoryField: "job_title" | "organisation" | "biography" | "country" | "languages" | "expertise" | "timezone";
         /** DirectoryPageOut */
         DirectoryPageOut: {
             /** Items */
@@ -6523,8 +6564,10 @@ export interface components {
             timezone: string | null;
             /** Is Discoverable */
             is_discoverable: boolean;
-            /** Show Timezone */
-            show_timezone: boolean;
+            /** Visible Fields */
+            visible_fields: components["schemas"]["DirectoryField"][];
+            /** Avatar Url */
+            avatar_url: string | null;
             /** Revision */
             revision: number;
             /** Updated At */
@@ -6550,12 +6593,15 @@ export interface components {
             timezone?: string | null;
             /** Is Discoverable */
             is_discoverable?: boolean | null;
-            /** Show Timezone */
-            show_timezone?: boolean | null;
+            /** Visible Fields */
+            visible_fields?: components["schemas"]["DirectoryField"][] | null;
             /** Expected Revision */
             expected_revision?: number | null;
         };
-        /** DirectoryUserOut */
+        /**
+         * DirectoryUserOut
+         * @description A search result. Fields the owner has not selected are always null or empty.
+         */
         DirectoryUserOut: {
             /**
              * User Id
@@ -6566,6 +6612,8 @@ export interface components {
             username: string;
             /** Display Name */
             display_name: string;
+            /** Avatar Url */
+            avatar_url: string | null;
             /** Job Title */
             job_title: string | null;
             /** Organisation */
@@ -16897,6 +16945,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_directory_avatar_api_me_directory_profile_avatar_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+        };
+    };
+    remove_directory_avatar_api_me_directory_profile_avatar_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+        };
+    };
+    get_directory_avatar_api_directory_users__user_id__avatar_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
+                    "image/png": unknown;
                 };
             };
             /** @description Validation Error */
