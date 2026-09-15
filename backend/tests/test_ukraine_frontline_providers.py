@@ -149,7 +149,26 @@ async def test_deepstate_and_spotted_use_the_same_retry_rule() -> None:
     clock.advance(FAILURE_RETRY)
     http.payloads = {"deepstatemap": DEEPSTATE, "warspotting": losses}
     assert (await providers.spotted()).status is FrontlineStatus.READY
-    assert len(http.requests) == requests + 2
+    assert len(http.requests) == requests + 1
     clock.advance(DEEPSTATE_COOLDOWN - FAILURE_RETRY - timedelta(seconds=1))
     await providers.snapshot()
-    assert len(http.requests) == requests + 2
+    assert len(http.requests) == requests + 1
+
+
+async def test_repeated_loss_ids_are_counted_once() -> None:
+    """The provider repeats entries between calls, so identical ids must collapse."""
+    row = {
+        "id": 7,
+        "type": "Tanks",
+        "model": "T-80BVM",
+        "status": "Destroyed",
+        "lost_by": "Russia",
+        "date": "2026-09-12",
+        "nearest_location": "Lyman",
+        "geo": "49.0,37.8",
+    }
+    http = FakeHttp({"warspotting": {"losses": [row, dict(row), {**row, "id": 8}]}})
+    providers = FrontlineProviders(http, FakeClock(NOW), deepstate=False, ocha=False, spotted=True)  # type: ignore[arg-type]
+    state = await providers.spotted()
+    assert [loss.id for loss in state.losses] == [7, 8]
+    assert len(http.requests) == 1

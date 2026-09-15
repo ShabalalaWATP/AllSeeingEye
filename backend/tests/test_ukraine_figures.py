@@ -338,8 +338,9 @@ async def test_providers_are_disabled_by_default_and_cache_when_enabled() -> Non
     assert first.snapshot.provider == "deepstate" and len(first.snapshot.features) == 2
     assert (await on.snapshot()) is first and len(http.requests) == 1
     spotted = await on.spotted()
-    assert spotted.status is FrontlineStatus.READY and len(spotted.losses) == 2
-    assert len(http.requests) == 3
+    # One documented recent call; the entry without coordinates is not mappable.
+    assert spotted.status is FrontlineStatus.READY and len(spotted.losses) == 1
+    assert len(http.requests) == 2
     clock.advance(timedelta(hours=7))
     http.payloads = {}
     stale = await on.snapshot()

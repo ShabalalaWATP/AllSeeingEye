@@ -187,7 +187,7 @@ def ukraine_assets(container: Container) -> list[SourceAsset]:
             "ukraine:warspotting",
             "WarSpotting geolocated losses",
             "WarSpotting",
-            "Geolocated, visually confirmed Russian equipment losses for recent months.",
+            "Geolocated, visually confirmed Russian equipment losses, latest recorded entries.",
             frontline.SPOTTED_TERMS,
             frontline.WARSPOTTING_URL,
             settings.ukraine_warspotting,

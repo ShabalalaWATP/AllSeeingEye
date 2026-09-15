@@ -34,7 +34,10 @@ OCHA_URL = (
     "https://gis.unocha.org/server/rest/services/Hosted/UKR_Front_Line/FeatureServer/0/query"
     "?where=1%3D1&outFields=date,source&f=geojson"
 )
-WARSPOTTING_URL = "https://ukr.warspotting.net/api/losses/russia/{month}"
+# The documented recent endpoint: dated paths answer with the same latest list, so
+# asking twice only returned duplicates. One call also stays well inside the
+# published limit of ten requests per ten seconds.
+WARSPOTTING_URL = "https://ukr.warspotting.net/api/losses/russia/recent/"
 DEEPSTATE_COOLDOWN = timedelta(hours=6)
 OCHA_COOLDOWN = timedelta(days=7)
 SPOTTED_COOLDOWN = timedelta(hours=6)
@@ -263,11 +266,8 @@ class FrontlineProviders:
         previous = self._spotted_state
         losses: list[SpottedLoss] = []
         try:
-            for month in _recent_months(now.date()):
-                payload = await self._http.get_json(
-                    WARSPOTTING_URL.format(month=month), conditional=False
-                )
-                losses.extend(parse_spotted(payload))
+            payload = await self._http.get_json(WARSPOTTING_URL, conditional=False)
+            losses.extend(parse_spotted(payload))
         except PAYLOAD_ERRORS as exc:
             if previous is not None and previous.losses:
                 return SpottedState(
@@ -283,7 +283,8 @@ class FrontlineProviders:
                 SPOTTED_TERMS,
                 None,
             )
-        losses.sort(key=lambda loss: loss.on, reverse=True)
+        unique = {loss.id: loss for loss in losses}
+        losses = sorted(unique.values(), key=lambda loss: loss.on, reverse=True)
         return SpottedState(
             FrontlineStatus.READY,
             "Provider snapshot",
@@ -303,9 +304,3 @@ def _reason(exc: Exception) -> str:
     if isinstance(exc, FeedFetchError | NotModified):
         return str(exc)
     return "the provider returned a malformed payload."
-
-
-def _recent_months(today: date) -> tuple[str, str]:
-    first = today.replace(day=1)
-    previous = (first - timedelta(days=1)).replace(day=1)
-    return (previous.strftime("%Y-%m"), first.strftime("%Y-%m"))
