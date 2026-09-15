@@ -29,6 +29,7 @@ from ase.adapters.feeds.http_contracts import (
     classify_fetch_error,
 )
 from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
+from ase.application.feeds.poll_scope import active_poll_scope
 
 __all__ = [
     "FeedCredential",
@@ -46,6 +47,10 @@ __all__ = [
 DEFAULT_MAX_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 3
 MAX_VALIDATORS = 256
+_TRANSLATION_PREFIXES = (
+    ipaddress.IPv6Network("64:ff9b::/96"),
+    ipaddress.IPv6Network("64:ff9b:1::/48"),
+)
 
 
 @dataclass(slots=True)
@@ -55,17 +60,28 @@ class _Validators:
 
 
 def is_public_address(host: str) -> bool:
+    """Only globally routable addresses; shared CGNAT space (100.64.0.0/10) is not global."""
     try:
         address = ipaddress.ip_address(host)
     except ValueError:
         return True  # a hostname; resolved and checked separately
-    return not (
-        address.is_private
-        or address.is_loopback
-        or address.is_link_local
-        or address.is_multicast
-        or address.is_reserved
-        or address.is_unspecified
+    if isinstance(address, ipaddress.IPv6Address) and (
+        address.ipv4_mapped is not None
+        or address.sixtofour is not None
+        or address.teredo is not None
+        or any(address in prefix for prefix in _TRANSLATION_PREFIXES)
+    ):
+        return False
+    return bool(
+        address.is_global
+        and not (
+            address.is_private
+            or address.is_loopback
+            or address.is_link_local
+            or address.is_multicast
+            or address.is_reserved
+            or address.is_unspecified
+        )
     )
 
 
@@ -234,15 +250,29 @@ class FeedHttpClient:
             except (httpx.HTTPError, BoundedGzipError) as exc:
                 raise classify_fetch_error(exc) from None
             if conditional:
-                self._validators[url] = _Validators(
-                    etag=response.headers.get("etag"),
-                    last_modified=response.headers.get("last-modified"),
+                self._record_validators(
+                    url,
+                    _Validators(
+                        etag=response.headers.get("etag"),
+                        last_modified=response.headers.get("last-modified"),
+                    ),
                 )
-                self._validators.move_to_end(url)
-                while len(self._validators) > MAX_VALIDATORS:
-                    self._validators.popitem(last=False)
             return body
         raise FeedFetchError("Too many redirects")
+
+    def _record_validators(self, url: str, validators: _Validators) -> None:
+        """Inside a scheduler poll, validators only land once the whole poll is published."""
+        scope = active_poll_scope()
+        if scope is None:
+            self._store_validators(url, validators)
+        else:
+            scope.stage((id(self), url), lambda: self._store_validators(url, validators))
+
+    def _store_validators(self, url: str, validators: _Validators) -> None:
+        self._validators[url] = validators
+        self._validators.move_to_end(url)
+        while len(self._validators) > MAX_VALIDATORS:
+            self._validators.popitem(last=False)
 
     async def _status_error(self, response: httpx.Response, url: str) -> FeedFetchError:
         return FeedHttpStatusError(response.status_code, url)

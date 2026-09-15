@@ -1,15 +1,18 @@
 """Traffic Scotland index, same-origin frame relay and curated UK catalogue regressions."""
 
+import asyncio
 import base64
 import json
 from unittest.mock import AsyncMock
 
 import pytest
 
+from ase.adapters.feeds.http import FeedHttpStatusError
 from ase.adapters.geo.camera_britain import (
     CURATED,
     FRAME,
     INDEX,
+    INDEX_RETRY_SECONDS,
     TrafficScotlandSource,
     build_sources,
     curated,
@@ -96,6 +99,36 @@ async def test_frames_only_for_indexed_sids_with_cache_and_fixed_urls() -> None:
     assert http.get_bytes.await_count == 3
     assert await source.frame("2") is None
     assert http.get_bytes.await_count == 3
+
+
+async def test_failed_index_load_cools_down_and_is_shared_by_frame_requests() -> None:
+    http = AsyncMock()
+    http.get_bytes.side_effect = FeedHttpStatusError(503, INDEX)
+    clock = [0.0]
+    source = TrafficScotlandSource(http, clock=lambda: clock[0])
+    for _ in range(10):
+        with pytest.raises((FeedHttpStatusError, ValueError)):
+            await source.frame("1")
+    assert http.get_bytes.await_count == 1
+    with pytest.raises(ValueError, match="frame unavailable"):
+        await GuardedCameraSource(source).frame("1")
+    assert http.get_bytes.await_count == 1
+
+    clock[0] = INDEX_RETRY_SECONDS + 1
+
+    async def slow_failure(*_: object, **__: object) -> bytes:
+        await asyncio.sleep(0.01)
+        raise FeedHttpStatusError(503, INDEX)
+
+    http.get_bytes.side_effect = slow_failure
+    results = await asyncio.gather(*(source.frame("1") for _ in range(10)), return_exceptions=True)
+    assert all(isinstance(result, Exception) for result in results)
+    assert http.get_bytes.await_count == 2
+
+    clock[0] = 2 * INDEX_RETRY_SECONDS + 2
+    http.get_bytes.side_effect = [index([ROW]), snippet()]
+    assert await source.frame("1") == JPEG
+    assert http.get_bytes.await_count == 4
 
 
 async def test_frame_without_an_image_is_a_provider_failure_even_when_guarded() -> None:

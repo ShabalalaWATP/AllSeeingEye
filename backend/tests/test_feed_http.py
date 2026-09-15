@@ -31,6 +31,21 @@ from ase.adapters.feeds.http import (
         ("::1", False),
         ("0.0.0.0", False),  # noqa: S104
         ("example.com", True),
+        ("93.184.216.34", True),
+        ("2606:4700:4700::1111", True),
+        ("100.128.0.1", True),
+        # Shared address space (RFC 6598) is carrier-grade NAT, never a public feed host.
+        ("100.64.0.1", False),
+        ("100.100.100.200", False),
+        ("100.127.255.255", False),
+        ("192.168.1.10", False),
+        ("172.16.0.1", False),
+        ("198.18.0.1", False),
+        ("fc00::1", False),
+        ("fe80::1", False),
+        ("::ffff:8.8.8.8", False),
+        ("2002:808:808::1", False),
+        ("64:ff9b::808:808", False),
     ],
 )
 def test_is_public_address(host: str, public: bool) -> None:

@@ -8,6 +8,7 @@ from ase.application.auditing import Auditor
 from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims, RequestContext
 from ase.application.feeds.health import HealthRegistry, SourceHealth
+from ase.application.feeds.poll_scope import poll_scope
 from ase.application.policy import require_admin
 from ase.application.ports import (
     Clock,
@@ -166,13 +167,15 @@ class AdminSourceControls:
         await self._uow.commit()
         generation: int | None = None
         try:
-            async with asyncio.timeout(20):
-                if isinstance(connector, GuardedFeedConnector):
-                    generation = await connector.current_generation()
-                    batch = await connector.fetch_batch()
-                    events, generation = batch.events, batch.generation
-                else:
-                    events = await connector.fetch()
+            # Test results are never published, so conditional validators must not persist.
+            with poll_scope():
+                async with asyncio.timeout(20):
+                    if isinstance(connector, GuardedFeedConnector):
+                        generation = await connector.current_generation()
+                        batch = await connector.fetch_batch()
+                        events, generation = batch.events, batch.generation
+                    else:
+                        events = await connector.fetch()
             result = SourceTestResult(
                 True,
                 min(len(events), 1000),

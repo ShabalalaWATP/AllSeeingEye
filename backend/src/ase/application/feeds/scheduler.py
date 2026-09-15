@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from ase.application.feeds.health import HealthRegistry, SourceStatus
 from ase.application.feeds.pipeline import Pipeline
+from ase.application.feeds.poll_scope import poll_scope
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventStore, CooperativeGrader
 from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector, FeedDeferred
@@ -113,6 +114,14 @@ class FeedScheduler:
             self._tasks[source_id] = asyncio.create_task(self._run_connector(connector))
 
     async def poll_once(self, connector: FeedConnector) -> PollOutcome:
+        """Per-poll side effects, such as conditional validators, land only after publication."""
+        with poll_scope() as scope:
+            outcome = await self._poll(connector)
+            if outcome.ok:
+                scope.commit()
+            return outcome
+
+    async def _poll(self, connector: FeedConnector) -> PollOutcome:
         source_id = connector.spec.id
         started = self._clock.now()
         generation: int | None = None
