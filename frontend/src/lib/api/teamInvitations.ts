@@ -2,6 +2,7 @@
 import { z } from 'zod';
 
 import { apiCall, apiSend } from './client';
+import type { components } from './types.gen';
 
 const invitationSchema = z.object({
   id: z.uuid(),
@@ -91,4 +92,25 @@ export function declineTeamInvitation(
   expectedRevision: number,
 ): Promise<TeamInvitation> {
   return respondToInvitation('decline', invitationId, expectedRevision);
+}
+
+const handleSubmissionSchema = z.object({
+  status: z.literal('submitted'),
+  message: z.string(),
+}) satisfies z.ZodType<components['schemas']['TeamHandleInvitationSubmittedOut']>;
+
+/** Invites an exact username. The response is identical whether or not the account exists. */
+export function sendTeamInvitationByUsername(
+  teamId: string,
+  username: string,
+  note?: string,
+): Promise<components['schemas']['TeamHandleInvitationSubmittedOut']> {
+  const body: components['schemas']['TeamHandleInvitationIn'] = note?.trim()
+    ? { username: username.trim(), note: note.trim() }
+    : { username: username.trim() };
+  return apiCall(`/api/teams/${encodeURIComponent(teamId)}/invitations/by-username`, {
+    method: 'POST',
+    body,
+    schema: handleSubmissionSchema,
+  });
 }

@@ -31,6 +31,8 @@ API_CSP = "default-src 'none'; frame-ancestors 'none'"
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
 IMPORT_MAX_BODY_BYTES = 8 * 1024 * 1024
 IMPORT_PATH = "/api/research/inputs"
+AVATAR_PATH = "/api/me/directory-profile/avatar"
+AVATAR_MAX_BODY_BYTES = 2 * 1024 * 1024
 _UUID_PATH = r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
 ORIGINAL_UPLOAD_PATH = re.compile(
     rf"/api/reports/{_UUID_PATH}/original-assets/{_UUID_PATH}/content"
@@ -89,6 +91,7 @@ class BodySizeLimitMiddleware:
             await self.app(scope, receive, send)
             return
         declared = Headers(scope=scope).get("content-length")
+        avatar = scope.get("path") == AVATAR_PATH and scope.get("method") == "PUT"
         importing = (scope.get("path") == IMPORT_PATH and scope.get("method") == "POST") or (
             scope.get("method") == "PUT"
             and ORIGINAL_UPLOAD_PATH.fullmatch(scope.get("path", "")) is not None
@@ -102,7 +105,9 @@ class BodySizeLimitMiddleware:
             and MAP_IMAGE_PATH.fullmatch(scope.get("path", "")) is not None
         )
         limit = (
-            MAP_IMAGE_MAX_BODY_BYTES
+            AVATAR_MAX_BODY_BYTES
+            if avatar
+            else MAP_IMAGE_MAX_BODY_BYTES
             if exporting_image
             else IMPORT_MAX_BODY_BYTES
             if importing
@@ -113,7 +118,7 @@ class BodySizeLimitMiddleware:
         if declared is not None and declared.isdigit() and int(declared) > limit:
             await self._reject(scope, receive, send)
             return
-        if importing or exporting_image:
+        if importing or exporting_image or avatar:
             await self._stream_import(scope, receive, send, limit)
             return
 

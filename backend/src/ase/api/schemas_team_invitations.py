@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Self
+from typing import Literal, Self
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,6 +22,23 @@ class TeamInvitationCreateIn(BaseModel):
 
     recipient_id: UUID
     note: str | None = Field(default=None, max_length=MAX_INVITATION_NOTE)
+
+
+class TeamHandleInvitationIn(BaseModel):
+    """Invite an exact username, including accounts that are not discoverable."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    username: str = Field(min_length=1, max_length=64)
+    note: str | None = Field(default=None, max_length=MAX_INVITATION_NOTE)
+
+
+class TeamHandleInvitationSubmittedOut(BaseModel):
+    status: Literal["submitted"] = "submitted"
+    message: str = (
+        "If that username can receive an invitation, it has been sent. "
+        "Pending invitations appear in the team's invitation list."
+    )
 
 
 class TeamInvitationActionIn(BaseModel):

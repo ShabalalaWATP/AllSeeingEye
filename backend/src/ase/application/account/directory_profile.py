@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from typing import Any
+from uuid import UUID
 
 from ase.application.auditing import Auditor
 from ase.application.auth.current_session import validate_current_session
@@ -17,9 +18,34 @@ from ase.application.ports import (
 )
 from ase.application.ports.directory_profile import DirectoryProfileRepository
 from ase.domain.audit import AuditAction
-from ase.domain.directory_profile import DirectoryPage, DirectoryProfile
+from ase.domain.directory_profile import DirectoryPage, DirectoryProfile, normalise_username
 from ase.domain.errors import Conflict, InvalidRequest, RateLimited, UsernameTaken
 from ase.domain.users import User
+
+
+async def resolve_exact_handle(
+    profiles: DirectoryProfileRepository, users: UserRepository, username: str
+) -> UUID | None:
+    """Resolve an exact handle to an active account id, including non-discoverable accounts.
+
+    This is an internal integration point for invitation delivery. Callers must not
+    reveal whether the result was ``None``; invalid, reserved, unknown and inactive
+    handles are indistinguishable here by design.
+    """
+
+    try:
+        handle = normalise_username(username)
+    except ValueError:
+        return None
+    if handle is None:
+        return None
+    profile = await profiles.get_by_username(handle)
+    if profile is None:
+        return None
+    user = await users.get_by_id(profile.user_id)
+    if user is None or not user.is_active:
+        return None
+    return user.id
 
 
 class DirectoryProfileUseCase:

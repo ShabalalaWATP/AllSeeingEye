@@ -94,6 +94,8 @@ class AuditAction(StrEnum):
     TEAM_BOARD_POST_PINNED = "team_board_post_pinned"
     TEAM_BOARD_POST_UNPINNED = "team_board_post_unpinned"
     DIRECTORY_PROFILE_UPDATED = "directory_profile_updated"
+    DIRECTORY_AVATAR_UPDATED = "directory_avatar_updated"
+    DIRECTORY_AVATAR_REMOVED = "directory_avatar_removed"
     AI_USAGE_POLICY_CREATED = "ai_usage_policy_created"
     AI_USAGE_POLICY_UPDATED = "ai_usage_policy_updated"
     AI_USAGE_POLICY_DISABLED = "ai_usage_policy_disabled"

@@ -9,6 +9,8 @@ from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import ContainerDep, ContextDep, CurrentUser, SessionDep
 from ase.api.schemas_team_invitations import (
+    TeamHandleInvitationIn,
+    TeamHandleInvitationSubmittedOut,
     TeamInvitationActionIn,
     TeamInvitationCreateIn,
     TeamInvitationOut,
@@ -63,6 +65,27 @@ async def send_team_invitation(
         actor, team_id, body.recipient_id, body.note, context
     )
     return TeamInvitationOut.from_entity(invitation)
+
+
+@router.post(
+    "/teams/{team_id}/invitations/by-username",
+    status_code=202,
+    response_model=TeamHandleInvitationSubmittedOut,
+)
+async def send_team_invitation_by_username(
+    team_id: UUID,
+    body: TeamHandleInvitationIn,
+    actor: CurrentUser,
+    session: SessionDep,
+    container: ContainerDep,
+    context: ContextDep,
+) -> TeamHandleInvitationSubmittedOut:
+    """Invite an exact handle; the response never reveals whether the account exists."""
+
+    await container.handle_invitations(session).submit(
+        actor, team_id, body.username, body.note, context
+    )
+    return TeamHandleInvitationSubmittedOut()
 
 
 @router.delete(

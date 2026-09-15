@@ -100,6 +100,8 @@ class TeamInvitationService:
         recipient_id: UUID,
         note: str | None,
         context: RequestContext,
+        *,
+        require_discoverable: bool = True,
     ) -> TeamInvitation:
         current, team = await self._team_authority(actor, team_id)
         target = await self._users.lock_by_id(recipient_id)
@@ -108,8 +110,9 @@ class TeamInvitationService:
             target is None
             or not target.is_active
             or profile is None
-            or not profile.is_discoverable
             or profile.username is None
+            # Exact-handle invitations may reach a non-discoverable account that has a handle.
+            or (require_discoverable and not profile.is_discoverable)
             or (target.role is Role.ADMIN and not current.is_admin)
         ):
             # One response for every ineligible account, so a Manager cannot
@@ -156,6 +159,20 @@ class TeamInvitationService:
         )
         await self._uow.commit()
         return invitation
+
+    async def authorise_sender(self, actor: User, team_id: UUID, note: str | None) -> None:
+        """Check caller-side invitation preconditions without creating anything."""
+
+        try:
+            _current, _team = await self._team_authority(actor, team_id)
+            _note(note)
+            if (
+                await self._invitations.count_pending(team_id, self._clock.now())
+                >= MAX_PENDING_INVITATIONS
+            ):
+                raise InvalidRequest("This team has reached its pending invitation limit.")
+        finally:
+            await self._uow.rollback()
 
     async def inbox(
         self, actor: User, *, status: InvitationStatus | None, limit: int, offset: int

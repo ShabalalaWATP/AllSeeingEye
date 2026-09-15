@@ -990,6 +990,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/teams/{team_id}/invitations/by-username": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Team Invitation By Username
+         * @description Invite an exact handle; the response never reveals whether the account exists.
+         */
+        post: operations["send_team_invitation_by_username_api_teams__team_id__invitations_by_username_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/teams/{team_id}/invitations/{invitation_id}": {
         parameters: {
             query?: never;
@@ -1143,6 +1163,41 @@ export interface paths {
         head?: never;
         /** Update Directory Profile */
         patch: operations["update_directory_profile_api_me_directory_profile_patch"];
+        trace?: never;
+    };
+    "/api/me/directory-profile/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upload Directory Avatar */
+        put: operations["upload_directory_avatar_api_me_directory_profile_avatar_put"];
+        post?: never;
+        /** Remove Directory Avatar */
+        delete: operations["remove_directory_avatar_api_me_directory_profile_avatar_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/directory/users/{user_id}/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Directory Avatar */
+        get: operations["get_directory_avatar_api_directory_users__user_id__avatar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/me/sessions": {
@@ -6540,6 +6595,12 @@ export interface components {
          * @enum {string}
          */
         DecisionMethod: "reviewer" | "verified_threshold" | "clock";
+        /**
+         * DirectoryField
+         * @description Optional profile fields whose directory visibility the owner controls.
+         * @enum {string}
+         */
+        DirectoryField: "job_title" | "organisation" | "biography" | "country" | "languages" | "expertise" | "timezone";
         /** DirectoryPageOut */
         DirectoryPageOut: {
             /** Items */
@@ -6578,8 +6639,10 @@ export interface components {
             timezone: string | null;
             /** Is Discoverable */
             is_discoverable: boolean;
-            /** Show Timezone */
-            show_timezone: boolean;
+            /** Visible Fields */
+            visible_fields: components["schemas"]["DirectoryField"][];
+            /** Avatar Url */
+            avatar_url: string | null;
             /** Revision */
             revision: number;
             /** Updated At */
@@ -6605,12 +6668,15 @@ export interface components {
             timezone?: string | null;
             /** Is Discoverable */
             is_discoverable?: boolean | null;
-            /** Show Timezone */
-            show_timezone?: boolean | null;
+            /** Visible Fields */
+            visible_fields?: components["schemas"]["DirectoryField"][] | null;
             /** Expected Revision */
             expected_revision?: number | null;
         };
-        /** DirectoryUserOut */
+        /**
+         * DirectoryUserOut
+         * @description A search result. Fields the owner has not selected are always null or empty.
+         */
         DirectoryUserOut: {
             /**
              * User Id
@@ -6621,6 +6687,8 @@ export interface components {
             username: string;
             /** Display Name */
             display_name: string;
+            /** Avatar Url */
+            avatar_url: string | null;
             /** Job Title */
             job_title: string | null;
             /** Organisation */
@@ -14235,6 +14303,30 @@ export interface components {
             /** Members */
             members: components["schemas"]["MemberOut"][];
         };
+        /**
+         * TeamHandleInvitationIn
+         * @description Invite an exact username, including accounts that are not discoverable.
+         */
+        TeamHandleInvitationIn: {
+            /** Username */
+            username: string;
+            /** Note */
+            note?: string | null;
+        };
+        /** TeamHandleInvitationSubmittedOut */
+        TeamHandleInvitationSubmittedOut: {
+            /**
+             * Status
+             * @default submitted
+             * @constant
+             */
+            status: "submitted";
+            /**
+             * Message
+             * @default If that username can receive an invitation, it has been sent. Pending invitations appear in the team's invitation list.
+             */
+            message: string;
+        };
         /** TeamIn */
         TeamIn: {
             /** Name */
@@ -16926,6 +17018,41 @@ export interface operations {
             };
         };
     };
+    send_team_invitation_by_username_api_teams__team_id__invitations_by_username_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamHandleInvitationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamHandleInvitationSubmittedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     withdraw_team_invitation_api_teams__team_id__invitations__invitation_id__delete: {
         parameters: {
             query?: {
@@ -17225,6 +17352,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_directory_avatar_api_me_directory_profile_avatar_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+        };
+    };
+    remove_directory_avatar_api_me_directory_profile_avatar_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryProfileOut"];
+                };
+            };
+        };
+    };
+    get_directory_avatar_api_directory_users__user_id__avatar_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
+                    "image/png": unknown;
                 };
             };
             /** @description Validation Error */

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { DirectoryAvatar } from '@/components/account/DirectoryAvatar';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextAreaField, TextField } from '@/components/ui/Field';
@@ -8,6 +9,7 @@ import { searchDirectory } from '@/lib/api/directoryProfile';
 import {
   listTeamInvitations,
   sendTeamInvitation,
+  sendTeamInvitationByUsername,
   withdrawTeamInvitation,
   type TeamInvitation,
 } from '@/lib/api/teamInvitations';
@@ -22,6 +24,7 @@ function expiryLabel(value: string): string {
 export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; canManage: boolean }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [handle, setHandle] = useState('');
   const [note, setNote] = useState('');
   const [results, setResults] = useState<Awaited<ReturnType<typeof searchDirectory>> | null>(null);
   const [pending, setPending] = useState<TeamInvitation[]>([]);
@@ -66,6 +69,23 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
     try {
       await sendTeamInvitation(teamId, recipientId, note);
       setNotice('Invitation sent. The account will appear in the team after acceptance.');
+      setNote('');
+      await loadPending();
+    } catch (reason) {
+      setError(describeError(reason));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const inviteHandle = async () => {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const submitted = await sendTeamInvitationByUsername(teamId, handle, note);
+      setNotice(submitted.message);
+      setHandle('');
       setNote('');
       await loadPending();
     } catch (reason) {
@@ -136,6 +156,34 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
               Search
             </Button>
           </form>
+          <form
+            className="flex flex-wrap items-end gap-3"
+            aria-label="Invite by exact username"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void inviteHandle();
+            }}
+          >
+            <div className="min-w-48 flex-1">
+              <TextField
+                label="Exact username"
+                hint="For people who are not listed in the directory."
+                minLength={3}
+                maxLength={32}
+                value={handle}
+                disabled={busy}
+                onChange={(event) => setHandle(event.target.value)}
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="secondary"
+              busy={busy}
+              disabled={handle.trim().length < 3}
+            >
+              Invite username
+            </Button>
+          </form>
           <TextAreaField
             label="Optional note"
             hint="Keep it short. No email is sent by this first-release flow."
@@ -160,12 +208,19 @@ export function TeamInvitationPanel({ teamId, canManage }: { teamId: string; can
                         key={person.user_id}
                         className="flex flex-wrap items-center justify-between gap-3 p-4"
                       >
-                        <div>
-                          <p className="font-medium">{person.display_name}</p>
-                          <p className="text-xs text-muted">
-                            @{person.username}
-                            {person.organisation ? ` · ${person.organisation}` : ''}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <DirectoryAvatar
+                            avatarUrl={person.avatar_url}
+                            name={person.display_name}
+                            size={36}
+                          />
+                          <div>
+                            <p className="font-medium">{person.display_name}</p>
+                            <p className="text-xs text-muted">
+                              @{person.username}
+                              {person.organisation ? ` · ${person.organisation}` : ''}
+                            </p>
+                          </div>
                         </div>
                         <Button
                           variant="secondary"

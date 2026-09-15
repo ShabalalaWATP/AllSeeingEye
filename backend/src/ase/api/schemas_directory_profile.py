@@ -17,6 +17,7 @@ from ase.domain.directory_profile import (
     MAX_ORGANISATION,
     USERNAME_PATTERN,
     DirectoryEntry,
+    DirectoryField,
     DirectoryPage,
     DirectoryProfile,
 )
@@ -24,6 +25,16 @@ from ase.domain.languages import LANGUAGE_CODE_PATTERN
 
 LanguageCode = Annotated[str, Field(pattern=LANGUAGE_CODE_PATTERN)]
 ExpertiseLabel = Annotated[str, Field(min_length=1, max_length=MAX_EXPERTISE_LABEL)]
+# JSON carries enum values as strings, which strict model validation would otherwise refuse.
+VisibleField = Annotated[DirectoryField, Field(strict=False)]
+
+
+def avatar_url(profile: DirectoryProfile) -> str | None:
+    """A versioned URL so a changed avatar is never served from a stale private cache."""
+
+    if profile.avatar_sha256 is None:
+        return None
+    return f"/api/directory/users/{profile.user_id}/avatar?v={profile.avatar_sha256[:16]}"
 
 
 def _clean_text(value: str | None) -> str | None:
@@ -48,7 +59,8 @@ class DirectoryProfileOut(BaseModel):
     expertise: list[str]
     timezone: str | None
     is_discoverable: bool
-    show_timezone: bool
+    visible_fields: list[DirectoryField]
+    avatar_url: str | None
     revision: int
     updated_at: datetime | None
 
@@ -63,9 +75,11 @@ class DirectoryProfileOut(BaseModel):
             country=profile.country,
             languages=list(profile.languages),
             expertise=list(profile.expertise),
-            timezone=profile.timezone if profile.show_timezone else None,
+            # The owner always sees their own saved timezone; visibility governs others.
+            timezone=profile.timezone,
             is_discoverable=profile.is_discoverable,
-            show_timezone=profile.show_timezone,
+            visible_fields=sorted(profile.visible_fields),
+            avatar_url=avatar_url(profile),
             revision=profile.revision,
             updated_at=profile.updated_at,
         )
@@ -83,7 +97,7 @@ class DirectoryProfileUpdateIn(BaseModel):
     expertise: list[ExpertiseLabel] | None = Field(default=None, max_length=MAX_EXPERTISE)
     timezone: str | None = Field(default=None, max_length=100)
     is_discoverable: bool | None = None
-    show_timezone: bool | None = None
+    visible_fields: list[VisibleField] | None = Field(default=None, max_length=len(DirectoryField))
     expected_revision: int | None = Field(default=None, ge=1)
 
     @field_validator("username")
@@ -131,6 +145,13 @@ class DirectoryProfileUpdateIn(BaseModel):
                 result.append(item)
         return result
 
+    @field_validator("visible_fields")
+    @classmethod
+    def valid_visible_fields(cls, value: list[DirectoryField] | None) -> list[DirectoryField]:
+        if value is None:
+            raise ValueError("Send an empty list to hide every optional field")
+        return list(dict.fromkeys(value))
+
     @model_validator(mode="after")
     def has_update(self) -> Self:
         if not self.model_fields_set - {"expected_revision"}:
@@ -143,13 +164,20 @@ class DirectoryProfileUpdateIn(BaseModel):
             changes["languages"] = tuple(changes["languages"] or ())
         if "expertise" in changes:
             changes["expertise"] = tuple(changes["expertise"] or ())
+        if "visible_fields" in changes:
+            changes["visible_fields"] = frozenset(
+                DirectoryField(item) for item in changes["visible_fields"]
+            )
         return changes
 
 
 class DirectoryUserOut(BaseModel):
+    """A search result. Fields the owner has not selected are always null or empty."""
+
     user_id: UUID
     username: str
     display_name: str
+    avatar_url: str | None
     job_title: str | None
     organisation: str | None
     biography: str | None
@@ -162,17 +190,22 @@ class DirectoryUserOut(BaseModel):
     def from_entry(cls, entry: DirectoryEntry) -> Self:
         profile = entry.profile
         assert profile.username is not None  # noqa: S101
+
+        def shown[T](field: DirectoryField, value: T, hidden: T) -> T:
+            return value if profile.shows(field) else hidden
+
         return cls(
             user_id=profile.user_id,
             username=profile.username,
             display_name=entry.display_name,
-            job_title=profile.job_title,
-            organisation=profile.organisation,
-            biography=profile.biography,
-            country=profile.country,
-            languages=list(profile.languages),
-            expertise=list(profile.expertise),
-            timezone=profile.timezone if profile.show_timezone else None,
+            avatar_url=avatar_url(profile),
+            job_title=shown(DirectoryField.JOB_TITLE, profile.job_title, None),
+            organisation=shown(DirectoryField.ORGANISATION, profile.organisation, None),
+            biography=shown(DirectoryField.BIOGRAPHY, profile.biography, None),
+            country=shown(DirectoryField.COUNTRY, profile.country, None),
+            languages=shown(DirectoryField.LANGUAGES, list(profile.languages), []),
+            expertise=shown(DirectoryField.EXPERTISE, list(profile.expertise), []),
+            timezone=shown(DirectoryField.TIMEZONE, profile.timezone, None),
         )
 
 
