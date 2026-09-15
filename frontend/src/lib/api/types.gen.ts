@@ -89,6 +89,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/economy/explainer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Economy Explainer
+         * @description Serve the shared cached explainer, generating only when the cadence allows it.
+         */
+        get: operations["economy_explainer_api_economy_explainer_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/economy/explainer/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Economy Explainer
+         * @description An administrator forces one regeneration; the attempt is always audited.
+         */
+        post: operations["refresh_economy_explainer_api_economy_explainer_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/economy/news": {
         parameters: {
             query?: never;
@@ -7014,6 +7054,20 @@ export interface components {
              */
             period_to: string;
         };
+        /** EconomyExplainerOut */
+        EconomyExplainerOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "stale" | "generating" | "empty" | "unavailable" | "validation_failed";
+            /** Stale */
+            stale: boolean;
+            /** Reason */
+            reason?: string | null;
+            explainer: components["schemas"]["ExplainerBodyOut"] | null;
+            provenance: components["schemas"]["ExplainerProvenanceOut"] | null;
+        };
         /** EconomyNewsItemOut */
         EconomyNewsItemOut: {
             /** Id */
@@ -7457,6 +7511,57 @@ export interface components {
          * @enum {string}
          */
         ExecutionRoute: "public_research" | "retained_area" | "private_document" | "private_media" | "fresh_web";
+        /** ExplainerBodyOut */
+        ExplainerBodyOut: {
+            world: components["schemas"]["ExplainerSectionOut"];
+            /** Regions */
+            regions: components["schemas"]["ExplainerRegionOut"][];
+            /** Glossary */
+            glossary: components["schemas"]["GlossaryEntryOut"][];
+        };
+        /** ExplainerProvenanceOut */
+        ExplainerProvenanceOut: {
+            /** Model */
+            model: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /**
+             * Snapshot Fetched At
+             * Format: date-time
+             */
+            snapshot_fetched_at: string;
+            /** Prompt Tokens */
+            prompt_tokens: number | null;
+            /** Completion Tokens */
+            completion_tokens: number | null;
+            /** Sources */
+            sources: string[];
+            /**
+             * Written By
+             * @default Written by the model from the figures shown on this page. The figures are the source of truth; the words are a plain-English description of them.
+             */
+            written_by: string;
+        };
+        /** ExplainerRegionOut */
+        ExplainerRegionOut: {
+            /** Id */
+            id: string;
+            section: components["schemas"]["ExplainerSectionOut"];
+        };
+        /** ExplainerSectionOut */
+        ExplainerSectionOut: {
+            /** Takeaway */
+            takeaway: string;
+            /** Paragraphs */
+            paragraphs: string[];
+            /** Drivers */
+            drivers: string[];
+            /** Watch */
+            watch: string[];
+        };
         /**
          * ExportFormat
          * @enum {string}
@@ -7959,6 +8064,13 @@ export interface components {
          * @enum {string}
          */
         GeoConfidence: "exact" | "city" | "admin1" | "country" | "none";
+        /** GlossaryEntryOut */
+        GlossaryEntryOut: {
+            /** Term */
+            term: string;
+            /** Plain English */
+            plain_english: string;
+        };
         /** GroundStationOut */
         GroundStationOut: {
             /** Id */
@@ -15306,6 +15418,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EconomySnapshotOut"];
+                };
+            };
+        };
+    };
+    economy_explainer_api_economy_explainer_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EconomyExplainerOut"];
+                };
+            };
+        };
+    };
+    refresh_economy_explainer_api_economy_explainer_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EconomyExplainerOut"];
                 };
             };
         };

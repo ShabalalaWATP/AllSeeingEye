@@ -25,6 +25,9 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import (
     assistant_history_models as _assistant_history_models,  # noqa: F401
 )
+from ase.adapters.persistence import (
+    economy_explainer_models as _economy_explainer_models,  # noqa: F401
+)
 from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
 from ase.adapters.persistence import (
     original_passage_models as _original_passage_models,  # noqa: F401

@@ -177,6 +177,60 @@
         ]
       }
     },
+    "/api/economy/explainer": {
+      "get": {
+        "tags": [
+          "economy"
+        ],
+        "summary": "Economy Explainer",
+        "description": "Serve the shared cached explainer, generating only when the cadence allows it.",
+        "operationId": "economy_explainer_api_economy_explainer_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EconomyExplainerOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/economy/explainer/refresh": {
+      "post": {
+        "tags": [
+          "economy"
+        ],
+        "summary": "Refresh Economy Explainer",
+        "description": "An administrator forces one regeneration; the attempt is always audited.",
+        "operationId": "refresh_economy_explainer_api_economy_explainer_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EconomyExplainerOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/economy/news": {
       "get": {
         "tags": [
@@ -22667,6 +22721,66 @@
         ],
         "title": "EconomyBriefingOut"
       },
+      "EconomyExplainerOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "stale",
+              "generating",
+              "empty",
+              "unavailable",
+              "validation_failed"
+            ],
+            "title": "Status"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "explainer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplainerBodyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExplainerProvenanceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "stale",
+          "explainer",
+          "provenance"
+        ],
+        "title": "EconomyExplainerOut"
+      },
       "EconomyNewsItemOut": {
         "properties": {
           "id": {
@@ -24020,6 +24134,159 @@
           "fresh_web"
         ],
         "title": "ExecutionRoute"
+      },
+      "ExplainerBodyOut": {
+        "properties": {
+          "world": {
+            "$ref": "#/components/schemas/ExplainerSectionOut"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/ExplainerRegionOut"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Regions"
+          },
+          "glossary": {
+            "items": {
+              "$ref": "#/components/schemas/GlossaryEntryOut"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Glossary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "world",
+          "regions",
+          "glossary"
+        ],
+        "title": "ExplainerBodyOut"
+      },
+      "ExplainerProvenanceOut": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Model"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "snapshot_fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Snapshot Fetched At"
+          },
+          "prompt_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens"
+          },
+          "completion_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Tokens"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Sources"
+          },
+          "written_by": {
+            "type": "string",
+            "title": "Written By",
+            "default": "Written by the model from the figures shown on this page. The figures are the source of truth; the words are a plain-English description of them."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "generated_at",
+          "snapshot_fetched_at",
+          "prompt_tokens",
+          "completion_tokens",
+          "sources"
+        ],
+        "title": "ExplainerProvenanceOut"
+      },
+      "ExplainerRegionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 8,
+            "title": "Id"
+          },
+          "section": {
+            "$ref": "#/components/schemas/ExplainerSectionOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "section"
+        ],
+        "title": "ExplainerRegionOut"
+      },
+      "ExplainerSectionOut": {
+        "properties": {
+          "takeaway": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Takeaway"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Paragraphs"
+          },
+          "drivers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Drivers"
+          },
+          "watch": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Watch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "takeaway",
+          "paragraphs",
+          "drivers",
+          "watch"
+        ],
+        "title": "ExplainerSectionOut"
       },
       "ExportFormat": {
         "type": "string",
@@ -25418,6 +25685,26 @@
           "none"
         ],
         "title": "GeoConfidence"
+      },
+      "GlossaryEntryOut": {
+        "properties": {
+          "term": {
+            "type": "string",
+            "maxLength": 60,
+            "title": "Term"
+          },
+          "plain_english": {
+            "type": "string",
+            "maxLength": 240,
+            "title": "Plain English"
+          }
+        },
+        "type": "object",
+        "required": [
+          "term",
+          "plain_english"
+        ],
+        "title": "GlossaryEntryOut"
       },
       "GroundStationOut": {
         "properties": {
