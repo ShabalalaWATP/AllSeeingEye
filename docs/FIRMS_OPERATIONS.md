@@ -61,10 +61,16 @@ input bounds and the single parser-worker limit remain unchanged.
 This is not an exact rolling 48-hour window; acquisition timestamps remain visible
 and the existing two-day timestamp validation, input and display caps still apply.
 
-The per-sensor bound is now 16 MiB and 150,000 rows. The previous 30,000-row API
-limit rejected a real NOAA-21 world response, and its published 24-hour file
-contained 111,691 records. This larger input remains bounded, parses off the API
-event loop, and uses the existing bounded store and snapshot-resynchronisation
+The per-sensor bound is now 16 MiB and 233,016 rows (16 MiB divided by a
+conservative 72-byte row). The previous 30,000-row API limit rejected a real
+NOAA-21 world response, and its published 24-hour file contained 111,691
+records. On 15 September 2026 the keyed NOAA-21 two-date world response held
+150,980 rows in 12.1 MiB and was rejected by the then 150,000-row cap, while
+NOAA-20 stayed below it; NASA's data availability endpoint still listed
+`VIIRS_NOAA21_NRT` as current. The row cap now follows the byte bound, whose
+shortest observed row is 73 bytes. Parsing that response took about 9 seconds
+off the event loop, inside the 120-second keyed allowance. This larger input
+remains bounded, parses off the API event loop, and uses the existing bounded store and snapshot-resynchronisation
 path rather than streaming an entire sensor batch into the browser.
 
 Every row is validated, but at most 10,000 observations per sensor are returned
@@ -78,7 +84,7 @@ input order and duplicate identities retain the last provider measurement.
 
 Selection occurs while reading rows: the parser holds at most 10,000 newest
 event objects plus 2,592 cell representatives, together with bounded identity
-bookkeeping. It does not first retain all 150,000 full event objects. One parser
+bookkeeping. It does not first retain every input row as a full event object. One parser
 worker per event loop runs at a time, and cancellation retains its slot until
 the underlying thread has finished. The downloaded NOAA-21 example now returns
 10,000 records covering 561 occupied cells. Their conservative store estimate is

@@ -29,8 +29,11 @@ from ase.domain.sources import SourceKind, SourceSpec
 
 ORIGIN = "https://firms.modaps.eosdis.nasa.gov"
 PRODUCT = "VIIRS_NOAA20_NRT"
-MAX_ROWS = 150_000
 MAX_BYTES = 16 * 1024 * 1024
+# The byte bound governs. The shortest observed world row is 73 bytes before its newline,
+# and a real NOAA-21 two-date world response held 150,980 rows (15 September 2026).
+MIN_ROW_BYTES = 72
+MAX_ROWS = MAX_BYTES // MIN_ROW_BYTES
 LIMITATIONS = (
     "Satellite thermal anomaly at a nominal 375 m pixel centre, not an exact fire boundary. "
     "Cloud, overpass timing and detection limits affect coverage. Heat does not establish "
