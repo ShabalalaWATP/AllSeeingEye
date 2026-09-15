@@ -12,6 +12,8 @@ async def dispose_resources(container: "Container") -> None:
     await container.satellite_http.aclose()
     await container.marine_http.aclose()
     await container.barentswatch_http.aclose()
+    if container.acled_tokens is not None:
+        await container.acled_tokens.aclose()
     await container.camera_http.aclose()
     await container.public_firms_http.aclose()
     await container.routing_http.aclose()

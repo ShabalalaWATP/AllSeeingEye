@@ -14,6 +14,8 @@ from ase.container.research_inputs import media_tools
 from ase.domain.web_research import WEB_SOURCE_ID
 
 if TYPE_CHECKING:
+    from pydantic import SecretStr
+
     from ase.infrastructure.settings import Settings
 
 OPTIONAL_CONNECTOR_SPECS = (
@@ -80,6 +82,37 @@ def media_requirement(settings: Settings) -> SourceRequirement:
     )
 
 
+def _secret_set(value: SecretStr | None) -> bool:
+    return value is not None and bool(value.get_secret_value().strip())
+
+
+def acled_requirement(settings: Settings) -> SourceRequirement:
+    """A refresh token renews itself; a manually supplied access token lasts one day."""
+    refresh, access = (
+        _secret_set(settings.acled_refresh_token),
+        _secret_set(settings.acled_access_token),
+    )
+    if refresh:
+        note = "ACLED refresh token is configured; access tokens renew automatically."
+    elif access:
+        note = (
+            "A manually supplied ACLED access token is configured; it expires after 24 hours. "
+            "Set ASE_ACLED_REFRESH_TOKEN for automatic renewal."
+        )
+    else:
+        note = (
+            "Run the ACLED OAuth password grant and set ASE_ACLED_REFRESH_TOKEN on the server "
+            "to enable ACLED events."
+        )
+    return SourceRequirement(
+        "credentials",
+        refresh or access,
+        "environment" if refresh or access else "none",
+        "ASE_ACLED_REFRESH_TOKEN or ASE_ACLED_ACCESS_TOKEN",
+        note,
+    )
+
+
 def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
     """Which documented setting unlocks each keyed or gated source, and whether it is set."""
     barentswatch = bool(
@@ -99,9 +132,7 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
             "BarentsWatch AIS client credentials are configured on the server.",
             "Create a BarentsWatch AIS client and set both settings on the server.",
         ),
-        ACLED_SPEC.id: _key(
-            "ASE_ACLED_ACCESS_TOKEN", bool(settings.acled_access_token), "ACLED events"
-        ),
+        ACLED_SPEC.id: acled_requirement(settings),
         RELIEFWEB_SPEC.id: _key(
             "ASE_RELIEFWEB_APPNAME", bool(settings.reliefweb_appname), "the ReliefWeb reports API"
         ),

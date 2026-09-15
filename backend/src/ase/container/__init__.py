@@ -77,6 +77,7 @@ from ase.application.ports.trackers import ConflictDirectory
 from ase.application.ports.warning import AlertNotifier
 from ase.application.terrain import TerrainSampler
 from ase.application.trackers.aviation import AviationMonitor, WatchedArea
+from ase.container.acled import build_acled_tokens
 from ase.container.admin import AdminWiring
 from ase.container.assistant import AssistantWiring
 from ase.container.auth import AuthWiring
@@ -174,7 +175,10 @@ class Container(
             SatelliteHttpClient(settings.feeds_user_agent),
         )
         self.initialise_sec_filings()
-        self.barentswatch_http = BarentsWatchHttpClient(settings.feeds_user_agent)
+        self.barentswatch_http, self.acled_tokens = (
+            BarentsWatchHttpClient(settings.feeds_user_agent),
+            build_acled_tokens(settings, self.session_factory, self.cipher, self.clock),
+        )
         self.source_admission = SqlSourceAdmission(
             self.session_factory, tuple(settings.disabled_feed_ids)
         )
@@ -247,6 +251,7 @@ class Container(
                         if settings.acled_access_token
                         else None
                     ),
+                    acled_tokens=self.acled_tokens,
                     reliefweb_appname=settings.reliefweb_appname,
                     cloudflare_radar_token=(
                         settings.cloudflare_radar_token.get_secret_value()

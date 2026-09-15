@@ -1,4 +1,4 @@
-"""Optional ACLED events using an operator-provisioned, short-lived OAuth token."""
+"""Optional ACLED events using a refreshed OAuth token or a manually supplied access token."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
+from ase.adapters.feeds.acled_http import ORIGIN
+from ase.adapters.feeds.acled_tokens import AcledTokens
 from ase.adapters.feeds.conflict_values import count, integer, point, text, when
 from ase.adapters.feeds.http import FeedCredential, FeedFetchError, FeedHttpClient
 from ase.application.ports import Clock
@@ -23,7 +25,6 @@ from ase.domain.events import (
 )
 from ase.domain.sources import SourceKind, SourceSpec
 
-ORIGIN = "https://acleddata.com"
 PAGE_SIZE = 500
 MAX_PAGES = 20
 LOOKBACK_DAYS = 14
@@ -54,11 +55,26 @@ TYPES = {
 class AcledConnector:
     spec = SPEC
 
-    def __init__(self, http: FeedHttpClient, clock: Clock, access_token: str) -> None:
-        if not access_token.strip():
-            raise ValueError("ACLED requires a current OAuth access token.")
-        self._http, self._clock = http, clock
-        self._credential = FeedCredential(ORIGIN, "Bearer " + access_token)
+    def __init__(
+        self,
+        http: FeedHttpClient,
+        clock: Clock,
+        access_token: str | None = None,
+        *,
+        tokens: AcledTokens | None = None,
+    ) -> None:
+        """`tokens` refreshes automatically; `access_token` is a manually supplied bearer."""
+        self._http, self._clock, self._tokens = http, clock, tokens
+        self._credential: FeedCredential | None = None
+        if tokens is None:
+            if not access_token or not access_token.strip():
+                raise ValueError("ACLED requires a refresh token or a current access token.")
+            self._credential = FeedCredential(ORIGIN, "Bearer " + access_token)
+
+    async def _page(self, url: str) -> object:
+        if self._tokens is not None:
+            return await self._tokens.get_json(url)
+        return await self._http.get_json(url, credential=self._credential)
 
     async def fetch(self) -> list[Event]:
         now = self._clock.now()
@@ -74,9 +90,7 @@ class AcledConnector:
                     "export_type": "dyadic",
                 }
             )
-            payload = await self._http.get_json(
-                self.spec.url + "?" + query, credential=self._credential
-            )
+            payload = await self._page(self.spec.url + "?" + query)
             if (
                 not isinstance(payload, dict)
                 or integer(payload.get("status")) != 200

@@ -42,7 +42,7 @@ states without exposing upstream error text or credentials.
 | --- | --- | --- |
 | GDELT events | Early media reports | Existing latest 15-minute export, bounded to 400 candidates. No missed-batch catch-up. Machine-coded reports require verification. |
 | UCDP Candidate | Provisional historical baseline | Public CSV enabled by default, release 26.0.7 (July 2026). Daily refresh, existing 5 MiB HTTP bound, 10,000-row cap. Optional API token selects the authenticated endpoint instead. |
-| ACLED | Coded political violence and demonstrations | Optional approved bearer token. Fourteen-day window, six-hour polling, bounded pagination. Entitlements and token expiry can prevent collection. |
+| ACLED | Coded political violence and demonstrations | Optional OAuth refresh token (renewed automatically) or a manually supplied 24-hour access token. Fourteen-day window, six-hour polling, bounded pagination. Account entitlement can prevent collection. |
 | ReliefWeb API | Humanitarian context with original publishers | Optional approved application name. Latest 100 metadata records hourly. Replaces the existing ReliefWeb RSS connector when configured. |
 | ReliefWeb RSS / Crisis Group | Existing context feeds | Public upstream availability varies. A configured source is not evidence that its latest poll succeeded. |
 
@@ -52,12 +52,40 @@ states without exposing upstream error text or credentials.
 
 Set optional values in the ignored backend environment, never in frontend code:
 `ASE_UCDP_ACCESS_TOKEN`, `ASE_UCDP_CANDIDATE_VERSION`,
-`ASE_ACLED_ACCESS_TOKEN`, `ASE_RELIEFWEB_APPNAME`.
+`ASE_ACLED_REFRESH_TOKEN` (or `ASE_ACLED_ACCESS_TOKEN`), `ASE_RELIEFWEB_APPNAME`.
 The version is explicit, not an automatically invented latest release. Check the
 provider downloads page before updating it. Restart the local API after changing
 these environment values. Ordinary source enable/disable controls still apply.
 No API credentials were added, purchases made or provider emails sent by this task.
-ACLED token refresh is an operator responsibility in this integration.
+
+### ACLED OAuth refresh
+
+ACLED access tokens last 24 hours and refresh tokens 14 days. The operator runs the
+password grant once, outside the app (see `.env.example`), and sets only the returned
+`refresh_token` as `ASE_ACLED_REFRESH_TOKEN`. The account password is never given to or
+stored by the app.
+
+- On first use the server exchanges the refresh token at
+  `https://acleddata.com/oauth/token` (form POST, fixed DNS-pinned origin, 20 second
+  limit, 64 KiB response cap) and caches the access token in memory.
+- It refreshes ten minutes before expiry, or once after the data API answers 401 and
+  then retries that read once. Refreshes are single-flight, so concurrent polls share one.
+- ACLED rotates the refresh token on every refresh. The rotated token is encrypted with
+  `ASE_ENCRYPTION_KEY` and kept in the single-row `acled_credentials` table (migration
+  `0056`) with a SHA-256 fingerprint of the environment token that seeded the chain,
+  never that token itself. On restart the stored token is preferred while the
+  fingerprint matches; pasting a new environment token supersedes it. Without an
+  encryption key rotation is kept in memory only and a warning is logged, so a restart
+  after the first refresh needs a fresh grant.
+- If the token endpoint answers 400 or 401, the source is deferred with "ACLED refresh
+  token expired or revoked; run the password grant again and update
+  ASE_ACLED_REFRESH_TOKEN" and no further refresh is attempted for an hour. Other
+  token failures cool down for five minutes while any still-valid access token is used.
+- Tokens, response bodies and upstream error text are never logged or shown.
+- `ASE_ACLED_ACCESS_TOKEN` still works for a manually supplied token but is not renewed.
+  When both are set the refresh token is used.
+- Several API processes polling ACLED share the stored rotation: a process whose refresh
+  token was already rotated by another adopts the stored token once before deferring.
 
 The public UCDP July CSV was fetched once during implementation: 1,357,690 bytes,
 1,828 rows, 49 columns. This verifies accessibility of that release, not real-time

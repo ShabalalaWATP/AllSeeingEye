@@ -46,7 +46,7 @@ no values are recorded here. A present credential is not a successful test.
 | `ASE_AISSTREAM_API_KEY` | Yes | Global terrestrial AIS WebSocket | Test existing connection before creating another account. Open-ocean coverage remains incomplete. |
 | `ASE_FIRMS_MAP_KEY` | Yes | NOAA-20 and NOAA-21 VIIRS Area API | Test existing key. Two sensor products do not make independent confirmation of a fire. |
 | `ASE_UCDP_ACCESS_TOKEN` | No | Token API with public monthly-file fallback | Optional improvement; a free public candidate fallback already exists. Release is fixed by `ASE_UCDP_CANDIDATE_VERSION`. |
-| `ASE_ACLED_ACCESS_TOKEN` | No | Political violence/protest API | Requires suitable event-data entitlement and a current OAuth token. Refresh-token lifecycle is not implemented. |
+| `ASE_ACLED_REFRESH_TOKEN` or `ASE_ACLED_ACCESS_TOKEN` | No | Political violence/protest API | Requires suitable event-data entitlement. Superseded 15 September 2026: a refresh token now renews automatically with encrypted rotation (see `docs/CONFLICT_COVERAGE.md`); a manual access token still expires after 24 hours. |
 | `ASE_RELIEFWEB_APPNAME` | No | Humanitarian reports API | Requires approved application name; public ReliefWeb RSS exists meanwhile. An app name is not a secret API key. |
 | `ASE_OS_MAPS_KEY` | No | GB OS Road, Outdoor and Light proxy | A valid OS Maps project key would activate the existing styles. |
 | `ASE_COMPANIES_HOUSE_KEY` | No | Company search/profile, officers, PSC | One credential activates three bounded registry capabilities. |
