@@ -5,6 +5,7 @@ import pytest
 
 from ase.adapters.feeds.news_rss import NewsRssConnector
 from ase.adapters.feeds.registry import build_connectors
+from ase.adapters.feeds.rss_seeds_gap_news import GAP_NEWS_SEEDS
 from ase.adapters.feeds.rss_seeds_news import NEWS_SEEDS
 from ase.adapters.feeds.rss_seeds_uk_news import UK_NEWS_SEEDS
 from ase.adapters.feeds.rss_seeds_world_news import WORLD_NEWS_SEEDS
@@ -48,7 +49,8 @@ async def test_new_feed_is_one_guarded_headline_request_with_original_publisher(
 
 def test_news_seed_catalogue_is_distinct_bounded_and_explicitly_unassessed() -> None:
     assert len(UK_NEWS_SEEDS) == 14 and len(WORLD_NEWS_SEEDS) == 24
-    assert len(NEWS_SEEDS) == 38
+    assert len(GAP_NEWS_SEEDS) == 15
+    assert len(NEWS_SEEDS) == 53
     ids = {seed.spec.id for seed in NEWS_SEEDS}
     assert len(ids) == len(NEWS_SEEDS)
     assert len({seed.spec.url for seed in NEWS_SEEDS}) == len(NEWS_SEEDS)

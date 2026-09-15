@@ -79,10 +79,12 @@ unlocated, with no guessed headline geocoding or publisher headquarters pins.
 
 ## Source coverage and operating limits
 
-[News source coverage](NEWS_SOURCE_COVERAGE.md) records the 38 verified additions,
+[News source coverage](NEWS_SOURCE_COVERAGE.md) records the 53 verified additions,
 publisher organisations, endpoint probes, exclusions and usage limitations.
-There are now 92 seeded RSS feeds across the app, including 14 additional UK
-national/regional feeds and 24 additional international feeds. These are
+There are now 128 seeded RSS feeds across the app, including 14 additional UK
+national/regional feeds, 24 additional international feeds and 15 coverage-gap
+feeds for the United States, the Gulf, Latin America, Africa, the Caucasus,
+Central Asia and Southeast Asia. These are
 headline/date/attribution/link feeds, not licensed full-text archives.
 
 Each new source has an explicit unassessed rating and F6 evidence grade. Known
