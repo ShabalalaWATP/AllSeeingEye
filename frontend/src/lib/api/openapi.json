@@ -2334,13 +2334,13 @@
         }
       }
     },
-    "/api/teams/{team_id}/leave": {
-      "post": {
+    "/api/teams/{team_id}/members/{user_id}": {
+      "patch": {
         "tags": [
           "teams"
         ],
-        "summary": "Leave Team",
-        "operationId": "leave_team_api_teams__team_id__leave_post",
+        "summary": "Change Member Role",
+        "operationId": "change_member_role_api_teams__team_id__members__user_id__patch",
         "security": [
           {
             "HTTPBearer": []
@@ -2356,11 +2356,38 @@
               "format": "uuid",
               "title": "Team Id"
             }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberRoleIn"
+              }
+            }
+          }
+        },
         "responses": {
-          "204": {
-            "description": "Successful Response"
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembershipOut"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2373,9 +2400,7 @@
             }
           }
         }
-      }
-    },
-    "/api/teams/{team_id}/members/{user_id}": {
+      },
       "delete": {
         "tags": [
           "teams"
@@ -2406,6 +2431,47 @@
               "type": "string",
               "format": "uuid",
               "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/leave": {
+      "post": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "Leave Team",
+        "operationId": "leave_team_api_teams__team_id__leave_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
             }
           }
         ],
@@ -28591,7 +28657,8 @@
         "required": [
           "email"
         ],
-        "title": "MemberIn"
+        "title": "MemberIn",
+        "description": "Administrator direct add. Team Managers use invitations instead."
       },
       "MemberOut": {
         "properties": {
@@ -28600,13 +28667,20 @@
             "format": "uuid",
             "title": "User Id"
           },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
           "display_name": {
             "type": "string",
             "title": "Display Name"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
           },
           "account_role": {
             "$ref": "#/components/schemas/Role"
@@ -28627,14 +28701,28 @@
         "type": "object",
         "required": [
           "user_id",
-          "email",
           "display_name",
+          "username",
           "account_role",
           "is_active",
           "role",
           "joined_at"
         ],
-        "title": "MemberOut"
+        "title": "MemberOut",
+        "description": "Roster entry. Login email is deliberately absent: teams are self-service."
+      },
+      "MemberRoleIn": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/MembershipRole"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "title": "MemberRoleIn"
       },
       "MembershipOut": {
         "properties": {

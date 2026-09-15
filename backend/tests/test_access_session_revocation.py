@@ -65,7 +65,7 @@ async def test_password_reset_ends_all_access_and_refresh_sessions(
     assert (await client.get("/api/me", headers=bearer(admin_token))).status_code == 200
 
 
-@pytest.mark.parametrize("change", [{"role": "manager"}, {"is_active": False}])
+@pytest.mark.parametrize("change", [{"role": "admin"}, {"is_active": False}])
 async def test_role_and_active_changes_end_access_immediately(
     client: AsyncClient,
     admin: User,
@@ -80,10 +80,9 @@ async def test_role_and_active_changes_end_access_immediately(
         )
     ).status_code == 200
     assert (await client.get("/api/me", headers=bearer(token))).status_code == 401
-    if change.get("role") == "manager":
-        manager = await login_token(client, USER_EMAIL, USER_PASSWORD)
-        assert (await client.get("/api/me", headers=bearer(manager))).json()["role"] == "manager"
-        assert (await client.get("/api/admin/users", headers=bearer(manager))).status_code == 403
+    if change.get("role") == "admin":
+        promoted = await login_token(client, USER_EMAIL, USER_PASSWORD)
+        assert (await client.get("/api/me", headers=bearer(promoted))).json()["role"] == "admin"
 
 
 @pytest.mark.parametrize(

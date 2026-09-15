@@ -65,7 +65,7 @@ async def revoke(
         )
         operator = await login_token(client, "operator@example.com", ADMIN_PASSWORD)
         response = await client.patch(
-            f"/api/admin/users/{admin.id}", json={"role": "manager"}, headers=bearer(operator)
+            f"/api/admin/users/{admin.id}", json={"role": "user"}, headers=bearer(operator)
         )
         assert response.status_code == 200
 

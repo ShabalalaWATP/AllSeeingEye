@@ -17,6 +17,8 @@ from ase.domain.users import Role, User, normalise_email
 DESCRIPTION_UNSET = object()
 MAX_ACTIVE_TEAMS_PER_ACCOUNT = 5
 MAX_TEAM_MEMBERS = 100
+LAST_MANAGER_MESSAGE = "Each active team must retain at least one active Manager."
+DIRECT_ADD_MESSAGE = "Team Managers add people by sending an invitation."
 
 
 def _name(value: str) -> str:
@@ -171,6 +173,22 @@ class TeamService:
         actor, _ = await self._team_editor(actor, team_id)
         return actor
 
+    async def _keep_active_manager(
+        self, team_id: UUID, membership: TeamMembership, target: User
+    ) -> None:
+        """Refuse only a change that would leave no active Manager.
+
+        An inactive Manager does not count towards the invariant, so removing or
+        demoting one never reduces the active count. Callers hold the
+        administration guard and team lock, which serialises concurrent attempts.
+        """
+        if (
+            membership.role is MembershipRole.MANAGER
+            and target.is_active
+            and await self._teams.count_active_managers(team_id) <= 1
+        ):
+            raise InvalidRequest(LAST_MANAGER_MESSAGE)
+
     async def set_member(
         self,
         actor: User,
@@ -180,7 +198,12 @@ class TeamService:
         role: MembershipRole,
         context: RequestContext,
     ) -> TeamMembership:
+        """Administrator-only direct add by email. Managers invite people instead."""
         actor = await self._membership_actor(actor, team_id)
+        if not actor.is_admin:
+            # Decided before any account lookup so the response cannot reveal
+            # whether an email exists, is inactive or belongs to an Administrator.
+            raise Forbidden(DIRECT_ADD_MESSAGE)
         email = normalise_email(email)
         if len(email) > 320 or email.count("@") != 1 or any(char.isspace() for char in email):
             raise InvalidRequest("Supply a valid account email address.")
@@ -190,23 +213,13 @@ class TeamService:
         target = await self._users.lock_by_id(target.id)
         if target is None or not target.is_active:
             raise InvalidRequest("An eligible active account could not be added.")
-        existing = await self._teams.get_membership(team_id, target.id)
-        # A team Manager may manage ordinary account memberships, including
-        # promoting or demoting another ordinary account. Site Administrator
-        # memberships remain outside that authority boundary.
-        if not actor.is_admin and target.role is Role.ADMIN:
-            raise Forbidden()
-        if actor.is_admin and target.id == actor.id:
+        if target.id == actor.id:
             raise Forbidden("Ask another Administrator to change an Administrator membership.")
+        existing = await self._teams.get_membership(team_id, target.id)
         if existing is None and await self._teams.count_members(team_id) >= MAX_TEAM_MEMBERS:
             raise InvalidRequest(f"A team can have at most {MAX_TEAM_MEMBERS} members.")
-        if (
-            existing is not None
-            and existing.role is MembershipRole.MANAGER
-            and role is MembershipRole.MEMBER
-            and await self._teams.count_active_managers(team_id) <= 1
-        ):
-            raise InvalidRequest("Each active team must retain at least one active Manager.")
+        if existing is not None and role is MembershipRole.MEMBER:
+            await self._keep_active_manager(team_id, existing, target)
         member = TeamMembership(
             team_id, target.id, role, existing.joined_at if existing else self._clock.now()
         )
@@ -216,8 +229,47 @@ class TeamService:
             actor=actor.id,
             subject=str(team_id),
             ip=context.ip,
-            details={"user_id": str(target.id), "role": role.value},
+            details={
+                "user_id": str(target.id),
+                "role": role.value,
+                "direct_add": existing is None,
+            },
         )
+        await self._uow.commit()
+        return member
+
+    async def change_role(
+        self,
+        actor: User,
+        team_id: UUID,
+        user_id: UUID,
+        role: MembershipRole,
+        context: RequestContext,
+    ) -> TeamMembership:
+        """Promote or demote an existing member, identified by account id."""
+        actor = await self._membership_actor(actor, team_id)
+        existing = await self._teams.get_membership(team_id, user_id)
+        target = await self._users.lock_by_id(user_id) if existing is not None else None
+        if existing is None or target is None:
+            raise NotFound()
+        if not actor.is_admin and target.role is Role.ADMIN:
+            raise Forbidden()
+        if actor.is_admin and target.id == actor.id:
+            raise Forbidden("Ask another Administrator to change an Administrator membership.")
+        if role is MembershipRole.MANAGER and not target.is_active:
+            raise InvalidRequest("Only an active account can be made a Manager.")
+        if role is MembershipRole.MEMBER:
+            await self._keep_active_manager(team_id, existing, target)
+        member = TeamMembership(team_id, target.id, role, existing.joined_at)
+        if existing.role is not role:
+            await self._teams.put_membership(member)
+            await self._auditor.record(
+                AuditAction.TEAM_MEMBER_SET,
+                actor=actor.id,
+                subject=str(team_id),
+                ip=context.ip,
+                details={"user_id": str(target.id), "role": role.value},
+            )
         await self._uow.commit()
         return member
 
@@ -234,10 +286,7 @@ class TeamService:
             )
         if actor.is_admin:
             raise Forbidden("Ask another Administrator to remove an administrator membership.")
-        if membership.role is MembershipRole.MANAGER and (
-            await self._teams.count_active_managers(team_id) <= 1
-        ):
-            raise InvalidRequest("Each active team must retain at least one active Manager.")
+        await self._keep_active_manager(team_id, membership, actor)
         await self._teams.remove_membership(team_id, actor.id)
         await self._auditor.record(
             AuditAction.TEAM_MEMBER_LEFT,
@@ -262,10 +311,7 @@ class TeamService:
             raise Forbidden()
         if actor.is_admin and target.id == actor.id:
             raise Forbidden("Ask another Administrator to remove an Administrator membership.")
-        if membership.role is MembershipRole.MANAGER and (
-            await self._teams.count_active_managers(team_id) <= 1
-        ):
-            raise InvalidRequest("Each active team must retain at least one active Manager.")
+        await self._keep_active_manager(team_id, membership, target)
         await self._teams.remove_membership(team_id, user_id)
         await self._auditor.record(
             AuditAction.TEAM_MEMBER_REMOVED,
