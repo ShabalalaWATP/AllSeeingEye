@@ -11,6 +11,71 @@ The source supplies indexing time, not publisher publication time. See
 [map news behaviour](MAP_NEWS_AND_EVIDENCE.md#geocoded-reporting) and the
 [GDELT event codebook](https://data.gdeltproject.org/documentation/GDELT-Event_Codebook-V2.0.pdf).
 
+## Coverage-gap additions, 15 September 2026
+
+Added 15 public feeds in `rss_seeds_gap_news.py` to fill regional gaps: United States
+desks (2), the Gulf and Arab region (3), Latin America (3), Africa (3), the Caucasus and
+Central Asia (2) and Southeast Asia (2). This takes the headline catalogue from 38 to 53
+feeds and the seeded RSS catalogue from 113 to 128. The same `news_seed` policy applies:
+F6 grade, unassessed rating, headlines only, 30-minute polling (30 more feed requests per
+hour before backoff) and no inferred geography. These are retained-feed evidence only and
+do not enter the research provider inventory or its 128-provider cap.
+
+Each feed was fetched with the project's `FeedHttpClient` identification and parsed through
+`NewsRssConnector` and `Normaliser`: HTTP 200 without a redirect, well-formed RSS, every item
+dated, linked and summary-free, and no future-dated items. The final run yielded 525 records.
+Feed paths were checked against each site's `robots.txt` with Python's `robotparser`; none
+disallows them (SABC's `robots.txt` redirects to itself over HTTP and was treated as absent).
+No RSS-specific personal-use restriction was found on the pages checked, so the general
+publisher terms note applies. Arab News answered 403 to `curl` but 200 to repeated
+`FeedHttpClient` requests, so it may be fragile behind bot protection.
+
+| Source ID | Publisher / coverage | Organisation | Language | Feed | Items | Newest publisher date (UTC) |
+| --- | --- | --- | --- | --- | ---: | --- |
+| `news_cbs_world` | CBS News World | CBS News | en | [RSS](https://www.cbsnews.com/latest/rss/world) | 30 | 2026-09-15 15:59:28 |
+| `news_abc_us_international` | ABC News International | ABC News | en | [RSS](https://abcnews.go.com/abcnews/internationalheadlines) | 25 | 2026-09-15 15:06:28 |
+| `news_the_national_uae` | The National UAE | International Media Investments | en | [RSS](https://www.thenationalnews.com/arc/outboundfeeds/rss/?outputType=xml) | 100 | 2026-09-15 16:14:04 |
+| `news_arab_news` | Arab News | Saudi Research and Media Group | en | [RSS](https://www.arabnews.com/rss.xml) | 50 | 2026-09-15 16:08:00 |
+| `news_middle_east_eye` | Middle East Eye | Middle East Eye | en | [RSS](https://www.middleeasteye.net/rss) | 20 | 2026-09-15 16:26:09 |
+| `news_mexico_news_daily` | Mexico News Daily | Mexico News Daily | en | [RSS](https://mexiconewsdaily.com/feed/) | 10 | 2026-09-15 16:00:45 |
+| `news_insight_crime` | InSight Crime | InSight Crime | en | [RSS](https://insightcrime.org/feed/) | 11 | 2026-09-14 19:20:45 |
+| `news_infobae` | Infobae | Infobae | es | [RSS](https://www.infobae.com/arc/outboundfeeds/rss/) | 100 | 2026-09-15 16:25:57 |
+| `news_nation_kenya` | Nation Kenya | Nation Media Group | en | [RSS](https://nation.africa/kenya/rss.xml) | 25 | 2026-09-15 15:51:20 |
+| `news_sabc_news` | SABC News | South African Broadcasting Corporation | en | [RSS](https://www.sabcnews.com/sabcnews/feed/) | 10 | 2026-09-15 16:13:35 |
+| `news_radio_dabanga` | Radio Dabanga | Radio Dabanga | en | [RSS](https://www.dabangasudan.org/en/feed) | 12 | 2026-09-14 17:57:20 |
+| `news_oc_media` | OC Media | OC Media | en | [RSS](https://oc-media.org/feed/) | 16 | 2026-09-15 15:21:53 |
+| `news_times_central_asia` | The Times of Central Asia | The Times of Central Asia | en | [RSS](https://timesca.com/feed/) | 10 | 2026-09-15 11:51:15 |
+| `news_rappler` | Rappler | Rappler | en | [RSS](https://www.rappler.com/feed/) | 10 | 2026-09-15 15:23:37 |
+| `news_the_diplomat` | The Diplomat | Diplomat Media | en | [RSS](https://thediplomat.com/feed/) | 96 | 2026-09-14 22:14:00 |
+
+Ownership limits: The National is owned by Abu Dhabi-based International Media Investments
+and Arab News by the Saudi Research and Media Group, so treat Gulf state positions in their
+reporting with care. SABC is a state-owned public broadcaster. No flag or reliability change is
+inferred; like CBC and ABC Australia they remain unassessed F6 sources. Nation Kenya and The
+Diplomat links may be paywalled. Infobae is Spanish; titles are not machine-translated.
+
+Rejected or not selected on 15 September 2026:
+
+| Candidate | Observation / reason |
+| --- | --- |
+| Voice of America | Feed answers, newest item March 2025; stale |
+| Al-Monitor, L'Orient Today, Ahram Online | HTTP 403 |
+| Gulf News, Khaleej Times | Feed URL HTTP 404 |
+| Rudaw English | Feed is not well-formed XML |
+| Tico Times | Unsupported response content encoding |
+| El Universal Mexico, Eyewitness News, Sahara Reporters | Feed URL HTTP 404 |
+| News24, The East African, Addis Standard, Sudan Tribune, Morocco World News | HTTP 403 |
+| Punch Nigeria, Daily Maverick | Future-dated items (up to about an hour ahead); no timezone inference applied |
+| Eurasianet, Taipei Times | No item supplied a recognised publication date |
+| Hurriyet Daily News | Parsed with zero items |
+| Civil Georgia | `robots.txt` disallows the feed path |
+| Yonhap English | Connection failed |
+| The Daily Star Bangladesh | Newest item July 2022; stale |
+| Asharq Al-Awsat English | Worked (200-item cap) but shares Arab News's owner; one Saudi Research and Media Group title chosen |
+| Politico, The Hill, Fox News World, Washington Post World, LA Times, Christian Science Monitor | Worked; US additions kept to two broadcaster international desks to bound the schedule |
+| The New Arab, Egypt Independent, Folha Mundo, La Nación, Clarín, El Tiempo, Colombia Reports, Rio Times, Latin America Reports | Worked; not selected within the 15-feed bound (Latin America Reports newest item four days old) |
+| Standard Kenya, Turkish Minute, JAMnews, Irrawaddy, VnExpress International, Malay Mail, Straits Times | Worked; not selected within the 15-feed bound |
+
 ## RSS verification
 
 Added 38 public feeds: 14 UK national/regional and 24 worldwide, taking the seeded RSS catalogue from 54 to 92. Verification used bounded public feed requests, then the actual NewsRssConnector and Normaliser. The final run yielded 1,506 dated, linked F6 records, with no retained summaries or inferred points. Live endpoint success is a snapshot, not an uptime or publisher-reliability guarantee.
