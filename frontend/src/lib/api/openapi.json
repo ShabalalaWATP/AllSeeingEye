@@ -20128,7 +20128,9 @@
           "on_demand",
           "not_configured",
           "disabled_by_admin",
-          "disabled_by_environment"
+          "disabled_by_environment",
+          "blocked_upstream",
+          "available"
         ],
         "title": "ConnectionState"
       },
@@ -41282,6 +41284,130 @@
         ],
         "title": "SourceActivationIn"
       },
+      "SourceAssetOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "family": {
+            "type": "string",
+            "enum": [
+              "camera_index",
+              "map_layer",
+              "ukraine_dataset",
+              "reference_dataset"
+            ],
+            "title": "Family"
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "official_index",
+              "curated_catalogue",
+              "third_party_directory",
+              "bundled_snapshot",
+              "request_service",
+              "browser_direct"
+            ],
+            "title": "Delivery"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "licence_note": {
+            "type": "string",
+            "title": "Licence Note"
+          },
+          "homepage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homepage"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note"
+          },
+          "refresh_note": {
+            "type": "string",
+            "title": "Refresh Note"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ConnectionState"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "requirement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRequirementOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "family",
+          "delivery",
+          "organisation",
+          "description",
+          "licence_note",
+          "homepage",
+          "coverage_note",
+          "refresh_note",
+          "state",
+          "detail",
+          "requirement",
+          "as_of",
+          "records"
+        ],
+        "title": "SourceAssetOut",
+        "description": "A camera index, map layer or dataset: public publisher metadata and state only."
+      },
       "SourceCapability": {
         "properties": {
           "id": {
@@ -41715,6 +41841,17 @@
           "polls": {
             "type": "integer",
             "title": "Polls"
+          },
+          "blocked_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked Reason"
           }
         },
         "type": "object",
@@ -41725,10 +41862,11 @@
           "consecutive_failures",
           "items_last_poll",
           "next_poll_at",
-          "polls"
+          "polls",
+          "blocked_reason"
         ],
         "title": "SourceHealthSummaryOut",
-        "description": "Delivery health without error text, which can embed operator URLs."
+        "description": "Delivery health without error text, which can embed operator URLs.\n\n`blocked_reason` is fixed server-authored text for an upstream refusal, never raw error text."
       },
       "SourceKind": {
         "type": "string",
@@ -45498,6 +45636,14 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/SourceAssetOut"
+            },
+            "type": "array",
+            "title": "Assets",
+            "default": []
           }
         },
         "type": "object",

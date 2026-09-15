@@ -40,6 +40,7 @@ export const sourceContext: components['schemas']['SourceSummaryOut'] = {
       items_last_poll: 12,
       next_poll_at: null,
       polls: 3,
+      blocked_reason: null,
     },
     detail: 'Collecting on schedule.',
   },

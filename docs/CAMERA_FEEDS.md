@@ -6,7 +6,8 @@ share selection and filters. Closing details removes the selection highlight.
 
 ## Coverage and playback
 
-The registry now contains 57 source entries covering every CCTV source group in
+The registry then contained 57 source entries (98 providers by 15 September 2026, each listed
+on `/sources`) covering every CCTV source group in
 OSIRIS revision `fac8d1b1dd3f9aab87bdeccdd04f05c25d5a3bb8` inspected for this work.
 This is source-group coverage, not a guarantee that every upstream camera is
 available. Providers change their catalogues and access policies. Empty, blocked

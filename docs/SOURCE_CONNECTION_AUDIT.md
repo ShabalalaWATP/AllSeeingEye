@@ -191,8 +191,8 @@ secret values. All paths below are backend settings, not browser environment val
 | Companies House | `ASE_COMPANIES_HOUSE_KEY` absent | Developer account/application and read-only REST key; test company, officers and PSC routes |
 | SSLMate CT Search | Key configured; seven records returned by the actual research provider on 11 September | Exact-hostname domain research, bounded first page of unexpired issuances |
 | UCDP | `ASE_UCDP_ACCESS_TOKEN` absent | Request authorised token access; retain the existing Candidate CSV fallback and its temporal limits |
-| ACLED | `ASE_ACLED_ACCESS_TOKEN` absent | Confirm event-level entitlement before configuring; Gmail Open access is aggregated and does not unlock the event adapter |
-| ReliefWeb | `ASE_RELIEFWEB_APPNAME` absent | Obtain an approved application name, not a publishing API key |
+| ACLED | `ASE_ACLED_REFRESH_TOKEN` absent | Confirm a Research, Partner or Enterprise myACLED tier before configuring; public-email Open access has no API, and a data 403 now shows as blocked upstream |
+| ReliefWeb | `ASE_RELIEFWEB_APPNAME` absent | Obtain a pre-approved application name (required since 1 November 2025); an unapproved name returns HTTP 403, shown as blocked upstream |
 | UK sanctions / OFAC SDN | Both snapshot paths absent | Import dated primary lists through the existing validated snapshot process and retain source hash/licence |
 | AidData projects | Catalogue path absent | Prepare the supported local catalogue with recorded years, provenance and actual project geometry |
 | OONI aggregates | Licence acknowledgement false | Confirm appropriate non-commercial use before enabling; no token is missing |

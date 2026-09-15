@@ -12,7 +12,7 @@ export function SourceCatalogueRow({ source }: { source: CatalogueSource }) {
     <li className="min-w-0 py-5 [overflow-wrap:anywhere]">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-text">{source.name}</h3>
+          <h4 className="text-base font-semibold text-text">{source.name}</h4>
           <p className="mt-1 text-sm text-muted">
             {source.organisation}
             {source.parent_organisation ? ` · ${source.parent_organisation}` : ''}

@@ -6188,7 +6188,7 @@ export interface components {
          * ConnectionState
          * @enum {string}
          */
-        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment";
+        ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment" | "blocked_upstream" | "available";
         /**
          * ContentCapability
          * @enum {string}
@@ -13613,6 +13613,46 @@ export interface components {
             /** Enabled */
             enabled: boolean;
         };
+        /**
+         * SourceAssetOut
+         * @description A camera index, map layer or dataset: public publisher metadata and state only.
+         */
+        SourceAssetOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Family
+             * @enum {string}
+             */
+            family: "camera_index" | "map_layer" | "ukraine_dataset" | "reference_dataset";
+            /**
+             * Delivery
+             * @enum {string}
+             */
+            delivery: "official_index" | "curated_catalogue" | "third_party_directory" | "bundled_snapshot" | "request_service" | "browser_direct";
+            /** Organisation */
+            organisation: string;
+            /** Description */
+            description: string;
+            /** Licence Note */
+            licence_note: string;
+            /** Homepage */
+            homepage: string | null;
+            /** Coverage Note */
+            coverage_note: string;
+            /** Refresh Note */
+            refresh_note: string;
+            state: components["schemas"]["ConnectionState"];
+            /** Detail */
+            detail: string;
+            requirement: components["schemas"]["SourceRequirementOut"] | null;
+            /** As Of */
+            as_of: string | null;
+            /** Records */
+            records: number | null;
+        };
         /** SourceCapability */
         SourceCapability: {
             /** Id */
@@ -13735,6 +13775,8 @@ export interface components {
         /**
          * SourceHealthSummaryOut
          * @description Delivery health without error text, which can embed operator URLs.
+         *
+         *     `blocked_reason` is fixed server-authored text for an upstream refusal, never raw error text.
          */
         SourceHealthSummaryOut: {
             status: components["schemas"]["SourceStatus"];
@@ -13750,6 +13792,8 @@ export interface components {
             next_poll_at: string | null;
             /** Polls */
             polls: number;
+            /** Blocked Reason */
+            blocked_reason: string | null;
         };
         /**
          * SourceKind
@@ -15108,6 +15152,11 @@ export interface components {
         ase__api__routers__sources__SourcesOut: {
             /** Items */
             items: components["schemas"]["SourceSummaryOut"][];
+            /**
+             * Assets
+             * @default []
+             */
+            assets: components["schemas"]["SourceAssetOut"][];
         };
         /** SourcesOut */
         ase__api__schemas_events__SourcesOut: {
