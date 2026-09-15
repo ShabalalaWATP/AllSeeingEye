@@ -1,3 +1,4 @@
+import { ADMIN_CARD } from '@/components/admin/AdminPage';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { User } from '@/lib/api/schemas';
@@ -20,7 +21,7 @@ export function LlmPersonalConnections({
   const [confirm, setConfirm] = useState<string | null>(null);
   const personal = bindings.filter((item) => item.user_id);
   return (
-    <section aria-label="Personal AI overrides" className="space-y-3 border-t border-line pt-5">
+    <section aria-label="Personal AI overrides" className={`${ADMIN_CARD} space-y-3`}>
       <h2 className="text-base font-semibold">Personal workspace overrides</h2>
       <p className="text-sm text-muted">
         These apply only to the named personal workspace. Team research follows the team or global

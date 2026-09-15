@@ -45,7 +45,10 @@ export function AiUsagePreview({
   }
 
   return (
-    <section className="space-y-3 border-t border-line pt-5" aria-labelledby="ai-policy-preview">
+    <section
+      className="space-y-3 rounded-lg border border-line/70 bg-ground/30 p-4"
+      aria-labelledby="ai-policy-preview"
+    >
       <div>
         <h3 id="ai-policy-preview" className="text-sm font-semibold">
           Preview effective allowance

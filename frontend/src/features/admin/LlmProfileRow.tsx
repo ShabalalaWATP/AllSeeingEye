@@ -83,7 +83,7 @@ export function LlmProfileRow({
       <details open={expanded}>
         <summary className="cursor-pointer text-sm font-medium">
           {profile.name}{' '}
-          <span className="ml-2 font-normal text-muted">
+          <span className={`ml-2 text-xs font-normal ${tested ? 'text-good' : 'text-amber'}`}>
             {tested ? 'Test passed' : 'Needs a test'}
           </span>
         </summary>

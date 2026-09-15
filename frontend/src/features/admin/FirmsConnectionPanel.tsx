@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AdminIcon } from '@/components/admin/AdminIcon';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -7,13 +8,21 @@ import { useFirmsConnection } from './useFirmsConnection';
 export function FirmsConnectionPanel() {
   const [open, setOpen] = useState(false);
   return (
-    <section className="border-y border-line py-4" aria-label="NASA FIRMS connection">
+    <section
+      className="admin-rise rounded-card border border-line/80 bg-surface/70 px-4 py-4 sm:px-5"
+      aria-label="NASA FIRMS connection"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-semibold">NASA FIRMS</h2>
-          <p className="mt-1 text-xs text-muted">
-            NOAA-20 VIIRS thermal observations · Optional Area API connection
-          </p>
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-line/80 bg-surface-2 text-ember">
+            <AdminIcon name="key" size={16} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-semibold">NASA FIRMS</h2>
+            <p className="mt-1 text-xs text-muted">
+              NOAA-20 VIIRS thermal observations · Optional Area API connection
+            </p>
+          </div>
         </div>
         <Button variant="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? 'Close FIRMS connection' : 'Manage FIRMS connection'}
@@ -44,7 +53,7 @@ function FirmsConnectionJourney() {
           href="https://firms.modaps.eosdis.nasa.gov/api/area/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-accent underline underline-offset-4"
+          className="text-cyan underline underline-offset-4"
         >
           Request a free MAP_KEY from NASA FIRMS
         </a>
@@ -64,7 +73,7 @@ function FirmsConnectionJourney() {
       )}
       {status && (
         <>
-          <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4 [&>div]:rounded-lg [&>div]:border [&>div]:border-line/70 [&>div]:bg-ground/40 [&>div]:p-3">
             <div>
               <dt className="text-xs text-muted">Current connection</dt>
               <dd className="mt-1 font-medium">
@@ -127,7 +136,7 @@ function FirmsConnectionJourney() {
             </Button>
           </div>
           {editable && (
-            <div className="grid gap-6 border-t border-line pt-4 lg:grid-cols-2">
+            <div className="grid gap-6 border-t border-line/70 pt-4 lg:grid-cols-2">
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold">1. Enter and test a replacement</h3>
                 <TextField
@@ -190,7 +199,7 @@ function FirmsConnectionJourney() {
             </div>
           )}
           {editable && (status.configured || status.draft_present) && (
-            <div className="space-y-2 border-t border-line pt-4">
+            <div className="space-y-2 rounded-lg border border-critical/30 bg-critical/5 p-3">
               {!connection.removeReview ? (
                 <Button
                   variant="ghost"

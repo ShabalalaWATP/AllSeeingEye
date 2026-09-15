@@ -1,3 +1,5 @@
+import { PersonCell } from '@/components/admin/PersonCell';
+import { StatusPill } from '@/components/admin/StatusPill';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/Field';
@@ -43,38 +45,40 @@ export function UserRow({ user, onUpdated, onResetLink }: UserRowProps) {
 
   return (
     <tr>
-      <Td>
-        <div className="font-medium">{user.display_name}</div>
-        <div className="text-muted">{user.email}</div>
+      <Td className="min-w-56 py-3">
+        <PersonCell name={user.display_name} email={user.email} muted={!user.is_active} />
       </Td>
-      <Td>
+      <Td className="py-3">
         <SelectField
           label={`Role for ${user.email}`}
           labelHidden
           options={options}
           value={user.role}
           disabled={busy}
-          className="w-28"
+          className="w-36"
           onChange={(event) => void update.run({ role: roleSchema.parse(event.target.value) })}
         />
       </Td>
-      <Td>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={user.is_active}
-            disabled={busy}
-            className="accent-ember"
-            onChange={(event) => void update.run({ is_active: event.target.checked })}
-          />
-          <span>Active</span>
-        </label>
+      <Td className="py-3">
+        <div className="flex flex-col items-start gap-1.5">
+          <label className="flex min-h-9 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={user.is_active}
+              disabled={busy}
+              className="size-4 accent-ember"
+              onChange={(event) => void update.run({ is_active: event.target.checked })}
+            />
+            <span>Active</span>
+          </label>
+          {user.is_active ? null : <StatusPill tone="neutral">Access paused</StatusPill>}
+        </div>
       </Td>
-      <Td className="font-mono text-xs whitespace-nowrap">
+      <Td className="py-3 font-mono text-xs whitespace-nowrap text-muted">
         {user.last_login_at === null ? 'Never' : formatUtc(user.last_login_at)}
       </Td>
-      <Td>
-        <div className="flex flex-col gap-2">
+      <Td className="min-w-44 py-3">
+        <div className="flex flex-col items-start gap-2">
           <Button
             variant="secondary"
             busy={reset.busy}

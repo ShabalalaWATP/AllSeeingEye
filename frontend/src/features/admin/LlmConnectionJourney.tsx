@@ -1,3 +1,4 @@
+import { ADMIN_CARD } from '@/components/admin/AdminPage';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
@@ -91,7 +92,7 @@ export function LlmConnectionJourney({
     }
   };
   return (
-    <section aria-label="Guided AI connection setup" className="space-y-5">
+    <section aria-label="Guided AI connection setup" className={`${ADMIN_CARD} space-y-5`}>
       <div hidden={!!tested}>
         <LlmProfileForm
           {...((draft ?? initial) ? { initial: draft ?? initial } : {})}
@@ -119,7 +120,7 @@ export function LlmConnectionJourney({
             Back to model settings
           </Button>
           <h3 className="text-sm font-semibold">3. Review scope and confirm</h3>
-          <Alert tone="warning">
+          <Alert tone="warning" title="Review before switching">
             This switches the AI provider receiving research prompts and selected evidence for the
             chosen audience. Confirm only after reviewing the endpoint, model and scope.
           </Alert>

@@ -1,5 +1,7 @@
 import { useCallback, useState, useSyncExternalStore } from 'react';
 
+import { ADMIN_CARD, AdminPage } from '@/components/admin/AdminPage';
+import { StatusPill } from '@/components/admin/StatusPill';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { describeError } from '@/lib/api/errors';
@@ -13,7 +15,7 @@ import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAcce
 import { useAuthStore } from '@/stores/auth';
 
 import { LlmPersonalConnections } from './LlmPersonalConnections';
-import { AiUsagePolicies } from './AiUsagePolicies';
+import { AllowanceControls, LlmDraftsSection } from './LlmWorkspaceSections';
 import { LlmConnectionSummary } from './LlmConnectionSummary';
 import type { ConnectionSelection } from './LlmConnectionSummary';
 import { LlmConnectionJourney } from './LlmConnectionJourney';
@@ -44,7 +46,6 @@ function ConnectionWorkspace() {
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' });
   const [notice, setNotice] = useState<string | null>(null);
   const [reuseId, setReuseId] = useState<string | null>(null);
-  const [showUsage, setShowUsage] = useState(false);
   const upsert = useCallback(
     (profile: LlmProfile) => {
       setData((current) =>
@@ -162,199 +163,157 @@ function ConnectionWorkspace() {
       !legacySelection.some((selection) => selection.profile.id === profile.id),
   );
   return (
-    <section className="h-full overflow-y-auto p-4 sm:p-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold">AI connections</h1>
-            <p className="mt-1 text-sm text-muted">
-              Choose the models used for research and reports.
-            </p>
+    <AdminPage
+      eyebrow="Research services"
+      title="AI connections"
+      width="narrow"
+      description="Choose the models used for research and reports. Test a draft before applying it to the whole site, a team or a personal workspace."
+      meta={
+        data === null ? undefined : globalBinding !== undefined ? (
+          <StatusPill tone="good">Global connection active</StatusPill>
+        ) : legacy ? (
+          <StatusPill tone="warning">Role-based connections in use</StatusPill>
+        ) : (
+          <StatusPill tone="critical">No global connection</StatusPill>
+        )
+      }
+      actions={
+        editor.mode === 'closed' ? (
+          <Button onClick={() => openEditor({ mode: 'create' })} disabled={!encryption || loading}>
+            Configure connection
+          </Button>
+        ) : undefined
+      }
+    >
+      {loading && <LoadingNote label="Loading AI connections" />}
+      {error !== null && (
+        <Alert tone="error">
+          {describeError(error)}{' '}
+          <Button variant="ghost" onClick={() => void reload()}>
+            Retry
+          </Button>
+        </Alert>
+      )}
+      {data !== null && !encryption && (
+        <Alert tone="warning" title="Keys cannot be stored">
+          Configure server encryption before saving or testing connections. Set ASE_ENCRYPTION_KEY
+          and restart the server.
+        </Alert>
+      )}
+      {notice !== null && (
+        <p role="status" className="text-sm">
+          {notice}
+        </p>
+      )}
+      {(apply.error ?? reset.error ?? resetPersonal.error) !== null && (
+        <Alert tone="error">
+          {describeError(apply.error ?? reset.error ?? resetPersonal.error)} Refresh the connections
+          before trying the switch again.
+        </Alert>
+      )}
+      {data !== null && (
+        <LlmConnectionSummary
+          global={global}
+          teams={teamSelections}
+          legacy={legacy}
+          disabled={!encryption || apply.busy || reset.busy || editor.mode !== 'closed'}
+          onReset={(team) => void reset.run(team)}
+          onReplace={(profile, teamId) =>
+            openEditor({
+              mode: 'replace',
+              profile,
+              models: [],
+              ...(teamId ? { initialScope: teamId } : {}),
+            })
+          }
+          onReuse={(profile) => {
+            apply.clearError();
+            setNotice(null);
+            setReuseId(profile.id);
+          }}
+        />
+      )}
+      {data !== null && (
+        <LlmPersonalConnections
+          bindings={bindings}
+          profiles={profiles}
+          users={data.users}
+          disabled={!encryption || apply.busy || resetPersonal.busy || editor.mode !== 'closed'}
+          onReset={(id) => void resetPersonal.run(id)}
+          onReplace={(profile, userId) =>
+            openEditor({ mode: 'replace', profile, models: [], initialScope: `user:${userId}` })
+          }
+        />
+      )}
+      {data !== null && reused !== undefined && editor.mode === 'closed' && (
+        <section aria-label="Reuse active connection" className={`${ADMIN_CARD} space-y-3`}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">Use an existing connection</h2>
+            <Button variant="ghost" disabled={apply.busy} onClick={() => setReuseId(null)}>
+              Close connection reuse
+            </Button>
           </div>
-          {editor.mode === 'closed' && (
-            <Button
-              onClick={() => openEditor({ mode: 'create' })}
-              disabled={!encryption || loading}
-            >
-              Configure connection
-            </Button>
-          )}
-        </div>
-        {loading && <LoadingNote label="Loading AI connections" />}
-        {error !== null && (
-          <Alert tone="error">
-            {describeError(error)}{' '}
-            <Button variant="ghost" onClick={() => void reload()}>
-              Retry
-            </Button>
-          </Alert>
-        )}
-        {data !== null && !encryption && (
-          <Alert tone="warning" title="Keys cannot be stored">
-            Configure server encryption before saving or testing connections. Set ASE_ENCRYPTION_KEY
-            and restart the server.
-          </Alert>
-        )}
-        {notice !== null && (
-          <p role="status" className="text-sm">
-            {notice}
-          </p>
-        )}
-        {(apply.error ?? reset.error ?? resetPersonal.error) !== null && (
-          <Alert tone="error">
-            {describeError(apply.error ?? reset.error ?? resetPersonal.error)} Refresh the
-            connections before trying the switch again.
-          </Alert>
-        )}
-        {data !== null && (
-          <LlmConnectionSummary
-            global={global}
-            teams={teamSelections}
-            legacy={legacy}
-            disabled={!encryption || apply.busy || reset.busy || editor.mode !== 'closed'}
-            onReset={(team) => void reset.run(team)}
-            onReplace={(profile, teamId) =>
-              openEditor({
-                mode: 'replace',
-                profile,
-                models: [],
-                ...(teamId ? { initialScope: teamId } : {}),
-              })
-            }
-            onReuse={(profile) => {
-              apply.clearError();
-              setNotice(null);
-              setReuseId(profile.id);
-            }}
-          />
-        )}
-        {data !== null && (
-          <LlmPersonalConnections
-            bindings={bindings}
-            profiles={profiles}
-            users={data.users}
-            disabled={!encryption || apply.busy || resetPersonal.busy || editor.mode !== 'closed'}
-            onReset={(id) => void resetPersonal.run(id)}
-            onReplace={(profile, userId) =>
-              openEditor({ mode: 'replace', profile, models: [], initialScope: `user:${userId}` })
-            }
-          />
-        )}
-        {data !== null && reused !== undefined && editor.mode === 'closed' && (
-          <section aria-label="Reuse active connection" className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-base font-semibold">Use an existing connection</h2>
-              <Button variant="ghost" disabled={apply.busy} onClick={() => setReuseId(null)}>
-                Close connection reuse
-              </Button>
-            </div>
-            <ul>
-              <LlmProfileRow
-                key={`${reused.id}:${reused.revision}`}
-                profile={reused}
-                teams={data.teams}
-                users={data.users}
-                disabled={!encryption}
-                applying={apply.busy || reset.busy}
-                hasGlobal={globalBinding !== undefined}
-                legacyProtected={false}
-                expanded
-                onEdit={(target, models) =>
-                  openEditor({ mode: 'replace', profile: target, models })
-                }
-                onDeleted={removed}
-                onTested={upsert}
-                onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
-              />
-            </ul>
-          </section>
-        )}
-        {data !== null && editor.mode !== 'closed' && (
-          <LlmConnectionJourney
-            key={
-              editor.mode === 'create'
-                ? 'new'
-                : `${editor.mode}:${editor.profile.id}:${editor.profile.revision}`
-            }
-            {...(editor.mode === 'create' ? {} : { initial: editor.profile })}
-            replacement={editor.mode === 'replace'}
-            {...(editor.mode !== 'create' && editor.initialScope
-              ? { initialScope: editor.initialScope }
-              : {})}
-            models={editor.mode === 'create' ? [] : editor.models}
-            teams={data.teams}
-            users={data.users}
-            hasGlobal={globalBinding !== undefined}
-            applying={apply.busy}
-            onSaved={(profile) => {
-              upsert(profile);
-              setNotice(`${profile.name} saved. The active connection has not changed.`);
-            }}
-            onApply={(profile, teamId, userId) => void apply.run(profile, teamId, userId)}
-            onCancel={() => setEditor({ mode: 'closed' })}
-          />
-        )}
-        {data !== null && editor.mode === 'closed' && (
-          <section aria-label="Saved connection drafts" className="space-y-3">
-            <div>
-              <h2 className="text-base font-semibold">Saved drafts and embeddings</h2>
-              <p className="mt-1 text-sm text-muted">
-                Text drafts do not change the active connection. Test and apply a draft when it is
-                ready.
-              </p>
-            </div>
-            {drafts.length === 0 ? (
-              <p className="text-sm text-muted">No saved drafts.</p>
-            ) : (
-              <ul>
-                {drafts.map((profile) => (
-                  <LlmProfileRow
-                    key={`${profile.id}:${profile.revision}`}
-                    profile={profile}
-                    teams={data.teams}
-                    users={data.users}
-                    disabled={!encryption}
-                    applying={apply.busy || reset.busy}
-                    hasGlobal={globalBinding !== undefined}
-                    legacyProtected={
-                      globalBinding === undefined &&
-                      profile.enabled &&
-                      profile.roles.some((role) => TEXT_ROLES.includes(role))
-                    }
-                    onEdit={(target, models) =>
-                      openEditor({ mode: 'edit', profile: target, models })
-                    }
-                    onDeleted={removed}
-                    onTested={upsert}
-                    onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
-        {editor.mode === 'closed' ? (
-          showUsage ? (
-            <>
-              <Button variant="ghost" onClick={() => setShowUsage(false)}>
-                Close allowance controls
-              </Button>
-              <AiUsagePolicies users={data?.users ?? []} teams={data?.teams ?? []} />
-            </>
-          ) : (
-            <section className="border-t border-line pt-6">
-              <h2 className="text-base font-semibold">AI access and usage</h2>
-              <p className="mt-1 text-sm text-muted">
-                Set bounded daily, weekly or monthly request and token allowances for the site,
-                individual users or teams.
-              </p>
-              <Button className="mt-3" variant="secondary" onClick={() => setShowUsage(true)}>
-                Open allowance controls
-              </Button>
-            </section>
-          )
-        ) : null}
-      </div>
-    </section>
+          <ul>
+            <LlmProfileRow
+              key={`${reused.id}:${reused.revision}`}
+              profile={reused}
+              teams={data.teams}
+              users={data.users}
+              disabled={!encryption}
+              applying={apply.busy || reset.busy}
+              hasGlobal={globalBinding !== undefined}
+              legacyProtected={false}
+              expanded
+              onEdit={(target, models) => openEditor({ mode: 'replace', profile: target, models })}
+              onDeleted={removed}
+              onTested={upsert}
+              onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
+            />
+          </ul>
+        </section>
+      )}
+      {data !== null && editor.mode !== 'closed' && (
+        <LlmConnectionJourney
+          key={
+            editor.mode === 'create'
+              ? 'new'
+              : `${editor.mode}:${editor.profile.id}:${editor.profile.revision}`
+          }
+          {...(editor.mode === 'create' ? {} : { initial: editor.profile })}
+          replacement={editor.mode === 'replace'}
+          {...(editor.mode !== 'create' && editor.initialScope
+            ? { initialScope: editor.initialScope }
+            : {})}
+          models={editor.mode === 'create' ? [] : editor.models}
+          teams={data.teams}
+          users={data.users}
+          hasGlobal={globalBinding !== undefined}
+          applying={apply.busy}
+          onSaved={(profile) => {
+            upsert(profile);
+            setNotice(`${profile.name} saved. The active connection has not changed.`);
+          }}
+          onApply={(profile, teamId, userId) => void apply.run(profile, teamId, userId)}
+          onCancel={() => setEditor({ mode: 'closed' })}
+        />
+      )}
+      {data !== null && editor.mode === 'closed' && (
+        <LlmDraftsSection
+          drafts={drafts}
+          teams={data.teams}
+          users={data.users}
+          encryption={encryption}
+          applying={apply.busy || reset.busy}
+          hasGlobal={globalBinding !== undefined}
+          onEdit={(target, models) => openEditor({ mode: 'edit', profile: target, models })}
+          onDeleted={removed}
+          onTested={upsert}
+          onApply={(target, teamId, userId) => void apply.run(target, teamId, userId)}
+        />
+      )}
+      {editor.mode === 'closed' ? (
+        <AllowanceControls users={data?.users ?? []} teams={data?.teams ?? []} />
+      ) : null}
+    </AdminPage>
   );
 }

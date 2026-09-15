@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 
+import { AdminIcon } from '@/components/admin/AdminIcon';
+import { AdminPage, AdminSection, EmptyState } from '@/components/admin/AdminPage';
 import { Alert, LoadingNote } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { Table, Th } from '@/components/ui/Table';
 import { fetchSources } from '@/lib/api/events';
 import type { Source, SourceHealth } from '@/lib/api/eventSchemas';
@@ -23,7 +26,7 @@ export function summarise(sources: readonly Source[]): string {
 }
 
 export default function AdminSourcesPage() {
-  const { data, error, loading, setData, key } = useScopedResource(fetchSources);
+  const { data, error, loading, setData, key, refresh } = useScopedResource(fetchSources);
   const now = useNow();
 
   const replaceHealth = useCallback(
@@ -38,56 +41,73 @@ export default function AdminSourcesPage() {
   );
 
   return (
-    <section className="flex h-full flex-col gap-4 overflow-y-auto p-6">
-      <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-xl font-semibold">Sources</h1>
-        {data !== null && <p className="text-sm text-muted">{summarise(data)}</p>}
-      </div>
-      <p className="text-sm text-muted">
-        Control collection across live feeds and on-demand research. Connection tests fetch a
-        bounded sample without publishing or saving records. Manage NASA FIRMS credentials below;
-        other source credentials remain operator configured.
-      </p>
+    <AdminPage
+      eyebrow="Research services"
+      title="Sources"
+      description="Control collection across live feeds and on-demand research. Connection tests fetch a bounded sample without publishing or saving records. Manage NASA FIRMS credentials below; other source credentials remain operator configured."
+      meta={
+        data === null ? undefined : (
+          <p className="inline-flex items-center gap-2 text-xs text-muted">
+            <AdminIcon name="sources" size={14} className="text-ember" />
+            {summarise(data)}
+          </p>
+        )
+      }
+      actions={
+        <Button variant="secondary" busy={loading} onClick={() => void refresh()}>
+          <AdminIcon name="refresh" size={16} />
+          Refresh
+        </Button>
+      }
+    >
       <FirmsConnectionPanel key={key} />
       {error === null ? null : <Alert tone="error">{describeError(error)}</Alert>}
-      {data === null ? (
-        loading ? (
-          <LoadingNote label="Loading sources" />
-        ) : null
-      ) : (
-        <Table caption="Sources">
-          <thead>
-            <tr>
-              <Th>Source</Th>
-              <Th>Category</Th>
-              <Th>Grade</Th>
-              <Th>Poll</Th>
-              <Th>Status</Th>
-              <Th>Last poll</Th>
-              <Th>Last error</Th>
-              <Th>Actions</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item) => (
-              <SourceRow
-                key={`${key}:${item.id}`}
-                source={item}
-                now={now}
-                onReset={replaceHealth}
-                onActivation={(id, enabled) =>
-                  setData(
-                    (current) =>
-                      current?.map((source) =>
-                        source.id === id ? { ...source, enabled } : source,
-                      ) ?? null,
-                  )
-                }
-              />
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </section>
+      <AdminSection
+        title="Collection registry"
+        icon="sources"
+        description="Health reflects the most recent polls. Disabling a source stops future collection; existing evidence stays available."
+      >
+        {data === null ? (
+          loading ? (
+            <LoadingNote label="Loading sources" />
+          ) : null
+        ) : data.length === 0 ? (
+          <EmptyState icon="sources" title="No sources are registered." />
+        ) : (
+          <Table caption="Sources" stickyHeader>
+            <thead>
+              <tr>
+                <Th>Source</Th>
+                <Th>Category</Th>
+                <Th>Grade</Th>
+                <Th>Poll</Th>
+                <Th>Status</Th>
+                <Th>Last poll</Th>
+                <Th>Last error</Th>
+                <Th>Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item) => (
+                <SourceRow
+                  key={`${key}:${item.id}`}
+                  source={item}
+                  now={now}
+                  onReset={replaceHealth}
+                  onActivation={(id, enabled) =>
+                    setData(
+                      (current) =>
+                        current?.map((source) =>
+                          source.id === id ? { ...source, enabled } : source,
+                        ) ?? null,
+                    )
+                  }
+                />
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </AdminSection>
+    </AdminPage>
   );
 }

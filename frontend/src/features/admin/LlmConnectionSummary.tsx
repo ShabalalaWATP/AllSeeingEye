@@ -1,3 +1,4 @@
+import { ADMIN_CARD } from '@/components/admin/AdminPage';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
@@ -33,7 +34,7 @@ function Connection({
 }) {
   const profile = selection.profile;
   return (
-    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 py-3">
+    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 py-3 first:pt-1">
       <div className="min-w-0 space-y-1">
         <p className="break-words font-medium">{profile.name}</p>
         <p className="break-all font-mono text-sm text-muted">
@@ -85,8 +86,8 @@ export function LlmConnectionSummary({
 }: LlmConnectionSummaryProps) {
   const [resetTeam, setResetTeam] = useState<string | null>(null);
   return (
-    <div className="space-y-7">
-      <section aria-label="Global AI connection" className="border-t border-line pt-5">
+    <div className="space-y-6">
+      <section aria-label="Global AI connection" className={ADMIN_CARD}>
         <h2 className="text-base font-semibold">
           {legacy ? 'Current role-based connections' : 'Global connection'}
         </h2>
@@ -113,7 +114,7 @@ export function LlmConnectionSummary({
           </div>
         )}
       </section>
-      <section aria-label="Team AI overrides" className="border-t border-line pt-5">
+      <section aria-label="Team AI overrides" className={ADMIN_CARD}>
         <h2 className="text-base font-semibold">Team overrides</h2>
         <p className="mt-1 text-sm text-muted">
           These connections keep their own model when the global connection changes.
