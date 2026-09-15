@@ -86,9 +86,15 @@ function post(teamId: string, postId: string, action = ''): string {
   return `${team(teamId)}/board/posts/${encodeURIComponent(postId)}${action}`;
 }
 
-export function listBoardPosts(teamId: string, offset = 0, limit = 20): Promise<TeamBoardPage> {
+export function listBoardPosts(
+  teamId: string,
+  offset = 0,
+  limit = 20,
+  signal?: AbortSignal,
+): Promise<TeamBoardPage> {
   return apiCall(`${team(teamId)}/board/posts?limit=${limit}&offset=${offset}`, {
     schema: pageSchema,
+    ...(signal === undefined ? {} : { signal }),
   });
 }
 
@@ -159,6 +165,9 @@ export function markBoardRead(teamId: string, lastSeenPostId: string): Promise<T
   });
 }
 
-export function getTeamDashboard(teamId: string): Promise<TeamDashboard> {
-  return apiCall(`${team(teamId)}/dashboard`, { schema: dashboardSchema });
+export function getTeamDashboard(teamId: string, signal?: AbortSignal): Promise<TeamDashboard> {
+  return apiCall(`${team(teamId)}/dashboard`, {
+    schema: dashboardSchema,
+    ...(signal === undefined ? {} : { signal }),
+  });
 }

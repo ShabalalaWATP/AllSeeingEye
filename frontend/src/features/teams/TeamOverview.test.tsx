@@ -153,7 +153,7 @@ describe('TeamOverview', () => {
       ),
     );
     const { user } = renderOverview();
-    expect(await screen.findByText('Not found.')).toBeInTheDocument();
+    expect(await screen.findByText('Team access changed')).toBeInTheDocument();
     revoked = false;
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Standing orders for the week')).toBeInTheDocument();

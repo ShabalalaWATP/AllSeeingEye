@@ -43,6 +43,11 @@ export function teamCapabilities(user: User, detail: TeamDetail | null): TeamCap
   };
 }
 
+/** A removed membership or hidden team reads as 403 or 404: stop showing and refreshing it. */
+export function isTeamAccessLoss(status: number): boolean {
+  return status === 403 || status === 404;
+}
+
 export interface MemberCapabilities {
   canChangeRole: boolean;
   canRemove: boolean;

@@ -159,7 +159,7 @@ export function TeamOverview({
   capabilities: TeamCapabilities;
   onTabChange: (tab: TeamDashboardTab) => void;
 }) {
-  const { data, error, loading, reload } = useTeamDashboard(teamId);
+  const { data, error, loading, accessLost, refreshFailed, reload } = useTeamDashboard(teamId);
   return (
     <div className="flex flex-col gap-7" aria-labelledby="team-overview-heading">
       <div>
@@ -175,6 +175,18 @@ export function TeamOverview({
         </p>
       </div>
       {loading && data === null ? <LoadingNote label="Loading team overview" /> : null}
+      <p aria-live="polite" className={refreshFailed ? 'text-xs text-muted' : 'sr-only'}>
+        {refreshFailed ? 'Automatic refresh failed. The overview will try again shortly.' : null}
+      </p>
+      {accessLost ? (
+        <Alert tone="warning" title="Team access changed">
+          This overview is no longer available to your account, so automatic refresh has stopped.
+          Refresh the team list to check your current workspaces.{' '}
+          <Button variant="ghost" onClick={() => void reload()}>
+            Retry
+          </Button>
+        </Alert>
+      ) : null}
       {error ? (
         <Alert tone="error">
           {error}{' '}
