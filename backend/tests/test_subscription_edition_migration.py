@@ -1,9 +1,10 @@
 """Additive 0035 migration against disposable populated databases only."""
 
+import asyncio
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 import sqlalchemy as sa
@@ -17,8 +18,17 @@ from test_scope_migration import _insert
 NOW = datetime(2026, 9, 14, 12, tzinfo=UTC)
 
 
+def _migrate(step, config, revision: str) -> None:
+    """Run an Alembic step, then restore a current loop for asyncpg's sync fallback."""
+    try:
+        step(config, revision)
+    finally:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
+
 def _seed(url: str):
-    engine = sa.create_engine(url)
+    # No pooling: each checkout connects on the current loop (see _migrate).
+    engine = sa.create_engine(url, poolclass=sa.pool.NullPool)
     metadata = sa.MetaData()
     metadata.reflect(engine)
     with engine.begin() as connection:
@@ -77,10 +87,11 @@ def _seed(url: str):
 
 def _exercise(url: str, async_url: str) -> None:
     config = alembic_config(async_url)
-    command.upgrade(config, "0034")
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    _migrate(command.upgrade, config, "0034")
     engine, schedule_id, owner, report_id, options, jobs = _seed(url)
     try:
-        command.upgrade(config, "0035")
+        _migrate(command.upgrade, config, "0035")
         metadata = sa.MetaData()
         metadata.reflect(engine)
         indexes = {row["name"] for row in sa.inspect(engine).get_indexes("subscription_editions")}
@@ -100,7 +111,8 @@ def _exercise(url: str, async_url: str) -> None:
                 .one()
             )
             assert schedule["name"] == "Legacy monthly"
-            assert schedule["last_report_id"] == report_id
+            # SQLite returns the stored hex text; PostgreSQL returns a UUID.
+            assert UUID(str(schedule["last_report_id"])) == UUID(report_id)
             assert schedule["next_run_at"] is not None
             assert schedule["research_options"] == {**options, "last_coverage": "unknown"}
             assert (
@@ -127,9 +139,9 @@ def _exercise(url: str, async_url: str) -> None:
                 .all()
             )
             assert len(retained) == 3
-            before = {str(row["id"]): row for row in jobs}
+            before = {UUID(str(row["id"])): row for row in jobs}
             for row in retained:
-                old = before[str(row["id"])]
+                old = before[UUID(str(row["id"]))]
                 for key in ("status", "payload", "payload_sha256", "payload_bytes", "error"):
                     assert row[key] == old[key]
         snapshot = canonical_snapshot(
@@ -162,10 +174,10 @@ def _exercise(url: str, async_url: str) -> None:
                 )
             )
         with pytest.raises(RuntimeError, match="retained subscription edition records"):
-            command.downgrade(config, "0034")
+            _migrate(command.downgrade, config, "0034")
         with engine.begin() as connection:
             connection.execute(metadata.tables["subscription_revisions"].delete())
-        command.downgrade(config, "0034")
+        _migrate(command.downgrade, config, "0034")
         assert "subscription_editions" not in sa.inspect(engine).get_table_names()
     finally:
         engine.dispose()
@@ -176,6 +188,8 @@ def test_sqlite_legacy_upgrade_keeps_due_slots_jobs_and_unknown_coverage(tmp_pat
     _exercise(f"sqlite:///{database}", f"sqlite+aiosqlite:///{database}")
 
 
+# asyncpg is the only shipped PostgreSQL driver; its sync fallback is deprecated upstream.
+@pytest.mark.filterwarnings("ignore:The async_fallback dialect argument:DeprecationWarning")
 def test_postgres_disposable_upgrade_when_explicitly_configured() -> None:
     async_url = os.environ.get("ASE_TEST_MIGRATION_POSTGRES_URL")
     if not async_url:
@@ -186,5 +200,7 @@ def test_postgres_disposable_upgrade_when_explicitly_configured() -> None:
         and (parsed.database or "").startswith("ase_s01_disposable_")
     ):
         pytest.fail("The PostgreSQL migration URL must name an ase_s01_disposable_ database.")
-    sync_url = parsed.set(drivername="postgresql+psycopg")
-    _exercise(str(sync_url), async_url)
+    # The project ships asyncpg only; its dialect's synchronous fallback drives the
+    # blocking seed and inspection helpers without adding a second driver.
+    sync_url = parsed.update_query_dict({"async_fallback": "true"})
+    _exercise(sync_url.render_as_string(hide_password=False), async_url)

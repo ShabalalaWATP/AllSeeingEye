@@ -10,8 +10,7 @@ import pytest
 
 from ai_usage_helpers import NOW, accounting, add_policy, policy, reservations, summaries
 from ase.adapters.persistence.ai_usage import SqlAiUsageRepository
-from ase.adapters.persistence.base import Base
-from ase.adapters.persistence.session import create_engine, create_session_factory
+from ase.adapters.persistence.session import create_session_factory
 from ase.adapters.persistence.teams import TeamMembershipRow, TeamRow
 from ase.application.ai_usage_admin import AiPolicyInput, AiUsagePolicyAdmin
 from ase.domain.ai_usage import (
@@ -29,6 +28,7 @@ from ase.domain.errors import Conflict, Forbidden
 from ase.domain.users import Role, User
 from assistant_helpers import Admission, Gateway, event, nothing
 from assistant_helpers import profile as eye_profile
+from race_database import race_engine
 
 
 def actor(role: Role = Role.ADMIN) -> User:
@@ -142,11 +142,8 @@ async def test_policy_admin_requires_admin_and_rejects_duplicate(container, user
 
 
 async def test_file_backed_concurrent_reservations_refuse_the_loser(tmp_path):
-    database = tmp_path / "ai-usage.db"
-    engine = create_engine(f"sqlite+aiosqlite:///{database}")
+    engine = await race_engine(tmp_path, "ai-usage.db")
     factory = create_session_factory(engine)
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
     current = policy(limit=1, tokens=10)
     async with factory() as session:
         await SqlAiUsageRepository(session).add_policy(current)

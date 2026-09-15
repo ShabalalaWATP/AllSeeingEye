@@ -10,8 +10,7 @@ import pytest
 
 from ai_usage_helpers import NOW, accounting, add_policy, policy, reservations, summaries
 from ase.adapters.persistence.ai_usage import SqlAiUsageRepository
-from ase.adapters.persistence.base import Base
-from ase.adapters.persistence.session import create_engine, create_session_factory
+from ase.adapters.persistence.session import create_session_factory
 from ase.application.ai_usage import AiUsageAccounting
 from ase.application.ai_usage_gateway import AllowanceLlmGateway
 from ase.application.ports.llm import LlmGatewayError, LlmGatewayTimeout
@@ -22,6 +21,7 @@ from ase.domain.ai_usage import (
     AiReservationStatus,
 )
 from ase.domain.llm import LlmResult
+from race_database import race_engine
 from report_job_budget_helpers import REQUEST
 
 
@@ -171,10 +171,8 @@ async def test_reserve_runs_bounded_reconciliation_opportunistically(container, 
 
 
 async def test_concurrent_reserve_and_settle_never_lose_increments(tmp_path):
-    engine = create_engine(f"sqlite+aiosqlite:///{tmp_path / 'settle-race.db'}")
+    engine = await race_engine(tmp_path, "settle-race.db")
     factory = create_session_factory(engine)
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
     current = policy(limit=None, tokens=None)
     async with factory() as session:
         await SqlAiUsageRepository(session).add_policy(current)

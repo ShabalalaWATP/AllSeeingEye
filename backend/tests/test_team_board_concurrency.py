@@ -1,4 +1,4 @@
-"""File-backed SQLite races for board revisions and the pin cap."""
+"""Real-database races (file SQLite or disposable PostgreSQL) for board revisions and pins."""
 
 from __future__ import annotations
 
@@ -10,8 +10,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from ase.adapters.persistence.base import Base
-from ase.adapters.persistence.session import create_engine, create_session_factory
+from ase.adapters.persistence.session import create_session_factory
 from ase.adapters.persistence.team_board import SqlTeamBoardRepository
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.application.auditing import Auditor
@@ -24,6 +23,7 @@ from ase.domain.team_board import TeamBoardPost
 from ase.domain.teams import MembershipRole, Team, TeamMembership
 from ase.domain.users import Role, User
 from helpers import FakeClock
+from race_database import race_engine
 
 NOW = datetime(2026, 9, 15, 9, tzinfo=UTC)
 CONTEXT = RequestContext(ip="127.0.0.1")
@@ -48,10 +48,8 @@ def _user(role: Role = Role.USER) -> User:
 async def _seed(
     tmp_path: Path, posts: int
 ) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession], User, UUID, list[UUID]]:
-    engine = create_engine(f"sqlite+aiosqlite:///{tmp_path / 'board.db'}")
+    engine = await race_engine(tmp_path, "board.db")
     factory = create_session_factory(engine)
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
     manager = _user()
     team_id = uuid4()
     ids = [uuid4() for _ in range(posts)]
