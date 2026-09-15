@@ -4,7 +4,8 @@ Official feed directories: ncsc.gov.uk/information/rss-feeds,
 cloud.google.com/blog/topics/threat-intelligence, cyber.gov.au's social media
 community page, cisa.gov/cybersecurity-advisories, cert.gov.ua, cyber.gc.ca,
 cert.ssi.gouv.fr and ic3.gov. The 13 September probes used the application's own
-user agent; CISA's advisory feed answered 200 that day after an earlier 403.
+user agent; CISA's advisory feed answered 200 that day after an earlier 403. From
+15 September 2026 the CISA and ACSC feeds refuse this client; rss_access.py defers them.
 Candidates that answered 403 or 404 (ENISA news, WeLiveSecurity, CCDCOE, SSSCIP,
 NCSC Ireland, Google TAG) were left out until their feed addresses are confirmed.
 """

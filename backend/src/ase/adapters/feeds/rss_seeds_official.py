@@ -121,7 +121,8 @@ OFFICIAL_SEEDS: tuple[RssSeed, ...] = (
         "Russian MFA news (Russian)",
         "Ministry of Foreign Affairs of the Russian Federation",
         P,
-        "https://mid.ru/ru/rss/",
+        # The feed's own self link; /ru/rss/ returns a firewall HTML page (15 September 2026).
+        "https://mid.ru/ru/rss.php",
         C,
         30,
         STATE_OFFICIAL,
