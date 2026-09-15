@@ -20,6 +20,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 import httpx
 
 from ase.adapters.feeds.bounded_gzip import BoundedGzipError, read_feed_response
+from ase.adapters.feeds.host_pacing import HostPacer
 from ase.adapters.feeds.http_contracts import (
     FeedCredential,
     FeedFetchError,
@@ -27,6 +28,8 @@ from ase.adapters.feeds.http_contracts import (
     FeedTimeoutError,
     NotModified,
     classify_fetch_error,
+    safe_header_token,
+    status_error,
 )
 from ase.adapters.feeds.secret_urls import SecretFeedUrl, protect_http_logs
 from ase.application.feeds.poll_scope import active_poll_scope
@@ -135,6 +138,7 @@ class FeedHttpClient:
         total_timeout_seconds: float = 120.0,
         max_bytes: int = DEFAULT_MAX_BYTES,
         client: httpx.AsyncClient | None = None,
+        host_pacer: HostPacer | None = None,
     ) -> None:
         if client is not None and (
             client.auth is not None
@@ -144,7 +148,7 @@ class FeedHttpClient:
             )
         ):
             raise ValueError("Shared feed clients must not carry global authorisation.")
-        self._max_bytes = max_bytes
+        self._max_bytes, self._pacer = max_bytes, host_pacer or HostPacer({})
         if total_timeout_seconds <= 0:
             raise ValueError("The total feed timeout must be positive.")
         self._total_timeout_seconds = total_timeout_seconds
@@ -209,7 +213,7 @@ class FeedHttpClient:
         if not 0 <= max_redirects <= MAX_REDIRECTS:
             raise ValueError("Invalid redirect budget")
         current = url
-        for redirect_count in range(max_redirects + 1):
+        for _ in range(max_redirects + 1):
             address = await assert_public_host(current)
             headers: dict[str, str] = {
                 "Accept-Encoding": "identity",
@@ -224,6 +228,7 @@ class FeedHttpClient:
             if validators and validators.last_modified:
                 headers["If-Modified-Since"] = validators.last_modified
             target, extensions = self._pinned(current, address, headers)
+            await self._pacer.wait(current)
             try:
                 async with self._client.stream(
                     "GET", target, headers=headers, extensions=extensions, follow_redirects=False
@@ -241,10 +246,7 @@ class FeedHttpClient:
                     body = await read_feed_response(
                         response,
                         self._max_bytes,
-                        url,
-                        current,
                         credentialed=credential is not None,
-                        redirected=redirect_count > 0,
                         default_reader=self._read_bounded,
                     )
             except (httpx.HTTPError, BoundedGzipError) as exc:
@@ -275,7 +277,7 @@ class FeedHttpClient:
             self._validators.popitem(last=False)
 
     async def _status_error(self, response: httpx.Response, url: str) -> FeedFetchError:
-        return FeedHttpStatusError(response.status_code, url)
+        return status_error(response.status_code, url, response.headers)
 
     async def get_json(
         self,
@@ -332,8 +334,11 @@ class FeedHttpClient:
     async def _read_bounded(self, response: httpx.Response) -> bytes:
         # HTTPX decodes compressed chunks before yielding them. Refuse that path so an
         # upstream cannot allocate a decompression bomb before our byte limit applies.
-        if response.headers.get("content-encoding", "identity").strip().lower() != "identity":
-            raise FeedFetchError("Unsupported response content encoding")
+        encoding = response.headers.get("content-encoding", "identity").strip().lower()
+        if encoding != "identity":
+            raise FeedFetchError(
+                f"Unsupported response content encoding: {safe_header_token(encoding)}"
+            )
         declared = response.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > self._max_bytes:
             raise FeedFetchError(f"Response too large ({declared} bytes)")

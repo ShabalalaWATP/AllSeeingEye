@@ -1,4 +1,4 @@
-"""Only the two verified UN RSS endpoints may decode bounded raw gzip streams."""
+"""Unauthenticated feeds that ignore Accept-Encoding: identity decode bounded raw gzip."""
 
 import gzip
 from collections.abc import AsyncIterator
@@ -10,6 +10,7 @@ from ase.adapters.feeds import http as feed_http
 from ase.adapters.feeds.http import FeedCredential, FeedFetchError, FeedHttpClient
 from ase.adapters.feeds.rss import RssConnector
 from ase.adapters.feeds.rss_seeds_official import OFFICIAL_SEEDS
+from ase.adapters.feeds.rss_seeds_uk_news import UK_NEWS_SEEDS
 
 URLS = (
     "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
@@ -78,19 +79,17 @@ async def test_gzip_exact_limit_and_empty_stream() -> None:
 
 
 @pytest.mark.parametrize(
-    "url", (URLS[0] + "?extra=1", "https://news.un.org/other.xml", "https://other.test/rss.xml")
+    "url",
+    (URLS[0] + "?extra=1", "https://www.independent.co.uk/news/uk/rss", "https://other.test/rss"),
 )
-async def test_other_urls_remain_identity_only(url: str) -> None:
-    body = Chunks(gzip.compress(b"<rss/>"))
-    with pytest.raises(FeedFetchError, match="encoding"):
-        await fetch(body, url=url)
-    assert not body.consumed
+async def test_any_unauthenticated_feed_decodes_gzip_it_did_not_ask_for(url: str) -> None:
+    assert await fetch(Chunks(gzip.compress(b"<rss/>")), url=url) == b"<rss/>"
 
 
 @pytest.mark.parametrize("encoding", ("br", "deflate", "gzip, identity", "unknown"))
 async def test_other_encodings_are_rejected_before_body_consumption(encoding: str) -> None:
     body = Chunks(b"untrusted")
-    with pytest.raises(FeedFetchError, match="encoding"):
+    with pytest.raises(FeedFetchError, match="Unsupported response content encoding: "):
         await fetch(body, encoding=encoding)
     assert not body.consumed
 
@@ -132,34 +131,42 @@ async def test_credentialed_request_does_not_gain_gzip_support() -> None:
     assert not body.consumed
 
 
-@pytest.mark.parametrize(
-    "start,end",
-    (("https://other.test/feed", URLS[0]), (URLS[0], URLS[1]), (URLS[0], URLS[0])),
-)
-async def test_redirects_cannot_inherit_the_encoding_exception(start: str, end: str) -> None:
+async def test_redirected_gzip_is_decoded_after_each_hop_is_rechecked() -> None:
     calls = 0
-    body = Chunks(gzip.compress(b"<rss/>"))
+    checked: list[str] = []
+
+    async def public(url: str) -> str:
+        checked.append(url)
+        return "8.8.8.8"
 
     def respond(request: httpx.Request) -> httpx.Response:
         nonlocal calls
         calls += 1
         if calls == 1:
-            return httpx.Response(302, headers={"location": end})
+            return httpx.Response(302, headers={"location": URLS[1]})
+        body = Chunks(gzip.compress(b"<rss/>"))
         return httpx.Response(200, headers={"content-encoding": "gzip"}, stream=body)
 
     client = FeedHttpClient(
         USER_AGENT, client=httpx.AsyncClient(transport=httpx.MockTransport(respond))
     )
     try:
-        with pytest.raises(FeedFetchError, match="encoding"):
-            await client.get_bytes(start)
-        assert calls == 2
-        assert not body.consumed
+        with pytest.MonkeyPatch.context() as patch:
+            patch.setattr(feed_http, "assert_public_host", public)
+            assert await client.get_bytes("https://other.test/feed") == b"<rss/>"
+        assert checked == ["https://other.test/feed", URLS[1]]
     finally:
         await client.aclose()
 
 
-@pytest.mark.parametrize("source_id", ("un_news", "un_press"))
+async def test_header_token_in_the_error_is_bounded_and_plain() -> None:
+    body = Chunks(b"untrusted")
+    with pytest.raises(FeedFetchError) as caught:
+        await fetch(body, encoding="<script>" + "z" * 100)
+    assert str(caught.value) == "Unsupported response content encoding: " + "script" + "z" * 32
+
+
+@pytest.mark.parametrize("source_id", ("un_news", "un_press", "news_independent_uk"))
 async def test_un_gzip_response_reaches_the_existing_rss_parser(source_id: str, clock) -> None:
     payload = (
         b"<rss><channel><item><guid>example</guid><title>Example headline</title>"
@@ -174,7 +181,7 @@ async def test_un_gzip_response_reaches_the_existing_rss_parser(source_id: str, 
     client = FeedHttpClient(
         USER_AGENT, client=httpx.AsyncClient(transport=httpx.MockTransport(respond))
     )
-    seed = next(seed for seed in OFFICIAL_SEEDS if seed.spec.id == source_id)
+    seed = next(seed for seed in (*OFFICIAL_SEEDS, *UK_NEWS_SEEDS) if seed.spec.id == source_id)
     try:
         events = await RssConnector(client, clock, seed.spec, seed.options).fetch()
         assert len(events) == 1

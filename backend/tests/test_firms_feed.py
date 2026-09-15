@@ -119,6 +119,14 @@ def test_collection_bounds(monkeypatch):
         parse_firms(payload(ROW), NOW)
 
 
+def test_row_bound_admits_a_full_byte_budget_of_short_rows():
+    # A real NOAA-21 two-date world response held 150,980 rows and broke a 150,000 cap.
+    assert firms.MAX_ROWS > 150_980
+    # The shortest observed row was 73 bytes, so a full byte budget stays within the cap.
+    assert firms.MIN_ROW_BYTES < 73
+    assert firms.MAX_ROWS * firms.MIN_ROW_BYTES > firms.MAX_BYTES - firms.MIN_ROW_BYTES
+
+
 @pytest.mark.parametrize("area", ["0,0,0,1", "170,-10,-170,10", "nan,0,1,1", "world/x", "0,0,1"])
 def test_bad_area_rejected(area):
     with pytest.raises(ValueError):

@@ -104,6 +104,33 @@ async def test_malformed_feed_not_modified_bom_and_cap() -> None:
     assert len(events) == MAX_ITEMS
 
 
+async def test_firewall_html_page_is_named_rather_than_called_malformed_xml() -> None:
+    page = (
+        "<html>\n\t<head>\n\t\t<title>Request Rejected</title>\n\t</head>\n"
+        "\t<body>The requested URL was rejected.<br></body>\n</html>"
+    )
+    for body in (page, "\n  <!DOCTYPE html><html><body>Consent</body></html>"):
+        with pytest.raises(FeedFetchError, match="returned an HTML page, not an RSS or Atom feed"):
+            await connector(body).fetch()
+
+
+async def test_russian_mfa_atom_self_link_shape_parses() -> None:
+    # Shape of https://mid.ru/ru/rss.php on 15 September 2026: a non-ISO feed <updated>.
+    atom = (
+        '<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom">'
+        "<title>Ministry</title><updated>15.09.2026 19:37:46</updated>"
+        '<entry><title type="html">Statement</title>'
+        '<link href="http://mid.ru/ru/foreign_policy/news/2141044/"/><summary type="html"/>'
+        "<id>http://mid.ru/ru/foreign_policy/news/2141044/</id>"
+        "<published>2026-09-15T19:02:00+03:00</published></entry></feed>"
+    )
+    (event,) = await connector(atom).fetch()
+    assert event.title == "Statement"
+    assert event.published_at == datetime(2026, 9, 15, 16, 2, tzinfo=UTC)
+    seed = next(seed for seed in RSS_SEEDS if seed.spec.id == "russia_mfa_ru")
+    assert seed.spec.url == "https://mid.ru/ru/rss.php"
+
+
 def test_helpers() -> None:
     assert parse_feed_date("") is None
     assert parse_feed_date("garbage") is None

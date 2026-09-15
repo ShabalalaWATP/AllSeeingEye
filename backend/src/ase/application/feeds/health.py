@@ -107,6 +107,19 @@ class HealthRegistry:
             entry.next_poll_at = now + self.breaker.backoff_for(entry.consecutive_failures)
         return entry
 
+    def record_rate_limited(
+        self, source_id: str, error: str, now: datetime, retry_after: timedelta | None
+    ) -> SourceHealth:
+        """Back off at least as long as the upstream asked; a throttle never disables."""
+        entry = self.get(source_id)
+        entry.consecutive_failures += 1
+        entry.last_error, entry.last_error_at = error[:300], now
+        entry.polls += 1
+        entry.status = SourceStatus.DEGRADED
+        wait = max(self.breaker.backoff_for(entry.consecutive_failures), retry_after or timedelta())
+        entry.next_poll_at = now + min(wait, self.breaker.max_backoff)
+        return entry
+
     def reset(self, source_id: str) -> SourceHealth:
         """An administrator re-enables a disabled source."""
         entry = self.get(source_id)

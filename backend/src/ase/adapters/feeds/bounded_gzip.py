@@ -1,21 +1,16 @@
-"""Narrow gzip compatibility for verified public UN feeds, with independent caps.
+"""Bounded gzip compatibility for unauthenticated feeds that ignore Accept-Encoding.
 
-Both exact URLs returned gzip despite Accept-Encoding: identity on 10 September
-2026. This exception does not cover redirects, credentials or other feed URLs.
-Read raw HTTP bytes so HTTPX cannot decompress before the expanded-size check.
+Feed requests advertise identity only, but some publishers (the UN RSS endpoints on
+10 September 2026, The Independent on 15 September 2026) answer gzip regardless.
+Those responses are decoded from raw HTTP bytes with independent wire and expanded
+caps, so HTTPX cannot decompress before the size check. Credentialed requests stay
+identity-only, and every other encoding is still refused before the body is read.
 """
 
 import zlib
 from collections.abc import Awaitable, Callable
 
 import httpx
-
-GZIP_RSS_URLS = frozenset(
-    {
-        "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
-        "https://press.un.org/en/rss.xml",
-    }
-)
 
 
 class BoundedGzipError(Exception):
@@ -25,21 +20,12 @@ class BoundedGzipError(Exception):
 async def read_feed_response(
     response: httpx.Response,
     max_bytes: int,
-    initial_url: str,
-    final_url: str,
     *,
     credentialed: bool,
-    redirected: bool,
     default_reader: Callable[[httpx.Response], Awaitable[bytes]],
 ) -> bytes:
-    """Keep normal transport policy unless the exact unauthenticated UN seed matches."""
-    if (
-        not credentialed
-        and not redirected
-        and initial_url == final_url
-        and initial_url in GZIP_RSS_URLS
-        and response.headers.get("content-encoding", "").strip().lower() == "gzip"
-    ):
+    """Decode a single gzip member for unauthenticated requests; otherwise the default path."""
+    if not credentialed and response.headers.get("content-encoding", "").strip().lower() == "gzip":
         return await read_bounded_gzip(response, max_bytes)
     return await default_reader(response)
 
