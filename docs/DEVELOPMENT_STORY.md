@@ -4822,7 +4822,8 @@ untouched. Team authority now follows current membership: any active account can
 create a team and becomes its first Manager, ordinary Managers can maintain ordinary
 members, Administrators are protected from team-level removal and the last active
 Manager cannot be removed. Team descriptions, archive/recovery and explicit leave
-are persisted through migration 0037.
+are persisted through migration 0037 (renumbered 0047 at integration; the branch's
+0035 to 0041 became 0045 to 0051).
 
 The same slice added opt-in directory profiles and a privacy-safe paginated search,
 with the editor under Account settings, plus migration 0036. A durable AI allowance
@@ -4839,3 +4840,26 @@ subscription paths, reconciliation and final browser acceptance remain open.
 Active team creation is bounded to five teams per account, roster membership to 100 people, and
 migration 0041 adds database uniqueness for active AI allowance targets.
 Administrators can also preview the effective account and team policies before applying a change.
+
+Later on 15 September 2026 the teams branch was reviewed before merging. The review found a
+branch that could not pass CI (application modules imported SQLAlchemy), whose migration ids
+collided with `main`, and which had real defects: every team member could read every other
+member's login email, Managers could silently rewrite an Administrator's post, failed and
+cancelled model calls were charged their full reservation, settlement could lose counter updates
+under PostgreSQL, and an ignored invitation blocked that person from ever being re-invited. The
+branch was merged with `main`, its migrations renumbered after `0044`, and the fixes were made in
+four parallel lanes with explicit file ownership, each integrated and re-checked in turn.
+
+Rosters now show directory handles instead of email, only Administrators can add accounts
+without consent, and every refusal a Manager sees is identical whatever the target account is.
+Migration `0050` demotes team-manager memberships that carried no authority before the global
+role was retired, so none gains power silently. Board edits belong to authors; moderation is an
+audited, reasoned removal or pin, and revision-conditional writes return 409. The allowance
+ledger records dispatch before calling a provider, so cancellation before dispatch is free, a
+timeout after dispatch is held as unknown rather than released or resent, and stale reservations
+are reconciled. Every remaining model path, including embeddings, connection tests, feed
+translation and conflict screening, is metered against an actor, team or explicit system budget.
+Avatars are decoded defensively and re-encoded without metadata, directory fields are
+individually visible, temporary allowance overrides exist, and the team Overview is backed by a
+bounded dashboard endpoint. Migrations `0052` and `0053` add board read cursors and avatars.
+Feature switches, PostgreSQL migration runs and authenticated browser journeys remain open.

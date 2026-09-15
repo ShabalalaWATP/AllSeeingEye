@@ -202,20 +202,20 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | --- | --- | --- |
 | T00 | None | **Implemented.** Inventory, baseline and successor authority ADR completed. |
 | T01 | T00 | **Implemented.** Membership-only management, atomic team creation, last-Manager and protected-Administrator rules are covered by race and negative-permission tests. |
-| T02 | T01 | **Implemented.** Migration `0050` converts legacy global Manager accounts to User, bumps security versions to expire old sessions, preserves team-manager memberships, and the administrator role picker no longer offers a new global Manager role. |
-| T03 | T01 | **Implemented for the current slice.** Self-leave, archive effects, direct membership controls, directory-backed invitations, withdrawal, acceptance/decline and invitation audit coverage are implemented. Broader deactivation reconciliation remains. |
-| P01 | T00 | **Partial.** Profile validation, directory visibility, unique handles and bounded discovery are implemented. Avatar processing remains pending because no safe existing asset pipeline is available. |
-| P02 | T03, P01 | **Implemented for the current slice.** Profile editor, roster controls, directory people picker and invitation inbox are wired with privacy-safe responses. Avatar processing remains outside the available asset pipeline. |
-| Q01 | T00 | **Partial.** Task/call accounting, precedence and provider reservation contracts are implemented for Ask Eye; the full model-call inventory remains open. |
-| Q02 | Q01 | **Implemented for the current slice.** Durable reserve/settle ledger, period counters, restart persistence and concurrent refusal tests pass. Reconciliation and system budgets remain open. |
-| Q03 | Q02 | **Partial.** Ask Eye, synchronous and queued report generation, native web search, automatic claim proposals and photo geolocation now reserve and settle through the shared ledger. Subscription, translation, embeddings, economy/cyber/live summaries, conflict screening and administrator tests still need explicit system or actor attribution. |
-| Q04 | Q03 | **Partial.** Administrator policy CRUD, audit events, effective-policy preview and personal usage display are implemented. Temporary overrides and full assignment coverage remain. |
+| T02 | T01 | **Implemented.** Migration `0050` first demotes team-manager memberships held by ordinary `user` accounts (which had no authority before), then converts legacy global Manager accounts to User, bumps security versions, audits the change and logs teams left without an active Manager. Assigning `manager` through the admin API is refused. |
+| T03 | T01 | **Implemented.** Self-leave (API and UI), archive effects, Administrator-only direct add, directory and exact-handle invitations, lapsed-invitation expiry on send, roster cap on acceptance, non-enumerating refusals, and deactivation reconciliation (an administrator cannot deactivate the last active Manager of an active team) are covered by tests. Removed members' scheduled team dispatch stops. |
+| P01 | T00 | **Implemented.** Profile validation, per-field directory visibility (timezone private by default), unique handles, bounded discovery and avatars (JPEG/PNG/WebP up to 2 MB, dimension checks before decode, re-encoded 256x256 WebP without metadata, stored in `directory_avatars`) are implemented. |
+| P02 | T03, P01 | **Implemented.** Profile editor with avatar upload/removal, roster showing handles and never login email, people picker with avatars, exact-username invitations and invitation inbox. |
+| Q01 | T00 | **Implemented.** Every outbound completion, embedding and web search path is inventoried and attributed in [ADR 0019](adr/0019-ai-usage-allowances.md). |
+| Q02 | Q01 | **Implemented.** Durable reserve/dispatch/settle ledger with relative conditional counter updates in a fixed lock order, released/settled/unknown outcomes, bounded opportunistic reconciliation of stale reservations, observation totals without policies and a system budget scope. Pruning of old reservation rows and an administrator review action for unknown calls remain. |
+| Q03 | Q02 | **Implemented.** Ask Eye (team-owned report Q&A charges the team), interactive and queued reports including subscriptions, web search, claims, photo geolocation, semantic search embeddings, administrator connection tests, feed translation and conflict screening reserve and settle through the shared ledger. |
+| Q04 | Q03 | **Implemented.** Administrator policy CRUD, dated temporary overrides (inherit, limit, unlimited, blocked), audit events, effective preview for accounts, teams and system work, personal usage and role-aware team usage views. |
 | D01 | T02, P02 | **Implemented for the current slice.** My teams entry, creation journey, personal/team context and capability-driven dashboard shell are wired. |
-| D02 | D01 | **Partial.** Overview and exact Research links are present; bounded shared report/subscription lists and action-needed states remain. |
-| D03 | D01 | **Implemented.** Board API/UI, replies, edit, moderation, pins, tombstones and cross-team/XSS coverage are present. |
-| D04 | D02, D03, Q04 | **Partial.** Usage widgets and archive/restore UX are present; mobile/visual acceptance and full overview data remain. |
-| V01 | All above | Full integration, security review, supported-database migration/recovery checks and authenticated browser journeys. Record failures honestly. |
-| V02 | V01 | Operator migration checklist, monitoring, rollout switches and bounded live provider smoke. Operational enablement is separately evidenced. |
+| D02 | D01 | **Implemented.** `GET /api/teams/{id}/dashboard` returns pinned posts, unread count, five recent team reports, next five subscription runs and bounded action-needed items; the Overview tab renders them with exact links. |
+| D03 | D01 | **Implemented.** Author-only edits, moderator removal and pins with an audited reason, public tombstones, revision-conditional writes returning 409, a locked three-pin cap, per-membership read cursors and unread counts. |
+| D04 | D02, D03, Q04 | **Partial.** Usage widgets, overview data and archive/restore UX are present. Visibility-aware board polling and mobile/visual browser acceptance remain. |
+| V01 | All above | **Partial.** Integrated with `main`, full backend and frontend suites with coverage gates, and SQLite migration round trips. PostgreSQL migration runs, authenticated browser journeys and the security review remain. |
+| V02 | V01 | **Not started.** Operator migration checklist, monitoring, feature switches (self-service creation, directory, board, enforcement) and bounded live provider smoke. |
 
 Implementation lanes can be separated after T00 into team authority, profiles/invitations and usage accounting. Assign explicit file ownership if delegation is used. One integration owner regenerates contracts and resolves migrations after each lane settles.
 
@@ -293,3 +293,30 @@ Release complete means ordinary users can create and manage teams, invite people
   native web discovery, automatic claim proposals and photo analysis. The wrapper
   reserves input plus output before dispatch, settles provider counts once and
   records safe failure reasons; unpriced system work is still intentionally open.
+
+### 15 September 2026, integration with main and review remediation
+
+- **Integration:** merged `main` (subscriptions work, migrations up to `0044`) into the
+  branch as `integrate/teams-profiles`. Branch migrations were renumbered `0045` to
+  `0051`, ADRs to 0018 and 0019, and SQLAlchemy constraint handling moved from the
+  application layer into adapters so the framework-free import contract holds.
+- **Review findings fixed:** roster email disclosure, Manager rewriting of others'
+  posts, full charging of failed or cancelled calls, lost counter updates on
+  settlement, lapsed invitations blocking re-invitation, roster cap bypass on
+  acceptance, inactive Manager removal, Manager direct add without consent and its
+  enumeration signal, assignable legacy Manager role, dormant team-manager
+  memberships gaining authority in `0050`, board edit/pin races and 422 on stale
+  revisions, empty observation mode, admin preview hiding team policies, and Ask Eye
+  never charging teams.
+- **Completed items:** leave UI, deactivation reconciliation, avatars, per-field
+  visibility, exact-handle invitations, temporary overrides, stale reservation
+  reconciliation, system budget, metering of every remaining model path, team
+  dashboard endpoint and overview, board read cursors, role-aware team usage and
+  frontend tests for the board, overview, directory profile, avatars, invitations and
+  AI usage panels. Frontend clients now derive their types from `types.gen.ts`.
+- **Migrations:** `0052` board moderation and read cursors, `0053` directory avatars
+  and field visibility; `0045`, `0047`, `0050` and `0051` were edited in place before
+  any database applied them.
+- **Remaining:** feature switches, visibility-aware board polling, pruning of old
+  reservation rows, an administrator review action for unknown calls, PostgreSQL
+  migration runs and authenticated browser journeys.
