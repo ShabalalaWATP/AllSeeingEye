@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     ucdp_candidate_version: str = Field(default="26.0.7", pattern=r"^[0-9]{2}\.0\.([1-9]|1[0-2])$")
     ucdp_access_token: SecretStr | None = None
     acled_access_token: SecretStr | None = None
+    acled_refresh_token: SecretStr | None = None
     reliefweb_appname: str | None = Field(
         default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{1,99}$"
     )

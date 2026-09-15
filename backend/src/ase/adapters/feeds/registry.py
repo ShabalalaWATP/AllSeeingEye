@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import SecretStr
 
+from ase.adapters.feeds.acled_tokens import AcledTokens
 from ase.adapters.feeds.adsb import LADD, PIA, AdsbListConnector, AdsbMilitaryConnector
 from ase.adapters.feeds.adsb_classification import AircraftClassificationCache
 from ase.adapters.feeds.adsb_global import AdsbGlobalConnector
@@ -76,6 +77,7 @@ def build_connectors(
     ucdp_candidate_version: str = "26.0.7",
     ucdp_access_token: str | None = None,
     acled_access_token: str | None = None,
+    acled_tokens: AcledTokens | None = None,
     reliefweb_appname: str | None = None,
     cloudflare_radar_token: str | None = None,
     iso3_to_iso2: Mapping[str, str] | None = None,
@@ -150,8 +152,9 @@ def build_connectors(
             if ucdp_access_token
             else UcdpPublicCandidateConnector(http, clock, ucdp_candidate_version)
         )
-    if acled_access_token and AcledConnector.spec.id not in excluded:
-        connectors.append(AcledConnector(http, clock, acled_access_token))
+    if (acled_tokens or acled_access_token) and AcledConnector.spec.id not in excluded:
+        # A refresh token renews itself; a manual access token expires within a day.
+        connectors.append(AcledConnector(http, clock, acled_access_token, tokens=acled_tokens))
     if cloudflare_radar_token and CloudflareRadarConnector.spec.id not in excluded:
         connectors.append(CloudflareRadarConnector(http, clock, cloudflare_radar_token))
     if reliefweb_appname and ReliefWebReportsConnector.spec.id not in excluded:
