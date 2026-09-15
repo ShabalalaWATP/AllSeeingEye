@@ -196,4 +196,31 @@ describe('AdminOverviewPage', () => {
     const ai = await card('AI connections');
     expect(await within(ai).findByText('No global connection')).toBeVisible();
   });
+
+  it('shows an upstream refusal with its operator reason rather than as a failing feed', async () => {
+    server.use(
+      http.get('/api/admin/sources', () =>
+        HttpResponse.json({
+          items: [
+            source({
+              id: 'cyber_cisa_advisories',
+              name: 'US CISA advisories',
+              health: sourceHealth({
+                status: 'degraded',
+                consecutive_failures: 0,
+                blocked_reason: 'CISA refuses automated clients for this feed.',
+              }),
+            }),
+          ],
+        }),
+      ),
+    );
+    renderApp('/admin', 'admin');
+    const sources = await card('Sources');
+    expect(await within(sources).findByText('Blocked upstream')).toBeVisible();
+    expect(within(sources).getByText('No failing feeds')).toBeVisible();
+    expect(
+      within(sources).getByText('CISA refuses automated clients for this feed.'),
+    ).toBeVisible();
+  });
 });

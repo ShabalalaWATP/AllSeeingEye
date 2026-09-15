@@ -123,6 +123,8 @@ class SourceHealthOut(BaseModel):
     last_latency_ms: float | None
     next_poll_at: datetime | None
     polls: int
+    # Fixed operator-facing text for an upstream refusal; never raw error detail.
+    blocked_reason: str | None = None
 
     @classmethod
     def from_health(cls, health: SourceHealth) -> Self:
@@ -137,6 +139,7 @@ class SourceHealthOut(BaseModel):
             last_latency_ms=health.last_latency_ms,
             next_poll_at=health.next_poll_at,
             polls=health.polls,
+            blocked_reason=health.blocked_reason,
         )
 
 

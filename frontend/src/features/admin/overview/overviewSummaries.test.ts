@@ -93,6 +93,24 @@ describe('overview summaries', () => {
     expect(summary.attention.map((item) => item.id)).toEqual(['major', 'minor', 'blocked']);
   });
 
+  it('counts upstream refusals separately from failing feeds', () => {
+    const refused = source({
+      id: 'refused',
+      health: sourceHealth({
+        status: 'degraded',
+        consecutive_failures: 0,
+        blocked_reason: 'The publisher refuses automated clients.',
+      }),
+    });
+    const failing = source({
+      id: 'failing',
+      health: sourceHealth({ status: 'degraded', consecutive_failures: 3 }),
+    });
+    const summary = summariseSources([refused, failing]);
+    expect(summary).toMatchObject({ failing: 1, blockedUpstream: 1 });
+    expect(summary.attention.map((item) => item.id)).toEqual(['failing', 'refused']);
+  });
+
   it('describes the global connection, overrides and drafts', () => {
     const status = summariseConnections({ items: [bound, draft], encryption_available: true }, [
       binding({}),

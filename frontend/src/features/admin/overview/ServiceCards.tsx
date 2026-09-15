@@ -21,13 +21,14 @@ const loadConnectionStatus = async () => {
 const loadSystemUsage = async () => summariseUsage(await previewAiUsage({ system: true }));
 
 const SEGMENTS: readonly {
-  key: 'healthy' | 'failing' | 'idle' | 'switchedOff' | 'blockedByOperator';
+  key: 'healthy' | 'failing' | 'blockedUpstream' | 'idle' | 'switchedOff' | 'blockedByOperator';
   label: string;
   bar: string;
   tone: StatusTone;
 }[] = [
   { key: 'healthy', label: 'Live', bar: 'bg-good', tone: 'good' },
   { key: 'failing', label: 'Failing', bar: 'bg-critical', tone: 'critical' },
+  { key: 'blockedUpstream', label: 'Blocked upstream', bar: 'bg-critical/40', tone: 'warning' },
   { key: 'idle', label: 'Waiting', bar: 'bg-cyan', tone: 'info' },
   { key: 'switchedOff', label: 'Switched off', bar: 'bg-muted', tone: 'neutral' },
   { key: 'blockedByOperator', label: 'Blocked by operator', bar: 'bg-amber', tone: 'warning' },
@@ -86,26 +87,31 @@ export function SourcesCard({ className = '' }: { className?: string }) {
                   Needs attention
                 </h3>
                 <ul className="mt-2 space-y-2">
-                  {summary.attention.slice(0, 3).map((source) => (
-                    <li key={source.id} className="flex min-w-0 flex-wrap items-center gap-2">
-                      {source.environment_disabled === true ? (
-                        <StatusPill tone="warning">Blocked</StatusPill>
-                      ) : (
-                        <StatusPill tone="critical">
-                          {source.health.consecutive_failures} failed polls
-                        </StatusPill>
-                      )}
-                      <span className="text-sm font-medium">{source.name}</span>
-                      {source.health.last_error === null ? null : (
-                        <span
-                          className="block w-full truncate font-mono text-[11px] text-muted"
-                          title={source.health.last_error}
-                        >
-                          {source.health.last_error}
-                        </span>
-                      )}
-                    </li>
-                  ))}
+                  {summary.attention.slice(0, 3).map((source) => {
+                    const detail = source.health.blocked_reason ?? source.health.last_error;
+                    return (
+                      <li key={source.id} className="flex min-w-0 flex-wrap items-center gap-2">
+                        {source.environment_disabled === true ? (
+                          <StatusPill tone="warning">Blocked</StatusPill>
+                        ) : source.health.blocked_reason ? (
+                          <StatusPill tone="warning">Blocked upstream</StatusPill>
+                        ) : (
+                          <StatusPill tone="critical">
+                            {source.health.consecutive_failures} failed polls
+                          </StatusPill>
+                        )}
+                        <span className="text-sm font-medium">{source.name}</span>
+                        {detail == null ? null : (
+                          <span
+                            className="block w-full truncate font-mono text-[11px] text-muted"
+                            title={detail}
+                          >
+                            {detail}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

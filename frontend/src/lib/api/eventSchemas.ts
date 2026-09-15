@@ -85,6 +85,7 @@ export const sourceHealthSchema = z.object({
   last_latency_ms: z.number().nullable(),
   next_poll_at: z.string().nullable(),
   polls: z.number().int(),
+  blocked_reason: z.string().nullable().optional(),
 });
 export type SourceHealth = z.infer<typeof sourceHealthSchema>;
 

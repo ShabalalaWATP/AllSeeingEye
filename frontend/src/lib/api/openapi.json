@@ -41772,6 +41772,17 @@
           "polls": {
             "type": "integer",
             "title": "Polls"
+          },
+          "blocked_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked Reason"
           }
         },
         "type": "object",

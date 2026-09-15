@@ -38,13 +38,18 @@ export interface SourceSummary {
   idle: number;
   switchedOff: number;
   blockedByOperator: number;
+  blockedUpstream: number;
   attention: Source[];
 }
 
-/** Failing feeds first (most consecutive failures), then operator-blocked feeds. */
+const refusedUpstream = (item: Source) =>
+  item.health.status === 'degraded' && Boolean(item.health.blocked_reason);
+
+/** Failing feeds first (most consecutive failures), then upstream refusals, then operator blocks. */
 export function summariseSources(sources: readonly Source[]): SourceSummary {
+  const upstream = sources.filter(refusedUpstream);
   const failing = sources
-    .filter((item) => item.health.status === 'degraded')
+    .filter((item) => item.health.status === 'degraded' && !refusedUpstream(item))
     .sort((a, b) => b.health.consecutive_failures - a.health.consecutive_failures);
   const blocked = sources.filter((item) => item.environment_disabled === true);
   const switchedOff = sources.filter(
@@ -62,7 +67,12 @@ export function summariseSources(sources: readonly Source[]): SourceSummary {
     ).length,
     switchedOff: switchedOff.length,
     blockedByOperator: blocked.length,
-    attention: [...failing, ...blocked.filter((item) => !failing.includes(item))],
+    blockedUpstream: upstream.length,
+    attention: [
+      ...failing,
+      ...upstream,
+      ...blocked.filter((item) => !failing.includes(item) && !upstream.includes(item)),
+    ],
   };
 }
 
