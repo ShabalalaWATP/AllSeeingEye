@@ -37,6 +37,7 @@ from ase.application.admin.users import IssueResetLinkUseCase, ListUsersUseCase,
 
 if TYPE_CHECKING:
     from ase.application.access import AccessPolicy
+    from ase.application.ai_usage import AiUsageAccounting
     from ase.application.auditing import Auditor
     from ase.application.feeds.health import HealthRegistry
     from ase.application.feeds.scheduler import FeedScheduler
@@ -59,6 +60,7 @@ class AdminWiring:
         llm: LlmGateway
         model_discovery: LlmModelDiscovery
         embedding_gateway: EmbeddingGateway
+        ai_usage_accounting: AiUsageAccounting
         generator: TokenGenerator
         links: LinkBuilder
         email_sender: EmailSender
@@ -193,6 +195,7 @@ class AdminWiring:
             r.llm_profiles, r.llm_usage, self.cipher, self.llm, self.clock,
             self._auditor(r), r.uow,
             embeddings=self.embedding_gateway, access=self.access_policy(session),
+            ai_usage=self.ai_usage_accounting,
         )  # fmt: skip
 
     def list_llm_usage(self, session: AsyncSession) -> ListLlmUsageUseCase:

@@ -11,6 +11,7 @@ from ase.application.feeds.pipeline import clean_text
 from ase.application.ports import Clock
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, SecretCipher
 from ase.application.ports.translate import TranslatedText, TranslatorUnavailable
+from ase.domain.ai_usage import AiAllowanceExceeded
 from ase.domain.events import MAX_TITLE
 from ase.domain.llm import LlmMessage, LlmProfile, LlmRequest, LlmRole, LlmUsage
 
@@ -132,6 +133,9 @@ class LlmTranslator:
             usage.ok = all(text is not None for text in translated)
             if not usage.ok:
                 usage.error = "The model returned an empty translation."
+        except AiAllowanceExceeded as exc:
+            # Nothing was sent. Leave titles untried so they are retried on a later cycle.
+            raise TranslatorUnavailable("The system AI allowance is exhausted.") from exc
         except LlmGatewayError:
             # Endpoint bodies can echo keys or feed text; never persist them as error text.
             usage.error = "The translation model call failed."
