@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 
 import { TeamBoard } from '@/features/teams/TeamBoard';
 import type { TeamCapabilities } from '@/features/teams/teamCapabilities';
@@ -7,6 +8,8 @@ import type { TeamBoardPage, TeamBoardPost } from '@/lib/api/teamBoard';
 
 import { plainUser } from './fixtures';
 import { team } from './fixtures.teams';
+import { apiError } from './handlers';
+import { server } from './server';
 
 export const boardBase = `/api/teams/${team.id}/board`;
 
@@ -61,6 +64,28 @@ export const managerBoardCapabilities: TeamCapabilities = {
   canManageMembers: true,
   canManageTeam: true,
 };
+
+/** Serve the first board page from a snapshot callback and record requests and receipts. */
+export function serveBoard(firstPage: () => TeamBoardPage | 404 | 503, olderPage?: TeamBoardPage) {
+  const requests: string[] = [];
+  const reads: unknown[] = [];
+  server.use(
+    http.get(`${boardBase}/posts`, ({ request }) => {
+      const offset = new URL(request.url).searchParams.get('offset') ?? '0';
+      requests.push(offset);
+      if (offset !== '0' && olderPage) return HttpResponse.json(olderPage);
+      const page = firstPage();
+      if (page === 404) return apiError(404, 'not_found', 'Not found.');
+      if (page === 503) return apiError(503, 'unavailable', 'Unavailable.');
+      return HttpResponse.json(page);
+    }),
+    http.post(`${boardBase}/read`, async ({ request }) => {
+      reads.push(await request.json());
+      return HttpResponse.json({ unread_count: 0 });
+    }),
+  );
+  return { requests, reads };
+}
 
 export function renderTeamBoard(userId: string, capabilities: TeamCapabilities) {
   const user = userEvent.setup();
