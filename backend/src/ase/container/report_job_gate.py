@@ -10,9 +10,7 @@ from ase.adapters.persistence.operational_models import ScheduleRow
 from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.application.model_routing import ModelRouting, RoleProfiles
 from ase.application.report_jobs.collection_records import evidence_from_json
-from ase.application.report_jobs.request_snapshot import request_from_dict
 from ase.application.report_jobs.snapshots import restore_job
-from ase.application.report_jobs.subscription_snapshot import restore_subscription_context
 from ase.application.reports.authorisation import ReportAuthorisation
 from ase.application.reports.map_origin import ReportMapOrigin
 from ase.application.reports.production_checkpoint import collection_from_dict
@@ -98,33 +96,24 @@ async def check_job(
 
 
 async def release_job(container: "Container", session: AsyncSession, stored: ReportJob) -> None:
-    """Saved drafts remain inspectable after a model change, subject to current access."""
+    """Source gate for reads and pauses, which start no work.
+
+    The service authorises the caller with ``require_read`` on the job. The owner's
+    background authority is deliberately not required here: a deactivated owner or an
+    archived team must not hide existing progress from an authorised reader. Admission
+    and resume use ``check_job``, which does require it. The response exposes progress
+    metadata only, so linked plans, areas and parent reports are not re-authorised.
+    """
     frozen = stored.payload.get("input")
     if frozen is None:
         return
-    access, repos = container.access_policy(session), container.repositories(session)
-    owner = (await access.background(stored.owner_id, stored.team_id)).actor
-    template = template_for(frozen["template_id"])
-    request = request_from_dict(frozen["request"], frozen["scope"], template)
-    origin = ReportMapOrigin(access, repos.reports, repos.map_views)
-    await ReportAuthorisation(
-        access, repos.reports, repos.plans, repos.aois, repos.uow, origin
-    ).prepare(owner, request)
-    await origin.resolve(owner, request, owner_id=stored.owner_id)
-    if request.parent_report_id is not None and request.parent_version is not None:
-        await require_parent(
-            access,
-            repos.reports,
-            owner,
-            request,
-            ParentReference(request.parent_report_id, request.parent_version, stored.owner_id),
-        )
     baseline = None
-    if frozen.get("schema_version") == 2:
-        request = restore_subscription_context(
-            frozen["subscription_context"], request, frozen["scope"]
+    context = frozen.get("subscription_context")
+    if context is not None and context["version"] is not None:
+        # Only the baseline's source identifiers are used, never returned.
+        baseline = await container.repositories(session).reports.get_version(
+            UUID(context["report_id"]), context["version"]
         )
-        baseline = await _subscription_baseline(container, session, stored, owner, request)
     await check_sources(container, stored, baseline)
 
 
