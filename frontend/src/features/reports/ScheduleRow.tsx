@@ -127,6 +127,9 @@ export function ScheduleRow({
           {item.last_coverage === 'partial' && (
             <p className="mb-2 font-medium text-amber">Partial source coverage</p>
           )}
+          {item.last_coverage === 'unknown' && (
+            <p className="mb-2 text-muted">Source coverage not recorded</p>
+          )}
           {item.last_error !== null && <p className="mb-2 text-critical">{item.last_error}</p>}
           {item.last_report_id !== null ? (
             <Link to={`/reports/${item.last_report_id}`} className="hover:underline">

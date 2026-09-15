@@ -10,6 +10,7 @@ export function CameraInspector({ camera, onClose }: { camera: Camera; onClose: 
 function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => void }) {
   const closeButton = useRef<HTMLButtonElement>(null);
   const activeRequest = useRef(0);
+  const frameAbort = useRef<AbortController | null>(null);
   const [request, setRequest] = useState<{ id: number; url: string | null } | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'loaded' | 'error' | 'expired'>('idle');
   useEffect(() => {
@@ -28,6 +29,15 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
     };
   }, [onClose]);
   useEffect(() => () => releaseCameraFrame(request?.url), [request]);
+  useEffect(
+    () => () => {
+      // A late relayed frame must be released, never stored, once the inspector has gone.
+      activeRequest.current = 0;
+      frameAbort.current?.abort();
+      frameAbort.current = null;
+    },
+    [],
+  );
   useEffect(() => {
     if (!request) return;
     // TfL images must not remain displayed beyond 15 minutes after request.
@@ -82,8 +92,12 @@ function CameraDetails({ camera, onClose }: { camera: Camera; onClose: () => voi
               setState('loading');
               if (isCameraFramePath(camera.snapshot_url)) {
                 // Relayed frames arrive through the session as a blob, then load like any image.
+                // Superseded requests finish and are released; closing aborts them all.
+                frameAbort.current ??= new AbortController();
                 setRequest({ id, url: null });
-                loadCameraFrame(camera.snapshot_url, id).then(
+                loadCameraFrame(camera.snapshot_url, id, {
+                  signal: frameAbort.current.signal,
+                }).then(
                   (objectUrl) => {
                     if (activeRequest.current === id) setRequest({ id, url: objectUrl });
                     else releaseCameraFrame(objectUrl);

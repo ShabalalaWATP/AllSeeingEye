@@ -25,6 +25,7 @@ const comparisonSchema = z.object({
       'significant_contradiction',
       'source_correction',
       'claim_inventory_changed',
+      'claim_mapping_unresolved',
       'claim_meaning_changed',
       'likelihood_changed',
       'horizon_changed',

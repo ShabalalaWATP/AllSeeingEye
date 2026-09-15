@@ -124,6 +124,45 @@ it('labels every edition state, pages older editions and retries a waiting editi
   expect(panel.queryByRole('button', { name: 'Load older editions' })).not.toBeInTheDocument();
 });
 
+it('shows an edition whose claim mapping could not be resolved', async () => {
+  server.use(
+    http.get('/api/schedules', () => HttpResponse.json({ items: [schedule] })),
+    http.get('/api/schedules/:id/events', () =>
+      HttpResponse.json({ items: [], limit: 10, offset: 0 }),
+    ),
+    http.get('/api/schedules/:id/editions', () =>
+      HttpResponse.json({
+        limit: 10,
+        offset: 0,
+        items: [
+          edition(1, {
+            workflow: 'completed',
+            report_quality: 'ready',
+            comparison: {
+              previous_version_id: 'f5f5f5f5-f5f5-45f5-85f5-f5f5f5f5f5f5',
+              current_version_id: 'e4e4e4e4-e4e4-44e4-84e4-e4e4e4e4e4e4',
+              state: 'assessment_changed',
+              reasons: ['claim_mapping_unresolved', 'claim_inventory_changed'],
+              changed_claims: 2,
+              corrected_evidence: 0,
+              novel_evidence: 1,
+              syndicated_duplicates: 0,
+              summary: 'Claims could not be matched to the earlier edition.',
+            },
+          }),
+        ],
+      }),
+    ),
+  );
+  const { history } = await openHistory();
+  const panel = within(history);
+  expect(
+    await panel.findByText('Claims could not be matched to the earlier edition.'),
+  ).toBeVisible();
+  expect(panel.getByText(/2 changed assessments · 0 source corrections/)).toBeVisible();
+  expect(panel.queryByRole('alert')).not.toBeInTheDocument();
+});
+
 it('shows empty history, load failures and control failures', async () => {
   let fail = true;
   server.use(

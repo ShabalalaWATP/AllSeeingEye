@@ -56,6 +56,24 @@ describe('schedule states', () => {
     expect(table.getByRole('link', { name: 'Review partial update' })).toBeVisible();
   });
 
+  it('lists an older schedule whose last coverage was never recorded', async () => {
+    server.use(
+      http.get('/api/schedules', () =>
+        HttpResponse.json({
+          items: [{ ...schedule, name: 'Legacy coverage', last_coverage: 'unknown' }],
+        }),
+      ),
+    );
+    renderApp('/subscriptions', 'user');
+    const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
+    expect(table.getByText('Legacy coverage')).toBeVisible();
+    expect(table.getByText('Source coverage not recorded')).toBeVisible();
+    expect(table.getByRole('link', { name: 'Latest update' })).toBeVisible();
+    expect(screen.queryByText(/unexpected response/i)).not.toBeInTheDocument();
+    const figures = within(screen.getByRole('list', { name: 'Subscription figures' }));
+    expect(figures.getByText('Needs attention').parentElement).toHaveTextContent('0');
+  });
+
   it('shows the error and the empty state', async () => {
     server.use(http.get('/api/schedules', () => failure('Schedules boom')));
     renderApp('/research/recurring', 'user');
