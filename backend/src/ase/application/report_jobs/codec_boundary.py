@@ -50,7 +50,9 @@ def json_copy(value: Any) -> Any:
 def boundary(value: Any, keys: set[str]) -> dict[str, Any]:
     if type(value) is not dict or set(value) != keys:
         raise ValueError("Invalid report snapshot fields")
-    raw = canonical_job_payload(value)
+    # The outer job checkpoint remains schema 1. Inner frozen inputs can evolve
+    # independently, while sharing the checkpoint's JSON and size safeguards.
+    raw = canonical_job_payload({"schema_version": 1, "snapshot": value})
     if len(raw) > MAX_SNAPSHOT_BYTES:
         raise ValueError("Report snapshot exceeds its size budget")
     pending: list[Any] = [value]

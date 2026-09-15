@@ -79,11 +79,19 @@ class AccessPolicy:
     async def background(
         self, owner_id: UUID, team_id: UUID | None, *, for_update: bool = False
     ) -> AccessContext:
-        """Automation runs only for a current owner in an active originating team."""
+        """Automation runs only for a current owner in an active originating team.
+
+        An unavailable owner is a refusal of the work, never a failure of the caller's
+        own session, so it raises Forbidden rather than Unauthenticated.
+        """
         owner = await self._users.get_by_id(owner_id)
-        if owner is None:
-            raise Unauthenticated()
-        context = await self.context(owner, for_update=for_update)
+        if owner is None or not owner.is_active:
+            raise Forbidden("Background work requires an active owner.")
+        try:
+            context = await self.context(owner, for_update=for_update)
+        except Unauthenticated:
+            # The owner changed between the read and the locked re-read.
+            raise Forbidden("Background work requires an active owner.") from None
         if team_id is not None:
             team = context.teams.get(team_id)
             if team is None or not team.is_active or team_id not in context.memberships:

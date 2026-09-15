@@ -5,10 +5,16 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 
+from ase.domain.claim_passage_validation import (
+    ClaimPassageCitation,
+    FrozenClaimPassage,
+    check_claim_passages,
+)
+from ase.domain.confidence_rationale import generic_confidence_rationale
 from ase.domain.doctrine import (
     Confidence,
     find_hedges,
-    find_urls,
+    has_numeric_likelihood,
     mentions_confidence,
     opens_as_judgement,
     scan_likelihood,
@@ -16,6 +22,7 @@ from ase.domain.doctrine import (
 )
 from ase.domain.evidence import EvidenceItem, quality_of_information
 from ase.domain.judgement_assessment import assess_judgement
+from ase.domain.report_prose_validation import check_prose
 from ase.domain.report_support import (
     check_judgement_support,
     check_structure,
@@ -110,6 +117,15 @@ def _check_judgement(
                 f"Forbidden likelihood language: {', '.join(scan.forbidden)}",
             )
         )
+    if has_numeric_likelihood(judgement.statement):
+        out.append(
+            Finding(
+                "yardstick",
+                Severity.ERROR,
+                where,
+                "Judgements use the qualitative yardstick, not numeric chance estimates",
+            )
+        )
     if len(bands) != 1:
         out.append(
             Finding(
@@ -136,9 +152,26 @@ def _check_judgement(
                 "hedge", Severity.ERROR, where, f"Hedge words in a judgement: {', '.join(hedges)}"
             )
         )
-    if not judgement.confidence_statement.strip():
+    rationale = judgement.confidence_statement.strip()
+    if generic_confidence_rationale(rationale):
         out.append(
-            Finding("confidence", Severity.ERROR, where, "A judgement needs a confidence statement")
+            Finding(
+                "confidence",
+                Severity.ERROR,
+                where,
+                "A judgement needs a specific confidence rationale tied to its information base, "
+                "analytical rigour or volatility",
+            )
+        )
+    rationale_scan = scan_likelihood(rationale)
+    if rationale_scan.bands or rationale_scan.forbidden or has_numeric_likelihood(rationale):
+        out.append(
+            Finding(
+                "yardstick",
+                Severity.ERROR,
+                where,
+                "Confidence rationale must describe evidence and method, not likelihood",
+            )
         )
     for sentence in sentences(judgement.statement) + sentences(judgement.confidence_statement):
         if mentions_confidence(sentence) and scan_likelihood(sentence).bands:
@@ -173,8 +206,12 @@ def validate_body(
     confidence_ceiling: Confidence = Confidence.HIGH,
     previous_exists: bool = False,
     evidence_items: Sequence[EvidenceItem] | None = None,
+    original_passages: Mapping[str, FrozenClaimPassage] | None = None,
+    passage_citations: Mapping[str, Sequence[ClaimPassageCitation]] | None = None,
 ) -> ValidationResult:
     """Apply every rule; return the cleaned body and the findings, errors first."""
+    if (original_passages is None) != (passage_citations is None):
+        raise ValueError("Frozen passages and their exact citation links must be supplied together")
     findings: list[Finding] = []
     frozen = {item.label: item for item in evidence_items} if evidence_items is not None else None
     if frozen is not None:
@@ -185,6 +222,18 @@ def validate_body(
     judgements: list[KeyJudgement] = []
     for judgement in body.key_judgements:
         checked = _check_judgement(judgement, assumption_ids, findings)
+        if original_passages is not None and passage_citations is not None:
+            links = passage_citations.get(checked.id)
+            if links is not None:
+                findings.extend(
+                    check_claim_passages(
+                        checked.id,
+                        checked.statement,
+                        links,
+                        original_passages,
+                        evidence_labels,
+                    )
+                )
         ceiling = confidence_ceiling
         if frozen is not None:
             support_assessment = assess_judgement(checked, tuple(frozen.values()))
@@ -233,6 +282,11 @@ def validate_body(
                 )
             )
         judgements.append(checked)
+    if passage_citations is not None:
+        for unknown in sorted(set(passage_citations) - {item.id for item in judgements}):
+            findings.append(
+                Finding("citation", Severity.ERROR, unknown, "Passage links name no judgement")
+            )
     body = replace(body, key_judgements=tuple(judgements))
     if frozen is not None:
         body = derive_reporting_grades(body, frozen, findings)
@@ -247,7 +301,7 @@ def validate_body(
             ),
         )
     _check_reporting(body, findings)
-    _check_prose(body, evidence_urls, findings)
+    check_prose(body, evidence_urls, findings)
     check_structure(body, findings)
     findings.sort(key=lambda f: (0 if f.severity is Severity.ERROR else 1, f.rule))
     return ValidationResult(body=body, findings=tuple(findings))
@@ -257,7 +311,12 @@ def _check_reporting(body: ReportBody, findings: list[Finding]) -> None:
     for theme in body.reporting:
         for index, item in enumerate(theme.items):
             where = f"reporting.{theme.theme}[{index}]"
-            if scan_likelihood(item.text).bands:
+            reporting_scan = scan_likelihood(item.text)
+            if (
+                reporting_scan.bands
+                or reporting_scan.forbidden
+                or has_numeric_likelihood(item.text)
+            ):
                 findings.append(
                     Finding(
                         "yardstick",
@@ -270,29 +329,3 @@ def _check_reporting(body: ReportBody, findings: list[Finding]) -> None:
                 findings.append(
                     Finding("evidence", Severity.ERROR, where, "Reporting items must cite evidence")
                 )
-
-
-def _check_prose(
-    body: ReportBody, evidence_urls: Mapping[str, str | None], findings: list[Finding]
-) -> None:
-    cited = body.cited_labels()
-    allowed = {url for label, url in evidence_urls.items() if url and label in cited}
-    for text in body.texts():
-        for url in find_urls(text):
-            if url.rstrip(".,") not in allowed:
-                findings.append(
-                    Finding(
-                        "url", Severity.ERROR, "text", f"URL not from cited evidence: {url[:80]}"
-                    )
-                )
-    hedged = [text for text in body.texts() if find_hedges(text)]
-    if hedged:
-        findings.append(
-            Finding(
-                "hedge",
-                Severity.WARNING,
-                "text",
-                f"{len(hedged)} passage(s) use hedge words; "
-                "check they describe capability, not likelihood",
-            )
-        )

@@ -1,14 +1,13 @@
 """Saved research configuration round trips and reaches the scheduled report request."""
 
 from datetime import UTC, datetime
-from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 
 from ase.application.schedules.manage import ScheduleInput, build_schedule
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.container import Container
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchFocus, ResearchMode
@@ -50,14 +49,8 @@ async def test_saved_question_round_trip_update_and_scheduled_request(
     assert listed.json()["items"][0]["question"] == "What changed this week?"
     async with container.session_factory() as session:
         schedule = (await container.list_schedules(session).execute(user))[0]
-    report_id = uuid4()
-    execute = AsyncMock(return_value=(SimpleNamespace(id=report_id), None))
-    with patch.object(
-        type(container), "generate_report", return_value=SimpleNamespace(execute=execute)
-    ):
-        assert await container.schedule_report(schedule) == report_id
-    actor, request, _ = execute.call_args.args
-    assert actor.id == user.id and request.automation is True
+    request = scheduled_report_request(schedule)
+    assert schedule.created_by == user.id and request.automation is True
     assert request.question == "What changed this week?"
     assert request.research_mode is mode
     assert request.research_languages == ("en",)

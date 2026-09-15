@@ -1,0 +1,42 @@
+{
+  "fixture_note": "Synthetic offline contract data, not a live Cloudflare observation.",
+  "docs_checked": "2026-09-14",
+  "docs": [
+    "https://developers.cloudflare.com/api/resources/radar/subresources/attacks/subresources/layer3/subresources/top/subresources/locations/methods/target/",
+    "https://developers.cloudflare.com/api/resources/radar/subresources/attacks/subresources/layer7/subresources/top/subresources/locations/methods/target/",
+    "https://developers.cloudflare.com/radar/investigate/application-layer-attacks/",
+    "https://radar.cloudflare.com/about"
+  ],
+  "layer3": {
+    "success": true,
+    "result": {
+      "meta": {
+        "dateRange": [{"startTime": "2026-09-13T09:45:00Z", "endTime": "2026-09-14T09:45:00Z"}],
+        "lastUpdated": "2026-09-14T09:55:00Z",
+        "normalization": "PERCENTAGE",
+        "units": [{"name": "*", "value": "bytes"}]
+      },
+      "top_0": [
+        {"rank": 1, "targetCountryAlpha2": "GB", "targetCountryName": "United Kingdom", "value": "41.125"},
+        {"rank": 2, "targetCountryAlpha2": "FR", "targetCountryName": "France", "value": "18.5"},
+        {"rank": 3, "targetCountryAlpha2": "JP", "targetCountryName": "Japan", "value": "0"}
+      ]
+    }
+  },
+  "layer7": {
+    "success": true,
+    "result": {
+      "meta": {
+        "dateRange": [{"startTime": "2026-09-13T09:30:00Z", "endTime": "2026-09-14T09:30:00Z"}],
+        "lastUpdated": "2026-09-14T09:50:00Z",
+        "normalization": "PERCENTAGE",
+        "units": [{"name": "*", "value": "requests"}],
+        "version": "synthetic-provider-revision-2"
+      },
+      "top_0": [
+        {"rank": 1, "targetCountryAlpha2": "FR", "targetCountryName": "France", "value": "31.25"},
+        {"rank": 2, "targetCountryAlpha2": "GB", "targetCountryName": "United Kingdom", "value": "20.25"}
+      ]
+    }
+  }
+}

@@ -13,13 +13,14 @@ import pytest
 
 from ase.adapters.llm import openai_compatible
 from ase.adapters.llm.openai_compatible import OpenAiCompatibleGateway
+from ase.application.ports.feeds import EventQuery
 from ase.application.ports.llm import LlmGatewayError
 from ase.container import Container
 from ase.domain.llm import LlmMessage, LlmRequest
 from ase.domain.users import User
 from helpers import ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD, bearer, login_token
 from llm_fixture_helpers import seed_legacy_profile
-from report_helpers import PROFILE
+from report_helpers import PROFILE, filled_store
 
 REQUEST = LlmRequest((LlmMessage("user", "private-prompt-marker"),), 30, 0.0)
 SECRET = "test-gateway-secret-marker"
@@ -203,6 +204,9 @@ async def test_provider_error_is_safe_in_persisted_reports_and_usage(
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     profile = {**PROFILE, "api_key": SECRET}
     await seed_legacy_profile(container, profile)
+    # With no evidence the pipeline writes a coverage-gap report without calling the model,
+    # so seed evidence to exercise the model failure this test guards.
+    container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["authorization"] == f"Bearer {SECRET}"

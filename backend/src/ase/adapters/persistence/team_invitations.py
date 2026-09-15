@@ -5,6 +5,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
@@ -12,6 +13,7 @@ from ase.adapters.persistence.directory_profile import DirectoryProfileRow
 from ase.adapters.persistence.models import UserRow
 from ase.adapters.persistence.team_invitation_models import TeamInvitationRow
 from ase.adapters.persistence.teams import TeamRow
+from ase.application.ports.team_invitations import DuplicateInvitation
 from ase.domain.team_invitation import InvitationStatus, TeamInvitation, TeamInvitationPage
 from ase.domain.teams import MembershipRole
 
@@ -63,7 +65,10 @@ class SqlTeamInvitationRepository:
                 revision=invitation.revision,
             )
         )
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError:
+            raise DuplicateInvitation() from None
 
     async def get(self, invitation_id: UUID) -> TeamInvitation | None:
         row = await self._session.get(TeamInvitationRow, invitation_id, populate_existing=True)

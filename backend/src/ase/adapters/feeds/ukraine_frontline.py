@@ -9,6 +9,7 @@ unavailable states rather than substituting another source.
 from __future__ import annotations
 
 import asyncio
+import math
 import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
@@ -37,6 +38,8 @@ WARSPOTTING_URL = "https://ukr.warspotting.net/api/losses/russia/{month}"
 DEEPSTATE_COOLDOWN = timedelta(hours=6)
 OCHA_COOLDOWN = timedelta(days=7)
 SPOTTED_COOLDOWN = timedelta(hours=6)
+FAILURE_RETRY = timedelta(minutes=5)
+PAYLOAD_ERRORS = (FeedFetchError, NotModified, ValueError, KeyError, TypeError, AttributeError)
 DEEPSTATE_TERMS = (
     "DeepStateMap licence of 3 September 2025: API use by the rights holder's permission; "
     "shown with the DeepStateMap credit and link, never redistributed."
@@ -50,10 +53,60 @@ _KINDS = {
 }
 
 
-def _rings(coordinates: Any) -> tuple[tuple[tuple[float, float], ...], ...]:
-    return tuple(
-        tuple((round(float(x), 4), round(float(y), 4)) for x, y, *_ in ring) for ring in coordinates
-    )
+Path = tuple[tuple[float, float], ...]
+Rings = tuple[Path, ...]
+
+
+def _number(value: object) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _path(positions: Any) -> Path | None:
+    """GeoJSON positions may carry altitude; each needs at least two finite numbers."""
+    if not isinstance(positions, list):
+        return None
+    parsed: list[tuple[float, float]] = []
+    for position in positions:
+        if not isinstance(position, list) or len(position) < 2:
+            return None
+        x, y, *_ = position
+        if not (_number(x) and _number(y)):
+            return None
+        parsed.append((round(float(x), 4), round(float(y), 4)))
+    return tuple(parsed)
+
+
+def _paths(coordinates: Any) -> Rings | None:
+    """Every member must be a valid path, or the whole geometry is skipped."""
+    if not isinstance(coordinates, list):
+        return None
+    paths: list[Path] = []
+    for member in coordinates:
+        path = _path(member)
+        if path is None:
+            return None
+        paths.append(path)
+    return tuple(paths)
+
+
+def _polygons(geometry: dict[str, Any]) -> tuple[Rings, ...] | None:
+    coordinates = geometry.get("coordinates")
+    if geometry.get("type") == "Polygon":
+        rings = _paths(coordinates)
+        return None if rings is None else (rings,)
+    if not isinstance(coordinates, list):
+        return None
+    polygons: list[Rings] = []
+    for polygon in coordinates:
+        rings = _paths(polygon)
+        if rings is None:
+            return None
+        polygons.append(rings)
+    return tuple(polygons)
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
 
 
 def parse_deepstate(payload: Any) -> tuple[str | None, tuple[FrontlineFeature, ...]]:
@@ -64,21 +117,20 @@ def parse_deepstate(payload: Any) -> tuple[str | None, tuple[FrontlineFeature, .
         raise FeedFetchError("DeepState returned an invalid map.")
     parsed: list[FrontlineFeature] = []
     for feature in features:
-        geometry = feature.get("geometry") or {}
-        name = text((feature.get("properties") or {}).get("name"), 300)
+        if not isinstance(feature, dict):
+            continue
+        geometry = _mapping(feature.get("geometry"))
+        name = text(_mapping(feature.get("properties")).get("name"), 300)
         kind = next((k for key, k in _KINDS.items() if key in name), None)
         if kind is None and "geoJSON.territories." in name:
             kind = FrontlineKind.HISTORICAL
         if kind is None or geometry.get("type") not in ("Polygon", "MultiPolygon"):
             continue
+        polygons = _polygons(geometry)
+        if polygons is None:
+            continue
         parts = re.split(r"\s*///\s*", name)
         label = parts[1] if len(parts) > 1 else parts[0]
-        coordinates = geometry["coordinates"]
-        polygons = (
-            (_rings(coordinates),)
-            if geometry["type"] == "Polygon"
-            else tuple(_rings(polygon) for polygon in coordinates)
-        )
         parsed.append(FrontlineFeature(kind=kind, label=label.strip()[:120], polygons=polygons))
     if len(parsed) > MAX_FRONTLINE_FEATURES:
         raise FeedFetchError("DeepState returned more areas than the bound.")
@@ -89,22 +141,20 @@ def parse_ocha(payload: Any) -> tuple[str | None, tuple[FrontlineFeature, ...]]:
     features = payload.get("features") if isinstance(payload, dict) else None
     if not isinstance(features, list):
         raise FeedFetchError("OCHA returned an invalid layer.")
-    lines: list[tuple[tuple[float, float], ...]] = []
+    lines: list[Path] = []
     newest = 0
     for feature in features[:MAX_FRONTLINE_FEATURES]:
-        geometry = feature.get("geometry") or {}
-        stamp = (feature.get("properties") or {}).get("date")
-        if isinstance(stamp, int | float):
+        if not isinstance(feature, dict):
+            continue
+        geometry = _mapping(feature.get("geometry"))
+        stamp = _mapping(feature.get("properties")).get("date")
+        if isinstance(stamp, int | float) and _number(stamp):
             newest = max(newest, int(stamp))
         if geometry.get("type") == "LineString":
-            lines.append(
-                tuple((round(float(x), 4), round(float(y), 4)) for x, y in geometry["coordinates"])
-            )
+            line = _path(geometry.get("coordinates"))
+            lines.extend(() if line is None else (line,))
         elif geometry.get("type") == "MultiLineString":
-            lines.extend(
-                tuple((round(float(x), 4), round(float(y), 4)) for x, y in part)
-                for part in geometry["coordinates"]
-            )
+            lines.extend(_paths(geometry.get("coordinates")) or ())
     assessed = datetime.fromtimestamp(newest / 1000, tz=UTC).date().isoformat() if newest else None
     feature = FrontlineFeature(kind=FrontlineKind.LINE, label="Front line", lines=tuple(lines))
     return assessed, (feature,) if lines else ()
@@ -152,9 +202,9 @@ class FrontlineProviders:
         self._deepstate, self._ocha, self._spotted = deepstate, ocha, spotted
         self._lock = asyncio.Lock()
         self._frontline: FrontlineState | None = None
-        self._frontline_at: datetime | None = None
+        self._frontline_due: datetime | None = None
         self._spotted_state: SpottedState | None = None
-        self._spotted_at: datetime | None = None
+        self._spotted_due: datetime | None = None
 
     async def snapshot(self) -> FrontlineState:
         if not self._deepstate and not self._ocha:
@@ -167,10 +217,10 @@ class FrontlineProviders:
         cooldown = DEEPSTATE_COOLDOWN if self._deepstate else OCHA_COOLDOWN
         async with self._lock:
             now = self._clock.now()
-            if self._frontline and self._frontline_at and now - self._frontline_at < cooldown:
+            if self._frontline and self._frontline_due and now < self._frontline_due:
                 return self._frontline
-            self._frontline_at = now
             self._frontline = await self._fetch_frontline(now)
+            self._frontline_due = _next_refresh(self._frontline.status, now, cooldown)
             return self._frontline
 
     async def _fetch_frontline(self, now: datetime) -> FrontlineState:
@@ -183,10 +233,14 @@ class FrontlineProviders:
         try:
             assessed, features = parse(await self._http.get_json(url, conditional=False))
             snapshot = FrontlineSnapshot(provider, attribution, terms, assessed, now, features)
-        except (FeedFetchError, NotModified, ValueError, KeyError, TypeError) as exc:
+        except PAYLOAD_ERRORS as exc:
             if previous is not None:
-                return FrontlineState(FrontlineStatus.STALE, f"Refresh failed: {exc}", previous)
-            return FrontlineState(FrontlineStatus.UNAVAILABLE, f"Provider unavailable: {exc}")
+                return FrontlineState(
+                    FrontlineStatus.STALE, f"Refresh failed: {_reason(exc)}", previous
+                )
+            return FrontlineState(
+                FrontlineStatus.UNAVAILABLE, f"Provider unavailable: {_reason(exc)}"
+            )
         return FrontlineState(FrontlineStatus.READY, "Provider snapshot", snapshot)
 
     async def spotted(self) -> SpottedState:
@@ -199,14 +253,10 @@ class FrontlineProviders:
             )
         async with self._lock:
             now = self._clock.now()
-            if (
-                self._spotted_state
-                and self._spotted_at
-                and now - self._spotted_at < SPOTTED_COOLDOWN
-            ):
+            if self._spotted_state and self._spotted_due and now < self._spotted_due:
                 return self._spotted_state
-            self._spotted_at = now
             self._spotted_state = await self._fetch_spotted(now)
+            self._spotted_due = _next_refresh(self._spotted_state.status, now, SPOTTED_COOLDOWN)
             return self._spotted_state
 
     async def _fetch_spotted(self, now: datetime) -> SpottedState:
@@ -218,17 +268,20 @@ class FrontlineProviders:
                     WARSPOTTING_URL.format(month=month), conditional=False
                 )
                 losses.extend(parse_spotted(payload))
-        except (FeedFetchError, NotModified, ValueError, KeyError, TypeError) as exc:
+        except PAYLOAD_ERRORS as exc:
             if previous is not None and previous.losses:
                 return SpottedState(
                     FrontlineStatus.STALE,
-                    f"Refresh failed: {exc}",
+                    f"Refresh failed: {_reason(exc)}",
                     SPOTTED_TERMS,
                     previous.downloaded_at,
                     previous.losses,
                 )
             return SpottedState(
-                FrontlineStatus.UNAVAILABLE, f"Provider unavailable: {exc}", SPOTTED_TERMS, None
+                FrontlineStatus.UNAVAILABLE,
+                f"Provider unavailable: {_reason(exc)}",
+                SPOTTED_TERMS,
+                None,
             )
         losses.sort(key=lambda loss: loss.on, reverse=True)
         return SpottedState(
@@ -238,6 +291,18 @@ class FrontlineProviders:
             now,
             tuple(losses[:MAX_SPOTTED]),
         )
+
+
+def _next_refresh(status: FrontlineStatus, now: datetime, cooldown: timedelta) -> datetime:
+    """The long provider cooldown follows a good snapshot only; failures retry sooner."""
+    return now + (cooldown if status is FrontlineStatus.READY else FAILURE_RETRY)
+
+
+def _reason(exc: Exception) -> str:
+    """Upstream fetch errors are already bounded; parser internals are not shown."""
+    if isinstance(exc, FeedFetchError | NotModified):
+        return str(exc)
+    return "the provider returned a malformed payload."
 
 
 def _recent_months(today: date) -> tuple[str, str]:

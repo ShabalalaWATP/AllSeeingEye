@@ -1,0 +1,37 @@
+{
+  "record_kind": "unfilled_human_review_outline_not_labels",
+  "review_status": "pending",
+  "reviewer_identity": null,
+  "reviewer_role": null,
+  "reviewed_at": null,
+  "manifest_sha256": null,
+  "case_id": null,
+  "case_sha256": null,
+  "model_run_id": null,
+  "report_id": null,
+  "report_version_id": null,
+  "executed_depth": null,
+  "material_statements": [
+    {
+      "statement_id": null,
+      "statement_text_sha256": null,
+      "cited_packet_id": null,
+      "cited_packet_sha256": null,
+      "cited_passage_sha256": null,
+      "supported_or_appropriately_qualified": null,
+      "date_correct": null,
+      "attribution_correct": null,
+      "number_and_unit_correct": null,
+      "rationale": null
+    }
+  ],
+  "required_question_statuses": [],
+  "counterevidence_retained_or_gap_explained": null,
+  "abstention_appropriate": null,
+  "expected_material_change": null,
+  "reported_material_change": null,
+  "disagreements": [],
+  "second_reviewer_identity": null,
+  "second_reviewer_role": null,
+  "resolution_rationale": null
+}

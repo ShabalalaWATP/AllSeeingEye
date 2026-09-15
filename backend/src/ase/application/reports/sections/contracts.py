@@ -56,9 +56,9 @@ SYNTHESIS_SCHEMA = _object(
     }
 )
 for _name, _cap in (
-    ("key_judgements", 5),
+    ("key_judgements", 8),
     ("assumptions", 8),
-    ("alternative_hypotheses", 3),
+    ("alternative_hypotheses", 4),
     ("gaps", 20),
     ("collection_recommendations", 8),
 ):

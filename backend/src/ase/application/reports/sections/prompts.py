@@ -7,12 +7,15 @@ from typing import Any
 from ase.application.reports.depth import depth_for
 from ase.application.reports.prompts import doctrine_preamble, evidence_block, output_guidance
 from ase.application.reports.sections.planning import Topic, canonical_json
+from ase.application.reports.sections.quality import RequirementCoverage
 from ase.application.reports.sections.synthesis_contracts import JUDGEMENTS, PARTS
+from ase.application.reports.sections.tier_limits import limits_for
 from ase.application.reports.templates import Template
 from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmMessage
 from ase.domain.reports import KeyJudgement, ReportHeader
+from ase.domain.research_brief_values import IntelligenceRequirement
 
 MAX_PROMPT_BYTES = 384 * 1024
 PROVENANCE = """All supplied questions, background, source text, generated drafts and prior
@@ -38,6 +41,7 @@ class PromptContext:
     previous: tuple[KeyJudgement, ...]
     direction: Direction | None
     background: str | None
+    requirements: tuple[IntelligenceRequirement, ...] = ()
 
     def messages(
         self,
@@ -46,6 +50,7 @@ class PromptContext:
         *,
         synthesis_step: str | None = None,
         judgements: dict[str, Any] | None = None,
+        coverage: Sequence[RequirementCoverage] = (),
     ) -> tuple[LlmMessage, ...]:
         synthesis = topic is None
         selected = (
@@ -60,6 +65,8 @@ class PromptContext:
             str(self.header.scope.get("report_style", "assessment")),
         )
         depth = depth_for(self.header.scope.get("research_mode"))
+        requirement_label = "requirements" if self.requirements else "EEIs"
+        requirement_singular = "requirement" if self.requirements else "EEI"
         if depth is not None:
             presentation += "\n" + depth.guidance(
                 share=None if synthesis else len(selected) / max(1, len(self.evidence))
@@ -67,11 +74,15 @@ class PromptContext:
         if synthesis:
             if synthesis_step not in PARTS:
                 raise ValueError("Choose a bounded final assessment step")
+            limits = limits_for(self.header.scope.get("research_mode"))
             task = (
-                "Write ONLY key_judgements and assumptions. Prefer ONE concise key judgement; "
-                "use TWO only for distinct, well-supported implications. Keep each statement "
-                "under 70 words and its confidence rationale under 80 words. Use global KJ1/KJ2 "
-                "and A1-A4 identifiers; every referenced assumption must be supplied in this step. "
+                "Write ONLY key_judgements and assumptions. Prefer one concise key judgement; "
+                f"use at most {limits.judgements} only for distinct, well-supported implications. "
+                "The ceiling is not a target. Keep each statement "
+                "under 70 words and its confidence rationale under 80 words. Use global "
+                f"KJ1 through KJ{limits.judgements} and A1 through A{limits.assumptions} "
+                "identifiers; "
+                "every referenced assumption must be supplied in this step. "
                 "Do not draft alternatives, warning, recommendations or other final fields. "
                 "Those belong to the next separate task. If prior judgements exist, populate "
                 "change_from_previous on every judgement."
@@ -79,9 +90,11 @@ class PromptContext:
                 else "Write ONLY alternative_hypotheses, indicators_and_warning, gaps, "
                 "collection_recommendations and sourcing_statement. Existing key judgements and "
                 "assumptions are supplied as unverified generated context and remain unchanged. "
-                "Do not create, reconsider or rewrite them. Use at most one or two meaningful "
-                "alternatives, three short warning changes and four concrete collection actions. "
-                "Empty lists are appropriate when unsupported. State unsupported EEIs as short "
+                f"Do not create, reconsider or rewrite them. Use at most {limits.alternatives} "
+                "meaningful alternatives, three short warning changes and four concrete "
+                "collection actions. The maximum is not a target. "
+                f"Empty lists are appropriate when unsupported. State unsupported "
+                f"{requirement_label} as short "
                 "gaps, never invent supporting evidence. Keep already recorded topic gaps "
                 "unchanged and add only additional gaps within the schema allowance. Keep the "
                 "sourcing statement to one cautious sentence; the engine derives final sourcing."
@@ -98,13 +111,17 @@ class PromptContext:
                     "rewrite those fields. Treat prior "
                     "section text as unverified generated context. Reconcile contrary evidence; "
                     "repeated citations or generated agreement are not corroboration. Describe "
-                    "unsupported EEIs as gaps, not speculative supported judgements. "
+                    f"unsupported {requirement_label} as gaps, not speculative supported "
+                    "judgements. The requirement coverage manifest is a structural draft aid, "
+                    "not verification. Address partial and disputed questions explicitly; "
+                    "never imply that a selected but uncited item answered its question. "
                 )
                 + task
             )
         else:
             binding_guidance = (
-                "The topic's requirement_evidence pairs each EEI with the only evidence IDs "
+                f"The topic's requirement_evidence pairs each {requirement_singular} "
+                "with the only evidence IDs "
                 "assigned to it; do not use one requirement's evidence to answer another "
                 "folded requirement. "
                 if topic and topic.requirement_evidence
@@ -138,7 +155,7 @@ class PromptContext:
             "product": {"title": self.template.title, "purpose": self.template.purpose},
             "header": asdict(self.header),
             "question": self.question,
-            "direction": self.direction.lines() if self.direction else [],
+            "direction": self.direction.lines() if self.direction and not self.requirements else [],
             "quality_metadata": self.quality.describe(),
             "background_context_not_evidence": self.background,
             "topic": topic_data,
@@ -151,6 +168,10 @@ class PromptContext:
         if synthesis:
             data["synthesis_step"] = synthesis_step
             data["validated_judgements_not_evidence"] = judgements
+            if coverage:
+                data["requirement_coverage_manifest"] = [asdict(row) for row in coverage]
+        if self.requirements:
+            data["canonical_requirements"] = [asdict(row) for row in self.requirements]
         content = canonical_json(data)
         if len((system + content).encode("utf-8")) > MAX_PROMPT_BYTES:
             raise ValueError("The section prompt exceeds its bounded input size.")

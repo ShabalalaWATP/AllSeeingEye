@@ -210,6 +210,34 @@ async def test_new_parent_version_does_not_replace_bound_context(
         assert current is not None and current.latest_version == 2
 
 
+async def test_selected_older_parent_version_remains_the_followup_source(
+    client: AsyncClient,
+    container: Container,
+    admin: User,
+    user: User,
+) -> None:
+    parent, original = await saved_parent(container, user)
+    await model_setup(client, container, admin)
+    async with container.session_factory() as session:
+        repos = container.repositories(session)
+        current = await repos.reports.get(parent.id)
+        assert current is not None
+        current.latest_version = 2
+        later = replace(original, id=uuid4(), number=2, evidence=())
+        await repos.reports.add_version(current, later)
+        await session.commit()
+    container.llm = CallbackGateway()
+    response = await client.post(
+        "/api/reports",
+        json=report_payload(parent_report_id=str(parent.id), parent_version=1),
+        headers=await actor_headers(client, user),
+    )
+    assert response.status_code == 201, response.text
+    payload = response.json()
+    assert payload["report"]["scope"]["parent_version"] == 1
+    assert len(payload["version"]["evidence"]) == len(original.evidence)
+
+
 async def test_admin_can_regenerate_same_owner_personal_follow_up(
     client: AsyncClient,
     container: Container,

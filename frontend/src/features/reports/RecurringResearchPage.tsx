@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: 'Set the depth and rhythm',
-    detail: 'Basic, deep or advanced research, daily to monthly, at the hour you want it ready.',
+    detail: 'Basic, deep or advanced research, daily through annual, at the hour you choose.',
   },
   {
     title: 'Read what changed',

@@ -6,7 +6,7 @@ pipeline of docs/03 section 9 for one version and accounts for every model call.
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
 from functools import partial
 
@@ -16,17 +16,26 @@ from ase.application.ports.evidence_urls import EvidenceUrlResolver
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository, SecretCipher
 from ase.application.ports.report_export import AsyncReportProjector
-from ase.application.ports.research import ResearchCollection
-from ase.application.reports.advocacy import advocate, apply_advocacy
+from ase.application.ports.research import (
+    CheckpointedChallengeCollection,
+    ResearchCollection,
+    SourceOperationCheckpoints,
+)
 from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.challenge import run_challenge
-from ase.application.reports.direction import direct
+from ase.application.reports.challenge_expansion import expand_and_review
 from ase.application.reports.drafting import Draft, draft_body
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.frozen_challenge import review_frozen
-from ase.application.reports.production_checkpoint import ProductionCheckpoints, ProductionSnapshot
+from ase.application.reports.original_followthrough import OriginalFollowThrough
+from ase.application.reports.production_checkpoint import (
+    ExpansionCheckpoints,
+    ProductionCheckpoints,
+    ProductionSnapshot,
+)
 from ase.application.reports.production_collection import prepare_collection
 from ase.application.reports.production_completion import complete_production
+from ase.application.reports.production_model_roles import advocate_for_job, direct_for_job
 from ase.application.reports.production_result import ProductionResult
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job, ProfileLookup, Totals, usage_entry
@@ -37,14 +46,11 @@ from ase.application.reports.sections import draft_sections
 from ase.application.reports.selection import Selection
 from ase.application.reports.subscription_updates import update_guidance
 from ase.domain.advocacy import DevilsAdvocacy
-from ase.domain.direction import Direction
-from ase.domain.evidence import EvidenceItem, quality_of_information
+from ase.domain.evidence import quality_of_information
 from ase.domain.grading import SourceProfile
-from ase.domain.llm import LlmRole
 from ase.domain.report_records import ReportVersion
 from ase.domain.reports import ReportBody
 from ase.domain.research_runs import ResearchStage
-from ase.domain.validation import Finding, Severity
 
 __all__ = ["Job", "Producer"]
 
@@ -63,6 +69,7 @@ class Producer:
         private_store_factory: Callable[[], EventStore] | None = None,
         automatic_claims: AutomaticClaims | None = None,
         web_research: FreshWebResearch | None = None,
+        original_followthrough: OriginalFollowThrough | None = None,
         projector: AsyncReportProjector | None = None,
         ai_usage: AiUsageAccounting | None = None,
     ) -> None:
@@ -76,6 +83,7 @@ class Producer:
         self._private_store_factory = private_store_factory
         self._automatic_claims = automatic_claims
         self._web_research = web_research
+        self._original_followthrough = original_followthrough
         self._projector = projector
         self._ai_usage = ai_usage
 
@@ -93,7 +101,20 @@ class Producer:
         )
         return result.version
 
-    async def produce_with_claims(
+    def _metered_gateway(self, job: Job) -> LlmGateway:
+        """Every model call in the job counts against the owner's AI allowance when metered."""
+        if self._ai_usage is None:
+            return self._gateway
+        return AllowanceLlmGateway(
+            self._gateway,
+            self._ai_usage,
+            owner_id=job.actor.id,
+            team_id=job.request.team_id,
+            profile_id=None,
+            purpose_prefix="report",
+        )
+
+    async def produce_with_claims(  # noqa: PLR0915 - serial checkpointed report stages
         self,
         job: Job,
         profile_for: ProfileLookup,
@@ -102,17 +123,14 @@ class Producer:
         progress: Progress | None = None,
         checkpoints: ProductionCheckpoints | None = None,
     ) -> ProductionResult:
-        gateway: LlmGateway = self._gateway
-        if self._ai_usage is not None:
-            gateway = AllowanceLlmGateway(
-                gateway,
-                self._ai_usage,
-                owner_id=job.actor.id,
-                team_id=job.request.team_id,
-                profile_id=None,
-                purpose_prefix="report",
-            )
+        gateway = self._metered_gateway(job)
         snapshot = await checkpoints.load_collection() if checkpoints is not None else None
+        source_operations = (
+            checkpoints
+            if isinstance(checkpoints, SourceOperationCheckpoints)
+            and checkpoints.source_phase_enabled
+            else None
+        )
         totals = (
             replace(
                 snapshot.totals,
@@ -124,7 +142,7 @@ class Producer:
         )
         await reached(progress, ResearchStage.PLANNING)
         if snapshot is None:
-            direction = await self._direct(job, profile_for, totals, gateway)
+            direction = await direct_for_job(job, profile_for, totals, gateway, self._cipher)
             store, receipt, query = await prepare_collection(
                 job,
                 direction,
@@ -137,6 +155,7 @@ class Producer:
                 cipher=self._cipher,
                 profile_for=profile_for,
                 web_research=self._web_research,
+                source_operations=source_operations,
             )
         else:
             direction, receipt, query = snapshot.direction, snapshot.receipt, snapshot.query
@@ -150,19 +169,28 @@ class Producer:
                 direction,
                 extra_terms,
                 runtime_query=query,
+                receipt=receipt,
+                reserve_challenge_slots=source_operations is not None,
             )
 
         selection = snapshot.selection if snapshot is not None else select()
-        if checkpoints is not None and snapshot is None:
-            await checkpoints.save_collection(
-                ProductionSnapshot(
-                    selection,
-                    direction,
-                    receipt,
-                    query,
-                    replace(totals, findings=list(totals.findings), usage=list(totals.usage)),
+        original_context = ""
+        if receipt is not None and self._original_followthrough is not None:
+            if snapshot is None:
+                originals = await self._original_followthrough.collect(
+                    job, store, selection, receipt
                 )
+                receipt = replace(receipt, original_followup=originals)
+            original_context = await self._original_followthrough.context(receipt.original_followup)
+        if checkpoints is not None and snapshot is None:
+            snapshot = ProductionSnapshot(
+                selection,
+                direction,
+                receipt,
+                query,
+                replace(totals, findings=list(totals.findings), usage=list(totals.usage)),
             )
+            await checkpoints.save_collection(snapshot)
         earlier = (
             job.previous.body.key_judgements
             if job.previous is not None
@@ -190,12 +218,14 @@ class Producer:
                 selected.items,
                 earlier,
                 direction=direction,
+                canonical_requirements=job.request.canonical_requirements,
                 background="\n\n".join(
                     filter(
                         None,
                         (
                             job.background,
                             receipt.describe() if receipt else None,
+                            original_context,
                             REUSE_NOTICE if job.reused_evidence else None,
                             update_guidance(
                                 job.subscription_baseline,
@@ -224,7 +254,38 @@ class Producer:
         body = draft.body or ReportBody()
         advocacy: DevilsAdvocacy | None = None
         challenge = None
-        if query is not None and query.mode.requires_challenge and checkpoints is not None:
+        if (
+            query is not None
+            and query.mode.requires_challenge
+            and snapshot is not None
+            and source_operations is not None
+            and isinstance(checkpoints, ExpansionCheckpoints)
+        ):
+            outcome = await expand_and_review(
+                job,
+                draft,
+                snapshot,
+                collection=self._research
+                if isinstance(self._research, CheckpointedChallengeCollection)
+                else None,
+                source_operations=source_operations,
+                checkpoints=checkpoints,
+                profiles=self._source_profiles,
+                gateway=gateway,
+                cipher=self._cipher,
+                profile_for=profile_for,
+                totals=totals,
+                redraft=make_draft,
+                progress=progress,
+            )
+            draft, selection, body, challenge = (
+                outcome.draft,
+                outcome.selection,
+                outcome.body,
+                outcome.challenge,
+            )
+            advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
+        elif query is not None and query.mode.requires_challenge and checkpoints is not None:
             body, challenge = await review_frozen(
                 job,
                 body,
@@ -266,8 +327,8 @@ class Producer:
             advocacy = next((row.advocacy for row in challenge.reviews if row.advocacy), None)
         elif job.request.devils_advocacy and body.key_judgements and draft.body is not None:
             await reached(progress, ResearchStage.CHALLENGING)
-            body, advocacy = await self._advocate(
-                job, profile_for, body, selection.items, totals, gateway
+            body, advocacy = await advocate_for_job(
+                job, profile_for, body, selection.items, totals, gateway, self._cipher
             )
         version = await build_version(
             job,
@@ -294,66 +355,3 @@ class Producer:
             self._usage,
             gateway=gateway if self._ai_usage is not None else None,
         )
-
-    async def _direct(
-        self, job: Job, profile_for: ProfileLookup, totals: Totals, gateway: LlmGateway
-    ) -> Direction | None:
-        if job.direction is not None:
-            return job.direction
-        question = (job.request.question or "").strip()
-        if not (job.template.needs_question or job.request.research_mode) or not question:
-            return None
-        profile = await profile_for(LlmRole.DIRECTION)
-        if profile is None:
-            totals.findings.append(
-                Finding(
-                    "direction",
-                    Severity.WARNING,
-                    "direction",
-                    "No enabled model profile plays the direction role; evidence was "
-                    "selected without search terms.",
-                )
-            )
-            return None
-        key = self._cipher.decrypt(profile.api_key_encrypted)
-        draft = await direct(
-            gateway,
-            profile,
-            key,
-            question,
-            job.country_name,
-            languages=job.request.research_languages if job.request.research_mode else (),
-        )
-        purpose = f"report:{job.template.id}:direction"
-        totals.usage.append(usage_entry(job, profile, purpose, draft.direction is not None, draft))
-        totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
-        return draft.direction
-
-    async def _advocate(
-        self,
-        job: Job,
-        profile_for: ProfileLookup,
-        body: ReportBody,
-        evidence: Sequence[EvidenceItem],
-        totals: Totals,
-        gateway: LlmGateway,
-    ) -> tuple[ReportBody, DevilsAdvocacy | None]:
-        profile = await profile_for(LlmRole.DEVIL)
-        if profile is None:
-            totals.findings.append(
-                Finding(
-                    "advocacy",
-                    Severity.WARNING,
-                    "devils_advocacy",
-                    "No enabled model profile plays the devil role; no contrarian view was taken.",
-                )
-            )
-            return body, None
-        key = self._cipher.decrypt(profile.api_key_encrypted)
-        draft = await advocate(gateway, profile, key, body, evidence)
-        purpose = f"report:{job.template.id}:advocacy"
-        totals.usage.append(usage_entry(job, profile, purpose, draft.advocacy is not None, draft))
-        totals.add(draft.prompt_tokens, draft.completion_tokens, draft.latency_ms, draft.findings)
-        if draft.advocacy is None:
-            return body, None
-        return apply_advocacy(body, draft.advocacy)

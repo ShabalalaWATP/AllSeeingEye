@@ -38,8 +38,8 @@ async def test_markdown_endpoint_returns_named_zip_when_publication_has_a_figure
         8,
     )
 
-    def build_with_figure(found_record, found_version):
-        document = original_build(found_record, found_version)
+    def build_with_figure(found_record, found_version, *, reviewed_snapshot=None):
+        document = original_build(found_record, found_version, reviewed_snapshot=reviewed_snapshot)
         return replace(
             document,
             blocks=(
@@ -87,8 +87,8 @@ async def test_markdown_endpoint_preserves_explicit_text_contract(
         8,
     )
 
-    def build_with_figure(found_record, found_version):
-        document = original_build(found_record, found_version)
+    def build_with_figure(found_record, found_version, *, reviewed_snapshot=None):
+        document = original_build(found_record, found_version, reviewed_snapshot=reviewed_snapshot)
         return replace(
             document,
             blocks=(

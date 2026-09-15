@@ -100,6 +100,13 @@ _HEDGE = _phrase_pattern(HEDGES)
 _CONFIDENCE = _phrase_pattern(CONFIDENCE_PHRASES)
 _URL = re.compile(r"https?://[^\s)\]>\"']+", re.IGNORECASE)
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
+_NUMERIC_LIKELIHOOD = re.compile(
+    r"\b(?:\d{1,3}(?:\.\d+)?\s*(?:%|percent|per cent)\s*"
+    r"(?:chance|likelihood|probability|certainty|likely|certain)"
+    r"|(?:chance|likelihood|probability)\s*(?:of|is|at|=|:)?\s*"
+    r"\d{1,3}(?:\.\d+)?\s*(?:%|percent|per cent))(?=\W|$)",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +127,11 @@ def scan_likelihood(text: str) -> LikelihoodScan:
         else:
             bands.append(band)
     return LikelihoodScan(tuple(bands), tuple(forbidden))
+
+
+def has_numeric_likelihood(text: str) -> bool:
+    """Detect a numeric chance assertion, not unrelated source statistics."""
+    return _NUMERIC_LIKELIHOOD.search(text) is not None
 
 
 def distinct_bands(text: str) -> tuple[Probability, ...]:

@@ -97,7 +97,8 @@ class LinuxChromiumPolicy:
             "--size",
             str(64 * 1024 * 1024),
             "--tmpfs",
-            "/tmp",  # noqa: S108  # A private tmpfs inside the new mount namespace.
+            # A private tmpfs inside the new mount namespace, not the host's /tmp.
+            "/tmp",  # noqa: S108  # nosec B108
             "--size",
             str(64 * 1024 * 1024),
             "--tmpfs",

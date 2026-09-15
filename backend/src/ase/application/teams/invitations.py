@@ -6,13 +6,11 @@ from dataclasses import replace
 from datetime import timedelta
 from uuid import UUID, uuid4
 
-from sqlalchemy.exc import IntegrityError
-
 from ase.application.auditing import Auditor
 from ase.application.dto import RequestContext
 from ase.application.ports import Clock, UnitOfWork, UserRepository
 from ase.application.ports.directory_profile import DirectoryProfileRepository
-from ase.application.ports.team_invitations import TeamInvitationRepository
+from ase.application.ports.team_invitations import DuplicateInvitation, TeamInvitationRepository
 from ase.application.ports.teams import TeamRepository
 from ase.domain.audit import AuditAction
 from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated
@@ -130,7 +128,7 @@ class TeamInvitationService:
         )
         try:
             await self._invitations.add(invitation)
-        except IntegrityError:
+        except DuplicateInvitation:
             await self._uow.rollback()
             raise Conflict("A pending invitation already exists for this account.") from None
         await self._auditor.record(

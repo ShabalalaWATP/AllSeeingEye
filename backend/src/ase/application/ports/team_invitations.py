@@ -8,6 +8,10 @@ from uuid import UUID
 from ase.domain.team_invitation import InvitationStatus, TeamInvitation, TeamInvitationPage
 
 
+class DuplicateInvitation(Exception):
+    """The recipient already holds a pending invitation to the team."""
+
+
 class TeamInvitationRepository(Protocol):
     async def add(self, invitation: TeamInvitation) -> None: ...
 

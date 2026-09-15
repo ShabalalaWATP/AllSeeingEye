@@ -80,7 +80,7 @@ def test_creator_manager_backfill_assigns_only_active_creators(tmp_path: Path) -
             ("3" * 32, "a" * 32, "member", "2026-09-06"),
         )
         connection.commit()
-    command.upgrade(config, "0037")
+    command.upgrade(config, "0047")
     with closing(sqlite3.connect(database)) as connection:
         assert connection.execute(
             "SELECT team_id,user_id,role FROM team_memberships ORDER BY team_id"
@@ -97,7 +97,7 @@ def test_creator_manager_backfill_assigns_only_active_creators(tmp_path: Path) -
 def test_retire_global_manager_preserves_security_version_boundary(tmp_path: Path) -> None:
     database = tmp_path / "retire-global-manager.db"
     config = alembic_config(f"sqlite+aiosqlite:///{database}")
-    command.upgrade(config, "0039")
+    command.upgrade(config, "0049")
     with closing(sqlite3.connect(database)) as connection:
         connection.execute(
             "INSERT INTO users (id,email,display_name,role,is_active,failed_login_count,"
@@ -114,7 +114,7 @@ def test_retire_global_manager_preserves_security_version_boundary(tmp_path: Pat
             ("t" * 32, "m" * 32, "manager", "2026-09-06"),
         )
         connection.commit()
-    command.upgrade(config, "0040")
+    command.upgrade(config, "0050")
     with closing(sqlite3.connect(database)) as connection:
         assert connection.execute(
             "SELECT role,security_version FROM users WHERE email=?",

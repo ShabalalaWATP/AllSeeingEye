@@ -8,6 +8,7 @@ import pytest
 
 from ase.adapters.persistence.source_controls import SqlSourceControlRepository
 from ase.container.research import research_service
+from ase.container.source_requirements import source_requirements
 from llm_fixture_helpers import seed_legacy_profile
 from report_helpers import PROFILE, ScriptedGateway, good_body
 from team_helpers import CONTEXT
@@ -34,12 +35,16 @@ async def test_historical_http_report_and_regeneration_preserve_project_records(
         map_ids = {"map_view_id": str(view.id), "map_revision_id": str(revision.id)}
         # A later revision cannot redirect this explicitly chosen area.
         await revise(container, claims, view, revision)
+    catalogue_path = str(catalogue(tmp_path))
+    # Allocation is fail-closed: the requirement comes from settings, as in production.
+    configured = container.settings.model_copy(update={"aiddata_catalogue_path": catalogue_path})
     container.research = research_service(
         container.http,
         container.clock,
         admission=container.source_admission,
         countries=container.countries,
-        aiddata_catalogue_path=str(catalogue(tmp_path)),
+        aiddata_catalogue_path=catalogue_path,
+        requirements=source_requirements(configured),
     )
     await seed_legacy_profile(container, {**PROFILE, "roles": ["assessment", "direction"]})
     if disabled:
@@ -126,3 +131,30 @@ async def test_historical_http_report_and_regeneration_preserve_project_records(
     )
     assert followup.status_code == 422
     assert "historical" in followup.text.lower()
+
+    container.llm = ScriptedGateway("{}", json.dumps(good_body()))
+    exact_scope = {
+        "template": "ask",
+        "question": "What remains uncertain about these commitments?",
+        "research_mode": "quick",
+        "parent_report_id": result["report"]["id"],
+        "parent_version": result["version"]["number"],
+        "research_time_basis": "recorded_time",
+        "research_since": START.isoformat(),
+        "research_until": END.isoformat(),
+        "disclose_area_to_provider": saved_area,
+    }
+    if saved_area:
+        exact_scope["research_area"] = {"geometry": geometry.to_collection()}
+    else:
+        exact_scope["country"] = "LA"
+    scoped_followup = await client.post("/api/reports", headers=auth, json=exact_scope)
+    assert scoped_followup.status_code == 201, scoped_followup.text
+    scope = scoped_followup.json()["report"]["scope"]
+    assert scope["parent_report_id"] == result["report"]["id"]
+    assert scope["parent_version"] == result["version"]["number"]
+    assert scope["research_time_basis"] == "recorded_time"
+    assert scoped_followup.json()["version"]["period_from"].startswith(START.date().isoformat())
+    if saved_area:
+        original_area = result["report"]["scope"]["map_origin"]["area"]
+        assert scope["research_area"]["sha256"] == original_area["sha256"]

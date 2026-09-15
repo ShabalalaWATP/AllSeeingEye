@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from httpx import AsyncClient
 
-from ase.adapters.persistence.schedules import SqlScheduleStore
-from ase.application.schedules.runner import ScheduleRunner
+from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.container import Container
-from ase.domain.schedules import Schedule, next_run_after
+from ase.domain.schedules import next_run_after
 from ase.domain.users import User
 from helpers import (
     ADMIN_EMAIL,
@@ -23,8 +21,7 @@ from helpers import (
     login_token,
 )
 from llm_fixture_helpers import seed_legacy_profile
-from report_helpers import PROFILE, ScriptedGateway, good_body
-from tracker_helpers import conflict_events
+from report_helpers import PROFILE
 
 FRIDAY = datetime(2026, 9, 4, 7, tzinfo=UTC)
 
@@ -81,7 +78,7 @@ async def test_schedules_are_validated_and_owned(
     ).status_code == 204
 
 
-async def test_runner_produces_due_reports_and_records_failures(
+async def test_runner_enqueues_due_slot_once_without_inline_production(
     client: AsyncClient, container: Container, admin: User, user: User
 ) -> None:
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
@@ -93,30 +90,17 @@ async def test_runner_produces_due_reports_and_records_failures(
     }  # fmt: skip
     created = await client.post("/api/schedules", json=body, headers=bearer(token))
     assert created.status_code == 201, created.text
-    container.store.upsert(conflict_events(container.clock.now()))
-    container.llm = ScriptedGateway(json.dumps(good_body()))
-    store = SqlScheduleStore(container.session_factory, container.access_policy)
-    runner = ScheduleRunner(store, container.schedule_report, container.clock)
-    assert await runner.run_once() == []  # not due yet
+    runner = container.schedule_runner
+    assert await runner.run_once() == 0  # not due yet
 
     container.clock.advance(timedelta(hours=2))
-    ran = await runner.run_once()
-    assert [item.name for item in ran] == ["Morning INTSUM"]
+    assert await runner.run_once() == 1
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     listed = await client.get("/api/schedules", headers=bearer(token))
     item = listed.json()["items"][0]
-    assert item["last_report_id"] is not None and item["last_error"] is None
+    assert item["last_report_id"] is None and item["last_error"] is None
     assert datetime.fromisoformat(item["next_run_at"]) > container.clock.now()
-    report = await client.get(f"/api/reports/{item['last_report_id']}", headers=bearer(token))
-    assert report.status_code == 200 and report.json()["report"]["scope"]["country"] == "UA"
-    assert await runner.run_once() == []  # booked for tomorrow
-
-    async def failing(schedule: Schedule) -> object:
-        raise RuntimeError("boom")
-
-    container.clock.advance(timedelta(days=1))
-    broken = ScheduleRunner(store, failing, container.clock)  # type: ignore[arg-type]
-    assert len(await broken.run_once()) == 1
-    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
-    listed = await client.get("/api/schedules", headers=bearer(token))
-    assert listed.json()["items"][0]["last_error"] == "RuntimeError: boom"
+    async with container.session_factory() as session:
+        edition = await SqlSubscriptionEditionRepository(session).active(UUID(item["id"]))
+        assert edition is not None and edition.job_id is not None
+    assert await runner.run_once() == 0

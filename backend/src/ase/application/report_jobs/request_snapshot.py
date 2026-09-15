@@ -1,8 +1,10 @@
 """Only explicit request settings and safe provenance can cross job admission."""
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 from hashlib import sha256
 from typing import Any
+
+from pydantic import TypeAdapter
 
 from ase.application.report_jobs.codec_boundary import (
     canonical,
@@ -17,6 +19,9 @@ from ase.application.report_jobs.codec_boundary import (
 from ase.application.reports.request import ReportRequest
 from ase.application.reports.scope import report_scope
 from ase.application.reports.templates import Template
+from ase.domain.research_brief_values import IntelligenceRequirement
+
+_REQUIREMENTS = TypeAdapter(tuple[IntelligenceRequirement, ...])
 
 _METADATA = {
     "research_input",
@@ -24,6 +29,8 @@ _METADATA = {
     "parent_report_id",
     "parent_version",
     "collection_plan_revision",
+    "subscription_previous_report_id",
+    "subscription_previous_version",
 }
 
 
@@ -56,6 +63,7 @@ def request_to_dict(request: ReportRequest) -> dict[str, Any]:
         "automation": request.automation,
         "map_view_id": str(request.map_view_id) if request.map_view_id else None,
         "map_revision_id": str(request.map_revision_id) if request.map_revision_id else None,
+        "canonical_requirements": [asdict(row) for row in request.canonical_requirements],
     }
 
 
@@ -66,6 +74,13 @@ def _object(value: Any, keys: set[str]) -> dict[str, Any]:
 
 
 def _metadata(scope: dict[str, Any]) -> None:
+    if ("subscription_previous_report_id" in scope) != ("subscription_previous_version" in scope):
+        raise ValueError("Subscription baseline must pin an exact saved version")
+    if "subscription_previous_report_id" in scope and (
+        identifier(scope["subscription_previous_report_id"]) is None
+        or count(scope["subscription_previous_version"]) < 1
+    ):
+        raise ValueError("Invalid frozen subscription baseline")
     if ("parent_report_id" in scope) != ("parent_version" in scope):
         raise ValueError("Parent report must pin an exact saved version")
     if "parent_report_id" in scope and (
@@ -111,11 +126,22 @@ def _metadata(scope: dict[str, Any]) -> None:
 
 
 def request_from_dict(value: Any, scope: Any, template: Template) -> ReportRequest:
-    _object(value, {"team_id", "profile_id", "automation", "map_view_id", "map_revision_id"})
+    fields = {"team_id", "profile_id", "automation", "map_view_id", "map_revision_id"}
+    if type(value) is not dict:
+        raise ValueError("Invalid frozen request")
+    _object(
+        value,
+        fields | ({"canonical_requirements"} if "canonical_requirements" in value else set()),
+    )
     if type(scope) is not dict or type(value["automation"]) is not bool:
         raise ValueError("Invalid frozen request")
     _metadata(scope)
     request = ReportRequest.from_scope(template.id, scope)
+    raw_requirements = value.get("canonical_requirements", [])
+    if type(raw_requirements) is not list or len(raw_requirements) > 12:
+        raise ValueError("Invalid frozen canonical requirements")
+    requirements = _REQUIREMENTS.validate_python(raw_requirements)
+    canonical(raw_requirements, [asdict(row) for row in requirements])
     request = replace(
         request,
         team_id=identifier(value["team_id"]),
@@ -123,6 +149,7 @@ def request_from_dict(value: Any, scope: Any, template: Template) -> ReportReque
         automation=value["automation"],
         map_view_id=identifier(value["map_view_id"]),
         map_revision_id=identifier(value["map_revision_id"]),
+        canonical_requirements=requirements,
     )
     # Type validation is performed after the historical codec; the canonical comparison
     # below then catches its coercions and every unrecognised nested field.

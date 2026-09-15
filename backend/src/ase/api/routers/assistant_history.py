@@ -1,6 +1,7 @@
 """Explicit private save, resume and delete for Ask Eye conversations."""
 
 import json
+from collections.abc import Iterable
 from uuid import UUID
 
 from fastapi import APIRouter, Response
@@ -13,6 +14,8 @@ from ase.api.schemas_assistant_history import (
     SavedConversationOut,
     SavedConversationPageOut,
     SavedConversationSummaryOut,
+    SavedTurnIn,
+    SavedTurnOut,
 )
 from ase.api.session_guard import validate_request_expiry, validate_request_session
 from ase.domain.errors import NotFound
@@ -34,6 +37,24 @@ def _out(row: AssistantConversationRow) -> SavedConversationOut:
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
+
+
+async def _authorise_report_turns(
+    user: CurrentUser,
+    turns: Iterable[SavedTurnIn | SavedTurnOut],
+    container: ContainerDep,
+    session: SessionDep,
+) -> None:
+    references = {
+        (turn.report.id, turn.report.version)
+        for turn in turns
+        if turn.scope == "report" and turn.report is not None
+    }
+    if not references:
+        return
+    reports = container.get_report(session)
+    for report_id, version in references:
+        await reports.execute(user, report_id, version)
 
 
 @router.get("")
@@ -76,12 +97,15 @@ async def save_conversation(
     # SQLite in-memory connection and roll back that write. Check first, then
     # recheck after commit before releasing the private snapshot.
     await validate_request_session(container, claims)
+    await _authorise_report_turns(user, body.turns, container, session)
     record = await SqlAssistantHistory(session).create(
         user.id, body.title, [turn.safe_dict() for turn in body.turns], container.clock.now()
     )
     result = _out(record)
+    await _authorise_report_turns(user, result.turns, container, session)
     validate_request_expiry(container, claims)
     await session.commit()
+    await _authorise_report_turns(user, result.turns, container, session)
     await validate_request_session(container, claims)
     validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"
@@ -102,6 +126,7 @@ async def get_conversation(
         raise NotFound()
     await validate_request_session(container, claims)
     result = _out(row)
+    await _authorise_report_turns(user, result.turns, container, session)
     validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"
     return result
@@ -118,6 +143,7 @@ async def replace_conversation(
     response: Response,
 ) -> SavedConversationOut:
     await validate_request_session(container, claims)
+    await _authorise_report_turns(user, body.turns, container, session)
     row = await SqlAssistantHistory(session).update(
         user.id,
         conversation_id,
@@ -126,8 +152,10 @@ async def replace_conversation(
         container.clock.now(),
     )
     result = _out(row)
+    await _authorise_report_turns(user, result.turns, container, session)
     validate_request_expiry(container, claims)
     await session.commit()
+    await _authorise_report_turns(user, result.turns, container, session)
     await validate_request_session(container, claims)
     validate_request_expiry(container, claims)
     response.headers["Cache-Control"] = "private, no-store"

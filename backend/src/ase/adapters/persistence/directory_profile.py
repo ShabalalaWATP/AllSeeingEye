@@ -19,12 +19,14 @@ from sqlalchemy import (
     or_,
     select,
 )
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ase.adapters.persistence.base import Base, UTCDateTime
 from ase.adapters.persistence.models import UserRow
 from ase.domain.directory_profile import DirectoryEntry, DirectoryPage, DirectoryProfile
+from ase.domain.errors import UsernameTaken
 
 
 class DirectoryProfileRow(Base):
@@ -102,7 +104,13 @@ class SqlDirectoryProfileRepository:
             self._session.add(row)
         else:
             _apply_profile(row, profile)
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            # Do not surface database constraint text, which can disclose schema details.
+            if "username" in str(exc.orig).lower():
+                raise UsernameTaken() from None
+            raise
 
     async def search(self, query: str, limit: int, offset: int) -> DirectoryPage:
         pattern = f"%{_escape_like(query.casefold())}%"

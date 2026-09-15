@@ -86,11 +86,40 @@ it('reports a relayed frame the server refuses', async () => {
   releaseCameraFrame('https://example.test/not-a-blob');
   const fetcher = vi.fn((_path: string) => Promise.resolve(new Blob(['x'])));
   await expect(
-    loadCameraFrame('/api/cameras/frames/traffic-scotland/16.jpg', 4, fetcher),
+    loadCameraFrame('/api/cameras/frames/traffic-scotland/16.jpg', 4, { fetcher }),
   ).resolves.toMatch(/^blob:/);
   expect(fetcher.mock.calls[0]?.[0]).toMatch(
     /^\/api\/cameras\/frames\/traffic-scotland\/16\.jpg\?_ase_refresh=\d+-4$/,
   );
+});
+
+it('never keeps a relayed frame blob that arrives after the inspector closes', async () => {
+  stubObjectUrls();
+  const created: string[] = [];
+  const create = vi.spyOn(URL, 'createObjectURL').mockImplementation(() => {
+    const url = `blob:late-${created.length}`;
+    created.push(url);
+    return url;
+  });
+  const revoke = vi.spyOn(URL, 'revokeObjectURL');
+  let served = false;
+  server.use(
+    http.get('/api/cameras/frames/traffic-scotland/16.jpg', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      served = true;
+      return HttpResponse.arrayBuffer(new Uint8Array([255, 216, 255]).buffer, {
+        headers: { 'Content-Type': 'image/jpeg' },
+      });
+    }),
+  );
+  const { unmount } = render(<CameraInspector camera={relayed} onClose={vi.fn()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Load image' }));
+  unmount();
+  await new Promise((resolve) => setTimeout(resolve, 120));
+  expect(served).toBe(true);
+  for (const url of created) expect(revoke).toHaveBeenCalledWith(url);
+  create.mockRestore();
+  revoke.mockRestore();
 });
 
 it('groups the new British, Baltic, Russian and eastern providers under their regions', () => {

@@ -7,6 +7,12 @@ import type { components } from './types.gen';
 import { apiCall, apiSend } from './client';
 
 export const scheduleSchema = z.object({
+  brief_id: z.uuid().nullable().optional(),
+  brief_revision: z.number().int().positive().nullable().optional(),
+  timezone: z.string().optional(),
+  local_hour: z.number().int().min(0).max(23).optional(),
+  local_minute: z.number().int().min(0).max(59).optional(),
+  collection_policy: z.enum(['rolling_snapshot', 'since_last_success']).optional(),
   team_id: z.uuid().nullable(),
   anchor_month: z.number().int().min(1).max(12).default(1),
   conflict_id: z.string().nullable().default(null),
@@ -57,15 +63,22 @@ export const scheduleSchema = z.object({
   next_run_at: z.string(),
   last_run_at: z.string().nullable(),
   last_report_id: z.string().nullable(),
+  last_version_id: z.string().nullable().default(null),
+  last_outcome: z.enum(['ready', 'needs_review', 'failed']).nullable().default(null),
+  last_coverage: z
+    .enum(['complete', 'partial', 'not_applicable', 'unknown'])
+    .nullable()
+    .default(null),
   last_error: z.string().nullable(),
 });
 export type Schedule = z.infer<typeof scheduleSchema>;
 
 export type ScheduleRequest = components['schemas']['ScheduleIn'];
 
-export async function fetchSchedules(): Promise<Schedule[]> {
+export async function fetchSchedules(signal?: AbortSignal): Promise<Schedule[]> {
   const page = await apiCall('/api/schedules', {
     schema: z.object({ items: z.array(scheduleSchema) }),
+    ...(signal ? { signal } : {}),
   });
   return page.items;
 }
@@ -92,34 +105,20 @@ export function updateSchedule(id: string, request: ScheduleRequest): Promise<Sc
   );
 }
 
-/** PUT is a full replacement. Preserve every saved option when changing run status. */
-export function scheduleRequest(schedule: Schedule, enabled: boolean): ScheduleRequest {
-  return {
-    name: schedule.name,
-    anchor_month: schedule.anchor_month,
-    conflict_id: schedule.conflict_id,
-    hazard: schedule.hazard,
-    research_area: schedule.research_area ? { geometry: schedule.research_area.geometry } : null,
-    disclose_area_to_provider: schedule.disclose_area_to_provider,
-    avoid_repetition: schedule.avoid_repetition,
-    template_id: schedule.template_id,
-    country_iso: schedule.country_iso,
-    country_isos: schedule.country_isos,
-    plan_id: schedule.plan_id,
-    team_id: schedule.team_id,
-    hour_utc: schedule.hour_utc,
-    cadence: schedule.cadence,
-    weekday: schedule.weekday,
-    monthday: schedule.monthday,
-    window_hours: schedule.window_hours,
-    enabled,
-    notify_on_change: schedule.notify_on_change,
-    question: schedule.question,
-    research_mode: schedule.research_mode,
-    research_languages: schedule.research_languages,
-    research_focus: schedule.research_focus,
-    research_subject: schedule.research_subject,
-    research_web_search: schedule.research_web_search,
-    research_source_ids: schedule.research_source_ids,
-  };
+export function pauseSchedule(id: string): Promise<Schedule> {
+  return scopedMutation(() =>
+    apiCall(`/api/schedules/${encodeURIComponent(id)}/pause`, {
+      method: 'POST',
+      schema: scheduleSchema,
+    }),
+  );
+}
+
+export function resumeSchedule(id: string): Promise<Schedule> {
+  return scopedMutation(() =>
+    apiCall(`/api/schedules/${encodeURIComponent(id)}/resume`, {
+      method: 'POST',
+      schema: scheduleSchema,
+    }),
+  );
 }

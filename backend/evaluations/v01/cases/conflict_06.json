@@ -1,0 +1,83 @@
+{
+  "schema_version": "ase-v01-case-1",
+  "id": "conflict_06",
+  "domain": "conflict",
+  "split": "development",
+  "requested_depth": "advanced",
+  "title": "Republished old offensive",
+  "evidence_origin": "synthetic_assistant_authored",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "question": "Does a newly retrieved report establish an offensive inside this research window?",
+  "requirements": [
+    {
+      "id": "r1",
+      "question": "Does a newly retrieved report establish an offensive inside this research window?",
+      "useful_packet_ids": [
+        "p1"
+      ],
+      "expected_passages": [
+        {
+          "packet_id": "p1",
+          "packet_sha256": "535646546c4456d838f348f3251b528a682b5eef8d6c413adfd1bd0f78961038",
+          "text": "the archive describes an offensive reported in August; the page was republished without a new event date."
+        }
+      ],
+      "reference_state": "gap",
+      "reference_outcome": "The August publication is outside the window; retrieval in September does not make it current."
+    }
+  ],
+  "scope": {
+    "countries": [
+      "UA"
+    ],
+    "since": "2026-09-10T00:00:00Z",
+    "until": "2026-09-14T00:00:00Z",
+    "privacy_boundary": "Public institutional and aggregate synthetic evidence only. No private-person identification or private address inference.",
+    "geographic_limit": "fictional eastern logistics corridor; no claim of complete geographic coverage."
+  },
+  "packet": [
+    {
+      "id": "p1",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic conflict source packet",
+      "summary": "the archive describes an offensive reported in August; the page was republished without a new event date.",
+      "content_sha256": "535646546c4456d838f348f3251b528a682b5eef8d6c413adfd1bd0f78961038",
+      "url": "https://example.invalid/conflict/bulletin",
+      "language": "en",
+      "published_at": "2026-08-01T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "UA",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "kind": "publication_time",
+      "packet_id": "p1",
+      "expected_admitted": false
+    }
+  ],
+  "edition": null,
+  "known_pitfalls": [
+    "Synthetic packet statements remain attributed claims, not real-world facts.",
+    "Never replace an old, partial or missing publication timestamp with retrieval time."
+  ],
+  "acceptable_abstentions": [
+    "The August publication is outside the window; retrieval in September does not make it current.",
+    "State which missing source, date, passage or context prevents a stronger answer."
+  ],
+  "analytical_review_questions": [
+    "Does every required question receive an answer, partial, disputed or gap state?",
+    "Are scope, attribution, units, counterevidence and missing coverage preserved without invented certainty?",
+    "If a forecast is added, does it have a finite horizon and explain its evidential limits?"
+  ]
+}

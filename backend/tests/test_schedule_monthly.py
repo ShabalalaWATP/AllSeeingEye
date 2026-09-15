@@ -2,15 +2,13 @@
 
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta, timezone
-from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 
 from ase.application.schedules.manage import ScheduleInput, build_schedule
-from ase.application.schedules.runner import ScheduleRunner
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.container import Container
 from ase.domain.errors import InvalidRequest
 from ase.domain.research import ResearchMode
@@ -99,12 +97,7 @@ async def test_monthly_scope_round_trip_reaches_report_and_pause_keeps_configura
         assert updated.json()["research_source_ids"] == BODY["research_source_ids"]
     async with container.session_factory() as session:
         schedule = (await container.list_schedules(session).execute(user))[0]
-    execute = AsyncMock(return_value=(SimpleNamespace(id=uuid4()), None))
-    with patch.object(
-        type(container), "generate_report", return_value=SimpleNamespace(execute=execute)
-    ):
-        await container.schedule_report(schedule)
-    request = execute.call_args.args[1]
+    request = scheduled_report_request(schedule)
     assert request.country_isos == ("UA", "PL")
     assert request.research_web_search is True
     assert request.research_source_ids == ("rss-bbc-world",)
@@ -147,21 +140,8 @@ def test_scope_changes_reset_comparison_but_pause_preserves_it(changes: dict[str
     assert changed.last_change is None
 
 
-async def test_runner_books_next_month_using_original_requested_day() -> None:
+def test_next_slot_keeps_original_requested_month_day() -> None:
     february = datetime(2026, 2, 28, 6, tzinfo=UTC)
-    schedule = build_schedule(
-        ScheduleInput(name="Monthly", template_id="intsum", cadence="monthly", monthday=31),
-        schedule_id=uuid4(),
-        owner=uuid4(),
-        created=NOW,
-        now=NOW,
+    assert next_run_after(february, 6, "monthly", monthday=31) == datetime(
+        2026, 3, 31, 6, tzinfo=UTC
     )
-    store = SimpleNamespace(
-        due=AsyncMock(return_value=[schedule]),
-        can_run=AsyncMock(return_value=True),
-        mark_run=AsyncMock(),
-    )
-    producer = AsyncMock(return_value=uuid4())
-    await ScheduleRunner(store, producer, SimpleNamespace(now=lambda: february)).run_once()
-    assert store.mark_run.call_args.kwargs["next_run_at"] == datetime(2026, 3, 31, 6, tzinfo=UTC)
-    assert store.mark_run.call_args.kwargs["expected"] == schedule

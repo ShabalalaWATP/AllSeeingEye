@@ -9,7 +9,7 @@ from typing import Any, NoReturn
 
 from ase.application.ports.llm import LlmGateway, LlmGatewayError, LlmTokenBudgetExhausted
 from ase.application.ports.section_checkpoints import SectionCheckpoints
-from ase.application.reports.drafting import Draft
+from ase.application.reports.drafting import Draft, no_evidence_draft
 from ase.application.reports.sections.assembly import assemble
 from ase.application.reports.sections.checkpoints import metadata, read_body, write_state
 from ase.application.reports.sections.contracts import (
@@ -18,17 +18,17 @@ from ase.application.reports.sections.contracts import (
     validate_step,
 )
 from ase.application.reports.sections.outcomes import SectionIncomplete, StepExhausted
+from ase.application.reports.sections.plan_selection import select_plan
 from ase.application.reports.sections.planning import (
-    LEGACY_METHOD_VERSION,
     MAX_TOPIC_LEAVES,
-    PREVIOUS_METHOD_VERSION,
     Topic,
-    packet_digest,
-    plan_topics,
     split_topic,
 )
 from ase.application.reports.sections.prompts import PromptContext
-from ase.application.reports.sections.quality import requirement_support_from_topics
+from ase.application.reports.sections.quality import (
+    project_requirement_coverage,
+    requirement_support_from_topics,
+)
 from ase.application.reports.sections.synthesis import collect_synthesis
 from ase.application.reports.sections.synthesis_contracts import (
     SCHEMA_NAMES,
@@ -40,6 +40,7 @@ from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import MAX_OUTPUT_TOKENS, LlmMessage, LlmProfile, LlmRequest
 from ase.domain.reports import KeyJudgement, ReportHeader
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import validate_body
 
 
@@ -57,11 +58,14 @@ class _Runner:
         self.context, self.checkpoints = context, checkpoints
         self.draft = Draft(model=profile.model)
         self.eeis = (
-            frozenset(f"EEI-{index}" for index in range(1, len(context.direction.eeis) + 1))
+            frozenset(row.id for row in context.requirements)
+            if context.requirements
+            else frozenset(f"EEI-{index}" for index in range(1, len(context.direction.eeis) + 1))
             if context.direction
             else frozenset()
         )
         self.digest = digest
+        self.research_mode = context.header.scope.get("research_mode")
         self.completed: list[tuple[Topic, dict[str, Any]]] = []
         self.leaves = 0
 
@@ -84,8 +88,14 @@ class _Runner:
                 call=self.synthesis_call,
                 pause=self.pause,
                 previous_exists=bool(self.context.previous),
+                research_mode=self.research_mode,
             )
-            raw = assemble(self.completed, synthesis, self.context.direction)
+            raw = assemble(
+                self.completed,
+                synthesis,
+                self.context.direction,
+                requirements=self.context.requirements,
+            )
         except (ValueError, TypeError, RecursionError):
             await self.pause(expected, "invalid_synthesis")
         checked = validate_body(
@@ -96,7 +106,12 @@ class _Runner:
             evidence_items=self.context.evidence,
         )
         self.draft.body = checked.body
-        self.draft.supported_requirements = requirement_support_from_topics(self.completed)
+        self.draft.supported_requirements = requirement_support_from_topics(
+            self.completed,
+            requirements=self.context.requirements,
+            direction=self.context.direction,
+            judgements=synthesis,
+        )
         self.draft.findings.extend(checked.findings)
         if not checked.passed:
             await self.pause(expected, "invalid_synthesis")
@@ -189,6 +204,14 @@ class _Runner:
                 [{"section_id": row.id, "body": body} for row, body in self.completed],
                 synthesis_step=part,
                 judgements=judgements,
+                coverage=project_requirement_coverage(
+                    self.completed,
+                    requirements=self.context.requirements,
+                    direction=self.context.direction,
+                    judgements=judgements,
+                )
+                if part is not None
+                else (),
             )
         except (ValueError, TypeError):
             await self.pause(expected, "input_limit")
@@ -208,7 +231,11 @@ class _Runner:
                 for _, body in self.completed
                 for gap in body["gaps"]
             }
-            schema = schema_for(part, remaining_gaps=20 - len(retained_gaps))
+            schema = schema_for(
+                part,
+                remaining_gaps=20 - len(retained_gaps),
+                research_mode=self.research_mode,
+            )
         request = LlmRequest(
             messages=messages,
             max_output_tokens=min(self.profile.max_output_tokens, MAX_OUTPUT_TOKENS),
@@ -263,6 +290,7 @@ class _Runner:
                     eeis=self.eeis,
                     previous_exists=bool(self.context.previous),
                     remaining_gaps=20 - len(retained_gaps),
+                    research_mode=self.research_mode,
                 )
             return validate_step(
                 decode(result.content),
@@ -288,62 +316,29 @@ async def draft_sections(
     background: str | None = None,
     *,
     checkpoints: SectionCheckpoints,
+    canonical_requirements: tuple[IntelligenceRequirement, ...] = (),
 ) -> Draft:
     """Resume unchanged validated steps; never replay an exhausted identical request.
 
     The gateway/job owner enforces lifetime call, token, lease and elapsed allowances.
     Native MAX deadlines recognise report_topic/report_judgements/report_context.
     """
+    if not evidence:
+        return no_evidence_draft(profile.model)
     context = PromptContext(
-        template, header, question, quality, tuple(evidence), tuple(previous), direction, background
+        template,
+        header,
+        question,
+        quality,
+        tuple(evidence),
+        tuple(previous),
+        direction,
+        background,
+        canonical_requirements,
     )
     try:
-        topics, digest = await _select_plan(context, profile, checkpoints)
+        topics, digest = await select_plan(context, profile, checkpoints)
         runner = _Runner(gateway, profile, api_key, context, checkpoints, digest)
     except (ValueError, TypeError, RecursionError):
         raise SectionIncomplete("planning", "invalid_packet", Draft(model=profile.model)) from None
     return await runner.run(topics)
-
-
-async def _select_plan(
-    context: PromptContext,
-    profile: LlmProfile,
-    checkpoints: SectionCheckpoints,
-) -> tuple[tuple[Topic, ...], str]:
-    """Resume v1 packets in place; use improved v2 matching for new packets."""
-    values = (
-        profile,
-        context.template,
-        context.header,
-        context.question,
-        context.quality,
-        context.evidence,
-        context.previous,
-        context.direction,
-        context.background,
-    )
-    topics = plan_topics(context.evidence, context.direction)
-    digest = packet_digest(*values)
-    if await _has_checkpoint(checkpoints, digest, topics):
-        return topics, digest
-    for method_version in (PREVIOUS_METHOD_VERSION, LEGACY_METHOD_VERSION):
-        legacy_topics = plan_topics(
-            context.evidence,
-            context.direction,
-            method_version=method_version,
-        )
-        legacy_digest = packet_digest(*values, method_version=method_version)
-        if await _has_checkpoint(checkpoints, legacy_digest, legacy_topics):
-            return legacy_topics, legacy_digest
-    return topics, digest
-
-
-async def _has_checkpoint(
-    checkpoints: SectionCheckpoints,
-    digest: str,
-    topics: Sequence[Topic],
-) -> bool:
-    for section_id in ("synthesis", *(topic.id for topic in topics)):
-        if await checkpoints.load(digest, section_id) is not None:
-            return True
-    return False

@@ -8,9 +8,10 @@ import pytest
 
 from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.adapters.persistence.warning import SqlWarningStore
-from ase.application.schedules.runner import ScheduleRunner
 from ase.application.warning.evaluator import IndicatorEvaluator
 from ase.container import Container
+from ase.domain.reports import ReportStatus
+from ase.domain.schedules import CoverageState, ScheduleRunResult
 from ase.domain.users import User
 from ase.domain.warning import Alert, Indicator, alert_from, evaluate
 from report_documents_helpers import document_records
@@ -33,6 +34,18 @@ async def saved_report(container: Container, owner: User, team_id: UUID | None) 
         await container.repositories(session).reports.add(record, version)
         await session.commit()
     return record.id
+
+
+async def run_result(container: Container, report_id: UUID) -> ScheduleRunResult:
+    async with container.session_factory() as session:
+        version = await container.repositories(session).reports.get_version(report_id, 1)
+    return (
+        ScheduleRunResult.from_version(version)
+        if version is not None
+        else ScheduleRunResult(
+            report_id, uuid4(), ReportStatus.READY, CoverageState.NOT_APPLICABLE, None
+        )
+    )
 
 
 @pytest.mark.parametrize("revocation", ["membership", "archive", "deactivation"])
@@ -71,8 +84,8 @@ async def test_background_stops_after_origin_authority_is_revoked(
         schedule.id,
         ran_at=container.clock.now(),
         next_run_at=container.clock.now() + timedelta(days=2),
-        report_id=report_id,
-        error=None,
+        result=await run_result(container, report_id),
+        error_code=None,
         expected=schedule,
     )
     async with container.session_factory() as session:
@@ -103,8 +116,8 @@ async def test_report_links_cannot_cross_personal_or_team_scope(
             schedule.id,
             ran_at=container.clock.now(),
             next_run_at=container.clock.now() + timedelta(days=2),
-            report_id=report_id,
-            error=None,
+            result=await run_result(container, report_id),
+            error_code=None,
             expected=schedule,
         )
     async with container.session_factory() as session:
@@ -115,8 +128,8 @@ async def test_report_links_cannot_cross_personal_or_team_scope(
         schedule.id,
         ran_at=container.clock.now(),
         next_run_at=container.clock.now() + timedelta(days=2),
-        report_id=valid,
-        error=None,
+        result=await run_result(container, valid),
+        error_code=None,
         expected=schedule,
     )
     async with container.session_factory() as session:
@@ -168,19 +181,19 @@ async def test_revocation_during_scheduled_work_prevents_report_attachment(
     report_id = await saved_report(container, actors.owner, actors.team.id)
     container.clock.advance(timedelta(days=1))
     store = SqlScheduleStore(container.session_factory, container.access_policy)
-    called = 0
-
-    async def producer(_schedule: object) -> UUID:
-        nonlocal called
-        called += 1
-        async with team_service(container) as service:
-            await service.remove_member(admin, actors.team.id, actors.owner.id, CONTEXT)
-        return report_id
-
-    runner = ScheduleRunner(store, producer, container.clock)
-    await runner.run_once()
-    assert called == 1
-    assert await runner.run_once() == []
+    assert await store.can_run(schedule)
+    result = await run_result(container, report_id)
+    async with team_service(container) as service:
+        await service.remove_member(admin, actors.team.id, actors.owner.id, CONTEXT)
+    assert not await store.can_run(schedule)
+    await store.mark_run(
+        schedule.id,
+        ran_at=container.clock.now(),
+        next_run_at=container.clock.now() + timedelta(days=1),
+        result=result,
+        error_code=None,
+        expected=schedule,
+    )
     async with container.session_factory() as session:
         current = await container.repositories(session).schedules.get(schedule.id)
         assert current and current.last_report_id is None and current.last_run_at is None

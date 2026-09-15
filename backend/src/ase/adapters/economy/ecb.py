@@ -1,9 +1,12 @@
-"""ECB 90-day reference rates, with defensive XML and explicit unsupported currencies."""
+"""ECB 90-day reference rates.
+
+XML parsing uses defusedxml; stdlib Element and ParseError are type/exception names only.
+"""
 
 import math
 from dataclasses import replace
 from datetime import date, datetime, timedelta
-from xml.etree.ElementTree import Element, ParseError
+from xml.etree.ElementTree import Element, ParseError  # nosec B405
 
 from defusedxml import ElementTree
 from defusedxml.common import DefusedXmlException

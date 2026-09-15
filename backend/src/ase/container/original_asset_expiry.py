@@ -6,6 +6,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
+from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.users import SqlUserRepository
 from ase.application.ports import Clock
 
@@ -22,6 +23,7 @@ async def expire_original_assets(
             async with sessions() as session:
                 await SqlUserRepository(session).lock_administration()
                 await SqlOriginalAssetRepository(session).expire(clock.now())
+                await SqlOriginalPassageRepository(session).expire(clock.now())
                 await session.commit()
         except Exception:
             # Do not expose database content or retained permitted-use declarations.

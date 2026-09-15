@@ -1,0 +1,27 @@
+# ADR 0016: Bounded selected-subscription metadata index
+
+Status: Accepted for an initial persistence milestone, 14 September 2026.
+
+## Context
+
+The live public event feed is intentionally transient (ADR 0003 and ADR 0014). A selected research subscription may still need to compare publication periods that extend beyond the live feed's cache lifetime. Retaining the entire feed would create an unbounded historical database with unclear source permissions. Source terms can also distinguish metadata from excerpts and full content.
+
+## Decision
+
+Keep a separate index containing public metadata only for subscriptions explicitly selected for continuing research. A record belongs to one subscription, its owner and, where applicable, its team. Reads require an authenticated actor and verified current team membership. Writes additionally require the originating subscription owner, acting through a fresh background access decision. A caller may submit only sources admitted by that subscription and must attach a reviewed source-policy identifier and permitted retention days. The index does not store full source bodies, passages, private search queries, credentials or the global live feed. Frozen evidence in report versions follows ADR 0014 and is outside this index.
+
+Each source has a separate cursor, watermark, page key and page digest. The collector fetches a page outside the database transaction. It then commits the validated page, quota eviction and cursor change in one transaction. A repeated completed page returns the same revision; a page-key conflict or stale cursor fails. A cursor never moves backwards. A partial or failed fetch must not advance it. The collector retries from the last committed cursor, with a bounded overlap and a recorded coverage gap when the public cache has expired.
+
+The record keeps separate observation, publication, source update, retrieval and first-seen times. A fingerprint includes source ID, item key, origin key, source version and content hash. Exact repeats are deduplicated without extending their retention. Changed content or source version becomes a new record linked to its preceding origin, so a correction is not silently overwritten.
+
+Initial hard ceilings are 400 days of metadata where source terms allow, 50,000 records and 256 MiB per owner, 2 GiB aggregate, 100 records per persisted page, and 32 source cursors per subscription. Deployments may set lower ceilings. The earliest source-policy or deployment age limit wins. Oldest owner records are evicted for age, item count or byte limits. A bounded per-subscription/source/reason loss summary preserves the fact and approximate event-time span of lost coverage. The index must report that gap as partial or unknown coverage; it cannot present evicted history as complete. An owner cannot force eviction of another owner's data to make room under the aggregate cap: the page fails and its cursor stays put. A later maintenance worker must reclaim expired data across owners before the aggregate cap causes avoidable admission failures.
+
+The source-policy receipt is a reference to a reviewed permission decision, not proof created by the index. The initial acquisition adapter admits only USGS earthquake events already present in the public feed cache, after checking source controls, the selected area, cache health and a source-specific collection interval. It performs at most two page operations per tick and never sends a private subscription question to the shared cache. The policy applies to bounded USGS-authored event metadata, not to arbitrary cached content or third-party material embedded in USGS publications. The [USGS copyright FAQ](https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted) says USGS-authored data and information are generally public domain in the United States, asks users to acknowledge USGS, and distinguishes third-party images and graphics. Downstream use must credit the U.S. Geological Survey. The index retains the source and policy identifiers for that attribution, but report/export attribution is still integration work. Annual windows may have older gaps; historical source APIs may fill them when authorised, otherwise coverage remains partial.
+
+## Consequences and boundaries
+
+The index is a selected-subscription exception to the transient global event rule, not a general search corpus. Its row and query scopes must remain independent of shared public cache keys, and private query terms must never enter those keys. Owner/team duplication on index rows is checked against the selected subscription on insertion; readers first authorise the subscription. Team access follows current membership as in ADR 0010. The write gate serialises aggregate quota decisions inside short transactions, with no network operation under the lock.
+
+Byte ceilings count the canonical UTF-8 metadata payload, not database page and index overhead. Operators must provision storage headroom beyond these logical ceilings.
+
+This milestone adds schema, validation, repository tests and a separate bounded acquisition tick against the existing public event cache. Paused or disabled subscriptions and disabled sources cannot advance the index. Publication remains independent. Cross-owner expiry maintenance, deletion and archival races, policy revocation cleanup, collection receipts and report/export attribution remain integration work. Persistence tests use disposable SQLite only. No operator database is read or migrated as part of this decision.

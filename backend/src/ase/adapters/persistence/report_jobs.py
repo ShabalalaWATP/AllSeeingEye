@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
 
 from ase.adapters.persistence.access import visibility_predicate
+from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.report_job_codec import from_row, payload_columns, with_payload
 from ase.adapters.persistence.report_job_models import ReportJobRow as Row
 from ase.domain.access import Visibility
@@ -51,6 +52,8 @@ class SqlReportJobRepository:
                 report_id=job.report_id,
                 version_id=job.version_id,
                 error=job.error,
+                brief_id=job.brief_id,
+                brief_revision=job.brief_revision,
                 **payload_columns(job.payload),
             )
         )
@@ -296,4 +299,6 @@ class SqlReportJobRepository:
             .returning(Row.id)
             .execution_options(synchronize_session=False)
         )
+        if removed is not None:
+            await SqlOriginalPassageRepository(self.session).delete_for_job(job_id)
         return removed is not None

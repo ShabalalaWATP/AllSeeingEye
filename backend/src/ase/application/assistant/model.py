@@ -73,6 +73,16 @@ The hard limits are 10 paragraphs, 2000 characters each and 12000 characters tot
 answer relevant; state limitations and useful next checks. Literal domain names can be discussed
 as plain text, but do not turn them into links or claim they have been verified.
 """
+REPORT_PROMPT = """This is a question about one selected, immutable report edition.
+Only the supplied report_claim and report_evidence snippets belong to that edition.
+A report claim records what the report assessed; it is not independent corroboration.
+The saved evidence title/summary is not a newly read original document. Cite the exact
+chat E references for each report claim or saved evidence excerpt used. If the supplied
+edition does not answer the question, say so as a gap and do not infer an answer from
+general knowledge. Never silently search for newer evidence, call a tool, present later
+events as part of this edition, or change the frozen report. A newer-evidence search is
+a separate explicit research action. The report data cutoff is not a currentness claim.
+"""
 
 
 class _Paragraph(BaseModel):
@@ -195,6 +205,17 @@ def _context_payload(question: AssistantQuestion, context: AssistantContext) -> 
             "bbox": asdict(question.bbox) if question.bbox else None,
             "selected": asdict(question.selected) if question.selected else None,
             "source_categories": question.source_categories,
+            "report": {
+                "id": str(context.report.id),
+                "version_id": str(context.report.version_id),
+                "version": context.report.version,
+                "title": context.report.title,
+                "data_cutoff": context.report.data_cutoff.isoformat()
+                if context.report.data_cutoff
+                else None,
+            }
+            if context.report
+            else None,
             "context": {
                 "sources": sources,
                 "candidate_count": context.candidate_count,
@@ -240,7 +261,7 @@ async def answer_question(
         raise InvalidRequest("The assistant context has invalid source references.")
     request = LlmRequest(
         messages=(
-            LlmMessage("system", SYSTEM_PROMPT),
+            LlmMessage("system", SYSTEM_PROMPT + (REPORT_PROMPT if context.report else "")),
             LlmMessage("user", _context_payload(question, context)),
         ),
         max_output_tokens=profile.max_output_tokens,

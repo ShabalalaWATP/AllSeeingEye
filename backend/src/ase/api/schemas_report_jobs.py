@@ -15,6 +15,13 @@ class ReportJobCreateIn(BaseModel):
     report: ReportCreateIn
 
 
+class BriefJobCreateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: UUID
+    brief_id: UUID
+    revision: int = Field(ge=1, strict=True)
+
+
 class ReportJobUsageOut(BaseModel):
     calls: int
     max_calls: int
@@ -36,6 +43,8 @@ class ReportJobSectionOut(BaseModel):
 
 class ReportJobOut(BaseModel):
     id: UUID
+    brief_id: UUID | None = None
+    brief_revision: int | None = None
     revision: int
     title: str
     status: Literal["queued", "running", "paused", "completed", "needs_review", "failed"]

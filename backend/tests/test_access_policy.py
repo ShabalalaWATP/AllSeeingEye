@@ -94,7 +94,7 @@ async def test_background_requires_active_owner_and_active_current_membership(
         )
         with pytest.raises(Forbidden):
             await policy.background(user.id, team.id)
-        with pytest.raises(Unauthenticated):
+        with pytest.raises(Forbidden):
             await policy.background(uuid4(), None)
         with pytest.raises(Unauthenticated):
             await policy.context(replace(user, security_version=-1))

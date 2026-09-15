@@ -16,6 +16,7 @@ from ase.domain.evidence_matrix import contribution_for
 from ase.domain.languages import language_capability
 from ase.domain.llm import LlmMessage
 from ase.domain.reports import KeyJudgement
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import Finding
 
 MAX_SUMMARY_CHARS = 600
@@ -126,6 +127,7 @@ def compose_messages(
     findings: Sequence[Finding] = (),
     previous: Sequence[KeyJudgement] = (),
     direction: Direction | None = None,
+    canonical_requirements: tuple[IntelligenceRequirement, ...] = (),
     background: str | None = None,
     report_language: str = "en",
     report_style: str = "assessment",
@@ -151,7 +153,18 @@ def compose_messages(
             "Background from the curated tracker (context, not evidence; never cite it): "
             f"{background}"
         )
-    if direction is not None:
+    if canonical_requirements:
+        parts.append(
+            "Canonical research requirements. Preserve every ID and exact question. Address "
+            "supported requirements with cited evidence; disclose unsupported requirements as "
+            "gaps. Optional requirements may remain unanswered, but must not be fabricated."
+        )
+        parts.extend(
+            f"{row.id} ({'required' if row.required else 'optional'}, priority {row.priority}): "
+            f"{row.question}"
+            for row in canonical_requirements
+        )
+    elif direction is not None:
         parts.append(
             "Direction. Address every EEI using the supplied evidence. Group related supported "
             "EEIs in assessment sections, naming their IDs and citing the relevant evidence. "

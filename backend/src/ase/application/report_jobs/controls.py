@@ -10,8 +10,14 @@ from typing import Any
 from uuid import UUID
 
 from ase.application.ports.report_jobs import ReportJobRepository
-from ase.application.report_jobs.budget import MAX_CALLS, MAX_OUTPUT_TOKENS, output_used
+from ase.application.report_jobs.budget import (
+    MAX_CALLS,
+    MAX_OUTPUT_TOKENS,
+    output_used,
+    token_count,
+)
 from ase.application.reports.request import ReportRequest
+from ase.domain.daily_briefing import retains_daily_admission
 from ase.domain.errors import Conflict, InvalidRequest, RateLimited
 from ase.domain.report_jobs import ReportJob
 
@@ -33,6 +39,10 @@ MAX_OPEN_PER_OWNER = 20
 MAX_OPEN_GLOBAL = 100
 
 
+class ReportJobCapacity(InvalidRequest):
+    """Retained job quota is full; the subscription may retry admission later."""
+
+
 async def require_capacity(repo: ReportJobRepository, owner_id: UUID, *, creating: bool) -> None:
     """The caller holds the shared administration lock across this count and admission."""
     if await repo.count_active(owner_id) >= MAX_ACTIVE_PER_OWNER:
@@ -41,7 +51,7 @@ async def require_capacity(repo: ReportJobRepository, owner_id: UUID, *, creatin
         await repo.count_open(owner_id) >= MAX_OPEN_PER_OWNER
         or await repo.count_open() >= MAX_OPEN_GLOBAL
     ):
-        raise InvalidRequest(
+        raise ReportJobCapacity(
             "The retained report-job limit has been reached. Complete existing work first."
         )
 
@@ -77,6 +87,28 @@ def request_digest(request: ReportRequest) -> str:
 def require_same_request(job: ReportJob, digest: str) -> None:
     if job.payload.get("request_digest") != digest:
         raise Conflict("This request identifier was already used for a different report.")
+
+
+def require_discardable(job: ReportJob, now: datetime) -> None:
+    """Progress may be discarded only when no provider reservation could still be billed."""
+    if retains_daily_admission(job, now):
+        raise InvalidRequest(
+            "Keep this daily briefing's progress until its 24-hour refresh time "
+            "to prevent an automatic duplicate generation. You can pause it instead."
+        )
+    if job.status in {"queued", "running"}:
+        raise InvalidRequest("Pause this report job before discarding its progress.")
+    calls = job.payload.get("calls", [])
+    if type(calls) is not list or any(type(call) is not dict for call in calls):
+        raise InvalidRequest("The retained report usage cannot be verified.")
+    if any(call.get("status") in {"in_flight", "uncertain"} for call in calls):
+        raise InvalidRequest("An uncertain provider reservation must remain retained.")
+    if any(
+        call.get("status") not in {"completed", "failed"}
+        or token_count(call.get("completion_tokens")) is None
+        for call in calls
+    ):
+        raise InvalidRequest("An unknown provider reservation must remain retained.")
 
 
 def has_budget(payload: dict[str, Any]) -> bool:

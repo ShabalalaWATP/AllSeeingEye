@@ -83,7 +83,16 @@ def test_small_packet_keeps_unambiguous_requirement_evidence_binding():
 
     topic = plan_topics(evidence, direction)[0]
     support = requirement_support_from_topics(
-        [(topic, {"reporting": [{"evidence": ["E1"]}], "assessment": []})]
+        [
+            (
+                topic,
+                {
+                    "reporting": [{"evidence": ["E1"]}],
+                    "assessment": [{"evidence": ["E1"]}],
+                    "gaps": [],
+                },
+            )
+        ]
     )
 
     assert topic.title == "Supplied evidence"
@@ -108,7 +117,11 @@ def test_folded_topic_supports_only_requirements_whose_bound_evidence_is_cited()
         [
             (
                 folded,
-                {"reporting": [{"evidence": [cited_labels[0]]}], "assessment": []},
+                {
+                    "reporting": [{"evidence": [cited_labels[0]]}],
+                    "assessment": [{"evidence": [cited_labels[0]]}],
+                    "gaps": [],
+                },
             )
         ]
     )

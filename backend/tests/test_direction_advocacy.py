@@ -127,7 +127,12 @@ async def test_ask_runs_direction_then_the_advocate(
         "Shelling in Kharkiv",
         "Talks resume in Vienna",
     ]
-    assert version["status"] == "ready"
+    # Direction adds requirements the fixture body does not assess and the fixture evidence is
+    # a two-word summary, so the requirement coverage and citation gates both ask for review.
+    assert version["status"] == "needs_review"
+    rules = {f["rule"] for f in version["findings"] if f["severity"] == "error"}
+    assert rules == {"requirement_coverage"}
+    assert version["citation_checks"]["judgements"][0]["status"] == "context_insufficient"
     assert version["body"]["key_judgements"][0]["confidence"] == "low"
     advocacy = version["devils_advocacy"]
     assert advocacy["target"] == "KJ1" and advocacy["evidence"] == ["E2"]
@@ -135,9 +140,10 @@ async def test_ask_runs_direction_then_the_advocate(
     assert any("E7" in f["message"] for f in version["findings"])
     assert version["prompt_tokens"] == 200 and version["latency_ms"] == 400.0
     markdown = version["markdown"]
-    assert "Requirements: PIR-1, SIR-1, SIR-2, EEI-1, EEI-2." in markdown
-    assert "## Direction" in markdown and "## Devil's advocacy" in markdown
-    assert "Confidence on KJ1 lowered from moderate to low." in markdown
+    # The published report folds advocacy into alternative explanations; direction and its
+    # requirements remain in the structured version asserted above.
+    assert "## Alternative explanations" in markdown
+    assert f"An alternative view is that {ADVOCACY['argument']}" in markdown
     assert response.json()["report"]["scope"]["devils_advocacy"] is True
 
     # Regeneration keeps the scope: direction again, and an advocate who leaves confidence alone.
@@ -160,7 +166,10 @@ async def test_ask_runs_direction_then_the_advocate(
     assert second["number"] == 2 and second["direction"]["pir"] == DIRECTION["pir"]
     assert second["body"]["key_judgements"][0]["confidence"] == "moderate"
     assert second["devils_advocacy"]["confidence_before"] is None
-    assert "Confidence unchanged. Two items from one theatre." in second["markdown"]
+    assert (
+        f"An alternative view is that {ADVOCACY['argument']} {ADVOCACY['rationale']}"
+        in (second["markdown"])
+    )
 
     async with container.session_factory() as session:
         usage = await container.repositories(session).llm_usage.list_recent(10)
@@ -188,7 +197,8 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert any("direction role" in m for m in messages) and any("devil role" in m for m in messages)
     assert plain.json()["version"]["direction"] is None
     assert plain.json()["version"]["devils_advocacy"] is None
-    assert plain.json()["version"]["status"] == "ready"
+    # Thin fixture evidence trips the citation review gate; the report still lands.
+    assert plain.json()["version"]["status"] == "needs_review"
 
     async with container.session_factory() as session:
         profiles = container.repositories(session).llm_profiles
@@ -203,7 +213,7 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert failing.status_code == 201
     messages = [f["message"] for f in failing.json()["version"]["findings"]]
     assert "Direction call failed: offline" in messages and "Call failed: down" in messages
-    assert failing.json()["version"]["status"] == "ready"
+    assert failing.json()["version"]["status"] == "needs_review"
 
     # Unusable direction JSON and an advocate who smuggles in a URL: dropped, with warnings.
     leaky = {**ADVOCACY, "argument": "Read https://evil.example/x instead."}

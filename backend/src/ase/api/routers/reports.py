@@ -10,6 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Header, Query, Request, Response
 from ase.adapters.reports.async_documents import run_bounded_thread
 from ase.adapters.reports.markdown_package import render_markdown_export
 from ase.api.deps import ClaimsDep, ContainerDep, ContextDep, CurrentUser, SessionDep
+from ase.api.report_reviewed_snapshot import selected_reviewed_snapshot
 from ase.api.report_run import run_generation
 from ase.api.schemas_reports import (
     ReportCreateIn,
@@ -21,6 +22,7 @@ from ase.api.schemas_reports import (
 from ase.api.session_guard import validate_request_session
 from ase.application.reports.document import build_document
 from ase.application.reports.document_release import release_document
+from ase.container.source_reviews import source_reviews
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -120,12 +122,22 @@ async def regenerate_report(
 async def get_report(
     report_id: UUID,
     user: CurrentUser,
+    claims: ClaimsDep,
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
+    source_snapshot_id: UUID | None = None,
 ) -> ReportOut:
     record, found = await container.get_report(session).execute(user, report_id, version)
-    return await run_bounded_thread(lambda: ReportOut.build(record, found))
+    snapshot = await selected_reviewed_snapshot(
+        claims, container, session, record, found, version, source_snapshot_id
+    )
+    result = await run_bounded_thread(lambda: ReportOut.build(record, found, snapshot))
+    if snapshot is not None:
+        await selected_reviewed_snapshot(
+            claims, container, session, record, found, version, source_snapshot_id
+        )
+    return result
 
 
 @router.get(
@@ -148,12 +160,16 @@ async def report_markdown(
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
+    source_snapshot_id: UUID | None = None,
 ) -> Response:
     record, found = await container.get_report(session).execute(user, report_id, version)
+    snapshot = await selected_reviewed_snapshot(
+        claims, container, session, record, found, version, source_snapshot_id
+    )
     package_figures = _prefers_zip(request.headers.get("accept", ""))
     rendered = await run_bounded_thread(
         lambda: render_markdown_export(
-            build_document(record, found),
+            build_document(record, found, reviewed_snapshot=snapshot),
             report_id,
             found.id,
             found.number,
@@ -171,6 +187,8 @@ async def report_markdown(
         access=container.access_policy(session),
         clock=container.clock,
         uow=repositories.uow,
+        source_reviews=source_reviews(container, session).reviews if snapshot is not None else None,
+        source_snapshot_id=snapshot.id if snapshot is not None else None,
     )
     return Response(
         rendered.content,

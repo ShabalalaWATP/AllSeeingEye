@@ -15,14 +15,17 @@ from ase.application.reports.document_builder import (
     MAX_EVIDENCE,
     DocumentBuilder,
 )
+from ase.application.reports.document_review import judgement_review, opening_review_notice
 from ase.application.reports.export_text import review_notice
 from ase.application.reports.frozen_header import frozen_period_line
 from ase.application.reports.publication_figures import build_evidence_relationship_figure
 from ase.application.reports.reference_projection import reference_text
+from ase.application.reports.reviewed_source_document import reviewed_source_assessment
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import BlockKind, DocumentInline, ReportDocument
 from ase.domain.report_records import ReportRecord, ReportVersion
 from ase.domain.reports import ReportBody, ReportStatus
+from ase.domain.source_review_records import SourceReviewSnapshot
 
 __all__ = [
     "MAX_BLOCKS",
@@ -57,6 +60,8 @@ def _summary(doc: DocumentBuilder, version: ReportVersion) -> None:
             doc.add(f"Confidence rationale (not independently verified): {rationale}{change}")
         elif change:
             doc.add(change.strip())
+        if version.document_schema_version >= 2:
+            judgement_review(doc, version, item.id)
     contrary = [
         (
             f"Retained reporting challenges the judgement that {item.statement}",
@@ -175,6 +180,7 @@ def build_document(
     version: ReportVersion,
     *,
     include_generated_figures: bool = True,
+    reviewed_snapshot: SourceReviewSnapshot | None = None,
 ) -> ReportDocument:
     """Build the canonical product for the exact frozen version without new research."""
     if len(version.markdown) > MAX_DOCUMENT_CHARS * 2:
@@ -188,7 +194,21 @@ def build_document(
     if isinstance(question, str) and question.strip() and question.strip() not in record.title:
         doc.add("Research question", BlockKind.SUBHEADING)
         doc.add(question.strip())
-    if version.status is ReportStatus.FAILED:
+    if version.canonical_requirements:
+        doc.add("Research requirements", BlockKind.SUBHEADING)
+        doc.list(
+            [
+                (
+                    f"{row.id} ({'required' if row.required else 'optional'}, "
+                    f"priority {row.priority}): {row.question}",
+                    (),
+                )
+                for row in version.canonical_requirements
+            ]
+        )
+    if version.document_schema_version >= 2:
+        opening_review_notice(doc, version)
+    elif version.status is ReportStatus.FAILED:
         doc.add(review_notice(version.status), BlockKind.WARNING)
     _summary(doc, version)
     if include_generated_figures:
@@ -203,6 +223,8 @@ def build_document(
     _limitations(doc, version)
     assessment_method(doc, version)
     source_assessment(doc, version)
+    if reviewed_snapshot is not None:
+        reviewed_source_assessment(doc, record, version, reviewed_snapshot)
     references = doc.references()
     if references:
         doc.heading("References")

@@ -16,7 +16,7 @@ from ase.adapters.persistence.ai_usage_models import AiUsagePolicyRow
 
 
 def _migration():
-    path = Path(__file__).parents[1] / "alembic/versions/0035_ai_usage_allowances.py"
+    path = Path(__file__).parents[1] / "alembic/versions/0045_ai_usage_allowances.py"
     spec = importlib.util.spec_from_file_location("ai_usage_migration", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -26,7 +26,7 @@ def _migration():
 
 def test_ai_usage_migration_and_retained_data_guard():
     module = _migration()
-    assert module.revision == "0035" and module.down_revision == "0034"
+    assert module.revision == "0045" and module.down_revision == "0044"
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:

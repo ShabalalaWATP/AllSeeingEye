@@ -11,6 +11,7 @@ from ase.application.reports.comparison import compare_versions
 from ase.application.reports.document import build_document
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import ExportFormat, ReportComparison, ReportFile
+from ase.domain.source_review_records import SourceReviewSnapshot
 from ase.domain.users import User
 
 MEDIA_TYPES = {
@@ -31,16 +32,26 @@ class ExportReportUseCase:
         self._projector = projector
 
     async def execute(
-        self, actor: User, report_id: UUID, format: ExportFormat, number: int | None = None
+        self,
+        actor: User,
+        report_id: UUID,
+        format: ExportFormat,
+        number: int | None = None,
+        reviewed_snapshot: SourceReviewSnapshot | None = None,
     ) -> ReportFile:
         if number is not None and number < 1:
             raise InvalidRequest("A report version must be positive.")
         record, version = await self._reader.execute(actor, report_id, number)
-        document = (
-            await self._projector.build(record, version)
-            if self._projector is not None
-            else await asyncio.to_thread(build_document, record, version)
-        )
+        if self._projector is not None:
+            document = (
+                await self._projector.build(record, version)
+                if reviewed_snapshot is None
+                else await self._projector.build(record, version, reviewed_snapshot)
+            )
+        else:
+            document = await asyncio.to_thread(
+                build_document, record, version, reviewed_snapshot=reviewed_snapshot
+            )
         content = await self._renderer.render(document, format)
         await self._reader.recheck(actor, report_id, version.number)
         return ReportFile(

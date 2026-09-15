@@ -12,6 +12,11 @@ from uuid import UUID
 WEB_SOURCE_ID = "research-web-search"
 WEB_SOURCE_NAME = "Fresh web search"
 WEB_POLICY = "ase-web-context-v1"
+WEB_ALLOCATION_POLICY = "ase-web-discovery-allocation-v1"
+WEB_ALLOCATED_REQUESTS = 1
+WEB_ALLOCATED_TOOL_CALLS = 3
+WEB_ALLOCATED_SECONDS = 90
+WEB_ALLOCATED_OUTPUT_TOKENS = 16_000
 MAX_SYNTHESIS = 6000
 MAX_CITATIONS = 12
 MAX_CONSULTED_URLS = 20
@@ -103,6 +108,11 @@ class WebResearchRecord:
     completion_tokens: int | None = None
     latency_ms: float = 0
     policy_version: str = WEB_POLICY
+    allocation_version: str | None = None
+    allocated_requests: int = 0
+    allocated_tool_calls: int = 0
+    allocated_seconds: int = 0
+    allocated_output_tokens: int = 0
 
     def __post_init__(self) -> None:
         if (
@@ -136,6 +146,34 @@ class WebResearchRecord:
             or any(
                 value is not None and (type(value) is not int or value < 0)
                 for value in (self.prompt_tokens, self.completion_tokens, self.profile_revision)
+            )
+            or any(
+                type(value) is not int
+                for value in (
+                    self.allocated_requests,
+                    self.allocated_tool_calls,
+                    self.allocated_seconds,
+                    self.allocated_output_tokens,
+                )
+            )
+            or (
+                (
+                    self.allocation_version,
+                    self.allocated_requests,
+                    self.allocated_tool_calls,
+                    self.allocated_seconds,
+                    self.allocated_output_tokens,
+                )
+                not in {
+                    (None, 0, 0, 0, 0),
+                    (
+                        WEB_ALLOCATION_POLICY,
+                        WEB_ALLOCATED_REQUESTS,
+                        WEB_ALLOCATED_TOOL_CALLS,
+                        WEB_ALLOCATED_SECONDS,
+                        WEB_ALLOCATED_OUTPUT_TOKENS,
+                    ),
+                }
             )
         ):
             raise ValueError("Invalid frozen web context")

@@ -5,6 +5,24 @@ import type { ReportSupportingWorkspaceProps } from './ReportSupportingWorkspace
 
 const ReportSupportingWorkspace = lazy(() => import('./ReportSupportingWorkspace'));
 
+function reachable(node: HTMLElement, panel: HTMLElement): boolean {
+  for (
+    let current: HTMLElement | null = node;
+    current && current !== panel;
+    current = current.parentElement
+  ) {
+    if (current.hidden || current.inert || current.getAttribute('aria-hidden') === 'true')
+      return false;
+    const style = getComputedStyle(current);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    if (current instanceof HTMLDetailsElement && !current.open) {
+      const summary = current.querySelector(':scope > summary');
+      if (!summary?.contains(node)) return false;
+    }
+  }
+  return true;
+}
+
 export function ReportWorkspaceDrawer({
   open,
   onClose,
@@ -27,15 +45,19 @@ export function ReportWorkspaceDrawer({
         return;
       }
       if (event.key !== 'Tab' || !panel.current) return;
+      const container = panel.current;
       const focusable = Array.from(
-        panel.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        container.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter((node) => !node.hasAttribute('hidden'));
+      ).filter((node) => reachable(node, container));
       const first = focusable[0];
       const last = focusable.at(-1);
       if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) {
+      if (!container.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {

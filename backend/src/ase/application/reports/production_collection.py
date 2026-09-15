@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from ase.application.ports.feeds import EventStore
 from ase.application.ports.llm import LlmGateway, SecretCipher
-from ase.application.ports.research import ResearchCollection
+from ase.application.ports.research import ResearchCollection, SourceOperationCheckpoints
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.plan_queries import prepare_model_plan
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
@@ -17,7 +17,7 @@ from ase.application.reports.query_preparation import (
     translation_languages,
 )
 from ase.application.reports.replan_queries import make_replanner
-from ase.application.reports.research import collect_report_evidence
+from ase.application.reports.research import collect_report_evidence_with_query
 from ase.application.research.model_planning import record_planning
 from ase.domain.direction import Direction
 from ase.domain.research import ResearchQuery
@@ -40,6 +40,7 @@ async def prepare_collection(
     cipher: SecretCipher | None = None,
     profile_for: ProfileLookup | None = None,
     web_research: FreshWebResearch | None = None,
+    source_operations: SourceOperationCheckpoints | None = None,
 ) -> tuple[EventStore, ResearchReceipt | None, ResearchQuery | None]:
     store = live_store
     receipt: ResearchReceipt | None = None
@@ -116,7 +117,8 @@ async def prepare_collection(
         ):
             replan = await make_replanner(job, totals, gateway, cipher, profile_for)
         await reached(progress, ResearchStage.COLLECTING)
-        store, receipt = await collect_report_evidence(
+        collection_query = query
+        store, receipt, query = await collect_report_evidence_with_query(
             query,
             job.request,
             collection,
@@ -125,15 +127,31 @@ async def prepare_collection(
             seed_events=job.seed_events,
             seed_attempts=job.seed_attempts,
             replan=replan,
+            source_operations=source_operations,
         )
         if transformation is not None and receipt.plan is not None:
-            receipt = replace(receipt, plan=record_query_translation(receipt.plan, transformation))
+            plan = (
+                replace(
+                    receipt.plan,
+                    translation=transformation,
+                    translation_calls=int(transformation.status != "unavailable"),
+                    model_calls=receipt.plan.model_calls
+                    + int(transformation.status != "unavailable"),
+                )
+                if receipt.plan.replans
+                else record_query_translation(receipt.plan, transformation)
+            )
+            receipt = replace(receipt, plan=plan)
         receipt = record_pass_provenance(
             receipt,
-            query,
+            collection_query,
             transformation,
             job.request.research_query_variants,
         )
+        if receipt.plan is not None and receipt.plan.replans and receipt.passes:
+            revised_plan = receipt.passes[-1].plan
+            if revised_plan is not None:
+                receipt = replace(receipt, plan=replace(receipt.plan, tasks=revised_plan.tasks))
         if planning is not None:
             receipt = replace(
                 receipt,

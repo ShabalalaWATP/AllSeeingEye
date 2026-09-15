@@ -12,6 +12,7 @@ from sqlalchemy import (
     CheckConstraint,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     String,
     Text,
@@ -189,12 +190,26 @@ class AlertRow(Base):
 
 class ScheduleRow(Base):
     __tablename__ = "schedules"
+    __table_args__ = (
+        CheckConstraint(
+            "(brief_id IS NULL AND brief_revision IS NULL) OR "
+            "(brief_id IS NOT NULL AND brief_revision >= 1)",
+            name="ck_schedules_brief_pair",
+        ),
+        ForeignKeyConstraint(
+            ["brief_id", "brief_revision"],
+            ["research_brief_revisions.brief_id", "research_brief_revisions.revision"],
+            name="fk_schedules_brief_revision",
+        ),
+    )
 
     team_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("teams.id", name="fk_schedules_team_id_teams"), nullable=True, index=True
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    brief_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    brief_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name: Mapped[str] = mapped_column(String(120))
     template_id: Mapped[str] = mapped_column(String(40))
     question: Mapped[str | None] = mapped_column(String(1000), nullable=True)
@@ -204,10 +219,17 @@ class ScheduleRow(Base):
     country_iso: Mapped[str | None] = mapped_column(String(2), nullable=True)
     plan_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
     hour_utc: Mapped[int] = mapped_column(Integer)
+    timezone: Mapped[str] = mapped_column(String(100), default="UTC", server_default="UTC")
+    local_hour: Mapped[int] = mapped_column(Integer, default=6, server_default="6")
+    local_minute: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    collection_policy: Mapped[str] = mapped_column(
+        String(32), default="rolling_snapshot", server_default="rolling_snapshot"
+    )
     cadence: Mapped[str] = mapped_column(String(16))
     weekday: Mapped[int] = mapped_column(Integer, default=0)
     window_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    archived_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     created_by: Mapped[UUID] = mapped_column(Uuid, index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     next_run_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)

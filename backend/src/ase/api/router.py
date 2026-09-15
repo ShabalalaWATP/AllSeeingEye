@@ -14,6 +14,7 @@ from ase.api.routers import (
     admin_llm_discovery,
     admin_requests,
     admin_sources,
+    admin_subscription_diagnostics,
     admin_users,
     ai_usage,
     annotation_comparisons,
@@ -43,6 +44,7 @@ from ase.api.routers import (
     mfa,
     navigation,
     original_assets,
+    original_passages,
     profile,
     radio,
     recovery,
@@ -50,17 +52,23 @@ from ase.api.routers import (
     relationships,
     report_documents,
     report_jobs,
+    report_ledgers,
     report_methodology,
     report_search,
     reports,
+    research_briefs,
     research_inputs,
     research_library,
+    research_preflight,
+    research_presets,
     research_runs,
     schedules,
     sec_filings,
     social,
+    source_reviews,
     sources,
     stream,
+    subscription_usage,
     team_board,
     team_invitations,
     teams,
@@ -102,17 +110,22 @@ api_router.include_router(footprints.router)
 api_router.include_router(map_views.router)
 api_router.include_router(map_image.router)
 api_router.include_router(original_assets.router)
+api_router.include_router(original_passages.router)
 api_router.include_router(claims.router)
 api_router.include_router(identities.router)
 api_router.include_router(annotation_comparisons.router)
 api_router.include_router(annotation_monitors.router)
 api_router.include_router(relationships.router)
+api_router.include_router(report_ledgers.router)
 api_router.include_router(research_library.router)
 api_router.include_router(countries.router)
 api_router.include_router(capabilities.router)
 api_router.include_router(cameras.router)
 api_router.include_router(tiles.router)
 api_router.include_router(reports.router)
+api_router.include_router(research_briefs.router)
+api_router.include_router(research_preflight.router)
+api_router.include_router(research_presets.router)
 api_router.include_router(research_inputs.router)
 api_router.include_router(sec_filings.router)
 api_router.include_router(research_runs.router)
@@ -121,15 +134,18 @@ api_router.include_router(report_methodology.router)
 api_router.include_router(report_search.router)
 api_router.include_router(social.router)
 api_router.include_router(sources.router)
+api_router.include_router(source_reviews.router)
 api_router.include_router(stream.router)
 api_router.include_router(trackers.router)
 api_router.include_router(direction.router)
 api_router.include_router(warning.router)
 api_router.include_router(schedules.router)
+api_router.include_router(subscription_usage.router)
 api_router.include_router(admin_requests.router)
 api_router.include_router(admin_users.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin_sources.router)
+api_router.include_router(admin_subscription_diagnostics.router)
 api_router.include_router(admin_llm.router)
 api_router.include_router(admin_llm_discovery.router)
 api_router.include_router(admin_ai_usage.router)

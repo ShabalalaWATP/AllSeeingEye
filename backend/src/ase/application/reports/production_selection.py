@@ -12,7 +12,64 @@ from ase.application.reports.subscription_updates import previous_signatures
 from ase.domain.direction import Direction
 from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
-from ase.domain.research import ResearchFocus, ResearchQuery
+from ase.domain.research import CollectionStatus, ResearchFocus, ResearchQuery
+from ase.domain.research_records import ResearchReceipt
+
+
+def _admitted_task_groups(receipt: ResearchReceipt | None) -> tuple[tuple[str, ...], ...]:
+    if receipt is None:
+        return ()
+    passes = (
+        ((row.plan, row.attempts) for row in receipt.passes)
+        if receipt.passes
+        else ((receipt.plan, receipt.attempts),)
+    )
+    groups: list[tuple[str, ...]] = []
+    for plan, attempts in passes:
+        if plan is None:
+            continue
+        completed = {
+            attempt.task_id
+            for attempt in attempts
+            if attempt.status is CollectionStatus.COMPLETED and attempt.result_count > 0
+        }
+        groups.extend(
+            task.terms
+            for task in plan.tasks
+            if task.purpose != "baseline"
+            and task.selected
+            and task.supported
+            and task.task_id in completed
+            and task.terms
+        )
+    return tuple(dict.fromkeys(groups))
+
+
+def _term_groups(
+    job: Job,
+    direction: Direction | None,
+    runtime_query: ResearchQuery | None,
+    receipt: ResearchReceipt | None,
+    extra_terms: tuple[str, ...],
+) -> tuple[tuple[str, ...], ...]:
+    if runtime_query is not None:
+        # An admitted revision is the active baseline; keep the operator's exact
+        # terms separately so a translation or revision cannot erase their priority.
+        base = [runtime_query.terms]
+        if job.request.research_terms is not None:
+            base.append(job.request.research_terms)
+        base.extend(variant.terms for variant in runtime_query.query_variants)
+        base.extend(_admitted_task_groups(receipt))
+    elif job.request.research_terms is not None:
+        base = [job.request.research_terms]
+        base.extend(variant.terms for variant in job.request.research_query_variants)
+    elif direction is not None:
+        base = [direction.search_terms]
+    else:
+        base = [job.terms]
+    if extra_terms:
+        base.append(extra_terms)
+    return tuple(dict.fromkeys(group for group in base if group))
 
 
 def select_for_job(
@@ -23,6 +80,8 @@ def select_for_job(
     extra_terms: tuple[str, ...] = (),
     *,
     runtime_query: ResearchQuery | None = None,
+    receipt: ResearchReceipt | None = None,
+    reserve_challenge_slots: bool = False,
 ) -> Selection:
     private = job.request.research_focus in (ResearchFocus.DOCUMENT, ResearchFocus.MEDIA)
     area = job.request.effective_area is not None
@@ -44,12 +103,16 @@ def select_for_job(
         strategy = replace(
             strategy, max_items=depth.evidence_items, per_source_cap=depth.per_source_cap
         )
+        if reserve_challenge_slots and job.request.research_mode is not None:
+            reserved = {"quick": 0, "detailed": 8, "advanced": 12}[job.request.research_mode.value]
+            strategy = replace(strategy, max_items=strategy.max_items - reserved)
     if private:
         # Private sections are parts of one supplied input, not competing publishers.
         # A diversity cap would discard later photographs, contradictions and caveats.
         # Preserve the complete bounded assessment within the report's 100-item ceiling;
         # original grades and the lack of independent corroboration remain unchanged.
         strategy = replace(strategy, max_items=100, per_source_cap=100)
+    groups = _term_groups(job, direction, runtime_query, receipt, extra_terms)
     selected = select_evidence(
         store,
         profiles,
@@ -57,19 +120,7 @@ def select_for_job(
         now=job.now,
         country_iso=None if private else job.request.country_iso,
         categories=() if private else job.request.categories,
-        terms=(
-            *(direction.search_terms if direction else job.terms),
-            *extra_terms,
-            *(
-                term
-                for task in (
-                    runtime_query.planned_tasks
-                    if runtime_query is not None
-                    else job.request.research_planned_tasks
-                )
-                for term in task.terms
-            ),
-        ),
+        term_groups=groups,
         # Area eligibility was admitted by spatial providers. A point-only filter
         # here would silently discard valid footprints without event coordinates.
         bbox=None if private or area else job.bbox,

@@ -26,6 +26,9 @@ async def test_report_retries_and_records_safe_deep_json_failure(
     admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     user_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     await seed_legacy_profile(container, PROFILE)
+    # With no evidence the pipeline writes a coverage-gap report without calling the model,
+    # so seed evidence to exercise the model failure this test guards.
+    container.store.upsert(list(filled_store().query(EventQuery(limit=10))))
     container.llm = ScriptedGateway(nested_output(), nested_output())
     response = await client.post(
         "/api/reports", json={"template": "intsum"}, headers=bearer(user_token)
@@ -56,7 +59,8 @@ async def test_direction_and_advocacy_degrade_without_losing_the_report(
     )
     assert response.status_code == 201
     version = response.json()["version"]
-    assert version["status"] == "ready"
+    # Thin fixture evidence trips the citation review gate; the report still lands.
+    assert version["status"] == "needs_review"
     assert version["direction"] is None and version["devils_advocacy"] is None
     findings = [finding["message"] for finding in version["findings"]]
     assert "Direction JSON is nested too deeply." in findings

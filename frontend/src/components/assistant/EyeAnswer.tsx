@@ -1,5 +1,5 @@
 import { memo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { AssistantAnswer } from '@/lib/api/assistant';
 import { SourceLink } from '@/components/ui/SourceLink';
 import { locateAssistantSource } from '@/lib/assistantMapContext';
@@ -15,6 +15,12 @@ function referenceUrl(value: string | null): string | null {
 }
 
 export function answerWithReferences(answer: AssistantAnswer): string {
+  const report = answer.report;
+  const heading = report
+    ? [
+        `${report.title} · Version ${report.version} · Data cutoff ${report.data_cutoff ? formatUtc(report.data_cutoff) : 'unavailable'}`,
+      ]
+    : [];
   const paragraphs = answer.paragraphs.map((paragraph) => {
     const citations = paragraph.citations.length ? ` [${paragraph.citations.join(', ')}]` : '';
     const prefix =
@@ -27,7 +33,11 @@ export function answerWithReferences(answer: AssistantAnswer): string {
     const url = referenceUrl(source.url);
     return `[${source.id}] ${source.title} · ${source.source_id}${url ? ` · ${url}` : ''}`;
   });
-  return (references.length ? [...paragraphs, 'References', ...references] : paragraphs).join('\n\n');
+  return (
+    references.length
+      ? [...heading, ...paragraphs, 'References', ...references]
+      : [...heading, ...paragraphs]
+  ).join('\n\n');
 }
 
 export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: AssistantAnswer }) {
@@ -72,12 +82,20 @@ export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: Assistant
       <h3>Answer</h3>
       <div className="eye-answer-scope" aria-label="Search interpretation">
         <span>
-          {answer.scope.mode === 'viewport'
-            ? 'Area: map view'
-            : answer.scope.mode === 'selected'
-              ? 'Area: selected item'
-              : 'Area: all available'}
+          {answer.scope.mode === 'report'
+            ? `Report: ${answer.report?.title ?? 'selected edition'} · Version ${answer.report?.version ?? 'unknown'}`
+            : answer.scope.mode === 'viewport'
+              ? 'Area: map view'
+              : answer.scope.mode === 'selected'
+                ? 'Area: selected item'
+                : 'Area: all available'}
         </span>
+        {answer.scope.mode === 'report' && (
+          <span>
+            Data cutoff:{' '}
+            {answer.report?.data_cutoff ? formatUtc(answer.report.data_cutoff) : 'unavailable'}
+          </span>
+        )}
         {interpretation.countries.length > 0 && (
           <span>Countries: {interpretation.countries.join(', ')}</span>
         )}
@@ -99,6 +117,13 @@ export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: Assistant
           </span>
         )}
       </div>
+      {answer.report && (
+        <p className="eye-answer-meta">
+          <Link to={`/reports/${answer.report.id}?version=${answer.report.version}`}>
+            Open this frozen report version
+          </Link>
+        </p>
+      )}
       {answer.paragraphs.map((paragraph, index) => (
         <section key={index} className="eye-paragraph" data-kind={paragraph.kind}>
           {paragraph.kind !== 'finding' && (
@@ -202,22 +227,29 @@ export const EyeAnswer = memo(function EyeAnswer({ answer }: { answer: Assistant
               )}
               <div className="eye-source-actions">
                 <SourceLink url={source.url}>Open original</SourceLink>
-                {source.point && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!source.point) return;
-                      locateAssistantSource({
-                        kind: source.kind,
-                        id: source.record_id,
-                        point: source.point,
-                      });
-                      void navigate('/');
-                    }}
-                  >
-                    Show on map
-                  </button>
-                )}
+                {source.point &&
+                  source.kind !== 'report_claim' &&
+                  source.kind !== 'report_evidence' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          !source.point ||
+                          source.kind === 'report_claim' ||
+                          source.kind === 'report_evidence'
+                        )
+                          return;
+                        locateAssistantSource({
+                          kind: source.kind,
+                          id: source.record_id,
+                          point: source.point,
+                        });
+                        void navigate('/');
+                      }}
+                    >
+                      Show on map
+                    </button>
+                  )}
               </div>
             </div>
           ))}

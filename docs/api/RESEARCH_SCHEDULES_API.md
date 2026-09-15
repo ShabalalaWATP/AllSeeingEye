@@ -1,19 +1,21 @@
 # Saved research schedules
 
-Schedules can save an explicit question and repeat bounded public-source research
-through the same report generator used by an interactive request. Each successful
-run saves a new report. Optional change monitoring creates an
-in-app alert only when the deterministic comparison detects a difference.
+Schedules save an explicit question and admit each due run as a durable report
+job and immutable edition. A completed run saves a report under the same access
+rules as one-off research. Optional monitoring compares frozen consecutive
+versions and creates an in-app event when the configured condition is met.
 There are no email, webhook or desktop-host notifications.
 
-Existing `/api/schedules` create, list, update and delete routes retain their
-personal/team visibility and management rules. New input/output fields:
+`/api/schedules` create, list and update retain personal/team visibility and
+management rules. `DELETE` now archives the subscription, stops future admission
+and retains its editions, index and reports. Pause/resume and edition controls
+are separate. The earlier `0015` fields include:
 
 | Field | Bounds and default |
 |---|---|
 | `notify_on_change` | Boolean, defaults to false; requires question or collection plan |
 | `question` | Nullable, at most 1,000 characters; whitespace-only input rejected |
-| `research_mode` | Null for existing live evidence, `quick` or `detailed` |
+| `research_mode` | Null for existing live evidence, `quick`, `detailed` or `advanced` |
 | `research_languages` | One to eight language codes; defaults to `en`; duplicates removed |
 | `research_focus` | `general`, `company`, `domain`, `document` or `media`; defaults to `general` |
 | `research_subject` | Nullable, at most 300 characters; required for company/domain |
@@ -26,17 +28,18 @@ personal/team visibility and management rules. New input/output fields:
 research mode always requires an explicit saved question. With a non-general
 research focus, the subject defines scope and a nation filter is rejected.
 Language codes are lower-cased before deduplication. Cadence supports daily,
-weekdays, weekly or calendar-monthly at a UTC hour. Ordinary research lookback
+weekdays, weekly, monthly, quarterly, semiannual and annual schedules, with
+saved local-time rules and UTC due-slot identity. Ordinary research lookback
 supports 1..17,520 hours. Private document/media schedules are unsupported.
 Requested languages and focus are collection instructions, not a
 guarantee that a provider supports them or that matching evidence exists.
 
-The scheduler forwards these fields with `automation=True`; current active owner,
-current team membership and active team checks remain enforced by the schedule
-store and report authorisation. Edits to a schedule invalidate a previously loaded
-run snapshot. Configured public providers and the assessment model may receive the
-saved question and subject each run. Existing bounded collection, source receipt,
-frozen evidence and report access rules apply. No raw research corpus is persisted.
+The scheduler snapshots these fields into a durable edition and report job after
+checking current owner, team and source authority. Edits cannot rewrite an
+accepted edition. Configured public providers and the assessment model may receive
+the saved question and subject each run. Bounded collection, source receipts,
+frozen evidence, usage reservations and report access rules apply. The selected
+research packet and report evidence are persisted under those bounds.
 
 Migration `0015`, following `0014`, adds nullable `question` and
 `research_options` columns to schedules. The JSON now stores plural countries,
@@ -47,7 +50,7 @@ these settings while preserving the older schedule columns; a research question
 cannot survive that downgrade. Back up the intended database before upgrading.
 Development checks used synthetic databases, not an operator database.
 
-Research, Recurring offers question, depth, scope and sources. Saved settings
+Subscriptions offers question, depth, scope and sources. Saved settings
 remain reviewable after creation; pause/resume preserves all options. Monthly
 day 31 clamps in February and returns to day 31 in March, without drift.
 
@@ -65,8 +68,15 @@ cannot be reconstructed and the next usable report establishes another baseline.
 The schedule exposes nullable `last_change` (bounded status, counts, reason codes,
 previous/current report and version IDs, and baseline version ID) and a readable
 `last_change_summary`. Status is `baseline`, `unchanged`, `changed` or `unavailable`.
-No extra evidence corpus is stored. The existing `last_report_id` still points to
+The comparison adds no separate raw evidence corpus. The existing `last_report_id` still points to
 the most recent successful scheduled output regardless of changes.
+
+These four values are a compatibility summary. Authorised
+`GET /api/schedules/{id}/editions` history also carries the newer six-state
+comparison, which separates failure, inadequate coverage, significant correction,
+assessment change, new evidence without a broad assessment change and no captured
+relevant change. Ambiguous claim mapping is classified as inadequate coverage for
+review, not a verified assessment change. Neither comparison proves real-world truth.
 
 Change alerts are labelled **Evidence changed**. They inherit schedule author
 and team visibility and can be acknowledged through the existing warning API.

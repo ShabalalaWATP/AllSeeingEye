@@ -28,10 +28,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await container.scheduler.start()
         await container.aviation_monitor.start()
         await container.evaluator.start()
-        await container.schedule_runner.start()
         await container.translation_queue.start()
         await container.conflict_screening.start()
         await container.social_monitor.start()
+    await container.schedule_runner.start()
     asset_expiry = asyncio.create_task(
         expire_original_assets(container.session_factory, container.clock)
     )
@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await container.schedule_runner.stop()
         await container.report_job_worker.stop()
         annotation_monitoring.cancel()
         await asyncio.gather(annotation_monitoring, return_exceptions=True)
@@ -48,7 +49,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await container.social_monitor.stop()
         await container.translation_queue.stop()
         await container.conflict_screening.stop()
-        await container.schedule_runner.stop()
         await container.evaluator.stop()
         await container.aviation_monitor.stop()
         await container.scheduler.stop()

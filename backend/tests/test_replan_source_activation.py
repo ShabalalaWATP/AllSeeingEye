@@ -44,5 +44,6 @@ async def test_disabling_source_during_replan_blocks_second_underlying_fetch(
     assert result.passes[0].attempts[0].status is CollectionStatus.EMPTY
     assert result.passes[1].attempts[0].status is CollectionStatus.UNAVAILABLE
     assert "disabled by the administrator" in result.passes[1].attempts[0].explanation
-    assert result.attempts[0].status is CollectionStatus.UNAVAILABLE
+    # The merged receipt keeps the genuine first search; pass two records the disable.
+    assert result.attempts[0].status is CollectionStatus.EMPTY
     assert container.store.stats().total == 0

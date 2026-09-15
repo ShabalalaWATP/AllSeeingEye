@@ -1,6 +1,7 @@
 import { researchDateError } from './ResearchTimeScope';
 import { ProjectHistory, projectInterval, type ProjectHistoryState } from './ProjectHistory';
 import { useState, type SyntheticEvent } from 'react';
+import { Link } from 'react-router';
 import type { SavedMapView } from '@/lib/api/mapViews';
 import type { Profile } from '@/lib/api/profile';
 import { describeError } from '@/lib/api/errors';
@@ -134,6 +135,12 @@ export function AreaResearchForm({
           automatically.
         </p>
       </div>
+      <Link
+        className="inline-block text-sm text-ember underline"
+        to={`/research?brief=new&map_view=${encodeURIComponent(saved.view.id)}&map_revision=${encodeURIComponent(saved.revision.id)}&question=${encodeURIComponent(question)}`}
+      >
+        Use this area and question in a Research Brief
+      </Link>
       <fieldset disabled={action.busy || !writable} className="space-y-5">
         <TextAreaField
           label="Your area research question"

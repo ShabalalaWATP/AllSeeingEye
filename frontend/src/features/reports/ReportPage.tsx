@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { Alert, LoadingNote } from '@/components/ui/Alert';
@@ -12,6 +12,11 @@ import { useScopedResource } from '@/lib/hooks/useScopedResource';
 import { useWorkspaces } from '@/lib/hooks/useWorkspaces';
 import { useAuthStore } from '@/stores/auth';
 import { useProfile } from '@/stores/profile';
+import {
+  launchAssistantReportQuestion,
+  registerAssistantReportContext,
+} from '@/lib/assistantReportContext';
+import { followUpAvailability } from '@/features/research/followUpScope';
 
 import { EvidenceNavigation } from './EvidenceLinks';
 import { LegacyReportReferences } from './LegacyReportReferences';
@@ -39,6 +44,7 @@ export default function ReportPage() {
   const mapRequest = useMapRequest();
   const navigate = useNavigate();
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const mobileContents = useRef<HTMLDetailsElement>(null);
   const closeWorkspace = useCallback(() => setWorkspaceOpen(false), []);
   const loader = useCallback(async () => {
     const signal = mapRequest();
@@ -63,6 +69,19 @@ export default function ReportPage() {
   }, [id, requested, mapId, mapRevision, mapRequest]);
   const resource = useScopedResource(loader);
   const { data, error, loading, reload } = resource;
+  const eyeReport = useMemo(
+    () =>
+      data
+        ? {
+            id: data.report.id,
+            version: data.version.number,
+            title: data.report.title,
+            dataCutoff: data.version.data_cutoff ?? null,
+          }
+        : null,
+    [data],
+  );
+  useEffect(() => (eyeReport ? registerAssistantReportContext(eyeReport) : undefined), [eyeReport]);
   const remove = useAsyncAction(async () => {
     await deleteReport(id);
     await navigate('/reports');
@@ -82,6 +101,7 @@ export default function ReportPage() {
     );
   }
   const { report, version } = data;
+  const followUp = followUpAvailability({ report, version });
   const canEdit = workspaces.canManage(report);
   const mapWritable =
     actor?.role === 'admin' ||
@@ -116,6 +136,13 @@ export default function ReportPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-md border border-cyan/50 bg-cyan/10 px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-cyan/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan motion-reduce:transition-none"
+                  onClick={() => eyeReport && launchAssistantReportQuestion(eyeReport)}
+                >
+                  Ask Eye about this version
+                </button>
                 <button
                   type="button"
                   className="rounded-md border border-line px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none"
@@ -161,6 +188,32 @@ export default function ReportPage() {
               </nav>
             </div>
           </header>
+
+          {contents.length > 0 && (
+            <details
+              ref={mobileContents}
+              className="mb-4 rounded-lg border border-line bg-surface px-4 py-3 lg:hidden"
+            >
+              <summary className="cursor-pointer text-sm font-medium text-text">
+                Jump to section
+              </summary>
+              <nav aria-label="Mobile report contents" className="pt-3">
+                <ol className="space-y-2 border-t border-line pt-3 text-sm text-muted">
+                  {contents.map((entry) => (
+                    <li key={entry.id}>
+                      <a
+                        className="block rounded py-1 hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-ember"
+                        href={`#${entry.id}`}
+                        onClick={() => mobileContents.current?.removeAttribute('open')}
+                      >
+                        {entry.label}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </details>
+          )}
 
           <div
             className={contents.length ? 'lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8' : ''}
@@ -208,14 +261,51 @@ export default function ReportPage() {
               {version.evidence.length} retained source item
               {version.evidence.length === 1 ? '' : 's'} · Exact version {version.number}
             </span>
-            <Link
-              to={version.research?.plan?.area ? '/' : `/research?parent=${encodeURIComponent(id)}`}
-              className="rounded px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none"
-            >
-              {version.research?.plan?.area
-                ? 'Research another map area →'
-                : 'Ask a follow-up question →'}
-            </Link>
+            {version.brief_id && version.brief_revision ? (
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to={`/research?brief=${version.brief_id}&revision=${version.brief_revision}&from_report=${encodeURIComponent(id)}&from_report_version=${version.number}`}
+                  className="rounded px-3 py-2 text-sm font-medium text-text hover:bg-surface-2"
+                >
+                  Use this brief
+                </Link>
+                <Link
+                  to={`/research?brief=${version.brief_id}&revision=${version.brief_revision}&from_report=${encodeURIComponent(id)}&from_report_version=${version.number}&intent=subscribe`}
+                  className="rounded px-3 py-2 text-sm font-medium text-text hover:bg-surface-2"
+                >
+                  Subscribe to updates
+                </Link>
+              </div>
+            ) : (
+              <span
+                className="text-xs text-muted"
+                title="This version has no frozen Research Brief revision."
+              >
+                Brief reuse unavailable for this version
+              </span>
+            )}
+            {followUp.request ? (
+              <Link
+                to={`/research?parent=${encodeURIComponent(id)}&parent_version=${String(version.number)}`}
+                className="rounded px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-2 motion-reduce:transition-none"
+              >
+                Ask a follow-up question →
+              </Link>
+            ) : (
+              <div className="flex max-w-sm flex-col items-end gap-1 text-right">
+                <button
+                  type="button"
+                  disabled
+                  aria-describedby="follow-up-unavailable-reason"
+                  className="cursor-not-allowed rounded px-3 py-2 text-sm font-medium text-muted opacity-60"
+                >
+                  Ask a follow-up question
+                </button>
+                <span id="follow-up-unavailable-reason" className="text-xs text-muted">
+                  Follow-up unavailable: {followUp.reason}
+                </span>
+              </div>
+            )}
           </footer>
         </div>
       </section>

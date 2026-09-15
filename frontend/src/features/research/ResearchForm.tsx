@@ -16,6 +16,7 @@ import { useResearchRun } from './useResearchRun';
 import { ResearchInput } from './ResearchInput';
 import { DocumentResearchInput } from './DocumentResearchInput';
 import { FollowUpSummary } from './FollowUpSummary';
+import type { FollowUpRequest } from './followUpScope';
 import { ResearchProgress } from './ResearchProgress';
 import { ResearchPlanEditor } from './ResearchPlanEditor';
 import { useResearchPlan } from './useResearchPlan';
@@ -42,7 +43,7 @@ export function ResearchForm({
   initialQuestion: string;
   initialDates?: ResearchDates | null;
   initialCountry: string;
-  parent?: { report: Report; request: ReportRequest } | undefined;
+  parent?: { report: Report; request: FollowUpRequest } | undefined;
 }) {
   const scope = useWorkspaceSelection(workspaces);
   const action = useResearchRun();

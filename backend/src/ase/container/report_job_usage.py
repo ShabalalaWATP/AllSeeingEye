@@ -5,8 +5,14 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from ase.application.report_jobs.budget import MAX_CALLS, JobInterrupted, token_count
+from ase.application.report_jobs.budget import (
+    MAX_CALLS,
+    NOT_DISPATCHED_ERROR,
+    JobInterrupted,
+    token_count,
+)
 from ase.domain.llm import LlmUsage
+from ase.domain.subscription_monthly_budget import utc_month
 
 _MUTABLE = frozenset({"status", "prompt_tokens", "completion_tokens", "latency_ms", "error"})
 
@@ -36,6 +42,19 @@ def _calls(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return found
 
 
+def _released_before_dispatch(value: dict[str, Any]) -> bool:
+    """A reservation refused by the pre-dispatch recheck sent no provider request."""
+    if value.get("error") != NOT_DISPATCHED_ERROR:
+        return False
+    if (
+        value["status"] != "failed"
+        or value.get("prompt_tokens") != 0
+        or value.get("completion_tokens") != 0
+    ):
+        raise JobInterrupted()
+    return True
+
+
 def settled_usage(
     before: dict[str, Any], after: dict[str, Any], owner_id: UUID, now: datetime
 ) -> list[LlmUsage]:
@@ -57,7 +76,7 @@ def settled_usage(
             k: v for k, v in value.items() if k not in _MUTABLE
         }:
             raise JobInterrupted()
-        if value["status"] == "uncertain":
+        if value["status"] == "uncertain" or _released_before_dispatch(value):
             continue
         latency = value.get("latency_ms")
         error = value.get("error")
@@ -70,9 +89,17 @@ def settled_usage(
             or (value["status"] == "completed" and error is not None)
         ):
             raise JobInterrupted()
+        dispatched_at = previous.get("dispatched_at", now.isoformat())
+        if type(dispatched_at) is not str or len(dispatched_at) > 40:
+            raise JobInterrupted()
+        try:
+            at = datetime.fromisoformat(dispatched_at)
+            utc_month(at)
+        except ValueError:
+            raise JobInterrupted() from None
         result.append(
             LlmUsage(
-                at=now,
+                at=at,
                 profile_id=UUID(value["profile_id"]),
                 user_id=owner_id,
                 purpose="report-job",

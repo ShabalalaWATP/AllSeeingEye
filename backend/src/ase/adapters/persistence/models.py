@@ -25,7 +25,17 @@ from ase.adapters.persistence import (
 from ase.adapters.persistence import (
     assistant_history_models as _assistant_history_models,  # noqa: F401
 )
+from ase.adapters.persistence import ledger_models as _ledger_models  # noqa: F401
+from ase.adapters.persistence import (
+    original_passage_models as _original_passage_models,  # noqa: F401
+)
 from ase.adapters.persistence import report_job_models as _report_job_models  # noqa: F401
+from ase.adapters.persistence import research_brief_models as _research_brief_models  # noqa: F401
+from ase.adapters.persistence import selected_index_models as _selected_index_models  # noqa: F401
+from ase.adapters.persistence import source_review_models as _source_review_models  # noqa: F401
+from ase.adapters.persistence import (
+    subscription_edition_models as _subscription_edition_models,  # noqa: F401
+)
 from ase.adapters.persistence import team_board_models as _team_board_models  # noqa: F401
 from ase.adapters.persistence import (
     team_invitation_models as _team_invitation_models,  # noqa: F401

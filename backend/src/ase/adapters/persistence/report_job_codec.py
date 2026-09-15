@@ -41,6 +41,8 @@ def with_payload(row: ReportJobRow, payload: dict[str, Any]) -> ReportJob:
         lease_token=row.lease_token,
         lease_until=row.lease_until,
         error=row.error,
+        brief_id=row.brief_id,
+        brief_revision=row.brief_revision,
     )
 
 

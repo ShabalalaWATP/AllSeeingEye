@@ -5,19 +5,21 @@ import {
   type AssistantAnswer,
   type AssistantRequest,
 } from '@/lib/api/assistant';
-import { describeError } from '@/lib/api/errors';
+import { ApiError, describeError } from '@/lib/api/errors';
 import { readAssistantMapContext } from '@/lib/assistantMapContext';
+import type { AssistantReportSelection } from '@/lib/assistantReportContext';
 import { useScopedRequest } from '@/lib/hooks/useScopedRequest';
 import { workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 import type { EyeSourceCategory } from './EyeSourceFilter';
 
-export type ChatScope = 'global' | 'viewport' | 'selected';
+export type ChatScope = 'global' | 'viewport' | 'selected' | 'report';
 export type ChatTimeWindow = 'auto' | '48' | '120' | '168' | '336' | '720' | '2160' | '8760';
 export interface EyeChatTurn {
   id: number;
   question: string;
   scope: ChatScope;
+  report: AssistantReportSelection | null;
   timeWindow: ChatTimeWindow;
   sourceCategories: EyeSourceCategory[] | null;
   receivedAt: number | null;
@@ -44,10 +46,11 @@ export interface SavedEyeTurn {
   scope: string;
   time_window: string;
   source_categories?: string[] | null;
+  report?: { id: string; version: number } | null;
   answer: AssistantAnswer;
 }
 function savedScope(value: string): ChatScope {
-  return value === 'viewport' || value === 'selected' ? value : 'global';
+  return value === 'viewport' || value === 'selected' || value === 'report' ? value : 'global';
 }
 function savedTimeWindow(value: string): ChatTimeWindow {
   return ['48', '120', '168', '336', '720', '2160', '8760'].includes(value)
@@ -61,11 +64,29 @@ function savedCategories(values: string[] | null): EyeSourceCategory[] | null {
   });
   return safe?.length ? safe : null;
 }
+function savedReport(turn: SavedEyeTurn): AssistantReportSelection | null {
+  const answerReport = turn.answer.report;
+  if (
+    turn.scope !== 'report' ||
+    !turn.report ||
+    turn.report.id !== answerReport?.id ||
+    turn.report.version !== answerReport.version ||
+    turn.answer.scope.mode !== 'report'
+  )
+    return null;
+  return {
+    id: turn.report.id,
+    version: turn.report.version,
+    title: answerReport.title,
+    dataCutoff: answerReport.data_cutoff,
+  };
+}
 
 /** Ephemeral questions only, no browser persistence and no model-supplied conversation authority. */
 export function useEyeChat() {
   const [question, setQuestion] = useState('');
   const [scope, setScope] = useState<ChatScope>('global');
+  const [report, setReport] = useState<AssistantReportSelection | null>(null);
   const [timeWindow, setTimeWindow] = useState<ChatTimeWindow>('auto');
   const [sourceCategories, setSourceCategories] = useState<EyeSourceCategory[] | null>(null);
   const [turns, setTurns] = useState<EyeChatTurn[]>([]);
@@ -100,17 +121,29 @@ export function useEyeChat() {
       setError('Enter a question of up to 2,000 characters.');
       return;
     }
-    const map = readAssistantMapContext();
+    const map = scope === 'report' ? null : readAssistantMapContext();
+    if (scope === 'report' && !report) {
+      setError('Open an exact report version before asking about it.');
+      return;
+    }
     const body: AssistantRequest = {
       question: trimmed,
       prior_questions: turns
-        .filter((turn) => turn.status === 'answered')
+        .filter(
+          (turn) =>
+            turn.status === 'answered' &&
+            (scope !== 'report' ||
+              (turn.scope === 'report' &&
+                turn.report?.id === report?.id &&
+                turn.report?.version === report?.version)),
+        )
         .slice(-4)
         .map((turn) => turn.question),
       scope,
     };
-    if (sourceCategories?.length) body.source_categories = sourceCategories;
-    if (timeWindow !== 'auto') {
+    if (scope === 'report' && report) body.report = { id: report.id, version: report.version };
+    if (scope !== 'report' && sourceCategories?.length) body.source_categories = sourceCategories;
+    if (scope !== 'report' && timeWindow !== 'auto') {
       const until = new Date();
       body.time_range = {
         since: new Date(until.getTime() - Number(timeWindow) * 3_600_000).toISOString(),
@@ -134,6 +167,7 @@ export function useEyeChat() {
     }
     const previous = [...turns].reverse().find((turn) => turn.status === 'answered');
     if (
+      scope !== 'report' &&
       refersToPriorAnswer(trimmed) &&
       previous?.answer?.continuation_id &&
       continuationFresh(previous.receivedAt) &&
@@ -162,6 +196,7 @@ export function useEyeChat() {
         id,
         question: trimmed,
         scope,
+        report: scope === 'report' ? report : null,
         timeWindow,
         sourceCategories,
         receivedAt: null,
@@ -172,6 +207,18 @@ export function useEyeChat() {
     ]);
     try {
       const answer = await askAssistant(body, signal);
+      if (
+        scope === 'report' &&
+        (answer.scope.mode !== 'report' ||
+          !answer.report ||
+          answer.report.id !== report?.id ||
+          answer.report.version !== report.version)
+      )
+        throw new ApiError(
+          502,
+          'report_context_mismatch',
+          'The answer did not match the selected report edition. No answer was added.',
+        );
       if (current())
         setTurns((previous) =>
           previous.map((turn) =>
@@ -198,6 +245,20 @@ export function useEyeChat() {
     setQuestion,
     scope,
     setScope,
+    report,
+    beginReport: (selection: AssistantReportSelection) => {
+      stop();
+      setTurns([]);
+      setQuestion('');
+      setError(null);
+      setScope('report');
+      setReport(selection);
+      setTimeWindow('auto');
+      setSourceCategories(null);
+      setSavedConversationId(null);
+      setSavedConversationTitle('');
+      setSavedSnapshotNotice(null);
+    },
     timeWindow,
     setTimeWindow,
     sourceCategories,
@@ -217,17 +278,27 @@ export function useEyeChat() {
       snapshotNotice: string,
     ) => {
       stop();
-      const restored = savedTurns.slice(-8).map((turn): EyeChatTurn => ({
-        id: ++sequence.current,
-        question: turn.question,
-        scope: savedScope(turn.scope),
-        timeWindow: savedTimeWindow(turn.time_window),
-        sourceCategories: savedCategories(turn.source_categories ?? null),
-        receivedAt: null,
-        saved: true,
-        answer: { ...turn.answer, continuation_id: null, model: null },
-        status: 'answered',
-      }));
+      const restored = savedTurns
+        .flatMap((turn): EyeChatTurn[] => {
+          const turnScope = savedScope(turn.scope);
+          const turnReport = savedReport(turn);
+          if (turnScope === 'report' && !turnReport) return [];
+          return [
+            {
+              id: ++sequence.current,
+              question: turn.question,
+              scope: turnScope,
+              report: turnReport,
+              timeWindow: savedTimeWindow(turn.time_window),
+              sourceCategories: savedCategories(turn.source_categories ?? null),
+              receivedAt: null,
+              saved: true,
+              answer: { ...turn.answer, continuation_id: null, model: null },
+              status: 'answered',
+            },
+          ];
+        })
+        .slice(-8);
       const last = restored.at(-1);
       setTurns(restored);
       setSavedConversationId(id);
@@ -236,6 +307,7 @@ export function useEyeChat() {
       setQuestion('');
       setError(null);
       setScope(last?.scope ?? 'global');
+      setReport(last?.scope === 'report' ? last.report : null);
       setTimeWindow(last?.timeWindow ?? 'auto');
       setSourceCategories(last?.sourceCategories ?? null);
     },
@@ -249,6 +321,7 @@ export function useEyeChat() {
       setQuestion('');
       setError(null);
       setScope('global');
+      setReport(null);
       setTimeWindow('auto');
       setSourceCategories(null);
       setSavedConversationId(null);

@@ -1,0 +1,3517 @@
+{
+  "schema_version": "ase-v01-contract-results-1",
+  "track": "offline_synthetic_contracts",
+  "manifest_sha256": "b198d962358da225395db2c86d02610750bac12a47d9fa38a81e0dd23d9b54d5",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "case_count": 60,
+  "passed_case_count": 60,
+  "metrics": {
+    "edition_changed_claims": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "edition_corrections": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "edition_novel_evidence": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "edition_reasons": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "edition_state": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "edition_syndication": {
+      "numerator": 24,
+      "denominator": 24,
+      "value": 1.0
+    },
+    "exact_excerpt_offsets": {
+      "numerator": 6,
+      "denominator": 6,
+      "value": 1.0
+    },
+    "exact_excerpt_presence": {
+      "numerator": 12,
+      "denominator": 12,
+      "value": 1.0
+    },
+    "literal_cue_contract": {
+      "numerator": 18,
+      "denominator": 18,
+      "value": 1.0
+    },
+    "point_in_declared_area": {
+      "numerator": 2,
+      "denominator": 2,
+      "value": 1.0
+    },
+    "publication_time_admission": {
+      "numerator": 12,
+      "denominator": 12,
+      "value": 1.0
+    },
+    "synthetic_projection_change_precision": {
+      "numerator": 12,
+      "denominator": 12,
+      "value": 1.0
+    },
+    "synthetic_projection_change_recall": {
+      "numerator": 12,
+      "denominator": 12,
+      "value": 1.0
+    },
+    "no_data_gap_classification": {
+      "numerator": 6,
+      "denominator": 6,
+      "value": 1.0
+    }
+  },
+  "by_domain_and_declared_depth": {
+    "company_policy/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "company_policy/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "company_policy/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "conflict/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "conflict/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "conflict/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "custom_area/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "custom_area/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "point_in_declared_area": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "custom_area/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "point_in_declared_area": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "cyber/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "cyber/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "cyber/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "disaster_humanitarian/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "disaster_humanitarian/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "disaster_humanitarian/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "economy/advanced": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    },
+    "economy/basic": {
+      "edition_changed_claims": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 2,
+        "denominator": 2,
+        "value": 1.0
+      },
+      "exact_excerpt_offsets": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "publication_time_admission": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      },
+      "no_data_gap_classification": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      }
+    },
+    "economy/deep": {
+      "edition_changed_claims": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_corrections": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_novel_evidence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_reasons": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_state": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "edition_syndication": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "exact_excerpt_presence": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "literal_cue_contract": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_precision": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "synthetic_projection_change_recall": {
+        "numerator": 1,
+        "denominator": 1,
+        "value": 1.0
+      },
+      "no_data_gap_classification": {
+        "numerator": 0,
+        "denominator": 0,
+        "value": null
+      }
+    }
+  },
+  "unmeasured": {
+    "required_question_coverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "No generated report is assessed in the contract track."
+    },
+    "curated_packet_retrieval_recall": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "Packets are supplied directly; no retrieval is run."
+    },
+    "passage_support": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "Literal presence does not establish semantic support."
+    },
+    "date_attribution_number_accuracy": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "Literal indicators do not measure factual accuracy."
+    },
+    "counterevidence_retention": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "No collection, selection or synthesis stage is run."
+    },
+    "appropriate_analytical_abstention": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "A coverage classification is not a written abstention."
+    },
+    "privacy_authorisation_budget_publication_invariants": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "Pure probes do not execute these paths."
+    },
+    "human_change_precision_recall": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null,
+      "reason": "No human-reviewed model edition output is available."
+    }
+  },
+  "execution": {
+    "python": "3.13.3",
+    "platform": "Windows",
+    "provider_requests": 0,
+    "model_calls": 0,
+    "external_cost_usd": 0,
+    "external_cost_basis": "known_zero_no_external_calls",
+    "elapsed_ms": 1.7181998118758202
+  },
+  "limitations": [
+    "All evidence and reference expectations are synthetic and assistant-authored.",
+    "Declared depth groups describe scenarios; no depth-specific planning or model is run.",
+    "Change metrics test frozen structured projections, not semantic extraction or truth.",
+    "Local function timing excludes acquisition, models, persistence and UI latency.",
+    "The same assistant authored both splits. Held-out cases are visible regression fixtures, not blind evaluation, independent labels or previously unseen production scenarios. Do not tune production policy against their expected outcomes."
+  ],
+  "cases": [
+    {
+      "case_id": "conflict_01",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.053000025218352675,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_02",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.006099988240748644,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_03",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.076299998909235,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_04",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.043400010326877236,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_05",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.03989998367615044,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_06",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.015700003132224083,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_07",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.07589999586343765,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "no_new_relevant_captured_evidence",
+          "actual": "no_new_relevant_captured_evidence",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "adequate_coverage_no_new_evidence",
+            "syndicated_duplicates_only"
+          ],
+          "actual": [
+            "adequate_coverage_no_new_evidence",
+            "syndicated_duplicates_only"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_08",
+      "domain": "conflict",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.04270000499673188,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_09",
+      "domain": "conflict",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.041799998143687844,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "conflict_10",
+      "domain": "conflict",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.03239998477511108,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_01",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.023100001271814108,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_02",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.0026999914553016424,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_03",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.04849999095313251,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_04",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.03969998215325177,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_05",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.039000005926936865,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_06",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.009700015652924776,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_07",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.03359999391250312,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "no_new_relevant_captured_evidence",
+          "actual": "no_new_relevant_captured_evidence",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "adequate_coverage_no_new_evidence",
+            "syndicated_duplicates_only"
+          ],
+          "actual": [
+            "adequate_coverage_no_new_evidence",
+            "syndicated_duplicates_only"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_08",
+      "domain": "cyber",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.028399983420968056,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_09",
+      "domain": "cyber",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.024899985874071717,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "cyber_10",
+      "domain": "cyber",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.02579999272711575,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "economy_01",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.016399979358538985,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_02",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.0020999868866056204,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_03",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.04650000482797623,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_04",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.039700011257082224,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_05",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.03659998765215278,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_06",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.008800008799880743,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "economy_07",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.028300011763349175,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "no_new_relevant_captured_evidence",
+          "actual": "no_new_relevant_captured_evidence",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "adequate_coverage_no_new_evidence"
+          ],
+          "actual": [
+            "adequate_coverage_no_new_evidence"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "economy_08",
+      "domain": "economy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.027000001864507794,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "economy_09",
+      "domain": "economy",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.025900022592395544,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "economy_10",
+      "domain": "economy",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.02260002656839788,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_01",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.01559997326694429,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_02",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.0018999853637069464,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_03",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.04379998426884413,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_04",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.037299992982298136,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_05",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.033499993151053786,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_06",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.012699980288743973,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_07",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.03200001083314419,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "new_evidence_broadly_unchanged_assessment",
+          "actual": "new_evidence_broadly_unchanged_assessment",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence"
+          ],
+          "actual": [
+            "new_relevant_evidence"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p3"
+          ],
+          "actual": [
+            "p3"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_08",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.025299988919869065,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_09",
+      "domain": "disaster_humanitarian",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.02509998739697039,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "disaster_humanitarian_10",
+      "domain": "disaster_humanitarian",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.022199994418770075,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_01",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.015700003132224083,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_02",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.001900014467537403,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_03",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.04509999416768551,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_04",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.0337999954354018,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_05",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.041799998143687844,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_06",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.008399976650252938,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_07",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.031000003218650818,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "new_evidence_broadly_unchanged_assessment",
+          "actual": "new_evidence_broadly_unchanged_assessment",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence"
+          ],
+          "actual": [
+            "new_relevant_evidence"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p3"
+          ],
+          "actual": [
+            "p3"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_08",
+      "domain": "company_policy",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.02710000262595713,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_09",
+      "domain": "company_policy",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.023600005079060793,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "company_policy_10",
+      "domain": "company_policy",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.0213000166695565,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_01",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.02269999822601676,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "exact_excerpt_offsets",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "point_in_declared_area",
+          "passed": true,
+          "expected": true,
+          "actual": true,
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_02",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.007099995855242014,
+      "checks": [
+        {
+          "contract": "exact_excerpt_presence",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        },
+        {
+          "contract": "point_in_declared_area",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_03",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.04569999873638153,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "date_mismatch"
+          ],
+          "actual": [
+            "date_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_04",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.04199999966658652,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [
+            "negation_mismatch"
+          ],
+          "actual": [
+            "negation_mismatch"
+          ],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_05",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.03199998172931373,
+      "checks": [
+        {
+          "contract": "literal_cue_contract",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_06",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.008400005754083395,
+      "checks": [
+        {
+          "contract": "publication_time_admission",
+          "passed": true,
+          "expected": false,
+          "actual": false,
+          "packet_id": "p1"
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_07",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.03309999010525644,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "new_evidence_broadly_unchanged_assessment",
+          "actual": "new_evidence_broadly_unchanged_assessment",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence"
+          ],
+          "actual": [
+            "new_relevant_evidence"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p3"
+          ],
+          "actual": [
+            "p3"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_08",
+      "domain": "custom_area",
+      "split": "development",
+      "requested_depth": "deep",
+      "passed": true,
+      "elapsed_ms": 0.02759997732937336,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "significant_contradiction_or_correction",
+          "actual": "significant_contradiction_or_correction",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "actual": [
+            "new_relevant_evidence",
+            "source_correction",
+            "support_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [
+            "p2"
+          ],
+          "actual": [
+            "p2"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_09",
+      "domain": "custom_area",
+      "split": "held_out",
+      "requested_depth": "advanced",
+      "passed": true,
+      "elapsed_ms": 0.022899999748915434,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "assessment_changed",
+          "actual": "assessment_changed",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "likelihood_changed"
+          ],
+          "actual": [
+            "likelihood_changed"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [
+            "assessment"
+          ],
+          "actual": [
+            "assessment"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    },
+    {
+      "case_id": "custom_area_10",
+      "domain": "custom_area",
+      "split": "held_out",
+      "requested_depth": "basic",
+      "passed": true,
+      "elapsed_ms": 0.021099986042827368,
+      "checks": [
+        {
+          "contract": "edition_state",
+          "passed": true,
+          "expected": "insufficient_coverage",
+          "actual": "insufficient_coverage",
+          "packet_id": null
+        },
+        {
+          "contract": "edition_reasons",
+          "passed": true,
+          "expected": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "actual": [
+            "coverage_inadequate",
+            "provider_outage"
+          ],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_changed_claims",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_corrections",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_novel_evidence",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        },
+        {
+          "contract": "edition_syndication",
+          "passed": true,
+          "expected": [],
+          "actual": [],
+          "packet_id": null
+        }
+      ]
+    }
+  ]
+}

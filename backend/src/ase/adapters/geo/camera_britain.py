@@ -61,6 +61,7 @@ JPEG_B64 = re.compile(rb"data:image/jpeg;base64,([A-Za-z0-9+/=]{64,})")
 FRAME_TTL_SECONDS = 45.0
 FRAME_MAX_BYTES = 2 * 1024 * 1024
 FRAME_CACHE_SIZE = 512
+INDEX_RETRY_SECONDS = 60.0
 
 
 def frame_path(sid: str) -> str:
@@ -129,18 +130,35 @@ class TrafficScotlandSource:
         self._known: frozenset[str] = frozenset()
         self._frames: OrderedDict[str, tuple[float, bytes]] = OrderedDict()
         self._limit = asyncio.Semaphore(2)
+        self._index_lock = asyncio.Lock()
+        self._index_failed_at: float | None = None
 
     async def fetch(self) -> tuple[Camera, ...]:
         payload = await self._http.get_bytes(INDEX, conditional=False, max_redirects=0)
         cameras = parse_scotland(payload)
         self._known = frozenset(camera.id.split(":", 1)[1] for camera in cameras)
+        self._index_failed_at = None
         return cameras
+
+    async def _load_index_for_frames(self) -> None:
+        """One shared index load for concurrent frame requests, then a cooldown after failure."""
+        async with self._index_lock:
+            if self._known:
+                return
+            failed_at = self._index_failed_at
+            if failed_at is not None and self._clock() - failed_at < INDEX_RETRY_SECONDS:
+                raise ValueError("Traffic Scotland camera index is temporarily unavailable")
+            try:
+                await self.fetch()
+            except Exception:
+                self._index_failed_at = self._clock()
+                raise
 
     async def frame(self, frame_id: str) -> bytes | None:
         if SID.fullmatch(frame_id) is None:
             return None
         if not self._known:
-            await self.fetch()
+            await self._load_index_for_frames()
         if frame_id not in self._known:
             return None
         now = self._clock()

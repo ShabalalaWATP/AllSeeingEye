@@ -55,7 +55,8 @@ it('saves monthly multi-country research with a two-year lookback, web search an
   expect(form.getByText(/For short months/)).toBeVisible();
   await user.clear(form.getByLabelText('Look back, days'));
   await user.type(form.getByLabelText('Look back, days'), '731');
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
+  expect(form.getByText(/Search period: Choose a search period within two years/)).toBeVisible();
   await user.clear(form.getByLabelText('Look back, days'));
   await user.type(form.getByLabelText('Look back, days'), '730');
   await user.click(form.getByRole('checkbox', { name: /^Include a fresh web search/ }));
@@ -92,13 +93,17 @@ it('pauses and resumes without losing saved countries, source choices or the mon
     research_source_ids: ['source-1'],
     window_hours: 17520,
   };
-  const updates: unknown[] = [];
+  const transitions: boolean[] = [];
   server.use(
     http.get('/api/schedules', () => HttpResponse.json({ items: [current] })),
-    http.put('/api/schedules/:id', async ({ request }) => {
-      const body = (await request.json()) as typeof current;
-      updates.push(body);
-      current = { ...current, ...body };
+    http.post('/api/schedules/:id/pause', () => {
+      current = { ...current, enabled: false };
+      transitions.push(current.enabled);
+      return HttpResponse.json(current);
+    }),
+    http.post('/api/schedules/:id/resume', () => {
+      current = { ...current, enabled: true };
+      transitions.push(current.enabled);
       return HttpResponse.json(current);
     }),
   );
@@ -109,15 +114,12 @@ it('pauses and resumes without losing saved countries, source choices or the mon
   expect(await table.findByText('Paused')).toBeVisible();
   await user.click(table.getByRole('button', { name: 'Resume' }));
   await table.findByRole('button', { name: 'Pause' });
-  expect(updates).toHaveLength(2);
-  for (const update of updates)
-    expect(update).toMatchObject({
-      country_isos: ['UA', 'GB'],
-      monthday: 31,
-      research_web_search: true,
-      research_source_ids: ['source-1'],
-      window_hours: 17520,
-    });
-  expect(updates[0]).toHaveProperty('enabled', false);
-  expect(updates[1]).toHaveProperty('enabled', true);
+  expect(transitions).toEqual([false, true]);
+  expect(current).toMatchObject({
+    country_isos: ['UA', 'GB'],
+    monthday: 31,
+    research_web_search: true,
+    research_source_ids: ['source-1'],
+    window_hours: 17520,
+  });
 });

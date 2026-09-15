@@ -1,7 +1,6 @@
 """Run explicit live search with the destination's immutable direction profile."""
 
 import asyncio
-import json
 import time
 from dataclasses import replace
 
@@ -18,12 +17,23 @@ from ase.application.ports.web_search import (
     WebSearchRequest,
     WebSearchUsageSink,
 )
+from ase.application.report_jobs.budget import JobBudgetExhausted
+from ase.application.report_jobs.fresh_web_allocation import validate_web_discovery_plan
+from ase.application.reports.fresh_web_context import web_query_context
 from ase.application.reports.production_types import Job, ProfileLookup, Totals
 from ase.domain.errors import EncryptionUnavailable
 from ase.domain.llm import LlmProfile, LlmProvider, LlmRole, LlmUsage
 from ase.domain.research import ResearchFocus, ResearchQuery
 from ase.domain.validation import Finding, Severity
-from ase.domain.web_research import WEB_SOURCE_ID, WebResearchRecord
+from ase.domain.web_research import (
+    WEB_ALLOCATED_OUTPUT_TOKENS,
+    WEB_ALLOCATED_REQUESTS,
+    WEB_ALLOCATED_SECONDS,
+    WEB_ALLOCATED_TOOL_CALLS,
+    WEB_ALLOCATION_POLICY,
+    WEB_SOURCE_ID,
+    WebResearchRecord,
+)
 
 
 class FreshWebResearch:
@@ -35,11 +45,16 @@ class FreshWebResearch:
         limiter: RateLimiter,
         usage_sink: WebSearchUsageSink | None = None,
         ai_usage: AiUsageAccounting | None = None,
+        *,
+        allocation_plan: object | None = None,
     ) -> None:
         self._gateway, self._admission = gateway, admission
         self._clock, self._limiter = clock, limiter
         self._usage_sink = usage_sink
         self._ai_usage = ai_usage
+        self._allocated = (
+            validate_web_discovery_plan(allocation_plan) if allocation_plan is not None else None
+        )
 
     async def collect(
         self,
@@ -50,7 +65,16 @@ class FreshWebResearch:
         profile_for: ProfileLookup,
     ) -> WebResearchRecord:
         record = WebResearchRecord(
-            "not_collected", "Fresh web search was not selected.", self._clock.now()
+            "not_collected",
+            "Fresh web search was not selected.",
+            self._clock.now(),
+            allocation_version=WEB_ALLOCATION_POLICY if self._allocated is not None else None,
+            allocated_requests=WEB_ALLOCATED_REQUESTS if self._allocated is not None else 0,
+            allocated_tool_calls=WEB_ALLOCATED_TOOL_CALLS if self._allocated is not None else 0,
+            allocated_seconds=WEB_ALLOCATED_SECONDS if self._allocated is not None else 0,
+            allocated_output_tokens=(
+                WEB_ALLOCATED_OUTPUT_TOKENS if self._allocated is not None else 0
+            ),
         )
         prepared = await self._profile(query, profile_for, record)
         if isinstance(prepared, WebResearchRecord):
@@ -78,7 +102,7 @@ class FreshWebResearch:
                     team_id=job.request.team_id,
                     profile_id=profile.id,
                 )
-            async with asyncio.timeout(90):
+            async with asyncio.timeout(WEB_ALLOCATED_SECONDS):
                 result = await gateway.search(
                     key,
                     profile.model,
@@ -108,6 +132,17 @@ class FreshWebResearch:
             async with self._admission.guard():
                 if not await self._admission.enabled(WEB_SOURCE_ID):
                     record = self._disabled(record)
+        except JobBudgetExhausted:
+            return replace(
+                record,
+                status="not_collected",
+                explanation=(
+                    "The frozen fresh-web discovery allowance was exhausted before dispatch."
+                    if self._allocated is not None
+                    else "The report's model-call allowance was exhausted before web dispatch."
+                ),
+                retrieved_at=self._clock.now(),
+            )
         except (WebSearchError, TimeoutError) as exc:
             timeout = isinstance(exc, TimeoutError) or "deadline" in str(exc)
             record = replace(
@@ -202,7 +237,7 @@ class FreshWebResearch:
         cipher: SecretCipher,
         record: WebResearchRecord,
     ) -> tuple[str, str] | WebResearchRecord:
-        context = self._context(query)
+        context = web_query_context(query)
         if context is None:
             return replace(
                 record,
@@ -252,26 +287,6 @@ class FreshWebResearch:
                 "The administrator disabled fresh web search. No web context was admitted."
             ),
         )
-
-    @staticmethod
-    def _context(query: ResearchQuery) -> str | None:
-        area = query.area.geometry.to_collection() if query.area else None
-        context = json.dumps(
-            {
-                "question": query.question,
-                "subject": query.subject,
-                "countries": query.country_isos,
-                "languages": query.languages,
-                "since_inclusive": query.since.isoformat(),
-                "until_exclusive": query.until.isoformat(),
-                "area_geojson": area,
-                "scope_notice": (
-                    "Search scope only; dates and spatial matches require verification."
-                ),
-            },
-            ensure_ascii=False,
-        )
-        return context if len(context) <= 12000 else None
 
     async def _account(
         self, job: Job, profile: LlmProfile, totals: Totals, record: WebResearchRecord

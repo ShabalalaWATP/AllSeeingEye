@@ -9,6 +9,7 @@ from ase.application.ai_usage_gateway import AllowanceLlmGateway, AllowanceWebSe
 from ase.application.ports.llm import LlmGateway
 from ase.application.ports.web_search import WebSearchGateway, WebSearchRequest, WebSearchResult
 from ase.application.report_jobs.budget import ReportCallBudget
+from ase.application.report_jobs.stage_reservations import ModelStage
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmRequest, LlmResult
 
@@ -29,8 +30,11 @@ def _hash_request(values: Mapping[str, Any]) -> str:
 
 
 class BudgetedLlmGateway:
-    def __init__(self, gateway: LlmGateway, budget: ReportCallBudget) -> None:
+    def __init__(
+        self, gateway: LlmGateway, budget: ReportCallBudget, *, stage: ModelStage | None = None
+    ) -> None:
         self._gateway, self._budget = gateway, budget
+        self._stage = stage
 
     async def complete(
         self, base_url: str, api_key: str, model: str, request: LlmRequest
@@ -64,6 +68,7 @@ class BudgetedLlmGateway:
             model=model,
             reserved_output=request.max_output_tokens,
             invoke=lambda: self._gateway.complete(base_url, api_key, model, request),
+            stage=self._stage,
         )
 
 
@@ -87,4 +92,5 @@ class BudgetedWebSearchGateway:
             model=model,
             reserved_output=request.max_output_tokens,
             invoke=lambda: self._gateway.search(api_key, model, request),
+            stage=ModelStage.FRESH_WEB,
         )

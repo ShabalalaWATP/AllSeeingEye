@@ -10,6 +10,7 @@ from ase.application.dto import RequestContext
 from ase.application.model_routing import ModelRouting
 from ase.application.ports.feeds import EventQuery
 from ase.application.reports.request import ReportRequest
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmConnectionBinding, LlmResult, LlmRole, ReasoningEffort
 from ase.domain.schedules import Schedule
@@ -181,10 +182,11 @@ async def test_schedule_uses_its_own_team_and_shared_translation_uses_global(
         now,
         team_id=first.id,
     )
-    report_id = await container.schedule_report(schedule)
-    assert {call[0] for call in gateway.calls} == {values[1].model}
     async with container.session_factory() as session:
-        record = await container.repositories(session).reports.get(report_id)
+        record, _ = await container.generate_report(session).execute(
+            user, scheduled_report_request(schedule), RequestContext()
+        )
+    assert {call[0] for call in gateway.calls} == {values[1].model}
     assert record.team_id == first.id
     assert (await container._translation_profile()).id == values[0].id
 

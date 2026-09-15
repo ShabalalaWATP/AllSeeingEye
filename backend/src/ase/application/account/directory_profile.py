@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any
 
-from sqlalchemy.exc import IntegrityError
-
 from ase.application.auditing import Auditor
 from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims, RequestContext
@@ -81,11 +79,8 @@ class DirectoryProfileUseCase:
             raise InvalidRequest("Invalid directory profile") from exc
         try:
             await self._profiles.save(profile)
-        except IntegrityError as exc:
+        except UsernameTaken:
             await self._uow.rollback()
-            # Do not surface database constraint text, which can disclose schema details.
-            if "username" in str(exc.orig).lower():
-                raise UsernameTaken() from None
             raise
         await self._auditor.record(
             AuditAction.DIRECTORY_PROFILE_UPDATED,

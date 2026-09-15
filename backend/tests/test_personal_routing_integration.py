@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from ase.application.dto import RequestContext
 from ase.application.reports.request import ReportRequest
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.domain.llm import LlmConnectionBinding, LlmResult
 from ase.domain.schedules import Schedule
 from test_claim_repository import seed
@@ -75,7 +76,12 @@ async def test_personal_schedule_and_shared_translation_are_isolated(container, 
     )
     for team_id, expected in ((None, person), (first.id, values[1]), (second.id, values[0])):
         container.llm = gateway = Gateway()
-        await container.schedule_report(replace(schedule, id=uuid4(), team_id=team_id))
+        async with container.session_factory() as session:
+            await container.generate_report(session).execute(
+                user,
+                scheduled_report_request(replace(schedule, id=uuid4(), team_id=team_id)),
+                RequestContext(),
+            )
         assert {call[0] for call in gateway.calls} == {expected.model}
     assert (await container._translation_profile()).id == values[0].id
 

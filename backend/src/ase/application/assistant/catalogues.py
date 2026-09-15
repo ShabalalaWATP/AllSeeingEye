@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from typing import Any
 
+from ase.application.assistant.doctrine_references import DOCTRINE_REFERENCES
 from ase.application.assistant.intent import QuestionIntent
 from ase.application.assistant.sources import safe_source_url
 from ase.application.cameras import CameraCatalogueService
@@ -14,47 +15,6 @@ from ase.domain.users import User
 
 CATALOGUE_LIMIT = 100
 
-DOCTRINE_REFERENCES = (
-    (
-        "phia-uncertainty-2025",
-        "UK PHIA: Explaining Uncertainty in Intelligence Assessment",
-        "https://www.gov.uk/government/publications/explaining-uncertainty-in-uk-intelligence-assessment/explaining-uncertainty-in-uk-intelligence-assessment",
-        "The UK PHIA guidance separates an assessed proposition's likelihood from "
-        "analytical confidence in the foundations of that judgement. The Probability "
-        "Yardstick supplies standard likelihood language; confidence describes the "
-        "information base, rigour, and complexity or volatility.",
-        "UK Crown copyright 2025; Open Government Licence v3.0, except where otherwise stated.",
-    ),
-    (
-        "phia-standards-2025",
-        "UK PHIA: Common Analytical Standards",
-        "https://www.gov.uk/government/publications/phia-common-analytical-standards/phia-common-analytical-standards",
-        "The public UK standards call for clear, auditable and objective assessment, "
-        "including testing alternative explanations and describing uncertainty or "
-        "information gaps. They are guidance for analytical practice, not evidence "
-        "that a particular event occurred.",
-        "UK Crown copyright 2025; Open Government Licence v3.0, except where otherwise stated.",
-    ),
-    (
-        "uk-mod-jdp-2-00",
-        "UK MOD JDP 2-00: Understanding and Intelligence Support to Joint Operations",
-        "https://www.gov.uk/government/publications/jdp-2-00-understanding-and-intelligence-support-to-joint-operations",
-        "Public UK MOD doctrine catalogue reference for intelligence support to joint "
-        "operations. Consult the linked publication for its actual edition and text; "
-        "Ask Eye does not ingest or reproduce the PDF.",
-        "UK MOD publication metadata and link only; no doctrine text is ingested.",
-    ),
-    (
-        "nato-ajp-2-9-catalogue",
-        "NATO AJP-2.9: Allied Joint Doctrine for Open Source Intelligence",
-        "https://www.gov.uk/government/collections/allied-joint-publication-ajp",
-        "Public catalogue reference for NATO open source intelligence doctrine. Check the "
-        "catalogue for the current edition and access conditions. This app does not "
-        "reproduce the doctrine or claim NATO accreditation.",
-        "Public catalogue link only; no doctrine text is ingested.",
-    ),
-)
-
 
 def doctrine_sources(question: AssistantQuestion, intent: QuestionIntent) -> list[AssistantSource]:
     """Expose short, attributed public methodology records only for doctrine questions."""
@@ -65,7 +25,8 @@ def doctrine_sources(question: AssistantQuestion, intent: QuestionIntent) -> lis
     if question.bbox or question.time_range or intent.time_range:
         return []
     rows = []
-    for identifier, title, url, summary, licence in DOCTRINE_REFERENCES:
+    for reference in DOCTRINE_REFERENCES:
+        identifier = reference.identifier
         if "phia" in intent.topics and not identifier.startswith("phia"):
             continue
         if "yardstick" in intent.topics and identifier != "phia-uncertainty-2025":
@@ -75,15 +36,25 @@ def doctrine_sources(question: AssistantQuestion, intent: QuestionIntent) -> lis
             kind="doctrine",
             record_id=identifier,
             source_id=f"doctrine:{identifier}",
-            title=title,
-            url=url,
+            title=reference.title,
+            url=reference.url,
             published_at=None,
             observed_at=None,
             point=None,
             grade=None,
-            summary=summary,
-            details=(licence, "Methodology reference, not event evidence."),
-            publisher="UK Government" if identifier.startswith(("phia", "uk-mod")) else "NATO",
+            summary=reference.summary,
+            details=(
+                f"Edition: {reference.edition}; version: {reference.version or 'not verified'}. "
+                f"Publication date ({reference.date_basis}): {reference.publication_date}.",
+                f"Reference checked {reference.retrieved_on.isoformat()}; "
+                f"verification scope: {reference.verification_scope}; "
+                f"catalogue publisher: {reference.catalogue_publisher}.",
+                reference.access_note,
+                f"Short public excerpt ({reference.excerpt.locator}): {reference.excerpt.text}",
+                reference.excerpt.reuse_basis,
+                "Methodology reference, not event evidence.",
+            ),
+            publisher=reference.publisher,
         )
         if intent.accepts("doctrine", source):
             rows.append(source)

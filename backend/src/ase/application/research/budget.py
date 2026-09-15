@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from math import isfinite
 
+from ase.application.research.source_allocation_types import DEPTH_CAPS
 from ase.domain.research import ResearchMode
 from ase.domain.research_capacity import MAX_COLLECTION_ITEMS, MAX_COLLECTION_REQUESTS
 
@@ -41,14 +42,34 @@ class CollectionBudget:
             return cls(requests=24, seconds=180, per_request_seconds=20, items=800)
         return cls(requests=6, seconds=45, per_request_seconds=12, items=200)
 
+    @classmethod
+    def for_initial_mode(cls, mode: ResearchMode) -> "CollectionBudget":
+        """Initial acquisition cap with post-draft time, calls and items reserved."""
+        total, challenge, seconds, _challenge_seconds, items, _challenge_items = DEPTH_CAPS[mode]
+        return cls(
+            requests=total - challenge,
+            seconds=seconds,
+            per_request_seconds=20 if mode is not ResearchMode.QUICK else 12,
+            items=items,
+        )
+
+    @classmethod
+    def for_challenge_mode(cls, mode: ResearchMode) -> "CollectionBudget | None":
+        """Separate post-draft cap; Basic has no new source challenge pass."""
+        _total, requests, _seconds, seconds, _items, items = DEPTH_CAPS[mode]
+        if not requests:
+            return None
+        return cls(requests=requests, seconds=seconds, per_request_seconds=20, items=items)
+
 
 class CollectionRunBudget:
     """Run-local accounting, never reusable across independent research runs.
 
-    Construct immediately before the initial collection pass. Time between passes
-    consumes this deadline too. Retain only IDs here; returned batches own the data.
+    Construct immediately before the initial collection pass. Only active
+    acquisition phases spend collection time; drafting or queue delays do not.
+    Retain only IDs here; returned batches own the data.
     Passes must run serially and request cancellation does not refund admission.
-    The optional monotonic clock supports deterministic deadline tests.
+    The optional monotonic clock supports deterministic phase-time tests.
     """
 
     def __init__(
@@ -56,7 +77,8 @@ class CollectionRunBudget:
     ) -> None:
         self._limits = limits
         self._clock = clock or asyncio.get_running_loop().time
-        self._deadline = self._clock() + limits.seconds
+        self._active_seconds = 0.0
+        self._active_since: float | None = None
         self._requests = 0
         self._retained_ids: set[str] = set()
         self._active = False
@@ -83,16 +105,23 @@ class CollectionRunBudget:
 
     @property
     def remaining_seconds(self) -> float:
-        return max(0.0, self._deadline - self._clock())
+        current_phase = (
+            max(0.0, self._clock() - self._active_since) if self._active_since is not None else 0.0
+        )
+        return max(0.0, self._limits.seconds - self._active_seconds - current_phase)
 
     @contextmanager
     def pass_scope(self) -> Iterator[None]:
         if self._active:
             raise ValueError("Collection passes sharing a run budget must be serial")
         self._active = True
+        self._active_since = self._clock()
         try:
             yield
         finally:
+            if self._active_since is not None:
+                self._active_seconds += max(0.0, self._clock() - self._active_since)
+                self._active_since = None
             self._active = False
 
     def admit(self) -> float | None:

@@ -170,6 +170,7 @@ class ResearchBatch:
     attempts: tuple[CollectionAttempt, ...] = ()
     plan: ResearchPlan | None = None
     passes: tuple[CollectionPass, ...] = ()
+    effective_query: ResearchQuery | None = None
 
     def __post_init__(self) -> None:
         if len(self.passes) > 2:

@@ -36,7 +36,7 @@ def scheduled_report_request(schedule: Schedule) -> ReportRequest:
         hazard=schedule.hazard,
         research_area=schedule.research_area,
         disclose_area_to_provider=schedule.disclose_area_to_provider,
-        subscription_previous_report_id=(schedule.baseline_report_id or schedule.last_report_id)
+        subscription_previous_report_id=schedule.baseline_report_id
         if schedule.avoid_repetition
         else None,
         subscription_seen_signatures=schedule.seen_content_signatures

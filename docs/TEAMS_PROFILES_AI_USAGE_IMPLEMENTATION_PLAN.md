@@ -202,7 +202,7 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | --- | --- | --- |
 | T00 | None | **Implemented.** Inventory, baseline and successor authority ADR completed. |
 | T01 | T00 | **Implemented.** Membership-only management, atomic team creation, last-Manager and protected-Administrator rules are covered by race and negative-permission tests. |
-| T02 | T01 | **Implemented.** Migration `0040` converts legacy global Manager accounts to User, bumps security versions to expire old sessions, preserves team-manager memberships, and the administrator role picker no longer offers a new global Manager role. |
+| T02 | T01 | **Implemented.** Migration `0050` converts legacy global Manager accounts to User, bumps security versions to expire old sessions, preserves team-manager memberships, and the administrator role picker no longer offers a new global Manager role. |
 | T03 | T01 | **Implemented for the current slice.** Self-leave, archive effects, direct membership controls, directory-backed invitations, withdrawal, acceptance/decline and invitation audit coverage are implemented. Broader deactivation reconciliation remains. |
 | P01 | T00 | **Partial.** Profile validation, directory visibility, unique handles and bounded discovery are implemented. Avatar processing remains pending because no safe existing asset pipeline is available. |
 | P02 | T03, P01 | **Implemented for the current slice.** Profile editor, roster controls, directory people picker and invitation inbox are wired with privacy-safe responses. Avatar processing remains outside the available asset pipeline. |
@@ -258,7 +258,7 @@ Release complete means ordinary users can create and manage teams, invite people
 - **Branch and safety:** created `codex/teams-profiles-ai-usage` in
   `C:\AlexDev\OSINT-teams-profiles`, leaving the user's `main` checkout and Claude's
   working tree untouched. No commit or push was made.
-- **T00/T01:** added [ADR 0016](adr/0016-team-self-service-authority.md), migrated
+- **T00/T01:** added [ADR 0018](adr/0018-team-self-service-authority.md), migrated
   team descriptions and creator memberships, and enforced current membership
   authority, protected Administrators and the final active Manager invariant.
   Focused team/API/race/migration tests passed.
@@ -287,7 +287,7 @@ Release complete means ordinary users can create and manage teams, invite people
   Managers retain the bounded direct-add path for known active accounts, while the
   invitation journey handles directory discovery and consent.
 - **T03 safety controls:** bounded active team creation to five teams per account and
-  team rosters to 100 members. Migration `0041` adds database uniqueness for active
+  team rosters to 100 members. Migration `0051` adds database uniqueness for active
   allowance targets so concurrent administrator edits cannot create duplicate policies.
 - **Q03:** added allowance decorators to the interactive and queued report paths,
   native web discovery, automatic claim proposals and photo analysis. The wrapper

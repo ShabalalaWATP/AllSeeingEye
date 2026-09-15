@@ -16,6 +16,7 @@ from ase.domain.research import ResearchQuery
 from ase.domain.research_records import ResearchReceipt
 from ase.domain.web_research import WEB_SOURCE_ID, WebCitation, WebResearchRecord
 from feeds_helpers import NOW
+from report_documents_helpers import document_records
 from report_job_helpers import job
 from report_job_snapshot_helpers import fixture_evidence
 
@@ -80,6 +81,15 @@ async def test_source_checks_cover_both_frozen_and_collected_items_without_dupli
     await check_sources(container, stored)
     identifiers = container.source_admission.enabled_many.await_args.args[0]
     assert set(identifiers) == {"first", "second"} and len(identifiers) == 2
+
+
+async def test_disabled_baseline_source_blocks_reusing_a_scheduled_comparison():
+    _, baseline = document_records()
+    blocked = baseline.evidence[0].source_id
+    container = host(blocked)
+    with pytest.raises(ReportJobSourceDisabled):
+        await check_sources(container, saved(), baseline)
+    assert blocked in container.source_admission.enabled_many.await_args.args[0]
 
 
 async def test_disabled_fresh_web_blocks_reusing_saved_synthesis_even_without_evidence():

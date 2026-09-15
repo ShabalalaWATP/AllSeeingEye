@@ -2,6 +2,7 @@
 
 import asyncio
 from contextlib import suppress
+from dataclasses import replace
 from datetime import timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -9,13 +10,21 @@ from uuid import UUID, uuid4
 import structlog
 
 from ase.adapters.persistence.report_jobs import SqlReportJobRepository
+from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
+from ase.adapters.persistence.subscription_retry_attempts import (
+    reconcile_stopped_attempts,
+    start_attempt,
+)
 from ase.application.report_jobs.budget import JobBudgetExhausted, JobInterrupted
 from ase.application.reports.sections import SectionIncomplete
 from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_execution import already_published, execute_job
 from ase.container.report_job_gate import ReportJobChanged, ReportJobSourceDisabled
+from ase.container.subscription_retry_orchestration import SubscriptionRetryOrchestrator
 from ase.domain.errors import Forbidden, NoModelAvailable, NotFound, Unauthenticated
 from ase.domain.report_jobs import ReportJob
+from ase.domain.subscription_editions import EditionWorkflow
+from ase.domain.subscription_monthly_budget import MonthlyBudgetExhausted
 
 if TYPE_CHECKING:
     from ase.container import Container
@@ -31,6 +40,7 @@ def failure_code(error: BaseException) -> str:
         return "section_" + error.reason
     mappings: tuple[tuple[tuple[type[BaseException], ...], str], ...] = (
         ((JobBudgetExhausted,), "budget_exhausted"),
+        ((MonthlyBudgetExhausted,), "monthly_budget_exhausted"),
         ((ReportJobChanged, NoModelAvailable), "model_changed"),
         ((ReportJobSourceDisabled,), "source_disabled"),
         ((Unauthenticated, Forbidden, NotFound), "access_changed"),
@@ -44,6 +54,7 @@ def failure_code(error: BaseException) -> str:
 class ReportJobWorker:
     def __init__(self, container: "Container") -> None:
         self.container = container
+        self._retry = SubscriptionRetryOrchestrator(container)
         self._running: dict[UUID, tuple[UUID, asyncio.Task[None]]] = {}
         self._loop: asyncio.Task[None] | None = None
 
@@ -87,8 +98,14 @@ class ReportJobWorker:
                 self._running.pop(key, None)
         async with self.container.session_factory() as session:
             repo = SqlReportJobRepository(session)
-            await repo.recover_expired(self.container.clock.now())
+            now = self.container.clock.now()
+            await repo.recover_expired(now)
+            await self._retry.recover_expired_editions(session, now)
+            await reconcile_stopped_attempts(session, now)
             await session.commit()
+        await self._retry.resume_due()
+        async with self.container.session_factory() as session:
+            repo = SqlReportJobRepository(session)
             available = await repo.queued(limit=CONCURRENCY)
         for key in available:
             if len(self._running) >= CONCURRENCY:
@@ -97,8 +114,12 @@ class ReportJobWorker:
                 continue
             async with self.container.session_factory() as session:
                 repo = SqlReportJobRepository(session)
+                editions = SqlSubscriptionEditionRepository(session)
                 stored = await repo.get(key)
                 if stored is None or stored.status != "queued":
+                    continue
+                edition = await editions.get_by_job(key)
+                if edition is not None and edition.workflow is not EditionWorkflow.QUEUED:
                     continue
                 token, now = uuid4(), self.container.clock.now()
                 claimed = await repo.claim(
@@ -108,6 +129,20 @@ class ReportJobWorker:
                     now=now,
                     lease_until=now + timedelta(seconds=LEASE_SECONDS),
                 )
+                if claimed is not None and edition is not None:
+                    advanced = await editions.advance(
+                        replace(
+                            edition,
+                            workflow=EditionWorkflow.RUNNING,
+                            updated_at=now,
+                            revision=edition.revision + 1,
+                        ),
+                        expected_revision=edition.revision,
+                    )
+                    if advanced is None:
+                        await session.rollback()
+                        continue
+                    await start_attempt(session, edition, claimed, now)
                 await session.commit()
             if claimed is not None:
                 self._running[key] = (token, asyncio.create_task(self.process(claimed)))
@@ -127,13 +162,17 @@ class ReportJobWorker:
             heartbeat.cancel()
             await asyncio.gather(heartbeat, return_exceptions=True)
             try:
-                if not await already_published(self.container, stored.id):
-                    await self._pause(stored, failure_code(exc))
+                if await already_published(self.container, stored.id):
+                    await self._retry.finish_published_attempt(stored)
+                else:
+                    await self._retry.pause(stored, failure_code(exc), exc)
             except Exception:
                 # An expired lease is recovered as paused by the next queue pass.
                 log.warning(
                     "report_jobs.interruption_checkpoint_unavailable", job_id=str(stored.id)
                 )
+        else:
+            await self._retry.finish_published_attempt(stored)
         finally:
             heartbeat.cancel()
             await asyncio.gather(heartbeat, return_exceptions=True)
@@ -147,26 +186,3 @@ class ReportJobWorker:
             raise
         except Exception:
             work.cancel()
-
-    async def _pause(self, stored: ReportJob, code: str) -> None:
-        async with self.container.session_factory() as session:
-            repo = SqlReportJobRepository(session)
-            current = await repo.get(stored.id)
-            if (
-                current is None
-                or current.status != "running"
-                or current.lease_token is None
-                or current.lease_token != stored.lease_token
-            ):
-                return
-            await repo.checkpoint(
-                current.id,
-                expected_revision=current.revision,
-                lease_token=current.lease_token,
-                payload=current.payload,
-                stage="paused",
-                now=self.container.clock.now(),
-                status="paused",
-                error=code,
-            )
-            await session.commit()

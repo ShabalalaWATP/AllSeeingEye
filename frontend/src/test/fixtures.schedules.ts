@@ -36,5 +36,8 @@ export const schedule: Schedule = {
   next_run_at: '2026-09-06T06:00:00Z',
   last_run_at: '2026-09-05T06:00:00Z',
   last_report_id: '11111111-1111-4111-8111-111111111111',
+  last_version_id: '12121212-1212-4212-8212-121212121212',
+  last_outcome: 'ready',
+  last_coverage: 'complete',
   last_error: null,
 };

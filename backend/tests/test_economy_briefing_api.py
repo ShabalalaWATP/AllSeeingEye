@@ -215,6 +215,8 @@ async def test_economic_briefing_freezes_dated_context_and_collects_financial_ne
         )
     )
     monkeypatch.setattr(container.research, "collect", collect)
+    # Durable research jobs acquire sources through the checkpointed path.
+    monkeypatch.setattr(container.research, "collect_checkpointed", collect)
     await work(container)
     current = await stored(container, job_id)
     assert current.status in {"completed", "needs_review"}, (current.status, current.error)

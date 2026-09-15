@@ -11,6 +11,7 @@ from ase.application.ai_usage import AiReservationBatch, AiUsageAccounting, sett
 from ase.application.assistant.continuation import AssistantCapacity
 from ase.application.assistant.intent import interpret_question
 from ase.application.assistant.model import AssistantAnswerInvalid, answer_question
+from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.usage import save_usage
 from ase.application.model_routing import ModelRouting
@@ -29,6 +30,7 @@ from ase.domain.assistant import (
     AssistantModel,
     AssistantParagraph,
     AssistantQuestion,
+    AssistantReportContext,
 )
 from ase.domain.errors import InvalidRequest, RateLimited
 from ase.domain.events import Category
@@ -56,19 +58,30 @@ class MapAssistant:
         capacity: AssistantCapacity,
         record_usage: UsageRecorder,
         ai_usage: AiUsageAccounting | None = None,
+        report_reader: ReportContextReader | None = None,
     ) -> None:
         self.access, self.routing, self.retrieval = access, routing, retrieval
         self.admission, self.gateway, self.cipher = admission, gateway, cipher
         self.clock, self.limiter, self.uow = clock, limiter, uow
         self.capacity, self.record_usage = capacity, record_usage
         self.ai_usage = ai_usage
+        self.report_reader = report_reader
 
     async def _authorise(
-        self, actor: User, check_session: SessionCheck, *, final: bool = False
+        self,
+        actor: User,
+        check_session: SessionCheck,
+        *,
+        report: AssistantReportContext | None = None,
+        final: bool = False,
     ) -> None:
         try:
             access = await self.access.context(actor, for_update=final)
             access.require_create(None)
+            if report is not None:
+                if self.report_reader is None:
+                    raise InvalidRequest("Report Q&A is unavailable.")
+                await self.report_reader.require_current(actor, report)
             await check_session()
         finally:
             # No identity-map snapshot or account lock crosses a provider request.
@@ -76,9 +89,17 @@ class MapAssistant:
 
     async def _sources_enabled(self, context: AssistantContext) -> None:
         enabled = await self.admission.enabled_many(
-            tuple(dict.fromkeys(source.source_id for source in context.sources))
+            tuple(
+                dict.fromkeys(
+                    source.source_id for source in context.sources if source.kind != "report_claim"
+                )
+            )
         )
-        if not all(enabled.get(source.source_id, False) for source in context.sources):
+        if not all(
+            enabled.get(source.source_id, False)
+            for source in context.sources
+            if source.kind != "report_claim"
+        ):
             raise InvalidRequest(
                 "A source was disabled while answering. Ask again with current sources."
             )
@@ -105,14 +126,20 @@ class MapAssistant:
                         )
                 else:
                     previous = None
-                if previous and FOLLOWUP_REFERENCE.search(question.question):
+                if question.scope == "report":
+                    if self.report_reader is None:
+                        raise InvalidRequest("Report Q&A is unavailable.")
+                    context = await self.report_reader.collect(actor, question)
+                elif previous and FOLLOWUP_REFERENCE.search(question.question):
                     context = self._followup_context(previous, question)
                 else:
                     context = await self.retrieval.collect(actor, question, as_of=self.clock.now())
                 context = replace(context, as_of=self.clock.now())
                 if not context.sources:
                     async with self.admission.guard():
-                        await self._authorise(actor, check_session, final=True)
+                        await self._authorise(
+                            actor, check_session, report=context.report, final=True
+                        )
                     return AssistantAnswer(
                         (
                             AssistantParagraph(
@@ -227,7 +254,7 @@ class MapAssistant:
         try:
             async with self.admission.guard():
                 await self._sources_enabled(context)
-                await self._authorise(actor, check_session)
+                await self._authorise(actor, check_session, report=context.report)
             if self.ai_usage is not None:
                 ai_reservation = await self.ai_usage.reserve(
                     actor.id,
@@ -332,10 +359,12 @@ class MapAssistant:
         # Accounting can await storage. Nothing protected is released until all
         # permissions have been rechecked after that final asynchronous side effect.
         async with self.admission.guard():
-            await self._authorise(actor, check_session, final=True)
+            await self._authorise(actor, check_session, report=context.report, final=True)
             await self._sources_enabled(context)
             await check_session()
-            continuation_id = self.capacity.remember(actor, context, self.clock.now())
+            continuation_id = (
+                None if context.report else self.capacity.remember(actor, context, self.clock.now())
+            )
             return AssistantAnswer(
                 paragraphs,
                 context,

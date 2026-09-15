@@ -8,7 +8,7 @@ import httpx
 import pytest
 from httpx import AsyncClient
 
-from ase.adapters.research_inputs.memory import BoundedResearchInputStore
+from ase.adapters.research_inputs.memory import MAX_USER_SLOTS, BoundedResearchInputStore
 from ase.container import Container
 from ase.domain.users import User
 from helpers import CSRF_COOKIE, USER_EMAIL, USER_PASSWORD, FakeClock, bearer, login_token
@@ -135,8 +135,9 @@ async def test_pending_capacity_precedes_fetch_and_session_choices_are_private(
     reservations = []
     try:
         key = await selected(client, token)
-        for filename in ("one.txt", "two.txt"):
-            reservations.append(container.research_inputs.reserve(user, filename))
+        # Fill every per-user input slot so capacity refuses before the filing is fetched.
+        for index in range(MAX_USER_SLOTS):
+            reservations.append(container.research_inputs.reserve(user, f"held-{index}.txt"))
         response = await client.post(f"{BASE}/{key}/import", headers=bearer(token))
         assert response.status_code == 429
         assert [str(request.url) for request in transport.requests] == [INDEX]

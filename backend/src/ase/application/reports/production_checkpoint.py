@@ -1,7 +1,9 @@
 """The immutable collection boundary retained before resumable drafting starts."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from ase.application.ports.section_checkpoints import SectionCheckpoints
 from ase.application.report_jobs.codec_boundary import boundary, count, json_copy
@@ -21,6 +23,12 @@ from ase.domain.report_records import evidence_to_list
 from ase.domain.research import ResearchQuery
 from ase.domain.research_records import ResearchReceipt, research_to_dict
 
+if TYPE_CHECKING:
+    from ase.application.reports.challenge_expansion_checkpoint import (
+        ExpansionPacket,
+        ExpansionPlan,
+    )
+
 
 @dataclass(frozen=True, slots=True)
 class ProductionSnapshot:
@@ -37,6 +45,14 @@ class ProductionCheckpoints(Protocol):
 
     @property
     def section_checkpoints(self) -> SectionCheckpoints: ...
+
+
+@runtime_checkable
+class ExpansionCheckpoints(Protocol):
+    async def load_expansion_plan(self) -> ExpansionPlan | None: ...
+    async def save_expansion_plan(self, plan: ExpansionPlan) -> None: ...
+    async def load_expansion_packet(self) -> ExpansionPacket | None: ...
+    async def save_expansion_packet(self, packet: ExpansionPacket) -> None: ...
 
 
 def collection_to_dict(snapshot: ProductionSnapshot) -> dict[str, Any]:
@@ -69,6 +85,9 @@ def _collection_from_dict(data: Any) -> ProductionSnapshot:
     value = boundary(
         data, {"schema_version", "selection", "direction", "receipt", "query", "totals"}
     )
+    # The shared boundary no longer pins inner schema versions, so the collection does.
+    if type(value["schema_version"]) is not int or value["schema_version"] != 1:
+        raise ValueError("Unsupported frozen collection schema")
     selected = value["selection"]
     if type(selected) is not dict or set(selected) != {"items", "flagged", "considered"}:
         raise ValueError("Invalid frozen evidence selection")

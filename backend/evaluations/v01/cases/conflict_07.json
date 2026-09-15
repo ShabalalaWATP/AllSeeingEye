@@ -1,0 +1,194 @@
+{
+  "schema_version": "ase-v01-case-1",
+  "id": "conflict_07",
+  "domain": "conflict",
+  "split": "development",
+  "requested_depth": "basic",
+  "title": "Translated wire copy",
+  "evidence_origin": "synthetic_assistant_authored",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "question": "Do translated and syndicated corridor updates provide independent corroboration?",
+  "requirements": [
+    {
+      "id": "r1",
+      "question": "Do translated and syndicated corridor updates provide independent corroboration?",
+      "useful_packet_ids": [
+        "p1"
+      ],
+      "expected_passages": [
+        {
+          "packet_id": "p1",
+          "packet_sha256": "51073aa900a78a54d210fe244b21b1f4664a5f591ded48e7acb3d962127fefe2",
+          "text": "the fictional corridor operator says rail deliveries resumed after repairs, subject to a safety inspection."
+        }
+      ],
+      "reference_state": "partial",
+      "reference_outcome": "Both copies share the declared synthetic origin. Translation is not an independent witness."
+    }
+  ],
+  "scope": {
+    "countries": [
+      "UA"
+    ],
+    "since": "2026-09-10T00:00:00Z",
+    "until": "2026-09-14T00:00:00Z",
+    "privacy_boundary": "Public institutional and aggregate synthetic evidence only. No private-person identification or private address inference.",
+    "geographic_limit": "fictional eastern logistics corridor; no claim of complete geographic coverage."
+  },
+  "packet": [
+    {
+      "id": "p1",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic conflict source packet",
+      "summary": "the fictional corridor operator says rail deliveries resumed after repairs, subject to a safety inspection.",
+      "content_sha256": "51073aa900a78a54d210fe244b21b1f4664a5f591ded48e7acb3d962127fefe2",
+      "url": "https://example.invalid/conflict/bulletin",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "UA",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    },
+    {
+      "id": "p2",
+      "source_id": "fixture_syndicator",
+      "source_name": "Synthetic syndicated copy",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic conflict source packet",
+      "summary": "the fictional corridor operator says rail deliveries resumed after repairs, subject to a safety inspection.",
+      "content_sha256": "51073aa900a78a54d210fe244b21b1f4664a5f591ded48e7acb3d962127fefe2",
+      "url": "https://example.invalid/conflict/copy",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "UA",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    },
+    {
+      "id": "p3",
+      "source_id": "fixture_translation",
+      "source_name": "Synthetic translated copy",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic conflict source packet",
+      "summary": "le bulletin fictif signale une perturbation et precise que la verification reste incomplete.",
+      "content_sha256": "f4628adf36b9b4f439fbf6d6742efdc50f0b1b3d8779af428a1cbf1bbc158b10",
+      "url": "https://example.invalid/conflict/translation",
+      "language": "fr",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "UA",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    }
+  ],
+  "probes": [],
+  "edition": {
+    "subscription_id": "conflict_syndication",
+    "previous": {
+      "number": 1,
+      "produced_at": "2026-09-13T10:00:00Z",
+      "claims": [
+        {
+          "id": "assessment",
+          "meaning": "Supply deliveries in the fictional corridor will remain disrupted during the stated horizon.",
+          "likelihood": "likely",
+          "horizon": "2026-09-14/2026-09-21",
+          "support": [
+            "p1"
+          ],
+          "opposition": [],
+          "significant_contradiction": false
+        }
+      ],
+      "evidence": [
+        {
+          "packet_id": "p1",
+          "correction_of_packet_id": null,
+          "relevant": true
+        }
+      ]
+    },
+    "current": {
+      "number": 2,
+      "produced_at": "2026-09-13T11:00:00Z",
+      "claims": [
+        {
+          "id": "assessment",
+          "meaning": "Supply deliveries in the fictional corridor will remain disrupted during the stated horizon.",
+          "likelihood": "likely",
+          "horizon": "2026-09-14/2026-09-21",
+          "support": [
+            "p1"
+          ],
+          "opposition": [],
+          "significant_contradiction": false
+        }
+      ],
+      "evidence": [
+        {
+          "packet_id": "p1",
+          "correction_of_packet_id": null,
+          "relevant": true
+        },
+        {
+          "packet_id": "p2",
+          "correction_of_packet_id": null,
+          "relevant": true
+        }
+      ]
+    },
+    "coverage": "complete_for_plan",
+    "attempted_providers": [
+      "fixture_primary"
+    ],
+    "successful_providers": [
+      "fixture_primary"
+    ],
+    "current_failed": false,
+    "expected_state": "no_new_relevant_captured_evidence",
+    "expected_reasons": [
+      "syndicated_duplicates_only",
+      "adequate_coverage_no_new_evidence"
+    ],
+    "expected_changed_claim_ids": [],
+    "expected_corrected_packet_ids": [],
+    "expected_novel_packet_ids": [],
+    "expected_syndicated_packet_ids": [
+      "p2"
+    ]
+  },
+  "known_pitfalls": [
+    "Synthetic packet statements remain attributed claims, not real-world facts.",
+    "Translation is a deliberately incomplete synthetic paraphrase, not an authenticated translation.",
+    "The production projection marks changed text as novel. This is not independent corroboration or semantic novelty."
+  ],
+  "acceptable_abstentions": [
+    "Both copies share the declared synthetic origin. Translation is not an independent witness.",
+    "State which missing source, date, passage or context prevents a stronger answer."
+  ],
+  "analytical_review_questions": [
+    "Does every required question receive an answer, partial, disputed or gap state?",
+    "Are scope, attribution, units, counterevidence and missing coverage preserved without invented certainty?",
+    "If a forecast is added, does it have a finite horizon and explain its evidential limits?"
+  ]
+}

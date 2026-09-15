@@ -95,6 +95,11 @@ async def test_request_shape_and_safe_errors() -> None:
     await gateway.aclose()
 
 
+# A genuine loopback endpoint, so failures come from the response under test rather than the
+# HTTPS rule for remote model hosts.
+LOCAL = "http://localhost:11434/v1"
+
+
 @pytest.mark.parametrize(
     "status,body", [(401, b"test-secret"), (302, b""), (200, b"invalid"), (200, b"[" * 2000)]
 )
@@ -104,9 +109,7 @@ async def test_status_json_and_redirect_failure(status: int, body: bytes) -> Non
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         with pytest.raises(EmbeddingGatewayError) as caught:
-            await OpenAiEmbeddingGateway(client=client).embed(
-                "http://local", "test-secret", "m", ["t"]
-            )
+            await OpenAiEmbeddingGateway(client=client).embed(LOCAL, "test-secret", "m", ["t"])
         assert "test-secret" not in str(caught.value)
 
 
@@ -130,7 +133,7 @@ async def test_response_cap_transport_error_and_total_deadline() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             with pytest.raises(EmbeddingGatewayError) as caught:
                 await OpenAiEmbeddingGateway(client=client, timeout_seconds=0.01).embed(
-                    "http://local", "test-secret", "m", ["t"]
+                    LOCAL, "test-secret", "m", ["t"]
                 )
             assert "test-secret" not in str(caught.value)
     gateway = OpenAiEmbeddingGateway()
@@ -157,7 +160,7 @@ async def test_compressed_response_is_rejected_before_body_read(encoding: str) -
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         with pytest.raises(EmbeddingGatewayError) as caught:
             await OpenAiEmbeddingGateway(client=client).embed(
-                "http://local", "test-secret", "m", ["private report text"]
+                LOCAL, "test-secret", "m", ["private report text"]
             )
     assert not consumed
     assert "test-secret" not in str(caught.value)
@@ -169,5 +172,5 @@ async def test_explicit_identity_encoding_is_accepted() -> None:
         return httpx.Response(200, headers={"Content-Encoding": "identity"}, json=payload([1]))
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
-        result = await OpenAiEmbeddingGateway(client=client).embed("http://local", "", "m", ["t"])
+        result = await OpenAiEmbeddingGateway(client=client).embed(LOCAL, "", "m", ["t"])
     assert result.vectors == ((1.0,),)

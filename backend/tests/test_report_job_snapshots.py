@@ -17,7 +17,9 @@ from ase.domain.map_research_origin import MapResearchOrigin
 from ase.domain.report_records import body_from_dict
 from ase.domain.research import ResearchMode
 from ase.domain.research_area import direct_area_from_geometry
+from ase.domain.research_brief_values import IntelligenceRequirement
 from feeds_helpers import NOW
+from report_documents_helpers import document_records
 from report_helpers import GOOD_BODY
 from report_job_snapshot_helpers import (
     INPUT_ID,
@@ -122,6 +124,27 @@ def test_ordinary_report_and_geographic_context_roundtrip() -> None:
     assert restored.country_name == job.country_name and restored.terms == job.terms
 
 
+def test_twelve_canonical_requirements_survive_frozen_job_restore() -> None:
+    requirements = tuple(
+        IntelligenceRequirement(f"REQ-{index:02d}", f"What happened in sector {index}?")
+        for index in range(12)
+    )
+    request = ReportRequest(
+        "ask",
+        question="Assess the twelve sectors",
+        research_mode=ResearchMode.ADVANCED,
+        canonical_requirements=requirements,
+    )
+    job = fixture_job(request)
+    frozen = freeze_job(job, fixture_routing(job), {}, private_store)
+    restored = restore_job(json.loads(json.dumps(frozen)), job.actor, job.profile)
+    assert restored.request.canonical_requirements == requirements
+    invalid = copy.deepcopy(frozen)
+    invalid["request"]["canonical_requirements"][0]["priority"] = True
+    with pytest.raises(ValueError):
+        restore_job(invalid, job.actor, job.profile)
+
+
 def test_collection_plan_requires_and_keeps_revision() -> None:
     request = replace(fixture_job().request, plan_id=uuid4())
     job = fixture_job(request)
@@ -144,7 +167,7 @@ def test_collection_plan_requires_and_keeps_revision() -> None:
     "patch",
     [
         {"schema_version": True},
-        {"schema_version": 2},
+        {"schema_version": 3},
         {"seed_events": []},
         {"window_seconds": True},
         {"window_seconds": -1},
@@ -223,6 +246,70 @@ def test_request_destination_and_override_are_retained() -> None:
     data["routing"]["destination_team_id"] = str(uuid4())
     with pytest.raises(ValueError, match="destination"):
         restore_job(data, job.actor, job.profile)
+
+
+def test_scheduled_update_keeps_exact_baseline_and_seen_fingerprints() -> None:
+    _, baseline = document_records()
+    request = replace(
+        fixture_job().request,
+        automation=True,
+        subscription_previous_report_id=baseline.report_id,
+        subscription_seen_signatures=("a" * 64, "b" * 64),
+    )
+    job = fixture_job(request)
+    job = replace(
+        job,
+        subscription_baseline=baseline,
+        followup_judgements=baseline.body.key_judgements,
+        scope={
+            **job.scope,
+            "subscription_previous_report_id": str(baseline.report_id),
+            "subscription_previous_version": baseline.number,
+        },
+    )
+    frozen = freeze_job(job, fixture_routing(job), {}, private_store)
+    assert frozen["schema_version"] == 2
+    assert frozen["subscription_context"] == {
+        "report_id": str(baseline.report_id),
+        "version": baseline.number,
+        "seen_signatures": ["a" * 64, "b" * 64],
+    }
+    serialised = json.dumps(frozen)
+    assert baseline.evidence[0].title not in serialised
+    restored = restore_job(json.loads(serialised), job.actor, job.profile)
+    assert restored.request.subscription_previous_report_id == baseline.report_id
+    assert restored.request.subscription_seen_signatures == request.subscription_seen_signatures
+    assert restored.followup_judgements == baseline.body.key_judgements
+
+
+def test_scheduled_update_rejects_tampered_baseline_and_signatures() -> None:
+    _, baseline = document_records()
+    request = replace(
+        fixture_job().request,
+        automation=True,
+        subscription_previous_report_id=baseline.report_id,
+        subscription_seen_signatures=("a" * 64,),
+    )
+    job = fixture_job(request)
+    job = replace(
+        job,
+        subscription_baseline=baseline,
+        scope={
+            **job.scope,
+            "subscription_previous_report_id": str(baseline.report_id),
+            "subscription_previous_version": baseline.number,
+        },
+    )
+    frozen = freeze_job(job, fixture_routing(job), {}, private_store)
+    for change in (
+        {"version": 0},
+        {"report_id": str(uuid4())},
+        {"seen_signatures": ["not-a-digest"]},
+    ):
+        tampered = copy.deepcopy(frozen)
+        tampered["subscription_context"].update(change)
+        with pytest.raises(ValueError):
+            restore_job(tampered, job.actor, job.profile)
 
 
 def test_private_metadata_without_matching_scope_is_not_dropped() -> None:

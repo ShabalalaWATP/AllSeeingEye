@@ -5,7 +5,12 @@ from typing import Any, Literal
 from ase.application.ports.section_checkpoints import SectionCheckpoint, SectionCheckpoints
 from ase.application.reports.sections.contracts import validate_step
 from ase.application.reports.sections.planning import Topic
-from ase.application.reports.sections.synthesis_contracts import PARTS, TITLES, validate_part
+from ase.application.reports.sections.synthesis_contracts import (
+    PARTS,
+    TITLES,
+    validate_aggregate_limits,
+    validate_part,
+)
 
 
 def metadata(topic: Topic | None, labels: tuple[str, ...]) -> dict[str, Any]:
@@ -34,6 +39,7 @@ def read_body(
     eeis: frozenset[str],
     *,
     previous_exists: bool = False,
+    research_mode: object = None,
 ) -> dict[str, Any]:
     payload = checkpoint.payload
     if (
@@ -49,13 +55,17 @@ def read_body(
             labels=frozenset(expected["evidence_labels"]),
             eeis=eeis,
             previous_exists=previous_exists,
+            research_mode=research_mode,
         )
-    return validate_step(
+    body = validate_step(
         payload["body"],
         synthesis=expected["kind"] == "synthesis",
         labels=frozenset(expected["evidence_labels"]),
         eeis=eeis,
     )
+    if expected["kind"] == "synthesis":
+        validate_aggregate_limits(body, research_mode=research_mode)
+    return body
 
 
 async def write_state(

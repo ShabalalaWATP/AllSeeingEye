@@ -1,0 +1,60 @@
+{
+  "policy_version": "ase-source-allocation-v2",
+  "reviewed_on": "2026-09-14",
+  "review_note": "Offline E01 source-purpose review against E00 route metadata. Expected choices are curated, not generated scores. No live retrieval or quality calibration is claimed.",
+  "profiles": {
+    "research_publisher_gov_uk_mod_news": {"terms": ["Ukraine", "drone", "drones", "warfare", "defence", "military"], "countries": ["GB", "UA"], "primary_content": false, "local_language": false},
+    "research-uk-parliament": {"terms": ["Ukraine", "drone", "drones", "procurement", "policy", "minister"], "countries": ["GB"], "primary_content": true, "local_language": false},
+    "research_regional_ukrinform_en": {"terms": ["Ukraine", "civilian", "displacement", "warfare"], "countries": ["UA"], "primary_content": false, "local_language": false},
+    "research_publisher_cyber_cisa_advisories": {"terms": ["cyber", "exploitation", "vulnerabilities", "ICS", "appliance", "mitigation"], "countries": ["US"], "primary_content": false, "local_language": false},
+    "research_publisher_cyber_cert_ua": {"terms": ["cyber", "exploitation", "campaign", "vulnerabilities", "malware"], "countries": ["UA"], "primary_content": false, "local_language": true},
+    "research_publisher_cyber_ncsc_reports": {"terms": ["cyber", "exploitation", "defensive", "campaign", "malware"], "countries": ["GB"], "primary_content": false, "local_language": false},
+    "research_publisher_economic_bank_england": {"terms": ["economy", "inflation", "monetary", "growth", "rates"], "countries": ["GB"], "primary_content": false, "local_language": false},
+    "research_publisher_economic_federal_reserve": {"terms": ["economy", "inflation", "monetary", "growth", "rates"], "countries": ["US"], "primary_content": false, "local_language": false},
+    "research-world-bank": {"terms": ["economy", "inflation", "GDP", "growth", "annual", "statistics"], "countries": [], "primary_content": true, "local_language": false}
+  },
+  "cases": [
+    {
+      "id": "ukraine_drone_uk_policy",
+      "question": "What changed in Ukraine drone warfare and UK procurement policy?",
+      "subject": "parliament: Ukraine drone procurement",
+      "terms": ["Ukraine drones"],
+      "countries": ["GB"],
+      "languages": ["en"],
+      "requirements": ["What changed in Ukraine drone procurement policy?", "What civilian effects are documented in Ukraine?"],
+      "source_ids": ["research_publisher_gov_uk_mod_news", "research-uk-parliament", "research_regional_ukrinform_en", "research_publisher_cyber_cisa_advisories", "research_publisher_economic_bank_england"],
+      "expected_first": "research-uk-parliament",
+      "must_plan": ["research_publisher_gov_uk_mod_news", "research-uk-parliament", "research_regional_ukrinform_en"],
+      "must_exclude": ["research_publisher_cyber_cisa_advisories", "research_publisher_economic_bank_england"],
+      "accepted_dates": ["publication_interval"]
+    },
+    {
+      "id": "cyber_exploitation",
+      "question": "Which ICS appliance vulnerabilities have observed exploitation and relevant mitigation?",
+      "subject": "ICS appliance exploitation vulnerabilities",
+      "terms": ["ICS exploitation"],
+      "countries": ["UA"],
+      "languages": ["en", "uk"],
+      "requirements": ["Which appliance vulnerabilities have observed exploitation?", "What campaign and mitigation evidence is relevant?"],
+      "source_ids": ["research_publisher_cyber_cisa_advisories", "research_publisher_cyber_cert_ua", "research_publisher_cyber_ncsc_reports", "research_publisher_gov_uk_mod_news", "research_publisher_economic_bank_england"],
+      "expected_first": "research_publisher_cyber_cisa_advisories",
+      "must_plan": ["research_publisher_cyber_cisa_advisories", "research_publisher_cyber_cert_ua", "research_publisher_cyber_ncsc_reports"],
+      "must_exclude": ["research_publisher_gov_uk_mod_news", "research_publisher_economic_bank_england"],
+      "accepted_dates": ["publication_interval"]
+    },
+    {
+      "id": "economy_statistical_context",
+      "question": "What do annual GDP statistics and monetary policy indicate about UK growth?",
+      "subject": "WB:GB:NY.GDP.MKTP.KD.ZG:2023:2024",
+      "terms": ["GDP growth"],
+      "countries": ["GB"],
+      "languages": ["en"],
+      "requirements": ["What annual GDP statistics show growth changes?", "What monetary policy changes are documented?"],
+      "source_ids": ["research-world-bank", "research_publisher_economic_bank_england", "research_publisher_economic_federal_reserve", "research_publisher_cyber_cisa_advisories", "research_publisher_gov_uk_mod_news"],
+      "expected_first": "research-world-bank",
+      "must_plan": ["research-world-bank", "research_publisher_economic_bank_england"],
+      "must_exclude": ["research_publisher_cyber_cisa_advisories", "research_publisher_gov_uk_mod_news"],
+      "accepted_dates": ["publication_interval", "annual_periods"]
+    }
+  ]
+}

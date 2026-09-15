@@ -7,7 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from ase.domain.access import Visibility
-from ase.domain.schedules import Schedule
+from ase.domain.schedules import Schedule, ScheduleErrorCode, ScheduleRunResult
 
 
 class ScheduleRepository(Protocol):
@@ -15,7 +15,7 @@ class ScheduleRepository(Protocol):
     async def get(self, schedule_id: UUID) -> Schedule | None: ...
     async def list_all(self, visibility: Visibility) -> list[Schedule]: ...
     async def save(self, schedule: Schedule) -> None: ...
-    async def delete(self, schedule_id: UUID) -> None: ...
+    async def archive(self, schedule: Schedule, archived_at: datetime) -> bool: ...
 
 
 class ScheduleStore(Protocol):
@@ -29,7 +29,7 @@ class ScheduleStore(Protocol):
         *,
         ran_at: datetime,
         next_run_at: datetime,
-        report_id: UUID | None,
-        error: str | None,
+        result: ScheduleRunResult | None,
+        error_code: ScheduleErrorCode | None,
         expected: Schedule,
     ) -> None: ...

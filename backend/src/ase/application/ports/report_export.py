@@ -5,6 +5,7 @@ from typing import Protocol
 from ase.domain.errors import InvalidRequest
 from ase.domain.report_documents import ExportFormat, ReportDocument
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.source_review_records import SourceReviewSnapshot
 
 
 class ReportRenderer(Protocol):
@@ -16,7 +17,12 @@ class AsyncReportRenderer(Protocol):
 
 
 class AsyncReportProjector(Protocol):
-    async def build(self, record: ReportRecord, version: ReportVersion) -> ReportDocument: ...
+    async def build(
+        self,
+        record: ReportRecord,
+        version: ReportVersion,
+        reviewed_snapshot: SourceReviewSnapshot | None = None,
+    ) -> ReportDocument: ...
 
 
 class RenderCleanupFailed(InvalidRequest):

@@ -97,6 +97,7 @@ def test_explicit_private_input_can_be_selected_without_inventing_a_date():
         terms=(),
         reused_evidence=(),
         seed_events=(event,),
+        subscription_baseline=None,
     )
     result = select_for_job(store, {}, job, None)
     assert len(result.items) == 1 and result.items[0].published_at is None

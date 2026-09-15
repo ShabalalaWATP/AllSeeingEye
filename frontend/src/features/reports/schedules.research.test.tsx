@@ -10,7 +10,7 @@ it('prefills a reviewable subscription from an Eye question without starting a r
   renderApp('/subscriptions?question=What+changed+in+Britain%3F&country=GB', 'user');
   const form = within(await screen.findByRole('form', { name: 'New subscription' }));
   expect(form.getByLabelText('Question')).toHaveValue('What changed in Britain?');
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  expect(form.getByRole('button', { name: 'Create subscription' })).toBeEnabled();
 });
 
 it('saves an explicit question and bounded research options for each scheduled run', async () => {
@@ -26,7 +26,8 @@ it('saves an explicit question and bounded research options for each scheduled r
   await user.click(form.getByText('Advanced scope and sources'));
   await user.type(form.getByLabelText('Subscription name'), 'Weekly port research');
   await user.selectOptions(form.getByLabelText('Product'), 'ask');
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
+  expect(form.getByText(/Question: Enter a question/)).toBeVisible();
   await user.type(form.getByLabelText('Question'), 'What changed at the port?');
   expect(
     form.getByRole('checkbox', { name: /^Notify in app when evidence changes/ }),
@@ -34,14 +35,16 @@ it('saves an explicit question and bounded research options for each scheduled r
   await user.click(form.getByRole('radio', { name: /^Deep/ }));
   await user.clear(form.getByLabelText('Research languages'));
   await user.type(form.getByLabelText('Research languages'), 'en; bad');
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
+  expect(form.getByText(/Research languages: Enter one to eight/)).toBeVisible();
   await user.clear(form.getByLabelText('Research languages'));
   await user.type(form.getByLabelText('Research languages'), 'en, uk, en');
   await user.click(form.getByText('Choose countries'));
   await user.click(form.getByRole('checkbox', { name: /^Ukraine/ }));
   await user.selectOptions(form.getByLabelText('Research focus'), 'company');
   expect(form.getByRole('group', { name: 'Countries' })).toBeDisabled();
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
+  expect(form.getByText(/Research subject: Enter a research subject/)).toBeVisible();
   expect(form.getByLabelText('Research subject')).toBeRequired();
   await user.type(form.getByLabelText('Research subject'), 'Example Port');
   await user.click(form.getByRole('button', { name: 'Create subscription' }));

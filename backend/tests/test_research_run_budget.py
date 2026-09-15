@@ -23,6 +23,27 @@ class Clock:
         return self.now
 
 
+@pytest.mark.parametrize(
+    ("mode", "initial", "challenge"),
+    [
+        (ResearchMode.QUICK, (6, 45, 200), None),
+        (ResearchMode.DETAILED, (20, 135, 792), (4, 45, 8)),
+        (ResearchMode.ADVANCED, (26, 180, 988), (6, 60, 12)),
+    ],
+)
+def test_phase_caps_reserve_post_draft_collection(mode, initial, challenge) -> None:
+    first = CollectionBudget.for_initial_mode(mode)
+    assert (first.requests, first.seconds, first.items) == initial
+    second = CollectionBudget.for_challenge_mode(mode)
+    assert (
+        None if second is None else (second.requests, second.seconds, second.items)
+    ) == challenge
+    total = CollectionBudget.for_mode(mode)
+    assert first.requests + (second.requests if second else 0) == total.requests
+    assert first.seconds + (second.seconds if second else 0) == total.seconds
+    assert first.items + (second.items if second else 0) == total.items
+
+
 @pytest.mark.parametrize("mode", list(ResearchMode))
 async def test_two_passes_share_mode_request_ceiling_and_reserve_capacity(mode) -> None:
     limits = CollectionBudget.for_mode(mode)
@@ -65,16 +86,16 @@ async def test_unique_items_are_charged_once_across_passes_and_originals_are_not
     assert state.requests_used == 2
 
 
-async def test_time_between_passes_consumes_original_deadline() -> None:
+async def test_time_between_passes_does_not_consume_active_acquisition_allowance() -> None:
     clock = Clock()
     state = CollectionRunBudget(CollectionBudget(6, 1, 1, 10), clock=clock)
     first, revised = Provider("first"), Provider("revised")
     await ResearchCollector([first]).collect(QUERY, run_budget=state, request_allowance=1)
     clock.now = 1.1
     result = await ResearchCollector([revised]).collect(QUERY, run_budget=state)
-    assert state.remaining_seconds == 0
-    assert revised.called == 0 and state.requests_used == 1
-    assert result.attempts[0].status is CollectionStatus.BUDGET_EXHAUSTED
+    assert state.remaining_seconds == 1
+    assert revised.called == 1 and state.requests_used == 2
+    assert result.attempts[0].status is CollectionStatus.EMPTY
 
 
 async def test_revised_request_timeout_uses_only_remaining_run_time(monkeypatch) -> None:
@@ -91,7 +112,7 @@ async def test_revised_request_timeout_uses_only_remaining_run_time(monkeypatch)
     await ResearchCollector([Provider("first")]).collect(QUERY, run_budget=state)
     clock.now = 0.75
     await ResearchCollector([Provider("revised")]).collect(QUERY, run_budget=state)
-    assert observed == [1, 0.25]
+    assert observed == [1, 1]
 
 
 async def test_failed_and_timed_out_requests_are_not_refunded_between_passes() -> None:

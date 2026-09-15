@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { useAuthStore } from '@/stores/auth';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { clearAssistantMapFocus } from '@/lib/assistantMapContext';
+import { useAssistantReportContext } from '@/lib/assistantReportContext';
 import { AssistantEye } from '@/components/brand/AssistantEye';
 import { LAUNCHER_HEIGHT, LAUNCHER_WIDTH, useAssistantPosition } from './useAssistantPosition';
 import { panelPlacement } from './panelPlacement';
@@ -17,6 +18,8 @@ function EyeSession() {
   const [seenTurn, setSeenTurn] = useState<number | null>(null);
   const placement = useAssistantPosition();
   const chat = useEyeChat();
+  const reportContext = useAssistantReportContext();
+  const seenReportLaunch = useRef(reportContext.launch?.token ?? 0);
   const launcher = useRef<HTMLButtonElement>(null);
   const panelId = useId(),
     helpId = useId();
@@ -29,6 +32,14 @@ function EyeSession() {
   const latest = chat.turns.at(-1);
   const unread = !open && latest?.status === 'answered' && latest.id !== seenTurn;
   useEffect(() => () => clearAssistantMapFocus(), []);
+  useEffect(() => {
+    const launch = reportContext.launch;
+    if (!launch || launch.token <= seenReportLaunch.current) return;
+    seenReportLaunch.current = launch.token;
+    chat.beginReport(launch.report);
+    setSeenTurn(null);
+    setOpen(true);
+  }, [reportContext.launch, chat]);
   return (
     <div className="eye-assistant" data-dragging={placement.dragging}>
       <button

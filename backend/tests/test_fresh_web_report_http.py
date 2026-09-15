@@ -1,4 +1,4 @@
-"""A real report HTTP pipeline freezes native web context separately from graded evidence."""
+"""A real report HTTP pipeline freezes web context without promoting it to evidence."""
 
 from ase.application.ports.feeds import EventQuery
 from ase.application.research.service import ResearchCollectionService
@@ -9,7 +9,9 @@ from report_helpers import PROFILE, ScriptedGateway
 from web_search_helpers import TEXT, URL, Gateway
 
 
-async def test_web_context_flows_through_drafting_freezing_read_and_export(client, container, user):
+async def test_web_context_is_frozen_but_zero_evidence_abstains_before_drafting(
+    client, container, user
+):
     await seed_legacy_profile(
         container,
         {
@@ -44,9 +46,9 @@ async def test_web_context_flows_through_drafting_freezing_read_and_export(clien
     assert payload["report"]["status"] == "needs_review"
     assert payload["version"]["evidence"] == []
     assert payload["version"]["quality"]["items"] == 0
+    # Discovery-only web context cannot support a report draft on its own.
     drafts = [request for request in container.llm.requests if request.schema_name == "report"]
-    assert drafts and TEXT in drafts[0].messages[1].content
-    assert "Do not cite it as E-labelled evidence" in drafts[0].messages[1].content
+    assert drafts == []
     report_id = payload["report"]["id"]
     fetched = await client.get(f"/api/reports/{report_id}", headers=bearer(token))
     assert fetched.status_code == 200

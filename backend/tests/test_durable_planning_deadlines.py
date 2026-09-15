@@ -127,7 +127,7 @@ async def test_admitted_review_preserves_reasoning_and_remaining_deadline(
 
 
 @pytest.mark.parametrize("found", [False, True])
-async def test_skipped_review_retains_source_plan_and_reports_zero_model_calls(
+async def test_bounded_review_does_not_spend_remaining_source_allowance(
     container, user, monkeypatch, found
 ):
     async def no_pacing(_self):
@@ -149,6 +149,6 @@ async def test_skipped_review_retains_source_plan_and_reports_zero_model_calls(
     assert providers[0].queries == []
     assert [len(row.queries) for row in providers[1:]] == [1, 1, 1, 1, 1, 1, 0]
     assert all(value == query for row in providers for value in row.queries)
-    assert batch.plan.model_calls == batch.plan.replans == 0
-    assert "not performed" in batch.plan.continuation.rationale
-    assert len(batch.passes) == 2 and gateway.calls == 0 and not totals.usage
+    assert batch.plan.model_calls == 1 and batch.plan.replans == 0
+    assert batch.plan.continuation.decision == "continue"
+    assert len(batch.passes) == 2 and gateway.calls == 1 and len(totals.usage) == 1

@@ -10,6 +10,9 @@ from ase.adapters.persistence.models import AlertRow, ScheduleRow
 from ase.adapters.persistence.schedules import SqlScheduleStore
 from ase.application.schedules.manage import ScheduleInput
 from ase.container import Container
+from ase.container.subscription_schedule_controls import archive_schedule
+from ase.domain.reports import ReportStatus
+from ase.domain.schedules import ScheduleRunResult
 from ase.domain.users import User
 from helpers import USER_PASSWORD, bearer, login_token
 from report_documents_helpers import document_records
@@ -36,6 +39,8 @@ async def schedule_for(container, owner, team_id=None):
 async def save_report(container, owner, team_id=None, *, changed=False):
     record, version = document_records(owner.id)
     record.team_id = team_id
+    record.status = ReportStatus.READY
+    version.status = ReportStatus.READY
     if changed:
         version = replace(
             version,
@@ -48,12 +53,15 @@ async def save_report(container, owner, team_id=None, *, changed=False):
 
 
 async def mark(container, schedule, report):
+    async with container.session_factory() as session:
+        version = await container.repositories(session).reports.get_version(report.id, 1)
+    assert version is not None
     await SqlScheduleStore(container.session_factory, container.access_policy).mark_run(
         schedule.id,
         ran_at=container.clock.now(),
         next_run_at=container.clock.now() + timedelta(days=1),
-        report_id=report.id,
-        error=None,
+        result=ScheduleRunResult.from_version(version),
+        error_code=None,
         expected=schedule,
     )
 
@@ -121,7 +129,18 @@ async def test_revoked_schedule_cannot_commit_change_alert(
     else:
         async with container.session_factory() as session:
             if revocation == "delete":
-                await container.delete_schedule(session).execute(actors.owner, schedule.id, CONTEXT)
+
+                async def valid_session() -> None:
+                    return None
+
+                await archive_schedule(
+                    container,
+                    session,
+                    actors.owner,
+                    schedule.id,
+                    CONTEXT,
+                    check_session=valid_session,
+                )
             elif revocation == "owner":
                 owner = await container.repositories(session).users.get_by_id(actors.owner.id)
                 owner.is_active = False

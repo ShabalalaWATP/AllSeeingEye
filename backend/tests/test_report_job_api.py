@@ -22,11 +22,12 @@ async def test_enqueue_then_worker_publishes_one_report_with_completed_sections(
     assert queued["report_id"] is None
     await work(container)
     current = await stored(container, queued["id"])
-    assert current.status == "completed", (current.status, current.error, current.payload)
+    # The synthetic evidence is a two-word summary, so the citation gate asks for review.
+    assert current.status == "needs_review", (current.status, current.error, current.payload)
     response = await client.get(f"/api/report-jobs/{queued['id']}", headers=headers)
     assert response.status_code == 200, response.text
     completed = response.json()
-    assert completed["status"] == "completed" and completed["completed_sections"] == 6
+    assert completed["status"] == "needs_review" and completed["completed_sections"] == 6
     assert completed["usage"]["calls"] == len(gateway.calls) == 7
     assert completed["usage"]["output_tokens"] == 35
     sections = {section["id"]: section for section in completed["sections"]}
@@ -65,7 +66,7 @@ async def test_repeated_request_uuid_admits_one_job_and_only_one_worker_run(
     assert jobs.status_code == 200 and len(jobs.json()["items"]) == 1
     await work(container)
     again = await submit(client, headers, request_id=request_id)
-    assert again.json()["id"] == first.json()["id"] and again.json()["status"] == "completed"
+    assert again.json()["id"] == first.json()["id"] and again.json()["status"] == "needs_review"
     assert len(gateway.calls) == 7
 
 
@@ -110,7 +111,7 @@ async def test_admitted_job_continues_after_original_browser_logout(client, user
     assert logout.status_code == 204
     await work(container)
     current = await stored(container, job_id)
-    assert current.status == "completed" and len(gateway.calls) == 7
+    assert current.status == "needs_review" and len(gateway.calls) == 7
     response = await client.get(f"/api/report-jobs/{job_id}", headers=headers)
     assert response.status_code == 401
 
@@ -139,7 +140,7 @@ async def test_explicit_resume_reuses_completed_topic_and_frozen_collection(
     assert response.status_code == 202 and response.json()["status"] == "queued", response.text
     await work(container)
     final = await stored(container, job_id)
-    assert final.status == "completed", final.error
+    assert final.status == "needs_review", final.error
     assert final.payload["collection"] == collection
     assert completed_topic in final.payload["sections"].values()
     assert [name for name, _ in gateway.calls] == [

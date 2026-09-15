@@ -115,6 +115,22 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
             bool(settings.cloudflare_radar_token),
             "Cloudflare Radar aggregated attack distributions",
         ),
+        **{
+            source_id: _configured(
+                "acknowledgement",
+                "ASE_CLOUDFLARE_RADAR_TOKEN and "
+                "ASE_CLOUDFLARE_RADAR_NONCOMMERCIAL_USE_ACKNOWLEDGED",
+                bool(settings.cloudflare_radar_token)
+                and settings.cloudflare_radar_noncommercial_use_acknowledged,
+                "Cloudflare Radar token and non-commercial use acknowledgement are configured.",
+                "Configure the Radar token and acknowledge suitable CC BY-NC 4.0 use before "
+                "enabling Radar research.",
+            )
+            for source_id in (
+                "research-cloudflare-radar-layer3",
+                "research-cloudflare-radar-layer7",
+            )
+        },
         "ucdp_candidate": _key(
             "ASE_UCDP_ACCESS_TOKEN",
             bool(settings.ucdp_access_token),
@@ -150,6 +166,14 @@ def source_requirements(settings: Settings) -> dict[str, SourceRequirement]:
             "Non-commercial use of OONI aggregates is acknowledged on the server.",
             "Set ASE_OONI_NONCOMMERCIAL_USE_ACKNOWLEDGED=true after confirming suitable use "
             "of CC BY-NC-SA data.",
+        ),
+        "research-ioda-outage-events": _configured(
+            "acknowledgement",
+            "ASE_IODA_PUBLIC_DATA_USE_ACKNOWLEDGED",
+            settings.ioda_public_data_use_acknowledged,
+            "Operator reviewed IODA public data-use terms and enabled research collection.",
+            "Review IODA public data-use permission, then set "
+            "ASE_IODA_PUBLIC_DATA_USE_ACKNOWLEDGED=true if suitable.",
         ),
         "research-aiddata-projects": _configured(
             "catalogue",

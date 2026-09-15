@@ -245,7 +245,8 @@ async def test_baseline_never_crosses_personal_scope_and_deleted_baseline_is_exp
     # A fake repository isolates the authorisation boundary without inserting an orphan owner.
 
     repository = SimpleNamespace(get=AsyncMock(return_value=foreign), get_version=AsyncMock())
-    request = scheduled_report_request(replace(schedule, last_report_id=foreign.id))
+    # Subscription runs compare with the accepted baseline edition, not the last report.
+    request = scheduled_report_request(replace(schedule, baseline_report_id=foreign.id))
     async with container.session_factory() as session:
         with pytest.raises((Forbidden, InvalidRequest, NotFound)):
             await load_subscription_baseline(

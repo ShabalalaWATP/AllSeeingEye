@@ -10,7 +10,7 @@ import { jobRunning } from './jobLabels';
 
 afterEach(() => vi.useRealTimers());
 
-it('polls only when visible, never overlaps requests and stops after a terminal result', async () => {
+it('polls only when visible, never overlaps requests and slows after a terminal result', async () => {
   vi.useFakeTimers();
   applySession('user');
   let release: (value: ReportJob) => void = () => undefined;
@@ -24,7 +24,7 @@ it('polls only when visible, never overlaps requests and stops after a terminal 
     .mockResolvedValue(reportJob({ status: 'completed', stage: 'completed' }));
   const view = renderHook(() => useJobPolling(loader, jobRunning));
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(3000);
+    await vi.advanceTimersByTimeAsync(5000);
   });
   expect(loader).toHaveBeenCalledTimes(2);
   await act(async () => {
@@ -45,9 +45,13 @@ it('polls only when visible, never overlaps requests and stops after a terminal 
   });
   expect(view.result.current.data?.status).toBe('completed');
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(12000);
+    await vi.advanceTimersByTimeAsync(29_999);
   });
   expect(loader).toHaveBeenCalledTimes(3);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1);
+  });
+  expect(loader).toHaveBeenCalledTimes(4);
   view.unmount();
 });
 
@@ -65,7 +69,7 @@ it('clears old access data immediately and rejects a stale in-flight poll', asyn
     .mockResolvedValue(reportJob({ title: 'Fresh authorised view', status: 'paused' }));
   const view = renderHook(() => useJobPolling(loader, jobRunning));
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(3000);
+    await vi.advanceTimersByTimeAsync(5000);
   });
   expect(view.result.current.data?.title).toBe('Private initial view');
   act(() => invalidateWorkspaceAccess());

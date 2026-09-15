@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 from uuid import UUID, uuid4
 
 from ase.application.policy import require_admin
@@ -22,9 +23,16 @@ from ase.domain.errors import Conflict, NotFound
 from ase.domain.users import User
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
     from ase.application.ports import Clock
+
+
+class AiUsageTransaction(Protocol):
+    """The short-lived transaction each accounting step opens and closes."""
+
+    async def commit(self) -> None: ...
+
+    async def rollback(self) -> None: ...
+
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,8 +47,8 @@ class AiUsageAccounting:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker[AsyncSession],
-        repository_factory: Callable[[AsyncSession], AiUsageRepository],
+        session_factory: Callable[[], AbstractAsyncContextManager[AiUsageTransaction]],
+        repository_factory: Callable[[Any], AiUsageRepository],
         clock: Clock,
     ) -> None:
         self._session_factory = session_factory

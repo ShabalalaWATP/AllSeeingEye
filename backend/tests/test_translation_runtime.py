@@ -152,4 +152,6 @@ async def test_lifespan_controls_translation_before_disposal(app: FastAPI, monke
         mocks.append(job)
     async with lifespan(app):
         assert mocks[-1].start.await_count == int(enabled)
+        assert mocks[jobs.index("schedule_runner")].start.await_count == 1
     mocks[-1].stop.assert_awaited_once()
+    mocks[jobs.index("schedule_runner")].stop.assert_awaited_once()

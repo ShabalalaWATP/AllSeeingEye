@@ -1,0 +1,39 @@
+{
+  "dimensions": {
+    "aggregate": {
+      "option": {
+        "id": "cpih1dim1A0",
+        "href": "https://api.beta.ons.gov.uk/v1/code-lists/cpih1dim1aggid/codes/cpih1dim1A0"
+      }
+    },
+    "geography": {
+      "option": {
+        "id": "K02000001",
+        "href": "https://api.beta.ons.gov.uk/v1/code-lists/uk-only/codes/K02000001"
+      }
+    },
+    "time": {
+      "options": [
+        {"id": "Jun-26", "href": "https://api.beta.ons.gov.uk/v1/code-lists/time/codes/Jun-26"},
+        {"id": "Jul-26", "href": "https://api.beta.ons.gov.uk/v1/code-lists/time/codes/Jul-26"},
+        {"id": "Aug-26", "href": "https://api.beta.ons.gov.uk/v1/code-lists/time/codes/Aug-26"},
+        {"id": "Sep-26", "href": "https://api.beta.ons.gov.uk/v1/code-lists/time/codes/Sep-26"}
+      ]
+    }
+  },
+  "links": {
+    "version": {
+      "id": "42",
+      "href": "https://api.beta.ons.gov.uk/v1/datasets/cpih01/editions/time-series/versions/42"
+    }
+  },
+  "observations": [
+    {"observation": "135.1"},
+    {"observation": "0"},
+    {"observation": null},
+    {"observation": "136.2"}
+  ],
+  "offset": 0,
+  "total_observations": 4,
+  "unit_of_measure": "Index: 2015=100"
+}

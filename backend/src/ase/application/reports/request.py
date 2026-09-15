@@ -15,6 +15,7 @@ from ase.domain.map_research_origin import MapResearchOrigin, origin_from_dict
 from ase.domain.query_variant_records import required_variant, validate_variant_anchors
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import ResearchArea, area_from_dict, validate_direct_area
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.research_plan import QueryVariant
 from ase.domain.research_scope import (
     normalise_countries,
@@ -71,6 +72,7 @@ class ReportRequest:
     # Internal automation reference, deliberately absent from public report request schemas.
     subscription_previous_report_id: UUID | None = None
     subscription_seen_signatures: tuple[str, ...] = ()
+    canonical_requirements: tuple[IntelligenceRequirement, ...] = ()
 
     @property
     def effective_area(self) -> ResearchArea | None:
@@ -90,6 +92,12 @@ class ReportRequest:
         self._validate_interval()
 
     def _validate_scope(self) -> None:
+        if self.parent_version is not None and (
+            self.parent_report_id is None
+            or type(self.parent_version) is not int
+            or self.parent_version < 1
+        ):
+            raise ValueError("A parent version needs an exact report and positive version number")
         countries = normalise_countries(self.country_iso, self.country_isos)
         object.__setattr__(self, "country_isos", countries)
         object.__setattr__(self, "country_iso", countries[0] if len(countries) == 1 else None)
@@ -106,6 +114,22 @@ class ReportRequest:
         self._validate_area()
 
     def _validate_plan(self) -> None:
+        requirements = self.canonical_requirements
+        if (
+            not isinstance(requirements, tuple)
+            or len(requirements) > 12
+            or any(not isinstance(row, IntelligenceRequirement) for row in requirements)
+            or len({row.id for row in requirements}) != len(requirements)
+        ):
+            raise ValueError("Use at most twelve distinct stable research requirements")
+        if requirements:
+            caps = {ResearchMode.QUICK: 3, ResearchMode.DETAILED: 6, ResearchMode.ADVANCED: 12}
+            if (
+                self.research_mode not in caps
+                or self.question is None
+                or sum(row.required for row in requirements) > caps[self.research_mode]
+            ):
+                raise ValueError("Requirements exceed the selected research depth")
         validate_variant_anchors(self.research_query_variants, self.research_terms)
         if any(row.origin != "operator" for row in self.research_candidate_hypotheses) or any(
             row.origin != "operator" for row in self.research_planned_tasks
@@ -140,10 +164,9 @@ class ReportRequest:
             self.research_since is None
             or self.research_until is None
             or self.research_focus is not ResearchFocus.GENERAL
-            or self.parent_report_id is not None
         ):
             raise ValueError(
-                "Project history requires an explicit interval and a new general research request"
+                "Project history requires an explicit interval and general research request"
             )
         if (self.map_view_id is None) != (self.map_revision_id is None):
             raise ValueError("Choose both saved map identifiers")
@@ -156,8 +179,6 @@ class ReportRequest:
         object.__setattr__(self, "research_until", self.research_until.astimezone(UTC))
         if self.window_hours is not None:
             raise ValueError("Choose a fixed research interval or a rolling window")
-        if self.research_mode is None:
-            raise ValueError("Fixed research intervals require research mode")
 
     def _validate_area(self) -> None:
         if self.research_area is None:
@@ -173,7 +194,6 @@ class ReportRequest:
             self.template_id != "ask"
             or self.research_mode is None
             or self.research_focus is not ResearchFocus.GENERAL
-            or self.parent_report_id is not None
             or self.research_input_id is not None
             or self.plan_id is not None
             or self.country_isos

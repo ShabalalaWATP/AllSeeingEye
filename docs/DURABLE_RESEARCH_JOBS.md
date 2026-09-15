@@ -69,11 +69,17 @@ removes their saved progress and releases capacity; published reports are retain
   run; receipts disclose that no continuation-model call was made.
 - The supported deployment remains one API process, with the existing shared
   source-control guard. Database revision and lease checks fence late writes.
+  See [Subscription operations](SUBSCRIPTIONS_OPERATIONS.md) for admission,
+  diagnostics and recovery of recurring editions.
 
-Detailed durable research reviews the frozen evidence once and states that it
-has not performed an additional contrary-source collection pass. Legacy direct
-`POST /api/reports` generation, regeneration and existing schedules retain their
-earlier pipeline. They are not all converted to durable section jobs by this change.
+Eligible Deep and Advanced durable jobs now plan a bounded post-draft challenge
+search against the first saved judgement. Its selected source results and usage
+receipt settle together under the job lease, so restart does not repeat a known
+completed request. This is not a complete challenge of every report section;
+unsupported findings remain subject to the final Needs review gate. Legacy direct
+`POST /api/reports` generation and regeneration retain their earlier pipeline.
+Subscriptions admit editions into the durable report-job workers rather than
+using the former direct schedule producer.
 
 ## API and migration
 
