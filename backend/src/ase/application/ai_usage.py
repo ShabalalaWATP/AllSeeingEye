@@ -34,7 +34,6 @@ class AiUsageTransaction(Protocol):
     async def rollback(self) -> None: ...
 
 
-
 @dataclass(frozen=True, slots=True)
 class AiReservationBatch:
     """All policy reservations for one provider request."""
