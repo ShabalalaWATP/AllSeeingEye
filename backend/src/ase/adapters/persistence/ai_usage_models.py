@@ -152,6 +152,7 @@ class AiUsageReservationRow(Base):
             name="ck_ai_reservation_attribution",
         ),
         Index("ix_ai_usage_reservations_status_created", "status", "created_at"),
+        Index("ix_ai_usage_reservations_status_period_end", "status", "period_end"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)

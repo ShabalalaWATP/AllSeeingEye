@@ -47,6 +47,32 @@ process, in a bounded batch of 20 calls. A reservation still `reserved` after on
 reports the number of calls held as unknown. There is no automatic release of unknown
 calls; an explicit review action is future work.
 
+### Retention
+
+The ledger keeps only what admission, reconciliation and the current views need. The same
+opportunistic admission path prunes expired rows, at most once an hour per process, in
+one short transaction that is never held across a model call. Each table loses at most
+500 rows per run through a single `DELETE ... WHERE key IN (SELECT key ... LIMIT 500)`,
+which behaves the same on SQLite and PostgreSQL. When any table fills its batch the next
+run follows at the one-minute reconciliation pace until the backlog clears. A failure is
+logged by exception type only and never blocks admission; a successful run logs the
+number of rows removed per table and no account or team identifiers.
+
+| Rows | Removed when | Never removed |
+| --- | --- | --- |
+| `ai_usage_reservations` | status `released` or `settled` and `period_end` more than 90 days ago (`RESERVATION_RETENTION`) | `reserved` (in flight or awaiting reconciliation) and `unknown` (awaiting review) |
+| `ai_usage_counters` | `period_end` more than 400 days ago (`PERIOD_RETENTION`, about 13 months) | any counter still carrying a reserved request or token |
+| `ai_usage_totals` | `period_end` more than 400 days ago | none beyond the age rule |
+
+Allowance summaries (`/api/ai-usage/me`, the administrator preview and team usage views)
+read only the counter and totals rows for the current period, and the preview's
+`unknown_calls` counts only `unknown` reservations, so pruning never changes a figure a
+user or administrator sees. The administrator reservation listing shows the latest 100
+rows and simply stops showing expired ones. Migration `0054` adds a
+`(status, period_end)` index on reservations for the selection; counters and totals stay
+small (one row per policy period and per monthly attribution bucket) and are selected
+without an extra index. The provider audit trail in `llm_usage` is unaffected.
+
 In the durable report job path the allowance decorator sits inside the job's
 `ReportCallBudget`, so a job refusal never reserves allowance, and an allowance refusal
 is recorded in the job ledger as `not_dispatched` and does not consume the job's output
@@ -78,8 +104,8 @@ recently created override active at the time of admission replaces the base limi
 Revocation is recorded rather than deleting the row. Creation, revocation and admission
 serialise on the same policy row lock, and creation and revocation are audited.
 
-Policy deletion remains a revisioned disable operation so historical reservations stay
-auditable. Provider assignment and encrypted credentials remain in the existing
+Policy deletion remains a revisioned disable operation so reservations stay auditable
+within their retention window. Provider assignment and encrypted credentials remain in the existing
 model-routing implementation.
 
 ## Model call inventory
@@ -111,8 +137,11 @@ Tests cover each newly metered path except conflict screening, which uses the sa
 The admission path is fail-closed when an enabled policy is exhausted and reports a
 stable `ai_usage_limit` error. Feed translation leaves titles untried when the system
 allowance is exhausted and retries on its normal interval rather than busy looping.
-Reservation rows grow per metered call while policies exist, in the same order as the
-existing `llm_usage` audit table; no automatic pruning is installed. Only timeouts are
+Reservation rows grow per metered call while policies exist, but finished rows are pruned
+90 days after their period ends and counters and totals after about 13 months, so the
+ledger stays a small operational aggregate. Pruning is admission-driven: an instance
+that makes no metered calls also prunes nothing, which is acceptable because only
+admission adds rows. Only timeouts are
 treated as unknown after dispatch; a transport error after the request was written is
 counted as a failed request with zero tokens. The PostgreSQL lock ordering is verified by
 design and by the SQLite concurrency tests; the suite has no disposable PostgreSQL run

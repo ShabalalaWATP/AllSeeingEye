@@ -19,6 +19,12 @@ MAX_ALLOWANCE = 2**31 - 1
 # A reservation this old that never reached a provider is released by reconciliation;
 # one that did reach a provider is held as ``unknown`` for administrator review.
 STALE_RESERVATION_AGE = timedelta(hours=1)
+# Released and settled reservations are kept this long after their period ends, then
+# pruned. ``reserved`` and ``unknown`` reservations are never pruned.
+RESERVATION_RETENTION = timedelta(days=90)
+# Counter and totals rows are kept this long after their period ends (about 13 months,
+# so a full year of monthly history survives). Only current periods are read.
+PERIOD_RETENTION = timedelta(days=400)
 
 
 class AiPolicyScope(StrEnum):

@@ -109,5 +109,15 @@ class AiLedgerRepository(Protocol):
     async def team_member_totals(self, team_id: UUID, now: datetime) -> list[AiMemberUsage]: ...
 
 
-class AiUsageRepository(AiPolicyRepository, AiLedgerRepository, Protocol):
+class AiUsagePruningRepository(Protocol):
+    """Bounded deletion of expired ledger rows; each call removes at most ``limit`` rows."""
+
+    async def prune_reservations(self, before: datetime, limit: int) -> int: ...
+
+    async def prune_counters(self, before: datetime, limit: int) -> int: ...
+
+    async def prune_totals(self, before: datetime, limit: int) -> int: ...
+
+
+class AiUsageRepository(AiPolicyRepository, AiLedgerRepository, AiUsagePruningRepository, Protocol):
     """The combined repository the container binds for each session."""

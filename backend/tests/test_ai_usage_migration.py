@@ -78,6 +78,9 @@ def test_ai_usage_migration_and_retained_data_guard():
         engine.dispose()
 
 
+PRUNING_MIGRATION = "0054_ai_usage_reservation_pruning_index.py"
+
+
 def _load(name: str, filename: str):
     path = Path(__file__).parents[1] / "alembic/versions" / filename
     spec = importlib.util.spec_from_file_location(name, path)
@@ -127,6 +130,7 @@ def test_site_and_system_policies_are_each_unique_when_enabled():
 def test_ai_usage_migrations_match_the_models():
     tables = _migration()
     uniqueness = _load("ai_usage_parity", "0051_ai_usage_policy_uniqueness.py")
+    pruning = _load("ai_usage_pruning_parity", PRUNING_MIGRATION)
     names = {
         "ai_usage_policies",
         "ai_usage_policy_overrides",
@@ -137,9 +141,12 @@ def test_ai_usage_migrations_match_the_models():
     engine = create_engine("sqlite://")
     try:
         with engine.begin() as connection:
-            tables.op = uniqueness.op = Operations(MigrationContext.configure(connection))
+            tables.op = uniqueness.op = pruning.op = Operations(
+                MigrationContext.configure(connection)
+            )
             tables.upgrade()
             uniqueness.upgrade()
+            pruning.upgrade()
             context = MigrationContext.configure(
                 connection,
                 opts={
@@ -154,5 +161,32 @@ def test_ai_usage_migrations_match_the_models():
                 },
             )
             assert compare_metadata(context, Base.metadata) == []
+    finally:
+        engine.dispose()
+
+
+def test_pruning_index_migration_round_trip():
+    tables = _migration()
+    pruning = _load("ai_usage_pruning_index", PRUNING_MIGRATION)
+    assert pruning.revision == "0054" and pruning.down_revision == "0053"
+    index = "ix_ai_usage_reservations_status_period_end"
+    engine = create_engine("sqlite://")
+    try:
+        with engine.begin() as connection:
+            tables.op = pruning.op = Operations(MigrationContext.configure(connection))
+            tables.upgrade()
+
+            def indexes() -> dict[str, list[str | None]]:
+                return {
+                    item["name"]: item["column_names"]
+                    for item in inspect(connection).get_indexes("ai_usage_reservations")
+                    if item["name"]
+                }
+
+            assert index not in indexes()
+            pruning.upgrade()
+            assert indexes()[index] == ["status", "period_end"]
+            pruning.downgrade()
+            assert index not in indexes()
     finally:
         engine.dispose()

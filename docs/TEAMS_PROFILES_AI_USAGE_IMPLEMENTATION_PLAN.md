@@ -207,7 +207,7 @@ Each task is a separately reviewable milestone with tests and an execution-log e
 | P01 | T00 | **Implemented.** Profile validation, per-field directory visibility (timezone private by default), unique handles, bounded discovery and avatars (JPEG/PNG/WebP up to 2 MB, dimension checks before decode, re-encoded 256x256 WebP without metadata, stored in `directory_avatars`) are implemented. |
 | P02 | T03, P01 | **Implemented.** Profile editor with avatar upload/removal, roster showing handles and never login email, people picker with avatars, exact-username invitations and invitation inbox. |
 | Q01 | T00 | **Implemented.** Every outbound completion, embedding and web search path is inventoried and attributed in [ADR 0019](adr/0019-ai-usage-allowances.md). |
-| Q02 | Q01 | **Implemented.** Durable reserve/dispatch/settle ledger with relative conditional counter updates in a fixed lock order, released/settled/unknown outcomes, bounded opportunistic reconciliation of stale reservations, observation totals without policies and a system budget scope. Pruning of old reservation rows and an administrator review action for unknown calls remain. |
+| Q02 | Q01 | **Implemented.** Durable reserve/dispatch/settle ledger with relative conditional counter updates in a fixed lock order, released/settled/unknown outcomes, bounded opportunistic reconciliation of stale reservations, observation totals without policies and a system budget scope, and bounded hourly pruning of expired reservations, counters and totals (migration `0054`). An administrator review action for unknown calls remains. |
 | Q03 | Q02 | **Implemented.** Ask Eye (team-owned report Q&A charges the team), interactive and queued reports including subscriptions, web search, claims, photo geolocation, semantic search embeddings, administrator connection tests, feed translation and conflict screening reserve and settle through the shared ledger. |
 | Q04 | Q03 | **Implemented.** Administrator policy CRUD, dated temporary overrides (inherit, limit, unlimited, blocked), audit events, effective preview for accounts, teams and system work, personal usage and role-aware team usage views. |
 | D01 | T02, P02 | **Implemented for the current slice.** My teams entry, creation journey, personal/team context and capability-driven dashboard shell are wired. |
@@ -315,8 +315,8 @@ Release complete means ordinary users can create and manage teams, invite people
   frontend tests for the board, overview, directory profile, avatars, invitations and
   AI usage panels. Frontend clients now derive their types from `types.gen.ts`.
 - **Migrations:** `0052` board moderation and read cursors, `0053` directory avatars
-  and field visibility; `0045`, `0047`, `0050` and `0051` were edited in place before
+  and field visibility, `0054` the reservation pruning index; `0045`, `0047`, `0050` and `0051` were edited in place before
   any database applied them.
-- **Remaining:** feature switches, visibility-aware board polling, pruning of old
-  reservation rows, an administrator review action for unknown calls, PostgreSQL
+- **Remaining:** feature switches, visibility-aware board polling, an administrator
+  review action for unknown calls, PostgreSQL
   migration runs and authenticated browser journeys.
