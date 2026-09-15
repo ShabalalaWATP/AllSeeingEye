@@ -37,6 +37,14 @@ __all__ = [
 
 SETTLEMENT_TIMEOUT = 3.0
 WEB_EXHAUSTED = "The model did not finish within its web-search output budget."
+NOT_DISPATCHED_ERROR = "not_dispatched"
+# A reservation refused by the pre-dispatch recheck never reached a provider.
+NOT_DISPATCHED: dict[str, Any] = {
+    "status": "failed",
+    "error": NOT_DISPATCHED_ERROR,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+}
 
 Payload = dict[str, Any]
 MutatePayload = Callable[[Callable[[Payload], None]], Awaitable[Payload]]
@@ -233,11 +241,17 @@ class ReportCallBudget:
         await self._check()
         call_id = await self._reserve(request_hash, schema, model, reserved_output, stage)
         started = time.monotonic()
-        cancelled = False
-        final: Payload = {"status": "uncertain", "error": "interrupted"}
         try:
             # Reservation can wait for a concurrent mutation; recheck before sending data.
             await self._check()
+        except BaseException:
+            # Nothing reached the provider, so no output, request or provider error is charged.
+            # The original refusal is kept; an unsaved release stays visibly in flight.
+            await self._settle(call_id, started, dict(NOT_DISPATCHED))
+            raise
+        cancelled = False
+        final: Payload = {"status": "uncertain", "error": "interrupted"}
+        try:
             result = await invoke()
             failure = result.failure if isinstance(result, WebSearchResult) else None
             final = {
@@ -267,15 +281,18 @@ class ReportCallBudget:
             final = {"status": "failed", "error": "provider_error"}
             raise
         finally:
-            final["latency_ms"] = round(max(0, time.monotonic() - started) * 1000, 3)
-
-            def settle(payload: Payload) -> None:
-                matches = [row for row in _calls(payload) if row.get("id") == call_id]
-                if len(matches) != 1 or matches[0]["status"] != "in_flight":
-                    raise JobInterrupted()
-                matches[0].update(final)
-
-            if not await _save_once(self._mutate, settle) and not cancelled:
+            if not await self._settle(call_id, started, final) and not cancelled:
                 raise JobInterrupted() from None
         await self._check()
         return result
+
+    async def _settle(self, call_id: str, started: float, final: Payload) -> bool:
+        final["latency_ms"] = round(max(0, time.monotonic() - started) * 1000, 3)
+
+        def settle(payload: Payload) -> None:
+            matches = [row for row in _calls(payload) if row.get("id") == call_id]
+            if len(matches) != 1 or matches[0]["status"] != "in_flight":
+                raise JobInterrupted()
+            matches[0].update(final)
+
+        return await _save_once(self._mutate, settle)

@@ -32,12 +32,15 @@ from ase.application.report_jobs.subscription_snapshot import (
 )
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job
+from ase.application.reports.request import ReportRequest
 from ase.application.reports.templates import template_for
 from ase.domain.direction import direction_to_dict
 from ase.domain.events import BoundingBox
+from ase.domain.evidence_time import EvidenceTimeBasis
 from ase.domain.grading import SourceProfile
 from ase.domain.llm import LlmProfile
 from ase.domain.model_routing_records import routing_from_dict, routing_to_dict
+from ase.domain.project_time import MAX_PROJECT_INTERVAL
 from ase.domain.report_records import evidence_to_list
 from ase.domain.reports import KeyJudgement
 from ase.domain.research import CollectionAttempt
@@ -69,6 +72,7 @@ _KEYS = {
     "routing",
 }
 _SUBSCRIPTION_KEYS = _KEYS | {"subscription_context"}
+_LIVE_WINDOW_SECONDS = 730 * 86400
 
 
 def freeze_job(
@@ -143,6 +147,13 @@ def _bbox(value: Any) -> BoundingBox | None:
     return BoundingBox(**value)
 
 
+def _window_limit(request: ReportRequest) -> float:
+    """Recorded-time research may cover the long project interval accepted at the boundary."""
+    if request.effective_time_basis is EvidenceTimeBasis.RECORDED:
+        return MAX_PROJECT_INTERVAL.total_seconds()
+    return float(_LIVE_WINDOW_SECONDS)
+
+
 def restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
     try:
         return _restore_job(data, actor, profile)
@@ -201,7 +212,7 @@ def _restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
         request=request,
         profile=profile,
         now=timestamp(value["now"]),
-        window=timedelta(seconds=number(value["window_seconds"], 1, 730 * 86400)),
+        window=timedelta(seconds=number(value["window_seconds"], 1, _window_limit(request))),
         title=text(value["title"], 2000) or "",
         scope=json_copy(value["scope"]),
         country_name=text(value["country_name"], 2000, nullable=True),

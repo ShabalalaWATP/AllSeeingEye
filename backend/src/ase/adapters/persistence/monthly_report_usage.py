@@ -13,7 +13,12 @@ from ase.adapters.persistence.models import LlmUsageRow
 from ase.adapters.persistence.report_job_codec import from_row
 from ase.adapters.persistence.report_job_models import ReportJobRow
 from ase.adapters.persistence.subscription_edition_models import SubscriptionEditionRow
-from ase.application.report_jobs.budget import MAX_CALLS, JobInterrupted, token_count
+from ase.application.report_jobs.budget import (
+    MAX_CALLS,
+    NOT_DISPATCHED_ERROR,
+    JobInterrupted,
+    token_count,
+)
 from ase.domain.report_jobs import ReportJob
 from ase.domain.subscription_monthly_budget import (
     MonthlyBudgetPolicy,
@@ -47,6 +52,9 @@ def _call_usage(call: dict[str, Any]) -> MonthlyUsage:
     if status not in {"in_flight", "completed", "failed", "uncertain"}:
         raise JobInterrupted()
     known = token_count(call.get("completion_tokens"))
+    if status == "failed" and call.get("error") == NOT_DISPATCHED_ERROR and known == 0:
+        # Released before dispatch: no provider request or output was spent.
+        return MonthlyUsage(0, 0)
     output = known if status in {"completed", "failed"} and known is not None else reserved
     return MonthlyUsage(1, output)
 

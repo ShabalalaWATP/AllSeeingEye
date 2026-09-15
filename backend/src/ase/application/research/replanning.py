@@ -97,10 +97,18 @@ def _merge(
         for row in second.attempts:
             previous = attempts.get(row.task_id or row.source_id)
             # Reservations and unsupported tasks cannot erase an actual earlier search.
+            # A failed second pass cannot hide first-pass items that remain admitted;
+            # the per-pass receipts still record that second outcome.
             if (
                 previous is None
-                or row.status not in _PLACEHOLDERS
                 or previous.status in _PLACEHOLDERS
+                or (
+                    row.status not in _PLACEHOLDERS
+                    and not (
+                        previous.status is CollectionStatus.COMPLETED
+                        and row.status is not CollectionStatus.COMPLETED
+                    )
+                )
             ):
                 attempts[row.task_id or row.source_id] = row
         second_plan = second.plan

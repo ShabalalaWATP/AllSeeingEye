@@ -175,11 +175,16 @@ def packet_from_dict(data: Any) -> ExpansionPacket:
 def validate_lineage(
     packet: ExpansionPacket, plan: ExpansionPlan, snapshot: ProductionSnapshot
 ) -> None:
-    """A v2 packet may only append distinct, consecutively labelled selected records."""
+    """A v2 packet may only append distinct, consecutively labelled selected records.
+
+    Document, media and follow-up selections can already exceed the challenge final limit.
+    That limit only bounds appended records, so an empty packet remains valid lineage.
+    """
     query = snapshot.query
     if query is None:
         raise ValueError("Challenge expansion requires a frozen research query")
     original = snapshot.selection.items
+    allowed = min(ADDITION_LIMITS[query.mode], max(0, FINAL_LIMITS[query.mode] - len(original)))
     first_label = (
         max((int(row.label[1:]) for row in original if row.label[1:].isdigit()), default=0) + 1
     )
@@ -188,8 +193,7 @@ def validate_lineage(
         or packet.parent != parent_digest(snapshot)
         or packet.plan_fingerprint != plan.fingerprint
         or plan.query != query_digest(query)
-        or len(packet.added) > ADDITION_LIMITS[query.mode]
-        or len(original) + len(packet.added) > FINAL_LIMITS[query.mode]
+        or len(packet.added) > allowed
         or tuple(row.label for row in packet.added)
         != tuple(f"E{first_label + index}" for index in range(len(packet.added)))
         or {row.event_id for row in packet.added} & {row.event_id for row in original}

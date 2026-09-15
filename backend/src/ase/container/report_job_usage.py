@@ -5,7 +5,12 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from ase.application.report_jobs.budget import MAX_CALLS, JobInterrupted, token_count
+from ase.application.report_jobs.budget import (
+    MAX_CALLS,
+    NOT_DISPATCHED_ERROR,
+    JobInterrupted,
+    token_count,
+)
 from ase.domain.llm import LlmUsage
 from ase.domain.subscription_monthly_budget import utc_month
 
@@ -37,6 +42,19 @@ def _calls(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return found
 
 
+def _released_before_dispatch(value: dict[str, Any]) -> bool:
+    """A reservation refused by the pre-dispatch recheck sent no provider request."""
+    if value.get("error") != NOT_DISPATCHED_ERROR:
+        return False
+    if (
+        value["status"] != "failed"
+        or value.get("prompt_tokens") != 0
+        or value.get("completion_tokens") != 0
+    ):
+        raise JobInterrupted()
+    return True
+
+
 def settled_usage(
     before: dict[str, Any], after: dict[str, Any], owner_id: UUID, now: datetime
 ) -> list[LlmUsage]:
@@ -58,7 +76,7 @@ def settled_usage(
             k: v for k, v in value.items() if k not in _MUTABLE
         }:
             raise JobInterrupted()
-        if value["status"] == "uncertain":
+        if value["status"] == "uncertain" or _released_before_dispatch(value):
             continue
         latency = value.get("latency_ms")
         error = value.get("error")
