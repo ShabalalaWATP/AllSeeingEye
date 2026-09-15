@@ -1,6 +1,6 @@
 """Optional diagnostics for feeds that can continue from validated cached inputs."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 from ase.application.ports.feeds import FeedConnector
@@ -12,6 +12,14 @@ class FeedDeferred(Exception):
     def __init__(self, message: str, retry_at: datetime) -> None:
         super().__init__(message)
         self.retry_at = retry_at
+
+
+class FeedRateLimited(Exception):
+    """The upstream asked for fewer requests; `retry_after` is its bounded wait, if stated."""
+
+    def __init__(self, message: str, retry_after: timedelta | None = None) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 @runtime_checkable

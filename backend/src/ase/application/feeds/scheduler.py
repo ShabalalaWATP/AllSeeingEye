@@ -14,7 +14,11 @@ from ase.application.feeds.pipeline import Pipeline
 from ase.application.feeds.poll_scope import poll_scope
 from ase.application.ports import Clock
 from ase.application.ports.cooperative_feeds import CooperativeEventStore, CooperativeGrader
-from ase.application.ports.feed_diagnostics import DiagnosticFeedConnector, FeedDeferred
+from ase.application.ports.feed_diagnostics import (
+    DiagnosticFeedConnector,
+    FeedDeferred,
+    FeedRateLimited,
+)
 from ase.application.ports.feed_release import FeedUnavailable, GuardedFeedConnector
 from ase.application.ports.feeds import BusMessage, EventBus, EventStore, FeedConnector, Grader
 from ase.application.ports.source_controls import SourceAdmission
@@ -157,16 +161,34 @@ class FeedScheduler:
                 else:
                     outcome = await self._publish(connector, raw, started)
                 return outcome
-        except FeedDeferred as exc:
-            entry = self._health.record_deferred(source_id, str(exc), started, exc.retry_at)
-            await self._bus.publish(BusMessage("source.health", {"health": entry}))
-            return PollOutcome(source_id, ok=False, error=entry.last_error)
+        except (FeedDeferred, FeedRateLimited) as exc:
+            return await self._slowed(connector, exc, generation, started)
         except FeedUnavailable as exc:
             return PollOutcome(source_id, ok=False, error=str(exc))
         except Exception as exc:
             if isinstance(connector, GuardedFeedConnector):
                 return await self._guarded_failure(connector, generation, started)
             return await self._failure(source_id, f"{type(exc).__name__}: {exc}", started)
+
+    async def _slowed(
+        self,
+        connector: FeedConnector,
+        exc: FeedDeferred | FeedRateLimited,
+        generation: int | None,
+        started: datetime,
+    ) -> PollOutcome:
+        """A deliberate deferral or an upstream throttle schedules the next attempt."""
+        source_id = connector.spec.id
+        if isinstance(exc, FeedDeferred):
+            entry = self._health.record_deferred(source_id, str(exc), started, exc.retry_at)
+        elif isinstance(connector, GuardedFeedConnector):
+            return await self._guarded_failure(connector, generation, started)
+        else:
+            entry = self._health.record_rate_limited(
+                source_id, f"{type(exc).__name__}: {exc}", started, exc.retry_after
+            )
+        await self._bus.publish(BusMessage("source.health", {"health": entry}))
+        return PollOutcome(source_id, ok=False, error=entry.last_error)
 
     async def _guarded_failure(
         self, connector: GuardedFeedConnector, generation: int | None, started: datetime

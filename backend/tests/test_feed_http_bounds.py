@@ -41,7 +41,7 @@ async def test_total_deadline_stops_a_slow_drip() -> None:
         await client.aclose()
 
 
-@pytest.mark.parametrize("encoding", ["gzip", "deflate", "br", "gzip, identity", "unknown"])
+@pytest.mark.parametrize("encoding", ["deflate", "br", "zstd", "gzip, identity", "unknown"])
 async def test_rejects_encoding_before_consuming_body(encoding: str) -> None:
     body = ObservedBody()
 
