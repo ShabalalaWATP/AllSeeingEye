@@ -21,6 +21,7 @@ from ase.domain.research import (
     ResearchFocus,
     ResearchMode,
 )
+from ase.domain.research_capacity import MAX_COLLECTION_RECEIPTS
 from ase.domain.research_records import research_from_dict, research_to_dict
 from feeds_helpers import make_event
 from llm_fixture_helpers import seed_legacy_profile
@@ -103,7 +104,9 @@ async def test_ineligible_planning_never_calls_model(container, user, case):
         job = replace(
             job,
             seed_attempts=tuple(
-                CollectionAttempt(str(i), "seed", CollectionStatus.EMPTY) for i in range(63)
+                # Retained receipts plus the one selected task fill every receipt slot.
+                CollectionAttempt(str(i), "seed", CollectionStatus.EMPTY)
+                for i in range(MAX_COLLECTION_RECEIPTS - 1)
             ),
         )
 

@@ -35,7 +35,8 @@ def payload():
         {"research_since": None},
         {"research_since": "2020-01-01T10:00:00"},
         {"research_until": "2020-01-01T10:00:00.123456Z"},
-        {"research_until": "2020-02-01T10:00:00Z"},
+        # Longer than the 730-day research maximum.
+        {"research_until": "2022-01-02T10:00:00Z"},
         {"window_hours": 1},
         {"map_view_id": None},
         {"disclose_area_to_provider": "true"},

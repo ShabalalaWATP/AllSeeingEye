@@ -12,6 +12,7 @@ import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
+from ase.adapters.research_inputs.memory import MAX_USER_SLOTS
 from ase.api.deps import get_access_claims, get_container, get_current_user, get_session
 from ase.api.errors import register_error_handlers
 from ase.api.routers import research_inputs
@@ -80,8 +81,9 @@ async def test_rejected_request_does_not_read_a_single_body_chunk(reason: str) -
     harness = Harness()
     application = upload_app(harness, authenticated=reason != "unauthenticated")
     if reason == "capacity":
-        harness.store.reserve(harness.actor, "first.txt")
-        harness.store.reserve(harness.actor, "second.txt")
+        # Fill every per-user slot, so admission refuses before any body chunk is read.
+        for index in range(MAX_USER_SLOTS):
+            harness.store.reserve(harness.actor, f"input-{index}.txt")
     messages = []
 
     async def receive() -> dict[str, Any]:

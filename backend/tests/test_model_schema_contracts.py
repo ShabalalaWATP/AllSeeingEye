@@ -17,11 +17,11 @@ from ase.application.reports.claim_proposal_model import SCHEMA as CLAIM_SCHEMA
 from ase.application.reports.plan_queries import planning_schema
 from ase.application.reports.production_types import Totals
 from ase.application.reports.replan_queries import make_replanner
+from ase.application.research.photo_model import photo_assessment_schema
 from ase.application.research.query_translation import translation_schema
 from ase.domain.advocacy import ADVOCACY_SCHEMA
 from ase.domain.direction import DIRECTION_SCHEMA
 from ase.domain.llm import LlmMessage, LlmRequest
-from ase.domain.photo_geolocation import PhotoAssessment
 from ase.domain.report_input import parse_model_body
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
 from ase.domain.reports import ChangeFromPrevious, ReportParseError, parse_body
@@ -66,7 +66,8 @@ def assert_strict_objects(schema, path="$", *, root=True):
         pytest.param(REVIEW_SCHEMA, id="challenge-review"),
         pytest.param(CLAIM_SCHEMA, id="claim-proposal"),
         pytest.param(TEST_SCHEMA, id="connection-test"),
-        pytest.param(PhotoAssessment.model_json_schema(), id="photo-geolocation"),
+        # The provider receives the strict projection, not the defaulted API model schema.
+        pytest.param(photo_assessment_schema(), id="photo-geolocation"),
         pytest.param(translation_schema(("en", "fr"), 2), id="query-translation"),
         pytest.param(
             screening_schema([ScreeningInput("one", "Public report", "")]),

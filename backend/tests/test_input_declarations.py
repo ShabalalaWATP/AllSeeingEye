@@ -9,6 +9,7 @@ from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from ase.adapters.research_inputs.memory import MAX_USER_SLOTS
 from ase.application.reports.export_text import evidence_metadata
 from ase.application.reports.prompts import evidence_block
 from ase.domain.errors import InvalidRequest, NotFound, RateLimited
@@ -75,6 +76,9 @@ async def test_declaration_derives_immutable_private_input_and_frozen_json():
     assert "source_dates" not in evidence_to_list((legacy,))[0]
     with pytest.raises(InvalidRequest):
         await h.service.declare(h.actor, receipt.id, receipt.sha256, (declaration(event),))
+    # Derived inputs occupy the owner's bounded slots; once full, another declaration is refused.
+    for index in range(MAX_USER_SLOTS - 2):
+        h.store.reserve(h.actor, f"held-{index}.txt")
     with pytest.raises(RateLimited):
         await h.service.declare(
             h.actor, original.id, original.sha256, (declaration(before.events[0]),)

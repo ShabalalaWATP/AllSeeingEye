@@ -127,7 +127,12 @@ async def test_ask_runs_direction_then_the_advocate(
         "Shelling in Kharkiv",
         "Talks resume in Vienna",
     ]
-    assert version["status"] == "ready"
+    # Direction adds requirements the fixture body does not assess and the fixture evidence is
+    # a two-word summary, so the requirement coverage and citation gates both ask for review.
+    assert version["status"] == "needs_review"
+    rules = {f["rule"] for f in version["findings"] if f["severity"] == "error"}
+    assert rules == {"requirement_coverage"}
+    assert version["citation_checks"]["judgements"][0]["status"] == "context_insufficient"
     assert version["body"]["key_judgements"][0]["confidence"] == "low"
     advocacy = version["devils_advocacy"]
     assert advocacy["target"] == "KJ1" and advocacy["evidence"] == ["E2"]
@@ -135,9 +140,10 @@ async def test_ask_runs_direction_then_the_advocate(
     assert any("E7" in f["message"] for f in version["findings"])
     assert version["prompt_tokens"] == 200 and version["latency_ms"] == 400.0
     markdown = version["markdown"]
-    assert "Requirements: PIR-1, SIR-1, SIR-2, EEI-1, EEI-2." in markdown
-    assert "## Direction" in markdown and "## Devil's advocacy" in markdown
-    assert "Confidence on KJ1 lowered from moderate to low." in markdown
+    # The published report folds advocacy into alternative explanations; direction and its
+    # requirements remain in the structured version asserted above.
+    assert "## Alternative explanations" in markdown
+    assert f"An alternative view is that {ADVOCACY['argument']}" in markdown
     assert response.json()["report"]["scope"]["devils_advocacy"] is True
 
     # Regeneration keeps the scope: direction again, and an advocate who leaves confidence alone.
@@ -160,7 +166,10 @@ async def test_ask_runs_direction_then_the_advocate(
     assert second["number"] == 2 and second["direction"]["pir"] == DIRECTION["pir"]
     assert second["body"]["key_judgements"][0]["confidence"] == "moderate"
     assert second["devils_advocacy"]["confidence_before"] is None
-    assert "Confidence unchanged. Two items from one theatre." in second["markdown"]
+    assert (
+        f"An alternative view is that {ADVOCACY['argument']} {ADVOCACY['rationale']}"
+        in (second["markdown"])
+    )
 
     async with container.session_factory() as session:
         usage = await container.repositories(session).llm_usage.list_recent(10)
