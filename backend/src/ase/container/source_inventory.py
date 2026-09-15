@@ -6,8 +6,10 @@ from typing import TYPE_CHECKING, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ase.adapters.archive.wayback import NullArchiver
 from ase.adapters.persistence.firms_credentials import SqlFirmsCredentials
 from ase.application.model_routing import ModelRouting
+from ase.application.source_assets import SourceAsset
 from ase.application.source_inventory import (
     ConnectionState,
     PlatformConnection,
@@ -15,6 +17,7 @@ from ase.application.source_inventory import (
     SourceInventory,
     SourceRequirement,
 )
+from ase.container.source_assets import build_source_assets
 from ase.container.source_requirements import (
     FIRMS_SETTING,
     OPTIONAL_CONNECTOR_SPECS,
@@ -61,6 +64,22 @@ def _platform(
             optional,
         ),
         "Configured." if present else "Optional." if optional else "Not configured.",
+    )
+
+
+def _toggle(
+    key: str, name: str, purpose: str, on: bool, setting: str, on_note: str, off_note: str
+) -> PlatformConnection:
+    """An effective on or off state; a switched-off toggle is an operator choice, not a gap."""
+    return PlatformConnection(
+        key,
+        name,
+        purpose,
+        ConnectionState.CONNECTED if on else ConnectionState.DISABLED_BY_ENVIRONMENT,
+        SourceRequirement(
+            "toggle", on, "environment", setting, on_note if on else off_note, optional=True
+        ),
+        "On." if on else "Off on this server.",
     )
 
 
@@ -113,7 +132,12 @@ class SourceInventoryWiring:
             container.source_admission,
             tuple(settings.disabled_feed_ids),
             resolve,
+            collecting=bool(settings.feeds_enabled),
         )
+
+    def source_assets(self, user: User) -> list[SourceAsset]:
+        """Camera, map, Ukraine and reference data, from cached metadata only."""
+        return build_source_assets(cast("Container", self), user)
 
     async def platform_connections(
         self, session: AsyncSession, user: User
@@ -178,14 +202,6 @@ class SourceInventoryWiring:
                 "ASE_SMTP_HOST and ASE_SMTP_FROM_EMAIL",
             ),
             _platform(
-                "highway_cameras",
-                "Washington State highway cameras",
-                "WSDOT camera snapshots in the CCTV catalogue.",
-                "api_key",
-                bool(settings.wsdot_access_code),
-                "ASE_WSDOT_ACCESS_CODE",
-            ),
-            _platform(
                 "alert_webhook",
                 "Alert webhook",
                 "Posts fired indicators to an external https endpoint.",
@@ -194,23 +210,33 @@ class SourceInventoryWiring:
                 "ASE_ALERT_WEBHOOK_URL",
                 optional=True,
             ),
-            _platform(
+            _toggle(
+                "live_feeds",
+                "Live feed collection",
+                "Runs the scheduled feeds, aviation monitor and alert evaluation in this process.",
+                bool(settings.feeds_enabled),
+                "ASE_FEEDS_ENABLED",
+                "Scheduled feeds run in this process (on by default outside tests).",
+                "Scheduled feeds are switched off; set ASE_FEEDS_ENABLED=true to collect.",
+            ),
+            _toggle(
                 "url_archive",
                 "Wayback archiving",
                 "Asks the Internet Archive to preserve each cited URL after a report.",
-                "toggle",
-                bool(settings.archive_enabled),
+                not isinstance(container.archiver, NullArchiver),
                 "ASE_ARCHIVE_ENABLED",
-                optional=True,
+                "Cited URLs are submitted to the Wayback Machine (on by default outside tests).",
+                "Archiving is switched off; set ASE_ARCHIVE_ENABLED=true to preserve cited URLs.",
             ),
-            _platform(
+            _toggle(
                 "conflict_screening",
                 "Conflict relevance screening",
                 "Uses the global model to screen machine-coded conflict reports.",
-                "toggle",
-                settings.conflict_screening_enabled,
+                settings.conflict_screening_enabled and bool(settings.feeds_enabled),
                 "ASE_CONFLICT_SCREENING_ENABLED",
-                optional=True,
+                "Screening runs when a global model is assigned (on by default).",
+                "Screening is off: it needs ASE_CONFLICT_SCREENING_ENABLED and live feed "
+                "collection.",
             ),
             PlatformConnection(
                 "media_tools",
