@@ -14,6 +14,7 @@ from ase.domain.direction import Direction
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmProfile
 from ase.domain.reports import KeyJudgement, ReportHeader
+from ase.domain.research_brief_values import IntelligenceRequirement
 
 MAX_INITIAL_TOPICS = 6
 MAX_TOPIC_LEAVES = 12
@@ -22,6 +23,7 @@ MAX_EVIDENCE = 100
 LEGACY_METHOD_VERSION = "report-sections-v1"
 PREVIOUS_METHOD_VERSION = "report-sections-v2"
 METHOD_VERSION = "report-sections-v3"
+CANONICAL_METHOD_VERSION = "report-sections-v4-brief"
 _LABEL = re.compile(r"E[1-9][0-9]{0,5}")
 _STOP = frozenset(
     [
@@ -96,6 +98,7 @@ def plan_topics(
     evidence: Sequence[EvidenceItem],
     direction: Direction | None,
     *,
+    requirements: Sequence[IntelligenceRequirement] = (),
     method_version: str = METHOD_VERSION,
 ) -> tuple[Topic, ...]:
     labels = tuple(item.label for item in evidence)
@@ -105,7 +108,12 @@ def plan_topics(
         or any(not _LABEL.fullmatch(label) for label in labels)
     ):
         raise ValueError("Section drafting requires bounded, uniquely labelled frozen evidence.")
-    eeis = tuple(direction.eeis) if direction else ()
+    if requirements:
+        eeis = tuple(row.question for row in requirements)
+        requirement_ids = tuple(row.id for row in requirements)
+    else:
+        eeis = direction.eeis if direction else ()
+        requirement_ids = tuple(f"EEI-{index}" for index in range(1, len(eeis) + 1))
     eei_terms = tuple(_terms(text) for text in eeis)
     item_terms = {
         item.label: _terms(f"{item.title} {item.title_en or ''} {item.summary or ''}")
@@ -131,7 +139,7 @@ def plan_topics(
         )
         key: tuple[str, tuple[str, ...]]
         if index is not None:
-            requirement_id = f"EEI-{index + 1}"
+            requirement_id = requirement_ids[index]
             assignments[item.label] = requirement_id
             key = (f"{requirement_id}: {eeis[index]}"[:100], (requirement_id,))
         else:
@@ -139,7 +147,11 @@ def plan_topics(
             key = (f"{item.category.replace('_', ' ').capitalize()}{country}"[:100], ())
         groups.setdefault(key, []).append(item.label)
     if len(labels) <= 2:
-        bindings = _bindings(labels, assignments) if method_version == METHOD_VERSION else ()
+        bindings = (
+            _bindings(labels, assignments)
+            if method_version in {METHOD_VERSION, CANONICAL_METHOD_VERSION}
+            else ()
+        )
         return (
             Topic(
                 "S1",
@@ -188,7 +200,9 @@ def plan_topics(
                 name,
                 items,
                 ids,
-                requirement_evidence=bindings if method_version == METHOD_VERSION else (),
+                requirement_evidence=bindings
+                if method_version in {METHOD_VERSION, CANONICAL_METHOD_VERSION}
+                else (),
             )
         )
     return tuple(topics)
@@ -269,11 +283,12 @@ def packet_digest(
     direction: Direction | None,
     background: str | None,
     *,
+    requirements: Sequence[IntelligenceRequirement] = (),
     method_version: str = METHOD_VERSION,
 ) -> str:
     packet = canonical_json(
         {
-            "method": method_version,
+            "method": CANONICAL_METHOD_VERSION if requirements else method_version,
             "profile": profile.config_hash,
             "template": asdict(template),
             "header": asdict(header),
@@ -283,6 +298,11 @@ def packet_digest(
             "previous": [asdict(row) for row in previous],
             "direction": asdict(direction) if direction else None,
             "background": background,
+            **(
+                {"canonical_requirements": [asdict(row) for row in requirements]}
+                if requirements
+                else {}
+            ),
         }
     )
     if len(packet.encode("utf-8")) > 2 * 1024 * 1024:

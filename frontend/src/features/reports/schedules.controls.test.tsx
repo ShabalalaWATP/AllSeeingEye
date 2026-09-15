@@ -24,12 +24,18 @@ it('edits report depth and timing, preserves sources and paused status, then sho
     country_iso: null,
   };
   const updates: Record<string, unknown>[] = [];
+  let resumeCalls = 0;
   server.use(
     http.get('/api/schedules', () => HttpResponse.json({ items: [current] })),
     http.put('/api/schedules/:id', async ({ request }) => {
       const body = (await request.json()) as Record<string, unknown>;
       updates.push(body);
       current = { ...current, ...body, next_run_at: '2026-10-31T15:00:00Z' };
+      return HttpResponse.json(current);
+    }),
+    http.post('/api/schedules/:id/resume', () => {
+      resumeCalls++;
+      current = { ...current, enabled: true };
       return HttpResponse.json(current);
     }),
   );
@@ -56,7 +62,8 @@ it('edits report depth and timing, preserves sources and paused status, then sho
   await user.click(table.getByRole('button', { name: 'Resume' }));
   await table.findByRole('button', { name: 'Pause' });
   expect(table.getByText(formatUtc('2026-10-31T15:00:00Z'))).toBeVisible();
-  expect(updates[1]).toMatchObject({ research_mode: 'advanced', enabled: true, hour_utc: 15 });
+  expect(resumeCalls).toBe(1);
+  expect(updates).toHaveLength(1);
 });
 
 it('retains the edit on failure and lets the operator cancel without another write', async () => {
@@ -88,9 +95,46 @@ it('filters the control panel and gives an explicit empty result', async () => {
   const { user } = renderApp('/research/recurring', 'user');
   await screen.findByRole('table', { name: 'Subscriptions' });
   await user.selectOptions(screen.getByLabelText('Show subscriptions'), 'attention');
-  expect(screen.getByText('No subscriptions match this status.')).toBeVisible();
+  expect(screen.getByText('No subscriptions match these filters.')).toBeVisible();
   await user.selectOptions(screen.getByLabelText('Show subscriptions'), 'active');
   expect(screen.getByText('Morning INTSUM')).toBeVisible();
+});
+
+it('filters subscriptions by question or topic together with update frequency', async () => {
+  server.use(
+    http.get('/api/schedules', () =>
+      HttpResponse.json({
+        items: [
+          {
+            ...schedule,
+            name: 'Baltic energy',
+            question: 'How is power supply changing?',
+            cadence: 'monthly',
+          },
+          {
+            ...schedule,
+            id: '29f2ac45-7912-4b23-b8c0-15c5eef784af',
+            name: 'Pacific security',
+            question: 'What changed around the port?',
+            research_subject: 'Maritime activity',
+            cadence: 'weekly',
+          },
+        ],
+      }),
+    ),
+  );
+  const { user } = renderApp('/research/recurring', 'user');
+  const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
+  expect(table.getByText('Baltic energy')).toBeVisible();
+  expect(table.getByText('Pacific security')).toBeVisible();
+
+  await user.type(screen.getByLabelText('Search subscriptions'), 'maritime');
+  expect(table.queryByText('Baltic energy')).not.toBeInTheDocument();
+  expect(table.getByText('Pacific security')).toBeVisible();
+  await user.selectOptions(screen.getByLabelText('Update frequency'), 'monthly');
+  expect(screen.getByText('No subscriptions match these filters.')).toBeVisible();
+  await user.selectOptions(screen.getByLabelText('Update frequency'), 'weekly');
+  expect(table.getByText('Pacific security')).toBeVisible();
 });
 
 it('clears fresh collection choices when using existing evidence only', async () => {
@@ -123,7 +167,7 @@ it('keeps the latest successful report accessible when a later scheduled run fai
   renderApp('/research/recurring', 'user');
   const table = within(await screen.findByRole('table', { name: 'Subscriptions' }));
   expect(table.getByText('The latest collection could not complete.')).toBeVisible();
-  expect(table.getByRole('link', { name: 'Latest update' })).toHaveAttribute(
+  expect(table.getByRole('link', { name: 'Last successful update' })).toHaveAttribute(
     'href',
     `/reports/${schedule.last_report_id ?? ''}`,
   );
@@ -217,8 +261,12 @@ it('prevents edit saves while a pause request is running and preserves its resul
     http.put('/api/schedules/:id', async ({ request }) => {
       const body = (await request.json()) as Record<string, unknown>;
       writes.push(body);
-      if (writes.length === 1) await pending;
       current = { ...current, ...body };
+      return HttpResponse.json(current);
+    }),
+    http.post('/api/schedules/:id/pause', async () => {
+      await pending;
+      current = { ...current, enabled: false };
       return HttpResponse.json(current);
     }),
   );
@@ -227,13 +275,13 @@ it('prevents edit saves while a pause request is running and preserves its resul
   await user.click(table.getByRole('button', { name: 'Edit' }));
   const form = within(await screen.findByRole('form', { name: 'Edit subscription' }));
   await user.click(table.getByRole('button', { name: 'Pause' }));
-  await waitFor(() => expect(writes).toHaveLength(1));
+  await waitFor(() => expect(table.getByRole('button', { name: 'Pause' })).toBeDisabled());
   expect(form.getByRole('button', { name: 'Save changes' })).toBeDisabled();
-  expect(table.getByRole('button', { name: 'Delete' })).toBeDisabled();
+  expect(table.getByRole('button', { name: 'Archive' })).toBeDisabled();
   release?.();
   await table.findByRole('button', { name: 'Resume' });
   await waitFor(() => expect(form.getByRole('button', { name: 'Save changes' })).toBeEnabled());
   await user.click(form.getByRole('button', { name: 'Save changes' }));
-  await waitFor(() => expect(writes).toHaveLength(2));
-  expect(writes[1]).toHaveProperty('enabled', false);
+  await waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]).toHaveProperty('enabled', false);
 });

@@ -38,13 +38,18 @@ def payload():
         {"research_until": "2020-02-01T10:00:00Z"},
         {"window_hours": 1},
         {"map_view_id": None},
-        {"research_mode": None},
         {"disclose_area_to_provider": "true"},
     ],
 )
 def test_rejects_invalid_fixed_interval_before_application(change):
     with pytest.raises(ValidationError):
         ReportCreateIn.model_validate({**payload(), **change})
+
+
+def test_fixed_interval_without_research_mode_is_accepted():
+    # Subscription editions pin exact windows for reports that do not research.
+    accepted = ReportCreateIn.model_validate({**payload(), "research_mode": None})
+    assert accepted.research_mode is None and accepted.research_since is not None
 
 
 def test_transport_retains_exact_map_and_interval():

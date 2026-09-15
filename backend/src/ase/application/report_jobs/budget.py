@@ -11,13 +11,31 @@ from uuid import UUID, uuid4
 
 from ase.application.ports.llm import LlmTokenBudgetExhausted
 from ase.application.ports.web_search import WebSearchResult
+from ase.application.report_jobs.budget_limits import (
+    MAX_CALLS,
+    MAX_COUNTER,
+    MAX_OUTPUT_TOKENS,
+    token_count,
+)
+from ase.application.report_jobs.fresh_web_allocation import check_web_discovery_dispatch
+from ase.application.report_jobs.stage_budget import check_stage_budget
+from ase.application.report_jobs.stage_reservations import ModelStage
 from ase.domain.errors import InvalidRequest
 from ase.domain.llm import LlmResult
+from ase.domain.subscription_monthly_budget import MonthlyBudgetExhausted
 
-MAX_CALLS = 24
-MAX_OUTPUT_TOKENS = 256_000
+__all__ = [
+    "MAX_CALLS",
+    "MAX_COUNTER",
+    "MAX_OUTPUT_TOKENS",
+    "JobBudgetExhausted",
+    "JobInterrupted",
+    "ReportCallBudget",
+    "output_used",
+    "token_count",
+]
+
 SETTLEMENT_TIMEOUT = 3.0
-MAX_COUNTER = 2**31 - 1
 WEB_EXHAUSTED = "The model did not finish within its web-search output budget."
 
 Payload = dict[str, Any]
@@ -34,11 +52,6 @@ class JobBudgetExhausted(InvalidRequest):
 class JobInterrupted(InvalidRequest):
     code = "report_job_interrupted"
     default_message = "Report generation stopped before its progress could be safely confirmed."
-
-
-def token_count(value: object) -> int | None:
-    """Unknown counts stay unknown; bools, negative and oversized values are invalid."""
-    return value if type(value) is int and 0 <= value <= MAX_COUNTER else None
 
 
 def _calls(payload: Payload) -> list[Payload]:
@@ -109,15 +122,27 @@ class ReportCallBudget:
         check: CheckAccess,
         *,
         profile_id: UUID | None = None,
+        require_stage_plan: bool = False,
     ) -> None:
         self._mutate, self._check, self._profile_id = mutate, check, profile_id
+        self._require_stage_plan = require_stage_plan
 
     def with_profile(self, profile_id: UUID) -> ReportCallBudget:
         """Attribute a call without creating another ledger or authorisation boundary."""
-        return ReportCallBudget(self._mutate, self._check, profile_id=profile_id)
+        return ReportCallBudget(
+            self._mutate,
+            self._check,
+            profile_id=profile_id,
+            require_stage_plan=self._require_stage_plan,
+        )
 
     async def _reserve(
-        self, request_hash: str, schema: str, model: str, reserved_output: int
+        self,
+        request_hash: str,
+        schema: str,
+        model: str,
+        reserved_output: int,
+        stage: ModelStage | None,
     ) -> str:
         if (
             not re.fullmatch(r"[0-9a-f]{64}", request_hash)
@@ -152,6 +177,19 @@ class ReportCallBudget:
                 or output_used(payload) + reserved_output > MAX_OUTPUT_TOKENS
             ):
                 raise JobBudgetExhausted()
+            if not check_web_discovery_dispatch(
+                payload,
+                calls,
+                schema=schema,
+                stage=stage,
+                reserved_output=reserved_output,
+            ):
+                raise JobBudgetExhausted("The frozen fresh-web discovery allowance is exhausted.")
+            stage_decision = check_stage_budget(
+                payload, calls, stage, reserved_output, required=self._require_stage_plan
+            )
+            if stage_decision is not None and not stage_decision.allowed:
+                raise JobBudgetExhausted(" ".join(stage_decision.reasons))
             calls.append(
                 {
                     "id": call_id,
@@ -165,12 +203,18 @@ class ReportCallBudget:
                     "completion_tokens": None,
                     "latency_ms": 0.0,
                     "error": None,
+                    **({"stage": stage.value} if stage_decision is not None and stage else {}),
                 }
             )
 
         try:
             await self._mutate(reserve)
-        except (JobBudgetExhausted, JobInterrupted, LlmTokenBudgetExhausted):
+        except (
+            JobBudgetExhausted,
+            JobInterrupted,
+            LlmTokenBudgetExhausted,
+            MonthlyBudgetExhausted,
+        ):
             raise
         except Exception:
             raise JobInterrupted() from None
@@ -184,9 +228,10 @@ class ReportCallBudget:
         model: str,
         reserved_output: int,
         invoke: Callable[[], Awaitable[Result]],
+        stage: ModelStage | None = None,
     ) -> Result:
         await self._check()
-        call_id = await self._reserve(request_hash, schema, model, reserved_output)
+        call_id = await self._reserve(request_hash, schema, model, reserved_output, stage)
         started = time.monotonic()
         cancelled = False
         final: Payload = {"status": "uncertain", "error": "interrupted"}

@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import (
     CheckConstraint,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -34,11 +35,23 @@ class ReportJobRow(Base):
             "(status <> 'running' AND lease_token IS NULL AND lease_until IS NULL)",
             name="ck_report_jobs_lease",
         ),
+        CheckConstraint(
+            "(brief_id IS NULL AND brief_revision IS NULL) OR "
+            "(brief_id IS NOT NULL AND brief_revision >= 1)",
+            name="ck_report_jobs_brief_pair",
+        ),
+        ForeignKeyConstraint(
+            ["brief_id", "brief_revision"],
+            ["research_brief_revisions.brief_id", "research_brief_revisions.revision"],
+            name="fk_report_jobs_brief_revision",
+        ),
         Index("ix_report_jobs_status_created", "status", "created_at", "id"),
         Index("ix_report_jobs_owner_created", "owner_id", "created_at"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    brief_id: Mapped[UUID | None] = mapped_column(Uuid, nullable=True)
+    brief_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
     request_key: Mapped[UUID] = mapped_column(Uuid)
     owner_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
     team_id: Mapped[UUID | None] = mapped_column(Uuid, ForeignKey("teams.id"), nullable=True)

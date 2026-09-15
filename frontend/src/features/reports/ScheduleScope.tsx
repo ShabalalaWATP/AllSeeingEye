@@ -46,7 +46,7 @@ export function ScheduleScope({
     sourceIds,
   } = state;
   return (
-    <details className="group border-t border-line pt-5">
+    <details id="subscription-advanced" className="group border-t border-line pt-5">
       <summary className="cursor-pointer text-sm font-medium">Advanced scope and sources</summary>
       <div className="mt-4 space-y-4">
         <WorkspaceField

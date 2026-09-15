@@ -11,12 +11,15 @@ from ase.application.reports.sections.quality import (
 from ase.domain.direction import Direction
 from ase.domain.report_input import parse_model_body
 from ase.domain.reports import ReportBody
+from ase.domain.research_brief_values import IntelligenceRequirement
 
 
 def assemble(
     topics: list[tuple[Topic, dict[str, Any]]],
     synthesis: dict[str, Any],
     direction: Direction | None = None,
+    *,
+    requirements: tuple[IntelligenceRequirement, ...] = (),
 ) -> ReportBody:
     reporting: list[dict[str, Any]] = []
     assessment: list[dict[str, Any]] = []
@@ -38,6 +41,9 @@ def assemble(
     report, _ = ensure_requirement_coverage(
         report,
         direction,
-        supported=requirement_support_from_topics(topics),
+        supported=requirement_support_from_topics(
+            topics, requirements=requirements, direction=direction, judgements=synthesis
+        ),
+        requirements=requirements,
     )
     return report

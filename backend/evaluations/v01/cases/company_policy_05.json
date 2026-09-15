@@ -1,0 +1,84 @@
+{
+  "schema_version": "ase-v01-case-1",
+  "id": "company_policy_05",
+  "domain": "company_policy",
+  "split": "development",
+  "requested_depth": "deep",
+  "title": "Revenue currency confusion",
+  "evidence_origin": "synthetic_assistant_authored",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "question": "What currency and scale does the fictional issuer report?",
+  "requirements": [
+    {
+      "id": "r1",
+      "question": "What currency and scale does the fictional issuer report?",
+      "useful_packet_ids": [
+        "p1"
+      ],
+      "expected_passages": [
+        {
+          "packet_id": "p1",
+          "packet_sha256": "0a58836c51af03610369a59628b663df1c04b8fcdd04bf598c32a4f697e9d912",
+          "text": "the fictional issuer reports 20 million pounds of provisional revenue in the stated period."
+        }
+      ],
+      "reference_state": "partial",
+      "reference_outcome": "Do not substitute dollars or remove the million scale; provisional revenue is not audited cash flow."
+    }
+  ],
+  "scope": {
+    "countries": [
+      "GB"
+    ],
+    "since": "2026-09-10T00:00:00Z",
+    "until": "2026-09-14T00:00:00Z",
+    "privacy_boundary": "Public institutional and aggregate synthetic evidence only. No private-person identification or private address inference.",
+    "geographic_limit": "fictional firm alder works and a draft procurement rule; no claim of complete geographic coverage."
+  },
+  "packet": [
+    {
+      "id": "p1",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic company_policy source packet",
+      "summary": "the fictional issuer reports 20 million pounds of provisional revenue in the stated period.",
+      "content_sha256": "0a58836c51af03610369a59628b663df1c04b8fcdd04bf598c32a4f697e9d912",
+      "url": "https://example.invalid/company_policy/bulletin",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "GB",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "kind": "literal_cues",
+      "packet_id": "p1",
+      "claim": "the fictional issuer reports 20 million dollars of provisional revenue in the stated period.",
+      "expected_indicators": []
+    }
+  ],
+  "edition": null,
+  "known_pitfalls": [
+    "Synthetic packet statements remain attributed claims, not real-world facts.",
+    "Deliberate blind spot: the current literal check cannot validate units. No warning is not a supported claim."
+  ],
+  "acceptable_abstentions": [
+    "Do not substitute dollars or remove the million scale; provisional revenue is not audited cash flow.",
+    "State which missing source, date, passage or context prevents a stronger answer."
+  ],
+  "analytical_review_questions": [
+    "Does every required question receive an answer, partial, disputed or gap state?",
+    "Are scope, attribution, units, counterevidence and missing coverage preserved without invented certainty?",
+    "If a forecast is added, does it have a finite horizon and explain its evidential limits?"
+  ]
+}

@@ -4,16 +4,122 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from difflib import SequenceMatcher
+from enum import StrEnum
 from typing import Any
 
 from ase.domain.direction import Direction
 from ase.domain.reports import Gap, ReportBody
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import Finding, Severity
 
 MAX_GAPS = 20
 _WORDS = re.compile(r"\w+")
+
+
+class CoverageState(StrEnum):
+    ANSWERED = "answered"
+    PARTIALLY_ANSWERED = "partially_answered"
+    DISPUTED = "disputed"
+    NO_ADEQUATE_EVIDENCE = "no_adequate_evidence"
+
+
+@dataclass(frozen=True, slots=True)
+class RequirementCoverage:
+    requirement_id: str
+    state: CoverageState
+    selected_evidence: tuple[str, ...]
+    cited_evidence: tuple[str, ...]
+    section_ids: tuple[str, ...]
+    gap_count: int
+
+
+def project_requirement_coverage(
+    topics: Sequence[tuple[Any, dict[str, Any]]],
+    *,
+    requirements: Sequence[IntelligenceRequirement] = (),
+    direction: Direction | None = None,
+    judgements: dict[str, Any] | None = None,
+) -> tuple[RequirementCoverage, ...]:
+    """Structural coverage for synthesis, not a factual verification of claims.
+
+    Only exact topic bindings and frozen citations count. A selected item alone
+    cannot answer a question. A partly answered question remains visible even
+    when some evidence was cited; contrary evidence is reported separately.
+    """
+    if not requirements and not any(topic.requirement_evidence for topic, _ in topics):
+        return ()
+    ids = (
+        tuple(row.id for row in requirements)
+        if requirements
+        else tuple(f"EEI-{index}" for index in range(1, len(direction.eeis) + 1))
+        if direction
+        else tuple(
+            dict.fromkeys(
+                requirement_id
+                for topic, _ in topics
+                for requirement_id, _ in topic.requirement_evidence
+            )
+        )
+    )
+    rows: list[RequirementCoverage] = []
+    for requirement_id in ids:
+        selected = tuple(
+            dict.fromkeys(
+                label
+                for topic, _ in topics
+                for bound_id, labels in topic.requirement_evidence
+                if bound_id == requirement_id
+                for label in labels
+            )
+        )
+        allowed = frozenset(selected)
+        reporting = {
+            label
+            for _, body in topics
+            for item in body["reporting"]
+            for label in item["evidence"]
+            if label in allowed
+        }
+        assessment = {
+            label
+            for _, body in topics
+            for item in body["assessment"]
+            for label in item["evidence"]
+            if label in allowed
+        }
+        cited = tuple(label for label in selected if label in reporting | assessment)
+        section_ids = tuple(
+            topic.id
+            for topic, body in topics
+            if any(
+                label in allowed
+                for kind in ("reporting", "assessment")
+                for item in body[kind]
+                for label in item["evidence"]
+            )
+        )
+        gap_count = sum(
+            gap.get("eei") == requirement_id for _, body in topics for gap in body["gaps"]
+        )
+        disputed = any(
+            allowed.intersection(row["supporting_evidence"])
+            and allowed.intersection(row["contradicting_evidence"])
+            for row in (judgements or {}).get("key_judgements", ())
+        )
+        if not cited:
+            state = CoverageState.NO_ADEQUATE_EVIDENCE
+        elif disputed:
+            state = CoverageState.DISPUTED
+        elif reporting and assessment and not gap_count:
+            state = CoverageState.ANSWERED
+        else:
+            state = CoverageState.PARTIALLY_ANSWERED
+        rows.append(
+            RequirementCoverage(requirement_id, state, selected, cited, section_ids, gap_count)
+        )
+    return tuple(rows)
 
 
 def _plain(text: str) -> str:
@@ -68,13 +174,7 @@ def normalise_gap_rows(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
     return [{"text": row.text, "eei": row.eei} for row in gaps[:MAX_GAPS]]
 
 
-def _requirement_text(direction: Direction, requirement_id: str) -> str:
-    index = int(requirement_id.removeprefix("EEI-")) - 1
-    return direction.eeis[index]
-
-
-def _notice(direction: Direction, requirement_id: str) -> Gap:
-    question = _requirement_text(direction, requirement_id)
+def _notice(question: str, requirement_id: str) -> Gap:
     return Gap(
         f"Not separately assessed from the retained evidence: {question}",
         requirement_id,
@@ -83,22 +183,21 @@ def _notice(direction: Direction, requirement_id: str) -> Gap:
 
 def requirement_support_from_topics(
     topics: Sequence[tuple[Any, dict[str, Any]]],
+    *,
+    requirements: Sequence[IntelligenceRequirement] = (),
+    direction: Direction | None = None,
+    judgements: dict[str, Any] | None = None,
 ) -> frozenset[str] | None:
-    """Return explicit v3 support, or defer legacy topics to body-heading inference."""
+    """Return structurally answered IDs; leave partial/disputed work for review."""
     if not any(topic.requirement_evidence for topic, _ in topics):
         return None
-    supported: set[str] = set()
-    for topic, body in topics:
-        cited = {
-            label
-            for section in (body["reporting"], body["assessment"])
-            for row in section
-            for label in row.get("evidence", ())
-        }
-        for requirement_id, evidence_labels in topic.requirement_evidence:
-            if cited & set(evidence_labels):
-                supported.add(requirement_id)
-    return frozenset(supported)
+    return frozenset(
+        row.requirement_id
+        for row in project_requirement_coverage(
+            topics, requirements=requirements, direction=direction, judgements=judgements
+        )
+        if row.state is CoverageState.ANSWERED
+    )
 
 
 def _support_from_body(body: ReportBody, requirement_ids: Sequence[str]) -> frozenset[str]:
@@ -120,6 +219,7 @@ def ensure_requirement_coverage(
     direction: Direction | None,
     *,
     supported: frozenset[str] | None = None,
+    requirements: Sequence[IntelligenceRequirement] = (),
 ) -> tuple[ReportBody, tuple[Finding, ...]]:
     """Add neutral unanswered-EEI notices and return publication review findings.
 
@@ -127,9 +227,19 @@ def ensure_requirement_coverage(
     converted into a claim that the real-world event or condition was absent.
     """
     rows = _deduplicate(body.gaps)
-    if direction is None or not direction.eeis:
+    if requirements:
+        requirement_rows = tuple((row.id, row.question, row.required) for row in requirements)
+    elif direction is not None:
+        requirement_rows = tuple(
+            (f"EEI-{index}", question, True) for index, question in enumerate(direction.eeis, 1)
+        )
+    else:
+        requirement_rows = ()
+    if not requirement_rows:
         return replace(body, gaps=tuple(rows[:MAX_GAPS])), ()
-    requirement_ids = tuple(f"EEI-{index}" for index in range(1, len(direction.eeis) + 1))
+    requirement_ids = tuple(row[0] for row in requirement_rows)
+    questions = {identifier: question for identifier, question, _ in requirement_rows}
+    required_ids = {identifier for identifier, _, required in requirement_rows if required}
     supported_ids = (
         _support_from_body(body, requirement_ids) if supported is None else supported
     ) & frozenset(requirement_ids)
@@ -137,7 +247,7 @@ def ensure_requirement_coverage(
     existing = {row.eei for row in rows if row.eei}
     for requirement_id in unsupported:
         if requirement_id not in existing:
-            rows.append(_notice(direction, requirement_id))
+            rows.append(_notice(questions[requirement_id], requirement_id))
 
     # Keep one disclosure for every unsupported requirement ahead of additional
     # requirement-specific and generic gaps, so the bounded cap cannot hide one.
@@ -165,5 +275,6 @@ def ensure_requirement_coverage(
             "The requirement was not separately assessed from sufficient retained evidence.",
         )
         for requirement_id in unsupported
+        if requirement_id in required_ids
     )
     return replace(body, gaps=tuple((priority + required + other)[:MAX_GAPS])), findings

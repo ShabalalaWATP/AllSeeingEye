@@ -46,6 +46,8 @@ async def test_daily_worker_produces_existing_cited_report_product(
         )
     )
     monkeypatch.setattr(container.research, "collect", collection)
+    # Durable research jobs acquire sources through the checkpointed path.
+    monkeypatch.setattr(container.research, "collect_checkpointed", collection)
     admitted = await client.post("/api/live-monitor/briefing", headers=headers)
     assert admitted.status_code == 202, admitted.text
     job_id = admitted.json()["job"]["id"]

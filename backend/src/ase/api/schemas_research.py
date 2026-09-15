@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,6 +35,22 @@ class CollectionPassOut(BaseModel):
     plan: ResearchPlanOut | None = None
 
 
+class OriginalFollowupOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    evidence_label: str
+    event_id: str
+    source_id: str
+    status: Literal["acquired", "headline_only", "unavailable"]
+    reason: str
+    candidate_id: str | None = None
+    passage_ref: UUID | None = None
+    passage_id: str | None = None
+    document_version_id: str | None = None
+    transport_requests: int | None = 0
+    transport_requests_reserved: int = 0
+
+
 class ResearchReceiptOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -54,3 +71,4 @@ class ResearchReceiptOut(BaseModel):
 
     passes: list[CollectionPassOut] = Field(default_factory=list, max_length=2)
     web_research: WebResearchOut | None = None
+    original_followup: list[OriginalFollowupOut] = Field(default_factory=list, max_length=10)

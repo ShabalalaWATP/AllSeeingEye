@@ -285,7 +285,7 @@ def parse_body(data: Any) -> ReportBody:
     gaps = tuple(
         Gap(
             text=_str(item.get("text", ""), "gaps.text", MAX_ITEM_CHARS),
-            eei=_str(item["eei"], "gaps.eei", 32) if item.get("eei") else None,
+            eei=_str(item["eei"], "gaps.eei", 64) if item.get("eei") else None,
         )
         for item in _objects(data.get("gaps"), "gaps")
     )

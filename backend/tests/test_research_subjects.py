@@ -239,7 +239,8 @@ async def test_safe_error_receipts_and_no_retry(provider_type, subject, error, s
 
 def test_registry_does_not_claim_independence_for_overlapping_scholarly_aggregators() -> None:
     specs = subject_specs()
-    assert len({spec.id for spec in specs}) == 4
+    # OpenAlex, Crossref, World Bank, UK Parliament and the ONS CPIH bridge.
+    assert len({spec.id for spec in specs}) == 5
     assert all(spec.independence_key == "" for spec in specs[:2])
     assert all(
         spec.reliability.value == "F" and spec.rating.status == "unassessed" for spec in specs

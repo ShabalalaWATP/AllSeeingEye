@@ -12,6 +12,7 @@ from ase.domain.doctrine import (
     distinct_bands,
     find_hedges,
     find_urls,
+    has_numeric_likelihood,
     mentions_confidence,
     opens_as_judgement,
     scan_likelihood,
@@ -63,6 +64,40 @@ def test_yardstick_scanning_prefers_longest_terms() -> None:
     assert sentences("One. Two!  Three? ") == ["One.", "Two!", "Three?"]
     assert opens_as_judgement("  We ASSESS that") and not opens_as_judgement("It is likely")
     assert term_for(Probability.REALISTIC_POSSIBILITY) == "realistic possibility"
+
+
+def test_numeric_likelihood_is_distinct_from_unrelated_source_statistics() -> None:
+    assert has_numeric_likelihood("We assess a 100% probability of escalation.")
+    assert has_numeric_likelihood("The chance is 75 percent.")
+    assert has_numeric_likelihood("We assess a 100 per cent certainty of escalation.")
+    assert has_numeric_likelihood("We assess it is 80% likely to escalate.")
+    assert not has_numeric_likelihood("The survey included 75 percent of households.")
+    assert not has_numeric_likelihood("The source reports 42 incidents.")
+
+
+def test_validator_rejects_numeric_judgement_and_forbidden_reporting_likelihood() -> None:
+    body = {
+        **GOOD_BODY,
+        "key_judgements": [
+            {
+                **GOOD_BODY["key_judgements"][0],
+                "statement": "We assess it is highly likely with a 100% probability of escalation.",
+            },
+            GOOD_BODY["key_judgements"][1],
+        ],
+        "reporting": [
+            {
+                "theme": "Source reporting",
+                "items": [
+                    {"text": "It is very likely to escalate.", "evidence": ["E1"], "grade": "C3"}
+                ],
+            }
+        ],
+    }
+    result = validate_body(parse_body(body), LABELS, URLS)
+    errors = [finding for finding in result.errors if finding.rule == "yardstick"]
+    assert any(finding.location == "KJ1" for finding in errors)
+    assert any(finding.location.startswith("reporting.") for finding in errors)
 
 
 def test_parse_body_bounds_and_drops_unknown_fields() -> None:
@@ -117,6 +152,33 @@ def test_validator_accepts_a_sound_report_and_strips_unknown_citations() -> None
     assert not result.passed
     assert any(f.rule == "citation" for f in result.errors)
     assert result.body.key_judgements[0].contradicting_evidence == ()
+
+
+@pytest.mark.parametrize(
+    "rationale",
+    ["Because.", "Unknown", "Insufficient evidence.", "Because the sources say so."],
+)
+def test_generic_confidence_rationale_is_not_a_completed_assessment(rationale: str) -> None:
+    body = {
+        **GOOD_BODY,
+        "key_judgements": [{**GOOD_BODY["key_judgements"][0], "confidence_statement": rationale}],
+    }
+    result = validate_body(parse_body(body), LABELS, URLS)
+    assert any(f.rule == "confidence" and f.severity is Severity.ERROR for f in result.findings)
+
+
+def test_forbidden_likelihood_in_confidence_rationale_is_rejected() -> None:
+    body = {
+        **GOOD_BODY,
+        "key_judgements": [
+            {
+                **GOOD_BODY["key_judgements"][0],
+                "confidence_statement": "The evidence is very likely enough, 100% certain.",
+            }
+        ],
+    }
+    result = validate_body(parse_body(body), LABELS, URLS)
+    assert any(f.rule == "yardstick" and f.location == "KJ1" for f in result.errors)
 
 
 def test_validator_catches_doctrine_breaches() -> None:

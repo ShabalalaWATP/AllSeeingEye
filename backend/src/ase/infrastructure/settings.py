@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     rate_limit_forgot_per_ip: int = Field(default=3, ge=1)
     rate_limit_set_password_per_ip: int = Field(default=10, ge=1)
     rate_limit_reports_per_user: int = Field(default=10, ge=1)
+    # Versioned UTC-month report model ceilings; operators may only reduce them.
+    monthly_owner_requests: int = Field(default=800, ge=1, le=800)
+    monthly_owner_output_tokens: int = Field(default=24_000_000, ge=1, le=24_000_000)
+    monthly_subscription_requests: int = Field(default=240, ge=1, le=240)
+    monthly_subscription_output_tokens: int = Field(default=8_000_000, ge=1, le=8_000_000)
     # Feeds: on by default outside tests; polite identification is mandatory for most APIs.
     feeds_enabled: bool | None = None
     feeds_contact: str = "set-ASE_FEEDS_CONTACT@example.invalid"
@@ -66,6 +71,7 @@ class Settings(BaseSettings):
     )
     aisstream_api_key: SecretStr | None = None
     cloudflare_radar_token: SecretStr | None = None
+    cloudflare_radar_noncommercial_use_acknowledged: bool = False
     # Ukraine frontline providers stay off until the operator records the terms they rest on.
     ukraine_deepstate_access: str | None = Field(default=None, pattern=r"^granted$")
     ukraine_ocha_humanitarian: bool = False
@@ -87,6 +93,7 @@ class Settings(BaseSettings):
     openaq_api_key: SecretStr | None = None
     wsdot_access_code: SecretStr | None = None
     ooni_noncommercial_use_acknowledged: bool = False
+    ioda_public_data_use_acknowledged: bool = False
     uksl_snapshot_path: str | None = None
     ofac_sdn_snapshot_path: str | None = None
     aiddata_catalogue_path: str | None = None

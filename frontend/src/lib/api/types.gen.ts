@@ -176,6 +176,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/report-jobs/from-brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Job From Brief
+         * @description Pin the exact immutable brief revision before report-job preparation.
+         */
+        post: operations["create_job_from_brief_api_report_jobs_from_brief_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/report-jobs/{job_id}/pause": {
         parameters: {
             query?: never;
@@ -1139,6 +1159,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/original-passages/{passage_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Original Passage */
+        get: operations["read_original_passage_api_reports__report_id__original_passages__passage_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/claims": {
         parameters: {
             query?: never;
@@ -1471,6 +1508,108 @@ export interface paths {
         patch: operations["update_relationship_review_api_relationship_reviews__relationship_id__patch"];
         trace?: never;
     };
+    "/api/reports/{report_id}/versions/{number}/ledgers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Ledgers */
+        get: operations["list_ledgers_api_reports__report_id__versions__number__ledgers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ledger */
+        get: operations["get_ledger_api_reports__report_id__versions__number__ledgers__ledger_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/forecasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Forecast */
+        post: operations["create_forecast_api_reports__report_id__versions__number__ledgers_forecasts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/indicators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Indicator */
+        post: operations["create_indicator_api_reports__report_id__versions__number__ledgers_indicators_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review Forecast */
+        post: operations["review_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/ledgers/{ledger_id}/missing-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Missing */
+        post: operations["record_missing_api_reports__report_id__versions__number__ledgers__ledger_id__missing_readings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/library": {
         parameters: {
             query?: never;
@@ -1676,6 +1815,127 @@ export interface paths {
         get: operations["report_markdown_api_reports__report_id__markdown_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/briefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Briefs */
+        get: operations["list_briefs_api_research_briefs_get"];
+        put?: never;
+        /** Create Brief */
+        post: operations["create_brief_api_research_briefs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/briefs/{brief_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief */
+        get: operations["get_brief_api_research_briefs__brief_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/briefs/{brief_id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Brief Revisions */
+        get: operations["list_brief_revisions_api_research_briefs__brief_id__revisions_get"];
+        put?: never;
+        /** Revise Brief */
+        post: operations["revise_brief_api_research_briefs__brief_id__revisions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/briefs/{brief_id}/revisions/{revision}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief Revision */
+        get: operations["get_brief_revision_api_research_briefs__brief_id__revisions__revision__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/briefs/{brief_id}/revisions/{revision}/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Research Preflight */
+        get: operations["research_preflight_api_research_briefs__brief_id__revisions__revision__preflight_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Presets */
+        get: operations["list_presets_api_research_presets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/research/presets/{preset_id}/definition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Editable Definition */
+        post: operations["editable_definition_api_research_presets__preset_id__definition_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2056,6 +2316,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/versions/{number}/source-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["history_api_reports__report_id__versions__number__source_reviews_get"];
+        put?: never;
+        /** Review */
+        post: operations["review_api_reports__report_id__versions__number__source_reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/source-assessment-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Freeze */
+        post: operations["freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/versions/{number}/source-assessment-snapshots/{snapshot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Snapshot */
+        get: operations["snapshot_api_reports__report_id__versions__number__source_assessment_snapshots__snapshot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stream": {
         parameters: {
             query?: never;
@@ -2385,6 +2697,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schedules/{schedule_id}/editions/{edition_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Edition */
+        post: operations["pause_edition_api_schedules__schedule_id__editions__edition_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/editions/{edition_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Edition */
+        post: operations["resume_edition_api_schedules__schedule_id__editions__edition_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/editions/{edition_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Edition */
+        post: operations["retry_edition_api_schedules__schedule_id__editions__edition_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/editions/{edition_id}/accept-baseline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Edition Baseline */
+        post: operations["accept_edition_baseline_api_schedules__schedule_id__editions__edition_id__accept_baseline_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Schedule */
+        post: operations["pause_schedule_api_schedules__schedule_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Schedule */
+        post: operations["resume_schedule_api_schedules__schedule_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/run-now": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Subscription Now */
+        post: operations["run_subscription_now_api_schedules__schedule_id__run_now_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Schedule */
+        post: operations["preview_schedule_api_schedules_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/editions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Subscription Editions */
+        get: operations["list_subscription_editions_api_schedules__schedule_id__editions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{schedule_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Subscription Events */
+        get: operations["list_subscription_events_api_schedules__schedule_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schedules": {
         parameters: {
             query?: never;
@@ -2397,6 +2879,23 @@ export interface paths {
         put?: never;
         /** Create Schedule */
         post: operations["create_schedule_api_schedules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/from-brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Schedule From Brief */
+        post: operations["create_schedule_from_brief_api_schedules_from_brief_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2416,6 +2915,40 @@ export interface paths {
         post?: never;
         /** Delete Schedule */
         delete: operations["delete_schedule_api_schedules__schedule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Owner Monthly Usage */
+        get: operations["owner_monthly_usage_api_schedules_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedules/{subscription_id}/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscription Monthly Usage */
+        get: operations["subscription_monthly_usage_api_schedules__subscription_id__usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2602,6 +3135,23 @@ export interface paths {
         put?: never;
         /** Reset Source */
         post: operations["reset_source_api_admin_sources__source_id__reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/subscriptions/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Subscription Diagnostics */
+        get: operations["get_subscription_diagnostics_api_admin_subscriptions_diagnostics_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3520,6 +4070,22 @@ export interface components {
             /** Polygons */
             polygons: number[][][][];
         };
+        /** AssertionRatingRevision */
+        AssertionRatingRevision: {
+            /** Evidence Id */
+            evidence_id: string;
+            /** Claim Id */
+            claim_id: string;
+            credibility: components["schemas"]["Credibility"];
+            review: components["schemas"]["RatingReview"];
+        };
+        /** AssessedOriginEdge */
+        AssessedOriginEdge: {
+            edge: components["schemas"]["OriginEdge"];
+            status: components["schemas"]["OriginStatus"];
+            /** Effective */
+            effective: boolean;
+        };
         /** AssessmentDimensionOut */
         AssessmentDimensionOut: {
             /** Name */
@@ -3587,6 +4153,11 @@ export interface components {
             /** Unsupported Judgements */
             unsupported_judgements: number;
         };
+        /**
+         * Assessor
+         * @enum {string}
+         */
+        Assessor: "reviewer" | "policy" | "model" | "third_party" | "legacy";
         /** AssistantAnswerIn */
         AssistantAnswerIn: {
             /** Question */
@@ -3598,7 +4169,7 @@ export interface components {
              * @default global
              * @enum {string}
              */
-            scope: "global" | "viewport" | "selected";
+            scope: "global" | "viewport" | "selected" | "report";
             bbox?: components["schemas"]["AssistantBoundsIn"] | null;
             selected?: components["schemas"]["AssistantSelectionIn"] | null;
             time_range?: components["schemas"]["AssistantTimeRangeIn"] | null;
@@ -3606,6 +4177,7 @@ export interface components {
             continuation_id?: string | null;
             /** Source Categories */
             source_categories?: (components["schemas"]["Category"] | ("camera" | "infrastructure" | "doctrine"))[] | null;
+            report?: components["schemas"]["AssistantReportIn"] | null;
         };
         /** AssistantAnswerOut */
         AssistantAnswerOut: {
@@ -3624,6 +4196,7 @@ export interface components {
              */
             generated_at: string;
             model: components["schemas"]["AssistantModelOut"] | null;
+            report?: components["schemas"]["AssistantReportOut"] | null;
         };
         /** AssistantBoundsIn */
         AssistantBoundsIn: {
@@ -3697,13 +4270,42 @@ export interface components {
             /** Lat */
             lat: number;
         };
+        /** AssistantReportIn */
+        AssistantReportIn: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version: number;
+        };
+        /** AssistantReportOut */
+        AssistantReportOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Version Id
+             * Format: uuid
+             */
+            version_id: string;
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /** Data Cutoff */
+            data_cutoff: string | null;
+        };
         /** AssistantScopeOut */
         AssistantScopeOut: {
             /**
              * Mode
              * @enum {string}
              */
-            mode: "global" | "viewport" | "selected";
+            mode: "global" | "viewport" | "selected" | "report";
             bbox: components["schemas"]["AssistantBoundsIn"] | null;
             selected: components["schemas"]["AssistantSelectionIn"] | null;
         };
@@ -3725,7 +4327,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "camera" | "infrastructure" | "gnss" | "doctrine";
+            kind: "event" | "camera" | "infrastructure" | "gnss" | "doctrine" | "report_claim" | "report_evidence";
             /** Record Id */
             record_id: string;
             /** Source Id */
@@ -3784,6 +4386,11 @@ export interface components {
             /** Next Before */
             next_before: number | null;
         };
+        /**
+         * Authenticity
+         * @enum {string}
+         */
+        Authenticity: "established" | "unassessed" | "disputed";
         /** AviationBoardOut */
         AviationBoardOut: {
             /** Military Total */
@@ -3812,6 +4419,42 @@ export interface components {
          * @enum {string}
          */
         BlockKind: "title" | "heading" | "annex" | "subheading" | "text" | "warning" | "metadata" | "list" | "table" | "figure" | "reference";
+        /** BriefJobCreateIn */
+        BriefJobCreateIn: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /**
+             * Brief Id
+             * Format: uuid
+             */
+            brief_id: string;
+            /** Revision */
+            revision: number;
+        };
+        /**
+         * BriefLimits
+         * @description Optional user ceilings; admission must also check the selected model profile.
+         */
+        BriefLimits: {
+            /**
+             * Policy Id
+             * @default ase-brief-limits-v1
+             */
+            policy_id: string;
+            /** Max Passes */
+            max_passes?: number | null;
+            /** Max External Operations */
+            max_external_operations?: number | null;
+            /** Max Model Calls */
+            max_model_calls?: number | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Max Collection Seconds */
+            max_collection_seconds?: number | null;
+        };
         /** CableOut */
         CableOut: {
             /** Id */
@@ -3914,6 +4557,46 @@ export interface components {
             os_maps: boolean;
             /** Os Layers */
             os_layers: string[];
+        };
+        /** CapabilityPrerequisite */
+        CapabilityPrerequisite: {
+            kind: components["schemas"]["PrerequisiteKind"];
+            /** Setting */
+            setting: string | null;
+            /**
+             * Optional
+             * @default false
+             */
+            optional: boolean;
+        };
+        /**
+         * CapabilityReadiness
+         * @enum {string}
+         */
+        CapabilityReadiness: "public_unverified" | "configured_unverified" | "requirement_unknown" | "requirement_missing" | "disabled";
+        /**
+         * CapabilityScope
+         * @enum {string}
+         */
+        CapabilityScope: "topic" | "country_context" | "area" | "company" | "domain" | "private_input";
+        /**
+         * CapabilitySupport
+         * @description Coarse declared support. Provider.supports and item-level checks remain authoritative.
+         *
+         *     Country context is a selection capability, never precise incident geography.
+         *     Configured languages are not detected article languages or translation support.
+         *     Date support describes filtering semantics, never archive completeness.
+         */
+        CapabilitySupport: {
+            /** Scopes */
+            scopes: components["schemas"]["CapabilityScope"][];
+            /** Dates */
+            dates: components["schemas"]["DateSupport"][];
+            /** Languages */
+            languages: string[];
+            language_policy: components["schemas"]["LanguageSupport"];
+            /** Constraints */
+            constraints: string;
         };
         /** CapturedIdentityValue */
         CapturedIdentityValue: {
@@ -4073,6 +4756,13 @@ export interface components {
             end: number;
             /** Text */
             text: string;
+        };
+        /** CitationKeyIn */
+        CitationKeyIn: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Excerpt Sha256 */
+            excerpt_sha256: string;
         };
         /**
          * CitationStatus
@@ -4507,6 +5197,11 @@ export interface components {
             /** Changed Fields */
             changed_fields: string[];
         };
+        /**
+         * ComparisonReason
+         * @enum {string}
+         */
+        ComparisonReason: "current_run_failed" | "baseline_unavailable" | "baseline_incompatible" | "provider_outage" | "coverage_inadequate" | "significant_contradiction" | "source_correction" | "claim_inventory_changed" | "claim_mapping_unresolved" | "claim_meaning_changed" | "likelihood_changed" | "horizon_changed" | "support_changed" | "opposition_changed" | "assumptions_changed" | "indicators_changed" | "new_relevant_evidence" | "syndicated_duplicates_only" | "adequate_coverage_no_new_evidence";
         /** ComparisonReportsOut */
         ComparisonReportsOut: {
             /** Items */
@@ -4578,6 +5273,11 @@ export interface components {
             assessment: components["schemas"]["ReportAssessment"] | null;
         };
         /**
+         * ComparisonState
+         * @enum {string}
+         */
+        ComparisonState: "failure" | "insufficient_coverage" | "significant_contradiction_or_correction" | "assessment_changed" | "new_evidence_broadly_unchanged_assessment" | "no_new_relevant_captured_evidence";
+        /**
          * Confidence
          * @enum {string}
          */
@@ -4602,6 +5302,22 @@ export interface components {
             changed_fields: string[];
             /** Explanations */
             explanations: string[];
+        };
+        /** ConfidenceDimensions */
+        ConfidenceDimensions: {
+            source_quality: components["schemas"]["Confidence"];
+            corroboration: components["schemas"]["Confidence"];
+            coverage: components["schemas"]["Confidence"];
+            /** Limitation */
+            limitation: string;
+        };
+        /** ConfidenceIn */
+        ConfidenceIn: {
+            source_quality: components["schemas"]["Confidence"];
+            corroboration: components["schemas"]["Confidence"];
+            coverage: components["schemas"]["Confidence"];
+            /** Limitation */
+            limitation: string;
         };
         /** ConfirmedLossesOut */
         ConfirmedLossesOut: {
@@ -4741,6 +5457,11 @@ export interface components {
          * @enum {string}
          */
         ConnectionState: "connected" | "idle" | "degraded" | "failing" | "key_missing" | "key_unverified" | "on_demand" | "not_configured" | "disabled_by_admin" | "disabled_by_environment";
+        /**
+         * ContentCapability
+         * @enum {string}
+         */
+        ContentCapability: "discovery_metadata" | "structured_records" | "retained_observations" | "private_passages" | "private_media_metadata";
         /** ContinuationTraceOut */
         ContinuationTraceOut: {
             /**
@@ -4914,12 +5635,38 @@ export interface components {
                 number
             ];
         };
+        /**
+         * CoverageState
+         * @enum {string}
+         */
+        CoverageState: "complete" | "partial" | "not_applicable" | "unknown";
+        /**
+         * Credibility
+         * @description NATO information credibility (AJP-2.1 Table 3.1).
+         * @enum {integer}
+         */
+        Credibility: 1 | 2 | 3 | 4 | 5 | 6;
         /** CredibilityLabelOut */
         CredibilityLabelOut: {
             /** Grade */
             grade: number;
             /** Label */
             label: string;
+        };
+        /** CriterionIn */
+        CriterionIn: {
+            /** Description */
+            description: string;
+            /** Metric Id */
+            metric_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Unit */
+            unit?: string | null;
+            /** Threshold */
+            threshold?: number | string | null;
+            direction?: components["schemas"]["ThresholdDirection"] | null;
+            aggregate?: components["schemas"]["WindowAggregate"] | null;
         };
         /** CyberActorCatalogueOut */
         CyberActorCatalogueOut: {
@@ -5270,6 +6017,11 @@ export interface components {
             /** Note */
             note: string;
         };
+        /**
+         * DateSupport
+         * @enum {string}
+         */
+        DateSupport: "publication_interval" | "current_snapshot" | "recorded_interval" | "research_interval" | "annual_periods" | "input_metadata";
         /** DayBucketOut */
         DayBucketOut: {
             /**
@@ -5282,6 +6034,11 @@ export interface components {
             /** Max Severity */
             max_severity: number | null;
         };
+        /**
+         * DecisionMethod
+         * @enum {string}
+         */
+        DecisionMethod: "reviewer" | "verified_threshold" | "clock";
         /** DoctrineReferenceOut */
         DoctrineReferenceOut: {
             /** Title */
@@ -5532,6 +6289,49 @@ export interface components {
          * @enum {integer}
          */
         EconomyWindowDays: 2 | 5 | 7 | 14;
+        /** EditionComparisonOut */
+        EditionComparisonOut: {
+            /** Previous Version Id */
+            previous_version_id: string | null;
+            /**
+             * Current Version Id
+             * Format: uuid
+             */
+            current_version_id: string;
+            state: components["schemas"]["ComparisonState"];
+            /** Reasons */
+            reasons: components["schemas"]["ComparisonReason"][];
+            /** Changed Claims */
+            changed_claims: number;
+            /** Corrected Evidence */
+            corrected_evidence: number;
+            /** Novel Evidence */
+            novel_evidence: number;
+            /** Syndicated Duplicates */
+            syndicated_duplicates: number;
+            /** Summary */
+            summary: string;
+        };
+        /**
+         * EditionCoverage
+         * @enum {string}
+         */
+        EditionCoverage: "complete_for_plan" | "partial" | "insufficient" | "unknown";
+        /**
+         * EditionQuality
+         * @enum {string}
+         */
+        EditionQuality: "absent" | "ready" | "needs_review" | "failed";
+        /**
+         * EditionTrigger
+         * @enum {string}
+         */
+        EditionTrigger: "scheduled" | "catch_up" | "run_now" | "baseline";
+        /**
+         * EditionWorkflow
+         * @enum {string}
+         */
+        EditionWorkflow: "pending" | "queued" | "running" | "retry_wait" | "paused" | "blocked" | "completed" | "failed" | "cancelled" | "skipped";
         /** EquipmentOut */
         EquipmentOut: {
             /** Id */
@@ -5812,6 +6612,11 @@ export interface components {
          */
         EvidenceTimeBasis: "publication" | "acquisition_or_publication" | "recorded_time";
         /**
+         * ExecutionRoute
+         * @enum {string}
+         */
+        ExecutionRoute: "public_research" | "retained_area" | "private_document" | "private_media" | "fresh_web";
+        /**
          * ExportFormat
          * @enum {string}
          */
@@ -6075,6 +6880,149 @@ export interface components {
             as_of: string;
             /** Links */
             links: components["schemas"]["ase__api__schemas_ukraine_reference__LinkOut"][];
+        };
+        /** ForecastCreateIn */
+        ForecastCreateIn: {
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Claim Revision Id
+             * Format: uuid
+             */
+            claim_revision_id: string;
+            /**
+             * Horizon End
+             * Format: date-time
+             */
+            horizon_end: string;
+            /**
+             * Review At
+             * Format: date-time
+             */
+            review_at: string;
+            criterion: components["schemas"]["CriterionIn"];
+            likelihood: components["schemas"]["Probability"];
+            confidence: components["schemas"]["ConfidenceIn"];
+            /** Supporting */
+            supporting: components["schemas"]["CitationKeyIn"][];
+            /**
+             * Contrary
+             * @default []
+             */
+            contrary: components["schemas"]["CitationKeyIn"][];
+        };
+        /** ForecastDecision */
+        ForecastDecision: {
+            /** Id */
+            id: string;
+            /** Forecast Version Id */
+            forecast_version_id: string;
+            /** Previous Decision Id */
+            previous_decision_id: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            state: components["schemas"]["ForecastState"];
+            method: components["schemas"]["DecisionMethod"];
+            /** Actor Id */
+            actor_id: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["PassageReference"][];
+            /** Outcome */
+            outcome?: boolean | null;
+            observation?: components["schemas"]["ThresholdObservation"] | null;
+            /** Corrects Decision Id */
+            corrects_decision_id?: string | null;
+            /** Superseding Version Id */
+            superseding_version_id?: string | null;
+        };
+        /** ForecastLedger */
+        ForecastLedger: {
+            /** Versions */
+            versions: components["schemas"]["ForecastVersion"][];
+            /**
+             * Decisions
+             * @default []
+             */
+            decisions: components["schemas"]["ForecastDecision"][];
+        };
+        /** ForecastReviewIn */
+        ForecastReviewIn: {
+            /** Previous Decision Id */
+            previous_decision_id?: string | null;
+            /**
+             * State
+             * @constant
+             */
+            state: "unresolved";
+            /** Reason */
+            reason: string;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["CitationKeyIn"][];
+            /** Corrects Decision Id */
+            corrects_decision_id?: string | null;
+        };
+        /**
+         * ForecastState
+         * @enum {string}
+         */
+        ForecastState: "open" | "due" | "resolved" | "superseded" | "unresolved";
+        /** ForecastVersion */
+        ForecastVersion: {
+            /** Forecast Id */
+            forecast_id: string;
+            /** Version Id */
+            version_id: string;
+            /** Version */
+            version: number;
+            /** Claim Id */
+            claim_id: string;
+            /** Claim Version Id */
+            claim_version_id: string;
+            /** Report Version Id */
+            report_version_id: string;
+            /**
+             * Issued At
+             * Format: date-time
+             */
+            issued_at: string;
+            /**
+             * Horizon End
+             * Format: date-time
+             */
+            horizon_end: string;
+            /**
+             * Review At
+             * Format: date-time
+             */
+            review_at: string;
+            criterion: components["schemas"]["ResolutionCriterion"];
+            likelihood: components["schemas"]["Probability"];
+            confidence: components["schemas"]["ConfidenceDimensions"];
+            /** Supporting */
+            supporting: components["schemas"]["PassageReference"][];
+            /** Contrary */
+            contrary: components["schemas"]["PassageReference"][];
+            /** Supersedes Version Id */
+            supersedes_version_id?: string | null;
+            /**
+             * Policy Version
+             * @default ase-forecast-ledger-v1
+             */
+            policy_version: string;
         };
         /** ForgotPasswordIn */
         ForgotPasswordIn: {
@@ -6469,6 +7417,35 @@ export interface components {
              */
             base_revision_id: string;
         };
+        /** IndicatorCreateIn */
+        IndicatorCreateIn: {
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Claim Revision Id
+             * Format: uuid
+             */
+            claim_revision_id: string;
+            /** Condition */
+            condition: string;
+            /** Metric Id */
+            metric_id: string;
+            /** Unit */
+            unit: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Capability */
+            source_capability: string;
+            /** Expected Update Hours */
+            expected_update_hours: number;
+            source_citation: components["schemas"]["CitationKeyIn"];
+            /** Threshold */
+            threshold?: number | string | null;
+            direction?: components["schemas"]["ThresholdDirection"] | null;
+        };
         /** IndicatorIn */
         IndicatorIn: {
             /** Name */
@@ -6523,6 +7500,16 @@ export interface components {
             /** Team Id */
             team_id?: string | null;
         };
+        /** IndicatorLedger */
+        IndicatorLedger: {
+            /** Versions */
+            versions: components["schemas"]["IndicatorVersion"][];
+            /**
+             * Readings
+             * @default []
+             */
+            readings: components["schemas"]["IndicatorReading"][];
+        };
         /** IndicatorOut */
         IndicatorOut: {
             /**
@@ -6573,6 +7560,71 @@ export interface components {
             updated_at: string;
             /** Team Id */
             team_id: string | null;
+        };
+        /** IndicatorReading */
+        IndicatorReading: {
+            /** Id */
+            id: string;
+            /** Indicator Version Id */
+            indicator_version_id: string;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string | null;
+            passage: components["schemas"]["PassageReference"] | null;
+            /** Verification Reference */
+            verification_reference: string | null;
+            /** Missing Reason */
+            missing_reason?: string | null;
+            /** Corrects Reading Id */
+            corrects_reading_id?: string | null;
+        };
+        /** IndicatorVersion */
+        IndicatorVersion: {
+            /** Indicator Id */
+            indicator_id: string;
+            /** Version Id */
+            version_id: string;
+            /** Version */
+            version: number;
+            /** Condition */
+            condition: string;
+            /** Metric Id */
+            metric_id: string;
+            /** Unit */
+            unit: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Capability */
+            source_capability: string;
+            /** Expected Update Hours */
+            expected_update_hours: number;
+            /**
+             * Issued At
+             * Format: date-time
+             */
+            issued_at: string;
+            /** Threshold */
+            threshold?: string | null;
+            direction?: components["schemas"]["ThresholdDirection"] | null;
+            /** Supersedes Version Id */
+            supersedes_version_id?: string | null;
+            /**
+             * Policy Version
+             * @default ase-indicator-ledger-v1
+             */
+            policy_version: string;
+            source_reference?: components["schemas"]["PassageReference"] | null;
         };
         /** IndicatorsOut */
         IndicatorsOut: {
@@ -6718,6 +7770,41 @@ export interface components {
             target_script?: string | null;
             /** Method */
             method: string;
+        };
+        /** IntelligenceRequirement */
+        IntelligenceRequirement: {
+            /** Id */
+            id: string;
+            /** Question */
+            question: string;
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /**
+             * Priority
+             * @default 1
+             */
+            priority: number;
+        };
+        /**
+         * IssuerAuthenticity
+         * @description Authenticity of one captured publication, never credibility of its assertion.
+         *
+         *     An observed reference identifies a retained capture/authentication receipt;
+         *     the policy does not infer authenticity from a URL or a government label.
+         */
+        IssuerAuthenticity: {
+            /** Evidence Id */
+            evidence_id: string;
+            /** Issuer Id */
+            issuer_id: string;
+            status: components["schemas"]["Authenticity"];
+            /** Basis */
+            basis: string;
+            /** Observed Reference */
+            observed_reference?: string | null;
         };
         /** JamCellOut */
         JamCellOut: {
@@ -6911,6 +7998,11 @@ export interface components {
             /** Languages */
             languages: components["schemas"]["LanguageCapabilityOut"][];
         };
+        /**
+         * LanguageSupport
+         * @enum {string}
+         */
+        LanguageSupport: "configured_language" | "english_terms" | "not_filtered";
         /** LedgerClaimOut */
         LedgerClaimOut: {
             /** Id */
@@ -6936,10 +8028,20 @@ export interface components {
             dimensions: components["schemas"]["ClaimDimensionOut"][];
         };
         /**
+         * LedgerKind
+         * @enum {string}
+         */
+        LedgerKind: "forecast" | "indicator";
+        /**
          * Lens
          * @enum {string}
          */
         Lens: "equipment" | "workforce" | "casualties" | "strikes" | "diplomacy";
+        /**
+         * LensId
+         * @enum {string}
+         */
+        LensId: "general" | "uk_policy" | "civilian_protection" | "regional_security" | "economic_exposure" | "energy_security" | "supply_chain" | "defensive_cyber" | "actor_perspective";
         /** LensSeriesOut */
         LensSeriesOut: {
             lens: components["schemas"]["Lens"];
@@ -7663,6 +8765,18 @@ export interface components {
             /** Explanation */
             explanation: string;
         };
+        /** MissingReadingIn */
+        MissingReadingIn: {
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Missing Reason */
+            missing_reason: string;
+            /** Corrects Reading Id */
+            corrects_reading_id?: string | null;
+        };
         /** ModelRoutingOut */
         ModelRoutingOut: {
             /**
@@ -7678,6 +8792,30 @@ export interface components {
             binding_user_id?: string | null;
             /** Profiles */
             profiles: components["schemas"]["RoutedModelOut"][];
+        };
+        /** MonthlyUsageOut */
+        MonthlyUsageOut: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "owner" | "subscription";
+            /** Subscription Id */
+            subscription_id: string | null;
+            /**
+             * Month Start
+             * Format: date-time
+             */
+            month_start: string;
+            /**
+             * Month End
+             * Format: date-time
+             */
+            month_end: string;
+            /** Policy Version */
+            policy_version: string;
+            used: components["schemas"]["UsageCountsOut"];
+            limit: components["schemas"]["UsageCountsOut"];
         };
         /** NavigationCapabilitiesOut */
         NavigationCapabilitiesOut: {
@@ -7805,6 +8943,19 @@ export interface components {
             /** Unknown */
             unknown: number;
         };
+        /** ObservationIntervalOut */
+        ObservationIntervalOut: {
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+        };
         /** ObservationMetadata */
         ObservationMetadata: {
             /**
@@ -7841,6 +8992,128 @@ export interface components {
             /** Scene Cloud Cover */
             scene_cloud_cover: number | null;
         };
+        /** OriginAnalysis */
+        OriginAnalysis: {
+            /** Nodes */
+            nodes: components["schemas"]["OriginNode"][];
+            /** Groups */
+            groups: components["schemas"]["OriginGroup"][];
+            /** Relationships */
+            relationships: components["schemas"]["AssessedOriginEdge"][];
+            /** Observations */
+            observations: components["schemas"]["OriginObservation"][];
+            /**
+             * Policy Version
+             * @default ase-origin-chains-v1
+             */
+            policy_version: string;
+        };
+        /** OriginEdge */
+        OriginEdge: {
+            /** Id */
+            id: string;
+            /** Child Id */
+            child_id: string;
+            /** Parent Id */
+            parent_id: string;
+            relation: components["schemas"]["OriginRelation"];
+            /** Reason */
+            reason: string;
+            assessor: components["schemas"]["Assessor"];
+            /** Assessor Id */
+            assessor_id: string;
+            /** Method */
+            method: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Observation Ids
+             * @default []
+             */
+            observation_ids: string[];
+            /** Reviewer Id */
+            reviewer_id?: string | null;
+            /** Reviewed At */
+            reviewed_at?: string | null;
+            /**
+             * Rejected
+             * @default false
+             */
+            rejected: boolean;
+        };
+        /** OriginGroup */
+        OriginGroup: {
+            /** Id */
+            id: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Member Ids */
+            member_ids: string[];
+            /** Known Original Ids */
+            known_original_ids: string[];
+            /** Review Required */
+            review_required: boolean;
+            /** Reasons */
+            reasons: string[];
+        };
+        /** OriginNode */
+        OriginNode: {
+            /** Id */
+            id: string;
+            /** Evidence Id */
+            evidence_id: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Source Id */
+            source_id: string;
+            role: components["schemas"]["OriginRole"];
+            /** Organisation */
+            organisation?: string | null;
+            /** Original Identity */
+            original_identity?: string | null;
+        };
+        /**
+         * OriginObservation
+         * @description An adapter-retained exact link or passage, not a model-invented reference.
+         *
+         *     Pure code checks membership. Only a trusted capture/review adapter may set
+         *     relation and target after observing that correspondence. A model proposal
+         *     cannot populate this registry. A generic retained passage alone supports no
+         *     particular relationship; neither state proves the underlying claim true.
+         */
+        OriginObservation: {
+            /** Id */
+            id: string;
+            /** Evidence Id */
+            evidence_id: string;
+            /** Kind */
+            kind: string;
+            /** Reference */
+            reference: string;
+            relation?: components["schemas"]["OriginRelation"] | null;
+            /** Target Evidence Id */
+            target_evidence_id?: string | null;
+            /** Claim Id */
+            claim_id?: string | null;
+        };
+        /**
+         * OriginRelation
+         * @enum {string}
+         */
+        OriginRelation: "republication" | "translation" | "citation_chain" | "possible_shared_anonymous_origin";
+        /**
+         * OriginRole
+         * @enum {string}
+         */
+        OriginRole: "original_document" | "original_statement" | "direct_witness" | "derived" | "unknown";
+        /**
+         * OriginStatus
+         * @enum {string}
+         */
+        OriginStatus: "proposal" | "observed" | "reviewed" | "rejected";
         /** OriginalAssetListOut */
         OriginalAssetListOut: {
             /** Items */
@@ -7936,6 +9209,84 @@ export interface components {
              */
             retention_days: number;
         };
+        /** OriginalFollowupOut */
+        OriginalFollowupOut: {
+            /** Evidence Label */
+            evidence_label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "acquired" | "headline_only" | "unavailable";
+            /** Reason */
+            reason: string;
+            /** Candidate Id */
+            candidate_id?: string | null;
+            /** Passage Ref */
+            passage_ref?: string | null;
+            /** Passage Id */
+            passage_id?: string | null;
+            /** Document Version Id */
+            document_version_id?: string | null;
+            /**
+             * Transport Requests
+             * @default 0
+             */
+            transport_requests: number | null;
+            /**
+             * Transport Requests Reserved
+             * @default 0
+             */
+            transport_requests_reserved: number;
+        };
+        /** OriginalPassageOut */
+        OriginalPassageOut: {
+            /**
+             * Ref
+             * Format: uuid
+             */
+            ref: string;
+            /** Evidence Label */
+            evidence_label: string;
+            /** Source Id */
+            source_id: string;
+            /** Issuer */
+            issuer: string;
+            /** Document Version Id */
+            document_version_id: string;
+            /** Original Sha256 */
+            original_sha256: string;
+            /** Passage Id */
+            passage_id: string;
+            /** Passage Sha256 */
+            passage_sha256: string;
+            /** Source Reference */
+            source_reference: string;
+            /** Page */
+            page: number | null;
+            /** Text */
+            text: string;
+            /** Published At */
+            published_at: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Original Language */
+            original_language: string;
+            /** Permitted Use */
+            permitted_use: string;
+        };
         /** OutlineOut */
         OutlineOut: {
             /** Name */
@@ -7944,6 +9295,15 @@ export interface components {
             iso: string;
             /** Polygons */
             polygons: number[][][][];
+        };
+        /** PassageReference */
+        PassageReference: {
+            /** Report Version Id */
+            report_version_id: string;
+            /** Evidence Id */
+            evidence_id: string;
+            /** Passage Id */
+            passage_id: string;
         };
         /** PhotoCandidate */
         PhotoCandidate: {
@@ -8277,6 +9637,193 @@ export interface components {
             /** Lat */
             lat: number;
         };
+        /** PreflightBudget */
+        PreflightBudget: {
+            tier: components["schemas"]["ResearchMode"];
+            /** Required Question Ceiling */
+            required_question_ceiling: number;
+            /** Tier Source Operations */
+            tier_source_operations: number;
+            /** Tier Collection Seconds */
+            tier_collection_seconds: number;
+            /** Source Operation Ceiling */
+            source_operation_ceiling: number;
+            /** Collection Second Ceiling */
+            collection_second_ceiling: number;
+            /** Model Call Ceiling */
+            model_call_ceiling: number;
+            /** Output Token Ceiling */
+            output_token_ceiling: number;
+            requested: components["schemas"]["BriefLimits"];
+            /**
+             * Reservations Made
+             * @default false
+             * @constant
+             */
+            reservations_made: false;
+        };
+        /** PreflightScope */
+        PreflightScope: {
+            /** Country Isos */
+            country_isos: string[];
+            focus: components["schemas"]["ResearchFocus"];
+            /** Subject */
+            subject: string | null;
+            /** Area Sha256 */
+            area_sha256: string | null;
+            /** Saved Map Resolution Required */
+            saved_map_resolution_required: boolean;
+            /** Linked Context Checks Required */
+            linked_context_checks_required: boolean;
+        };
+        /** PreflightSource */
+        PreflightSource: {
+            capability: components["schemas"]["SourceCapability"];
+            readiness: components["schemas"]["CapabilityReadiness"];
+            /** Candidate Unverified */
+            candidate_unverified: boolean;
+            /** Exclusion Reasons */
+            exclusion_reasons: string[];
+            /** Date Note */
+            date_note: string;
+        };
+        /**
+         * PrerequisiteKind
+         * @enum {string}
+         */
+        PrerequisiteKind: "api_key" | "acknowledgement" | "snapshot" | "catalogue" | "runtime" | "model" | "retained_store" | "private_input";
+        /** PresetBundleReadiness */
+        PresetBundleReadiness: {
+            /** Id */
+            id: string;
+            /** Candidate Provider Ids */
+            candidate_provider_ids: string[];
+            /** Gap Ids */
+            gap_ids: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "unverified_candidates" | "declared_gaps" | "unavailable";
+        };
+        /** PresetDefinitionIn */
+        PresetDefinitionIn: {
+            /** Version */
+            version: number;
+            /** @default detailed */
+            depth: components["schemas"]["ResearchMode"];
+            lens?: components["schemas"]["LensId"] | null;
+            /** Selected Requirement Ids */
+            selected_requirement_ids?: string[] | null;
+            /** Selected Source Ids */
+            selected_source_ids?: string[] | null;
+        };
+        /** PresetDefinitionOut */
+        PresetDefinitionOut: {
+            definition: components["schemas"]["ResearchBriefDraftIn"];
+            readiness: components["schemas"]["PresetReadiness"];
+            /** Omitted Requirement Ids */
+            omitted_requirement_ids: string[];
+            /**
+             * Note
+             * @default Editable starter only; no brief was saved and no source was queried. Complete the required inputs and review coverage before admission. Save through the existing Research Brief endpoint to assign current ownership and preserve this preset version.
+             */
+            note: string;
+        };
+        /** PresetIndicator */
+        PresetIndicator: {
+            /** Id */
+            id: string;
+            /** Condition */
+            condition: string;
+        };
+        /** PresetInput */
+        PresetInput: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Guidance */
+            guidance: string;
+            /** Target */
+            target: string;
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+        };
+        /** PresetLanguageReceipt */
+        PresetLanguageReceipt: {
+            /** Language */
+            language: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "configured_route_unverified" | "no_configured_route";
+            /** Source Ids */
+            source_ids: string[];
+            /**
+             * Note
+             * @default Configured query language is not detected source language. No translation or fallback has been performed; retain this language choice for explicit review if unsupported.
+             */
+            note: string;
+        };
+        /** PresetReadiness */
+        PresetReadiness: {
+            /** Policy Version */
+            policy_version: string;
+            /** Source Bundles */
+            source_bundles: components["schemas"]["PresetBundleReadiness"][];
+            /** Sources */
+            sources: components["schemas"]["PresetSourceReadiness"][];
+            /** Gaps */
+            gaps: components["schemas"]["UnavailableCapabilityGap"][];
+            /** Languages */
+            languages: components["schemas"]["PresetLanguageReceipt"][];
+            /** Candidate Provider Ids */
+            candidate_provider_ids: string[];
+            /** Source Selection Required */
+            source_selection_required: boolean;
+            /** Required Input Ids */
+            required_input_ids: string[];
+            /**
+             * Note
+             * @default Catalogue support and configuration presence are unverified. Candidate IDs are not dispatch authorisation or proof of scope, language, historical coverage or returned evidence. Current admission, exact provider support, disclosure choices and budgets apply at each run. The seven-day baseline is for initial activation; requested quarterly or annual intervals must retain their own historical coverage limits. No cadence is selected by a preset.
+             */
+            note: string;
+        };
+        /** PresetRequirement */
+        PresetRequirement: {
+            /** Id */
+            id: string;
+            /** Question */
+            question: string;
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Priority */
+            priority: number;
+        };
+        /** PresetSourceReadiness */
+        PresetSourceReadiness: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            readiness: components["schemas"]["CapabilityReadiness"];
+            /** Candidate */
+            candidate: boolean;
+            /** Scope Language Compatible */
+            scope_language_compatible: boolean;
+            /** Constraints */
+            constraints: string;
+            /** Limitations */
+            limitations: string[];
+        };
         /**
          * Probability
          * @enum {string}
@@ -8510,6 +10057,35 @@ export interface components {
             /** Source Url */
             source_url: string;
         };
+        /** RatingReview */
+        RatingReview: {
+            /** Id */
+            id: string;
+            assessor: components["schemas"]["Assessor"];
+            /** Assessor Id */
+            assessor_id: string;
+            status: components["schemas"]["RatingStatus"];
+            /** Basis */
+            basis: string;
+            /** Policy Version */
+            policy_version: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Reviewed At */
+            reviewed_at?: string | null;
+            /** Supersedes */
+            supersedes?: string | null;
+            /** Policy Note */
+            policy_note?: string | null;
+        };
+        /**
+         * RatingStatus
+         * @enum {string}
+         */
+        RatingStatus: "applied" | "proposal";
         /** ReadyOut */
         ReadyOut: {
             /** Status */
@@ -9006,6 +10582,8 @@ export interface components {
             research_input_id?: string | null;
             /** Parent Report Id */
             parent_report_id?: string | null;
+            /** Parent Version */
+            parent_version?: number | null;
             /** Map View Id */
             map_view_id?: string | null;
             /** Map Revision Id */
@@ -9108,6 +10686,10 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Brief Id */
+            brief_id?: string | null;
+            /** Brief Revision */
+            brief_revision?: number | null;
             /** Revision */
             revision: number;
             /** Title */
@@ -9192,6 +10774,56 @@ export interface components {
             /** Items */
             items: components["schemas"]["ReportJobOut"][];
         };
+        /** ReportLedger */
+        ReportLedger: {
+            anchor: components["schemas"]["ReportLedgerAnchor"];
+            /** History */
+            history: components["schemas"]["ForecastLedger"] | components["schemas"]["IndicatorLedger"];
+        };
+        /** ReportLedgerAnchor */
+        ReportLedgerAnchor: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["LedgerKind"];
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /**
+             * Claim Id
+             * Format: uuid
+             */
+            claim_id: string;
+            /**
+             * Claim Revision Id
+             * Format: uuid
+             */
+            claim_revision_id: string;
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Latest Ordinal */
+            latest_ordinal: number;
+            source_reference?: components["schemas"]["PassageReference"] | null;
+        };
         /** ReportMethodologyOut */
         ReportMethodologyOut: {
             /** Method Version */
@@ -9273,6 +10905,71 @@ export interface components {
             /** Batch Size */
             batch_size: number;
         };
+        /** ReportSourceAssessment */
+        ReportSourceAssessment: {
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /**
+             * Frozen At
+             * Format: date-time
+             */
+            frozen_at: string;
+            /** Evidence */
+            evidence: components["schemas"]["ReportSourceEvidence"][];
+            /** Claims */
+            claims: components["schemas"]["ReportSourceClaim"][];
+            /** Assessments */
+            assessments: components["schemas"]["ScopedSourceAssessment"][];
+            origins: components["schemas"]["OriginAnalysis"];
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /**
+             * Policy Version
+             * @default ase-source-assessment-v1
+             */
+            policy_version: string;
+        };
+        /** ReportSourceClaim */
+        ReportSourceClaim: {
+            /** Claim Id */
+            claim_id: string;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Subject */
+            subject: string;
+            /** Digest */
+            digest: string;
+            /** Uses */
+            uses: components["schemas"]["ReportSourceUse"][];
+        };
+        /** ReportSourceEvidence */
+        ReportSourceEvidence: {
+            /** Capture Id */
+            capture_id: string;
+            /** Label */
+            label: string;
+            /** Event Id */
+            event_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Digest */
+            digest: string;
+            /** Declared Organisation */
+            declared_organisation: string | null;
+        };
+        /** ReportSourceUse */
+        ReportSourceUse: {
+            /** Capture Id */
+            capture_id: string;
+            /** Roles */
+            roles: ("supporting" | "contradicting")[];
+        };
         /**
          * ReportStatus
          * @enum {string}
@@ -9321,7 +11018,14 @@ export interface components {
         };
         /** ReportVersionOut */
         ReportVersionOut: {
+            /** Brief Id */
+            brief_id?: string | null;
+            /** Brief Revision */
+            brief_revision?: number | null;
+            /** Canonical Requirements */
+            canonical_requirements?: components["schemas"]["IntelligenceRequirement"][];
             publication?: components["schemas"]["ReportPublicationOut"] | null;
+            reviewed_source_snapshot?: components["schemas"]["SourceReviewSnapshot"] | null;
             claim_generation?: components["schemas"]["ClaimGenerationReceipt"] | null;
             claim_ledger?: components["schemas"]["ClaimLedgerOut"] | null;
             model_routing?: components["schemas"]["ModelRoutingOut"] | null;
@@ -9416,6 +11120,156 @@ export interface components {
             };
             /** Sha256 */
             sha256: string;
+        };
+        /**
+         * ResearchBriefDraftIn
+         * @description The reusable definition is checked by the one strict domain codec.
+         */
+        ResearchBriefDraftIn: {
+            /** Title */
+            title: string;
+            /** Team Id */
+            team_id?: string | null;
+            /** Preset Id */
+            preset_id?: string | null;
+            /** Preset Version */
+            preset_version?: number | null;
+            /** Question */
+            question: {
+                [key: string]: unknown;
+            };
+            /** Scope */
+            scope: {
+                [key: string]: unknown;
+            };
+            /** Observation */
+            observation: {
+                [key: string]: unknown;
+            };
+            /** Lens */
+            lens: {
+                [key: string]: unknown;
+            };
+            /** Collection */
+            collection: {
+                [key: string]: unknown;
+            };
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            };
+            /** Limits */
+            limits: {
+                [key: string]: unknown;
+            };
+            /** Monitoring */
+            monitoring: {
+                [key: string]: unknown;
+            };
+            /** Private Inputs */
+            private_inputs?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ResearchBriefOut */
+        ResearchBriefOut: {
+            /** Brief */
+            brief: {
+                [key: string]: unknown;
+            };
+        };
+        /** ResearchBriefPageOut */
+        ResearchBriefPageOut: {
+            /** Items */
+            items: components["schemas"]["ResearchBriefSummaryOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** ResearchBriefRevisionIn */
+        ResearchBriefRevisionIn: {
+            /** Title */
+            title: string;
+            /** Team Id */
+            team_id?: string | null;
+            /** Preset Id */
+            preset_id?: string | null;
+            /** Preset Version */
+            preset_version?: number | null;
+            /** Question */
+            question: {
+                [key: string]: unknown;
+            };
+            /** Scope */
+            scope: {
+                [key: string]: unknown;
+            };
+            /** Observation */
+            observation: {
+                [key: string]: unknown;
+            };
+            /** Lens */
+            lens: {
+                [key: string]: unknown;
+            };
+            /** Collection */
+            collection: {
+                [key: string]: unknown;
+            };
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            };
+            /** Limits */
+            limits: {
+                [key: string]: unknown;
+            };
+            /** Monitoring */
+            monitoring: {
+                [key: string]: unknown;
+            };
+            /** Private Inputs */
+            private_inputs?: {
+                [key: string]: unknown;
+            }[];
+            /** Base Revision */
+            base_revision: number;
+        };
+        /** ResearchBriefSummaryOut */
+        ResearchBriefSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Team Id */
+            team_id: string | null;
+            /** Title */
+            title: string;
+            /** Schema Version */
+            schema_version: number;
+            /** Origin */
+            origin: string;
+            /** Published */
+            published: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Revised At
+             * Format: date-time
+             */
+            revised_at: string;
         };
         /** ResearchCandidateIn */
         ResearchCandidateIn: {
@@ -9700,6 +11554,229 @@ export interface components {
             continuation?: components["schemas"]["ContinuationTraceOut"] | null;
             planning?: components["schemas"]["PlanningTraceOut"] | null;
         };
+        /** ResearchPreflight */
+        ResearchPreflight: {
+            /**
+             * Brief Id
+             * Format: uuid
+             */
+            brief_id: string;
+            /** Revision */
+            revision: number;
+            /** Title */
+            title: string;
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            scope: components["schemas"]["PreflightScope"];
+            /**
+             * Since
+             * Format: date-time
+             */
+            since: string;
+            /**
+             * Until
+             * Format: date-time
+             */
+            until: string;
+            /** Observation Policy */
+            observation_policy: string;
+            time_basis: components["schemas"]["EvidenceTimeBasis"];
+            /** Forecast Horizon Days */
+            forecast_horizon_days: number | null;
+            /** Question */
+            question: string;
+            /** Requirements */
+            requirements: components["schemas"]["IntelligenceRequirement"][];
+            budget: components["schemas"]["PreflightBudget"];
+            /** Source Policy */
+            source_policy: string;
+            /** Sources */
+            sources: components["schemas"]["PreflightSource"][];
+            /** Unknown Source Ids */
+            unknown_source_ids: string[];
+            /** Gaps */
+            gaps: components["schemas"]["UnavailableCapabilityGap"][];
+            /** Candidate Provider Ids */
+            candidate_provider_ids: string[];
+            /** Known Origin Group Count */
+            known_origin_group_count: number;
+            /** Unknown Origin Capability Count */
+            unknown_origin_capability_count: number;
+            /** Review Reasons */
+            review_reasons: string[];
+            /**
+             * Preview Only
+             * @default true
+             * @constant
+             */
+            preview_only: true;
+            /**
+             * Admission Checked
+             * @default false
+             * @constant
+             */
+            admission_checked: false;
+            /**
+             * Source Relevance Ranked
+             * @default false
+             * @constant
+             */
+            source_relevance_ranked: false;
+            /**
+             * Provider Calls
+             * @default 0
+             * @constant
+             */
+            provider_calls: 0;
+            /**
+             * Model Calls
+             * @default 0
+             * @constant
+             */
+            model_calls: 0;
+            /**
+             * Model Compatibility
+             * @default not_checked
+             * @constant
+             */
+            model_compatibility: "not_checked";
+            /**
+             * Policy Version
+             * @default ase-source-capabilities-v1
+             */
+            policy_version: string;
+            /**
+             * Duration Note
+             * @default Collection allowance plus generation time varies. No measured total-duration estimate is available. These are ceilings, not a reservation or an expected spend.
+             */
+            duration_note: string;
+            /**
+             * Coverage Note
+             * @default No expenditure occurs during this preview. Candidates pass coarse catalogue checks only; exact provider support, date coverage, relevance, current permissions and model capacity must be checked at run admission. No evidence or source connectivity was tested. Candidate origin counts describe catalogue groups, not corroboration. Stage reservations and interactive clarification are outside this preview milestone.
+             */
+            coverage_note: string;
+        };
+        /** ResearchPreflightOut */
+        ResearchPreflightOut: {
+            preflight: components["schemas"]["ResearchPreflight"];
+        };
+        /** ResearchPreset */
+        ResearchPreset: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /** Purpose */
+            purpose: string;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "conflict" | "cyber" | "economy" | "cross_cutting";
+            /** Owner Role */
+            owner_role: string;
+            /**
+             * Reviewed On
+             * Format: date
+             */
+            reviewed_on: string;
+            /** Question */
+            question: string;
+            /** Requirements */
+            requirements: components["schemas"]["PresetRequirement"][];
+            /**
+             * Required Inputs
+             * @default []
+             */
+            required_inputs: components["schemas"]["PresetInput"][];
+            /**
+             * Country Isos
+             * @default []
+             */
+            country_isos: string[];
+            /** Scope Note */
+            scope_note: string;
+            /** Suggested Languages */
+            suggested_languages: string[];
+            /** Language Note */
+            language_note: string;
+            /** Source Bundles */
+            source_bundles: string[];
+            /**
+             * Optional Bundles
+             * @default []
+             */
+            optional_bundles: string[];
+            /**
+             * Source Ids
+             * @default []
+             */
+            source_ids: string[];
+            /**
+             * Declared Gap Ids
+             * @default []
+             */
+            declared_gap_ids: string[];
+            /** Lens Choices */
+            lens_choices: components["schemas"]["LensId"][];
+            default_lens: components["schemas"]["LensId"];
+            /**
+             * Lens Note
+             * @default A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.
+             */
+            lens_note: string;
+            /**
+             * Default Depth
+             * @default detailed
+             * @constant
+             */
+            default_depth: "detailed";
+            /**
+             * Baseline Days
+             * @default 7
+             * @constant
+             */
+            baseline_days: 7;
+            /** Forecast Horizon Days */
+            forecast_horizon_days?: 30 | null;
+            /** Sections */
+            sections: string[];
+            /** Indicators */
+            indicators: components["schemas"]["PresetIndicator"][];
+            /** Exclusions */
+            exclusions: string[];
+            /** Quality Trap */
+            quality_trap: string;
+            /** Keywords */
+            keywords: string[];
+        };
+        /** ResearchPresetOut */
+        ResearchPresetOut: {
+            preset: components["schemas"]["ResearchPreset"];
+            readiness: components["schemas"]["PresetReadiness"];
+        };
+        /** ResearchPresetsOut */
+        ResearchPresetsOut: {
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /** Items */
+            items: components["schemas"]["ResearchPresetOut"][];
+            /** Lens Choices */
+            lens_choices?: components["schemas"]["LensId"][];
+            /**
+             * Lens Rule
+             * @default A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.
+             */
+            lens_rule: string;
+        };
         /** ResearchPreviewOut */
         ResearchPreviewOut: {
             /** Question */
@@ -9795,6 +11872,8 @@ export interface components {
             /** Passes */
             passes?: components["schemas"]["CollectionPassOut"][];
             web_research?: components["schemas"]["WebResearchOut"] | null;
+            /** Original Followup */
+            original_followup?: components["schemas"]["OriginalFollowupOut"][];
         };
         /** ResearchRunOut */
         ResearchRunOut: {
@@ -9958,6 +12037,24 @@ export interface components {
             expires_at: string;
         };
         /**
+         * ResolutionCriterion
+         * @description An observed extreme within the issue-to-horizon window, or human review.
+         */
+        ResolutionCriterion: {
+            /** Description */
+            description: string;
+            /** Metric Id */
+            metric_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Unit */
+            unit?: string | null;
+            /** Threshold */
+            threshold?: string | null;
+            direction?: components["schemas"]["ThresholdDirection"] | null;
+            aggregate?: components["schemas"]["WindowAggregate"] | null;
+        };
+        /**
          * Role
          * @enum {string}
          */
@@ -9985,6 +12082,14 @@ export interface components {
              * Format: date-time
              */
             profile_updated_at: string;
+        };
+        /** RunNowIn */
+        RunNowIn: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
         };
         /** SavedConversationIn */
         SavedConversationIn: {
@@ -10052,6 +12157,16 @@ export interface components {
             view: components["schemas"]["MapViewOut"];
             revision: components["schemas"]["MapRevisionOut"];
         };
+        /** SavedReportReference */
+        SavedReportReference: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Version */
+            version: number;
+        };
         /** SavedTurnIn */
         SavedTurnIn: {
             /** Question */
@@ -10062,6 +12177,7 @@ export interface components {
             time_window: string;
             /** Source Categories */
             source_categories?: string[] | null;
+            report?: components["schemas"]["SavedReportReference"] | null;
             answer: components["schemas"]["AssistantAnswerOut"];
         };
         /** SavedTurnOut */
@@ -10074,7 +12190,72 @@ export interface components {
             time_window: string;
             /** Source Categories */
             source_categories?: string[] | null;
+            report?: components["schemas"]["SavedReportReference"] | null;
             answer: components["schemas"]["AssistantAnswerOut"];
+        };
+        /** ScheduleFromBriefIn */
+        ScheduleFromBriefIn: {
+            /**
+             * Brief Id
+             * Format: uuid
+             */
+            brief_id: string;
+            /** Brief Revision */
+            brief_revision: number;
+            /** Name */
+            name?: string | null;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+            /**
+             * Local Hour
+             * @default 6
+             */
+            local_hour: number;
+            /**
+             * Local Minute
+             * @default 0
+             */
+            local_minute: number;
+            /**
+             * Cadence
+             * @default daily
+             */
+            cadence: string;
+            /**
+             * Weekday
+             * @default 0
+             */
+            weekday: number;
+            /**
+             * Monthday
+             * @default 1
+             */
+            monthday: number;
+            /**
+             * Anchor Month
+             * @default 1
+             */
+            anchor_month: number;
+            /** @default rolling_snapshot */
+            collection_policy: components["schemas"]["WindowPolicy"];
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /**
+             * Notify On Change
+             * @default false
+             */
+            notify_on_change: boolean;
+            /**
+             * Avoid Repetition
+             * @default true
+             */
+            avoid_repetition: boolean;
         };
         /** ScheduleIn */
         ScheduleIn: {
@@ -10093,6 +12274,20 @@ export interface components {
              * @default 6
              */
             hour_utc: number;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+            /** Local Hour */
+            local_hour?: number | null;
+            /**
+             * Local Minute
+             * @default 0
+             */
+            local_minute: number;
+            /** @default rolling_snapshot */
+            collection_policy: components["schemas"]["WindowPolicy"];
             /**
              * Cadence
              * @default daily
@@ -10159,6 +12354,23 @@ export interface components {
             /** Research Source Ids */
             research_source_ids?: string[] | null;
         };
+        /** ScheduleOccurrenceOut */
+        ScheduleOccurrenceOut: {
+            /** Scheduled Date */
+            scheduled_date: string;
+            /**
+             * Local
+             * Format: date-time
+             */
+            local: string;
+            /**
+             * Utc
+             * Format: date-time
+             */
+            utc: string;
+            /** Dst Resolution */
+            dst_resolution: string;
+        };
         /** ScheduleOut */
         ScheduleOut: {
             /**
@@ -10178,6 +12390,19 @@ export interface components {
             plan_id: string | null;
             /** Hour Utc */
             hour_utc: number;
+            /** Timezone */
+            timezone: string;
+            /** Local Hour */
+            local_hour: number;
+            /** Local Minute */
+            local_minute: number;
+            collection_policy: components["schemas"]["WindowPolicy"];
+            /** Brief Id */
+            brief_id: string | null;
+            /** Brief Revision */
+            brief_revision: number | null;
+            /** Next Three */
+            next_three: components["schemas"]["ScheduleOccurrenceOut"][];
             /** Cadence */
             cadence: string;
             /** Weekday */
@@ -10218,6 +12443,10 @@ export interface components {
             last_run_at: string | null;
             /** Last Report Id */
             last_report_id: string | null;
+            /** Last Version Id */
+            last_version_id: string | null;
+            last_outcome: components["schemas"]["ReportStatus"] | null;
+            last_coverage: components["schemas"]["CoverageState"] | null;
             /** Last Error */
             last_error: string | null;
             /** Team Id */
@@ -10240,10 +12469,46 @@ export interface components {
             /** Research Source Ids */
             research_source_ids: string[] | null;
         };
+        /** SchedulePreviewOut */
+        SchedulePreviewOut: {
+            /** Next Three */
+            next_three: components["schemas"]["ScheduleOccurrenceOut"][];
+            collection_policy: components["schemas"]["WindowPolicy"];
+            /** Window Hours */
+            window_hours: number | null;
+            /**
+             * Note
+             * @default Preview only. No report job or subscription has been created.
+             */
+            note: string;
+        };
         /** SchedulesOut */
         SchedulesOut: {
             /** Items */
             items: components["schemas"]["ScheduleOut"][];
+        };
+        /** ScopedSourceAssessment */
+        ScopedSourceAssessment: {
+            /** Evidence Id */
+            evidence_id: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Subject */
+            subject: string;
+            reliability: components["schemas"]["Reliability"];
+            credibility: components["schemas"]["Credibility"];
+            source_revision: components["schemas"]["SourceRatingRevision"] | null;
+            assertion_revision: components["schemas"]["AssertionRatingRevision"] | null;
+            authenticity: components["schemas"]["IssuerAuthenticity"] | null;
+            /** Review Notes */
+            review_notes: string[];
+            /**
+             * Policy Version
+             * @default ase-source-assessment-v1
+             */
+            policy_version: string;
         };
         /** SearchEditionOut */
         SearchEditionOut: {
@@ -10492,6 +12757,32 @@ export interface components {
             /** Enabled */
             enabled: boolean;
         };
+        /** SourceCapability */
+        SourceCapability: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Family */
+            family: string;
+            route: components["schemas"]["ExecutionRoute"];
+            content: components["schemas"]["ContentCapability"];
+            support: components["schemas"]["CapabilitySupport"];
+            /** Origin Group */
+            origin_group: string | null;
+            /** Limitations */
+            limitations: string[];
+            /**
+             * Prerequisites
+             * @default []
+             */
+            prerequisites: components["schemas"]["CapabilityPrerequisite"][];
+            /**
+             * Control Ids
+             * @default []
+             */
+            control_ids: string[];
+        };
         /** SourceConnectionOut */
         SourceConnectionOut: {
             state: components["schemas"]["ConnectionState"];
@@ -10705,6 +12996,17 @@ export interface components {
             /** Reviewed At */
             reviewed_at: string | null;
         };
+        /** SourceRatingRevision */
+        SourceRatingRevision: {
+            /** Source Id */
+            source_id: string;
+            /** Subject */
+            subject: string;
+            reliability: components["schemas"]["Reliability"];
+            /** Expertise Basis */
+            expertise_basis: string | null;
+            review: components["schemas"]["RatingReview"];
+        };
         /** SourceRequirementOut */
         SourceRequirementOut: {
             /**
@@ -10725,6 +13027,117 @@ export interface components {
             note: string;
             /** Optional */
             optional: boolean;
+        };
+        /** SourceReviewIn */
+        SourceReviewIn: {
+            /** Label */
+            label: string;
+            /** Judgement Id */
+            judgement_id: string;
+            /** Subject */
+            subject: string;
+            kind: components["schemas"]["SourceReviewKind"];
+            /** Basis */
+            basis: string;
+            /** Previous Id */
+            previous_id?: string | null;
+            reliability?: components["schemas"]["Reliability"] | null;
+            /** Expertise Basis */
+            expertise_basis?: string | null;
+            /** Credibility */
+            credibility?: number | null;
+            authenticity?: components["schemas"]["Authenticity"] | null;
+            /** Policy Note */
+            policy_note?: string | null;
+        };
+        /**
+         * SourceReviewKind
+         * @enum {string}
+         */
+        SourceReviewKind: "reliability" | "credibility" | "authenticity";
+        /** SourceReviewRevision */
+        SourceReviewRevision: {
+            scope: components["schemas"]["SourceReviewScope"];
+            target: components["schemas"]["SourceReviewTarget"];
+            kind: components["schemas"]["SourceReviewKind"];
+            /** Number */
+            number: number;
+            review: components["schemas"]["RatingReview"];
+            reliability?: components["schemas"]["Reliability"] | null;
+            /** Expertise Basis */
+            expertise_basis?: string | null;
+            credibility?: components["schemas"]["Credibility"] | null;
+            authenticity?: components["schemas"]["IssuerAuthenticity"] | null;
+        };
+        /** SourceReviewScope */
+        SourceReviewScope: {
+            /**
+             * Owner Id
+             * Format: uuid
+             */
+            owner_id: string;
+            /** Team Id */
+            team_id: string | null;
+        };
+        /** SourceReviewSnapshot */
+        SourceReviewSnapshot: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            scope: components["schemas"]["SourceReviewScope"];
+            /**
+             * Authored By
+             * Format: uuid
+             */
+            authored_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            projection: components["schemas"]["ReportSourceAssessment"];
+            /** Decision Ids */
+            decision_ids: string[];
+        };
+        /** SourceReviewTarget */
+        SourceReviewTarget: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Report Version Id
+             * Format: uuid
+             */
+            report_version_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Subject */
+            subject: string;
+            /** Capture Id */
+            capture_id: string;
+            /** Claim Id */
+            claim_id: string;
+        };
+        /** SourceSnapshotIn */
+        SourceSnapshotIn: {
+            /** Subjects */
+            subjects: {
+                [key: string]: string;
+            };
         };
         /**
          * SourceStatus
@@ -10850,6 +13263,151 @@ export interface components {
             budget_bytes: number;
             /** Per Category */
             per_category: components["schemas"]["CategoryStatsOut"][];
+        };
+        /** SubscriptionBaselineOut */
+        SubscriptionBaselineOut: {
+            /**
+             * Subscription Id
+             * Format: uuid
+             */
+            subscription_id: string;
+            /**
+             * Edition Id
+             * Format: uuid
+             */
+            edition_id: string;
+            /**
+             * Analytical Baseline Version Id
+             * Format: uuid
+             */
+            analytical_baseline_version_id: string;
+            /** Covered Intervals */
+            covered_intervals: components["schemas"]["ObservationIntervalOut"][];
+            /** Complete Cutoff */
+            complete_cutoff: string | null;
+        };
+        /** SubscriptionDiagnosticsOut */
+        SubscriptionDiagnosticsOut: {
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Enabled Subscriptions */
+            enabled_subscriptions: number;
+            /** Overdue Subscriptions */
+            overdue_subscriptions: number;
+            /** Oldest Due At */
+            oldest_due_at: string | null;
+            /** Oldest Due Lag Seconds */
+            oldest_due_lag_seconds: number | null;
+            /** Active Editions By Workflow */
+            active_editions_by_workflow: {
+                [key: string]: number;
+            };
+            /** Uncertain Outcome Editions */
+            uncertain_outcome_editions: number;
+            /** Source Failure Editions */
+            source_failure_editions: number;
+            /** Source Failure Categories */
+            source_failure_categories: {
+                [key: string]: number;
+            };
+            /** Last Admitted Job At */
+            last_admitted_job_at: string | null;
+            /** Open Report Jobs */
+            open_report_jobs: number;
+            /** Global Open Job Limit */
+            global_open_job_limit: number;
+            /** Queue Saturated */
+            queue_saturated: boolean;
+        };
+        /** SubscriptionEditionOut */
+        SubscriptionEditionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Subscription Id
+             * Format: uuid
+             */
+            subscription_id: string;
+            trigger: components["schemas"]["EditionTrigger"];
+            /** Due At Utc */
+            due_at_utc: string | null;
+            /** Frozen Revision */
+            frozen_revision: number;
+            requested: components["schemas"]["ObservationIntervalOut"];
+            /** Effective Intervals */
+            effective_intervals: components["schemas"]["ObservationIntervalOut"][];
+            /** Gaps */
+            gaps: components["schemas"]["ObservationIntervalOut"][];
+            workflow: components["schemas"]["EditionWorkflow"];
+            report_quality: components["schemas"]["EditionQuality"];
+            coverage: components["schemas"]["EditionCoverage"];
+            /** Job Id */
+            job_id: string | null;
+            /** Report Id */
+            report_id: string | null;
+            /** Version Id */
+            version_id: string | null;
+            /** Covered By Edition Id */
+            covered_by_edition_id: string | null;
+            /** Accepted As Baseline */
+            accepted_as_baseline: boolean;
+            /** Safe Reason */
+            safe_reason: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            comparison?: components["schemas"]["EditionComparisonOut"] | null;
+        };
+        /** SubscriptionEditionsOut */
+        SubscriptionEditionsOut: {
+            /** Items */
+            items: components["schemas"]["SubscriptionEditionOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** SubscriptionEventOut */
+        SubscriptionEventOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Edition Id
+             * Format: uuid
+             */
+            edition_id: string;
+            /** Event Kind */
+            event_kind: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** SubscriptionEventsOut */
+        SubscriptionEventsOut: {
+            /** Items */
+            items: components["schemas"]["SubscriptionEventOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** TallyOut */
         TallyOut: {
@@ -11019,6 +13577,38 @@ export interface components {
             /** Provider */
             provider?: string | null;
         };
+        /**
+         * ThresholdDirection
+         * @enum {string}
+         */
+        ThresholdDirection: "at_least" | "at_most";
+        /** ThresholdObservation */
+        ThresholdObservation: {
+            /** Metric Id */
+            metric_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Unit */
+            unit: string;
+            aggregate: components["schemas"]["WindowAggregate"];
+            /** Value */
+            value: string | null;
+            /**
+             * Window Start
+             * Format: date-time
+             */
+            window_start: string;
+            /**
+             * Window End
+             * Format: date-time
+             */
+            window_end: string;
+            /** Coverage Verified */
+            coverage_verified: boolean;
+            /** Verification Reference */
+            verification_reference: string | null;
+            passage: components["schemas"]["PassageReference"] | null;
+        };
         /** TimelineEventOut */
         TimelineEventOut: {
             /** Id */
@@ -11176,6 +13766,23 @@ export interface components {
             };
         };
         /**
+         * UnavailableCapabilityGap
+         * @description Unimplemented research coverage, deliberately without a provider ID.
+         */
+        UnavailableCapabilityGap: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Related Source Ids
+             * @default []
+             */
+            related_source_ids: string[];
+        };
+        /**
          * UpdateGroup
          * @enum {string}
          */
@@ -11192,6 +13799,13 @@ export interface components {
             role?: components["schemas"]["Role"] | null;
             /** Is Active */
             is_active?: boolean | null;
+        };
+        /** UsageCountsOut */
+        UsageCountsOut: {
+            /** Requests */
+            requests: number;
+            /** Output Tokens */
+            output_tokens: number;
         };
         /** UserOut */
         UserOut: {
@@ -11287,6 +13901,16 @@ export interface components {
             /** Notice */
             notice: string;
         };
+        /**
+         * WindowAggregate
+         * @enum {string}
+         */
+        WindowAggregate: "maximum" | "minimum";
+        /**
+         * WindowPolicy
+         * @enum {string}
+         */
+        WindowPolicy: "rolling_snapshot" | "since_last_success";
         /** YardstickBandOut */
         YardstickBandOut: {
             probability: components["schemas"]["Probability"];
@@ -11639,6 +14263,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ReportJobCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_job_from_brief_api_report_jobs_from_brief_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefJobCreateIn"];
             };
         };
         responses: {
@@ -13695,6 +16352,40 @@ export interface operations {
             };
         };
     };
+    read_original_passage_api_reports__report_id__original_passages__passage_ref__get: {
+        parameters: {
+            query: {
+                version_number: number;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                passage_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OriginalPassageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_claims_api_claims_get: {
         parameters: {
             query: {
@@ -14622,6 +17313,222 @@ export interface operations {
             };
         };
     };
+    list_ledgers_api_reports__report_id__versions__number__ledgers_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ledger_api_reports__report_id__versions__number__ledgers__ledger_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+                ledger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_forecast_api_reports__report_id__versions__number__ledgers_forecasts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_indicator_api_reports__report_id__versions__number__ledgers_indicators_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IndicatorCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_forecast_api_reports__report_id__versions__number__ledgers__ledger_id__reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+                ledger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastReviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_missing_api_reports__report_id__versions__number__ledgers__ledger_id__missing_readings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+                ledger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MissingReadingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLedger"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_library_api_me_library_get: {
         parameters: {
             query?: {
@@ -15009,6 +17916,7 @@ export interface operations {
         parameters: {
             query?: {
                 version?: number | null;
+                source_snapshot_id?: string | null;
             };
             header?: never;
             path: {
@@ -15071,6 +17979,7 @@ export interface operations {
         parameters: {
             query?: {
                 version?: number | null;
+                source_snapshot_id?: string | null;
             };
             header?: never;
             path: {
@@ -15088,6 +17997,302 @@ export interface operations {
                 content: {
                     "text/markdown": string;
                     "application/zip": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_briefs_api_research_briefs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_brief_api_research_briefs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResearchBriefDraftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_api_research_briefs__brief_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_brief_revisions_api_research_briefs__brief_id__revisions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                brief_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefPageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revise_brief_api_research_briefs__brief_id__revisions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResearchBriefRevisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_revision_api_research_briefs__brief_id__revisions__revision__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                revision: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchBriefOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    research_preflight_api_research_briefs__brief_id__revisions__revision__preflight_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                revision: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchPreflightOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_presets_api_research_presets_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                group?: ("conflict" | "cyber" | "economy" | "cross_cutting") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchPresetsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    editable_definition_api_research_presets__preset_id__definition_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresetDefinitionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresetDefinitionOut"];
                 };
             };
             /** @description Validation Error */
@@ -15530,6 +18735,7 @@ export interface operations {
         parameters: {
             query?: {
                 version?: number | null;
+                source_snapshot_id?: string | null;
             };
             header?: never;
             path: {
@@ -15744,6 +18950,148 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlatformConnectionsOut"];
+                };
+            };
+        };
+    };
+    history_api_reports__report_id__versions__number__source_reviews_get: {
+        parameters: {
+            query: {
+                label: string;
+                judgement_id: string;
+                subject: string;
+                kind: components["schemas"]["SourceReviewKind"];
+            };
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceReviewRevision"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_api_reports__report_id__versions__number__source_reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceReviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceReviewRevision"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    freeze_api_reports__report_id__versions__number__source_assessment_snapshots_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceSnapshotIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceReviewSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    snapshot_api_reports__report_id__versions__number__source_assessment_snapshots__snapshot_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                number: number;
+                snapshot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceReviewSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -16411,6 +19759,332 @@ export interface operations {
             };
         };
     };
+    pause_edition_api_schedules__schedule_id__editions__edition_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+                edition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_edition_api_schedules__schedule_id__editions__edition_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+                edition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_edition_api_schedules__schedule_id__editions__edition_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+                edition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_edition_baseline_api_schedules__schedule_id__editions__edition_id__accept_baseline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+                edition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionBaselineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_schedule_api_schedules__schedule_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_schedule_api_schedules__schedule_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_subscription_now_api_schedules__schedule_id__run_now_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunNowIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_schedule_api_schedules_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchedulePreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_subscription_editions_api_schedules__schedule_id__editions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEditionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_subscription_events_api_schedules__schedule_id__events_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                schedule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionEventsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_schedules_api_schedules_get: {
         parameters: {
             query?: never;
@@ -16441,6 +20115,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_schedule_from_brief_api_schedules_from_brief_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleFromBriefIn"];
             };
         };
         responses: {
@@ -16516,6 +20223,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    owner_monthly_usage_api_schedules_usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyUsageOut"];
+                };
+            };
+        };
+    };
+    subscription_monthly_usage_api_schedules__subscription_id__usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyUsageOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -16856,6 +20614,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_subscription_diagnostics_api_admin_subscriptions_diagnostics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionDiagnosticsOut"];
                 };
             };
         };

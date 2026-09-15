@@ -7,6 +7,8 @@ from ase.application.auth.current_session import validate_current_session
 from ase.application.dto import AccessClaims
 from ase.application.ports import Clock, RefreshTokenRepository, UnitOfWork, UserRepository
 from ase.application.ports.reports import ReportRepository
+from ase.application.ports.source_reviews import SourceReviewRepository
+from ase.application.reports.reviewed_source_document import validate_reviewed_snapshot
 from ase.domain.errors import Conflict, NotFound, Unauthenticated
 from ase.domain.report_documents import ReportFile
 
@@ -22,6 +24,8 @@ async def release_document(
     access: AccessPolicy,
     clock: Clock,
     uow: UnitOfWork,
+    source_reviews: SourceReviewRepository | None = None,
+    source_snapshot_id: UUID | None = None,
 ) -> None:
     if rendered.report_version_id is None or rendered.version_number is None:
         raise Conflict("The rendered document has no exact report version.")
@@ -42,6 +46,24 @@ async def release_document(
         raise NotFound()
     if version.id != rendered.report_version_id:
         raise Conflict("The rendered document's exact report version changed.")
+    if source_snapshot_id is not None:
+        if source_reviews is None:
+            raise Conflict("The reviewed source snapshot cannot be rechecked.")
+        snapshot = await source_reviews.snapshot(source_snapshot_id)
+        if (
+            snapshot is None
+            or snapshot.report_id != report_id
+            or snapshot.report_version_id != version.id
+        ):
+            raise NotFound()
+        context.require_read(snapshot.scope.owner_id, snapshot.scope.team_id)
+        context.require_same_scope(
+            snapshot.scope.owner_id,
+            snapshot.scope.team_id,
+            record.created_by,
+            record.team_id,
+        )
+        validate_reviewed_snapshot(record, version, snapshot)
     # Logout is independent of the administration guard. Check its current
     # committed family state after all object reads, then check time synchronously.
     await validate_current_session(claims, users, refresh, clock)

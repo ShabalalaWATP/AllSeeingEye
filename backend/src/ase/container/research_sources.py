@@ -1,12 +1,18 @@
 """Static research capabilities, without asserting live availability or claim reliability."""
 
+from dataclasses import replace
+
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
+from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
 from ase.adapters.feeds.rss_seeds_social import SOCIAL_SEEDS
 from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
+from ase.adapters.research_records.cloudflare_radar import PROVIDER_IDS as RADAR_PROVIDER_IDS
+from ase.adapters.research_records.ecb_reference_rate import EcbReferenceRateProvider
+from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchProvider
 from ase.adapters.research_records.ooni import LIMITATIONS as OONI_LIMITATIONS
 from ase.adapters.research_records.ooni import OoniAggregateProvider
 from ase.adapters.research_subjects.specs import subject_specs
@@ -89,6 +95,26 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
     )
     specs.extend(record_specs())
     specs.extend(subject_specs())
+    specs.extend(
+        replace(
+            _spec(
+                provider_id,
+                f"Cloudflare Radar {layer} target distribution",
+                Category.CYBER,
+                "Provider-reported traffic shares; no incidents, target locations or attribution.",
+                "Current global top-10 distribution; one fixed-layer request per cache miss.",
+                "Explicit noncommercial acknowledgement and configured Radar token required. "
+                "No history, precise geometry, full country coverage or query-text filtering. "
+                "Country filtering preserves the global denominator and full provider interval.",
+                RADAR_ATTACK_SPEC.licence_note,
+                organisation="Cloudflare Radar",
+                role="originator",
+                requires_key=True,
+            ),
+            licence_note=RADAR_ATTACK_SPEC.licence_note,
+        )
+        for layer, provider_id in RADAR_PROVIDER_IDS.items()
+    )
     specs.append(
         _spec(
             RetainedAreaFeedProvider.id,
@@ -174,6 +200,40 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             "Disabled by default; no individual probe records are collected.",
             organisation="Open Observatory of Network Interference",
             role="originator",
+        )
+    )
+    specs.extend(
+        (
+            _spec(
+                IodaOutageResearchProvider.id,
+                IodaOutageResearchProvider.name,
+                Category.CYBER,
+                "IODA reports detected country-level network anomaly windows; it does not "
+                "establish outage cause, affected users, a precise location or cyber attribution.",
+                "Exact one-country recorded-time selection; at most 14 days and the first "
+                "20 returned events from one request.",
+                "Requires operator-reviewed data-use acknowledgement. IODA API results carry "
+                "copyright; no complete-history or absence claim, and long-term reuse "
+                "needs review.",
+                "Source: IODA, Georgia Tech. API copyright notice; data-reuse permission "
+                "must be confirmed by the operator.",
+                organisation="Georgia Tech Internet Intelligence Lab",
+                role="originator",
+            ),
+            _spec(
+                EcbReferenceRateProvider.id,
+                EcbReferenceRateProvider.name,
+                Category.ECONOMIC,
+                "Official ECB EXR reference-rate values, not a market transaction quote or "
+                "a verified economic interpretation.",
+                "Exact GBP-per-EUR series and at most 31 recorded days; no broad economic search.",
+                "Current API vintage only. Missing days are not zero; revisions, release "
+                "timestamps and other ECB series are not acquired.",
+                "Source: ECB statistics. Public ESCB data reuse requires attribution and "
+                "unmodified values and metadata.",
+                organisation="European Central Bank",
+                role="originator",
+            ),
         )
     )
     specs.extend(

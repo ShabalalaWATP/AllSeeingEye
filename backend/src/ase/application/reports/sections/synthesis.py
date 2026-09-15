@@ -8,7 +8,11 @@ from ase.application.reports.drafting import Draft
 from ase.application.reports.sections.checkpoints import read_body, synthesis_metadata, write_state
 from ase.application.reports.sections.contracts import validate_step
 from ase.application.reports.sections.outcomes import SectionIncomplete, StepExhausted
-from ase.application.reports.sections.synthesis_contracts import JUDGEMENTS, PARTS
+from ase.application.reports.sections.synthesis_contracts import (
+    JUDGEMENTS,
+    PARTS,
+    validate_aggregate_limits,
+)
 
 
 class SynthesisCall(Protocol):
@@ -32,11 +36,12 @@ async def collect_synthesis(
     call: SynthesisCall,
     pause: Callable[[dict[str, Any], str], Awaitable[NoReturn]],
     previous_exists: bool,
+    research_mode: object = None,
 ) -> dict[str, Any]:
     saved = await checkpoints.load(digest, "synthesis")
     if saved and saved.status == "completed":
         # Existing reports and a completed new aggregate retain their original cache identity.
-        return read_body(saved, expected, eeis)
+        return read_body(saved, expected, eeis, research_mode=research_mode)
     if saved and saved.status == "running":
         # The service must explicitly resume/reset an uncertain old request first.
         raise SectionIncomplete("synthesis", "interrupted", draft)
@@ -52,7 +57,13 @@ async def collect_synthesis(
         checkpoint = await checkpoints.load(digest, part)
         if checkpoint and checkpoint.status == "completed":
             try:
-                body = read_body(checkpoint, child, eeis, previous_exists=previous_exists)
+                body = read_body(
+                    checkpoint,
+                    child,
+                    eeis,
+                    previous_exists=previous_exists,
+                    research_mode=research_mode,
+                )
             except (ValueError, TypeError, RecursionError):
                 # Do not overwrite immutable completed material that failed revalidation.
                 raise SectionIncomplete(part, "invalid_checkpoint", draft) from None
@@ -70,6 +81,8 @@ async def collect_synthesis(
         combined.update(body)
         if part == JUDGEMENTS:
             judgements = body
-    return validate_step(
+    result = validate_step(
         combined, synthesis=True, labels=frozenset(expected["evidence_labels"]), eeis=eeis
     )
+    validate_aggregate_limits(result, research_mode=research_mode)
+    return result

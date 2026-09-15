@@ -1,11 +1,13 @@
 """Concrete research provider selection and private store factories."""
 
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 from typing import Literal
 
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS_SPEC
 from ase.adapters.feeds.http import FeedHttpClient
+from ase.adapters.feeds.radar_attack_trends import RadarAttackTrends
 from ase.adapters.research.eonet_area import EonetAreaResearchProvider
 from ase.adapters.research.news import GoogleNewsResearchProvider
 from ase.adapters.research.openaq_area import OpenAqAreaResearchProvider
@@ -13,6 +15,10 @@ from ase.adapters.research.retained_area import RetainedAreaFeedProvider
 from ase.adapters.research.usgs_area import UsgsAreaResearchProvider
 from ase.adapters.research_records.aiddata_provider import AidDataProvider
 from ase.adapters.research_records.certificates import CertificateTransparencyProvider
+from ase.adapters.research_records.cloudflare_radar import (
+    PROVIDER_IDS as RADAR_PROVIDER_IDS,
+)
+from ase.adapters.research_records.cloudflare_radar import CloudflareRadarResearchProvider
 from ase.adapters.research_records.companies_house import CompaniesHouseProvider
 from ase.adapters.research_records.companies_house_client import CompaniesHouseClient
 from ase.adapters.research_records.companies_house_people import (
@@ -29,7 +35,10 @@ from ase.adapters.research_records.copernicus_research import CopernicusResearch
 from ase.adapters.research_records.designation_import import load_designation_snapshot
 from ase.adapters.research_records.designations import DesignationProvider
 from ase.adapters.research_records.domains import DnsResearchProvider, RdapResearchProvider
+from ase.adapters.research_records.ecb_reference_rate import EcbReferenceRateProvider
 from ase.adapters.research_records.gleif import GleifParentProvider, GleifProfileProvider
+from ase.adapters.research_records.ioda_outage_events import IodaOutageResearchProvider
+from ase.adapters.research_records.ons_cpih import OnsCpihProvider
 from ase.adapters.research_records.ooni import OoniAggregateProvider
 from ase.adapters.research_records.sec_client import SecClient
 from ase.adapters.research_subjects.parliament import ParliamentQuestionsProvider
@@ -43,6 +52,8 @@ from ase.application.ports.services import Clock
 from ase.application.ports.source_controls import SourceAdmission
 from ase.application.research.service import ResearchCollectionService
 from ase.application.research.source_admission import ControlledResearchProvider
+from ase.application.source_inventory import SourceRequirement
+from ase.container.research_allocation import ResearchAllocationContext, load_research_allocation
 from ase.container.research_feeds import public_research_feeds
 from ase.domain.research import ResearchFocus, ResearchQuery
 from ase.domain.source_controls import source_control_keys
@@ -65,6 +76,10 @@ def research_service(
     certificate_transparency_key: str | None = None,
     openalex_api_key: str | None = None,
     openaq_api_key: str | None = None,
+    radar_reader: RadarAttackTrends | None = None,
+    radar_noncommercial_use_acknowledged: bool = False,
+    ioda_public_data_use_acknowledged: bool = False,
+    requirements: Mapping[str, SourceRequirement] | None = None,
 ) -> ResearchCollectionService:
     sec_client = sec_client or SecClient(http)
     # Preserve the credential-specific rolling request allowance across research runs.
@@ -74,6 +89,18 @@ def research_service(
         http, clock, companies_house_key, client=registry_client
     )
     certificates = CertificateTransparencyProvider(http, clock, certificate_transparency_key)
+    shared_radar = (
+        radar_reader if radar_reader is not None else RadarAttackTrends(http, clock, None)
+    )
+    radar_providers = tuple(
+        CloudflareRadarResearchProvider(
+            shared_radar,
+            clock,
+            layer=layer,
+            allow_noncommercial_data=radar_noncommercial_use_acknowledged,
+        )
+        for layer in ("layer3", "layer7")
+    )
     procurement = ContractsFinderProvider(http, clock)
     aiddata = AidDataProvider(
         Path(aiddata_catalogue_path) if aiddata_catalogue_path else None,
@@ -140,6 +167,12 @@ def research_service(
                 OpenAlexProvider(http, clock, api_key=openalex_api_key),
                 CrossrefProvider(http, clock),
                 WorldBankProvider(http, clock),
+                OnsCpihProvider(http, clock),
+                EcbReferenceRateProvider(http, clock),
+                IodaOutageResearchProvider(
+                    http, clock, allow_data_use=ioda_public_data_use_acknowledged
+                ),
+                *radar_providers,
                 ParliamentQuestionsProvider(http, clock),
                 OoniAggregateProvider(
                     http, clock, allow_noncommercial_data=ooni_noncommercial_use_acknowledged
@@ -171,10 +204,43 @@ def research_service(
                 UsgsAreaResearchProvider.id,
                 EonetAreaResearchProvider.id,
                 OpenAqAreaResearchProvider.id,
+                OnsCpihProvider.id,
+                EcbReferenceRateProvider.id,
+                IodaOutageResearchProvider.id,
+                *RADAR_PROVIDER_IDS.values(),
             }
         ]
 
-    return ResearchCollectionService(providers, challenge_providers=challenge_providers)
+    async def allocation_loader(provider_ids: tuple[str, ...]) -> ResearchAllocationContext:
+        if admission is None:
+            raise ValueError("Current source admission is required for allocation")
+        safe_requirements = dict(requirements or {})
+        # A configured read token never substitutes for explicit licence consent.
+        if radar_noncommercial_use_acknowledged is not True or radar_reader is None:
+            for provider_id in RADAR_PROVIDER_IDS.values():
+                safe_requirements[provider_id] = SourceRequirement(
+                    "acknowledgement",
+                    False,
+                    "none",
+                    "ASE_CLOUDFLARE_RADAR_NONCOMMERCIAL_USE_ACKNOWLEDGED",
+                    "Shared Radar reader and explicit noncommercial acknowledgement are required.",
+                )
+        if retained_store is not None:
+            safe_requirements[RetainedAreaFeedProvider.id] = SourceRequirement(
+                "runtime", True, "database", None, "Retained event store is available."
+            )
+        return await load_research_allocation(
+            provider_ids,
+            admission=admission,
+            requirements=safe_requirements,
+            disabled=frozenset(disabled),
+        )
+
+    return ResearchCollectionService(
+        providers,
+        challenge_providers=challenge_providers,
+        allocation_loader=allocation_loader if admission is not None else None,
+    )
 
 
 def private_research_store() -> InMemoryEventStore:

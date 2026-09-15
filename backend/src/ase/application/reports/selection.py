@@ -186,6 +186,7 @@ def select_evidence(
     country_iso: str | None = None,
     categories: Sequence[Category] = (),
     terms: Sequence[str] = (),
+    term_groups: Sequence[Sequence[str]] = (),
     bbox: BoundingBox | None = None,
     countries: Sequence[str] = (),
     hazard: Hazard | None = None,
@@ -198,9 +199,9 @@ def select_evidence(
 ) -> Selection:
     """Freeze the best evidence for the scope; items with instruction-like text are left out.
 
-    Search terms (from the direction call or a conflict's keywords) put matching items
-    ahead of the rest and boost them by the number of terms matched; unmatched items only
-    fill the remaining places. A bounding box and extra countries widen the pool (a
+    Earlier term groups take precedence. Matches within a group are ordered by
+    evidence score and stable ID; unmatched items fill the remaining places.
+    A bounding box and extra countries widen the pool (a
     conflict area); a hazard narrows it to one kind of disaster.
     """
     window = (
@@ -223,12 +224,23 @@ def select_evidence(
     )
     if hazard is not None:
         pool = [event for event in pool if hazard_of(event) is hazard]
-    lowered = tuple(term.lower().strip() for term in terms if term.strip())
+    lowered_groups = tuple(
+        tuple(term.lower().strip() for term in group if term.strip())
+        for group in (term_groups or (terms,))
+    )
+    lowered = tuple(dict.fromkeys(term for group in lowered_groups for term in group))
+
+    def relevance(event: Event) -> int:
+        return next(
+            (index for index, group in enumerate(lowered_groups) if term_matches(event, group)),
+            len(lowered_groups),
+        )
 
     def rank(event: Event) -> tuple[int, float, str]:
-        matches = term_matches(event, lowered)
+        group = group_index[event.id]
+        matches = term_matches(event, lowered_groups[group]) if group < len(lowered_groups) else 0
         return (
-            -bool(matches),
+            group,
             -score(
                 event, until if since is not None and until is not None else now, window, time_basis
             )
@@ -248,13 +260,18 @@ def select_evidence(
             else (),
         )
     ]
-    ranked = _diversify(sorted(safe, key=rank), profiles, lowered)
+    group_index = {event.id: relevance(event) for event in safe}
+    ordered = sorted(safe, key=rank)
+    buckets: list[list[Event]] = [[] for _ in range(len(lowered_groups) + 1)]
+    for event in ordered:
+        buckets[group_index[event.id]].append(event)
+    ranked = [event for bucket in buckets for event in _diversify(bucket, profiles, lowered)]
     if seen_content_signatures:
         # Preserve relevance ahead of novelty, and quality/diversity within each group.
         # Repeated items may still supply essential context after new relevant evidence.
         ranked.sort(
             key=lambda event: (
-                not bool(term_matches(event, lowered)) if lowered else False,
+                group_index[event.id],
                 content_signature(event) in seen_content_signatures,
             )
         )

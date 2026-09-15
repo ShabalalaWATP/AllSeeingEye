@@ -238,6 +238,8 @@ export const reportPublicationSchema = z.object({
 export type ReportPublication = z.infer<typeof reportPublicationSchema>;
 
 export const reportVersionSchema = z.object({
+  brief_id: z.uuid().nullable().optional(),
+  brief_revision: z.number().int().positive().nullable().optional(),
   publication: reportPublicationSchema.nullable().optional(),
   claim_ledger: claimLedgerSchema.nullable().optional(),
   claim_generation: claimGenerationSchema.nullable().optional(),

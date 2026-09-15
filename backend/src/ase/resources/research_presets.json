@@ -1,0 +1,2113 @@
+{
+  "schema_version": 1,
+  "presets": [
+    {
+      "id": "conflict-global",
+      "version": 1,
+      "title": "Global conflict briefing",
+      "group": "conflict",
+      "purpose": "Prioritise evidenced conflict developments, civilian effects and escalation signals.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Which armed conflicts changed materially during the selected period, and what are the implications over the next month?",
+      "requirements": [
+        {
+          "id": "conflict-global.q1",
+          "question": "What major developments are supported by dated evidence?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "conflict-global.q2",
+          "question": "What changes in intensity or territorial control are corroborated, claimed or contested?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "conflict-global.q3",
+          "question": "What civilian and humanitarian effects are documented?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "conflict-global.q4",
+          "question": "What diplomacy or escalation indicators changed, and what contrary evidence exists?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [],
+      "scope_note": "Global relevance selection; disclose regions and languages omitted within collection limits.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CONFLICT",
+        "HUMANITARIAN",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "general",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "regional_table",
+        "sourced_timeline",
+        "coverage_selection"
+      ],
+      "indicators": [
+        {
+          "id": "conflict-global.i1",
+          "condition": "Is there cited corroboration of escalation or a ceasefire change?"
+        },
+        {
+          "id": "conflict-global.i2",
+          "condition": "Is displacement or aid-access deterioration documented by attributable sources?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Exclude ordinary crime and accidents from armed-conflict classification; separately label relevant civil unrest."
+      ],
+      "quality_trap": "Exclude ordinary crime and accidents from armed-conflict classification; separately label relevant civil unrest.",
+      "keywords": [
+        "war",
+        "armed conflict",
+        "global",
+        "humanitarian"
+      ]
+    },
+    {
+      "id": "conflict-russia-ukraine",
+      "version": 1,
+      "title": "Russia and Ukraine",
+      "group": "conflict",
+      "purpose": "Assess wartime developments, contested claims, civilian effects and diplomacy.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess developments in the Russia-Ukraine war, distinguish claims from corroborated reporting and explain implications for security, civilians and diplomacy.",
+      "requirements": [
+        {
+          "id": "conflict-russia-ukraine.q1",
+          "question": "Which significant developments and contested claims have new evidence?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "conflict-russia-ukraine.q2",
+          "question": "What civilian and infrastructure effects are documented?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "conflict-russia-ukraine.q3",
+          "question": "What military and economic constraints are evidenced?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "conflict-russia-ukraine.q4",
+          "question": "Which diplomatic and escalation indicators changed, including contrary evidence?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "RU",
+        "UA"
+      ],
+      "scope_note": "Russia and Ukraine; identify and distinguish explicitly relevant spillover.",
+      "suggested_languages": [
+        "en",
+        "uk",
+        "ru"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CONFLICT",
+        "HUMANITARIAN",
+        "OFFICIAL",
+        "NEWS"
+      ],
+      "optional_bundles": [
+        "ENERGY"
+      ],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "regional_security",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "dated_developments",
+        "disputed_assessments",
+        "lens_implications"
+      ],
+      "indicators": [
+        {
+          "id": "conflict-russia-ukraine.i1",
+          "condition": "Is there a cited policy or ceasefire change?"
+        },
+        {
+          "id": "conflict-russia-ukraine.i2",
+          "condition": "Are civilian effects or supply disruptions documented with dates and attribution?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Preserve provenance and dates of map or frontline assessments; do not represent them as live positions."
+      ],
+      "quality_trap": "Preserve provenance and dates of map or frontline assessments; do not represent them as live positions.",
+      "keywords": [
+        "Russia",
+        "Ukraine",
+        "war",
+        "frontline"
+      ]
+    },
+    {
+      "id": "conflict-israel-gaza-west-bank",
+      "version": 1,
+      "title": "Israel, Gaza and the West Bank",
+      "group": "conflict",
+      "purpose": "Assess security, civilian protection, aid access and diplomacy with attributed claims.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess developments affecting security, civilian protection, aid access and diplomacy in Israel, Gaza and the West Bank during the selected period.",
+      "requirements": [
+        {
+          "id": "conflict-israel-gaza-west-bank.q1",
+          "question": "What reported events have attributable evidence and what is contested?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "conflict-israel-gaza-west-bank.q2",
+          "question": "How have documented civilian effects and aid access changed?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "conflict-israel-gaza-west-bank.q3",
+          "question": "What statements and actions by the parties are evidenced?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "conflict-israel-gaza-west-bank.q4",
+          "question": "What diplomatic developments and alternative explanations need assessment?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "IL",
+        "PS"
+      ],
+      "scope_note": "Israel, Gaza and the West Bank; distinguish regional context. Actor-perspective edits may examine Israeli domestic/security concerns, Palestinian civilian/governance concerns or regional diplomacy, without suppressing contrary evidence.",
+      "suggested_languages": [
+        "en",
+        "ar",
+        "he"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CONFLICT",
+        "HUMANITARIAN",
+        "OFFICIAL",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "civilian_protection",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "observed_reporting",
+        "party_claims",
+        "assessed_implications",
+        "unresolved_contradictions"
+      ],
+      "indicators": [
+        {
+          "id": "conflict-israel-gaza-west-bank.i1",
+          "condition": "Are access changes or agreement implementation documented?"
+        },
+        {
+          "id": "conflict-israel-gaza-west-bank.i2",
+          "condition": "Is escalation or displacement corroborated with explicit uncertainty?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "No lens may erase contrary evidence or equate different actors' claims without examining their support."
+      ],
+      "quality_trap": "No lens may erase contrary evidence or equate different actors' claims without examining their support.",
+      "keywords": [
+        "Israel",
+        "Gaza",
+        "West Bank",
+        "Palestinian",
+        "aid"
+      ]
+    },
+    {
+      "id": "conflict-iran-region",
+      "version": 1,
+      "title": "Iran and regional escalation",
+      "group": "conflict",
+      "purpose": "Examine regional escalation, diplomacy and economic exposure.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What developments involving Iran materially change regional escalation risk, diplomacy or civilian and economic exposure?",
+      "requirements": [
+        {
+          "id": "conflict-iran-region.q1",
+          "question": "Which activities are reported and on what attribution basis?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "conflict-iran-region.q2",
+          "question": "What diplomatic and official signals changed?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "conflict-iran-region.q3",
+          "question": "What energy or shipping consequences have supporting evidence?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "conflict-iran-region.q4",
+          "question": "What competing escalation and de-escalation explanations fit the evidence?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "IR"
+      ],
+      "scope_note": "Iran and explicitly named relevant neighbouring areas.",
+      "suggested_languages": [
+        "en",
+        "fa",
+        "ar"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CONFLICT",
+        "OFFICIAL",
+        "NEWS",
+        "ENERGY",
+        "MOBILITY"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "regional_security",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "actor_claims",
+        "regional_dependencies",
+        "warning_indicators"
+      ],
+      "indicators": [
+        {
+          "id": "conflict-iran-region.i1",
+          "condition": "Is a policy change or shipping disruption verified by cited evidence?"
+        },
+        {
+          "id": "conflict-iran-region.i2",
+          "condition": "Has multilateral reporting changed the basis for an escalation assessment?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Distinguish intention assessments from observations; an attributed statement does not prove the intention it claims."
+      ],
+      "quality_trap": "Distinguish intention assessments from observations; an attributed statement does not prove the intention it claims.",
+      "keywords": [
+        "Iran",
+        "Middle East",
+        "escalation",
+        "Persian"
+      ]
+    },
+    {
+      "id": "conflict-taiwan-indopacific",
+      "version": 1,
+      "title": "Taiwan and the Indo-Pacific",
+      "group": "conflict",
+      "purpose": "Assess security, policy, diplomacy and commercial exposure.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Which developments affect Taiwan Strait and wider Indo-Pacific security, and how should they change the current outlook?",
+      "requirements": [
+        {
+          "id": "conflict-taiwan-indopacific.q1",
+          "question": "What reported activity and official policy changes are evidenced?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "conflict-taiwan-indopacific.q2",
+          "question": "What regional diplomatic developments matter?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "conflict-taiwan-indopacific.q3",
+          "question": "What trade and supply-chain implications are supported?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "conflict-taiwan-indopacific.q4",
+          "question": "What alternative explanations and warning indicators should be retained?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "TW"
+      ],
+      "scope_note": "Taiwan Strait and explicitly selected regional actors.",
+      "suggested_languages": [
+        "en",
+        "zh",
+        "ja",
+        "ko"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "OFFICIAL",
+        "NEWS",
+        "TRADE",
+        "CONFLICT",
+        "MOBILITY"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "regional_security",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "activity_baseline",
+        "regional_diplomacy",
+        "commercial_exposure"
+      ],
+      "indicators": [
+        {
+          "id": "conflict-taiwan-indopacific.i1",
+          "condition": "Is there a cited policy change?"
+        },
+        {
+          "id": "conflict-taiwan-indopacific.i2",
+          "condition": "Does a sustained activity change have a valid baseline and corroboration?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Public track gaps alone do not establish military activity; distinguish routine baselines from evidenced sustained changes."
+      ],
+      "quality_trap": "Public track gaps alone do not establish military activity; distinguish routine baselines from evidenced sustained changes.",
+      "keywords": [
+        "Taiwan",
+        "Indo-Pacific",
+        "China",
+        "Japan",
+        "Korea"
+      ]
+    },
+    {
+      "id": "cyber-global",
+      "version": 1,
+      "title": "Global cyber threat intelligence",
+      "group": "cyber",
+      "purpose": "Prioritise exploitation evidence and defensive implications.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Which evidenced cyber developments matter most to defenders during this period?",
+      "requirements": [
+        {
+          "id": "cyber-global.q1",
+          "question": "What active exploitation has credible supporting evidence?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "cyber-global.q2",
+          "question": "Which campaigns are reported, and what supports their attribution?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "cyber-global.q3",
+          "question": "Which sectors and regions are affected or potentially exposed?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "cyber-global.q4",
+          "question": "What defensive implications are supported and where do sources disagree?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [],
+      "scope_note": "Global cyber relevance; add relevant incident-source languages within budget.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CTI",
+        "NETWORK",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "defensive_cyber",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "exploitation_table",
+        "actors_and_campaigns",
+        "source_disagreements"
+      ],
+      "indicators": [
+        {
+          "id": "cyber-global.i1",
+          "condition": "Is new exploitation corroborated or an authoritative urgent advisory issued?"
+        },
+        {
+          "id": "cyber-global.i2",
+          "condition": "Is a material campaign change evidenced by dated reporting?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Do not generate offensive actions or active scanning instructions; historical actor knowledge is not current observed activity."
+      ],
+      "quality_trap": "Do not generate offensive actions or active scanning instructions; historical actor knowledge is not current observed activity.",
+      "keywords": [
+        "cyber",
+        "CTI",
+        "exploitation",
+        "campaign",
+        "advisory"
+      ]
+    },
+    {
+      "id": "cyber-uk-critical-sectors",
+      "version": 1,
+      "title": "UK critical sectors",
+      "group": "cyber",
+      "purpose": "Relate cyber evidence to chosen UK sectors and optional technology context.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess cyber developments relevant to selected UK critical sectors and identify evidence-backed defensive priorities.",
+      "requirements": [
+        {
+          "id": "cyber-uk-critical-sectors.q1",
+          "question": "Which incidents and advisories are relevant to the selected sectors?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "cyber-uk-critical-sectors.q2",
+          "question": "What exploitation may affect the selected assets, with inventory uncertainty?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "cyber-uk-critical-sectors.q3",
+          "question": "What third-party dependencies are exposed by the evidence?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "cyber-uk-critical-sectors.q4",
+          "question": "What confidence and defensive priorities are supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "sectors",
+          "label": "Critical sectors",
+          "guidance": "Select one or more sectors before using this starter.",
+          "target": "scope.subject",
+          "required": true
+        },
+        {
+          "id": "technology_profile",
+          "label": "Optional technology profile",
+          "guidance": "Include only voluntarily supplied product or technology context.",
+          "target": "scope.subject",
+          "required": false
+        }
+      ],
+      "country_isos": [
+        "GB"
+      ],
+      "scope_note": "United Kingdom and the explicitly selected critical sectors; technology profile is voluntary.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CTI",
+        "NETWORK",
+        "OFFICIAL",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "defensive_cyber",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "relevance_matrix",
+        "defensive_priorities"
+      ],
+      "indicators": [
+        {
+          "id": "cyber-uk-critical-sectors.i1",
+          "condition": "Does a cited advisory identify a product in the supplied profile?"
+        },
+        {
+          "id": "cyber-uk-critical-sectors.i2",
+          "condition": "Is exploitation or a relevant service disruption observed and verified?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Profile matching means potential relevance, not proof that the user's systems are vulnerable."
+      ],
+      "quality_trap": "Profile matching means potential relevance, not proof that the user's systems are vulnerable.",
+      "keywords": [
+        "UK",
+        "critical infrastructure",
+        "sectors",
+        "cyber"
+      ]
+    },
+    {
+      "id": "cyber-ransomware",
+      "version": 1,
+      "title": "Ransomware",
+      "group": "cyber",
+      "purpose": "Separate criminal claims from corroborated incidents and defensive exposure.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What changed in ransomware activity, affected sectors and defensive exposure during the period?",
+      "requirements": [
+        {
+          "id": "cyber-ransomware.q1",
+          "question": "Which incidents are corroborated by attributable reporting?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "cyber-ransomware.q2",
+          "question": "Which victims are only claimed and which are independently confirmed?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "cyber-ransomware.q3",
+          "question": "What campaign or tool changes are supported by trusted analysis?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "cyber-ransomware.q4",
+          "question": "What defensive implications follow, with source and sample limitations?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [],
+      "scope_note": "Selected regions and sectors; safe official victim disclosures where acquisition is permitted.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CTI",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "defensive_cyber",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "claim_corroboration",
+        "sector_trends"
+      ],
+      "indicators": [
+        {
+          "id": "cyber-ransomware.i1",
+          "condition": "Is a campaign change independently corroborated?"
+        },
+        {
+          "id": "cyber-ransomware.i2",
+          "condition": "Is a changed exploitation route evidenced in attributable analysis?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Do not collect leaked personal files or treat criminal leak-site assertions as confirmed incidents."
+      ],
+      "quality_trap": "Do not collect leaked personal files or treat criminal leak-site assertions as confirmed incidents.",
+      "keywords": [
+        "ransomware",
+        "victims",
+        "extortion",
+        "criminal claims"
+      ]
+    },
+    {
+      "id": "cyber-actor-watch",
+      "version": 1,
+      "title": "Selected threat actor",
+      "group": "cyber",
+      "purpose": "Track new actor reporting while preserving alias and attribution uncertainty.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What new evidence changes our understanding of this actor's reported activity and defensive relevance?",
+      "requirements": [
+        {
+          "id": "cyber-actor-watch.q1",
+          "question": "What new campaign reports are relevant to the reviewed actor?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "cyber-actor-watch.q2",
+          "question": "What is the attribution basis and what uncertainty remains?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "cyber-actor-watch.q3",
+          "question": "Which techniques are observed now versus historical reference?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "cyber-actor-watch.q4",
+          "question": "What defensive implications matter for selected sectors?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "actor",
+          "label": "Reviewed actor",
+          "guidance": "Supply a reviewed actor ID or explicitly resolve the ambiguous name.",
+          "target": "scope.subject",
+          "required": true
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "A reviewed actor ID or explicitly resolved ambiguous name; add relevant original languages.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CTI",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "defensive_cyber",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "alias_source_crosswalk",
+        "historical_current_timeline"
+      ],
+      "indicators": [
+        {
+          "id": "cyber-actor-watch.i1",
+          "condition": "Is new independent attribution evidence available?"
+        },
+        {
+          "id": "cyber-actor-watch.i2",
+          "condition": "Has a campaign change been validated against dated evidence?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "ATT&CK descriptions alone are background, not proof of a current operation or location; aliases are not exact identity equivalence."
+      ],
+      "quality_trap": "ATT&CK descriptions alone are background, not proof of a current operation or location; aliases are not exact identity equivalence.",
+      "keywords": [
+        "actor",
+        "APT",
+        "ATT&CK",
+        "aliases",
+        "attribution"
+      ]
+    },
+    {
+      "id": "cyber-technology-exploitation",
+      "version": 1,
+      "title": "Exploitation affecting selected technologies",
+      "group": "cyber",
+      "purpose": "Check exploitation and issuer guidance against a selected technology scope.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Which current exploitation evidence and advisories are relevant to these technologies?",
+      "requirements": [
+        {
+          "id": "cyber-technology-exploitation.q1",
+          "question": "Which product versions are identified as affected?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "cyber-technology-exploitation.q2",
+          "question": "What exploitation is observed versus hypothetical?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "cyber-technology-exploitation.q3",
+          "question": "What patch or mitigation status is reported by the issuer?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "cyber-technology-exploitation.q4",
+          "question": "What dependencies and sector implications are supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "technologies",
+          "label": "Technologies",
+          "guidance": "Supply product, vendor and version details or a technology family.",
+          "target": "scope.subject",
+          "required": true
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "Named products, vendors and versions or an explicit technology family.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "CTI"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "defensive_cyber",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "cve_product_version",
+        "advisory_dates",
+        "inventory_uncertainty"
+      ],
+      "indicators": [
+        {
+          "id": "cyber-technology-exploitation.i1",
+          "condition": "Is exploitation confirmed or an affected-version range revised?"
+        },
+        {
+          "id": "cyber-technology-exploitation.i2",
+          "condition": "Has the issuer changed its remediation guidance?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Version-name similarity does not prove exposure; preserve uncertainty in inventory matches."
+      ],
+      "quality_trap": "Version-name similarity does not prove exposure; preserve uncertainty in inventory matches.",
+      "keywords": [
+        "CVE",
+        "products",
+        "vendor",
+        "versions",
+        "vulnerabilities"
+      ]
+    },
+    {
+      "id": "economy-global",
+      "version": 1,
+      "title": "Global macroeconomy",
+      "group": "economy",
+      "purpose": "Explain changes in growth, prices, policy and transmission mechanisms.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What changed in global growth, inflation, financial conditions and trade, and through which mechanisms might it matter next?",
+      "requirements": [
+        {
+          "id": "economy-global.q1",
+          "question": "What relevant statistical releases and revisions changed the evidence?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-global.q2",
+          "question": "What monetary and fiscal changes are documented?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-global.q3",
+          "question": "What trade and energy conditions changed?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-global.q4",
+          "question": "What transmission mechanisms and alternative outlooks are supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [],
+      "scope_note": "Global relevance selection; include original institutional languages where useful.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "ENERGY",
+        "TRADE",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "comparable_indicators",
+        "release_calendar",
+        "sourced_charts"
+      ],
+      "indicators": [
+        {
+          "id": "economy-global.i1",
+          "condition": "Has a defined data surprise or revision occurred?"
+        },
+        {
+          "id": "economy-global.i2",
+          "condition": "Is a monetary or fiscal policy change documented?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Do not merge incompatible frequencies, nominal and real measures or revised vintages."
+      ],
+      "quality_trap": "Do not merge incompatible frequencies, nominal and real measures or revised vintages.",
+      "keywords": [
+        "macro",
+        "growth",
+        "inflation",
+        "global economy"
+      ]
+    },
+    {
+      "id": "economy-uk",
+      "version": 1,
+      "title": "UK economy",
+      "group": "economy",
+      "purpose": "Assess UK releases, policy and household or business exposure.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess changes in UK growth, prices, employment, monetary and fiscal policy, and external exposure.",
+      "requirements": [
+        {
+          "id": "economy-uk.q1",
+          "question": "Which official releases and revisions changed the evidence?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-uk.q2",
+          "question": "What Bank of England or Treasury policy changes are documented?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-uk.q3",
+          "question": "What household and business transmission mechanisms are supported?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-uk.q4",
+          "question": "What trade and energy implications matter?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "GB"
+      ],
+      "scope_note": "United Kingdom; prioritise implemented ONS and UK official routes, disclosing missing routes.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "ENERGY",
+        "TRADE",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "uk_dashboard",
+        "dated_releases",
+        "written_interpretation"
+      ],
+      "indicators": [
+        {
+          "id": "economy-uk.i1",
+          "condition": "Has a selected inflation, labour or growth release changed?"
+        },
+        {
+          "id": "economy-uk.i2",
+          "condition": "Has a documented policy decision changed the outlook?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Separate a statistical release date from its measured period; missing ONS routes remain a coverage gap."
+      ],
+      "quality_trap": "Separate a statistical release date from its measured period; missing ONS routes remain a coverage gap.",
+      "keywords": [
+        "UK",
+        "Britain",
+        "ONS",
+        "Bank of England",
+        "Treasury"
+      ]
+    },
+    {
+      "id": "economy-usa",
+      "version": 1,
+      "title": "USA economy",
+      "group": "economy",
+      "purpose": "Assess US activity, policy and international transmission.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess changes in US activity, prices, labour markets, policy and global spillovers.",
+      "requirements": [
+        {
+          "id": "economy-usa.q1",
+          "question": "What relevant statistical releases and revisions changed?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-usa.q2",
+          "question": "What Federal Reserve or fiscal developments are documented?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-usa.q3",
+          "question": "What trade and financial transmission mechanisms are supported?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-usa.q4",
+          "question": "What alternative outlooks fit the evidence?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "US"
+      ],
+      "scope_note": "United States; use verified US official routes where implemented and disclose gaps.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "TRADE",
+        "NEWS"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "us_indicators",
+        "transmission_chart"
+      ],
+      "indicators": [
+        {
+          "id": "economy-usa.i1",
+          "condition": "Has a named release or revision changed a supported assessment?"
+        },
+        {
+          "id": "economy-usa.i2",
+          "condition": "Has a Federal Reserve or fiscal policy decision changed?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Named release and policy indicators are not trading recommendations or promised price predictions."
+      ],
+      "quality_trap": "Named release and policy indicators are not trading recommendations or promised price predictions.",
+      "keywords": [
+        "USA",
+        "United States",
+        "Federal Reserve",
+        "US economy"
+      ]
+    },
+    {
+      "id": "economy-china",
+      "version": 1,
+      "title": "China economy",
+      "group": "economy",
+      "purpose": "Compare activity, credit, property and policy evidence with methodological limits.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess changes in China's activity, prices, property and credit conditions, policy and trade exposure.",
+      "requirements": [
+        {
+          "id": "economy-china.q1",
+          "question": "What official data changed and what methodological limits apply?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-china.q2",
+          "question": "What evidence supports policy implementation?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-china.q3",
+          "question": "What changed in property, credit and external demand?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-china.q4",
+          "question": "What corroborating and contrary indicators are available?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "CN"
+      ],
+      "scope_note": "China, with external demand and trade context distinguished.",
+      "suggested_languages": [
+        "en",
+        "zh"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "TRADE",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "source_comparison",
+        "series_limitations",
+        "policy_transmission"
+      ],
+      "indicators": [
+        {
+          "id": "economy-china.i1",
+          "condition": "Is a credit, property or trade shift evidenced with defined measures?"
+        },
+        {
+          "id": "economy-china.i2",
+          "condition": "Has a policy change or its implementation been documented?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Government statements and external estimates retain distinct definitions and provenance."
+      ],
+      "quality_trap": "Government statements and external estimates retain distinct definitions and provenance.",
+      "keywords": [
+        "China",
+        "Chinese",
+        "property",
+        "credit",
+        "trade"
+      ]
+    },
+    {
+      "id": "economy-russia",
+      "version": 1,
+      "title": "Russia economy",
+      "group": "economy",
+      "purpose": "Assess available releases, energy trade, sanctions and data gaps.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess changes in Russia's economic conditions, fiscal and monetary policy, energy trade and sanctions exposure.",
+      "requirements": [
+        {
+          "id": "economy-russia.q1",
+          "question": "What official data or revisions are available and what is missing?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-russia.q2",
+          "question": "What energy and trade evidence supports the assessment?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-russia.q3",
+          "question": "What budget, price and monetary changes are documented?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-russia.q4",
+          "question": "What sanctions changes and data gaps affect interpretation?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "RU"
+      ],
+      "scope_note": "Russia; distinguish reported measures from independent estimates and external trade context.",
+      "suggested_languages": [
+        "en",
+        "ru"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "ENERGY",
+        "TRADE",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "reported_estimated_measures",
+        "trade_caveats"
+      ],
+      "indicators": [
+        {
+          "id": "economy-russia.i1",
+          "condition": "Are restrictions or release revisions documented?"
+        },
+        {
+          "id": "economy-russia.i2",
+          "condition": "Is a trade shift evidenced with coverage and methodology disclosed?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Missing data is not inferred stability; preserve trade and methodology caveats."
+      ],
+      "quality_trap": "Missing data is not inferred stability; preserve trade and methodology caveats.",
+      "keywords": [
+        "Russia",
+        "Russian",
+        "sanctions",
+        "energy trade"
+      ]
+    },
+    {
+      "id": "economy-iran",
+      "version": 1,
+      "title": "Iran economy",
+      "group": "economy",
+      "purpose": "Assess prices, policy, trade and currency evidence with regime distinctions.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "Assess changes in Iran's prices, activity, fiscal and monetary conditions, energy trade and external constraints.",
+      "requirements": [
+        {
+          "id": "economy-iran.q1",
+          "question": "What official and alternative data are available and how are they defined?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "economy-iran.q2",
+          "question": "What exchange-rate regimes and measures must be distinguished?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "economy-iran.q3",
+          "question": "What energy, trade and sanctions developments are documented?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "economy-iran.q4",
+          "question": "What civilian and business implications are supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [],
+      "country_isos": [
+        "IR"
+      ],
+      "scope_note": "Iran and explicitly relevant external trade constraints.",
+      "suggested_languages": [
+        "en",
+        "fa"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MACRO",
+        "ENERGY",
+        "TRADE",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "economic_exposure",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "currency_price_methodology",
+        "data_gaps",
+        "economic_transmission"
+      ],
+      "indicators": [
+        {
+          "id": "economy-iran.i1",
+          "condition": "Is a policy or trade change evidenced?"
+        },
+        {
+          "id": "economy-iran.i2",
+          "condition": "Have comparable price or currency measures changed with their regime identified?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Official and market foreign-exchange series are not interchangeable."
+      ],
+      "quality_trap": "Official and market foreign-exchange series are not interchangeable.",
+      "keywords": [
+        "Iran",
+        "Persian",
+        "exchange rates",
+        "energy",
+        "sanctions"
+      ]
+    },
+    {
+      "id": "energy-security",
+      "version": 1,
+      "title": "Energy security",
+      "group": "cross_cutting",
+      "purpose": "Assess supply, disruption, demand and policy exposure for a chosen region.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What changed in energy supply, demand, infrastructure disruption and policy exposure?",
+      "requirements": [
+        {
+          "id": "energy-security.q1",
+          "question": "What physical and pricing indicators have comparable sources and units?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "energy-security.q2",
+          "question": "What outages or disruptions are reported and confirmed?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "energy-security.q3",
+          "question": "What policy and trade changes are documented?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "energy-security.q4",
+          "question": "What alternative explanations and exposure are supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "region",
+          "label": "Region",
+          "guidance": "Select the region whose energy security should be assessed.",
+          "target": "scope.country_isos",
+          "required": true
+        },
+        {
+          "id": "commodity",
+          "label": "Optional commodity",
+          "guidance": "Choose a commodity if the assessment should be narrower.",
+          "target": "scope.subject",
+          "required": false
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "Selected region and optional commodity; suggest relevant original languages after geography is chosen.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "ENERGY",
+        "TRADE",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [
+        "HAZARD"
+      ],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "energy_security",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "supply_dependencies",
+        "comparable_series"
+      ],
+      "indicators": [
+        {
+          "id": "energy-security.i1",
+          "condition": "Is a facility or flow disruption confirmed?"
+        },
+        {
+          "id": "energy-security.i2",
+          "condition": "Has an energy or trade policy change been documented?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Infrastructure capacity does not prove current output; distinguish physical flows, spot and futures prices and available capacity."
+      ],
+      "quality_trap": "Infrastructure capacity does not prove current output; distinguish physical flows, spot and futures prices and available capacity.",
+      "keywords": [
+        "energy",
+        "oil",
+        "gas",
+        "electricity",
+        "supply"
+      ]
+    },
+    {
+      "id": "shipping-supply-chains",
+      "version": 1,
+      "title": "Shipping and supply chains",
+      "group": "cross_cutting",
+      "purpose": "Assess evidenced disruptions and dependencies on selected routes.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What evidenced disruptions or changes affect the selected maritime and supply-chain dependencies?",
+      "requirements": [
+        {
+          "id": "shipping-supply-chains.q1",
+          "question": "What port and chokepoint developments are evidenced?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "shipping-supply-chains.q2",
+          "question": "What movement or volume indicators are available with valid coverage?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "shipping-supply-chains.q3",
+          "question": "What trade or regulatory changes are documented?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "shipping-supply-chains.q4",
+          "question": "What downstream exposure is supported?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "routes",
+          "label": "Routes or regions",
+          "guidance": "Identify the routes, chokepoints or regions to monitor.",
+          "target": "scope.subject",
+          "required": true
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "Selected routes or regions with optional commodity or sector context.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "MOBILITY",
+        "TRADE",
+        "NEWS",
+        "OFFICIAL",
+        "HAZARD"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "supply_chain",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": 30,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "route_dependencies",
+        "tracking_coverage"
+      ],
+      "indicators": [
+        {
+          "id": "shipping-supply-chains.i1",
+          "condition": "Is a closure or disruption corroborated?"
+        },
+        {
+          "id": "shipping-supply-chains.i2",
+          "condition": "Is a measured movement or volume change supported by a valid baseline?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "AIS coverage and receiver changes are not fleet-wide movement changes; missing tracks do not establish no movement."
+      ],
+      "quality_trap": "AIS coverage and receiver changes are not fleet-wide movement changes; missing tracks do not establish no movement.",
+      "keywords": [
+        "shipping",
+        "maritime",
+        "ports",
+        "supply chains",
+        "AIS"
+      ]
+    },
+    {
+      "id": "disaster-humanitarian",
+      "version": 1,
+      "title": "Disasters and humanitarian conditions",
+      "group": "cross_cutting",
+      "purpose": "Distinguish hazard observations, impacts, response and forecast limits.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What verified or reported hazards and humanitarian impacts changed, and what remains uncertain?",
+      "requirements": [
+        {
+          "id": "disaster-humanitarian.q1",
+          "question": "What hazard observations are supported by dated sources?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "disaster-humanitarian.q2",
+          "question": "What exposure is estimated and what impacts are confirmed?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "disaster-humanitarian.q3",
+          "question": "What aid, access and displacement reporting is available?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "disaster-humanitarian.q4",
+          "question": "What forecast and coverage limits constrain the assessment?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "hazard_scope",
+          "label": "Hazard scope",
+          "guidance": "Choose global relevance or selected regions and hazard types.",
+          "target": "scope.hazard",
+          "required": true
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "Choose global relevance or selected regions and hazard types; distinguish observation geography from context.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "HAZARD",
+        "HUMANITARIAN",
+        "NEWS",
+        "OFFICIAL"
+      ],
+      "optional_bundles": [],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "civilian_protection",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "event_impact_response",
+        "observation_timeline"
+      ],
+      "indicators": [
+        {
+          "id": "disaster-humanitarian.i1",
+          "condition": "Has an authority issued an attributable alert or confirmed impact update?"
+        },
+        {
+          "id": "disaster-humanitarian.i2",
+          "condition": "Is an aid-access change documented?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "FIRMS detections alone are not confirmed destructive fires or attacks; keep sensor observations, forecasts and confirmed impacts separate."
+      ],
+      "quality_trap": "FIRMS detections alone are not confirmed destructive fires or attacks; keep sensor observations, forecasts and confirmed impacts separate.",
+      "keywords": [
+        "disasters",
+        "humanitarian",
+        "earthquakes",
+        "fires",
+        "aid"
+      ]
+    },
+    {
+      "id": "area-custom",
+      "version": 1,
+      "title": "Custom area watch",
+      "group": "cross_cutting",
+      "purpose": "Assess exact area observations and separately labelled regional context.",
+      "owner_role": "Research catalogue maintainer",
+      "reviewed_on": "2026-09-14",
+      "question": "What relevant developments are evidenced within this area, and what wider context affects it?",
+      "requirements": [
+        {
+          "id": "area-custom.q1",
+          "question": "Which observations meet exact area-matching rules?",
+          "required": true,
+          "priority": 1
+        },
+        {
+          "id": "area-custom.q2",
+          "question": "What relevant news and infrastructure context affects the area?",
+          "required": true,
+          "priority": 2
+        },
+        {
+          "id": "area-custom.q3",
+          "question": "What developments relate to the operator's selected themes?",
+          "required": true,
+          "priority": 3
+        },
+        {
+          "id": "area-custom.q4",
+          "question": "What gaps and uncertainty remain in location, time and coverage?",
+          "required": true,
+          "priority": 4
+        }
+      ],
+      "required_inputs": [
+        {
+          "id": "area",
+          "label": "Exact area",
+          "guidance": "Choose a valid saved polygon or draw an exact area; retain its version and disclosure choice.",
+          "target": "scope.area",
+          "required": true
+        },
+        {
+          "id": "question",
+          "label": "Main question",
+          "guidance": "Replace the starter question with the operator's area-specific question.",
+          "target": "question.main",
+          "required": true
+        }
+      ],
+      "country_isos": [],
+      "scope_note": "A valid saved polygon or drawn shape and an operator question. Preserve exact geometry and provider disclosure choice. Language suggestions need geography review.",
+      "suggested_languages": [
+        "en"
+      ],
+      "language_note": "Search-language suggestions only. Source and query language are distinct from report output language. Preserve original passages and translation provenance; disclose unsupported languages instead of silently replacing them.",
+      "source_bundles": [
+        "AREA"
+      ],
+      "optional_bundles": [
+        "NEWS",
+        "OFFICIAL",
+        "CONFLICT",
+        "HUMANITARIAN",
+        "CTI",
+        "NETWORK",
+        "MACRO",
+        "TRADE",
+        "ENERGY",
+        "MOBILITY",
+        "HAZARD",
+        "SCHOLARLY"
+      ],
+      "source_ids": [],
+      "declared_gap_ids": [],
+      "lens_choices": [
+        "general",
+        "uk_policy",
+        "civilian_protection",
+        "regional_security",
+        "economic_exposure",
+        "energy_security",
+        "supply_chain",
+        "defensive_cyber",
+        "actor_perspective"
+      ],
+      "default_lens": "general",
+      "lens_note": "A lens changes relevance, audience and decision context only. Examine counterevidence and alternative explanations; source grades and likelihood rules do not change. Actor-perspective analysis examines stated aims, constraints and claims without endorsing them or directing a preferred factual conclusion.",
+      "default_depth": "detailed",
+      "baseline_days": 7,
+      "forecast_horizon_days": null,
+      "sections": [
+        "key_judgements",
+        "supporting_findings",
+        "opposing_evidence",
+        "gaps",
+        "references",
+        "exact_area_map",
+        "precise_context_table",
+        "requirements_matrix"
+      ],
+      "indicators": [
+        {
+          "id": "area-custom.i1",
+          "condition": "Has a user-defined observable condition changed with cited evidence?"
+        },
+        {
+          "id": "area-custom.i2",
+          "condition": "Is a precisely located change supported within the selected area?"
+        }
+      ],
+      "exclusions": [
+        "Do not invent developments or a forecast when evidence is absent.",
+        "Approximate place mentions remain context and never become precise incident markers; preserve the exact AOI and disclosure choice."
+      ],
+      "quality_trap": "Approximate place mentions remain context and never become precise incident markers; preserve the exact AOI and disclosure choice.",
+      "keywords": [
+        "area",
+        "AOI",
+        "map",
+        "polygon",
+        "watch"
+      ]
+    }
+  ]
+}

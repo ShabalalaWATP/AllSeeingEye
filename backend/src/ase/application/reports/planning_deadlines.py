@@ -5,7 +5,7 @@ from math import isfinite
 from ase.domain.llm import ReasoningEffort
 
 # The existing research_plan/research_continuation transport budget is 120 seconds.
-# Initial planning precedes collection; follow-up planning shares collection time.
+# Model planning is separate from active source-acquisition time.
 DURABLE_PLANNING_SECONDS = 120.0
 
 

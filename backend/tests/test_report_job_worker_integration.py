@@ -101,7 +101,9 @@ async def test_old_lease_cancel_cannot_interrupt_replacement_worker(
     release.set()
     await asyncio.wait_for(new_task, 20)
     final = await stored(container, job_id)
-    assert final.status == "completed", final.error
+    # The synthetic draft lacks enough original source context for automatic release.
+    # Lease replacement still finishes the same job without replaying the uncertain call.
+    assert final.status == "needs_review", final.error
     assert len(final.payload["calls"]) == 8 and len(gateway.calls) == 7
     assert final.payload["calls"][0]["status"] == "uncertain"
 
@@ -131,7 +133,7 @@ async def test_final_commit_failure_is_atomic_and_next_tick_does_not_duplicate_r
     monkeypatch.setattr(SqlAlchemyUnitOfWork, "commit", commit)
     await work(container)
     final = await stored(container, job_id)
-    assert final.status == ("completed" if acknowledgement_lost else "paused")
+    assert final.status == ("needs_review" if acknowledgement_lost else "paused")
     async with container.session_factory() as session:
         repo = container.repositories(session).reports
         reports = await repo.list_recent(10)

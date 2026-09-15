@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
 import structlog
@@ -11,10 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ase.adapters.feeds.mastodon import load_watch
 from ase.adapters.geo.infrastructure import public_infrastructure
 from ase.adapters.llm.translator import LlmTranslator
-from ase.adapters.persistence.schedules import SqlScheduleStore
+from ase.adapters.persistence.selected_index_acquisition import SqlSelectedIndexAcquisitionStore
 from ase.adapters.persistence.social import SqlSocialActivity, SqlSocialTerms
 from ase.adapters.persistence.teams import SqlTeamRepository
 from ase.adapters.persistence.warning import SqlWarningStore
+from ase.adapters.research.selected_event_cache import USGS_SELECTED_POLICY, PublicEventCachePages
 from ase.application.direction.areas import CreateAoiUseCase, DeleteAoiUseCase, ListAoisUseCase
 from ase.application.direction.plans import (
     CreatePlanUseCase,
@@ -33,8 +34,8 @@ from ase.application.schedules.manage import (
     ListSchedulesUseCase,
     UpdateScheduleUseCase,
 )
-from ase.application.schedules.report_request import scheduled_report_request
 from ase.application.schedules.runner import ScheduleRunner
+from ase.application.schedules.selected_index_acquisition import SelectedIndexAcquisition
 from ase.application.teams.service import TeamService
 from ase.application.trackers.aviation import (
     AviationService,
@@ -53,9 +54,9 @@ from ase.application.warning.indicators import (
     UpdateIndicatorUseCase,
 )
 from ase.container.reporting import ReportWiring
-from ase.domain.errors import InvalidRequest, NoModelAvailable
+from ase.container.subscription_enqueue import SubscriptionAdmission
+from ase.domain.errors import NoModelAvailable
 from ase.domain.llm import LlmProfile, LlmRole, LlmUsage
-from ase.domain.schedules import Schedule
 from ase.domain.warning import Alert, Indicator
 
 if TYPE_CHECKING:
@@ -67,6 +68,7 @@ if TYPE_CHECKING:
     from ase.adapters.store.memory import InMemoryEventStore
     from ase.application.auditing import Auditor
     from ase.application.dto import RateLimits
+    from ase.application.feeds.health import HealthRegistry
     from ase.application.ports.archive import Archiver
     from ase.application.ports.embeddings import EmbeddingGateway
     from ase.application.ports.feeds import EventBus
@@ -76,7 +78,7 @@ if TYPE_CHECKING:
     from ase.application.ports.trackers import ConflictDirectory
     from ase.application.ports.warning import AlertNotifier
     from ase.application.trackers.aviation import WatchedArea
-    from ase.container import Repositories
+    from ase.container import Container, Repositories
     from ase.domain.aviation import JamMap
     from ase.domain.grading import SourceProfile
     from ase.infrastructure.settings import Settings
@@ -95,6 +97,7 @@ class FeatureWiring(ReportWiring):
         limits: RateLimits
         session_factory: async_sessionmaker[AsyncSession]
         store: InMemoryEventStore
+        health: HealthRegistry
         countries: CountryDirectory
         conflicts: ConflictDirectory
         cipher: SecretCipher
@@ -300,10 +303,15 @@ class FeatureWiring(ReportWiring):
         )
 
     def build_schedule_runner(self) -> ScheduleRunner:
-        return ScheduleRunner(
-            SqlScheduleStore(self.session_factory, self.access_policy),
-            self.schedule_report,
+        selected_index = SelectedIndexAcquisition(
+            SqlSelectedIndexAcquisitionStore(self.session_factory, self.access_policy),
+            ((USGS_SELECTED_POLICY, PublicEventCachePages(self.store, self.health)),),
+            self.source_admission,
             self.clock,
+        )
+        return ScheduleRunner(
+            SubscriptionAdmission(cast("Container", self)).tick,
+            acquisition_tick=selected_index.tick,
         )
 
     def build_translation_queue(self) -> TranslationQueue:
@@ -328,18 +336,6 @@ class FeatureWiring(ReportWiring):
         async with self.session_factory() as session:
             await self.repositories(session).llm_usage.add(usage)
             await session.commit()
-
-    async def schedule_report(self, schedule: Schedule) -> UUID:
-        """The product a schedule asks for, produced as its owner."""
-        async with self.session_factory() as session:
-            owner = await self.repositories(session).users.get_by_id(schedule.created_by)
-            if owner is None or not owner.is_active:
-                raise InvalidRequest("The schedule's owner is unavailable.")
-            request = scheduled_report_request(schedule)
-            record, _version = await self.generate_report(session).execute(
-                owner, request, RequestContext()
-            )
-            return record.id
 
     def public_infrastructure(self) -> dict[str, Any]:
         return public_infrastructure()

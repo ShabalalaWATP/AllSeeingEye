@@ -9,7 +9,7 @@ from ase.domain.research import ResearchFocus
 from ase.domain.trackers import Hazard
 
 if TYPE_CHECKING:
-    from ase.application.schedules.manage import ScheduleInput
+    from ase.application.schedules.definition import ScheduleInput
 
 
 def validate_subscription_scope(data: "ScheduleInput", template: Template) -> None:

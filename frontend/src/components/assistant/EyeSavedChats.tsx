@@ -65,6 +65,10 @@ export function EyeSavedChats({ chat, onResume }: { chat: EyeChat; onResume: () 
                 scope: turn.scope,
                 time_window: turn.timeWindow,
                 source_categories: turn.sourceCategories,
+                report:
+                  turn.scope === 'report' && turn.report
+                    ? { id: turn.report.id, version: turn.report.version }
+                    : null,
                 answer: turn.answer,
               },
             ]
@@ -132,6 +136,9 @@ export function EyeSavedChats({ chat, onResume }: { chat: EyeChat; onResume: () 
     <section className="eye-saved-chats" aria-label="Saved Eye conversations">
       <div className="eye-save-current">
         <label htmlFor={titleId}>Save this chat</label>
+        {chat.scope === 'report' && (
+          <p>Report Q&amp;A is saved with the exact report edition and version.</p>
+        )}
         <div>
           <input
             id={titleId}

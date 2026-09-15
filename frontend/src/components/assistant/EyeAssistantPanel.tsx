@@ -1,13 +1,13 @@
 import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import type { CSSProperties, SyntheticEvent } from 'react';
 import { Link } from 'react-router';
-import { useAssistantMapAvailability } from '@/lib/assistantMapContext';
 import { researchHref, subscriptionHref } from '@/lib/researchNavigation';
 import { EyeAnswer } from './EyeAnswer';
-import { EyeSourceFilter } from './EyeSourceFilter';
+import { EyeMapControls } from './EyeMapControls';
+import { EyeNewerResearchLink, EyeReportContext } from './EyeReportContext';
 import { EyeSavedChats } from './EyeSavedChats';
 import './eyeConversation.css';
-import type { ChatTimeWindow, EyeChat } from './useEyeChat';
+import type { EyeChat } from './useEyeChat';
 
 const prompts = [
   [
@@ -34,7 +34,6 @@ export function EyeAssistantPanel({
   onToggleExpanded: () => void;
   style: CSSProperties;
 }) {
-  const map = useAssistantMapAvailability();
   const input = useRef<HTMLTextAreaElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -93,7 +92,7 @@ export function EyeAssistantPanel({
         <img src="/brand/eye-512.png" alt="" aria-hidden="true" width="42" height="30" />
         <div>
           <h2>The Eye</h2>
-          <p>Ask your map sources</p>
+          <p>{chat.report ? 'Ask this report edition' : 'Ask your map sources'}</p>
         </div>
         <div className="eye-window-actions">
           <button
@@ -168,29 +167,33 @@ export function EyeAssistantPanel({
           }}
         />
       )}
+      {chat.report && <EyeReportContext report={chat.report} onMapChat={chat.clear} />}
       {chat.savedSnapshotNotice && <p className="eye-snapshot-note">{chat.savedSnapshotNotice}</p>}
       <div className="eye-transcript" role="log" aria-live="polite" aria-label="Eye conversation">
         {chat.turns.length === 0 && (
           <div className="eye-welcome">
-            <h3>What would you like to know?</h3>
+            <h3>{chat.report ? 'What does this edition say?' : 'What would you like to know?'}</h3>
             <p>
-              Search across retained map feeds, even when their layers are switched off. Answers
-              include sources, timestamps and coverage limits.
+              {chat.report
+                ? 'Ask about a claim, uncertainty or source in this saved version. The answer may say this edition does not address your question.'
+                : 'Search across retained map feeds, even when their layers are switched off. Answers include sources, timestamps and coverage limits.'}
             </p>
-            <div className="eye-suggestions">
-              {prompts.map(([label, question]) => (
-                <button
-                  type="button"
-                  key={label}
-                  onClick={() => {
-                    chat.setQuestion(question);
-                    input.current?.focus();
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            {!chat.report && (
+              <div className="eye-suggestions">
+                {prompts.map(([label, question]) => (
+                  <button
+                    type="button"
+                    key={label}
+                    onClick={() => {
+                      chat.setQuestion(question);
+                      input.current?.focus();
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {chat.turns.map((turn) => (
@@ -223,67 +226,9 @@ export function EyeAssistantPanel({
         <div ref={bottom} />
       </div>
       <form className="eye-composer" onSubmit={submit} noValidate>
-        <div className="eye-search-controls">
-          <div className="eye-scope">
-            <label htmlFor={scopeId}>Area</label>
-            <select
-              id={scopeId}
-              aria-label="Eye search scope"
-              value={chat.scope}
-              disabled={chat.busy}
-              onChange={(event) => {
-                const value = event.target.value;
-                if (value === 'global' || value === 'viewport' || value === 'selected')
-                  chat.setScope(value);
-              }}
-            >
-              <option value="global">All sources</option>
-              <option value="viewport" disabled={!map?.bounds}>
-                Map view
-              </option>
-              <option value="selected" disabled={!map?.selected}>
-                Selected item
-              </option>
-            </select>
-          </div>
-          <div className="eye-scope">
-            <label htmlFor={timeId}>Time</label>
-            <select
-              id={timeId}
-              aria-label="Eye time period"
-              value={chat.timeWindow}
-              disabled={chat.busy}
-              onChange={(event) => chat.setTimeWindow(event.target.value as ChatTimeWindow)}
-            >
-              <option value="auto">From question</option>
-              <option value="48">Past 2 days</option>
-              <option value="120">Past 5 days</option>
-              <option value="168">Past 7 days</option>
-              <option value="336">Past 14 days</option>
-              <option value="720">Past 30 days</option>
-              <option value="2160">Past 90 days</option>
-              <option value="8760">Past year</option>
-            </select>
-          </div>
-        </div>
-        {chat.timeWindow !== 'auto' && (
-          <p className="eye-scope-note">Filters by publication time. Source archives vary.</p>
+        {chat.scope !== 'report' && (
+          <EyeMapControls chat={chat} scopeId={scopeId} timeId={timeId} />
         )}
-        {chat.scope === 'viewport' && (
-          <p className="eye-scope-note">
-            Uses the current geographic view boundary, including layers switched off.
-          </p>
-        )}
-        {chat.scope === 'selected' && (
-          <p className="eye-scope-note">
-            {map?.selected ? map.selected.title : 'Select an item on the map to continue.'}
-          </p>
-        )}
-        <EyeSourceFilter
-          value={chat.sourceCategories}
-          onChange={chat.setSourceCategories}
-          disabled={chat.busy}
-        />
         <label className="sr-only" htmlFor={inputId}>
           Ask the Eye
         </label>
@@ -294,7 +239,9 @@ export function EyeAssistantPanel({
           maxLength={2000}
           rows={2}
           onChange={(event) => chat.setQuestion(event.target.value)}
-          placeholder="Ask about events, places or sources…"
+          placeholder={
+            chat.report ? 'Ask about this report edition…' : 'Ask about events, places or sources…'
+          }
           onKeyDown={(event) => {
             if (
               event.key === 'Enter' &&
@@ -324,24 +271,32 @@ export function EyeAssistantPanel({
             </button>
           )}
         </div>
-        <div className="eye-research-link">
-          <Link
-            to={researchHref(
-              lastQuestion ?? 'Investigate the available evidence and its limitations.',
-              country,
-              timeRange,
-            )}
-            onClick={onClose}
-          >
-            Search deeper in Research →
-          </Link>
-          <span>Opens a reviewable research draft. Refine its scope and sources there.</span>
-          {answered?.answer && (
-            <Link to={subscriptionHref(answered.question, subscriptionCountry)} onClick={onClose}>
-              Create subscription draft →
+        {chat.report ? (
+          <EyeNewerResearchLink
+            question={lastQuestion ?? `Find newer evidence about ${chat.report.title}`}
+            report={chat.report}
+            onNavigate={onClose}
+          />
+        ) : (
+          <div className="eye-research-link">
+            <Link
+              to={researchHref(
+                lastQuestion ?? 'Investigate the available evidence and its limitations.',
+                country,
+                timeRange,
+              )}
+              onClick={onClose}
+            >
+              Search deeper in Research →
             </Link>
-          )}
-        </div>
+            <span>Opens a reviewable research draft. Refine its scope and sources there.</span>
+            {answered?.answer && (
+              <Link to={subscriptionHref(answered.question, subscriptionCountry)} onClick={onClose}>
+                Create subscription draft →
+              </Link>
+            )}
+          </div>
+        )}
       </form>
     </section>
   );

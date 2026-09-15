@@ -8,6 +8,7 @@ from ase.adapters.feeds.google_news_links import GoogleNewsUrlResolver
 from ase.application.ports.llm import LlmGateway, LlmUsageRepository
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.generate import GenerateReportUseCase
+from ase.application.reports.original_followthrough import OriginalFollowThrough
 from ase.container.research import private_research_store
 
 if TYPE_CHECKING:
@@ -22,6 +23,7 @@ class ReportGenerationWiring:
         gateway: LlmGateway | None = None,
         usage: LlmUsageRepository | None = None,
         web_research: FreshWebResearch | None = None,
+        original_followthrough: OriginalFollowThrough | None = None,
     ) -> GenerateReportUseCase:
         container = cast("Container", self)
         r = container.repositories(session)
@@ -29,6 +31,7 @@ class ReportGenerationWiring:
             store=container.store,
             research=container.research,
             web_research=web_research if web_research is not None else container.fresh_web_research,
+            original_followthrough=original_followthrough,
             research_inputs=container.research_inputs,
             private_store_factory=private_research_store,
             source_profiles=container.source_profiles,

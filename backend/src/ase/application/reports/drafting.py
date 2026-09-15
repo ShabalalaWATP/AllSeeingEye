@@ -16,7 +16,8 @@ from ase.domain.evidence import EvidenceItem, QualityOfInformation
 from ase.domain.llm import LlmProfile, LlmRequest
 from ase.domain.report_input import parse_model_body
 from ase.domain.report_schema import REPORT_BODY_SCHEMA
-from ase.domain.reports import KeyJudgement, ReportBody, ReportHeader, ReportParseError
+from ase.domain.reports import Gap, KeyJudgement, ReportBody, ReportHeader, ReportParseError
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.validation import Finding, Severity, validate_body
 
 MAX_ATTEMPTS = 2
@@ -38,6 +39,28 @@ class Draft:
         return any(f.severity is Severity.ERROR for f in self.findings)
 
 
+NO_EVIDENCE_MESSAGE = (
+    "No eligible evidence was retained for this scope and observation period. "
+    "The requested questions cannot be assessed from this collection."
+)
+
+
+def no_evidence_draft(model: str) -> Draft:
+    """Publish an explicit limit without a model call or fabricated judgement."""
+    return Draft(
+        body=ReportBody(
+            gaps=(Gap("No eligible evidence was retained to answer the research question."),),
+            collection_recommendations=(
+                "Review source availability, scope and period before a further collection.",
+            ),
+            sourcing_statement=NO_EVIDENCE_MESSAGE,
+        ),
+        findings=[Finding("no_evidence", Severity.ERROR, "evidence", NO_EVIDENCE_MESSAGE)],
+        model=model,
+        supported_requirements=frozenset(),
+    )
+
+
 async def draft_body(
     gateway: LlmGateway,
     profile: LlmProfile,
@@ -50,8 +73,12 @@ async def draft_body(
     previous: Sequence[KeyJudgement],
     direction: Direction | None = None,
     background: str | None = None,
+    *,
+    canonical_requirements: tuple[IntelligenceRequirement, ...] = (),
 ) -> Draft:
     """Retry repairable failures once, but never repeat an exhausted token budget."""
+    if not evidence:
+        return no_evidence_draft(profile.model)
     draft = Draft()
     labels = frozenset(item.label for item in evidence)
     urls = {item.label: item.url for item in evidence}
@@ -70,6 +97,7 @@ async def draft_body(
             findings=draft.findings,
             previous=previous,
             direction=direction,
+            canonical_requirements=canonical_requirements,
             background=background,
             report_language=str(header.scope.get("report_language", "en")),
             report_style=str(header.scope.get("report_style", "assessment")),

@@ -8,10 +8,14 @@ from ase.adapters.persistence.report_jobs import SqlReportJobRepository
 from ase.application.dto import RequestContext
 from ase.application.report_jobs.accounting import apply_usage
 from ase.application.report_jobs.budget import ReportCallBudget
+from ase.application.report_jobs.fresh_web_allocation import WEB_PLAN_KEY
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.save_production import SaveProduction
 from ase.container.report_job_checkpoints import ReportJobCheckpoints
 from ase.container.report_job_gateways import bind_report_job_gateways
+from ase.container.report_original_followthrough import make_original_followthrough
+from ase.container.report_original_publication import link_original_followup
+from ase.container.subscription_publication import publish_subscription_edition
 from ase.domain.llm import LlmUsage
 from ase.domain.report_jobs import ReportJob
 from ase.domain.report_records import ReportRecord
@@ -45,6 +49,8 @@ async def execute_job(
             request=replace(job.request, automation=True),
         )
         await session.rollback()
+        if job.request.research_mode is not None:
+            await checkpoints.reconcile_open_source_operations(job.request.research_mode)
         budget = ReportCallBudget(checkpoints.mutate, checkpoints.check, profile_id=job.profile.id)
         gateway, web_gateway = await bind_report_job_gateways(
             routing, container.cipher, container.llm, container.web_search_gateway, budget
@@ -58,6 +64,12 @@ async def execute_job(
                 container.source_admission,
                 container.clock,
                 container.limiter,
+                allocation_plan=stored.payload.get(WEB_PLAN_KEY),
+            ),
+            original_followthrough=(
+                make_original_followthrough(container, stored, checkpoints)
+                if checkpoints.source_phase_enabled
+                else None
             ),
         )
 
@@ -71,6 +83,15 @@ async def execute_job(
             progress=progress,
             before_persist=checkpoints.check,
         )
+        if stored.brief_id is not None:
+            result = replace(
+                result,
+                version=replace(
+                    result.version,
+                    brief_id=stored.brief_id,
+                    brief_revision=stored.brief_revision,
+                ),
+            )
         if result.version.status is ReportStatus.FAILED:
             raise ValueError("Report validation did not complete")
         if result.version.id != stored.version_id or result.version.report_id != stored.report_id:
@@ -93,6 +114,18 @@ async def execute_job(
                     current.payload,
                     needs_review=result.version.status is ReportStatus.NEEDS_REVIEW,
                 )
+                access = await container.access_policy(session).background(
+                    stored.owner_id, stored.team_id, for_update=True
+                )
+                await publish_subscription_edition(
+                    session,
+                    stored,
+                    result.version,
+                    access,
+                    container.clock.now(),
+                    research_required=job.request.research_mode is not None,
+                )
+                await link_original_followup(session, container, stored, result.version)
 
             record = ReportRecord(
                 id=stored.report_id,

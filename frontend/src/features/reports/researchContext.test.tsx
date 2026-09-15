@@ -49,7 +49,7 @@ describe('frozen context and challenge reader', () => {
     expect(screen.getByText(/Missing counterevidence does not confirm/)).toBeVisible();
     expect(screen.getByRole('link', { name: /Ask a follow-up question/ })).toHaveAttribute(
       'href',
-      `/research?parent=${report.report.id}`,
+      `/research?parent=${report.report.id}&parent_version=1`,
     );
   });
 

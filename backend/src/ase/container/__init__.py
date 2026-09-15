@@ -95,6 +95,7 @@ from ase.container.research import research_service
 from ase.container.research_inputs import ResearchInputWiring
 from ase.container.sec_filings import SecFilingWiring
 from ase.container.source_inventory import SourceInventoryWiring
+from ase.container.source_requirements import source_requirements
 from ase.container.ukraine import UkraineWiring
 from ase.domain.aviation import JamMap
 from ase.infrastructure.clock import SystemClock
@@ -182,9 +183,15 @@ class Container(
             self.clock,
             tuple(settings.disabled_feed_ids),
             admission=self.source_admission,
+            requirements=source_requirements(settings),
             retained_store=self.store,
             sec_client=self.sec_client,
             ooni_noncommercial_use_acknowledged=settings.ooni_noncommercial_use_acknowledged,
+            ioda_public_data_use_acknowledged=settings.ioda_public_data_use_acknowledged,
+            radar_reader=self.radar_attack_trends,
+            radar_noncommercial_use_acknowledged=(
+                settings.cloudflare_radar_noncommercial_use_acknowledged
+            ),
             uksl_snapshot_path=settings.uksl_snapshot_path,
             ofac_sdn_snapshot_path=settings.ofac_sdn_snapshot_path,
             aiddata_catalogue_path=settings.aiddata_catalogue_path,

@@ -30,8 +30,10 @@ async def review_frozen(
     profile_for: ProfileLookup,
     totals: Totals,
     progress: Progress | None,
+    searches: tuple[ChallengeSearch, ...] | None = None,
+    redrafted: bool = False,
 ) -> tuple[ReportBody, ReportChallenge]:
-    """One bounded review call; neither recollect nor renumber an already checkpointed packet."""
+    """Review the final frozen packet, including truthful optional source receipts."""
     await reached(progress, ResearchStage.CHALLENGING)
     profile = await profile_for(LlmRole.DEVIL) or await profile_for(LlmRole.DIRECTION)
     reviews: tuple[ChallengeReview, ...] = ()
@@ -75,17 +77,21 @@ async def review_frozen(
             body, advocacy = apply_advocacy(body, review.advocacy)
             adjusted_review = replace(review, advocacy=advocacy)
         adjusted.append(adjusted_review)
-    totals.findings.append(
-        Finding(
-            "challenge",
-            Severity.WARNING,
-            "challenge",
-            FROZEN_COLLECTION_GAP,
-        )
+    gap = (
+        FROZEN_COLLECTION_GAP
+        if searches is None
+        else "Some judgements had no targeted fresh counterevidence search. "
+        "An empty or failed search does not confirm a judgement."
+        if any(row.status != "attempted" for row in searches)
+        else "Fresh source searches were attempted. Returned candidates were reviewed "
+        "without treating model agreement or an empty result as independent corroboration."
     )
-    body = replace(body, gaps=(*body.gaps, Gap(FROZEN_COLLECTION_GAP)))
+    totals.findings.append(Finding("challenge", Severity.WARNING, "challenge", gap))
+    body = replace(body, gaps=(*body.gaps, Gap(gap)))
     return body, ReportChallenge(
-        searches=tuple(
+        searches=searches
+        if searches is not None
+        else tuple(
             ChallengeSearch(
                 row.id,
                 row.statement,
@@ -96,5 +102,5 @@ async def review_frozen(
             for row in body.key_judgements
         ),
         reviews=tuple(adjusted),
-        redrafted=False,
+        redrafted=redrafted,
     )

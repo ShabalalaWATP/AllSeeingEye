@@ -39,7 +39,9 @@ from ase.domain.report_records import (
 )
 from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.research_scope import MAX_RESEARCH_HOURS, validate_research_interval
+from ase.domain.source_review_records import SourceReviewSnapshot
 
 
 class ReportCreateIn(BaseModel):
@@ -79,6 +81,7 @@ class ReportCreateIn(BaseModel):
     research_subject: str | None = Field(default=None, max_length=300)
     research_input_id: UUID | None = None
     parent_report_id: UUID | None = None
+    parent_version: int | None = Field(default=None, ge=1)
     map_view_id: UUID | None = None
     map_revision_id: UUID | None = None
     disclose_area_to_provider: StrictBool = False
@@ -151,6 +154,7 @@ class ReportCreateIn(BaseModel):
             research_subject=self.research_subject,
             research_input_id=self.research_input_id,
             parent_report_id=self.parent_report_id,
+            parent_version=self.parent_version,
             map_view_id=self.map_view_id,
             map_revision_id=self.map_revision_id,
             disclose_area_to_provider=self.disclose_area_to_provider,
@@ -228,7 +232,11 @@ class ReportsOut(BaseModel):
 
 
 class ReportVersionOut(BaseModel):
+    brief_id: UUID | None = None
+    brief_revision: int | None = None
+    canonical_requirements: list[IntelligenceRequirement] = Field(default_factory=list)
     publication: ReportPublicationOut | None = None
+    reviewed_source_snapshot: SourceReviewSnapshot | None = None
     claim_generation: ClaimGenerationReceipt | None = None
     claim_ledger: ClaimLedgerOut | None = None
     model_routing: ModelRoutingOut | None = None
@@ -257,13 +265,24 @@ class ReportVersionOut(BaseModel):
     devils_advocacy: dict[str, Any] | None
 
     @classmethod
-    def from_version(cls, version: ReportVersion, record: ReportRecord | None = None) -> Self:
+    def from_version(
+        cls,
+        version: ReportVersion,
+        record: ReportRecord | None = None,
+        reviewed_snapshot: SourceReviewSnapshot | None = None,
+    ) -> Self:
         return cls(
+            brief_id=version.brief_id,
+            brief_revision=version.brief_revision,
+            canonical_requirements=list(version.canonical_requirements),
             publication=(
-                ReportPublicationOut.from_document(build_document(record, version))
+                ReportPublicationOut.from_document(
+                    build_document(record, version, reviewed_snapshot=reviewed_snapshot)
+                )
                 if record is not None
                 else None
             ),
+            reviewed_source_snapshot=reviewed_snapshot,
             claim_ledger=ClaimLedgerOut.model_validate(build_claim_ledger(version)),
             claim_generation=version.claim_generation,
             model_routing=ModelRoutingOut.model_validate(version.model_routing)
@@ -316,8 +335,13 @@ class ReportOut(BaseModel):
     version: ReportVersionOut
 
     @classmethod
-    def build(cls, record: ReportRecord, version: ReportVersion) -> Self:
+    def build(
+        cls,
+        record: ReportRecord,
+        version: ReportVersion,
+        reviewed_snapshot: SourceReviewSnapshot | None = None,
+    ) -> Self:
         return cls(
             report=ReportSummaryOut.from_record(record),
-            version=ReportVersionOut.from_version(version, record),
+            version=ReportVersionOut.from_version(version, record, reviewed_snapshot),
         )

@@ -6,20 +6,34 @@ from collections.abc import Callable
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.adapters.persistence.access import visibility_predicate
 from ase.adapters.persistence.models import CollectionPlanRow, ReportRow, ScheduleRow
+from ase.adapters.persistence.reports import SqlReportRepository
 from ase.adapters.persistence.schedule_changes import record_change
+from ase.adapters.persistence.subscription_briefs import load_schedule_brief
+from ase.adapters.persistence.subscription_due_selection import due_schedule_rows
+from ase.adapters.persistence.subscription_editions import SqlSubscriptionEditionRepository
 from ase.adapters.persistence.subscription_history import remember_evidence
 from ase.application.access import AccessContext, AccessPolicy
+from ase.application.schedules.revision_snapshot import revision_from_schedule
+from ase.application.schedules.runner import DueCursor
 from ase.domain.access import Visibility
-from ase.domain.errors import Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.errors import Conflict, Forbidden, InvalidRequest, NotFound, Unauthenticated
+from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_area import area_from_dict, area_to_dict
 from ase.domain.research_changes import change_from_dict, change_to_dict
-from ase.domain.schedules import Schedule
+from ase.domain.schedules import (
+    CoverageState,
+    Schedule,
+    ScheduleErrorCode,
+    ScheduleRunResult,
+)
+from ase.domain.subscription_editions import SubscriptionEdition
+from ase.domain.subscription_recurrence import WindowPolicy
 
 
 def _from_row(row: ScheduleRow) -> Schedule:
@@ -31,10 +45,17 @@ def _from_row(row: ScheduleRow) -> Schedule:
         country_iso=row.country_iso,
         plan_id=row.plan_id,
         hour_utc=row.hour_utc,
+        timezone=row.timezone,
+        local_hour=row.local_hour,
+        local_minute=row.local_minute,
+        collection_policy=WindowPolicy(row.collection_policy),
+        brief_id=row.brief_id,
+        brief_revision=row.brief_revision,
         cadence=row.cadence,
         weekday=row.weekday,
         window_hours=row.window_hours,
         enabled=row.enabled,
+        archived_at=row.archived_at,
         created_by=row.created_by,
         created_at=row.created_at,
         next_run_at=row.next_run_at,
@@ -65,6 +86,15 @@ def _from_row(row: ScheduleRow) -> Schedule:
         baseline_report_id=UUID(options["baseline_report_id"])
         if options.get("baseline_report_id")
         else None,
+        last_version_id=UUID(options["last_version_id"])
+        if options.get("last_version_id")
+        else None,
+        last_outcome=ReportStatus(options["last_outcome"]) if options.get("last_outcome") else None,
+        last_coverage=CoverageState(options["last_coverage"])
+        if options.get("last_coverage")
+        else CoverageState.UNKNOWN
+        if "last_coverage" not in options and (row.last_run_at or row.last_report_id)
+        else None,
     )
 
 
@@ -74,10 +104,17 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
     row.country_iso = schedule.country_iso
     row.plan_id = schedule.plan_id
     row.hour_utc = schedule.hour_utc
+    row.timezone = schedule.timezone
+    row.local_hour = schedule.local_hour if schedule.local_hour is not None else schedule.hour_utc
+    row.local_minute = schedule.local_minute
+    row.collection_policy = schedule.collection_policy.value
+    row.brief_id = schedule.brief_id
+    row.brief_revision = schedule.brief_revision
     row.cadence = schedule.cadence
     row.weekday = schedule.weekday
     row.window_hours = schedule.window_hours
     row.enabled = schedule.enabled
+    row.archived_at = schedule.archived_at
     row.created_by = schedule.created_by
     row.created_at = schedule.created_at
     row.next_run_at = schedule.next_run_at
@@ -105,6 +142,9 @@ def _fill(row: ScheduleRow, schedule: Schedule) -> None:
         "baseline_report_id": str(schedule.baseline_report_id)
         if schedule.baseline_report_id
         else None,
+        "last_version_id": str(schedule.last_version_id) if schedule.last_version_id else None,
+        "last_outcome": schedule.last_outcome.value if schedule.last_outcome else None,
+        "last_coverage": schedule.last_coverage.value if schedule.last_coverage else None,
         "web_search": schedule.research_web_search,
         "source_ids": list(schedule.research_source_ids)
         if schedule.research_source_ids is not None
@@ -129,7 +169,10 @@ class SqlScheduleRepository:
     async def list_all(self, visibility: Visibility) -> list[Schedule]:
         rows = await self._session.scalars(
             select(ScheduleRow)
-            .where(visibility_predicate(ScheduleRow.created_by, ScheduleRow.team_id, visibility))
+            .where(
+                visibility_predicate(ScheduleRow.created_by, ScheduleRow.team_id, visibility),
+                ScheduleRow.archived_at.is_(None),
+            )
             .order_by(ScheduleRow.name)
         )
         return [_from_row(row) for row in rows]
@@ -138,12 +181,25 @@ class SqlScheduleRepository:
         row = await self._session.get(ScheduleRow, schedule.id)
         if row is None:
             raise NotFound("Schedule not found.")
+        if row.archived_at is not None or schedule.archived_at is not None:
+            raise NotFound("Schedule not found.")
         _fill(row, schedule)
         await self._session.flush()
 
-    async def delete(self, schedule_id: UUID) -> None:
-        await self._session.execute(delete(ScheduleRow).where(ScheduleRow.id == schedule_id))
-        await self._session.flush()
+    async def archive(self, schedule: Schedule, archived_at: datetime) -> bool:
+        """Keep the FK parent and immutable children; one atomic tombstone write wins."""
+        result = await self._session.scalar(
+            update(ScheduleRow)
+            .where(
+                ScheduleRow.id == schedule.id,
+                ScheduleRow.created_by == schedule.created_by,
+                ScheduleRow.team_id == schedule.team_id,
+                ScheduleRow.archived_at.is_(None),
+            )
+            .values(enabled=False, archived_at=archived_at)
+            .returning(ScheduleRow.id)
+        )
+        return result is not None
 
 
 class SqlScheduleStore:
@@ -168,7 +224,11 @@ class SqlScheduleStore:
             current = await session.get(ScheduleRow, row.id, populate_existing=True)
             if current is None:
                 return None
-            if not row.enabled or (row.created_by, row.team_id) != origin:
+            if (
+                not row.enabled
+                or row.archived_at is not None
+                or (row.created_by, row.team_id) != origin
+            ):
                 return None
             if row.plan_id is not None:
                 plan = await session.get(CollectionPlanRow, row.plan_id, populate_existing=True)
@@ -188,14 +248,16 @@ class SqlScheduleStore:
                 return False
             return _from_row(row) == schedule
 
-    async def due(self, now: datetime) -> list[Schedule]:
+    async def due(self, now: datetime, *, limit: int = 16) -> list[Schedule]:
+        items, _ = await self.due_batch(now, limit=limit)
+        return items
+
+    async def due_batch(
+        self, now: datetime, *, limit: int = 16, cursor: DueCursor | None = None
+    ) -> tuple[list[Schedule], DueCursor | None]:
         async with self._session_factory() as session:
-            rows = await session.scalars(
-                select(ScheduleRow)
-                .where(ScheduleRow.enabled.is_(True), ScheduleRow.next_run_at <= now)
-                .order_by(ScheduleRow.next_run_at)
-            )
-            return [_from_row(row) for row in rows]
+            rows, next_cursor = await due_schedule_rows(session, now, limit=limit, cursor=cursor)
+            return [_from_row(row) for row in rows], next_cursor
 
     async def mark_run(
         self,
@@ -203,8 +265,8 @@ class SqlScheduleStore:
         *,
         ran_at: datetime,
         next_run_at: datetime,
-        report_id: UUID | None,
-        error: str | None,
+        result: ScheduleRunResult | None,
+        error_code: ScheduleErrorCode | None,
         expected: Schedule,
     ) -> None:
         async with self._session_factory() as session:
@@ -214,8 +276,8 @@ class SqlScheduleStore:
             access = await self._authorise(session, row, for_update=True)
             if access is None or _from_row(row) != expected:
                 return
-            if report_id is not None:
-                report = await session.get(ReportRow, report_id, populate_existing=True)
+            if result is not None:
+                report = await session.get(ReportRow, result.report_id, populate_existing=True)
                 if report is None:
                     return
                 try:
@@ -224,11 +286,82 @@ class SqlScheduleStore:
                     )
                 except (Forbidden, InvalidRequest, NotFound):
                     return
-                await record_change(session, row, report, access, ran_at)
-                await remember_evidence(session, row, report)
+                version = await SqlReportRepository(session).get_version(report.id, 1)
+                if (
+                    version is None
+                    or ScheduleRunResult.from_version(
+                        version, research_required=expected.research_mode is not None
+                    )
+                    != result
+                ):
+                    return
+                if result.successful:
+                    await record_change(session, row, report, access, ran_at)
+                    await remember_evidence(session, row, report)
             row.last_run_at = ran_at
             row.next_run_at = next_run_at
-            row.last_error = error
-            if report_id is not None:
-                row.last_report_id = report_id
+            row.last_error = (result.error_code if result else error_code) or None
+            options = dict(row.research_options or {})
+            options["last_version_id"] = str(result.version_id) if result else None
+            options["last_outcome"] = result.outcome.value if result else None
+            options["last_coverage"] = result.coverage.value if result else None
+            row.research_options = options
+            if result is not None:
+                row.last_report_id = result.report_id
             await session.commit()
+
+
+async def project_edition_outcome(
+    session: AsyncSession,
+    edition: SubscriptionEdition,
+    result: ScheduleRunResult,
+    access: AccessContext,
+) -> bool:
+    """Project a published edition in the caller's report transaction.
+
+    A changed subscription may still retain its historical edition, but must not
+    have its current comparison state overwritten by an older execution.
+    """
+    row = await session.get(ScheduleRow, edition.subscription_id, populate_existing=True)
+    if row is None or not row.enabled or row.archived_at is not None:
+        return False
+    schedule = _from_row(row)
+    frozen = await SqlSubscriptionEditionRepository(session).get_revision(
+        edition.subscription_id, edition.frozen_revision
+    )
+    brief = await load_schedule_brief(session, access, schedule)
+    if (
+        frozen is None
+        or (schedule.created_by, schedule.team_id) != (frozen.owner_id, frozen.team_id)
+        or revision_from_schedule(schedule, 1, brief=brief).compatibility_fingerprint
+        != edition.compatibility_fingerprint
+    ):
+        return False
+    report = await session.get(ReportRow, result.report_id, populate_existing=True)
+    if report is None:
+        raise Conflict("The published subscription report is unavailable.")
+    access.require_same_scope(row.created_by, row.team_id, report.created_by, report.team_id)
+    version = await SqlReportRepository(session).get_version(report.id, 1)
+    if (
+        version is None
+        or ScheduleRunResult.from_version(
+            version, research_required=schedule.research_mode is not None
+        )
+        != result
+    ):
+        raise Conflict("The published subscription version does not match its edition.")
+    if result.successful:
+        await record_change(session, row, report, access, edition.updated_at)
+        await remember_evidence(session, row, report)
+    row.last_report_id = result.report_id
+    row.last_run_at = edition.updated_at
+    row.last_error = result.error_code.value if result.error_code else None
+    options = dict(row.research_options or {})
+    options.update(
+        last_version_id=str(result.version_id),
+        last_outcome=result.outcome.value,
+        last_coverage=result.coverage.value,
+    )
+    row.research_options = options
+    await session.flush()
+    return True

@@ -61,6 +61,26 @@ async def test_create_commits_fixed_ids_and_only_frozen_input(service_env):
         assert check.await_count == 3
 
 
+async def test_prepared_admission_leaves_commit_to_the_edition_transaction(service_env):
+    env, key = service_env, uuid4()
+    async with env.service() as (service, deps):
+        candidate = await service.prepare_candidate(env.user, key, REQUEST)
+        assert not deps.session.in_transaction()
+        admitted = await service.admit_prepared(env.user, candidate, check_session=AsyncMock())
+        assert admitted.id == candidate.id
+        assert (await deps.repo.get(candidate.id)) is not None
+        await deps.session.rollback()
+    async with env.factory() as session:
+        assert await SqlReportJobRepository(session).get(candidate.id) is None
+
+    async with env.service() as (service, deps):
+        candidate = await service.prepare_candidate(env.user, key, REQUEST)
+        admitted = await service.admit_prepared(env.user, candidate, check_session=AsyncMock())
+        await deps.session.commit()
+    async with env.factory() as session:
+        assert (await SqlReportJobRepository(session).get(admitted.id)) is not None
+
+
 async def test_request_replay_is_owner_scoped_and_mismatched_body_conflicts(service_env):
     env, key = service_env, uuid4()
     async with env.service() as (service, deps):

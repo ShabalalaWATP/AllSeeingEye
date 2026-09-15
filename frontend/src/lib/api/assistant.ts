@@ -20,7 +20,15 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
   sources: z.array(
     z.object({
       id: z.string(),
-      kind: z.enum(['event', 'camera', 'infrastructure', 'gnss', 'doctrine']),
+      kind: z.enum([
+        'event',
+        'camera',
+        'infrastructure',
+        'gnss',
+        'doctrine',
+        'report_claim',
+        'report_evidence',
+      ]),
       record_id: z.string(),
       source_id: z.string(),
       title: z.string(),
@@ -32,7 +40,7 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
     }),
   ),
   scope: z.object({
-    mode: z.enum(['global', 'viewport', 'selected']),
+    mode: z.enum(['global', 'viewport', 'selected', 'report']),
     bbox: z
       .object({ west: z.number(), south: z.number(), east: z.number(), north: z.number() })
       .nullable(),
@@ -60,6 +68,16 @@ export const assistantAnswerSchema: z.ZodType<AssistantAnswer> = z.object({
   continuation_id: z.string().nullable(),
   generated_at: z.string(),
   model: z.object({ name: z.string(), reasoning_effort: z.string().nullable() }).nullable(),
+  report: z
+    .object({
+      id: z.uuid(),
+      version_id: z.uuid(),
+      version: z.number().int().positive(),
+      title: z.string(),
+      data_cutoff: z.string().nullable(),
+    })
+    .nullable()
+    .default(null),
 });
 
 export function askAssistant(body: AssistantRequest, signal: AbortSignal) {

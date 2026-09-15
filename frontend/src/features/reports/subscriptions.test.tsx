@@ -61,7 +61,9 @@ it('uses saved area geometry and explicit provider consent while clearing other 
   expect(form.getByRole('group', { name: 'Countries' })).toBeDisabled();
   const consent = form.getByRole('checkbox', { name: /^Allow source providers/ });
   expect(consent).not.toBeChecked();
-  expect(form.getByRole('button', { name: 'Create subscription' })).toBeDisabled();
+  await user.click(form.getByRole('button', { name: 'Create subscription' }));
+  expect(form.getByText(/Area disclosure: Allow providers/)).toBeVisible();
+  expect(captured).toBeUndefined();
   await user.click(consent);
   await user.click(form.getByRole('button', { name: 'Create subscription' }));
   await waitFor(() =>

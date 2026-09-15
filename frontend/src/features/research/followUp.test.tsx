@@ -157,6 +157,7 @@ describe('private and follow-up research', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe(`/research/jobs/${nextId}`));
     expect(requestBody).toMatchObject({
       parent_report_id: report.report.id,
+      parent_version: 1,
       team_id: team.id,
       research_focus: 'document',
       report_language: 'es',
@@ -239,18 +240,3 @@ describe('private and follow-up research', () => {
     ).toThrow(/private research scope is incomplete/);
   });
 });
-
-it.each(['map_origin', 'research_area'])(
-  'does not turn an area report with %s into a rolling general follow-up',
-  (origin) => {
-    expect(() =>
-      followUpRequest({
-        ...report,
-        report: {
-          ...report.report,
-          scope: { ...report.report.scope, [origin]: { revision_id: 'saved' }, window_hours: 0 },
-        },
-      }),
-    ).toThrow('Start area research from its saved map revision');
-  },
-);

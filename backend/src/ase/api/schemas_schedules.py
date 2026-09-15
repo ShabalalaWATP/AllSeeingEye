@@ -9,11 +9,27 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 from ase.api.schemas_research_area import ResearchAreaIn, ResearchAreaOut
-from ase.application.schedules.manage import ScheduleInput
+from ase.application.schedules.definition import ScheduleInput
+from ase.domain.reports import ReportStatus
 from ase.domain.research import ResearchFocus, ResearchMode
 from ase.domain.research_changes import ResearchChange
 from ase.domain.research_scope import MAX_RESEARCH_HOURS
-from ase.domain.schedules import Schedule
+from ase.domain.schedules import CoverageState, Schedule
+from ase.domain.subscription_recurrence import WindowPolicy
+
+
+class ScheduleOccurrenceOut(BaseModel):
+    scheduled_date: str
+    local: datetime
+    utc: datetime
+    dst_resolution: str
+
+
+class SchedulePreviewOut(BaseModel):
+    next_three: list[ScheduleOccurrenceOut]
+    collection_policy: WindowPolicy
+    window_hours: int | None
+    note: str = "Preview only. No report job or subscription has been created."
 
 
 class ScheduleIn(BaseModel):
@@ -27,6 +43,10 @@ class ScheduleIn(BaseModel):
     )
     plan_id: UUID | None = None
     hour_utc: int = Field(default=6, ge=0, le=23)
+    timezone: str = Field(default="UTC", min_length=1, max_length=100)
+    local_hour: int | None = Field(default=None, ge=0, le=23)
+    local_minute: int = Field(default=0, ge=0, le=59)
+    collection_policy: WindowPolicy = WindowPolicy.ROLLING_SNAPSHOT
     cadence: str = Field(default="daily", max_length=16)
     weekday: int = Field(default=0, ge=0, le=6)
     monthday: int = Field(default=1, ge=1, le=31)
@@ -67,6 +87,10 @@ class ScheduleIn(BaseModel):
             country_isos=tuple(self.country_isos),
             plan_id=self.plan_id,
             hour_utc=self.hour_utc,
+            timezone=self.timezone,
+            local_hour=self.local_hour,
+            local_minute=self.local_minute,
+            collection_policy=self.collection_policy,
             cadence=self.cadence,
             weekday=self.weekday,
             monthday=self.monthday,
@@ -92,6 +116,25 @@ class ScheduleIn(BaseModel):
         )
 
 
+class ScheduleFromBriefIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    brief_id: UUID
+    brief_revision: int = Field(ge=1)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    timezone: str = Field(default="UTC", min_length=1, max_length=100)
+    local_hour: int = Field(default=6, ge=0, le=23)
+    local_minute: int = Field(default=0, ge=0, le=59)
+    cadence: str = Field(default="daily", max_length=16)
+    weekday: int = Field(default=0, ge=0, le=6)
+    monthday: int = Field(default=1, ge=1, le=31)
+    anchor_month: int = Field(default=1, ge=1, le=12)
+    collection_policy: WindowPolicy = WindowPolicy.ROLLING_SNAPSHOT
+    enabled: StrictBool = True
+    notify_on_change: StrictBool = False
+    avoid_repetition: StrictBool = True
+
+
 class ScheduleOut(BaseModel):
     id: UUID
     name: str
@@ -100,6 +143,13 @@ class ScheduleOut(BaseModel):
     country_isos: list[str]
     plan_id: UUID | None
     hour_utc: int
+    timezone: str
+    local_hour: int
+    local_minute: int
+    collection_policy: WindowPolicy
+    brief_id: UUID | None
+    brief_revision: int | None
+    next_three: list[ScheduleOccurrenceOut]
     cadence: str
     weekday: int
     monthday: int
@@ -116,6 +166,9 @@ class ScheduleOut(BaseModel):
     next_run_at: datetime
     last_run_at: datetime | None
     last_report_id: UUID | None
+    last_version_id: UUID | None
+    last_outcome: ReportStatus | None
+    last_coverage: CoverageState | None
     last_error: str | None
     team_id: UUID | None
     notify_on_change: bool
@@ -139,6 +192,23 @@ class ScheduleOut(BaseModel):
             country_isos=list(schedule.country_isos),
             plan_id=schedule.plan_id,
             hour_utc=schedule.hour_utc,
+            timezone=schedule.timezone,
+            local_hour=schedule.local_hour
+            if schedule.local_hour is not None
+            else schedule.hour_utc,
+            local_minute=schedule.local_minute,
+            collection_policy=schedule.collection_policy,
+            brief_id=schedule.brief_id,
+            brief_revision=schedule.brief_revision,
+            next_three=[
+                ScheduleOccurrenceOut(
+                    scheduled_date=item.scheduled_date.isoformat(),
+                    local=item.local,
+                    utc=item.utc,
+                    dst_resolution=item.dst_resolution,
+                )
+                for item in schedule.next_three
+            ],
             cadence=schedule.cadence,
             weekday=schedule.weekday,
             monthday=schedule.monthday,
@@ -157,6 +227,9 @@ class ScheduleOut(BaseModel):
             next_run_at=schedule.next_run_at,
             last_run_at=schedule.last_run_at,
             last_report_id=schedule.last_report_id,
+            last_version_id=schedule.last_version_id,
+            last_outcome=schedule.last_outcome,
+            last_coverage=schedule.last_coverage,
             last_error=schedule.last_error,
             team_id=schedule.team_id,
             notify_on_change=schedule.notify_on_change,

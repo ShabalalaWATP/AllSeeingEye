@@ -7,6 +7,7 @@ from uuid import UUID
 
 from ase.application.report_jobs.budget import MAX_CALLS, JobInterrupted, token_count
 from ase.domain.llm import LlmUsage
+from ase.domain.subscription_monthly_budget import utc_month
 
 _MUTABLE = frozenset({"status", "prompt_tokens", "completion_tokens", "latency_ms", "error"})
 
@@ -70,9 +71,17 @@ def settled_usage(
             or (value["status"] == "completed" and error is not None)
         ):
             raise JobInterrupted()
+        dispatched_at = previous.get("dispatched_at", now.isoformat())
+        if type(dispatched_at) is not str or len(dispatched_at) > 40:
+            raise JobInterrupted()
+        try:
+            at = datetime.fromisoformat(dispatched_at)
+            utc_month(at)
+        except ValueError:
+            raise JobInterrupted() from None
         result.append(
             LlmUsage(
-                at=now,
+                at=at,
                 profile_id=UUID(value["profile_id"]),
                 user_id=owner_id,
                 purpose="report-job",

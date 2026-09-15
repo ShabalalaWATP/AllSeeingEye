@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from ase.adapters.persistence.assistant_history import SqlAssistantHistory
 from ase.adapters.persistence.assistant_history_models import AssistantConversationRow
 from helpers import USER_EMAIL, USER_PASSWORD, bearer, create_user, login_token
+from report_documents_helpers import document_records
 
 
 def _save_body(*, url: str | None = "https://example.org/record") -> dict:
@@ -63,6 +64,30 @@ def _save_body(*, url: str | None = "https://example.org/record") -> dict:
     }
 
 
+def _report_save_body(
+    *,
+    report_id: str = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    version: int = 3,
+    version_id: str = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+) -> dict:
+    body = _save_body()
+    turn = body["turns"][0]
+    turn["scope"] = "report"
+    turn["source_categories"] = None
+    turn["report"] = {"id": report_id, "version": version}
+    turn["answer"]["scope"] = {"mode": "report", "bbox": None, "selected": None}
+    turn["answer"]["report"] = {
+        "id": report_id,
+        "version_id": version_id,
+        "version": version,
+        "title": "Frozen report edition",
+        "data_cutoff": "2026-09-01T00:00:00Z",
+    }
+    turn["answer"]["sources"][0]["kind"] = "report_claim"
+    turn["answer"]["sources"][0]["source_id"] = f"report_version:{version_id}"
+    return body
+
+
 async def test_explicit_save_resume_replace_delete_and_strip_transient_metadata(
     client, user, container
 ):
@@ -104,6 +129,48 @@ async def test_explicit_save_resume_replace_delete_and_strip_transient_metadata(
     assert deleted.headers["cache-control"] == "private, no-store"
     missing = await client.get(f"/api/assistant/conversations/{item['id']}", headers=headers)
     assert missing.status_code == 404
+
+
+async def test_report_scoped_save_resume_rechecks_exact_edition_access(client, user, container):
+    token = await login_token(client, USER_EMAIL, USER_PASSWORD)
+    headers = bearer(token)
+    record, version = document_records(user.id)
+    async with container.session_factory() as session:
+        await container.repositories(session).reports.add(record, version)
+        await container.repositories(session).uow.commit()
+    body = _report_save_body(
+        report_id=str(record.id), version=version.number, version_id=str(version.id)
+    )
+    created = await client.post("/api/assistant/conversations", headers=headers, json=body)
+    assert created.status_code == 201, created.text
+    saved = created.json()
+    saved_turn = saved["turns"][0]
+    assert saved_turn["scope"] == "report"
+    assert saved_turn["report"] == {
+        "id": str(record.id),
+        "version": version.number,
+    }
+    assert saved_turn["answer"]["scope"]["mode"] == "report"
+    assert saved_turn["answer"]["report"]["version"] == version.number
+    assert saved_turn["answer"]["model"] is None
+    assert saved_turn["answer"]["continuation_id"] is None
+    loaded = await client.get(f"/api/assistant/conversations/{saved['id']}", headers=headers)
+    assert loaded.status_code == 200
+    assert loaded.json()["turns"] == saved["turns"]
+
+    mismatched = _report_save_body(
+        report_id=str(record.id), version=version.number, version_id=str(version.id)
+    )
+    mismatched["turns"][0]["report"]["version"] = version.number + 1
+    response = await client.post("/api/assistant/conversations", headers=headers, json=mismatched)
+    assert response.status_code == 422
+    assert "exact report edition" in response.text
+
+    async with container.session_factory() as session:
+        await container.repositories(session).reports.delete(record.id)
+        await container.repositories(session).uow.commit()
+    revoked = await client.get(f"/api/assistant/conversations/{saved['id']}", headers=headers)
+    assert revoked.status_code == 404
 
 
 async def test_owner_isolation_and_deactivation(client, user, container):

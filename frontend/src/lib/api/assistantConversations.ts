@@ -8,13 +8,40 @@ export type AssistantConversationSummary = components['schemas']['SavedConversat
 export type AssistantConversationTurn = components['schemas']['SavedTurnOut'];
 export type AssistantConversationPayload = components['schemas']['SavedConversationIn'];
 
-const turnSchema: z.ZodType<AssistantConversationTurn> = z.object({
-  question: z.string().min(1).max(2000),
-  scope: z.enum(['global', 'viewport', 'selected']),
-  time_window: z.enum(['auto', '48', '120', '168', '336', '720', '2160', '8760']),
-  source_categories: z.array(assistantSourceCategorySchema).max(14).nullable(),
-  answer: assistantAnswerSchema,
-});
+const turnSchema: z.ZodType<AssistantConversationTurn> = z
+  .object({
+    question: z.string().min(1).max(2000),
+    scope: z.enum(['global', 'viewport', 'selected', 'report']),
+    time_window: z.enum(['auto', '48', '120', '168', '336', '720', '2160', '8760']),
+    source_categories: z.array(assistantSourceCategorySchema).max(14).nullable(),
+    report: z
+      .object({ id: z.uuid(), version: z.number().int().positive() })
+      .nullable()
+      .default(null),
+    answer: assistantAnswerSchema,
+  })
+  .superRefine((turn, context) => {
+    const answerReport = turn.answer.report;
+    if (turn.scope === 'report') {
+      if (
+        turn.report == null ||
+        answerReport == null ||
+        turn.answer.scope.mode !== 'report' ||
+        turn.report.id !== answerReport.id ||
+        turn.report.version !== answerReport.version
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Report-scoped saved turns must identify the exact report edition.',
+        });
+      }
+    } else if (turn.report != null || turn.answer.scope.mode === 'report' || answerReport != null) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Map-scoped saved turns cannot include report context.',
+      });
+    }
+  });
 const summarySchema = z.object({
   id: z.uuid(),
   title: z.string(),

@@ -9,8 +9,10 @@ from sqlalchemy import func, select
 from ase.adapters.persistence.claim_models import ClaimRow
 from ase.adapters.persistence.claims import SqlClaimRepository
 from ase.adapters.persistence.models import LlmUsageRow, ReportRow, ReportVersionRow
+from ase.application.dto import RequestContext
 from ase.application.ports.feeds import EventQuery
 from ase.application.reports.request import ReportRequest
+from ase.application.schedules.report_request import scheduled_report_request
 from ase.domain.claim_generation import ClaimGenerationStatus
 from ase.domain.llm import LlmResult
 from ase.domain.schedules import Schedule
@@ -100,9 +102,12 @@ async def test_schedule_uses_same_automatic_pipeline(container, user):
     schedule = Schedule(
         uuid4(), "Daily research", "intsum", None, None, 6, "daily", 0, 48, True, user.id, now, now
     )
-    report_id = await container.schedule_report(schedule)
     async with container.session_factory() as session:
-        version = await container.repositories(session).reports.get_version(report_id, 1)
+        record, _ = await container.generate_report(session).execute(
+            user, scheduled_report_request(schedule), RequestContext()
+        )
+    async with container.session_factory() as session:
+        version = await container.repositories(session).reports.get_version(record.id, 1)
         assert version.claim_generation.status is ClaimGenerationStatus.COMPLETED
         assert len(version.claim_generation.revision_ids) == 2
 

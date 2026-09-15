@@ -132,8 +132,15 @@ class ReportJob:
     lease_token: UUID | None = None
     lease_until: datetime | None = None
     error: str | None = None
+    brief_id: UUID | None = None
+    brief_revision: int | None = None
 
     def __post_init__(self) -> None:
+        if (self.brief_id is None) != (self.brief_revision is None) or (
+            self.brief_revision is not None
+            and (type(self.brief_revision) is not int or self.brief_revision < 1)
+        ):
+            raise ValueError("Report jobs must pin an exact Research Brief revision")
         if self.status not in JOB_STATUSES or type(self.revision) is not int or self.revision < 1:
             raise ValueError("Invalid report job status or revision.")
         if not 1 <= len(self.title.strip()) <= 300 or len(self.title) > 300:

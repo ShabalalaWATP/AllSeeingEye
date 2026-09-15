@@ -135,7 +135,8 @@ async def test_generate_read_export_and_delete(
     assert response.status_code == 201, response.text
     payload = response.json()
     report_id = payload["report"]["id"]
-    assert payload["report"]["status"] == "ready"
+    # These synthetic event headlines lack original passages for material claims.
+    assert payload["report"]["status"] == "needs_review"
     assert payload["report"]["title"] == "Intelligence report: Ukraine"
     assert payload["report"]["scope"] == {
         "report_language": "en",
@@ -219,13 +220,14 @@ async def test_generation_faults_retry_limits_and_validation(
         await client.post("/api/reports", json={"template": "country_brief"}, headers=bearer(token))
     ).status_code == 422
 
-    # Invalid JSON first, then a sound answer: two attempts, ready.
+    # Invalid JSON first, then a parseable answer that still needs source review.
     container.llm = ScriptedGateway("not json", json.dumps(good_body()))
     ok = await client.post(
         "/api/reports", json={"template": "ask", "question": "What next?"}, headers=bearer(token)
     )
     assert ok.status_code == 201
-    assert ok.json()["version"]["attempts"] == 2 and ok.json()["report"]["status"] == "ready"
+    assert ok.json()["version"]["attempts"] == 2
+    assert ok.json()["report"]["status"] == "needs_review"
     assert ok.json()["report"]["title"] == "Ask the Eye: What next?"
 
     # Two doctrine breaches in a row: stored for review with the findings attached.
@@ -292,11 +294,12 @@ async def test_regeneration_adds_a_version_that_must_state_what_changed(
     assert "previous version's key judgements" in prompt
     assert "KJ1: We assess it is highly likely" in prompt
 
-    # With them, the third version is ready and the earlier versions stay readable.
+    # Change markers resolve that finding; absent original passages still require review.
     judgements = [{**j, "change_from_previous": "unchanged"} for j in good_body()["key_judgements"]]
     container.llm = ScriptedGateway(json.dumps(good_body(key_judgements=judgements)))
     third = await client.post(f"/api/reports/{report_id}/versions", headers=bearer(token))
-    assert third.json()["report"]["status"] == "ready"
+    assert third.json()["report"]["status"] == "needs_review"
+    assert not any(f["rule"] == "change" for f in third.json()["version"]["findings"])
     assert third.json()["version"]["number"] == 3
     assert (
         third.json()["version"]["body"]["key_judgements"][0]["change_from_previous"] == "unchanged"

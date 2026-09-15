@@ -215,6 +215,8 @@ async def test_real_asgi_disconnect_cancels_model_and_leaves_no_report_or_usage(
 ):
     token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     await seed_legacy_profile(container, PROFILE)
+    # Without evidence the report skips the model entirely, so seed evidence to reach it.
+    container.store.upsert(tuple(filled_store().query(EventQuery(limit=10))))
     entered, cleaned = asyncio.Event(), asyncio.Event()
 
     class WaitingGateway:

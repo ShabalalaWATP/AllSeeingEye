@@ -4,6 +4,7 @@ import pytest
 from httpx import AsyncClient
 
 from ase.application.dto import RequestContext
+from ase.application.ports.feeds import EventQuery
 from ase.application.reports.request import ReportRequest
 from ase.container import Container
 from ase.domain.errors import NotFound
@@ -12,7 +13,7 @@ from ase.domain.users import Role, User
 from helpers import USER_PASSWORD, bearer, create_user, login_token
 from llm_fixture_helpers import seed_legacy_profile
 from report_documents_helpers import document_records
-from report_helpers import PROFILE, ScriptedGateway
+from report_helpers import PROFILE, ScriptedGateway, filled_store
 from team_helpers import CONTEXT, team_service
 
 
@@ -79,6 +80,9 @@ async def test_membership_revoked_during_model_call_cannot_persist_report(
     team = await team_for(container, admin, user)
     record = await save_team_report(container, user, team.id)
     await seed_legacy_profile(container, PROFILE)
+    # With no evidence the pipeline writes a coverage-gap report without a model call, which
+    # would never reach the revocation below. Seed evidence so the model call happens.
+    container.store.upsert(tuple(filled_store().query(EventQuery(limit=10))))
 
     class RevokingGateway(ScriptedGateway):
         async def complete(self, base_url, api_key, model, request):

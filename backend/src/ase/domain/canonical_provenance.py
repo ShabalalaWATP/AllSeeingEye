@@ -8,9 +8,46 @@ from dataclasses import fields, is_dataclass
 from typing import Any
 
 from ase.domain.evidence import EvidenceItem
+from ase.domain.report_records import ReportVersion
 from ase.domain.research import CollectionAttempt
 from ase.domain.research_plan import QueryVariant, ResearchPlan, ResearchTask
 from ase.domain.research_records import ResearchReceipt
+
+# Fields added after historical exports were hashed; absent values keep the old bytes.
+_ADDED_DEFAULTS: tuple[tuple[type, tuple[tuple[str, Any], ...]], ...] = (
+    (EvidenceItem, (("transformations", ()), ("source_dates", ()))),
+    (
+        QueryVariant,
+        (
+            ("kind", "translation"),
+            ("original_terms", ()),
+            ("source_script", None),
+            ("target_script", None),
+            ("method", None),
+        ),
+    ),
+    (ResearchTask, (("query_variant", None),)),
+    (CollectionAttempt, (("query_variant", None),)),
+    (ResearchReceipt, (("web_research", None), ("original_followup", ()))),
+    (ResearchPlan, (("country_isos", ()), ("research_web_search", False))),
+    (
+        ReportVersion,
+        (
+            ("brief_id", None),
+            ("brief_revision", None),
+            ("canonical_requirements", ()),
+            ("document_schema_version", 1),
+            ("source_assessment", None),
+        ),
+    ),
+)
+
+
+def _added_defaults(value: Any) -> tuple[tuple[str, Any], ...]:
+    for kind, defaults in _ADDED_DEFAULTS:
+        if isinstance(value, kind):
+            return defaults
+    return ()
 
 
 def canonical_snapshot(value: Any) -> Any:
@@ -18,23 +55,7 @@ def canonical_snapshot(value: Any) -> Any:
         result = {
             field.name: canonical_snapshot(getattr(value, field.name)) for field in fields(value)
         }
-        defaults: tuple[tuple[str, Any], ...] = ()
-        if isinstance(value, EvidenceItem):
-            defaults = (("transformations", ()), ("source_dates", ()))
-        elif isinstance(value, QueryVariant):
-            defaults = (
-                ("kind", "translation"),
-                ("original_terms", ()),
-                ("source_script", None),
-                ("target_script", None),
-                ("method", None),
-            )
-        elif isinstance(value, ResearchTask | CollectionAttempt):
-            defaults = (("query_variant", None),)
-        elif isinstance(value, ResearchReceipt):
-            defaults = (("web_research", None),)
-        elif isinstance(value, ResearchPlan):
-            defaults = (("country_isos", ()), ("research_web_search", False))
+        defaults = _added_defaults(value)
         for key, default in defaults:
             if result[key] == default:
                 del result[key]

@@ -111,6 +111,18 @@ async def test_nonempty_initial_pass_completes_unattempted_explicit_selection_un
     assert [row.source_id for row in result.passes[1].attempts] == ["4", "5", "6", "7"]
 
 
+async def test_unavailable_provider_is_not_retried_with_identical_query() -> None:
+    providers = [Recording("offline", failure=True)] + [Recording(str(i)) for i in range(7)]
+
+    async def unchanged(*args):
+        return None
+
+    result = await ResearchCollectionService(lambda _: providers).collect(QUERY, replan=unchanged)
+    assert len(providers[0].queries) == 1
+    assert sum(len(provider.queries) for provider in providers) == 6
+    assert result.plan and result.plan.replans == 0
+
+
 @pytest.mark.parametrize("outcome", ["none", "failure", "unchanged"])
 async def test_declined_failed_or_unchanged_replan_uses_remaining_original_sources(outcome) -> None:
     providers = [Recording(str(index)) for index in range(8)]
@@ -171,8 +183,9 @@ async def test_failures_unsupported_and_empty_selection_never_trigger_replanning
         assert result.plan and result.plan.replans == 0
 
 
-async def test_replan_timeout_cancels_callback_and_leaves_no_second_pass(monkeypatch) -> None:
-    monkeypatch.setattr(CollectionBudget, "for_mode", lambda _: CollectionBudget(6, 0.02, 0.02, 10))
+async def test_replan_timeout_cancels_callback_but_preserves_source_allowance(monkeypatch) -> None:
+    monkeypatch.setattr(CollectionBudget, "for_mode", lambda _: CollectionBudget(6, 1, 1, 10))
+    monkeypatch.setattr("ase.application.research.replanning.DURABLE_PLANNING_SECONDS", 0.02)
     cancelled = False
 
     async def callback(*args):
@@ -185,8 +198,8 @@ async def test_replan_timeout_cancels_callback_and_leaves_no_second_pass(monkeyp
 
     providers = [Recording(str(index)) for index in range(6)]
     result = await ResearchCollectionService(lambda _: providers).collect(QUERY, replan=callback)
-    assert cancelled and len(result.passes) == 1
-    assert sum(len(provider.queries) for provider in providers) == 3
+    assert cancelled and len(result.passes) == 2
+    assert sum(len(provider.queries) for provider in providers) == 6
 
 
 async def test_service_keeps_admission_through_replan_and_releases_on_cancellation() -> None:

@@ -6,13 +6,20 @@ from ase.adapters.reports.async_documents import run_bounded_thread
 from ase.application.reports.document import build_document
 from ase.domain.report_documents import ReportDocument
 from ase.domain.report_records import ReportRecord, ReportVersion
+from ase.domain.source_review_records import SourceReviewSnapshot
 
 
 class AsyncReportDocumentProjector:
     def __init__(self, *, wait_for_slot: bool = False) -> None:
         self._wait_for_slot = wait_for_slot
 
-    async def build(self, record: ReportRecord, version: ReportVersion) -> ReportDocument:
+    async def build(
+        self,
+        record: ReportRecord,
+        version: ReportVersion,
+        reviewed_snapshot: SourceReviewSnapshot | None = None,
+    ) -> ReportDocument:
         return await run_bounded_thread(
-            partial(build_document, record, version), wait_for_slot=self._wait_for_slot
+            partial(build_document, record, version, reviewed_snapshot=reviewed_snapshot),
+            wait_for_slot=self._wait_for_slot,
         )

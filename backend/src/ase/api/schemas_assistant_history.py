@@ -44,18 +44,46 @@ def _validate_text_tree(value: object) -> None:
             _validate_text_tree(child)
 
 
+class SavedReportReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: UUID
+    version: int = Field(ge=1, le=1_000_000)
+
+
 class SavedTurnIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2_000)
-    scope: str = Field(pattern="^(global|viewport|selected)$")
+    scope: str = Field(pattern="^(global|viewport|selected|report)$")
     time_window: str = Field(pattern="^(auto|48|120|168|336|720|2160|8760)$")
     source_categories: list[str] | None = Field(default=None, max_length=14)
+    # Keep the exact report selection beside the answer.  The answer contains
+    # the frozen edition metadata too, but this field makes the saved turn's
+    # scope explicit and lets the API reject mixed or tampered transcripts.
+    report: SavedReportReference | None = None
     answer: AssistantAnswerOut
 
     @model_validator(mode="after")
     def valid_answer(self) -> "SavedTurnIn":
         if not self.question.strip() or not self.answer.paragraphs:
             raise ValueError("Only answered questions can be saved.")
+        report_answer = self.answer.report
+        if self.scope == "report":
+            if (
+                self.answer.scope.mode != "report"
+                or report_answer is None
+                or self.report is None
+                or self.report.id != report_answer.id
+                or self.report.version != report_answer.version
+            ):
+                raise ValueError(
+                    "Report-scoped saved turns must identify the exact report edition."
+                )
+        elif (
+            self.report is not None
+            or self.answer.scope.mode == "report"
+            or report_answer is not None
+        ):
+            raise ValueError("Map-scoped saved turns cannot include report context.")
         if len(self.answer.paragraphs) > 12 or len(self.answer.sources) > 32:
             raise ValueError("Saved answer exceeds its item limit.")
         for source in self.answer.sources:
@@ -73,6 +101,7 @@ class SavedTurnIn(BaseModel):
             "scope": self.scope,
             "time_window": self.time_window,
             "source_categories": self.source_categories,
+            "report": self.report.model_dump(mode="json") if self.report else None,
             "answer": answer,
         }
 

@@ -26,6 +26,10 @@ from ase.application.report_jobs.request_snapshot import (
     request_to_dict,
     template_digest,
 )
+from ase.application.report_jobs.subscription_snapshot import (
+    freeze_subscription_context,
+    restore_subscription_context,
+)
 from ase.application.reports.production_selection import select_for_job
 from ase.application.reports.production_types import Job
 from ase.application.reports.templates import template_for
@@ -64,6 +68,7 @@ _KEYS = {
     "followup_judgements",
     "routing",
 }
+_SUBSCRIPTION_KEYS = _KEYS | {"subscription_context"}
 
 
 def freeze_job(
@@ -82,9 +87,10 @@ def freeze_job(
         store = store_factory()
         store.upsert(job.seed_events)
         evidence = select_for_job(store, profiles, job, job.direction).items
+    subscription_context = freeze_subscription_context(job)
     value: dict[str, Any] = json_copy(
         {
-            "schema_version": 1,
+            "schema_version": 2 if subscription_context is not None else 1,
             "template_id": job.template.id,
             "template_digest": template_digest(job.template),
             "request": request_to_dict(job.request),
@@ -106,6 +112,11 @@ def freeze_job(
             "seed_attempts": [asdict(row) for row in job.seed_attempts],
             "followup_judgements": [asdict(row) for row in job.followup_judgements],
             "routing": routing_to_dict(routing.provenance),
+            **(
+                {"subscription_context": subscription_context}
+                if subscription_context is not None
+                else {}
+            ),
         }
     )
     restore_job(value, job.actor, job.profile)
@@ -140,11 +151,19 @@ def restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
 
 
 def _restore_job(data: Any, actor: User, profile: LlmProfile) -> Job:
-    value = boundary(data, _KEYS)
+    if type(data) is not dict or type(data.get("schema_version")) is not int:
+        raise ValueError("Invalid report snapshot version")
+    if data["schema_version"] not in {1, 2}:
+        raise ValueError("Unsupported report snapshot version")
+    value = boundary(data, _SUBSCRIPTION_KEYS if data["schema_version"] == 2 else _KEYS)
     template = template_for(text(value["template_id"], 120) or "")
     if value["template_digest"] != template_digest(template):
         raise ValueError("The frozen report template has changed")
     request = request_from_dict(value["request"], value["scope"], template)
+    if value["schema_version"] == 2:
+        request = restore_subscription_context(
+            value["subscription_context"], request, value["scope"]
+        )
     routing = routing_from_dict(value["routing"])
     if routing is None or routing.destination_team_id != request.team_id:
         raise ValueError("Invalid frozen model routing destination")

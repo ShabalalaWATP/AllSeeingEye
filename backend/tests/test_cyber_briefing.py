@@ -158,6 +158,8 @@ async def test_worker_collects_cyber_only_and_preserves_cited_retained_observati
         )
     )
     monkeypatch.setattr(container.research, "collect", collect)
+    # Durable research jobs acquire sources through the checkpointed path.
+    monkeypatch.setattr(container.research, "collect_checkpointed", collect)
     response = await client.post("/api/cyber/briefing?days=14", headers=headers)
     assert response.status_code == 202, response.text
     await work(container)

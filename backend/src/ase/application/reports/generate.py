@@ -38,6 +38,7 @@ from ase.application.reports.automatic_claims import AutomaticClaims
 from ase.application.reports.fresh_web_research import FreshWebResearch
 from ase.application.reports.job_preparation import ReportJobBuilder
 from ase.application.reports.map_origin import ReportMapOrigin
+from ase.application.reports.original_followthrough import OriginalFollowThrough
 from ase.application.reports.production import Job, Producer
 from ase.application.reports.production_checkpoint import ProductionCheckpoints
 from ase.application.reports.production_result import ProductionResult
@@ -89,6 +90,7 @@ class GenerateReportUseCase:
         map_views: MapViewRepository | None = None,
         claims: ClaimRepository | None = None,
         web_research: FreshWebResearch | None = None,
+        original_followthrough: OriginalFollowThrough | None = None,
         projector: AsyncReportProjector | None = None,
     ) -> None:
         self._backgrounds = dict(backgrounds or {})
@@ -101,6 +103,7 @@ class GenerateReportUseCase:
             url_resolver=url_resolver,
             research=research,
             web_research=web_research,
+            original_followthrough=original_followthrough,
             private_store_factory=private_store_factory,
             automatic_claims=AutomaticClaims(gateway, cipher, clock, limiter)
             if claims is not None

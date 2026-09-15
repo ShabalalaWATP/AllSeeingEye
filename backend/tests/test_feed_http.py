@@ -145,11 +145,12 @@ async def test_redirects_errors_and_size_caps(no_dns: None) -> None:
 
 async def test_transport_errors_are_wrapped(no_dns: None) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("refused")
+        raise httpx.ConnectError("refused: private-term")
 
     client = make_client(handler)
-    with pytest.raises(FeedFetchError, match="ConnectError"):
+    with pytest.raises(FeedFetchError, match="ConnectError") as error:
         await client.get_bytes("https://feeds.test/x")
+    assert "private-term" not in str(error.value)
     await client.aclose()
 
 

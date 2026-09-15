@@ -1,5 +1,6 @@
-import type { Report, ReportRequest } from '@/lib/api/reports';
+import type { Report } from '@/lib/api/reports';
 import type { Workspaces } from '@/lib/hooks/useWorkspaces';
+import type { FollowUpRequest } from './followUpScope';
 
 export function FollowUpSummary({
   parent,
@@ -7,7 +8,7 @@ export function FollowUpSummary({
   workspaces,
 }: {
   parent: Report;
-  request: ReportRequest;
+  request: FollowUpRequest;
   workspaces: Workspaces;
 }) {
   return (
@@ -15,7 +16,15 @@ export function FollowUpSummary({
       aria-label="Follow-up scope"
       className="space-y-2 border-y border-line py-4 text-xs text-muted [overflow-wrap:anywhere]"
     >
-      <h2 className="text-sm font-medium text-text">Follow-up to {parent.report.title}</h2>
+      <h2 className="text-sm font-medium text-text">
+        Follow-up to {parent.report.title}, edition {request.parent_version}
+      </h2>
+      <p>
+        Parent observation period:{' '}
+        {parent.version.period_from && parent.version.period_to
+          ? `${parent.version.period_from} to ${parent.version.period_to} (end excluded).`
+          : 'Not recorded for this edition.'}
+      </p>
       <p>
         {workspaces.label(parent.report.team_id)} · {request.research_focus} ·{' '}
         {request.research_subject ??
@@ -26,7 +35,7 @@ export function FollowUpSummary({
       </p>
       <p>
         {request.research_since && request.research_until
-          ? `Fixed period: ${request.research_since} to ${request.research_until} (end excluded).`
+          ? `${request.research_time_basis === 'recorded_time' ? 'Recorded-time' : 'Fixed'} period: ${request.research_since} to ${request.research_until} (end excluded).`
           : `Rolling period: ${request.window_hours ?? 'original'} hours.`}{' '}
         Fresh web search{' '}
         {request.research_web_search ? 'enabled, with the original provider disclosure' : 'off'}.
@@ -38,9 +47,13 @@ export function FollowUpSummary({
           remain unverified research inputs and share the normal collection budget.
         </p>
       )}
+      {request.research_area && (
+        <p>Uses the exact saved area geometry and its original provider disclosure.</p>
+      )}
       <p>
-        The original workspace, focus and collection scope are fixed. The server binds the latest
-        parent version when this run starts and saves that version reference with the new report.
+        The original workspace, focus, period and collection scope are fixed. The server checks
+        access to edition {request.parent_version} and records that exact parent reference with the
+        new report.
       </p>
       {(request.research_source_ids !== undefined ||
         request.research_terms !== undefined ||

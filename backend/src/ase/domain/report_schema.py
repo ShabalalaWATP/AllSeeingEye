@@ -174,7 +174,7 @@ REPORT_BODY_SCHEMA: dict[str, Any] = {
                 "required": ["text", "eei"],
                 "properties": {
                     "text": _text(),
-                    "eei": {"type": ["string", "null"], "minLength": 1, "maxLength": 32},
+                    "eei": {"type": ["string", "null"], "minLength": 1, "maxLength": 64},
                 },
             },
         },

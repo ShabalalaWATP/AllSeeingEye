@@ -2,12 +2,14 @@
 
 from datetime import datetime
 from typing import Literal, Self
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ase.domain.assistant import (
     AssistantAnswer,
     AssistantQuestion,
+    AssistantReportSelection,
     AssistantSelection,
     AssistantTimeRange,
 )
@@ -36,11 +38,17 @@ class AssistantTimeRangeIn(BaseModel):
     until: datetime
 
 
+class AssistantReportIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: UUID
+    version: int = Field(ge=1, le=1_000_000)
+
+
 class AssistantAnswerIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2000)
     prior_questions: list[str] = Field(default_factory=list, max_length=4)
-    scope: Literal["global", "viewport", "selected"] = "global"
+    scope: Literal["global", "viewport", "selected", "report"] = "global"
     bbox: AssistantBoundsIn | None = None
     selected: AssistantSelectionIn | None = None
     time_range: AssistantTimeRangeIn | None = None
@@ -48,6 +56,7 @@ class AssistantAnswerIn(BaseModel):
     source_categories: list[AssistantSourceCategory] | None = Field(
         default=None, min_length=1, max_length=14
     )
+    report: AssistantReportIn | None = None
 
     def to_question(self) -> AssistantQuestion:
         return AssistantQuestion(
@@ -61,6 +70,7 @@ class AssistantAnswerIn(BaseModel):
             tuple(str(value) for value in self.source_categories)
             if self.source_categories
             else None,
+            AssistantReportSelection(**self.report.model_dump()) if self.report else None,
         )
 
     @model_validator(mode="after")
@@ -78,7 +88,9 @@ class AssistantPointOut(BaseModel):
 class AssistantSourceOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
-    kind: Literal["event", "camera", "infrastructure", "gnss", "doctrine"]
+    kind: Literal[
+        "event", "camera", "infrastructure", "gnss", "doctrine", "report_claim", "report_evidence"
+    ]
     record_id: str
     source_id: str
     title: str
@@ -97,7 +109,7 @@ class AssistantParagraphOut(BaseModel):
 
 
 class AssistantScopeOut(BaseModel):
-    mode: Literal["global", "viewport", "selected"]
+    mode: Literal["global", "viewport", "selected", "report"]
     bbox: AssistantBoundsIn | None
     selected: AssistantSelectionIn | None
 
@@ -127,6 +139,15 @@ class AssistantModelOut(BaseModel):
     reasoning_effort: str | None
 
 
+class AssistantReportOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    version_id: UUID
+    version: int
+    title: str
+    data_cutoff: datetime | None
+
+
 class AssistantAnswerOut(BaseModel):
     paragraphs: list[AssistantParagraphOut]
     sources: list[AssistantSourceOut]
@@ -136,6 +157,7 @@ class AssistantAnswerOut(BaseModel):
     continuation_id: str | None
     generated_at: datetime
     model: AssistantModelOut | None
+    report: AssistantReportOut | None = None
 
     @classmethod
     def from_answer(cls, answer: AssistantAnswer) -> Self:
@@ -179,4 +201,5 @@ class AssistantAnswerOut(BaseModel):
             continuation_id=answer.continuation_id,
             generated_at=answer.generated_at,
             model=AssistantModelOut.model_validate(answer.model) if answer.model else None,
+            report=AssistantReportOut.model_validate(context.report) if context.report else None,
         )

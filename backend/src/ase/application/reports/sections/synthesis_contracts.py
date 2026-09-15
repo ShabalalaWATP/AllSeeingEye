@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from ase.application.reports.sections.contracts import SYNTHESIS_SCHEMA, validate_content
+from ase.application.reports.sections.tier_limits import limits_for
 from ase.domain.report_input import _check
 from ase.domain.reports import parse_body
 from ase.domain.validation import Finding, Severity, _check_judgement
@@ -26,7 +27,6 @@ def _subset(names: tuple[str, ...]) -> dict[str, Any]:
 
 JUDGEMENTS_SCHEMA = _subset(("key_judgements", "assumptions"))
 _judgements = JUDGEMENTS_SCHEMA["properties"]["key_judgements"]
-_judgements["maxItems"] = 2
 _fields = _judgements["items"]["properties"]
 _fields["confidence_statement"]["maxLength"] = 600
 for _name, _cap in (
@@ -37,7 +37,6 @@ for _name, _cap in (
 ):
     _fields[_name]["maxItems"] = _cap
 _fields["indicators"]["items"]["maxLength"] = 240
-JUDGEMENTS_SCHEMA["properties"]["assumptions"]["maxItems"] = 4
 JUDGEMENTS_SCHEMA["properties"]["assumptions"]["items"]["properties"]["text"]["maxLength"] = 400
 
 CONTEXT_SCHEMA = _subset(
@@ -50,7 +49,7 @@ CONTEXT_SCHEMA = _subset(
     )
 )
 _context = CONTEXT_SCHEMA["properties"]
-for _name, _cap in (("alternative_hypotheses", 2), ("gaps", 10), ("collection_recommendations", 4)):
+for _name, _cap in (("gaps", 10), ("collection_recommendations", 4)):
     _context[_name]["maxItems"] = _cap
 for _name in ("text", "why_less_likely"):
     _context["alternative_hypotheses"]["items"]["properties"][_name]["maxLength"] = 400
@@ -62,13 +61,31 @@ _context["collection_recommendations"]["items"]["maxLength"] = 280
 _context["sourcing_statement"]["maxLength"] = 600
 
 
-def schema_for(part: str, *, remaining_gaps: int = 20) -> dict[str, Any]:
+def schema_for(
+    part: str, *, remaining_gaps: int = 20, research_mode: object = None
+) -> dict[str, Any]:
     if part not in PARTS:
         raise ValueError("Unknown synthesis step")
     schema = deepcopy(JUDGEMENTS_SCHEMA if part == JUDGEMENTS else CONTEXT_SCHEMA)
+    limits = limits_for(research_mode)
+    if part == JUDGEMENTS:
+        schema["properties"]["key_judgements"]["maxItems"] = limits.judgements
+        schema["properties"]["assumptions"]["maxItems"] = limits.assumptions
     if part == CONTEXT:
+        schema["properties"]["alternative_hypotheses"]["maxItems"] = limits.alternatives
         schema["properties"]["gaps"]["maxItems"] = min(10, max(0, remaining_gaps))
     return schema
+
+
+def validate_aggregate_limits(value: dict[str, Any], *, research_mode: object = None) -> None:
+    """A cached combined step must still obey its frozen tier's strict maxima."""
+    limits = limits_for(research_mode)
+    if (
+        len(value["key_judgements"]) > limits.judgements
+        or len(value["assumptions"]) > limits.assumptions
+        or len(value["alternative_hypotheses"]) > limits.alternatives
+    ):
+        raise ValueError("Final assessment exceeds the selected depth limits")
 
 
 def validate_part(
@@ -79,9 +96,14 @@ def validate_part(
     eeis: frozenset[str],
     previous_exists: bool = False,
     remaining_gaps: int = 20,
+    research_mode: object = None,
 ) -> dict[str, Any]:
     """A reusable partial step has its own exact shape, citations and linked identifiers."""
-    _check(value, schema_for(part, remaining_gaps=remaining_gaps), "synthesis_part")
+    _check(
+        value,
+        schema_for(part, remaining_gaps=remaining_gaps, research_mode=research_mode),
+        "synthesis_part",
+    )
     validate_content(value, labels=labels, eeis=eeis)
     if part == JUDGEMENTS:
         body = parse_body(value)

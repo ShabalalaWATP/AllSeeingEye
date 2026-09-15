@@ -80,7 +80,15 @@ async def test_new_version_persists_current_period_without_rewriting_history(
         await session.commit()
 
     later = job.now + timedelta(hours=5)
-    second = replace(first, id=uuid4(), number=2, created_at=later, markdown="Second version")
+    # A source-assessment receipt is bound to its own version, so the copy must not reuse it.
+    second = replace(
+        first,
+        id=uuid4(),
+        number=2,
+        created_at=later,
+        markdown="Second version",
+        source_assessment=None,
+    )
     record.latest_version = 2
     record.period_from = later - job.window
     record.period_to = record.data_cutoff = later

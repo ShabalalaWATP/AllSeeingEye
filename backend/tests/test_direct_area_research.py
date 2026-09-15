@@ -195,6 +195,43 @@ async def test_direct_report_preserves_area_on_regeneration_and_blocks_unscoped_
     assert followup.status_code == 422
     assert "area research" in followup.text.lower()
 
+    container.llm = ScriptedGateway("{}", json.dumps(good_body()))
+    scoped_followup = await client.post(
+        "/api/reports",
+        json={
+            **report_body(),
+            "question": "What changed in this exact area?",
+            "parent_report_id": report_id,
+            "parent_version": 1,
+        },
+        headers=auth,
+    )
+    assert scoped_followup.status_code == 201, scoped_followup.text
+    followup_scope = scoped_followup.json()["report"]["scope"]
+    assert followup_scope["parent_report_id"] == report_id
+    assert followup_scope["parent_version"] == 1
+    assert followup_scope["research_area"]["sha256"] == AREA.sha256
+    assert scoped_followup.json()["version"]["period_from"] == result["version"]["period_from"]
+
+    changed_area = copy.deepcopy(area_input())
+    coordinates = changed_area["geometry"]["features"][0]["geometry"]["coordinates"][0]
+    for point in coordinates:
+        if point[0] == 1:
+            point[0] = 2
+    different_area = await client.post(
+        "/api/reports",
+        json={
+            **report_body(),
+            "question": "Can a changed area inherit evidence?",
+            "research_area": changed_area,
+            "parent_report_id": report_id,
+            "parent_version": 1,
+        },
+        headers=auth,
+    )
+    assert different_area.status_code == 422
+    assert "exact saved area" in different_area.text.lower()
+
 
 async def test_direct_report_requires_disclosure_before_collection(client, container, user):
     provider = SpatialFixture()

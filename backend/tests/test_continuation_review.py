@@ -216,9 +216,10 @@ async def test_deadline_prevents_unperformed_replan_claim(expire_before_pass, mo
         )
 
     result = await ResearchCollectionService(lambda _: providers).collect(QUERY, replan=callback)
-    assert sum(row.called for row in providers) == 3
-    assert result.plan.replans == 0 and result.plan.model_calls == 1
-    assert result.plan.continuation.decision == "continue"
+    assert sum(row.called for row in providers) == (6 if expire_before_pass else 3)
+    assert result.plan.replans == int(expire_before_pass)
+    assert result.plan.model_calls == 1
+    assert result.plan.continuation.decision == ("replan" if expire_before_pass else "continue")
     assert result.plan.continuation.requested_decision == "replan"
 
 

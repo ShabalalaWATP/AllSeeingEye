@@ -44,6 +44,18 @@ def subject_specs() -> tuple[SourceSpec, ...]:
             "Preserve supplied units and missing values. Underlying dataset terms may vary.",
         ),
         (
+            "research-ons-cpih",
+            "ONS UK CPIH monthly observations",
+            "Office for National Statistics",
+            Category.ECONOMIC,
+            "https://api.beta.ons.gov.uk/v1/datasets/cpih01",
+            "https://developer.ons.gov.uk/observations/cmd/",
+            "Explicit ONS:CPIH:<version> subject, United Kingdom only and at most 24 monthly "
+            "periods under recorded-time semantics. The selected version is not a latest-version "
+            "claim. Preserve units, null values and the exact ONS version. OGL v3.0 attribution "
+            "is required.",
+        ),
+        (
             "research-uk-parliament",
             "UK Parliament written questions",
             "UK Parliament",

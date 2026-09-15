@@ -1,0 +1,430 @@
+{
+  "schema_version": "ase-v01-manifest-1",
+  "frozen_at": "2026-09-14T00:00:00Z",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "split_policy": "Within each domain, cases 01-08 are development and the linked 09-10 subscription pair is held out. The whole linked pair stays together. This split was fixed before production ranking or prompt tuning; no such tuning is performed by this harness.",
+  "held_out_limitations": "The same assistant authored both splits. Held-out cases are visible regression fixtures, not blind evaluation, independent labels or previously unseen production scenarios. Do not tune production policy against their expected outcomes.",
+  "cases": [
+    {
+      "id": "conflict_01",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_01.json",
+      "sha256": "e41e01a10ee8f7cc9414c2ba3c8e3b949ed06ea460996749825182bb81bd7afe"
+    },
+    {
+      "id": "conflict_02",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_02.json",
+      "sha256": "6fc540069e77d0b07329a222343fe25a99f3871d591183a5875c37933b0824b0"
+    },
+    {
+      "id": "conflict_03",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_03.json",
+      "sha256": "3c3949c696456dc9ee78eea6b61baaae8097dcef754e26e3292f8c24abdb7e21"
+    },
+    {
+      "id": "conflict_04",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_04.json",
+      "sha256": "09a39ae052f2764d8b15cab3efb2c5d47e7fbcc76ad6d72e1b8cbab23396ba83"
+    },
+    {
+      "id": "conflict_05",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_05.json",
+      "sha256": "094982361db0137730a2e6ce317ec0f2495a98b29a0e1591ce0355d61d841842"
+    },
+    {
+      "id": "conflict_06",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_06.json",
+      "sha256": "9e4a1d3d4ab210b35a51088208181041c0962005633dedbd5f4e9e737103cca5"
+    },
+    {
+      "id": "conflict_07",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_07.json",
+      "sha256": "aa6cfad1bbf1026ce10d418714d7d45ee0d8ca3d43b1d6779f9b249d5a41a05c"
+    },
+    {
+      "id": "conflict_08",
+      "domain": "conflict",
+      "split": "development",
+      "path": "cases/conflict_08.json",
+      "sha256": "d0d55f44e65247b6f17d49ccf4d10619e17644d9dd89edda9eb67e9779511d48"
+    },
+    {
+      "id": "conflict_09",
+      "domain": "conflict",
+      "split": "held_out",
+      "path": "cases/conflict_09.json",
+      "sha256": "fea3541a08bd26dbdd8cb5aedc104b6a11fe5b2955dce911983aacf4c5055010"
+    },
+    {
+      "id": "conflict_10",
+      "domain": "conflict",
+      "split": "held_out",
+      "path": "cases/conflict_10.json",
+      "sha256": "5f42c60d385f1d78ae0d9f98e2b42c66fef8dcaf08fcfa8e31c50e5f25770186"
+    },
+    {
+      "id": "cyber_01",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_01.json",
+      "sha256": "87bf62cf5ab1f6cba990e09f4dd787beab0a979238540dd05a8a525610c64971"
+    },
+    {
+      "id": "cyber_02",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_02.json",
+      "sha256": "fda37133e9fbed27ffd3b2a0e2074d0227f83226b03d06d9617ac0302e0e8bd1"
+    },
+    {
+      "id": "cyber_03",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_03.json",
+      "sha256": "87d02b7966af46c489b5eb3f6df0d923cd8b19ca1a8fcf1fd1878d75636772b9"
+    },
+    {
+      "id": "cyber_04",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_04.json",
+      "sha256": "c5e73a910ca551d0cfcc002a85656a98bd18f774543ff3d81b2c54c4f64082bb"
+    },
+    {
+      "id": "cyber_05",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_05.json",
+      "sha256": "9d2025453bb13276e8b3b5618be852f9eaf8654ebee0bde17a348b290e87b2a3"
+    },
+    {
+      "id": "cyber_06",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_06.json",
+      "sha256": "00c5742156773d54e2b0bacfac51324f11a5dda813c641743db1d0fef5981401"
+    },
+    {
+      "id": "cyber_07",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_07.json",
+      "sha256": "9f69fbb38ca970b2f4b5c058035c78663154e6473aaaae3674bdf87d90a08e82"
+    },
+    {
+      "id": "cyber_08",
+      "domain": "cyber",
+      "split": "development",
+      "path": "cases/cyber_08.json",
+      "sha256": "170c01517a0d883300098db117e4fa6076f77c8aa669c48826c8a177e093cfe3"
+    },
+    {
+      "id": "cyber_09",
+      "domain": "cyber",
+      "split": "held_out",
+      "path": "cases/cyber_09.json",
+      "sha256": "2cd426891f7bd3e625c34fafae7a163aac2978cd071979ba2363cc7274ea6a12"
+    },
+    {
+      "id": "cyber_10",
+      "domain": "cyber",
+      "split": "held_out",
+      "path": "cases/cyber_10.json",
+      "sha256": "1e347056f3d1a32e4d94a0d43f460d0efde0d44a03357b7cd0d9c1c30b410943"
+    },
+    {
+      "id": "economy_01",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_01.json",
+      "sha256": "6c44dde775ea6e16a46e136cd0b65920ee2b4808ec63278d21f836bfffe25e66"
+    },
+    {
+      "id": "economy_02",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_02.json",
+      "sha256": "0b2370e6f65e35f540c31ab19147a5b11662fbf116afb5da17c29342cb5f373c"
+    },
+    {
+      "id": "economy_03",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_03.json",
+      "sha256": "fd3fa46fdd172176435206fad00d4129816546a3017e6abe295ec850647c837a"
+    },
+    {
+      "id": "economy_04",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_04.json",
+      "sha256": "da9295f80c7c8cfc89bdaedc47a51827faf7a49aa85cd1a09fdc1696970bb4e0"
+    },
+    {
+      "id": "economy_05",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_05.json",
+      "sha256": "122ca95822dc2130a25d60f47dcc6096f26fe0d42f891a853d05761523b60f31"
+    },
+    {
+      "id": "economy_06",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_06.json",
+      "sha256": "38a6e9bc7706ccbb8bc82d409bf20f37e3bf46a6b5662f1a6897dadd21b52303"
+    },
+    {
+      "id": "economy_07",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_07.json",
+      "sha256": "7b2900fb0426686db15adf8366991fbc0ecbc61380e4f9850fc7ad7da63bb4bc"
+    },
+    {
+      "id": "economy_08",
+      "domain": "economy",
+      "split": "development",
+      "path": "cases/economy_08.json",
+      "sha256": "089bde3622aa5b882ddc51e89018afbc2a867e325708207b0895c2b3e004c51d"
+    },
+    {
+      "id": "economy_09",
+      "domain": "economy",
+      "split": "held_out",
+      "path": "cases/economy_09.json",
+      "sha256": "30a6289e9d3ea70d4a63f57b89226c9dad72b01c475f7880331a5bc80a84b1eb"
+    },
+    {
+      "id": "economy_10",
+      "domain": "economy",
+      "split": "held_out",
+      "path": "cases/economy_10.json",
+      "sha256": "2ca2e31d29cbc51d75a3d6c818a333f924b2e5ecf1f0eb422509029e716a5a54"
+    },
+    {
+      "id": "disaster_humanitarian_01",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_01.json",
+      "sha256": "4fc959f7fcec91a89f7117dc4e59826f5307bf5f868686b9f8d19119ae87cc53"
+    },
+    {
+      "id": "disaster_humanitarian_02",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_02.json",
+      "sha256": "285187fac81921769b4e866d0ef9bf0a65af67dc3619d59e6cccbbbc22833716"
+    },
+    {
+      "id": "disaster_humanitarian_03",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_03.json",
+      "sha256": "c566e7335d10dcb4b699208d9ebc933482c352ff7ee2faf6224808325ccdfb4d"
+    },
+    {
+      "id": "disaster_humanitarian_04",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_04.json",
+      "sha256": "8c7a3715f5366211e41c3e77d72530a8221a18fec814b61028e872ae4ece66b4"
+    },
+    {
+      "id": "disaster_humanitarian_05",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_05.json",
+      "sha256": "30feb0265d089836c758db85ef44f049a22a381c1ae707c0da57649cf7b1fda4"
+    },
+    {
+      "id": "disaster_humanitarian_06",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_06.json",
+      "sha256": "91b2209f8db1f849beb52f1d61b87e1bf28c6769cba055ef9f79a5ee747e2923"
+    },
+    {
+      "id": "disaster_humanitarian_07",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_07.json",
+      "sha256": "60db129af1c289878ab64733237e44b7ad51ebbb7d2bdfb25fc89b35815517bd"
+    },
+    {
+      "id": "disaster_humanitarian_08",
+      "domain": "disaster_humanitarian",
+      "split": "development",
+      "path": "cases/disaster_humanitarian_08.json",
+      "sha256": "75853e6e16b7e8b84622fbe57bbe08d0174223670989b5e4c4bdd708ccdfb2ff"
+    },
+    {
+      "id": "disaster_humanitarian_09",
+      "domain": "disaster_humanitarian",
+      "split": "held_out",
+      "path": "cases/disaster_humanitarian_09.json",
+      "sha256": "fbf84f1db1b61b73be024e0d032a5e10ad420a8286ecf2f7f65407ad0330e135"
+    },
+    {
+      "id": "disaster_humanitarian_10",
+      "domain": "disaster_humanitarian",
+      "split": "held_out",
+      "path": "cases/disaster_humanitarian_10.json",
+      "sha256": "1beec9f6290c5ed240bc934d942b86a25a5c685f4483a39241d710bcc094c0f4"
+    },
+    {
+      "id": "company_policy_01",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_01.json",
+      "sha256": "7e74dd7f0e425d242a508d9499a97d936cf3044b64360a6c31b77b0f21c36d95"
+    },
+    {
+      "id": "company_policy_02",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_02.json",
+      "sha256": "393f06ecacbd65c9a687b9b7b401ce300922d7b9c8d0a345ed22c9347f9fca4e"
+    },
+    {
+      "id": "company_policy_03",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_03.json",
+      "sha256": "9d8cfa49d941cad8283bbb73fa48719d9b6ba93e68f0ad957fe5c6a1b8512ffe"
+    },
+    {
+      "id": "company_policy_04",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_04.json",
+      "sha256": "5cd8fa48ed5edf0978c28d4ebacda6edc3d4cd35251e3501ad7670111d3378c1"
+    },
+    {
+      "id": "company_policy_05",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_05.json",
+      "sha256": "e09e960240b42ae2c995037e1b4098015fc0082e82adf19c1a265ee93699d56e"
+    },
+    {
+      "id": "company_policy_06",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_06.json",
+      "sha256": "a03b94aa0b74f5429410a55a4928b5bc8c2fed3bc40901b627ad0e8332f277f0"
+    },
+    {
+      "id": "company_policy_07",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_07.json",
+      "sha256": "61b9609b3b5b94776fc224cdb44678b00b21bb767725c59841f6c5d4ebdb5f33"
+    },
+    {
+      "id": "company_policy_08",
+      "domain": "company_policy",
+      "split": "development",
+      "path": "cases/company_policy_08.json",
+      "sha256": "eb1cd73079015fb405be752d401447154cdcf28adb0e328321ea54a26533880a"
+    },
+    {
+      "id": "company_policy_09",
+      "domain": "company_policy",
+      "split": "held_out",
+      "path": "cases/company_policy_09.json",
+      "sha256": "5e7e7c9bb903be257c5184a586387f00594b7bf531599cbedc3e5161c2dff3f0"
+    },
+    {
+      "id": "company_policy_10",
+      "domain": "company_policy",
+      "split": "held_out",
+      "path": "cases/company_policy_10.json",
+      "sha256": "cace90e992d9d0b423847485efef3bc1171a598e5060d5d3fa63afff3036a87e"
+    },
+    {
+      "id": "custom_area_01",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_01.json",
+      "sha256": "30dcbc9f0ee9ccbc1dc23b304c6bba455cf41f20bc89db275470de1d87ae71cf"
+    },
+    {
+      "id": "custom_area_02",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_02.json",
+      "sha256": "06e418fb5d0e32093fac4b66b290fc57311d1d73329f650e395e97d17b207c26"
+    },
+    {
+      "id": "custom_area_03",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_03.json",
+      "sha256": "cc357f049a591580be56874d6bb7dc7963d6921c4a635874f42c3202302ce3f2"
+    },
+    {
+      "id": "custom_area_04",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_04.json",
+      "sha256": "7af488cdeb8dd36a737a9b2c2213ef07dca402f3006c09b0d02527f397d8c9fb"
+    },
+    {
+      "id": "custom_area_05",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_05.json",
+      "sha256": "536d9b34198a3fa14d36baa73f5592b8acb2e1ec3a2e141cbc19edeb7885e438"
+    },
+    {
+      "id": "custom_area_06",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_06.json",
+      "sha256": "19c488731423505d8ab5bf92088b6ca26ffbfcb66072d5b53aa0c309727dc77d"
+    },
+    {
+      "id": "custom_area_07",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_07.json",
+      "sha256": "79062df8f9528af760bf6283da7d73f0ed9cf1b0f7a897de76bca41c80ffe82f"
+    },
+    {
+      "id": "custom_area_08",
+      "domain": "custom_area",
+      "split": "development",
+      "path": "cases/custom_area_08.json",
+      "sha256": "fc930f45e74dabc586551818ea8130b9dbde7f98e4beeda619ce1e876af7f708"
+    },
+    {
+      "id": "custom_area_09",
+      "domain": "custom_area",
+      "split": "held_out",
+      "path": "cases/custom_area_09.json",
+      "sha256": "d42ef6a1f923563c0e2b01605154ed0a35020512a06acfbf17bbac28cff890c1"
+    },
+    {
+      "id": "custom_area_10",
+      "domain": "custom_area",
+      "split": "held_out",
+      "path": "cases/custom_area_10.json",
+      "sha256": "506c250a4e4f62446e6e9fb0e2e701540691d8e07b377bd8649b1d92ba831b82"
+    }
+  ]
+}

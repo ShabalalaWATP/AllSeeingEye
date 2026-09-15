@@ -17,28 +17,37 @@ from ase.domain.claim_generation import ClaimGenerationReceipt, claim_generation
 from ase.domain.direction import Direction, direction_from_dict, direction_to_dict
 from ase.domain.doctrine import Confidence
 from ase.domain.evidence import EvidenceItem, QualityOfInformation
-from ase.domain.evidence_attributes import (
-    evidence_attributes_from_list,
-    evidence_attributes_to_list,
-)
-from ase.domain.evidence_geometry import geometry_from_dict, geometry_to_dict
 from ase.domain.evidence_matrix import ReportAssessment
+from ase.domain.evidence_records import evidence_from_list, evidence_to_list
 from ase.domain.model_routing import ModelRoutingRecord
 from ase.domain.model_routing_records import routing_to_dict
-from ase.domain.observation import observation_from_dict, observation_to_dict
-from ase.domain.project import project_from_dict, project_to_dict
 from ase.domain.report_assessment_records import assessment_to_dict
 from ase.domain.reports import ReportBody, ReportHeader, ReportStatus, parse_body
+from ase.domain.research_brief_values import IntelligenceRequirement
 from ase.domain.research_context import ResearchContext
 from ase.domain.research_context_records import context_to_dict
 from ase.domain.research_records import ResearchReceipt, research_to_dict
-from ase.domain.source_provenance_records import (
-    dates_from_list,
-    provenance_to_dict,
-    transformations_from_list,
-)
-from ase.domain.source_rating_records import source_rating_from_dict, source_rating_to_dict
+from ase.domain.source_assessment_capture import source_assessment_analysis_fields
+from ase.domain.source_assessment_report import SourceAssessmentCapture
 from ase.domain.validation import Finding, Severity
+
+__all__ = [
+    "ReportRecord",
+    "ReportVersion",
+    "analysis_from_dict",
+    "analysis_to_dict",
+    "body_from_dict",
+    "body_to_dict",
+    "brief_reference_from_analysis",
+    "document_schema_version_from_analysis",
+    "evidence_from_list",
+    "evidence_to_list",
+    "findings_from_list",
+    "findings_to_list",
+    "quality_from_dict",
+    "quality_to_dict",
+    "requirements_from_analysis",
+]
 
 
 @dataclass(slots=True)
@@ -98,10 +107,28 @@ class ReportVersion:
     challenge: ReportChallenge | None = None
     model_routing: ModelRoutingRecord | None = None
     claim_generation: ClaimGenerationReceipt | None = None
+    canonical_requirements: tuple[IntelligenceRequirement, ...] = ()
+    brief_id: UUID | None = None
+    brief_revision: int | None = None
+    document_schema_version: int = 1
+    source_assessment: SourceAssessmentCapture | None = None
 
 
 def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
     """Optional frozen version metadata, without inventing an assessment for legacy records."""
+    if (version.brief_id is None) != (version.brief_revision is None):
+        raise ValueError("A report version must pin both Research Brief identifiers")
+    if version.brief_revision is not None and (
+        not isinstance(version.brief_id, UUID)
+        or type(version.brief_revision) is not int
+        or version.brief_revision < 1
+    ):
+        raise ValueError("Invalid frozen Research Brief reference")
+    if type(version.document_schema_version) is not int or version.document_schema_version not in (
+        1,
+        2,
+    ):
+        raise ValueError("Unsupported frozen document projection version")
     if (
         version.direction is None
         and version.advocacy is None
@@ -113,9 +140,34 @@ def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
         and version.challenge is None
         and version.model_routing is None
         and version.claim_generation is None
+        and version.source_assessment is None
+        and not version.canonical_requirements
+        and version.brief_id is None
+        and version.document_schema_version == 1
     ):
         return None
     return {
+        **source_assessment_analysis_fields(
+            version.source_assessment,
+            report_version_id=version.id,
+            body=version.body,
+            evidence=version.evidence,
+        ),
+        **(
+            {"document_schema_version": version.document_schema_version}
+            if version.document_schema_version != 1
+            else {}
+        ),
+        **(
+            {"brief_reference": {"id": str(version.brief_id), "revision": version.brief_revision}}
+            if version.brief_id is not None
+            else {}
+        ),
+        **(
+            {"canonical_requirements": [asdict(row) for row in version.canonical_requirements]}
+            if version.canonical_requirements
+            else {}
+        ),
         **(
             {"claim_generation": claim_generation_to_dict(version.claim_generation)}
             if version.claim_generation is not None
@@ -143,6 +195,50 @@ def analysis_to_dict(version: ReportVersion) -> dict[str, Any] | None:
             "cutoff": version.data_cutoff.isoformat() if version.data_cutoff else None,
         },
     }
+
+
+def document_schema_version_from_analysis(data: Mapping[str, Any] | None) -> int:
+    if not data or "document_schema_version" not in data:
+        return 1
+    version = data["document_schema_version"]
+    if type(version) is not int or version != 2:
+        raise ValueError("Unsupported frozen document projection version")
+    return version
+
+
+def requirements_from_analysis(
+    data: Mapping[str, Any] | None,
+) -> tuple[IntelligenceRequirement, ...]:
+    """Restore exact authored questions from this version, independent of legacy Direction."""
+    if not data or "canonical_requirements" not in data:
+        return ()
+    rows = data["canonical_requirements"]
+    if not isinstance(rows, list) or len(rows) > 12:
+        raise ValueError("Invalid saved canonical requirements")
+    result: list[IntelligenceRequirement] = []
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != {"id", "question", "required", "priority"}:
+            raise ValueError("Invalid saved canonical requirement")
+        result.append(IntelligenceRequirement(**row))
+    if len({row.id for row in result}) != len(result):
+        raise ValueError("Duplicate saved canonical requirement")
+    return tuple(result)
+
+
+def brief_reference_from_analysis(
+    data: Mapping[str, Any] | None,
+) -> tuple[UUID | None, int | None]:
+    if not data or "brief_reference" not in data:
+        return None, None
+    value = data["brief_reference"]
+    if not isinstance(value, dict) or set(value) != {"id", "revision"}:
+        raise ValueError("Invalid frozen Research Brief reference")
+    if type(value["revision"]) is not int or value["revision"] < 1:
+        raise ValueError("Invalid frozen Research Brief revision")
+    try:
+        return UUID(value["id"]), value["revision"]
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise ValueError("Invalid frozen Research Brief identifier") from exc
 
 
 def analysis_from_dict(
@@ -204,80 +300,4 @@ def quality_from_dict(data: Mapping[str, Any]) -> QualityOfInformation:
         ),
         flagged=int(data.get("flagged", 0)),
         confidence_ceiling=Confidence(str(data.get("confidence_ceiling", "low"))),
-    )
-
-
-def evidence_to_list(items: tuple[EvidenceItem, ...]) -> list[dict[str, Any]]:
-    rows = []
-    for item in items:
-        data = asdict(item)
-        data["published_at"] = item.published_at.isoformat() if item.published_at else None
-        data["captured_at"] = item.captured_at.isoformat()
-        data["observed_at"] = item.observed_at.isoformat() if item.observed_at else None
-        data["flags"] = list(item.flags)
-        data["source_rating"] = source_rating_to_dict(item.source_rating)
-        data["attributes"] = evidence_attributes_to_list(item.attributes)
-        # Omit absent additions: saved map revisions hash the historical wire shape.
-        data.pop("transformations")
-        data.pop("source_dates")
-        if item.transformations:
-            data["transformations"] = [provenance_to_dict(row) for row in item.transformations]
-        if item.source_dates:
-            data["source_dates"] = [provenance_to_dict(row) for row in item.source_dates]
-        data.pop("geometry")
-        data.pop("observation")
-        data.pop("project")
-        if item.project is not None:
-            data["project"] = project_to_dict(item.project)
-        if item.geometry is not None:
-            data["geometry"] = geometry_to_dict(item.geometry)
-        if item.observation is not None:
-            data["observation"] = observation_to_dict(item.observation)
-        rows.append(data)
-    return rows
-
-
-def evidence_from_list(rows: list[Mapping[str, Any]]) -> tuple[EvidenceItem, ...]:
-    return tuple(
-        EvidenceItem(
-            label=str(row["label"]),
-            event_id=str(row["event_id"]),
-            source_id=str(row["source_id"]),
-            source_name=str(row["source_name"]),
-            independence_key=str(row["independence_key"]),
-            category=str(row["category"]),
-            title=str(row["title"]),
-            summary=row.get("summary"),
-            url=row.get("url"),
-            published_at=datetime.fromisoformat(str(row["published_at"]))
-            if row.get("published_at") is not None
-            else None,
-            captured_at=datetime.fromisoformat(str(row["captured_at"])),
-            grade=str(row["grade"]),
-            reliability=str(row["reliability"]),
-            credibility=int(row["credibility"]),
-            grade_rationale=str(row.get("grade_rationale", "")),
-            lon=row.get("lon"),
-            lat=row.get("lat"),
-            country_iso=row.get("country_iso"),
-            content_hash=str(row.get("content_hash", "")),
-            instrument=bool(row.get("instrument", False)),
-            flags=tuple(str(flag) for flag in row.get("flags", [])),
-            archive_url=row.get("archive_url"),
-            title_en=row.get("title_en"),
-            language=row.get("language"),
-            geo_confidence=row.get("geo_confidence"),
-            observed_at=(
-                datetime.fromisoformat(str(row["observed_at"])) if row.get("observed_at") else None
-            ),
-            story_id=row.get("story_id"),
-            source_rating=source_rating_from_dict(row.get("source_rating")),
-            attributes=evidence_attributes_from_list(row.get("attributes")),
-            geometry=geometry_from_dict(row.get("geometry")),
-            observation=observation_from_dict(row.get("observation")),
-            project=project_from_dict(row.get("project")),
-            transformations=transformations_from_list(row.get("transformations", ())),
-            source_dates=dates_from_list(row.get("source_dates", ())),
-        )
-        for row in rows
     )

@@ -7,6 +7,36 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-muted) transparent;
 }
+.eye-report-context {
+  display: grid;
+  gap: 3px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--eye-accent) 5%, var(--color-surface));
+  font-size: 10px;
+  color: var(--color-muted);
+}
+.eye-report-context-label {
+  color: var(--eye-accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+}
+.eye-report-context strong {
+  color: var(--color-text);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.eye-report-context p {
+  line-height: 1.45;
+}
+.eye-report-context button {
+  width: fit-content;
+  margin-top: 2px;
+  color: var(--eye-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .eye-welcome h3 {
   font-size: 15px;
   font-weight: 500;

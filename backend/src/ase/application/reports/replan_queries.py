@@ -85,10 +85,10 @@ async def make_replanner(
         )
         if timeout is None:
             limitation = (
-                "the remaining collection time cannot fit the "
+                "the available planning time cannot fit the "
                 f"{DURABLE_PLANNING_SECONDS:g}-second Max reasoning allowance"
                 if job.version_id is not None and profile.reasoning_effort == ReasoningEffort.MAX
-                else "the remaining collection time is exhausted or invalid"
+                else "the available planning time is exhausted or invalid"
             )
             return ContinuationProposal(
                 None,

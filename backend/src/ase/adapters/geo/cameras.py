@@ -1,11 +1,15 @@
-"""Official keyless camera indexes. URLs are source constants, never caller supplied."""
+"""Official keyless camera indexes.
+
+URLs are source constants, never caller supplied. XML uses defusedxml; the stdlib
+ParseError import is only for exception handling.
+"""
 
 import json
 import math
 import re
 from typing import Any
 from urllib.parse import urlsplit
-from xml.etree.ElementTree import ParseError
+from xml.etree.ElementTree import ParseError  # nosec B405
 
 from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring

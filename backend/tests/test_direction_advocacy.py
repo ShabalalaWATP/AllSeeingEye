@@ -188,7 +188,8 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert any("direction role" in m for m in messages) and any("devil role" in m for m in messages)
     assert plain.json()["version"]["direction"] is None
     assert plain.json()["version"]["devils_advocacy"] is None
-    assert plain.json()["version"]["status"] == "ready"
+    # Thin fixture evidence trips the citation review gate; the report still lands.
+    assert plain.json()["version"]["status"] == "needs_review"
 
     async with container.session_factory() as session:
         profiles = container.repositories(session).llm_profiles
@@ -203,7 +204,7 @@ async def test_direction_and_advocacy_degrade_without_stopping_the_report(
     assert failing.status_code == 201
     messages = [f["message"] for f in failing.json()["version"]["findings"]]
     assert "Direction call failed: offline" in messages and "Call failed: down" in messages
-    assert failing.json()["version"]["status"] == "ready"
+    assert failing.json()["version"]["status"] == "needs_review"
 
     # Unusable direction JSON and an advocate who smuggles in a URL: dropped, with warnings.
     leaky = {**ADVOCACY, "argument": "Read https://evil.example/x instead."}

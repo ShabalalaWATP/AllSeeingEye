@@ -6,10 +6,12 @@ from uuid import UUID
 from fastapi import APIRouter, Query, Response
 
 from ase.api.deps import ClaimsDep, ContainerDep, CurrentUser, SessionDep
+from ase.api.report_reviewed_snapshot import selected_reviewed_snapshot
 from ase.api.schemas_claim_export import ClaimPackageIn
 from ase.api.schemas_report_documents import ReportComparisonOut
 from ase.api.session_guard import validate_request_session
 from ase.application.reports.document_release import release_document
+from ase.container.source_reviews import source_reviews
 from ase.domain.report_documents import ExportFormat
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -106,8 +108,20 @@ async def export_report(
     session: SessionDep,
     container: ContainerDep,
     version: Annotated[int | None, Query(ge=1)] = None,
+    source_snapshot_id: UUID | None = None,
 ) -> Response:
-    result = await container.export_report(session).execute(user, report_id, format, version)
+    snapshot = None
+    if source_snapshot_id is not None:
+        record, found = await container.get_report(session).execute(user, report_id, version)
+        snapshot = await selected_reviewed_snapshot(
+            claims, container, session, record, found, version, source_snapshot_id
+        )
+    exporter = container.export_report(session)
+    result = (
+        await exporter.execute(user, report_id, format, version)
+        if snapshot is None
+        else await exporter.execute(user, report_id, format, version, snapshot)
+    )
     repositories = container.repositories(session)
     await release_document(
         claims,
@@ -119,6 +133,8 @@ async def export_report(
         access=container.access_policy(session),
         clock=container.clock,
         uow=repositories.uow,
+        source_reviews=source_reviews(container, session).reviews if snapshot is not None else None,
+        source_snapshot_id=snapshot.id if snapshot is not None else None,
     )
     return Response(
         result.content,

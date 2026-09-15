@@ -10,6 +10,52 @@ const failure = (message: string) =>
   HttpResponse.json({ error: { code: 'server_error', message } }, { status: 500 });
 
 describe('schedule states', () => {
+  it('counts failed, review-required and partial-coverage runs as needing attention', async () => {
+    server.use(
+      http.get('/api/schedules', () =>
+        HttpResponse.json({
+          items: [
+            {
+              ...schedule,
+              id: 'failed',
+              name: 'Failed run',
+              last_outcome: 'failed',
+              last_error: null,
+            },
+            {
+              ...schedule,
+              id: 'review',
+              name: 'Review required',
+              last_outcome: 'needs_review',
+            },
+            {
+              ...schedule,
+              id: 'partial',
+              name: 'Partial coverage',
+              last_coverage: 'partial',
+            },
+            { ...schedule, id: 'ready', name: 'Ready run' },
+          ],
+        }),
+      ),
+    );
+    const { user } = renderApp('/research/recurring', 'user');
+    const figures = within(await screen.findByRole('list', { name: 'Subscription figures' }));
+    expect(figures.getByText('Needs attention').parentElement).toHaveTextContent('3');
+    await user.selectOptions(screen.getByLabelText('Show subscriptions'), 'attention');
+    const table = within(screen.getByRole('table', { name: 'Subscriptions' }));
+    expect(table.getByText('Failed run')).toBeVisible();
+    expect(table.getByText('Review required')).toBeVisible();
+    expect(table.getByText('Partial coverage')).toBeVisible();
+    expect(table.queryByText('Ready run')).not.toBeInTheDocument();
+    expect(table.getByText('Latest run failed')).toBeVisible();
+    expect(table.getByText('Latest report needs review')).toBeVisible();
+    expect(table.getByText('Partial source coverage')).toBeVisible();
+    expect(table.getByRole('link', { name: 'Last successful update' })).toBeVisible();
+    expect(table.getByRole('link', { name: 'Review latest update' })).toBeVisible();
+    expect(table.getByRole('link', { name: 'Review partial update' })).toBeVisible();
+  });
+
   it('shows the error and the empty state', async () => {
     server.use(http.get('/api/schedules', () => failure('Schedules boom')));
     renderApp('/research/recurring', 'user');
@@ -23,7 +69,7 @@ describe('schedule states', () => {
     ).toBeInTheDocument();
   });
 
-  it('describes weekday and weekly orders with their last outcome, and deletes one', async () => {
+  it('describes weekday and weekly orders with their last outcome, and archives one', async () => {
     let deleted: string | null = null;
     server.use(
       http.get('/api/schedules', () =>
@@ -62,7 +108,12 @@ describe('schedule states', () => {
     expect(within(table).getByText('RuntimeError: boom')).toBeInTheDocument();
     expect(within(table).getByText('not yet')).toBeInTheDocument();
     expect(within(table).getByText('Intelligence summary')).toBeInTheDocument();
-    await user.click(within(table).getAllByRole('button', { name: 'Delete' })[1]!);
+    await user.click(within(table).getAllByRole('button', { name: 'Archive' })[1]!);
+    expect(deleted).toBeNull();
+    expect(within(table).getByRole('group', { name: 'Archive Morning INTSUM' })).toHaveTextContent(
+      'Existing reports remain available.',
+    );
+    await user.click(within(table).getByRole('button', { name: 'Confirm archive' }));
     await waitFor(() => {
       expect(deleted).toBe('e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4');
     });
@@ -98,6 +149,10 @@ describe('schedule states', () => {
         country_isos: [],
         window_hours: 24,
         hour_utc: 6,
+        timezone: 'UTC',
+        local_hour: 6,
+        local_minute: 0,
+        collection_policy: 'rolling_snapshot',
         cadence: 'daily',
         weekday: 0,
         monthday: 1,

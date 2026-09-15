@@ -13,7 +13,10 @@ class RadarHttp:
         self.calls: list[tuple[str, FeedCredential]] = []
         self.malformed_layer7 = malformed_layer7
 
-    async def get_json(self, url: str, *, credential: FeedCredential, conditional: bool) -> object:
+    async def get_json(
+        self, url: str, *, credential: FeedCredential, conditional: bool, max_redirects: int
+    ) -> object:
+        assert max_redirects == 0
         self.calls.append((url, credential))
         layer7 = "/layer7/" in url
         return {
@@ -30,6 +33,7 @@ class RadarHttp:
                         }
                     ],
                     "lastUpdated": NOW.isoformat(),
+                    "units": [{"name": "*", "value": "requests" if layer7 else "bytes"}],
                 },
                 "top_0": [
                     {
@@ -37,18 +41,6 @@ class RadarHttp:
                         "targetCountryAlpha2": "GB",
                         "targetCountryName": "United Kingdom",
                         "value": "42.5",
-                    },
-                    {
-                        "rank": 2,
-                        "targetCountryAlpha2": "BAD",
-                        "targetCountryName": "Invalid",
-                        "value": "3",
-                    },
-                    {
-                        "rank": 3,
-                        "targetCountryAlpha2": "FR",
-                        "targetCountryName": "France",
-                        "value": "nan",
                     },
                 ],
             },

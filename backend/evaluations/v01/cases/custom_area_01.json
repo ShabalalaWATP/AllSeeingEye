@@ -1,0 +1,125 @@
+{
+  "schema_version": "ase-v01-case-1",
+  "id": "custom_area_01",
+  "domain": "custom_area",
+  "split": "development",
+  "requested_depth": "basic",
+  "title": "Inside antimeridian area",
+  "evidence_origin": "synthetic_assistant_authored",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "question": "Does the synthetic point observation lie inside the declared coastal area?",
+  "requirements": [
+    {
+      "id": "r1",
+      "question": "Does the synthetic point observation lie inside the declared coastal area?",
+      "useful_packet_ids": [
+        "p1"
+      ],
+      "expected_passages": [
+        {
+          "packet_id": "p1",
+          "packet_sha256": "a9560c910cc974c16018facf2ecb67f07664a2b81d20ef0c156d4c1235479982",
+          "text": "the synthetic coastal station records 12 vessel detections at a declared point inside the area; detection is not a vessel identity."
+        }
+      ],
+      "reference_state": "partial",
+      "reference_outcome": "The point is in the area. Retain the limitation that detections do not identify private individuals."
+    }
+  ],
+  "scope": {
+    "countries": [
+      "FJ"
+    ],
+    "since": "2026-09-10T00:00:00Z",
+    "until": "2026-09-14T00:00:00Z",
+    "privacy_boundary": "Public institutional and aggregate synthetic evidence only. No private-person identification or private address inference.",
+    "geographic_limit": "fictional coastal area spanning the antimeridian; no claim of complete geographic coverage."
+  },
+  "packet": [
+    {
+      "id": "p1",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic custom_area source packet",
+      "summary": "the synthetic coastal station records 12 vessel detections at a declared point inside the area; detection is not a vessel identity.",
+      "content_sha256": "a9560c910cc974c16018facf2ecb67f07664a2b81d20ef0c156d4c1235479982",
+      "url": "https://example.invalid/custom_area/bulletin",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "FJ",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    },
+    {
+      "id": "p2",
+      "source_id": "fixture_social",
+      "source_name": "Synthetic unverified social claim",
+      "origin_id": "fixture_social_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic custom_area source packet",
+      "summary": "an unverified social claim offers a wider conclusion without the reporting limits.",
+      "content_sha256": "ca8648d61c86677e8bd148d10731354d8d6c011ef53aa47ffdd559a7d06f8c8d",
+      "url": "https://example.invalid/custom_area/social",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "FJ",
+      "evidence_role": "unverified_claim",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "kind": "quote",
+      "packet_id": "p1",
+      "proposed": "the synthetic coastal station records 12 vessel detections at a declared point inside the area; detection is not a vessel identity.",
+      "expected_present": true
+    },
+    {
+      "kind": "publication_time",
+      "packet_id": "p1",
+      "expected_admitted": true
+    },
+    {
+      "kind": "point_in_area",
+      "bounds": [
+        170,
+        -20,
+        -170,
+        -10
+      ],
+      "point": [
+        179,
+        -15
+      ],
+      "expected_inside": true
+    }
+  ],
+  "edition": null,
+  "known_pitfalls": [
+    "Synthetic packet statements remain attributed claims, not real-world facts.",
+    "An institutional source name does not itself establish truth or complete coverage.",
+    "Candidate forecast for human review: conditions will improve. This has no forecast horizon and the offline checks do not establish its support."
+  ],
+  "acceptable_abstentions": [
+    "The point is in the area. Retain the limitation that detections do not identify private individuals.",
+    "State which missing source, date, passage or context prevents a stronger answer."
+  ],
+  "analytical_review_questions": [
+    "Does every required question receive an answer, partial, disputed or gap state?",
+    "Are scope, attribution, units, counterevidence and missing coverage preserved without invented certainty?",
+    "If a forecast is added, does it have a finite horizon and explain its evidential limits?"
+  ]
+}

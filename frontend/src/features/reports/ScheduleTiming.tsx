@@ -27,7 +27,10 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => ({
 }));
 
 export function describeCadence(schedule: Schedule): string {
-  const at = `${String(schedule.hour_utc).padStart(2, '0')}:00 UTC`;
+  const at =
+    schedule.local_hour === undefined || !schedule.timezone
+      ? `${String(schedule.hour_utc).padStart(2, '0')}:00 UTC`
+      : `${String(schedule.local_hour).padStart(2, '0')}:${String(schedule.local_minute ?? 0).padStart(2, '0')} ${schedule.timezone}`;
   if (schedule.cadence === 'monthly') return `day ${schedule.monthday} each month at ${at}`;
   if (['quarterly', 'semiannual', 'annual'].includes(schedule.cadence)) {
     const period =

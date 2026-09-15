@@ -1,0 +1,178 @@
+{
+  "schema_version": "ase-v01-case-1",
+  "id": "company_policy_08",
+  "domain": "company_policy",
+  "split": "development",
+  "requested_depth": "deep",
+  "title": "Same-URL workforce correction",
+  "evidence_origin": "synthetic_assistant_authored",
+  "label_origin": "assistant_authored_reference_expectations",
+  "human_review_status": "pending",
+  "question": "How should the fictional issuer correction affect the workforce count?",
+  "requirements": [
+    {
+      "id": "r1",
+      "question": "How should the fictional issuer correction affect the workforce count?",
+      "useful_packet_ids": [
+        "p1",
+        "p2"
+      ],
+      "expected_passages": [
+        {
+          "packet_id": "p1",
+          "packet_sha256": "c301dcbd1b6b33ded41f67b3681fc64405317ff0a25c53cfd1968387aac9c418",
+          "text": "the synthetic issuer statement initially listed 26 roles."
+        },
+        {
+          "packet_id": "p2",
+          "packet_sha256": "066631920435ee890d8c0c1dc9ac5dbe1f0477a5ba159cdccd3a1d9ca67e3755",
+          "text": "the synthetic issuer statement previously listed 26 roles and explicitly corrected the count to 24. This is an explicit source correction."
+        }
+      ],
+      "reference_state": "partial",
+      "reference_outcome": "Cite the corrected count and exact version; a revision is not proof of job losses between observations."
+    }
+  ],
+  "scope": {
+    "countries": [
+      "GB"
+    ],
+    "since": "2026-09-10T00:00:00Z",
+    "until": "2026-09-14T00:00:00Z",
+    "privacy_boundary": "Public institutional and aggregate synthetic evidence only. No private-person identification or private address inference.",
+    "geographic_limit": "fictional firm alder works and a draft procurement rule; no claim of complete geographic coverage."
+  },
+  "packet": [
+    {
+      "id": "p1",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic company_policy source packet",
+      "summary": "the synthetic issuer statement initially listed 26 roles.",
+      "content_sha256": "c301dcbd1b6b33ded41f67b3681fc64405317ff0a25c53cfd1968387aac9c418",
+      "url": "https://example.invalid/company_policy/bulletin",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "GB",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    },
+    {
+      "id": "p2",
+      "source_id": "fixture_primary",
+      "source_name": "Synthetic primary bulletin",
+      "origin_id": "fixture_origin",
+      "origin_basis": "explicit_synthetic_assignment",
+      "title": "Synthetic company_policy source packet",
+      "summary": "the synthetic issuer statement previously listed 26 roles and explicitly corrected the count to 24. This is an explicit source correction.",
+      "content_sha256": "066631920435ee890d8c0c1dc9ac5dbe1f0477a5ba159cdccd3a1d9ca67e3755",
+      "url": "https://example.invalid/company_policy/bulletin",
+      "language": "en",
+      "published_at": "2026-09-12T12:00:00Z",
+      "retrieved_at": "2026-09-13T12:00:00Z",
+      "publication_precision": "instant",
+      "country": "GB",
+      "evidence_role": "support",
+      "limitations": [
+        "Invented local test text, not captured public evidence.",
+        "The declared organisation and origin are synthetic fixture assignments, not trust grades."
+      ]
+    }
+  ],
+  "probes": [],
+  "edition": {
+    "subscription_id": "company_policy_correction",
+    "previous": {
+      "number": 1,
+      "produced_at": "2026-09-13T10:00:00Z",
+      "claims": [
+        {
+          "id": "assessment",
+          "meaning": "The fictional firm will remain without a published award decision during the stated horizon.",
+          "likelihood": "likely",
+          "horizon": "2026-09-14/2026-09-21",
+          "support": [
+            "p1"
+          ],
+          "opposition": [],
+          "significant_contradiction": false
+        }
+      ],
+      "evidence": [
+        {
+          "packet_id": "p1",
+          "correction_of_packet_id": null,
+          "relevant": true
+        }
+      ]
+    },
+    "current": {
+      "number": 2,
+      "produced_at": "2026-09-13T11:00:00Z",
+      "claims": [
+        {
+          "id": "assessment",
+          "meaning": "The fictional firm will remain without a published award decision during the stated horizon.",
+          "likelihood": "likely",
+          "horizon": "2026-09-14/2026-09-21",
+          "support": [
+            "p2"
+          ],
+          "opposition": [],
+          "significant_contradiction": false
+        }
+      ],
+      "evidence": [
+        {
+          "packet_id": "p2",
+          "correction_of_packet_id": "p1",
+          "relevant": true
+        }
+      ]
+    },
+    "coverage": "complete_for_plan",
+    "attempted_providers": [
+      "fixture_primary"
+    ],
+    "successful_providers": [
+      "fixture_primary"
+    ],
+    "current_failed": false,
+    "expected_state": "significant_contradiction_or_correction",
+    "expected_reasons": [
+      "support_changed",
+      "source_correction",
+      "new_relevant_evidence"
+    ],
+    "expected_changed_claim_ids": [
+      "assessment"
+    ],
+    "expected_corrected_packet_ids": [
+      "p2"
+    ],
+    "expected_novel_packet_ids": [
+      "p2"
+    ],
+    "expected_syndicated_packet_ids": []
+  },
+  "known_pitfalls": [
+    "Synthetic packet statements remain attributed claims, not real-world facts.",
+    "Only the explicit fixture correction link establishes correction status. A changed URL hash alone would not."
+  ],
+  "acceptable_abstentions": [
+    "Cite the corrected count and exact version; a revision is not proof of job losses between observations.",
+    "State which missing source, date, passage or context prevents a stronger answer."
+  ],
+  "analytical_review_questions": [
+    "Does every required question receive an answer, partial, disputed or gap state?",
+    "Are scope, attribution, units, counterevidence and missing coverage preserved without invented certainty?",
+    "If a forecast is added, does it have a finite horizon and explain its evidential limits?"
+  ]
+}

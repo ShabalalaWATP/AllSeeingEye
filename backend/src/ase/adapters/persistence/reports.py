@@ -17,8 +17,11 @@ from ase.adapters.persistence.library_models import ResearchLibraryRow, Research
 from ase.adapters.persistence.map_views import SqlMapViewRepository
 from ase.adapters.persistence.models import ReportRow, ReportVersionRow
 from ase.adapters.persistence.original_assets import SqlOriginalAssetRepository
+from ase.adapters.persistence.original_passages import SqlOriginalPassageRepository
 from ase.adapters.persistence.relationship_reviews import SqlRelationshipReviewRepository
+from ase.adapters.persistence.report_ledgers import delete_report_ledgers
 from ase.adapters.persistence.report_search import ReportEmbeddingRow
+from ase.adapters.persistence.source_reviews import delete_source_snapshots_for_report
 from ase.domain.access import Visibility
 from ase.domain.challenge_records import challenge_from_dict
 from ase.domain.citation_check_records import citation_checks_from_dict
@@ -33,16 +36,20 @@ from ase.domain.report_records import (
     analysis_to_dict,
     body_from_dict,
     body_to_dict,
+    brief_reference_from_analysis,
+    document_schema_version_from_analysis,
     evidence_from_list,
     evidence_to_list,
     findings_from_list,
     findings_to_list,
     quality_from_dict,
     quality_to_dict,
+    requirements_from_analysis,
 )
 from ase.domain.reports import ReportStatus
 from ase.domain.research_context_records import context_from_dict
 from ase.domain.research_records import research_from_dict
+from ase.domain.source_assessment_capture import source_assessment_from_analysis
 
 
 def _record_from_row(row: ReportRow) -> ReportRecord:
@@ -64,8 +71,14 @@ def _record_from_row(row: ReportRow) -> ReportRecord:
 
 def _version_from_row(row: ReportVersionRow) -> ReportVersion:
     direction, advocacy = analysis_from_dict(row.analysis)
+    brief_id, brief_revision = brief_reference_from_analysis(row.analysis)
     period = (row.analysis or {}).get("period") or {}
+    body = body_from_dict(row.body)
+    evidence = evidence_from_list(list(row.evidence))
     return ReportVersion(
+        source_assessment=source_assessment_from_analysis(
+            row.analysis, report_version_id=row.id, body=body, evidence=evidence
+        ),
         claim_generation=claim_generation_from_dict(row.analysis["claim_generation"])
         if row.analysis and row.analysis.get("claim_generation") is not None
         else None,
@@ -77,13 +90,17 @@ def _version_from_row(row: ReportVersionRow) -> ReportVersion:
         challenge=challenge_from_dict((row.analysis or {}).get("challenge")),
         citation_checks=citation_checks_from_dict((row.analysis or {}).get("citation_checks")),
         research_context=context_from_dict((row.analysis or {}).get("research_context")),
+        canonical_requirements=requirements_from_analysis(row.analysis),
+        brief_id=brief_id,
+        brief_revision=brief_revision,
+        document_schema_version=document_schema_version_from_analysis(row.analysis),
         id=row.id,
         report_id=row.report_id,
         number=row.number,
         status=ReportStatus(row.status),
-        body=body_from_dict(row.body),
+        body=body,
         findings=findings_from_list(list(row.findings)),
-        evidence=evidence_from_list(list(row.evidence)),
+        evidence=evidence,
         quality=quality_from_dict(row.quality),
         markdown=row.markdown,
         profile_id=row.profile_id,
@@ -204,7 +221,10 @@ class SqlReportRepository:
     async def delete(self, report_id: UUID) -> None:
         await delete_report_monitors(self._session, report_id)
         # Explicit cleanup also supports SQLite connections without FK enforcement.
+        await delete_source_snapshots_for_report(self._session, report_id)
+        await delete_report_ledgers(self._session, report_id)
         await SqlOriginalAssetRepository(self._session).delete_for_report(report_id)
+        await SqlOriginalPassageRepository(self._session).delete_for_report(report_id)
         await SqlClaimRepository(self._session).delete_for_report(report_id)
         await SqlIdentityDecisionRepository(self._session).delete_for_report(report_id)
         await SqlRelationshipReviewRepository(self._session).delete_for_report(report_id)

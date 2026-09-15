@@ -26,6 +26,12 @@ export interface ScheduleFormStateProps {
   onSubmit: (request: ScheduleRequest) => void;
 }
 
+export interface ScheduleIssue {
+  field: string;
+  message: string;
+  advanced?: boolean;
+}
+
 /** A schedule reuses normal research choices and evaluates its time window at each run. */
 export function useScheduleForm({
   templates,
@@ -154,16 +160,50 @@ export function useScheduleForm({
     windowHours === null ||
     (Number.isInteger(Number(lookback)) && windowHours >= 1 && windowHours <= 17520);
   const invalidCountry = product?.needs_country === true && countriesInScope.length !== 1;
-  const invalid =
-    !name.trim() ||
-    !scope.ready ||
-    !product ||
-    invalidPlan ||
-    invalidQuestion ||
-    invalidCountry ||
-    !validWindow ||
-    Boolean(activeResearch && researchArea && initial?.enabled !== false && !discloseArea) ||
-    countriesInScope.length > 8;
+  const issues: ScheduleIssue[] = [
+    ...(!name.trim()
+      ? [{ field: 'Subscription name', message: 'Enter a subscription name.' }]
+      : []),
+    ...(!scope.ready
+      ? [{ field: 'Workspace', message: 'Choose an available workspace.', advanced: true }]
+      : []),
+    ...(!product ? [{ field: 'Product', message: 'Choose a product.', advanced: true }] : []),
+    ...(invalidPlan
+      ? [
+          {
+            field: 'Collection plan',
+            message: 'Choose an available collection plan.',
+            advanced: true,
+          },
+        ]
+      : []),
+    ...(needsQuestion && !question.trim() && (!selectedPlan || activeResearch)
+      ? [{ field: 'Question', message: 'Enter a question.' }]
+      : []),
+    ...(activeResearch && !validLanguages
+      ? [
+          {
+            field: 'Research languages',
+            message: 'Enter one to eight valid language codes.',
+            advanced: true,
+          },
+        ]
+      : []),
+    ...(subjectScoped && !subject.trim()
+      ? [{ field: 'Research subject', message: 'Enter a research subject.', advanced: true }]
+      : []),
+    ...(invalidCountry ? [{ field: 'Nation', message: 'Choose one nation.' }] : []),
+    ...(countriesInScope.length > 8
+      ? [{ field: 'Countries', message: 'Choose no more than eight countries.' }]
+      : []),
+    ...(!validWindow
+      ? [{ field: 'Search period', message: 'Choose a search period within two years.' }]
+      : []),
+    ...(activeResearch && researchArea && initial?.enabled !== false && !discloseArea
+      ? [{ field: 'Area disclosure', message: 'Allow providers to receive the saved area.' }]
+      : []),
+  ];
+  const invalid = issues.length > 0;
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (invalid || busy) return;
@@ -190,6 +230,10 @@ export function useScheduleForm({
       research_web_search: activeResearch && webSearch,
       window_hours: windowHours,
       hour_utc: Number(hour),
+      timezone: initial?.timezone ?? 'UTC',
+      local_hour: Number(hour),
+      local_minute: initial?.local_minute ?? 0,
+      collection_policy: initial?.collection_policy ?? 'rolling_snapshot',
       cadence,
       anchor_month: Number(anchorMonth),
       avoid_repetition: avoidRepetition,
@@ -267,6 +311,7 @@ export function useScheduleForm({
     invalidQuestion,
     validWindow,
     invalid,
+    issues,
     submit,
     setPlanId,
   };

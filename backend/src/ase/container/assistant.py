@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ase.application.assistant.continuation import AssistantCapacity
+from ase.application.assistant.report_context import ReportContextReader
 from ase.application.assistant.retrieval import AssistantRetrieval
 from ase.application.assistant.service import MapAssistant
 from ase.application.model_routing import ModelRouting
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from ase.application.ports import Clock, RateLimiter
     from ase.application.ports.llm import LlmGateway, SecretCipher
     from ase.application.ports.source_controls import SourceAdmission
+    from ase.application.reports.access import GetReportUseCase
     from ase.container.repositories import Repositories
     from ase.domain.grading import SourceProfile
 
@@ -40,6 +42,7 @@ class AssistantWiring:
         session_factory: async_sessionmaker[AsyncSession]
 
         def repositories(self, session: AsyncSession) -> Repositories: ...
+        def get_report(self, session: AsyncSession) -> GetReportUseCase: ...
         def access_policy(self, session: AsyncSession) -> AccessPolicy: ...
         def public_infrastructure(self) -> dict[str, Any]: ...
 
@@ -74,4 +77,5 @@ class AssistantWiring:
             repos.uow,
             self.assistant_capacity,
             record_usage,
+            ReportContextReader(self.get_report(session)),
         )

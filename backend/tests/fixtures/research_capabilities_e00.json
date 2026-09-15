@@ -1,0 +1,25 @@
+{
+  "policy_version": "ase-source-capabilities-v1",
+  "bundle_ids": ["NEWS", "OFFICIAL", "CONFLICT", "HUMANITARIAN", "CTI", "NETWORK", "MACRO", "TRADE", "ENERGY", "MOBILITY", "HAZARD", "SCHOLARLY", "AREA"],
+  "bundle_examples": [
+    {"bundle": "CTI", "provider": "research_publisher_cyber_ncsc_news", "gap": "gap.cti_kev"},
+    {"bundle": "NETWORK", "provider": "research-ooni-aggregate", "gap": "gap.network_telemetry"},
+    {"bundle": "MACRO", "provider": "research-world-bank", "gap": "gap.ons_ecb"},
+    {"bundle": "MOBILITY", "provider": "research-retained-area-feeds", "gap": "gap.mobility_history"},
+    {"bundle": "SCHOLARLY", "provider": "research-openalex", "gap": "gap.scholarly_passages"}
+  ],
+  "same_origin_pairs": [
+    ["research_publisher_bbc_world", "research_publisher_economic_bbc_business"],
+    ["research_publisher_meduza_en", "research_regional_meduza_ru"],
+    ["research_regional_hrana_fa", "research_regional_hrana_en"],
+    ["research_publisher_cyber_ncsc_news", "research_publisher_cyber_ncsc_reports"]
+  ],
+  "support_examples": [
+    {"id": "research_publisher_cyber_cert_fr", "scope": "topic", "date": "publication_interval", "language": "fr"},
+    {"id": "research_regional_iranwire_fa", "scope": "country_context", "date": "publication_interval", "language": "fa"},
+    {"id": "research-rdap", "scope": "domain", "date": "current_snapshot", "language": null},
+    {"id": "research-world-bank", "scope": "country_context", "date": "annual_periods", "language": null},
+    {"id": "research-aiddata-projects", "scope": "area", "date": "recorded_interval", "language": null},
+    {"id": "research-usgs-area", "scope": "area", "date": "research_interval", "language": null}
+  ]
+}

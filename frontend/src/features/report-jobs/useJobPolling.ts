@@ -3,6 +3,10 @@ import { asApiError, type ApiError } from '@/lib/api/errors';
 import { subscribeWorkspaceAccess, workspaceRevision } from '@/lib/workspaceAccess';
 import { useAuthStore } from '@/stores/auth';
 
+const ACTIVE_DELAY = 5_000;
+const IDLE_DELAY = 30_000;
+const MAX_BACKOFF = 300_000;
+
 export function jobAuthority() {
   const state = useAuthStore.getState();
   return `${state.status}:${state.user?.id}:${state.user?.role}:${state.user?.is_active}:${workspaceRevision()}`;
@@ -35,6 +39,7 @@ export function useJobPolling<T>(
       generation.current++;
       pending.current?.abort();
       setSnapshot({ key, loader, data, error: null });
+      setReloadIndex((value) => value + 1);
     },
     [key, loader],
   );
@@ -44,6 +49,8 @@ export function useJobPolling<T>(
     if (paused || session.status !== 'authenticated' || !session.user?.is_active) return;
     let disposed = false,
       terminal = false;
+    let failures = 0;
+    let active = true;
     let timer: number | undefined;
     const stop = () => {
       if (timer !== undefined) window.clearTimeout(timer);
@@ -54,6 +61,10 @@ export function useJobPolling<T>(
     };
     const current = (id: number, signal: AbortSignal) =>
       !disposed && !signal.aborted && generation.current === id && jobAuthority() === key;
+    const queue = (delay: number) => {
+      if (document.visibilityState === 'visible')
+        timer = window.setTimeout(() => void poll(), delay);
+    };
     const poll = async () => {
       if (disposed || terminal || document.visibilityState !== 'visible' || jobAuthority() !== key)
         return;
@@ -64,12 +75,14 @@ export function useJobPolling<T>(
         const data = await loader(controller.signal);
         if (!current(id, controller.signal)) return;
         setSnapshot({ key, loader, data, error: null });
-        terminal = !shouldPoll(data);
+        active = shouldPoll(data);
+        failures = 0;
       } catch (caught) {
         if (!current(id, controller.signal)) return;
         const error = asApiError(caught);
         // Access failures discard the last private view and require an explicit fresh read.
         terminal = [401, 403, 404].includes(error.status);
+        failures += 1;
         setSnapshot((previous) => ({
           key,
           loader,
@@ -80,7 +93,7 @@ export function useJobPolling<T>(
       } finally {
         if (pending.current === controller) pending.current = null;
         if (current(id, controller.signal) && !terminal)
-          timer = window.setTimeout(() => void poll(), 3000);
+          queue(Math.min((active ? ACTIVE_DELAY : IDLE_DELAY) * 2 ** failures, MAX_BACKOFF));
       }
     };
     const visibility = () => {

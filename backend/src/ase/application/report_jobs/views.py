@@ -21,6 +21,8 @@ _ERRORS = {
     "token_budget_exhausted": "This step used its output allowance before completing.",
     "budget_exhausted": "This report has reached its lifetime call or output allowance.",
     "report_job_budget_exhausted": "This report has reached its lifetime call or output allowance.",
+    "monthly_budget_exhausted": "This UTC month's report request or output allowance is reached.",
+    "monthly_budget": "This UTC month's report request or output allowance is reached.",
     "profile_changed": "The saved model settings have changed. Start a new report.",
     "model_changed": "The saved model settings have changed. Start a new report.",
     "routing_changed": "The model assignment has changed. Start a new report.",
@@ -264,6 +266,8 @@ def job_view(job: ReportJob, *, detail: bool = True, can_control: bool = True) -
     period = frozen if detail and isinstance(frozen, dict) else {}
     return {
         "id": job.id,
+        "brief_id": job.brief_id,
+        "brief_revision": job.brief_revision,
         # Internal metadata comes from the immutable checkpoint, never the response clock.
         # Generic public progress schemas omit these; economy summaries expose the range.
         "period_from": period.get("period_from"),
