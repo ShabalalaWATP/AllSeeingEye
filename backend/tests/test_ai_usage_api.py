@@ -144,9 +144,11 @@ async def test_team_usage_view_depends_on_membership_role(client, container, adm
     manager_token = await login_token(client, USER_EMAIL, USER_PASSWORD)
     team = await client.post("/api/teams", headers=bearer(manager_token), json={"name": "Ops"})
     team_id = team.json()["id"]
+    # Only Administrators add accounts directly; Managers must invite.
+    admin_token = await login_token(client, ADMIN_EMAIL, ADMIN_PASSWORD)
     added = await client.put(
         f"/api/teams/{team_id}/members",
-        headers=bearer(manager_token),
+        headers=bearer(admin_token),
         json={"email": "member@example.com"},
     )
     assert added.status_code == 200, added.text
