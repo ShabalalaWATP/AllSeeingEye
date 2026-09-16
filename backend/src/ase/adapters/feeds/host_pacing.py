@@ -22,10 +22,14 @@ REDDIT_HOST = "www.reddit.com"
 # Telegram serves every curated channel preview from one host, and the pages are large
 # and uncacheable. Five seconds between them keeps this process well inside polite use.
 TELEGRAM_HOST = "t.me"
+# The Bluesky public AppView serves the rotating curated-account poll and the on-demand
+# research route. Its robots.txt asks for a handful of concurrent requests at most.
+BLUESKY_HOST = "public.api.bsky.app"
 DEFAULT_HOST_INTERVALS: Mapping[str, float] = {
     ADSB_LOL_HOST: 1.0,
     REDDIT_HOST: 5.0,
     TELEGRAM_HOST: 5.0,
+    BLUESKY_HOST: 1.0,
 }
 
 

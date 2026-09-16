@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 
+from ase.adapters.feeds.bluesky import SPEC as BLUESKY_SPEC
 from ase.adapters.feeds.google_news import SPEC as GOOGLE_NEWS
 from ase.adapters.feeds.radar_attack_trends import SPEC as RADAR_ATTACK_SPEC
 from ase.adapters.feeds.rss_seeds_regional import REGIONAL_SEEDS
@@ -10,6 +11,7 @@ from ase.adapters.research.news import EDITIONS
 from ase.adapters.research.news import LIMITATIONS as NEWS_LIMITATIONS
 from ase.adapters.research.regional import LIMITATIONS as REGIONAL_LIMITATIONS
 from ase.adapters.research.retained_area import RetainedAreaFeedProvider
+from ase.adapters.research.social_bluesky import BlueskyResearchProvider
 from ase.adapters.research.social_telegram import LIMITATIONS as TELEGRAM_LIMITATIONS
 from ase.adapters.research.social_telegram import PROVIDER_ID, PROVIDER_NAME
 from ase.adapters.research_records.cloudflare_radar import PROVIDER_IDS as RADAR_PROVIDER_IDS
@@ -112,6 +114,25 @@ def research_source_specs(disabled: tuple[str, ...] = ()) -> tuple[SourceSpec, .
             language="und",
         )
     )
+    if BLUESKY_SPEC.id not in disabled:
+        specs.append(
+            _spec(
+                BlueskyResearchProvider.id,
+                BlueskyResearchProvider.name,
+                Category.SOCIAL,
+                "Reviewed public accounts supply their own claims; neither the platform nor "
+                "the curated label authenticates a post's author, origin or content.",
+                "Local phrase matching within at most three curated public author feeds and "
+                "the requested dates.",
+                "No platform-wide search: the unauthenticated search endpoint refuses callers. "
+                "Only recent author-feed posts are considered; reposts, other people's replies, "
+                "linked pages, media and quoted posts are excluded. Curated topics are "
+                "collection choices, not evidence of geography.",
+                BLUESKY_SPEC.licence_note,
+                role="platform",
+                language="und",
+            )
+        )
     specs.extend(record_specs())
     specs.extend(subject_specs())
     specs.extend(

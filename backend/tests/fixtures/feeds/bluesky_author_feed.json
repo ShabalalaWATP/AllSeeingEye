@@ -1,0 +1,135 @@
+{
+  "feed": [
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpostone",
+        "cid": "bafy1",
+        "author": {
+          "did": "did:plc:aaaa",
+          "handle": "kyivindependent.com",
+          "displayName": "The Kyiv Independent"
+        },
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T21:40:00.123Z",
+          "text": "Air defence engaged drones over three oblasts overnight. Regional officials reported damage to energy infrastructure and no casualties so far.",
+          "langs": ["en"],
+          "embed": {"$type": "app.bsky.embed.images"}
+        },
+        "embed": {"images": [{"alt": "map"}, {"alt": "photo"}]},
+        "replyCount": 4,
+        "repostCount": 12,
+        "likeCount": 30,
+        "quoteCount": 1,
+        "indexedAt": "2026-09-05T21:40:02.000Z"
+      }
+    },
+    {
+      "reason": {"$type": "app.bsky.feed.defs#reasonRepost"},
+      "post": {
+        "uri": "at://did:plc:bbbb/app.bsky.feed.post/3lpreposted",
+        "cid": "bafy2",
+        "author": {"did": "did:plc:bbbb", "handle": "someone.else", "displayName": "Someone"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T20:00:00.000Z",
+          "text": "A repost carries another account's words and must not become an event.",
+          "langs": ["en"]
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpshortreply",
+        "cid": "bafy3",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T19:00:00.000Z",
+          "text": "More to follow.",
+          "langs": ["en"],
+          "reply": {"root": {"uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpostone"}}
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lplongreply",
+        "cid": "bafy4",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T18:30:00.000Z",
+          "text": "Update on the overnight strikes: the regional administration now says two substations were hit and repairs are under way, with rolling outages expected across the oblast during the day.",
+          "langs": ["uk"],
+          "reply": {"root": {"uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpostone"}}
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:cccc/app.bsky.feed.post/3lpwrongauthor",
+        "cid": "bafy5",
+        "author": {"did": "did:plc:cccc", "handle": "impostor.example"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T17:00:00.000Z",
+          "text": "An unexpected author in this author feed must be refused by the parser.",
+          "langs": ["en"]
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.generator/3lpnotapost",
+        "cid": "bafy6",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.generator",
+          "createdAt": "2026-09-05T16:00:00.000Z",
+          "text": "A feed generator record is not a post and must be refused."
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpempty",
+        "cid": "bafy7",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2026-09-05T15:00:00.000Z",
+          "text": "   ",
+          "langs": ["en"]
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpfuture",
+        "cid": "bafy8",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2027-01-01T00:00:00.000Z",
+          "text": "A post stamped in the future by its author, with no declared language at all.",
+          "langs": []
+        }
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:aaaa/app.bsky.feed.post/3lpbadtime",
+        "cid": "bafy9",
+        "author": {"did": "did:plc:aaaa", "handle": "kyivindependent.com"},
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "not-a-timestamp",
+          "text": "An unparsable timestamp falls back to the observation clock, never to an invented date.",
+          "langs": ["en-GB"]
+        }
+      }
+    },
+    "not-an-object"
+  ]
+}
