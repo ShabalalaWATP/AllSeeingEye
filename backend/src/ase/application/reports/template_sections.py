@@ -137,8 +137,9 @@ SECTIONS: dict[str, tuple[str, ...]] = {
         "Response: appeals, agency actions and outbreak notices in the window, cited.",
         "Assessment: what the reported facts imply for the next days, what is driving the "
         "trajectory, the second-order effects on access, health and displacement, and the "
-        "comparison with the earlier reporting in this window. Prose, citing evidence, "
-        "clearly marked as assessment.",
+        "comparison with the earlier reporting in this window. Give at least one "
+        "alternative reading of the same reporting and what would show which is right. "
+        "Prose, citing evidence, clearly marked as assessment.",
         "Key judgements: one to three on trajectory and needs, each with one yardstick "
         "term, a confidence rating and its falsifying condition.",
         "Gaps: what is not yet known, why it matters, and next-update criteria as indicators.",
