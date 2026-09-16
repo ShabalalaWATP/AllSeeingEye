@@ -122,7 +122,7 @@ export default function UkrainePage({
       {reference.data ? (
         <>
           <TimelineSection reference={reference.data} fetcher={imageFetcher} />
-          <ForcesSection reference={reference.data} />
+          <ForcesSection reference={reference.data} fetcher={imageFetcher} />
           <EquipmentSection reference={reference.data} fetcher={imageFetcher} />
         </>
       ) : null}

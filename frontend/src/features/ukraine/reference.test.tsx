@@ -30,26 +30,33 @@ describe('Ukraine reference sections', () => {
     expect(screen.getByText(/the drive on Kyiv failed/)).toBeInTheDocument();
   });
 
-  it('expands the force trees and links commanders to the figures tracker', async () => {
+  it('reads a force chart node, its chain of command and its subordinates', async () => {
     const { user } = renderApp('/conflicts/ukraine', 'user');
     const russia = await screen.findByRole(
       'region',
       { name: 'Russia force structure' },
       { timeout: 5000 },
     );
-    expect(within(russia).getByText('Supreme Commander-in-Chief')).toBeInTheDocument();
-    expect(within(russia).getByText(/Commander \(reported\): Vladimir Putin/)).toBeInTheDocument();
-    expect(within(russia).getByRole('link', { name: 'figure record' })).toHaveAttribute(
+    // Re-query after each toggle: expanding rebuilds the list under the chart.
+    const chart = () => within(russia).getByRole('list', { name: 'Russia chain of command' });
+    const detail = within(russia).getByRole('complementary', { name: 'Russia formation detail' });
+    expect(detail).toHaveTextContent('Choose a box in the chart');
+
+    await user.click(within(chart()).getByRole('button', { name: /^Supreme Commander-in-Chief/ }));
+    expect(detail).toHaveTextContent('Commander (reported): Vladimir Putin');
+    expect(within(detail).getByRole('link', { name: 'figure record' })).toHaveAttribute(
       'href',
       '/trackers/figures',
     );
-    expect(within(russia).getByText('General Staff and Joint Grouping of Forces')).toBeVisible();
-    await user.click(within(russia).getByRole('button', { name: 'Hide 1 subordinate' }));
-    expect(within(russia).queryByText('General Staff and Joint Grouping of Forces')).toBeNull();
-    await user.click(within(russia).getByRole('button', { name: 'Show 1 subordinate' }));
-    expect(within(russia).getByText('General Staff and Joint Grouping of Forces')).toBeVisible();
+
+    const subordinate = 'General Staff and Joint Grouping of Forces';
+    expect(within(chart()).queryByText(subordinate)).not.toBeNull();
+
     const ukraine = screen.getByRole('region', { name: 'Ukraine force structure' });
-    expect(within(ukraine).getByText(/Strength: Around one million/)).toBeInTheDocument();
+    await user.click(within(ukraine).getByRole('button', { name: /^Supreme Commander-in-Chief/ }));
+    expect(
+      within(ukraine).getByRole('complementary', { name: 'Ukraine formation detail' }),
+    ).toHaveTextContent('Strength: Around one million personnel by official statements.');
   });
 
   it('groups equipment by speciality and sub-heading, with a compare table and licensed images', async () => {

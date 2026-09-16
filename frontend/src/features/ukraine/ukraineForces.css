@@ -1,0 +1,129 @@
+/*
+ * Force organisation chart. The markup is a plain nested list, so it reads correctly to a
+ * screen reader and collapses to an indented outline on a narrow screen; these rules only
+ * add the connector lines that make the same list look like a top-down chart.
+ */
+.uk-org ul {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.uk-org ul[hidden] {
+  display: none;
+}
+
+.uk-org li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 6px 0;
+  list-style: none;
+}
+
+/* The elbow above each child: half a horizontal line, plus a vertical drop. */
+.uk-org li::before,
+.uk-org li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 22px;
+  border-top: 1px solid var(--color-line);
+}
+
+.uk-org li::after {
+  right: auto;
+  left: 50%;
+  border-top: 1px solid var(--color-line);
+  border-left: 1px solid var(--color-line);
+}
+
+.uk-org li:only-child {
+  padding-top: 0;
+}
+
+.uk-org li:only-child::before,
+.uk-org li:only-child::after {
+  display: none;
+}
+
+.uk-org li:first-child::before,
+.uk-org li:last-child::after {
+  border: 0 none;
+}
+
+.uk-org li:last-child::before {
+  border-right: 1px solid var(--color-line);
+  border-radius: 0 6px 0 0;
+}
+
+.uk-org li:first-child::after {
+  border-radius: 6px 0 0 0;
+}
+
+/* The stem that drops from a node into its list of subordinates. */
+.uk-org ul ul {
+  position: relative;
+  padding-top: 22px;
+}
+
+.uk-org ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 22px;
+  border-left: 1px solid var(--color-line);
+}
+
+.uk-org__node {
+  width: 13rem;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+/* Narrow screens read the same list as an indented outline with a single spine. */
+.uk-org[data-layout='stacked'] ul {
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 0;
+}
+
+.uk-org[data-layout='stacked'] ul ul {
+  margin-left: 0.55rem;
+  padding: 0 0 0 0.75rem;
+  border-left: 1px solid var(--color-line);
+}
+
+.uk-org[data-layout='stacked'] li {
+  align-items: stretch;
+  padding: 0.4rem 0 0;
+}
+
+.uk-org[data-layout='stacked'] li:only-child {
+  padding-top: 0.4rem;
+}
+
+.uk-org[data-layout='stacked'] li::before,
+.uk-org[data-layout='stacked'] li::after,
+.uk-org[data-layout='stacked'] ul ul::before {
+  display: none;
+}
+
+.uk-org[data-layout='stacked'] .uk-org__node {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uk-org__node {
+    transition: none;
+  }
+}
