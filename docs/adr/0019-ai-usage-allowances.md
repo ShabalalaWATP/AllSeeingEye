@@ -127,11 +127,20 @@ call passes through an allowance decorator.
 | Administrator connection test, completion and embeddings probes | `admin/llm_testing.py` | The administrator running the test | Yes |
 | Feed title translation | `adapters/llm/translator.py`, built in `container/features.py` | System | Yes |
 | Conflict screening of shared feeds | `application/conflict_screening/model.py` | System | Yes |
+| Economy page plain-English explainer | `application/economy_explainer_model.py`, built in `container/economy_explainer.py` | System, purpose `economy_explainer` | Yes |
 | Model discovery (`list_models`) | `adapters/llm/openai_compatible.py` | Not a completion; lists models only | No, not billable model usage |
 | Fortnightly Ukraine digest | `application/ukraine_digest_writer.py`, built in `container/ukraine.py` | System, purpose `system:ukraine_digest`; at most one call a fortnight, plus one retry when the mechanical checks reject the first answer | Yes |
 
 Tests cover each newly metered path except conflict screening, which uses the same
 `system_llm_gateway()` wiring as feed translation but has no dedicated allowance test.
+The economy explainer has its own allowance test
+(`tests/test_economy_explainer.py::test_the_call_is_reserved_and_settled_against_the_system_budget`)
+asserting a settled reservation, system attribution and the exact purpose string. It
+passes `purpose_prefix=""` to `AllowanceLlmGateway`, which records the schema name
+alone rather than a prefixed purpose; it is the only consumer that does so. Its
+cadence is at most one call per fact-pack fingerprint and never more than once in 24
+hours, with a single retry when the mechanical checks reject an answer, so it can
+spend at most two calls a day. See `docs/ECONOMY_WORKSPACE.md`.
 
 ## Consequences
 

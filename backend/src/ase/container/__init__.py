@@ -86,6 +86,7 @@ from ase.container.conflict_screening import build_conflict_screening
 from ase.container.cyber import CyberWiring
 from ase.container.economy import EconomyWiring
 from ase.container.economy_briefing import EconomyBriefingWiring
+from ase.container.economy_explainer import EconomyExplainerWiring
 from ase.container.email import build_email_sender
 from ase.container.features import FeatureWiring
 from ase.container.lifecycle import dispose_resources
@@ -117,6 +118,7 @@ class Container(
     AssistantWiring,
     EconomyWiring,
     EconomyBriefingWiring,
+    EconomyExplainerWiring,
     CyberWiring,
     SourceInventoryWiring,
     PublicFigureWiring,

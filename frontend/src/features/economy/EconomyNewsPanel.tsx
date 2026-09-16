@@ -32,6 +32,7 @@ export function EconomyNewsPanel({
   asOf,
   report,
   briefing,
+  explainerLeads = false,
   onRetry,
 }: {
   items: readonly EconomyNewsItem[];
@@ -43,6 +44,7 @@ export function EconomyNewsPanel({
   asOf?: string | undefined;
   report: Report | null;
   briefing: EconomyBriefing | null;
+  explainerLeads?: boolean;
   onRetry: () => void;
 }) {
   const filtered = (
@@ -66,7 +68,13 @@ export function EconomyNewsPanel({
           {formatUtc(asOf)}
         </p>
       )}
-      <EconomyNewsOverview items={filtered} region={region} report={report} briefing={briefing} />
+      <EconomyNewsOverview
+        items={filtered}
+        region={region}
+        report={report}
+        briefing={briefing}
+        explainerLeads={explainerLeads}
+      />
       {loading && items.length === 0 && <LoadingNote label="Collecting economic headlines" />}
       {error && (
         <Alert tone="error">

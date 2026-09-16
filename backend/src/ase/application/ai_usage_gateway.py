@@ -207,7 +207,8 @@ def _web_usage(result: WebSearchResult) -> Usage:
 
 
 def _purpose(prefix: str, schema_name: str) -> str:
-    return f"{prefix}:{schema_name}"[:64]
+    """An empty prefix lets a single-purpose consumer record its own exact purpose."""
+    return (f"{prefix}:{schema_name}" if prefix else schema_name)[:64]
 
 
 def _text_tokens(value: str, output_tokens: int) -> int:

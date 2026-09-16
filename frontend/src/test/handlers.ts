@@ -1,4 +1,5 @@
 import { profileHandlers } from './handlers.profile';
+import { economyExplainer } from './fixtures.economyExplainer';
 import { platformConnections } from './fixtures.researchMetadata';
 import { figureBoard } from './fixtures.figures';
 import { ukraineHandlers } from './handlers.ukraine';
@@ -382,6 +383,8 @@ export const handlers = [
       source_url: 'https://radar.cloudflare.com/',
     }),
   ),
+
+  http.get('/api/economy/explainer', () => HttpResponse.json(economyExplainer)),
 
   http.get('/api/capabilities', () => HttpResponse.json({ os_maps: false, os_layers: [] })),
 
