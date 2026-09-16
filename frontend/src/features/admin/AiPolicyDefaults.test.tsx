@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 
-import { aiDefaults, aiPolicy } from '@/test/fixtures.aiUsage';
+import { aiDefaults, aiPolicy, aiPrices, aiTotals } from '@/test/fixtures.aiUsage';
 import { apiError } from '@/test/handlers';
 import { server } from '@/test/server';
 
@@ -75,5 +75,45 @@ describe('AiPolicyDefaults', () => {
     fail = false;
     await user.click(screen.getByRole('button', { name: 'Retry loading suggested policies' }));
     expect(await screen.findByText(/Would be created/)).toBeInTheDocument();
+  });
+
+  it('reports a failure to apply without claiming anything was created', async () => {
+    server.use(
+      http.get('/api/admin/ai-usage/defaults', () => HttpResponse.json(aiDefaults())),
+      http.post('/api/admin/ai-usage/defaults', () =>
+        apiError(409, 'conflict', 'A policy already exists for this target and period.'),
+      ),
+    );
+    const { user, onApplied } = mount();
+    await user.click(await screen.findByRole('button', { name: 'Apply 1 suggested policies' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('A policy already exists');
+    expect(screen.queryByText(/policies were created/)).not.toBeInTheDocument();
+    expect(onApplied).not.toHaveBeenCalled();
+  });
+
+  it('hides money and the headroom comparison when nothing has been recorded', async () => {
+    const quiet = aiDefaults({
+      observed: aiTotals({ estimated_cost: null }),
+      observed_daily_tokens: 0,
+      prices: aiPrices({ input_per_million: 0, output_per_million: 0, configured: false }),
+    });
+    server.use(http.get('/api/admin/ai-usage/defaults', () => HttpResponse.json(quiet)));
+    mount();
+    expect(await screen.findByText(/Raise any figure that looks tight/)).toBeInTheDocument();
+    expect(screen.queryByText(/estimated\)/)).not.toBeInTheDocument();
+  });
+
+  it('says plainly when a race meant nothing was created', async () => {
+    server.use(
+      http.get('/api/admin/ai-usage/defaults', () => HttpResponse.json(aiDefaults())),
+      http.post('/api/admin/ai-usage/defaults', () =>
+        HttpResponse.json({ created: [] }, { status: 201 }),
+      ),
+    );
+    const { user } = mount();
+    await user.click(await screen.findByRole('button', { name: 'Apply 1 suggested policies' }));
+    expect(
+      await screen.findByText('Every suggested policy already existed. Nothing was changed.'),
+    ).toBeInTheDocument();
   });
 });
