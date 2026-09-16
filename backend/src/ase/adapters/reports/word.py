@@ -228,6 +228,11 @@ def render_docx(document: ReportDocument) -> bytes:
         if block.kind is BlockKind.FIGURE and block.figure:
             _add_figure(word, block.figure, figures[id(block.figure)])
             continue
+        if block.kind is BlockKind.DIAGRAM and block.diagram:
+            # Word receives the text alternative; the equivalent table follows it.
+            paragraph = word.add_paragraph(style=styles[BlockKind.METADATA])
+            _add_inlines(paragraph, f"{block.diagram.title}. {block.diagram.alt_text}", ())
+            continue
         if block.kind is BlockKind.LIST:
             style = "List Number" if block.ordered else "List Bullet"
             for item in block.items:

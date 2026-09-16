@@ -13,6 +13,7 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 from ase.application.reports.observation_text import observation_lines
 from ase.application.reports.source_provenance_text import source_provenance_lines
 from ase.domain.evidence import EvidenceItem
+from ase.domain.report_diagrams import ReportDiagram
 from ase.domain.report_documents import DocumentInline
 from ase.domain.reports import ReportStatus
 
@@ -37,6 +38,10 @@ def markdown_fields[T](value: T) -> T:
     """
     if type(value) is str:
         return cast(T, plain_markdown(cast(str, value)))
+    if isinstance(value, ReportDiagram):
+        # Diagram data is revalidated on construction, and escaping could push a label
+        # past its bound. Its renderers escape each field where they place it instead.
+        return value
     if isinstance(value, tuple):
         return cast(T, tuple(markdown_fields(item) for item in value))
     if is_dataclass(value) and not isinstance(value, type):

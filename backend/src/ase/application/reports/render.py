@@ -8,6 +8,7 @@ from ase.application.reports.assessment_export import assessment_sections
 from ase.application.reports.challenge_export import challenge_sections
 from ase.application.reports.citation_export import citation_sections
 from ase.application.reports.context_export import context_sections
+from ase.application.reports.diagram_text import diagram_lines
 from ase.application.reports.export_text import markdown_fields, plain_markdown, review_notice
 from ase.application.reports.markdown_annex import annex_lines
 from ase.application.reports.research_export import research_sections
@@ -111,6 +112,10 @@ def _analysis_lines(body: ReportBody) -> list[str]:
         lines += ["## Assessment", ""]
         for section in body.assessment:
             lines += [f"### {section.heading}", f"{section.text}{_cites(section.evidence)}", ""]
+    if body.diagrams:
+        lines += ["## Diagrams", ""]
+        for diagram in body.diagrams:
+            lines += diagram_lines(diagram)
     if body.assumptions:
         lines += ["## Assumptions", ""]
         for assumption in body.assumptions:
