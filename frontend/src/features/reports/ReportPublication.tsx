@@ -88,15 +88,18 @@ function Masthead({
   );
 }
 
-type Section = {
+interface Section {
   key: string;
   id: string;
   title: string;
   index: number;
   children: ReactNode[];
-};
+}
 
-type Rendered = { nodes: ReactNode[]; section: Section | null };
+interface Rendered {
+  nodes: ReactNode[];
+  section: Section | null;
+}
 
 function blockNode(block: Block, key: string): ReactNode {
   if (block.kind === 'subheading')

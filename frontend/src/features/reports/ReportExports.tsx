@@ -3,7 +3,6 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { describeError } from '@/lib/api/errors';
 import { fetchReportFile } from '@/lib/api/reportDocuments';
-import type { ReportExportFormat } from '@/lib/api/reportDocuments';
 import { fetchReportMarkdown } from '@/lib/api/reports';
 import type { ReportStatus } from '@/lib/api/reports';
 import { fileNameFor, saveTextFile } from '@/lib/download';
@@ -69,7 +68,7 @@ export function ReportExports({
         saveTextFile(file.filename ?? fallback, await file.blob.text());
       }
     } else {
-      const blob = await fetchReportFile(id, version, format as ReportExportFormat);
+      const blob = await fetchReportFile(id, version, format);
       saveBinaryFile(fileNameFor(`${title}-v${String(version)}`, format), blob);
     }
     closeMenu(true);

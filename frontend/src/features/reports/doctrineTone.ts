@@ -33,7 +33,7 @@ export function reliabilityTone(value: string | null | undefined): Tone {
 
 /** Information credibility, 1 to 6. 6 means insufficient grounds to judge. */
 export function credibilityTone(value: number | string | null | undefined): Tone {
-  const number = typeof value === 'number' ? value : Number(String(value ?? '').trim());
+  const number = typeof value === 'number' ? value : Number((value ?? '').trim());
   if (number === 1 || number === 2) return 'strong';
   if (number === 3) return 'mid';
   if (number === 4 || number === 5) return 'caution';

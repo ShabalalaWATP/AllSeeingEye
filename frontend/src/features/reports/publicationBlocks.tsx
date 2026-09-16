@@ -52,10 +52,11 @@ export function TableBlock({ block }: { block: Block }) {
   return (
     <figure className="report-reader-wide mt-8" aria-label={table.title}>
       <h3 className="report-reader-subheading">{table.title}</h3>
+      {/* A focusable region keeps the horizontal scroll reachable from the keyboard. */}
       <div
         className="report-reader-table-wrap"
         tabIndex={0}
-        role="group"
+        role="region"
         aria-label={`${table.title} (scrollable table)`}
       >
         <table className="report-reader-table">

@@ -2,12 +2,12 @@ import type { ReportExportFormat } from '@/lib/api/reportDocuments';
 
 export type ExportChoice = ReportExportFormat | 'md';
 
-export type ExportDescription = {
+export interface ExportDescription {
   label: string;
   short: string;
   purpose: string;
   detail: string;
-};
+}
 
 /**
  * What each export is for, in the reader's words. The descriptions state only what
