@@ -42,7 +42,7 @@ export function CommandPalette() {
     <dialog
       ref={dialogRef}
       aria-label="Find anything"
-      className="m-0 mt-[8vh] ml-[50%] w-[min(34rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-xl border border-line bg-ground p-0 text-text backdrop:bg-black/65"
+      className="fixed top-[8vh] left-1/2 m-0 w-[min(34rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-xl border border-line bg-ground p-0 text-text backdrop:bg-black/65"
       onCancel={(event) => {
         event.preventDefault();
         close();
